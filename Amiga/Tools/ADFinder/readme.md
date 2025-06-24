@@ -2,7 +2,7 @@
 
 I found myself wanting to work on an ADF image in the same way modern computers allow to manage files. 
 
-macOS spoils users with the easy going user interface and I didn't find any tool out there that would offer the rich experience and being compatible with the need of an amiga engineer.
+macOS spoils users with the easy going user interface and I didn't find any tool out there that would offer the rich experience and being compatible with the need of an amiga engineer. I did find an [awesome library](https://github.com/adflib/ADFlib) that would enable that dream to come true.
 
 So I start building it. Details and pre-built app are [here](https://ginnov.github.io/littlethings/)
 
@@ -32,7 +32,7 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 ## Work in Progress / Thinking about
 the items below move up as they get done.
 
-19.	👷🏻 Add files via Drag and Drop (lo pri)
+19.	👷🏻 Add files via Drag and Drop (low pri)
 21.	👷🏻 Auto convert audio when adding them to an image
 22.	👷🏻 IFF Image viewer
 23.	👷🏻 IFF image converter	
