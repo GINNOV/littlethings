@@ -48,13 +48,19 @@ struct AboutView: View {
 
             Divider()
 
-            Text("CONTRIBUTIONS")
+            Text("CONTRIBUTIONS & DEV TIPS")
                 .font(.caption.weight(.semibold))
-            
-            VStack(alignment: .leading, spacing: 6) {
-                Text("🔌 Powered by ADFLib.")
-                Text("🎨 Some icons by thiings.co")
-                Text("❣️ Lots of love from the community for bug reports and suggestions.")
+            HStack(alignment: .top, spacing: 32) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("🔌 Powered by [ADFLib](https://github.com/adflib/ADFlib).")
+                    Text("🎨 Some icons by [thiings.co](https://thiings.co)")
+                    Text("🐛 [Report bugs or suggest features](https://github.com/GINNOV/littlethings/issues)")
+                    Text("❣️ Lots of love from the community.")
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("👷🏼‍♂️ Build [ADFLib](https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder/distribution/docs/build_adflib.md) for macOS.")
+                    Text("👷🏼‍♀️ Overall tool's [architecture](https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder/distribution/docs).")
+                }
             }
             .font(.caption)
             .padding(.bottom)
