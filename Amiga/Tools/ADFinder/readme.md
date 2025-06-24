@@ -44,3 +44,8 @@ the items below move up as they get done.
 
 # What it looks like?
 I took a bunch of screenshots, I don't always keep them up to date but [here](https://ginnov.github.io/littlethings/adfinder_learnmore.html) you'll find what's up now.
+
+# Engineering tips
+To make it easier on less terminal experienced coders I provided with the code the unmodified [ADFLib](https://github.com/adflib/ADFlib) library built only for Apple Silicon and Universal. However, if for some reason, you would like to use the source code, the repo doesn't provide instructions on how to build for macOS, I always write done what I figure out and [here](https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder/distribution/docs) you find the steps I took to build the library. I hope it helps.
+
+I also put together a general architecture doc for how the app is structured to help others that want to to fork and dork around it. It's here (link to come)
