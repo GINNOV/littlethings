@@ -65,7 +65,7 @@ struct AboutView: View {
             .font(.caption)
             .padding(.bottom)
 
-            Button("Close") {
+            Button("CLOSE") {
                 dismiss()
             }
             .keyboardShortcut(.cancelAction)
