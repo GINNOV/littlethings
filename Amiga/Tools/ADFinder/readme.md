@@ -2,7 +2,7 @@
 
 I found myself wanting to work on an ADF image in the same way modern computers allow to manage files. 
 
-macOS spoils users with the easy going user interface and I didn't find any tool out there that would offer the rich experience and being compatible with the need of an amiga engineer.
+macOS spoils users with the easy going user interface and I didn't find any tool out there that would offer the rich experience and being compatible with the need of an amiga engineer. But I did find a [fantastic library](https://github.com/adflib/ADFlib) that would enable me to get the job done.
 
 So I start building it. Details and pre-built app are [here](https://ginnov.github.io/littlethings/)
 
