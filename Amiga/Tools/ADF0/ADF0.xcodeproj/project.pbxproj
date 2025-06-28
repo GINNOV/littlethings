@@ -7,25 +7,41 @@
 	objects = {
 
 /* Begin PBXCopyFilesBuildPhase section */
-		AC82F3912E04ED6900E5C503 /* CopyFiles */ = {
+		AC82F3912E04ED6900E5C503 /* Copy Files (2 items) */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
 			);
+			name = "Copy Files (2 items)";
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		AC82F3932E04ED6900E5C503 /* unADF */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = unADF; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC82F3932E04ED6900E5C503 /* ADF0 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ADF0; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		ACEE1DC22E1077BE001AD498 /* Exceptions for "ADF0" folder in "Copy Files (2 items)" phase from "ADF0" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = AC82F3912E04ED6900E5C503 /* Copy Files (2 items) */;
+			membershipExceptions = (
+				ADFLibrary/adf_swift_helpers.c,
+				ADFLibrary/ADFService.swift,
+				main.swift,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		AC82F3952E04ED6900E5C503 /* unADF */ = {
+		AC82F3952E04ED6900E5C503 /* ADF0 */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = unADF;
+			exceptions = (
+				ACEE1DC22E1077BE001AD498 /* Exceptions for "ADF0" folder in "Copy Files (2 items)" phase from "ADF0" target */,
+			);
+			path = ADF0;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -44,7 +60,7 @@
 		AC82F38A2E04ED6900E5C503 = {
 			isa = PBXGroup;
 			children = (
-				AC82F3952E04ED6900E5C503 /* unADF */,
+				AC82F3952E04ED6900E5C503 /* ADF0 */,
 				AC82F3942E04ED6900E5C503 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -52,7 +68,7 @@
 		AC82F3942E04ED6900E5C503 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AC82F3932E04ED6900E5C503 /* unADF */,
+				AC82F3932E04ED6900E5C503 /* ADF0 */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -60,26 +76,26 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AC82F3922E04ED6900E5C503 /* unADF */ = {
+		AC82F3922E04ED6900E5C503 /* ADF0 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AC82F39A2E04ED6900E5C503 /* Build configuration list for PBXNativeTarget "unADF" */;
+			buildConfigurationList = AC82F39A2E04ED6900E5C503 /* Build configuration list for PBXNativeTarget "ADF0" */;
 			buildPhases = (
 				AC82F38F2E04ED6900E5C503 /* Sources */,
 				AC82F3902E04ED6900E5C503 /* Frameworks */,
-				AC82F3912E04ED6900E5C503 /* CopyFiles */,
+				AC82F3912E04ED6900E5C503 /* Copy Files (2 items) */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				AC82F3952E04ED6900E5C503 /* unADF */,
+				AC82F3952E04ED6900E5C503 /* ADF0 */,
 			);
-			name = unADF;
+			name = ADF0;
 			packageProductDependencies = (
 			);
 			productName = unADF;
-			productReference = AC82F3932E04ED6900E5C503 /* unADF */;
+			productReference = AC82F3932E04ED6900E5C503 /* ADF0 */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -97,7 +113,7 @@
 					};
 				};
 			};
-			buildConfigurationList = AC82F38E2E04ED6900E5C503 /* Build configuration list for PBXProject "unADF" */;
+			buildConfigurationList = AC82F38E2E04ED6900E5C503 /* Build configuration list for PBXProject "ADF0" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -111,7 +127,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AC82F3922E04ED6900E5C503 /* unADF */,
+				AC82F3922E04ED6900E5C503 /* ADF0 */,
 			);
 		};
 /* End PBXProject section */
@@ -187,6 +203,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/ADF0/ADF0-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -244,6 +261,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/ADF0/ADF0-Bridging-Header.h";
 			};
 			name = Release;
 		};
@@ -253,9 +271,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/ADF0/ADFHeaders";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/unADF/ADFLibrary",
+					"$(PROJECT_DIR)/ADF0/ADFLibrary",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -268,9 +287,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/ADF0/ADFHeaders";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/unADF/ADFLibrary",
+					"$(PROJECT_DIR)/ADF0/ADFLibrary",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -280,7 +300,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AC82F38E2E04ED6900E5C503 /* Build configuration list for PBXProject "unADF" */ = {
+		AC82F38E2E04ED6900E5C503 /* Build configuration list for PBXProject "ADF0" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AC82F3982E04ED6900E5C503 /* Debug */,
@@ -289,7 +309,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AC82F39A2E04ED6900E5C503 /* Build configuration list for PBXNativeTarget "unADF" */ = {
+		AC82F39A2E04ED6900E5C503 /* Build configuration list for PBXNativeTarget "ADF0" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AC82F39B2E04ED6900E5C503 /* Debug */,
