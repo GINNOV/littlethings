@@ -10,7 +10,8 @@ public struct IFF {
     /// - Parameter filePath: The path to the IFF file.
     /// - Returns: An UnsafeMutablePointer to an IFF_Chunk struct, or nil on failure.
     public static func read(filePath: String) -> UnsafeMutablePointer<IFF_Chunk>? {
-        // CORRECTED: The C function `IFF_read` requires two arguments.
+        // The C function `IFF_read` requires two arguments: filename and chunkRegistry
+        // Using nil for chunkRegistry will use the default registry
         return IFF_read(filePath, nil)
     }
 
@@ -22,13 +23,23 @@ public struct IFF {
         IFF_free(chunk, nil)
     }
 
-    /// A helper function to find a specific sub-chunk within a larger IFF structure.
+    /// A helper function to find a specific sub-chunk within a FORM chunk.
     /// - Parameters:
-    ///   - parentChunk: The parent chunk to search within (e.g., the main 'FORM' chunk).
-    ///   - id: The 4-character identifier of the chunk to find (e.g., "BMHD").
+    ///   - form: The form chunk to search within (must be a FORM chunk).
+    ///   - chunkId: The 4-character identifier of the chunk to find (e.g., "BMHD").
     /// - Returns: A pointer to the found chunk, or nil if not found.
-//    public static func findChunk(in parentChunk: UnsafeMutablePointer<IFF_Chunk>, id: String) -> UnsafeMutablePointer<IFF_Chunk>? {
-//        // This will now compile correctly once the package structure is aligned.
-//        return IFF_find_chunk(parentChunk, id)
-//    }
+    public static func findChunk(in form: UnsafeMutablePointer<IFF_Form>, chunkId: IFF_ID) -> UnsafeMutablePointer<IFF_Chunk>? {
+        // Use IFF_getChunkFromForm to find the chunk by ID
+        return IFF_getChunkFromForm(form, chunkId)
+    }
+    
+    /// A helper function to find a specific data chunk within a FORM chunk.
+    /// - Parameters:
+    ///   - form: The form chunk to search within (must be a FORM chunk).
+    ///   - chunkId: The 4-character identifier of the chunk to find (e.g., "BMHD").
+    /// - Returns: A pointer to the found chunk, or nil if not found.
+    public static func findDataChunk(in form: UnsafeMutablePointer<IFF_Form>, chunkId: IFF_ID) -> UnsafeMutablePointer<IFF_Chunk>? {
+        // Use IFF_getDataChunkFromForm to find the data chunk by ID
+        return IFF_getDataChunkFromForm(form, chunkId)
+    }
 }
