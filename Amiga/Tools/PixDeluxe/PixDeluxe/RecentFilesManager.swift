@@ -10,43 +10,52 @@ import Foundation
 class RecentFilesManager: ObservableObject {
     @Published var files: [URL] = []
     private let key = "recentIFFBookmarks"
-    private let maxRecents = 5
+    private let maxRecents = 10 // Increased to a more common number
 
     init() {
         loadRecents()
     }
 
+    /// Adds a URL to the recent files list, ensuring no duplicates and respecting the maximum limit.
+    /// This method is now corrected to safely handle array manipulation.
     func add(url: URL) {
-        // Create secure bookmark data from the URL
-        guard let bookmark = try? url.bookmarkData(options: .minimalBookmark, includingResourceValuesForKeys: nil, relativeTo: nil) else {
-            return
+        // 1. Remove the URL if it already exists to avoid duplicates and ensure it moves to the top.
+        files.removeAll { $0 == url }
+
+        // 2. Add the new URL to the top of the list.
+        files.insert(url, at: 0)
+
+        // 3. Keep the list at the desired size by removing the last element if over limit.
+        if files.count > maxRecents {
+            files = Array(files.prefix(maxRecents))
         }
 
-        var bookmarks = UserDefaults.standard.array(forKey: key) as? [Data] ?? []
+        // 4. Create new bookmark data from the updated URL list. This is more robust
+        //    than trying to manipulate the bookmarks array directly.
+        let bookmarks = files.compactMap { fileURL in
+            try? fileURL.bookmarkData(options: .minimalBookmark, includingResourceValuesForKeys: nil, relativeTo: nil)
+        }
 
-        // Avoid duplicates by removing any existing bookmark for the same file
-        if let existingIndex = files.firstIndex(of: url) {
-            bookmarks.remove(at: existingIndex)
-        }
-        
-        // Add the new bookmark to the top of the list
-        bookmarks.insert(bookmark, at: 0)
-        
-        // Keep the list at the desired size
-        if bookmarks.count > maxRecents {
-            bookmarks = Array(bookmarks.prefix(maxRecents))
-        }
-        
+        // 5. Save the new, correct array of bookmarks.
         UserDefaults.standard.set(bookmarks, forKey: key)
-        loadRecents() // Reload to update the @Published property
+        
+        // 6. The @Published files property is already updated, so no need to call loadRecents().
+        //    SwiftUI will automatically pick up the change.
     }
 
+    /// Loads the recent files from UserDefaults by resolving saved bookmarks.
     private func loadRecents() {
-        let bookmarks = UserDefaults.standard.array(forKey: key) as? [Data] ?? []
+        guard let bookmarks = UserDefaults.standard.array(forKey: key) as? [Data] else {
+            self.files = []
+            return
+        }
+        
         files = bookmarks.compactMap { bookmark in
             var isStale = false
-            // Resolve the bookmark data back into a URL
+            // Resolve the bookmark data back into a URL.
+            // Using .withSecurityScope is important for sandboxed apps.
             guard let url = try? URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale), !isStale else {
+                // If the bookmark is stale (e.g., file was moved or deleted), we discard it.
                 return nil
             }
             return url
