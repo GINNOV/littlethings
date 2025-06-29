@@ -9,7 +9,7 @@ This folder in the repo is for all folks out there that have that flashback-need
 I don't know what I am doing, but what I share here worked for me, and I hope it does some good for you too.
 
 # The Website
-If you fancy something cooler than a markdown page I put together a small website with the list of tools, tutorials and other thing that I learned during my flashback journey. It's [here](https://ginnov.github.io/littlethings/). I hope it serves you well.
+If you fancy something cooler than a markdown page I put together a small website with the list of tools, tutorials and other things that I learn during my flashback journey. It's [here](https://ginnov.github.io/littlethings/). I hope it serves you well.
 
 ---
 Reach out if you have questions or cool things to share.
