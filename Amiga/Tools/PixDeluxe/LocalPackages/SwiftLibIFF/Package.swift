@@ -13,30 +13,20 @@ let package = Package(
         // C library target
         .target(
             name: "Clibiff",
-            path: "Sources/Clibiff/src",
+            path: "Sources/Clibiff/src/libiff", // <-- Set the target path to the root of the C library
             exclude: [
-                "Doxyfile",
-                "libiff.sln",
-                "libiff.pc.in",
-                "iffjoin",
-                "iffpp",
-                "libiff/Makefile.am",
-                "libiff/libiff.vcxproj",
-                "libiff/libiff.vcxproj.filters",
-                "libiff/libiff.def"
+                // Excludes are now relative to the new path
+                "Makefile.am",
+                "libiff.vcxproj",
+                "libiff.vcxproj.filters",
+                "libiff.def"
             ],
-            sources: ["libiff"],
-            publicHeadersPath: "libiff/include",
+            publicHeadersPath: "include", // <-- Public headers are in the 'include' subdirectory
             cSettings: [
-                .headerSearchPath("../include"),
-                .headerSearchPath("libiff"),
-                .headerSearchPath("libiff/include"),
+                // This allows C files to find their own headers via #include "iff.h"
+                .headerSearchPath("include"),
                 .define("HAVE_CONFIG_H"),
-                .define("PACKAGE_DATA_DIR=\"\\\"/usr/local/share/libiff\\\"\""),
                 .unsafeFlags(["-Wno-unused-command-line-argument"])
-            ],
-            linkerSettings: [
-                .linkedLibrary("m")
             ]
         ),
         
