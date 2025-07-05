@@ -11,9 +11,10 @@
 // Core IFF library headers
 #import "libiff/iff.h"
 #import "libiff/id.h"
+#import "libiff/ifftypes.h"
 
 // ILBM-specific headers
-#import "ilbm.h"
+#import "ilbm.h" 
 #import "ilbmimage.h"
 #import "bitmapheader.h"
 #import "colormap.h"
