@@ -2,7 +2,7 @@
 //  PixDeluxeApp.swift
 //  PixDeluxe
 //
-//  Created by Mario Esposito on 6/18/25.
+//  Created by Mario Esposito on 7/1/25.
 //
 
 import SwiftUI
