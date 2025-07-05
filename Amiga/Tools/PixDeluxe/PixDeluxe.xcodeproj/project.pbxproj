@@ -6,16 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		AC2191132E03D9A60093A439 /* SwiftLibIFF in Frameworks */ = {isa = PBXBuildFile; productRef = AC2191122E03D9A60093A439 /* SwiftLibIFF */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
-		AC2190FE2E03D9140093A439 /* PixDeluxe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PixDeluxe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACDE0A8D2E13FD04004886A6 /* PixDeluxe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PixDeluxe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		AC2191002E03D9140093A439 /* PixDeluxe */ = {
+		ACDE0A8F2E13FD04004886A6 /* PixDeluxe */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = PixDeluxe;
 			sourceTree = "<group>";
@@ -23,29 +19,36 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		AC2190FB2E03D9140093A439 /* Frameworks */ = {
+		ACDE0A8A2E13FD04004886A6 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AC2191132E03D9A60093A439 /* SwiftLibIFF in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AC2190F52E03D9140093A439 = {
+		AC35228B2E1424BB0000EE0B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				AC2191002E03D9140093A439 /* PixDeluxe */,
-				AC2190FF2E03D9140093A439 /* Products */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		ACDE0A842E13FD04004886A6 = {
+			isa = PBXGroup;
+			children = (
+				ACDE0A8F2E13FD04004886A6 /* PixDeluxe */,
+				AC35228B2E1424BB0000EE0B /* Frameworks */,
+				ACDE0A8E2E13FD04004886A6 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		AC2190FF2E03D9140093A439 /* Products */ = {
+		ACDE0A8E2E13FD04004886A6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AC2190FE2E03D9140093A439 /* PixDeluxe.app */,
+				ACDE0A8D2E13FD04004886A6 /* PixDeluxe.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -53,68 +56,66 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AC2190FD2E03D9140093A439 /* PixDeluxe */ = {
+		ACDE0A8C2E13FD04004886A6 /* PixDeluxe */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AC21910A2E03D9150093A439 /* Build configuration list for PBXNativeTarget "PixDeluxe" */;
+			buildConfigurationList = ACDE0A992E13FD05004886A6 /* Build configuration list for PBXNativeTarget "PixDeluxe" */;
 			buildPhases = (
-				AC2190FA2E03D9140093A439 /* Sources */,
-				AC2190FB2E03D9140093A439 /* Frameworks */,
-				AC2190FC2E03D9140093A439 /* Resources */,
+				ACDE0A892E13FD04004886A6 /* Sources */,
+				ACDE0A8A2E13FD04004886A6 /* Frameworks */,
+				ACDE0A8B2E13FD04004886A6 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				AC2191002E03D9140093A439 /* PixDeluxe */,
+				ACDE0A8F2E13FD04004886A6 /* PixDeluxe */,
 			);
 			name = PixDeluxe;
 			packageProductDependencies = (
-				AC2191122E03D9A60093A439 /* SwiftLibIFF */,
 			);
 			productName = PixDeluxe;
-			productReference = AC2190FE2E03D9140093A439 /* PixDeluxe.app */;
+			productReference = ACDE0A8D2E13FD04004886A6 /* PixDeluxe.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		AC2190F62E03D9140093A439 /* Project object */ = {
+		ACDE0A852E13FD04004886A6 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
-					AC2190FD2E03D9140093A439 = {
+					ACDE0A8C2E13FD04004886A6 = {
 						CreatedOnToolsVersion = 16.4;
 					};
 				};
 			};
-			buildConfigurationList = AC2190F92E03D9140093A439 /* Build configuration list for PBXProject "PixDeluxe" */;
+			buildConfigurationList = ACDE0A882E13FD04004886A6 /* Build configuration list for PBXProject "PixDeluxe" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = AC2190F52E03D9140093A439;
+			mainGroup = ACDE0A842E13FD04004886A6;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				AC2191112E03D9A60093A439 /* XCLocalSwiftPackageReference "LocalPackages/SwiftLibIFF" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = AC2190FF2E03D9140093A439 /* Products */;
+			productRefGroup = ACDE0A8E2E13FD04004886A6 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AC2190FD2E03D9140093A439 /* PixDeluxe */,
+				ACDE0A8C2E13FD04004886A6 /* PixDeluxe */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		AC2190FC2E03D9140093A439 /* Resources */ = {
+		ACDE0A8B2E13FD04004886A6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -124,7 +125,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		AC2190FA2E03D9140093A439 /* Sources */ = {
+		ACDE0A892E13FD04004886A6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -134,7 +135,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		AC2191082E03D9150093A439 /* Debug */ = {
+		ACDE0A972E13FD05004886A6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -198,7 +199,7 @@
 			};
 			name = Debug;
 		};
-		AC2191092E03D9150093A439 /* Release */ = {
+		ACDE0A982E13FD05004886A6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -254,7 +255,7 @@
 			};
 			name = Release;
 		};
-		AC21910B2E03D9150093A439 /* Debug */ = {
+		ACDE0A9A2E13FD05004886A6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -267,21 +268,25 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/PixDeluxe/IFFLib/libilbm/**";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/PixDeluxe/IFFLib/libilbm";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.PixDeluxe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "PixDeluxe/libiff-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
-		AC21910C2E03D9150093A439 /* Release */ = {
+		ACDE0A9B2E13FD05004886A6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -294,16 +299,20 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/PixDeluxe/IFFLib/libilbm/**";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/PixDeluxe/IFFLib/libilbm";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.PixDeluxe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "PixDeluxe/libiff-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -311,39 +320,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AC2190F92E03D9140093A439 /* Build configuration list for PBXProject "PixDeluxe" */ = {
+		ACDE0A882E13FD04004886A6 /* Build configuration list for PBXProject "PixDeluxe" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AC2191082E03D9150093A439 /* Debug */,
-				AC2191092E03D9150093A439 /* Release */,
+				ACDE0A972E13FD05004886A6 /* Debug */,
+				ACDE0A982E13FD05004886A6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AC21910A2E03D9150093A439 /* Build configuration list for PBXNativeTarget "PixDeluxe" */ = {
+		ACDE0A992E13FD05004886A6 /* Build configuration list for PBXNativeTarget "PixDeluxe" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AC21910B2E03D9150093A439 /* Debug */,
-				AC21910C2E03D9150093A439 /* Release */,
+				ACDE0A9A2E13FD05004886A6 /* Debug */,
+				ACDE0A9B2E13FD05004886A6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		AC2191112E03D9A60093A439 /* XCLocalSwiftPackageReference "LocalPackages/SwiftLibIFF" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = LocalPackages/SwiftLibIFF;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		AC2191122E03D9A60093A439 /* SwiftLibIFF */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SwiftLibIFF;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = AC2190F62E03D9140093A439 /* Project object */;
+	rootObject = ACDE0A852E13FD04004886A6 /* Project object */;
 }
