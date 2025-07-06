@@ -47,20 +47,41 @@ struct ContentView: View {
                     
                     Spacer()
                     
-                    Button("Open IFF Image") {
-                        viewModel.openFile()
-                    }
-                    .padding()
-                    .fileImporter(
-                        isPresented: $viewModel.isFileImporterPresented,
-                        allowedContentTypes: [UTType(filenameExtension: "iff") ?? .data, UTType(filenameExtension: "lbm") ?? .data],
-                        allowsMultipleSelection: false
-                    ) { result in
-                        viewModel.handleFileImport(result: result)
-                    }
+                    // AI_REVIEW: As requested, the "Open IFF Image" button has been
+                    // removed from the main view body and replaced by a toolbar item.
+                    // #END_REVIEW
                 }
                 .padding(.vertical)
                 .navigationTitle("PixDeluxe")
+                // AI_REVIEW: A new toolbar is added here to provide quick access to
+                // common actions, replacing the old button.
+                // #END_REVIEW
+                .toolbar {
+                    ToolbarItemGroup {
+                        Button(action: {
+                            viewModel.openFile()
+                        }) {
+                            Image(systemName: "folder")
+                        }
+                        .help("Open") // Tooltip
+
+                        Button(action: {
+                            viewModel.exportToImage()
+                        }) {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                        .help("Export") // Tooltip
+                        .disabled(viewModel.image == nil)
+
+                        Button(action: {
+                            viewModel.toggleImageDetails()
+                        }) {
+                            Image(systemName: "info.circle")
+                        }
+                        .help("Metadata") // Tooltip
+                        .disabled(viewModel.imageDetails == nil)
+                    }
+                }
 
                 if viewModel.isGeneratingHexdump {
                     ProgressView("Generating Hexdump...")
@@ -81,6 +102,14 @@ struct ContentView: View {
                     ImageDetailsView(details: details)
                 }
             }
+            .fileImporter(
+                isPresented: $viewModel.isFileImporterPresented,
+                allowedContentTypes: [UTType(filenameExtension: "iff") ?? .data, UTType(filenameExtension: "lbm") ?? .data],
+                allowsMultipleSelection: false
+            ) { result in
+                viewModel.handleFileImport(result: result)
+            }
         }
     }
 }
+
