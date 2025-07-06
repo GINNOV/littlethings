@@ -4,28 +4,25 @@ import PackageDescription
 let package = Package(
     name: "CILBM",
     products: [
+        // This defines the single library product for this package.
+        // It correctly targets "libilbm", which is the top-level library,
+        // and explicitly declares its type as static.
         .library(
             name: "CILBM",
+            type: .static,
             targets: ["libilbm"]),
-        .executable(
-            name: "TestApp",
-            targets: ["TestApp"])
     ],
     targets: [
-        // Because the files are now in a conventional layout (headers in an
-        // "include" subdirectory), SPM requires no extra configuration.
-        // It will automatically find the headers and handle dependency linking.
+        // This target builds the libiff C library. It has no dependencies.
         .target(
             name: "libiff",
             dependencies: []
         ),
+        // This target builds the libilbm C library.
+        // It correctly declares its dependency on "libiff".
         .target(
             name: "libilbm",
             dependencies: ["libiff"]
-        ),
-        .executableTarget(
-            name: "TestApp",
-            dependencies: ["libilbm"]
         )
     ]
 )
