@@ -9,6 +9,6 @@ import AppKit
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillFinishLaunching(_ notification: Notification) {
-        UserDefaults.standard.set("preferred", forKey: "AppleWindowTabbingMode")
+        UserDefaults.standard.set("always", forKey: "AppleWindowTabbingMode")
     }
 }
