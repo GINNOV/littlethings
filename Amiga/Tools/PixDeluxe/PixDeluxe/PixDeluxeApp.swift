@@ -17,6 +17,7 @@ struct PixDeluxeApp: App {
         }
         .commands {
             UtilitiesCommands(viewModel: viewModel)
+            FileMenuCommands(viewModel: viewModel)
         }
     }
 }

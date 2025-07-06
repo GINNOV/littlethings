@@ -10,8 +10,7 @@ import UniformTypeIdentifiers
 
 struct ContentView: View {
     @ObservedObject var viewModel: ContentViewModel
-    @State private var showingFileImporter = false
-
+    
     var body: some View {
         NavigationSplitView {
             VStack {
@@ -49,11 +48,15 @@ struct ContentView: View {
                     Spacer()
                     
                     Button("Open IFF Image") {
-                        showingFileImporter = true
+                        viewModel.openFile()
                     }
                     .padding()
+                    // AI_REVIEW: The .fileImporter is now bound to the viewModel's
+                    // published property, centralizing the control logic. The local
+                    // @State variable has been removed.
+                    // #END_REVIEW
                     .fileImporter(
-                        isPresented: $showingFileImporter,
+                        isPresented: $viewModel.isFileImporterPresented,
                         allowedContentTypes: [UTType(filenameExtension: "iff") ?? .data, UTType(filenameExtension: "lbm") ?? .data],
                         allowsMultipleSelection: false
                     ) { result in

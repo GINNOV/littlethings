@@ -16,6 +16,7 @@ class ContentViewModel: ObservableObject {
     @Published var hexdump: String? = nil
     @Published var isGeneratingHexdump = false
     @Published var isConverting = false
+    @Published var isFileImporterPresented = false
 
     // MARK: - Services
     let fileManager = FileManagerService()
@@ -37,6 +38,10 @@ class ContentViewModel: ObservableObject {
     
     // MARK: - Public Methods (Intents)
     
+    func openFile() {
+        self.isFileImporterPresented = true
+    }
+    
     func selectFile(url: URL) {
         guard url.startAccessingSecurityScopedResource() else {
             print("❌ Could not gain security-scoped access to file: \(url.path)")
@@ -50,6 +55,7 @@ class ContentViewModel: ObservableObject {
     }
     
     func handleFileImport(result: Result<[URL], Error>) {
+        self.isFileImporterPresented = false
         switch result {
         case .success(let urls):
             guard let url = urls.first else { return }
@@ -93,8 +99,7 @@ class ContentViewModel: ObservableObject {
     func exportToImage() {
         guard let nsImage = lastNSImage else { return }
         isConverting = true
-        // This doesn't need a background thread as the save panel is modal.
-        imageConverter.export(nsImage: nsImage, to: .png) // or .jpeg
+        imageConverter.export(nsImage: nsImage, to: .png)
         isConverting = false
     }
 
