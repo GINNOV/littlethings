@@ -22,10 +22,8 @@ class IFFParser {
 
     func parse(url: URL) -> ParseResult? {
         let path = url.path
-        print("ℹ️ Attempting to parse IFF file at: \(path)")
-
+        
         guard let iffChunk = ILBM_read(path) else {
-            print("❌ Error: libilbm could not read the IFF file at \(path).")
             return nil
         }
         defer { ILBM_free(iffChunk) }
@@ -34,7 +32,6 @@ class IFFParser {
         guard let images = ILBM_extractImages(iffChunk, &imagesCount),
               imagesCount > 0,
               let imagePtr = images[0] else {
-            print("❌ Error: Could not extract ILBM images from the file.")
             return nil
         }
         defer { ILBM_freeImages(images, imagesCount) }
@@ -42,7 +39,6 @@ class IFFParser {
         let image = imagePtr.pointee
 
         guard let bitMapHeader = image.bitMapHeader?.pointee else {
-            print("❌ Error: Could not get bitmap header.")
             return nil
         }
 
@@ -51,23 +47,17 @@ class IFFParser {
         }
 
         if ILBM_imageIsILBM(imagePtr) == 1 {
-            if ILBM_convertILBMToACBM(imagePtr) == 0 {
-                print("❌ Error: Failed to convert IFF from planar to chunky format.")
-                return nil
-            }
+            if ILBM_convertILBMToACBM(imagePtr) == 0 { return nil }
         } else if !(ILBM_imageIsPBM(imagePtr) == 1 || ILBM_imageIsACBM(imagePtr) == 1) {
-            print("❌ Error: Unsupported IFF image type.")
             return nil
         }
         
         guard let body = image.body?.pointee, let chunkyDataPtr = body.chunkData else {
-            print("❌ Error: Could not get chunky pixel data from body.")
             return nil
         }
         let chunkyData = Array(UnsafeBufferPointer(start: chunkyDataPtr, count: Int(body.chunkSize)))
 
         guard let colorMap = image.colorMap?.pointee, let colors = colorMap.colorRegister else {
-             print("❌ Error: Could not get color map.")
              return nil
         }
         let colorMapSize = Int(colorMap.colorRegisterLength)
@@ -90,12 +80,12 @@ class IFFParser {
         }
         
         let finalImage = IFFImage(width: width, height: height, pixels: rgbaPixels)
-        let details = extractDetails(from: image)
+        let details = extractDetails(from: image, fileName: url.lastPathComponent)
         
         return ParseResult(image: finalImage, chunkyData: chunkyData, details: details)
     }
     
-    private func extractDetails(from image: ILBM_Image) -> IFFImageDetails {
+    private func extractDetails(from image: ILBM_Image, fileName: String) -> IFFImageDetails {
         guard let bmhd = image.bitMapHeader?.pointee else {
             fatalError("Bitmap header should always be present.")
         }
@@ -124,6 +114,7 @@ class IFFParser {
         }
 
         return IFFImageDetails(
+            fileName: fileName,
             width: Int(bmhd.w),
             height: Int(bmhd.h),
             depth: Int(bmhd.nPlanes),

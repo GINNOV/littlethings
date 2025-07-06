@@ -9,15 +9,14 @@ import SwiftUI
 
 @main
 struct PixDeluxeApp: App {
-    @StateObject private var viewModel = ContentViewModel()
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        WindowGroup {
-            ContentView(viewModel: viewModel)
+        DocumentGroup(newDocument: PixDeluxeDocument()) { file in
+            ContentView(document: file.$document)
         }
         .commands {
-            UtilitiesCommands(viewModel: viewModel)
-            FileMenuCommands(viewModel: viewModel)
+            UtilitiesCommands()
         }
     }
 }

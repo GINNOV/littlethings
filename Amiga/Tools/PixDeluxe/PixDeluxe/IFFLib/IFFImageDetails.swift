@@ -8,6 +8,7 @@
 import Foundation
 
 struct IFFImageDetails {
+    let fileName: String
     let width: Int
     let height: Int
     let depth: Int
