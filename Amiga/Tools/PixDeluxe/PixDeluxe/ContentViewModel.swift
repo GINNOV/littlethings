@@ -17,6 +17,8 @@ class ContentViewModel: ObservableObject {
     @Published var isGeneratingHexdump = false
     @Published var isConverting = false
     @Published var isFileImporterPresented = false
+    @Published var imageDetails: IFFImageDetails? = nil
+    @Published var showingImageDetails = false
 
     // MARK: - Services
     let fileManager = FileManagerService()
@@ -37,6 +39,10 @@ class ContentViewModel: ObservableObject {
     }
     
     // MARK: - Public Methods (Intents)
+    
+    func toggleImageDetails() {
+        showingImageDetails.toggle()
+    }
     
     func openFile() {
         self.isFileImporterPresented = true
@@ -111,13 +117,13 @@ class ContentViewModel: ObservableObject {
             self.hexdump = nil
             self.lastChunkyData = nil
             self.lastNSImage = nil
+            self.imageDetails = nil
         }
         
         DispatchQueue.global(qos: .userInitiated).async {
             guard let parseResult = self.iffParser.parse(url: url) else { return }
             
             let iffImage = parseResult.image
-            
             let provider = CGDataProvider(data: Data(iffImage.pixels) as CFData)
             
             if let cgImage = CGImage(width: iffImage.width, height: iffImage.height, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: iffImage.width * 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue), provider: provider!, decode: nil, shouldInterpolate: true, intent: .defaultIntent) {
@@ -128,9 +134,11 @@ class ContentViewModel: ObservableObject {
                     self.lastChunkyData = parseResult.chunkyData
                     self.lastNSImage = nsImage
                     self.image = Image(nsImage: nsImage)
+                    self.imageDetails = parseResult.details
                     print("🖼️ Successfully displayed image: \(url.lastPathComponent)")
                 }
             }
         }
     }
 }
+
