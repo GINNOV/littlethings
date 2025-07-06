@@ -51,10 +51,6 @@ struct ContentView: View {
                         viewModel.openFile()
                     }
                     .padding()
-                    // AI_REVIEW: The .fileImporter is now bound to the viewModel's
-                    // published property, centralizing the control logic. The local
-                    // @State variable has been removed.
-                    // #END_REVIEW
                     .fileImporter(
                         isPresented: $viewModel.isFileImporterPresented,
                         allowedContentTypes: [UTType(filenameExtension: "iff") ?? .data, UTType(filenameExtension: "lbm") ?? .data],
@@ -78,6 +74,11 @@ struct ContentView: View {
                         .padding()
                         .background(Material.regular)
                         .cornerRadius(10)
+                }
+            }
+            .sheet(isPresented: $viewModel.showingImageDetails) {
+                if let details = viewModel.imageDetails {
+                    ImageDetailsView(details: details)
                 }
             }
         }

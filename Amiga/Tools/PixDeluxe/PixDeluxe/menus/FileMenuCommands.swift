@@ -17,5 +17,20 @@ struct FileMenuCommands: Commands {
             }
             .keyboardShortcut("O", modifiers: .command)
         }
+        
+        // AI_REVIEW: The compiler error was correct. `.showHelp` is not a valid
+        // member of `CommandGroupPlacement`. The correct anchor to place an
+        // item in the standard "View" menu is `.toolbar`. This change
+        // resolves the compiler error and correctly places the command.
+        // #END_REVIEW
+        CommandGroup(after: .toolbar) {
+            Divider()
+            Button("Image Details") {
+                viewModel.toggleImageDetails()
+            }
+            .keyboardShortcut("i", modifiers: .command)
+            .disabled(viewModel.imageDetails == nil)
+        }
     }
 }
+
