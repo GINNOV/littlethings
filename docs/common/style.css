@@ -1,6 +1,11 @@
 /* Google Fonts Import */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;700&family=Source+Code+Pro:wght@400;600&display=swap');
 
+/* Classic Amiga Mouse Pointer */
+html {
+    cursor: url('../images/amiga-pointer.png'), auto;
+}
+
 /* General Reset */
 * {
     box-sizing: border-box;
