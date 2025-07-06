@@ -1,0 +1,42 @@
+[
+  {
+    "image": "1_adfinder.png",
+    "description": "It looks like the Apple Finder with one magic touch, it works on Amiga Disk. Custom images aren't supported yet."
+  },
+  {
+    "image": "2_adfinder.png",
+    "description": "Create a new image using one of the two file systems supported."
+  },
+  {
+    "image": "3_adfinder.png",
+    "description": "Sort like a real Amiga champ."
+  },
+  {
+    "image": "4_adfinder.png",
+    "description": "Delete files and folder by either honoring the original settings or using God powers."
+  },
+  {
+    "image": "5_adfinder.png",
+    "description": "An Hex/Ascii viewer that allows you to export the dump of a file."
+  },
+  {
+    "image": "6_adfinder.png",
+    "description": "A small but effective text editor to make startup sequene tweaks or just write a note."
+  },
+  {
+    "image": "7_adfinder.png",
+    "description": "Inspect the disk blocks like a real Amiga surgeon"
+  },
+  {
+    "image": "8_adfinder.png",
+    "description": "Set permissions and attributes on files."
+  },
+  {
+    "image": "9_adfinder.png",
+    "description": "Inspet sectors like an Amiga proctologist. Useful to compare two disks."
+  },
+  {
+    "image": "10_adfinder.png",
+    "description": "Retrieve current permissions in the same fashion you do on Finder and with the same shortcuts!"
+  }
+]
