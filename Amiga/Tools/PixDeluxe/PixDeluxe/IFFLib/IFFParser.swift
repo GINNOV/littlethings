@@ -80,12 +80,13 @@ class IFFParser {
         }
         
         let finalImage = IFFImage(width: width, height: height, pixels: rgbaPixels)
-        let details = extractDetails(from: image, fileName: url.lastPathComponent)
+        // AI_REVIEW: Pass the full URL to the details extractor instead of just the filename.
+        let details = extractDetails(from: image, fileURL: url)
         
         return ParseResult(image: finalImage, chunkyData: chunkyData, details: details)
     }
     
-    private func extractDetails(from image: ILBM_Image, fileName: String) -> IFFImageDetails {
+    private func extractDetails(from image: ILBM_Image, fileURL: URL) -> IFFImageDetails {
         guard let bmhd = image.bitMapHeader?.pointee else {
             fatalError("Bitmap header should always be present.")
         }
@@ -114,7 +115,8 @@ class IFFParser {
         }
 
         return IFFImageDetails(
-            fileName: fileName,
+            fileName: fileURL.lastPathComponent,
+            filePath: fileURL.path,
             width: Int(bmhd.w),
             height: Int(bmhd.h),
             depth: Int(bmhd.nPlanes),

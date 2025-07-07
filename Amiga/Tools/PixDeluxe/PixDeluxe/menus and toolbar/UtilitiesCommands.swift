@@ -18,10 +18,7 @@ struct UtilitiesCommands: Commands {
             }
             .disabled(document?.chunkyData == nil)
             .keyboardShortcut("h", modifiers: [.command, .shift])
-            
-            // AI_REVIEW: The conversion process is now orchestrated here. It first opens a file picker,
-            // then shows the new dedicated color depth dialog, and finally calls the purely
-            // algorithmic image converter with the results.
+
             Button("Convert to IFF...") {
                 let openPanel = NSOpenPanel()
                 openPanel.allowedContentTypes = [.png, .jpeg]

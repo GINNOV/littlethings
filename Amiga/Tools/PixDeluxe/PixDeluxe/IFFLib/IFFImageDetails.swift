@@ -7,8 +7,9 @@
 
 import Foundation
 
-struct IFFImageDetails {
+struct IFFImageDetails: Hashable {
     let fileName: String
+    let filePath: String
     let width: Int
     let height: Int
     let depth: Int
