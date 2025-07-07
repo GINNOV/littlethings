@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<key>QLIsDataBasedPreview</key>
+			<false/>
+			<key>QLSupportedContentTypes</key>
+			<array>
+				<string>com.theblifemovement.iff-image</string>
+				<string>dyn.ah62d4rv4ge80w3xg</string>
+				<string>public.ilbm</string>
+				<string>com.ea.iff</string>
+			</array>
+			<key>QLSupportsSearchableItems</key>
+			<false/>
+		</dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.quicklook.preview</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>$(PRODUCT_MODULE_NAME).PreviewViewController</string>
+		<key>UTExportedTypeDeclarations</key>
+		<array>
+			<dict>
+				<key>UTTypeDescription</key>
+				<string>IFF Image</string>
+				<key>UTTypeIdentifier</key>
+				<string>com.theblifemovement.iff-image</string>
+				<key>UTTypeTagSpecification</key>
+				<dict>
+					<key>public.filename-extension</key>
+					<array>
+						<string>iff</string>
+						<string>lbm</string>
+					</array>
+				</dict>
+				<key>UTTypeConformsTo</key>
+				<array>
+					<string>public.image</string>
+					<string>public.data</string>
+				</array>
+			</dict>
+		</array>
+	</dict>
+</dict>
+</plist>
