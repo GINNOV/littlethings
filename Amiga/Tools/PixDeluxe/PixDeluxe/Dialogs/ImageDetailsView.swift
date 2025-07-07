@@ -9,12 +9,29 @@ import SwiftUI
 
 struct ImageDetailsView: View {
     let details: IFFImageDetails
+    @State private var justCopied = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Image Details")
-                .font(.title)
-                .padding(.bottom)
+            HStack {
+                // AI_REVIEW: The title is now the dynamic filename from the details struct.
+                Text(details.fileName)
+                    .font(.title)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                
+                Spacer()
+                
+                // AI_REVIEW: A button is added to copy the full file path to the clipboard.
+                // It shows a temporary confirmation checkmark after being clicked.
+                Button(action: copyPath) {
+                    Image(systemName: justCopied ? "checkmark" : "doc.on.doc")
+                }
+                .buttonStyle(PlainButtonStyle())
+                .help("Copy File Path")
+                .foregroundColor(justCopied ? .green : .accentColor)
+            }
+            .padding(.bottom)
 
             Form {
                 Section(header: Text("Dimensions")) {
@@ -39,7 +56,18 @@ struct ImageDetailsView: View {
             }
         }
         .padding()
-        .frame(minWidth: 350, idealWidth: 400)
+        .frame(minWidth: 400, idealWidth: 450)
+    }
+    
+    private func copyPath() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(details.filePath, forType: .string)
+        
+        justCopied = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            justCopied = false
+        }
     }
 }
 
