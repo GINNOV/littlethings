@@ -6,8 +6,6 @@
 //
 
 import Foundation
-
-// AI_REVIEW: The C-defined macros for chunk IDs are not directly available in Swift.
 // This file correctly re-defines them as Swift constants so they can be used
 // in the parser, fixing the "Cannot find in scope" compiler errors.
 let ILBM_ID_ILBM: IFF_ID = (UInt32("I".unicodeScalars.first!.value) << 24 | UInt32("L".unicodeScalars.first!.value) << 16 | UInt32("B".unicodeScalars.first!.value) << 8 | UInt32("M".unicodeScalars.first!.value))

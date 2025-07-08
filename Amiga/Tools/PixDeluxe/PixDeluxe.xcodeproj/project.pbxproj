@@ -10,9 +10,22 @@
 		ACDE0A8D2E13FD04004886A6 /* PixDeluxe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PixDeluxe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AC96C6A62E1D2F1700EF77F5 /* Exceptions for "PixDeluxe" folder in "PixDeluxe" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = ACDE0A8C2E13FD04004886A6 /* PixDeluxe */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		ACDE0A8F2E13FD04004886A6 /* PixDeluxe */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AC96C6A62E1D2F1700EF77F5 /* Exceptions for "PixDeluxe" folder in "PixDeluxe" target */,
+			);
 			path = PixDeluxe;
 			sourceTree = "<group>";
 		};
@@ -263,12 +276,13 @@
 				CODE_SIGN_ENTITLEMENTS = PixDeluxe/PixDeluxe.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 91;
+				CURRENT_PROJECT_VERSION = 105;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/PixDeluxe/IFFLib/libilbm/**";
+				INFOPLIST_FILE = PixDeluxe/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -294,12 +308,13 @@
 				CODE_SIGN_ENTITLEMENTS = PixDeluxe/PixDeluxe.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 91;
+				CURRENT_PROJECT_VERSION = 105;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/PixDeluxe/IFFLib/libilbm/**";
+				INFOPLIST_FILE = PixDeluxe/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (

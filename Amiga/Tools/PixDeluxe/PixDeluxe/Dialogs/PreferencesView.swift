@@ -11,14 +11,11 @@ struct PreferencesView: View {
     @StateObject private var settings = Settings()
 
     var body: some View {
-        // AI_REVIEW: The layout has been adjusted to reduce padding and improve alignment.
-        HStack(alignment: .center, spacing: 20) {
-            // AI_REVIEW: The view now uses the custom "gear1" image from your asset catalog
-            // instead of the SF Symbol.
+        HStack(alignment: .center, spacing: 1) {
             Image("gear1")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 80, height: 80)
+                .frame(width: 120, height: 120)
                 .foregroundColor(.gray.opacity(0.5))
                 .frame(width: 120)
 
@@ -34,9 +31,9 @@ struct PreferencesView: View {
                 }
                 .pickerStyle(.radioGroup)
             }
-            .padding(.top, 10) // Reduced top padding for the form
+            .padding(.top, 5)
         }
         .padding()
-        .frame(width: 480, height: 180) // Adjusted frame for a more compact view
+        .frame(width: 480, height: 180)
     }
 }

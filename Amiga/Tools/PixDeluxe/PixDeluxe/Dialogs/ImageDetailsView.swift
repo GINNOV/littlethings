@@ -71,8 +71,7 @@ struct ImageDetailsView: View {
         pasteboard.setString(details.filePath, forType: .string)
         
         justCopied = true
-        // AI_REVIEW: The `asyncAfter` call is updated to the modern syntax,
-        // using `.now() + .seconds()`, which resolves the compiler error.
+
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
             justCopied = false
         }

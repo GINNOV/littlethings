@@ -19,8 +19,6 @@ struct IFFImageDetails: Hashable {
     let aspectRatio: String
     let pageDimensions: String
     let viewportMode: String?
-    
-    // AI_REVIEW: Properties added to support the new debug view.
     let formType: String
     let hasCMAP: Bool
 }

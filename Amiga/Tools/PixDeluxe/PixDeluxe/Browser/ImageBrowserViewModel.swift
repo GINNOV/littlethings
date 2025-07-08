@@ -29,11 +29,7 @@ class ImageBrowserViewModel: ObservableObject {
     @Published var statusText: String = "Select a folder to begin browsing."
 
     private let iffWrapper = IFFWrapper()
-
-    // AI_REVIEW: The `openFolder` method has been updated to be fully asynchronous.
-    // It now uses `openPanel.begin` with a completion handler instead of the blocking
-    // `runModal()` call. This fixes the console error and prevents the UI from freezing,
-    // which was the root cause of the gesture recognition bugs.
+    
     func openFolder() {
         let openPanel = NSOpenPanel()
         openPanel.canChooseFiles = false

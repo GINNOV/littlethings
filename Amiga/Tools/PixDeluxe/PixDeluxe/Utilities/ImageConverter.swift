@@ -2,254 +2,329 @@
 //  ImageConverter.swift
 //  PixDeluxe
 //
-//  Created by Mario Esposito on 7/5/25.
+//  Created by Engineer on 6/1/24.
 //
-
 import AppKit
 import UniformTypeIdentifiers
-import Foundation
-import CoreGraphics
 
-class ImageConverter {
+func timestamp(_ label: String) {
+    print("⏱️ [\(label)] at \(Date().timeIntervalSince1970)")
+}
 
-    // MARK: - Exporting from IFF
+class ColorBucket {
+    let colors: [NSColor]
 
-    func export(nsImage: NSImage, to format: UTType) {
-        let savePanel = NSSavePanel()
-        savePanel.allowedContentTypes = [format]
-        savePanel.canCreateDirectories = true
-        savePanel.nameFieldStringValue = "Untitled"
+    init(colors: [NSColor]) {
+        self.colors = colors
+    }
 
-        guard savePanel.runModal() == .OK, let url = savePanel.url else {
-            print("ℹ️ Export cancelled by user.")
-            return
-        }
+    var range: Double {
+        guard !colors.isEmpty else { return 0 }
+        let r = colors.map { $0.redComponent }
+        let g = colors.map { $0.greenComponent }
+        let b = colors.map { $0.blueComponent }
+        return max(r.max()! - r.min()!, g.max()! - g.min()!, b.max()! - b.min()!)
+    }
 
-        guard let tiffData = nsImage.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiffData) else {
-            print("❌ Could not get bitmap representation of the image.")
-            return
-        }
+    var averageColor: NSColor {
+        let r = colors.reduce(0.0) { $0 + $1.redComponent } / Double(colors.count)
+        let g = colors.reduce(0.0) { $0 + $1.greenComponent } / Double(colors.count)
+        let b = colors.reduce(0.0) { $0 + $1.blueComponent } / Double(colors.count)
+        return NSColor(red: r, green: g, blue: b, alpha: 1.0)
+    }
+}
 
-        let fileType: NSBitmapImageRep.FileType = (format == .png) ? .png : .jpeg
-        guard let data = bitmap.representation(using: fileType, properties: [:]) else {
-            print("❌ Could not convert image to \(format.description).")
-            return
-        }
+class ImageConverter: ObservableObject {
+    @Published var isConverting = false
+    @Published var conversionProgress: Double = 0.0
+    @Published var conversionStatusText = "Starting..."
 
-        do {
-            try data.write(to: url)
-            print("✅ Successfully exported image to \(url.path)")
-        } catch {
-            print("❌ Failed to write exported image to disk: \(error.localizedDescription)")
+    func export(cgImage: CGImage, fileExtension: String) {
+        Task { @MainActor in
+            let savePanel = NSSavePanel()
+            if let type = UTType(filenameExtension: fileExtension) {
+                savePanel.allowedContentTypes = [type]
+            }
+            savePanel.canCreateDirectories = true
+            savePanel.nameFieldStringValue = "Untitled"
+
+            guard savePanel.runModal() == .OK, let url = savePanel.url else {
+                print("ℹ️ Export cancelled.")
+                return
+            }
+
+            Task.detached {
+                let bitmap = NSBitmapImageRep(cgImage: cgImage)
+                let fileType: NSBitmapImageRep.FileType
+                switch fileExtension.lowercased() {
+                case "png": fileType = .png
+                case "jpg", "jpeg": fileType = .jpeg
+                default:
+                    print("❌ Unsupported format: \(fileExtension)")
+                    return
+                }
+
+                guard let data = bitmap.representation(using: fileType, properties: [:]) else {
+                    print("❌ Conversion failed.")
+                    return
+                }
+
+                do {
+                    try data.write(to: url)
+                    print("✅ Exported to \(url.path)")
+                } catch {
+                    print("❌ Write error: \(error.localizedDescription)")
+                }
+            }
         }
     }
 
-    // MARK: - Importing to IFF (Color)
+    func convert(url: URL, nPlanes: Int) async -> URL? {
+        guard nPlanes > 0 && nPlanes <= 8 else {
+            print("❌ Only 1–8 planes supported.")
+            return nil
+        }
 
-    func convert(url: URL, nPlanes: Int) -> URL? {
-        let numberOfColors = Int(pow(2.0, Double(nPlanes)))
+        await MainActor.run {
+            isConverting = true
+            conversionProgress = 0.0
+            conversionStatusText = "Loading..."
+        }
+
+        timestamp("Start convert")
 
         guard let nsImage = NSImage(contentsOf: url) else {
-            print("❌ Could not load image from \(url.path)")
+            print("❌ Image load failed.")
+            await MainActor.run { isConverting = false }
             return nil
         }
 
-        print("⏳ Starting image quantization to \(numberOfColors) colors...")
-        guard let (indexedPixels, palette, width, height) = quantize(image: nsImage, numberOfColors: numberOfColors) else {
-            print("❌ Failed to quantize image.")
+        let numColors = 1 << nPlanes
+        await MainActor.run {
+            conversionProgress = 0.2
+            conversionStatusText = "Quantizing to \(numColors) colors..."
+        }
+
+        timestamp("Start quantization")
+
+        guard let (indexedPixels, palette, width, height) = await quantize(image: nsImage, numberOfColors: numColors) else {
+            print("❌ Quantization failed.")
+            await MainActor.run { isConverting = false }
             return nil
         }
-        print("✅ Quantization complete. Palette size: \(palette.count)")
 
-        let tempFileName = (url.deletingPathExtension().lastPathComponent) + ".iff"
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(tempFileName)
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(url.deletingPathExtension().lastPathComponent + ".iff")
 
-        print("⏳ Creating IFF file at \(tempURL.path)...")
-        createIFFFromPalette(path: tempURL.path, width: width, height: height, pixels: indexedPixels, palette: palette, nPlanes: UInt8(nPlanes))
+        await MainActor.run {
+            conversionProgress = 0.8
+            conversionStatusText = "Writing IFF..."
+        }
+
+        timestamp("Creating IFF file")
+
+        do {
+            try await createIFFFile(indexedPixels: indexedPixels, palette: palette, width: width, height: height, nPlanes: nPlanes, outputURL: tempURL)
+            timestamp("IFF file created")
+        } catch {
+            print("❌ IFF write failed: \(error.localizedDescription)")
+            await MainActor.run { isConverting = false }
+            return nil
+        }
+
+        await MainActor.run {
+            isConverting = false
+            conversionProgress = 1.0
+            conversionStatusText = "Done!"
+        }
 
         return tempURL
     }
 
-    // MARK: - Nearest Color Matching
-
-    private func findNearestColorIndex(r: UInt8, g: UInt8, b: UInt8, palette: [ILBM_ColorRegister]) -> UInt8 {
-        var bestIndex: Int = 0
-        var bestDistance: Int = Int.max
-
-        for (i, color) in palette.enumerated() {
-            let dr = Int(color.red) - Int(r)
-            let dg = Int(color.green) - Int(g)
-            let db = Int(color.blue) - Int(b)
-            let distance = dr * dr + dg * dg + db * db
-            if distance < bestDistance {
-                bestDistance = distance
-                bestIndex = i
-            }
-        }
-        return UInt8(bestIndex)
-    }
-
-    // MARK: - Quantization
-
-    private func quantize(image: NSImage, numberOfColors: Int) -> (indexedPixels: [UInt8], palette: [ILBM_ColorRegister], width: Int, height: Int)? {
+    private func quantize(image: NSImage, numberOfColors: Int) async -> (indexedPixels: [UInt8], palette: [NSColor], width: Int, height: Int)? {
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
 
         let width = cgImage.width
         let height = cgImage.height
+        let bpp = 4
+        let bpr = width * bpp
+        let totalBytes = height * bpr
 
+        var pixelData = Data(count: totalBytes)
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-        var rgbaPixels = [UInt8](repeating: 0, count: width * height * 4)
-        guard let context = CGContext(data: &rgbaPixels,
-                                      width: width,
-                                      height: height,
-                                      bitsPerComponent: 8,
-                                      bytesPerRow: width * 4,
-                                      space: colorSpace,
-                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
-            return nil
-        }
-        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        let ctx = CGContext(
+            data: pixelData.withUnsafeMutableBytes { $0.baseAddress },
+            width: width, height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: bpr,
+            space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        )
+        ctx?.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
 
-        var colorCounts: [UInt32: Int] = [:]
-        for i in stride(from: 0, to: rgbaPixels.count, by: 4) {
-            let r = UInt32(rgbaPixels[i])
-            let g = UInt32(rgbaPixels[i+1])
-            let b = UInt32(rgbaPixels[i+2])
-            let color: UInt32 = (r << 16) | (g << 8) | b
-            colorCounts[color, default: 0] += 1
+        let bytes = pixelData.withUnsafeBytes { $0.bindMemory(to: UInt8.self) }
+        let pixels: [NSColor] = stride(from: 0, to: totalBytes, by: bpp).map { i in
+            NSColor(red: Double(bytes[i]) / 255.0,
+                    green: Double(bytes[i + 1]) / 255.0,
+                    blue: Double(bytes[i + 2]) / 255.0,
+                    alpha: 1.0)
         }
 
-        let sortedColors = colorCounts.keys.sorted { colorCounts[$0]! > colorCounts[$1]! }
-        let topColors = Array(sortedColors.prefix(numberOfColors))
+        print("📊 Extracted \(pixels.count) pixels")
 
-        var palette = topColors.map { color -> ILBM_ColorRegister in
-            let r = UInt8((color >> 16) & 0xFF)
-            let g = UInt8((color >> 8) & 0xFF)
-            let b = UInt8(color & 0xFF)
-            return ILBM_ColorRegister(red: r, green: g, blue: b)
+        let sampled = pixels.count > 4096 ? Array(pixels.shuffled().prefix(4096)) : pixels
+        let palette = await medianCutQuantization(pixels: sampled, numberOfColors: numberOfColors)
+
+        timestamp("Palette created")
+
+        let indexed = pixels.map { color in
+            findNearestColorIndex(pixel: color, palette: palette)
         }
 
-        // Optional: pad palette to 256 if needed
-        while palette.count < numberOfColors {
-            palette.append(ILBM_ColorRegister(red: 0, green: 0, blue: 0))
-        }
-
-        var indexedPixels = [UInt8](repeating: 0, count: width * height)
-        for i in 0..<(width * height) {
-            let pixelIndex = i * 4
-            let r = rgbaPixels[pixelIndex]
-            let g = rgbaPixels[pixelIndex + 1]
-            let b = rgbaPixels[pixelIndex + 2]
-            indexedPixels[i] = findNearestColorIndex(r: r, g: g, b: b, palette: palette)
-        }
-
-        return (indexedPixels, palette, width, height)
+        timestamp("Quantization complete")
+        return (indexed, palette, width, height)
     }
 
-    // MARK: - Planar Interleave (Chunky to Planar) - FIXED VERSION
+    private func medianCutQuantization(pixels: [NSColor], numberOfColors: Int) async -> [NSColor] {
+        var buckets: [ColorBucket] = [ColorBucket(colors: pixels)]
+        while buckets.count < numberOfColors {
+            guard let bucket = buckets.max(by: { $0.range < $1.range }) else { break }
+            let (b1, b2) = splitBucket(bucket)
+            if let i = buckets.firstIndex(where: { $0 === bucket }) {
+                buckets.remove(at: i)
+                buckets.append(contentsOf: [b1, b2])
+            }
+        }
+        return buckets.map { $0.averageColor }
+    }
 
-    private func interleave(chunkyPixels: [UInt8], width: Int, height: Int, planes: Int) -> [UInt8] {
-        let bytesPerRowInPlane = ((width + 15) / 16) * 2  // Word-aligned
-        let planeSize = bytesPerRowInPlane * height
-        let totalSize = planeSize * planes
-        
-        var output = [UInt8](repeating: 0, count: totalSize)
-        
-        // Process each bitplane separately
-        for plane in 0..<planes {
-            let planeOffset = plane * planeSize
-            
-            // Process each row in this bitplane
-            for y in 0..<height {
-                let rowOffset = planeOffset + (y * bytesPerRowInPlane)
-                
-                // Process each pixel in this row
-                for x in 0..<width {
-                    let chunkyIndex = y * width + x
-                    let colorIndex = chunkyPixels[chunkyIndex]
-                    
-                    // Check if this bit is set in the current plane
-                    if (colorIndex >> plane) & 1 != 0 {
-                        let byteIndex = x / 8
-                        let bitPosition = 7 - (x % 8)
-                        output[rowOffset + byteIndex] |= (1 << bitPosition)
+    private func splitBucket(_ bucket: ColorBucket) -> (ColorBucket, ColorBucket) {
+        let colors = bucket.colors
+
+        let rRange = colors.max { $0.redComponent < $1.redComponent }!.redComponent -
+                     colors.min { $0.redComponent < $1.redComponent }!.redComponent
+        let gRange = colors.max { $0.greenComponent < $1.greenComponent }!.greenComponent -
+                     colors.min { $0.greenComponent < $1.greenComponent }!.greenComponent
+        let bRange = colors.max { $0.blueComponent < $1.blueComponent }!.blueComponent -
+                     colors.min { $0.blueComponent < $1.blueComponent }!.blueComponent
+
+        let sorted: [NSColor]
+        if rRange >= gRange && rRange >= bRange {
+            sorted = colors.sorted { $0.redComponent < $1.redComponent }
+        } else if gRange >= bRange {
+            sorted = colors.sorted { $0.greenComponent < $1.greenComponent }
+        } else {
+            sorted = colors.sorted { $0.blueComponent < $1.blueComponent }
+        }
+
+        let mid = sorted.count / 2
+        return (
+            ColorBucket(colors: Array(sorted[..<mid])),
+            ColorBucket(colors: Array(sorted[mid...]))
+        )
+    }
+
+    private func findNearestColorIndex(pixel: NSColor, palette: [NSColor]) -> UInt8 {
+        var best = 0
+        var bestDist = Double.infinity
+        for (i, c) in palette.enumerated() {
+            let dist = pow(pixel.redComponent - c.redComponent, 2) +
+                       pow(pixel.greenComponent - c.greenComponent, 2) +
+                       pow(pixel.blueComponent - c.blueComponent, 2)
+            if dist < bestDist {
+                bestDist = dist
+                best = i
+            }
+        }
+        return UInt8(best)
+    }
+
+    private func convertToBitPlanes(indexedPixels: [UInt8], width: Int, height: Int, nPlanes: Int) -> Data {
+        let bytesPerRow = (width + 7) / 8
+        let totalSize = bytesPerRow * height * nPlanes
+        var planar = Data(count: totalSize)
+
+        for y in 0..<height {
+            for x in 0..<width {
+                let color = indexedPixels[y * width + x]
+                for plane in 0..<nPlanes {
+                    let bit = (color >> plane) & 1
+                    let byteIndex = (plane * height + y) * bytesPerRow + (x / 8)
+                    let mask = UInt8(1 << (7 - (x % 8)))
+                    if bit == 1 {
+                        planar[byteIndex] |= mask
                     }
                 }
             }
         }
-        
-        print("🧠 Interleaved: width=\(width), height=\(height), planes=\(planes)")
-        print("   bytesPerRowInPlane=\(bytesPerRowInPlane), planeSize=\(planeSize), totalBytes=\(totalSize)")
-        
-        return output
+        return planar
     }
 
-    // MARK: - IFF Writing
+    private func createIFFFile(indexedPixels: [UInt8], palette: [NSColor], width: Int, height: Int, nPlanes: Int, outputURL: URL) async throws {
+        let planarData = convertToBitPlanes(indexedPixels: indexedPixels, width: width, height: height, nPlanes: nPlanes)
 
-    private func createIFFFromPalette(path: String, width: Int, height: Int, pixels: [UInt8], palette: [ILBM_ColorRegister], nPlanes: UInt8) {
-        let planarPixels = interleave(chunkyPixels: pixels, width: width, height: height, planes: Int(nPlanes))
+        var data = Data()
+        data.append("FORM".data(using: .ascii)!)
+        let sizeOffset = data.count
+        data.append(contentsOf: [0, 0, 0, 0])
+        data.append("ILBM".data(using: .ascii)!)
 
-        guard let form = IFF_createEmptyForm(ILBM_ID_ILBM) else { return }
-        let genericFormChunk = UnsafeMutablePointer<IFF_Chunk>(OpaquePointer(form))
-        defer { ILBM_free(genericFormChunk) }
+        // BMHD
+        data.append("BMHD".data(using: .ascii)!)
+        data.append(contentsOf: [0, 0, 0, 20])
+        data.append(contentsOf: [
+            UInt8((width >> 8) & 0xFF), UInt8(width & 0xFF),
+            UInt8((height >> 8) & 0xFF), UInt8(height & 0xFF),
+            0, 0, 0, 0,
+            UInt8(nPlanes), 0, 0, 0,
+            0, 0, 1, 1,
+            UInt8((width >> 8) & 0xFF), UInt8(width & 0xFF),
+            UInt8((height >> 8) & 0xFF), UInt8(height & 0xFF)
+        ])
 
-        guard let bmhdChunk = ILBM_createBitMapHeader() else { return }
-        bmhdChunk.pointee.w = UInt16(width)
-        bmhdChunk.pointee.h = UInt16(height)
-        bmhdChunk.pointee.x = 0
-        bmhdChunk.pointee.y = 0
-        bmhdChunk.pointee.nPlanes = nPlanes
-        bmhdChunk.pointee.masking = UInt8(ILBM_MSK_NONE.rawValue)
-        bmhdChunk.pointee.compression = UInt8(ILBM_CMP_NONE.rawValue)
-        bmhdChunk.pointee.transparentColor = 0
-        bmhdChunk.pointee.xAspect = 5
-        bmhdChunk.pointee.yAspect = 6
-        bmhdChunk.pointee.pageWidth = IFF_Word(UInt16(width))
-        bmhdChunk.pointee.pageHeight = IFF_Word(UInt16(height))
-        IFF_addToForm(form, UnsafeMutablePointer<IFF_Chunk>(OpaquePointer(bmhdChunk)))
-
-        guard let cmapChunk = ILBM_createColorMap() else { return }
-        for color in palette {
-            if let newRegister = ILBM_addColorRegisterInColorMap(cmapChunk) {
-                newRegister.pointee = color
-            }
+        // CMAP
+        data.append("CMAP".data(using: .ascii)!)
+        let cmap = palette.flatMap {
+            [UInt8($0.redComponent * 255),
+             UInt8($0.greenComponent * 255),
+             UInt8($0.blueComponent * 255)]
         }
-        IFF_addToForm(form, UnsafeMutablePointer<IFF_Chunk>(OpaquePointer(cmapChunk)))
+        let cmapLen = cmap.count
+        data.append(contentsOf: [
+            UInt8((cmapLen >> 24) & 0xFF), UInt8((cmapLen >> 16) & 0xFF),
+            UInt8((cmapLen >> 8) & 0xFF), UInt8(cmapLen & 0xFF)
+        ])
+        data.append(contentsOf: cmap)
+        if cmapLen % 2 == 1 { data.append(0) }
 
-        let actualBodySize = planarPixels.count
-        guard let bodyChunk = IFF_createRawChunk(ILBM_ID_BODY, IFF_Long(actualBodySize)) else { return }
-        let bodyRawChunk = UnsafeMutablePointer<IFF_RawChunk>(OpaquePointer(bodyChunk))
+        // BODY
+        data.append("BODY".data(using: .ascii)!)
+        let bodySize = planarData.count
+        data.append(contentsOf: [
+            UInt8((bodySize >> 24) & 0xFF), UInt8((bodySize >> 16) & 0xFF),
+            UInt8((bodySize >> 8) & 0xFF), UInt8(bodySize & 0xFF)
+        ])
+        data.append(planarData)
+        if bodySize % 2 == 1 { data.append(0) }
 
-        var mutablePlanarPixels = planarPixels
-        mutablePlanarPixels.withUnsafeMutableBufferPointer {
-            IFF_copyDataToRawChunkData(bodyRawChunk, $0.baseAddress)
-        }
-        IFF_addToForm(form, UnsafeMutablePointer<IFF_Chunk>(OpaquePointer(bodyChunk)))
+        // FORM size
+        let finalSize = data.count - 8
+        data.replaceSubrange(sizeOffset..<sizeOffset+4, with: [
+            UInt8((finalSize >> 24) & 0xFF), UInt8((finalSize >> 16) & 0xFF),
+            UInt8((finalSize >> 8) & 0xFF), UInt8(finalSize & 0xFF)
+        ])
 
-        if ILBM_write(path, genericFormChunk) == C_TRUE {
-            print("✅ Successfully created IFF file at \(path)")
-        } else {
-            print("❌ Failed to write IFF file.")
-        }
+        try data.write(to: outputURL)
+        print("✅ Wrote IFF to \(outputURL.path)")
+
+        let tail = data.suffix(32)
+        let hexBytes = tail.map { String(format: "%02X", $0) }.joined(separator: " ")
+        print("🔍 Tail: \(hexBytes)")
     }
-    
-    // MARK: - Debug Helper
-    
-    private func debugPlanarData(planarPixels: [UInt8], width: Int, height: Int, planes: Int) {
-        let bytesPerRowInPlane = ((width + 15) / 16) * 2
-        let planeSize = bytesPerRowInPlane * height
-        
-        print("🔍 Planar data verification:")
-        print("   Expected total size: \(planeSize * planes)")
-        print("   Actual data size: \(planarPixels.count)")
-        
-        // Check if we have any data in each plane
-        for plane in 0..<planes {
-            let planeOffset = plane * planeSize
-            let planeData = Array(planarPixels[planeOffset..<min(planeOffset + planeSize, planarPixels.count)])
-            let nonZeroBytes = planeData.filter { $0 != 0 }.count
-            print("   Plane \(plane): \(nonZeroBytes) non-zero bytes out of \(planeData.count)")
-        }
+}
+
+extension FixedWidthInteger {
+    func toData() -> Data {
+        var val = self
+        return Data(bytes: &val, count: MemoryLayout<Self>.size)
     }
 }

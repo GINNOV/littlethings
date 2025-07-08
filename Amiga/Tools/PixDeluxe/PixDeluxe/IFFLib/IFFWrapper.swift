@@ -22,8 +22,6 @@ class IFFWrapper {
                 return nil
             }
             
-            // AI_REVIEW: The C function returns an `Unmanaged<CGImage>`. We must call `takeRetainedValue()`
-            // to correctly transfer memory management to Swift's ARC, resolving the compiler error.
             guard let unmanagedImageRef = iff_createImageFromData(baseAddress, data.count, true) else {
                 print("❌ [Debug] iff_createImageFromData failed for \(fileURL.lastPathComponent)")
                 return nil
