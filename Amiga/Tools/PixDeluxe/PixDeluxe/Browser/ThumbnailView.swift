@@ -15,10 +15,6 @@ struct ThumbnailView: View {
 
     var body: some View {
         VStack {
-            // AI_REVIEW: The root cause of the bug is a gesture ambiguity issue in SwiftUI's grid layout.
-            // The fix is to wrap the view in a single, unambiguous tap gesture and to explicitly
-            // define its clickable area using `.contentShape`. This ensures that SwiftUI correctly
-            // identifies which thumbnail is being tapped, even for the first item in the grid.
             ZStack(alignment: .bottomTrailing) {
                 Image(nsImage: item.nsImage)
                     .resizable()

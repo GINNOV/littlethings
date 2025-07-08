@@ -80,8 +80,5 @@ int bmhd_getDepth(bmhd_t *bmhd);
 int bmhd_getCompression(bmhd_t *bmhd);
 int bmhd_getMasking(bmhd_t *bmhd);
 uint32_t form_getType(form_t *form);
-
-// AI_REVIEW: Added missing function declarations to make them visible to Swift.
-// This resolves the "Cannot find in scope" compiler errors.
 int header_getSize(header_t *h);
 int camg_getLace(camg_t *camg);

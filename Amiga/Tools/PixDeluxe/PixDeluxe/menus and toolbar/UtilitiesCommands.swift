@@ -37,10 +37,12 @@ struct UtilitiesCommands: Commands {
                     return
                 }
 
-                if let newURL = imageConverter.convert(url: url, nPlanes: nPlanes) {
-                    NSDocumentController.shared.openDocument(withContentsOf: newURL, display: true) { document, documentWasAlreadyOpen, error in
-                        if let error = error {
-                            print("❌ Failed to open converted IFF document: \(error.localizedDescription)")
+                Task {
+                    if let newURL = await imageConverter.convert(url: url, nPlanes: nPlanes) {
+                        NSDocumentController.shared.openDocument(withContentsOf: newURL, display: true) { document, alreadyOpen, error in
+                            if let error = error {
+                                print("❌ Failed to open IFF: \(error.localizedDescription)")
+                            }
                         }
                     }
                 }

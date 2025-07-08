@@ -6,9 +6,6 @@
 //
 
 import SwiftUI
-
-// AI_REVIEW: A new notification name is defined to communicate from the AppDelegate
-// to the SwiftUI views without creating a hard dependency.
 extension Notification.Name {
     static let openImageBrowser = Notification.Name("openImageBrowser")
 }
@@ -26,7 +23,6 @@ struct PixDeluxeApp: App {
         }
         .commands {
             UtilitiesCommands()
-            // AI_REVIEW: The BrowserCommands struct is now included below, resolving the compiler error.
             BrowserCommands()
         }
         
@@ -34,10 +30,7 @@ struct PixDeluxeApp: App {
             ImageBrowserView()
                 .frame(minWidth: 400, minHeight: 300)
         }
-        
-        // AI_REVIEW: The call is disambiguated by specifying `SwiftUI.Settings`.
-        // This resolves the name collision with the custom `Settings` class
-        // and fixes the "Extra trailing closure" compiler error.
+
         SwiftUI.Settings {
             PreferencesView()
         }

@@ -35,8 +35,6 @@ struct ImageBrowserView: View {
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 20) {
                             ForEach(viewModel.browserItems) { item in
-                                // AI_REVIEW: The view now passes a simple closure to the ThumbnailView,
-                                // which handles its own button actions internally.
                                 ThumbnailView(item: item, onImageTap: {
                                     self.selectedImage = item.nsImage
                                     self.isViewerPresented = true

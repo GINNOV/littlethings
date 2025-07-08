@@ -32,9 +32,6 @@ struct PixDeluxeDocument: FileDocument {
 
     init() { }
 
-    // AI_REVIEW: The initializer has been corrected. It now gets the file's contents as `Data`
-    // and passes it directly to the updated parser. This removes the incorrect dependency on a
-    // file URL and the inefficient temporary file workaround, fixing the compiler error.
     init(configuration: ReadConfiguration) throws {
         guard let data = configuration.file.regularFileContents else {
             throw CocoaError(.fileReadCorruptFile)
@@ -70,7 +67,15 @@ struct PixDeluxeDocument: FileDocument {
     
     @MainActor
     func exportToPNG() {
-        guard let nsImage = nsImage else { return }
-        imageConverter.export(nsImage: nsImage, to: .png)
+        guard let cgImage = cgImage else {
+            print("❌ No CGImage to export.")
+            return
+        }
+        imageConverter.export(cgImage: cgImage, fileExtension: "png")
+    }
+    @MainActor
+    func exportToJPEG() {
+        guard let cgImage = cgImage else { return }
+        imageConverter.export(cgImage: cgImage, fileExtension: "jpg")
     }
 }

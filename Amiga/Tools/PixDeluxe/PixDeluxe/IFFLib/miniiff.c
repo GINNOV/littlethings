@@ -1,20 +1,16 @@
 /*
  * iff.c
- * ql_plugin_test_2
  *
  * Created by David R on 13-03-09.
- * Copyright 2013 __MyCompanyName__. All rights reserved.
  *
  */
 
+#include "miniiff.h"
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
 #include <QuickLook/QuickLook.h>
-
-#include <CoreFoundation/CFUtilities.h>
-#include <CoreFoundation/CFByteOrder.h>
-#include "miniiff.h"
-#include <stdbool.h>
+#include <string.h>
+#include <assert.h>
 
 // Private helper function declarations
 static SInt8 *byterun_unpack(SInt8 *src, UInt8 *dest, int numBytes);
@@ -51,7 +47,7 @@ void *header_getData(header_t *h)
 
 header_t *header_getNext(header_t *h)
 {
-    return header_getData(h) + ((header_getSize(h)+1) & -2);
+    return (header_t*)(header_getData(h) + ((header_getSize(h)+1) & ~1));
 }
 
 int bmhd_getWidth(bmhd_t *bmhd)
@@ -172,17 +168,16 @@ int cmap_unpack(chunkMap_t *ckmap, UInt32 *dest)
     
     if (!cmap)
     {
-        // For PBM files, generate a grayscale map
         if (ckmap->bmhd) {
             int depth = bmhd_getDepth(ckmap->bmhd);
             int numColors = 1 << depth;
             UInt8 (*palette)[4] = (void *)dest;
             for (int i = 0; i < numColors; i++) {
                 UInt8 val = (i * 255) / (numColors - 1);
-                palette[i][0] = 0; // Alpha
-                palette[i][1] = val; // R
-                palette[i][2] = val; // G
-                palette[i][3] = val; // B
+                palette[i][0] = 0;
+                palette[i][1] = val;
+                palette[i][2] = val;
+                palette[i][3] = val;
             }
             return numColors;
         }
@@ -190,8 +185,7 @@ int cmap_unpack(chunkMap_t *ckmap, UInt32 *dest)
     }
     
     int numColors = header_getSize(&cmap->header) / 3;
-    UInt8 *src = header_getData(&cmap->header);
-    
+    UInt8 *src = (UInt8 *)header_getData(&cmap->header);
     UInt8 (*palette)[4] = (void *)dest;
 
     for (int i=0; i<numColors; i++)
@@ -224,7 +218,7 @@ static SInt8 *byterun_unpack(SInt8 *src, UInt8 *dest, int numBytes)
     
     while (dest < rowEnd)
     {
-        int x = *src++;
+        SInt8 x = *src++;
         
         if (x >= 0)
         {
@@ -232,9 +226,9 @@ static SInt8 *byterun_unpack(SInt8 *src, UInt8 *dest, int numBytes)
                 *dest++ = *src++;
             }
         }
-        else if (x != -128) // rle
+        else if (x != -128)
         {
-            int y = *src++;
+            UInt8 y = *src++;
             for (int i = 0; i < (1 - x); i++) {
                 *dest++ = y;
             }
@@ -267,13 +261,13 @@ int body_unpack(chunkMap_t *ckmap, UInt8 *chunky)
 
     UInt32 type = form_getType(ckmap->form);
 
-    int cols = ((width+15) & -16) >> 3;
+    int cols = ((width+15) & ~15) >> 3;
     
-    SInt8 *src = header_getData(&body->header);
+    SInt8 *src = (SInt8 *)header_getData(&body->header);
     
     if (type == 'ILBM')
     {
-        UInt8 *planar = malloc(height*cols*depth);
+        UInt8 *planar = (UInt8 *)malloc(height*cols*depth);
         if (!planar) return -1;
         
         UInt8 *dest = planar;
@@ -379,7 +373,7 @@ int ilbm_decode(chunkMap_t *ckmap, UInt32 *picture)
         int height = bmhd_getHeight(ckmap->bmhd);
         int depth = bmhd_getDepth(ckmap->bmhd);
         
-        UInt8 *chunky = malloc(width*height);
+        UInt8 *chunky = (UInt8 *)malloc(width*height);
 
         if (!chunky)
         {
@@ -392,14 +386,13 @@ int ilbm_decode(chunkMap_t *ckmap, UInt32 *picture)
             return -1;
         }
         
-        UInt32 *palette = malloc(256*sizeof(UInt32));
+        UInt32 *palette = (UInt32 *)malloc(256*sizeof(UInt32));
         
         if (!palette)
         {
             free(chunky);
             return -1;
         }
-        
         if (cmap_unpack(ckmap, palette) < 0)
         {
             free(chunky);
@@ -409,7 +402,6 @@ int ilbm_decode(chunkMap_t *ckmap, UInt32 *picture)
 
         if (ckmap->camg && camg_getHAM(ckmap->camg) && depth >= 5)
         {
-            // HAM
             int r=0, g=0, b=0;
             for (int i=0; i<width*height; i++)
             {
@@ -433,20 +425,23 @@ int ilbm_decode(chunkMap_t *ckmap, UInt32 *picture)
                         r = lo << (10-depth);
                         break;
                 }
-                picture[i] = (r<<16)|(g<<8)|(b)|(255u<<24);
+                picture[i] = (b<<24)|(g<<16)|(r<<8)|255;
             }
         }
         else
         {
-            // normal indexed colors
             int tc = bmhd_getMasking(ckmap->bmhd) == 2 ? bmhd_getTransparentColor(ckmap->bmhd) : -1;
             for (int i=0; i<width*height; i++)
             {
-                UInt8 index = chunky[i];
-                picture[i] = ((((UInt8*)palette)[index*4+1]) << 16) |
-                             ((((UInt8*)palette)[index*4+2]) << 8)  |
-                             ((((UInt8*)palette)[index*4+3]))       |
-                             ( (index == tc) ? 0 : (255u << 24) );
+                picture[i] = palette[chunky[i]];
+                if (chunky[i] == tc)
+                {
+                    picture[i] &= 0xffffff00;
+                }
+                else
+                {
+                    picture[i] |= 0x000000ff;
+                }
             }
         }
         
@@ -487,7 +482,6 @@ int ilbm_decode(chunkMap_t *ckmap, UInt32 *picture)
     }
     else if (ckmap->cmap)
     {
-        // This part seems to be for palette files, not implemented in the app
         return -1;
     }
     
@@ -508,7 +502,7 @@ CGImageRef iff_createImageFromData(const UInt8 *bytePtr, long length, bool withA
         return NULL;
     }
 
-    UInt32 *picture = calloc(size.width * size.height, sizeof(UInt32));
+    UInt32 *picture = (UInt32 *)calloc(size.width * size.height, sizeof(UInt32));
     if (!picture) {
         return NULL;
     }
@@ -528,7 +522,7 @@ CGImageRef iff_createImageFromData(const UInt8 *bytePtr, long length, bool withA
                                                  size.width, size.height,
                                                  8, 4 * size.width,
                                                  colorSpace,
-                                                 kCGImageAlphaPremultipliedLast);
+                                                 withAlpha ? kCGImageAlphaPremultipliedFirst : kCGImageAlphaNoneSkipFirst);
 
     CGColorSpaceRelease(colorSpace);
 

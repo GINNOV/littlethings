@@ -75,9 +75,6 @@ class IFFParser {
         if image.pointee.formType == ILBM_ID_ILBM {
             if ILBM_convertILBMToACBM(image) == 1 {
                 print("  - ✅ Converted ILBM to chunky (ACBM).")
-                // AI_REVIEW: This is the critical fix. The C function re-allocates the body chunk.
-                // We MUST update our local `bodyChunk` variable to point to the new memory location
-                // returned by the C function to prevent using a stale pointer.
                 if let newBody = image.pointee.body {
                      bodyChunk = UnsafeMutableRawPointer(newBody).assumingMemoryBound(to: IFF_Chunk.self)
                 } else {

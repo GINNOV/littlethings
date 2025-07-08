@@ -15,7 +15,6 @@ struct ImageViewer: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            // AI_REVIEW: The background opacity is increased to 0.95 to make it less distracting.
             Color.black.opacity(0.95).edgesIgnoringSafeArea(.all)
                 .onTapGesture {
                     isPresented = false
@@ -37,7 +36,6 @@ struct ImageViewer: View {
             .buttonStyle(PlainButtonStyle())
             .padding()
             
-            // AI_REVIEW: This hidden button adds a keyboard shortcut to dismiss the view with the Escape key.
             Button("") {
                 isPresented = false
             }
