@@ -12,13 +12,16 @@
 #import "libiff/iff.h"
 #import "libiff/id.h"
 #import "libiff/ifftypes.h"
+#import "libiff/form.h"
+#import "libiff/rawchunk.h"
 
 // ILBM-specific headers
-#import "ilbm.h" 
+#import "ilbm.h"
 #import "ilbmimage.h"
 #import "bitmapheader.h"
 #import "colormap.h"
 #import "interleave.h"
 #import "byterun.h"
-
+#import "viewport.h"
+#import "miniiff.h"
 #endif /* libiff_Bridging_Header_h */

@@ -10,11 +10,11 @@ import SwiftUI
 struct ImageDetailsView: View {
     let details: IFFImageDetails
     @State private var justCopied = false
+    @State private var showDebugInfo = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                // AI_REVIEW: The title is now the dynamic filename from the details struct.
                 Text(details.fileName)
                     .font(.title)
                     .lineLimit(1)
@@ -22,8 +22,6 @@ struct ImageDetailsView: View {
                 
                 Spacer()
                 
-                // AI_REVIEW: A button is added to copy the full file path to the clipboard.
-                // It shows a temporary confirmation checkmark after being clicked.
                 Button(action: copyPath) {
                     Image(systemName: justCopied ? "checkmark" : "doc.on.doc")
                 }
@@ -53,6 +51,14 @@ struct ImageDetailsView: View {
                         DetailRow(label: "Viewport Mode", value: viewportMode)
                     }
                 }
+                
+                DisclosureGroup("Debug Info", isExpanded: $showDebugInfo) {
+                    VStack {
+                        DetailRow(label: "Form Type", value: details.formType)
+                        DetailRow(label: "Has CMAP Chunk", value: details.hasCMAP ? "Yes" : "No")
+                    }
+                    .padding(.top, 5)
+                }
             }
         }
         .padding()
@@ -65,7 +71,9 @@ struct ImageDetailsView: View {
         pasteboard.setString(details.filePath, forType: .string)
         
         justCopied = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+        // AI_REVIEW: The `asyncAfter` call is updated to the modern syntax,
+        // using `.now() + .seconds()`, which resolves the compiler error.
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
             justCopied = false
         }
     }
