@@ -13,7 +13,6 @@ struct ImageBrowserView: View {
     @State private var selectedImage: NSImage?
     @State private var isViewerPresented = false
     
-    // Configure the adaptive grid layout.
     let columns = [
         GridItem(.adaptive(minimum: 150))
     ]
@@ -21,7 +20,6 @@ struct ImageBrowserView: View {
     var body: some View {
         ZStack {
             VStack {
-                // Show a loading indicator while scanning.
                 if viewModel.isLoading {
                     VStack {
                         ProgressView()
@@ -29,21 +27,20 @@ struct ImageBrowserView: View {
                             .padding(.top)
                             .foregroundColor(.secondary)
                     }
-                // Show the status text when idle or empty.
                 } else if viewModel.browserItems.isEmpty {
                     Text(viewModel.statusText)
                         .font(.title)
                         .foregroundColor(.secondary)
                 } else {
-                    // The main scrollable grid of thumbnails.
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 20) {
                             ForEach(viewModel.browserItems) { item in
-                                ThumbnailView(item: item)
-                                    .onTapGesture {
-                                        selectedImage = item.nsImage
-                                        isViewerPresented = true
-                                    }
+                                // AI_REVIEW: The view now passes a simple closure to the ThumbnailView,
+                                // which handles its own button actions internally.
+                                ThumbnailView(item: item, onImageTap: {
+                                    self.selectedImage = item.nsImage
+                                    self.isViewerPresented = true
+                                })
                             }
                         }
                         .padding()
@@ -62,14 +59,12 @@ struct ImageBrowserView: View {
                 }
             }
             
-            // Present the full-screen viewer when an image is selected.
             if isViewerPresented, let image = selectedImage {
                 ImageViewer(image: image, isPresented: $isViewerPresented)
                     .transition(.opacity)
             }
         }
         .onAppear {
-            // Prompt the user to select a folder immediately if the browser is empty.
             if viewModel.browserItems.isEmpty {
                 viewModel.openFolder()
             }
