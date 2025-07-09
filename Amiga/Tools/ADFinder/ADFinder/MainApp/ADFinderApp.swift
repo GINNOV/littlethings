@@ -12,9 +12,12 @@ import UniformTypeIdentifiers
 struct ADFinderApp: App {
     @AppStorage("rememberWindowSize") private var rememberWindowSize = false
     @AppStorage("autoEnableTabs") private var autoEnableTabs = false
+    @AppStorage("lastVersionPromptedFor") private var lastVersionPromptedFor: String = ""
+    @AppStorage("dontShowWhatsNew") private var dontShowWhatsNew = false
     
     @State private var recentFilesService = RecentFilesService()
     @State private var logStore = LogStore.shared
+    @State private var showWhatsNew = false
     
     @Environment(\.openWindow) private var openWindow
 
@@ -24,6 +27,12 @@ struct ADFinderApp: App {
         WindowGroup {
             ContentView(recentFilesService: recentFilesService)
                 .environment(logStore)
+                .sheet(isPresented: $showWhatsNew) {
+                                    WhatsNewView(showWhatsNew: $showWhatsNew)
+                                }
+                                .onAppear {
+                                    checkForUpdates()
+                                }
         }
         .commands {
             AmigaMenuCommands()
@@ -83,6 +92,16 @@ struct ADFinderApp: App {
         
         Window("ADF Disk Comparator", id: "compare-window") {
             ADFCompareView()
+        }
+    }
+    
+    private func checkForUpdates() {
+        let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+        
+        // Show the dialog if the user hasn't opted out and the current version is new.
+        if !dontShowWhatsNew && currentVersion != lastVersionPromptedFor {
+            showWhatsNew = true
+            lastVersionPromptedFor = currentVersion
         }
     }
 }

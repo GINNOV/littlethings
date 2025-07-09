@@ -19,13 +19,17 @@ struct ADFCompareView: View {
             HStack(spacing: 20) {
                 FileDropTarget(title: "Source Disk", url: $sourceURL) { url in
                     if !compareService.load(url: url, for: .source) {
-                        // Handle error if needed
+                        Task {
+                            LogStore.shared.add(message: "\($sourceURL)" + "\n")
+                        }
                     }
                 }
                 
                 FileDropTarget(title: "Destination Disk", url: $destURL) { url in
                     if !compareService.load(url: url, for: .destination) {
-                        // Handle error if needed
+                        Task {
+                            LogStore.shared.add(message: "\($destURL)" + "\n")
+                        }
                     }
                 }
             }
