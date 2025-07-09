@@ -20,75 +20,117 @@ struct ContentView: View {
     TIP: Lots of IFF files available here: https://aminet.net/search?f=2&path=pix/clip
     """
     @State private var text: String = ""
-
-    // Helper computed properties to get version and build number from the bundle.
-    private var appVersion: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "N/A"
-    }
-    private var appBuild: String {
-        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "N/A"
-    }
+    @State private var showingAbout = false
 
     var body: some View {
-        VStack(spacing: 25) {
-            Image("amiga-dev-hub")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(maxWidth: 280)
-                .clipShape(Circle())
-                .shadow(color: .gray.opacity(0.6), radius: 10, x: 0, y: 5)
-                .padding(.top)
+        ZStack(alignment: .topTrailing) {
+            // Main content
+            VStack(spacing: 25) {
+                Image("amiga-dev-hub")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(maxWidth: 280)
+                    .clipShape(Circle())
+                    .shadow(color: .gray.opacity(0.6), radius: 10, x: 0, y: 5)
+                    .padding(.top)
 
-            VStack {
-                Text("IFF Quick Look Plugin")
-                    .font(.system(size: 32, weight: .thin, design: .default))
-                Text("from Back To Amiga Dev Hub")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-            }
-
-            ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(nsColor: .textBackgroundColor))
-                
-                if text.isEmpty {
-                    Text(placeholderText)
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundColor(.secondary)
-                        .padding()
-                        .allowsHitTesting(false) // Lets clicks pass through to the TextEditor below.
+                VStack {
+                    Text("IFF Quick Look Plugin")
+                        .font(.system(size: 32, weight: .thin, design: .default))
                 }
-                
-                TextEditor(text: $text)
-                    .padding(EdgeInsets(top: 6, leading: 4, bottom: 8, trailing: 4))
-                    .font(.system(.body, design: .monospaced))
-                    .scrollContentBackground(.hidden) // Makes the TextEditor background transparent.
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .shadow(color: .black.opacity(0.15), radius: 5, x: 0, y: 2)
-            .frame(height: 250)
 
+                ZStack(alignment: .topLeading) {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(nsColor: .textBackgroundColor))
+                    
+                    if text.isEmpty {
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("This application installs a Quick Look plugin for viewing IFF/ILBM image files, a format popular on the Amiga computer.")
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                                
+                                Text("How to use:")
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                                
+                                Text("1. Keep this app in your Applications folder.")
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                                
+                                Text("2. Run the app once to register the plugin with macOS.")
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                                
+                                Text("3. Quit this app (you don't need to keep it running).")
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                                
+                                Text("4. Select any .iff or .lbm file in Finder and press the Spacebar to see a preview!")
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                                
+                                HStack {
+                                    Text("TIP: Lots of IFF files available")
+                                        .font(.system(.body, design: .monospaced))
+                                        .foregroundColor(.secondary)
+                                    
+                                    Link("HERE",
+                                         destination: URL(string: "https://aminet.net/search?f=2&path=pix/clip")!)
+                                        .font(.system(.body, design: .monospaced))
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding()
+                    } else {
+                        TextEditor(text: $text)
+                            .padding(EdgeInsets(top: 6, leading: 4, bottom: 8, trailing: 4))
+                            .font(.system(.body, design: .monospaced))
+                            .scrollContentBackground(.hidden) // Makes the TextEditor background transparent.
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .shadow(color: .black.opacity(0.15), radius: 5, x: 0, y: 2)
+                .frame(height: 250)
+
+                
+                Button(action: {
+                    NSApplication.shared.terminate(nil)
+                }) {
+                    Text("Quit")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+                .buttonStyle(.plain)
+                .shadow(radius: 5)
+            }
+            .padding(40)
+            .frame(width: 550, height: 675)
             
+            // Info button overlay
             Button(action: {
-                NSApplication.shared.terminate(nil)
+                showingAbout.toggle()
             }) {
-                Text("Quit")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
+                Image(systemName: "info.circle")
+                    .font(.system(size: 20))
+                    .foregroundColor(.secondary)
+                    .background(Color.clear)
             }
             .buttonStyle(.plain)
-            .shadow(radius: 5)
+            .padding(.top, 20)
+            .padding(.trailing, 20)
+            .help("About") // Adds a tooltip on hover
+            
         }
-        .padding(40)
-        .frame(width: 550, height: 675)
-        
-        Text("Version \(appVersion) (Build \(appBuild))")
-            .font(.footnote)
-            .foregroundColor(.secondary)
+        .sheet(isPresented: $showingAbout) {
+            AboutView()
+        }
     }
 }
 

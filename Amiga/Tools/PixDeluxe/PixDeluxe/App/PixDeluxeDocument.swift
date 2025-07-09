@@ -11,6 +11,7 @@ import UniformTypeIdentifiers
 struct PixDeluxeDocument: FileDocument {
     var cgImage: CGImage?
     var details: IFFImageDetails?
+    var about: AboutView?
     var chunkyData: [UInt8]?
     
     @MainActor
