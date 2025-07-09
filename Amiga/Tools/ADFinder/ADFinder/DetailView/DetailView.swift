@@ -38,6 +38,7 @@ struct DetailView: View {
     @State var sortOrder: SortOrder = .nameAscending
     @State var showingFileExporter = false
     @State var adfDocumentToSave: ADFDocument?
+    @State var quickLookHelper = QuickLookHelper()
     
     var selectedEntry: AmigaEntry? {
         guard let selectedEntryID = selectedEntryID else { return nil }
@@ -117,7 +118,6 @@ struct DetailView: View {
                     showAlert(message: "Disk dump saved to:\n\(path.path)")
                 }
             },
-            
             generateList: {
                 let (error, path) = adfService.generateDirectoryListing()
                 if let error = error {
@@ -204,6 +204,13 @@ struct DetailView: View {
         .onReceive(NotificationCenter.default.publisher(for: .showAboutWindow)) { _ in
             showingAboutView = true
         }
+
+        .onReceive(NotificationCenter.default.publisher(for: .triggerQuickLook)) { _ in
+            print("DEBUG: Received triggerQuickLook notification.")
+            if let entry = selectedEntry {
+                showQuickLook(for: entry)
+            }
+        }
     }
 
     @ViewBuilder
@@ -261,5 +268,5 @@ struct DetailView: View {
                 currentEntries = []
             }
         }
-    }    
+    }
 }
