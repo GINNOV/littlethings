@@ -10,7 +10,8 @@ import UniformTypeIdentifiers
 
 struct ContentView: View {
     @Binding var document: PixDeluxeDocument
-
+    @State private var showingAboutSheet = false
+    
     var body: some View {
         VStack {
             if let image = document.image {
@@ -27,8 +28,11 @@ struct ContentView: View {
         }
         .navigationTitle(document.details?.fileName ?? "PixDeluxe")
         .toolbar {
-            DetailToolbar(document: $document)
+            DetailToolbar(document: $document, showingAboutSheet: $showingAboutSheet)
         }
         .focusedSceneValue(\.document, $document)
+        .sheet(isPresented: $showingAboutSheet) {
+            AboutView()
+        }
     }
 }

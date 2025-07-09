@@ -54,6 +54,11 @@ struct UtilitiesCommands: Commands {
                 document?.exportToPNG()
             }
             .disabled(document?.image == nil)
+            
+            Button("Export as JPG...") {
+                document?.exportToJPEG()
+            }
+            .disabled(document?.image == nil)
         }
     }
 }

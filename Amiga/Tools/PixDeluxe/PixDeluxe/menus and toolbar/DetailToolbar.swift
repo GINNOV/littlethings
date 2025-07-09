@@ -10,6 +10,7 @@ import SwiftUI
 struct DetailToolbar: ToolbarContent {
     @Binding var document: PixDeluxeDocument
     @State private var showingDetails = false
+    @Binding var showingAboutSheet: Bool
     
     var body: some ToolbarContent {
         ToolbarItemGroup {
@@ -29,6 +30,12 @@ struct DetailToolbar: ToolbarContent {
                     ImageDetailsView(details: details)
                 }
             }
+            Button(action: {
+                            showingAboutSheet.toggle()
+                        }) {
+                            Label("About", systemImage: "info.circle")
+                        }
+                        .help("About this application")
         }
     }
 }
