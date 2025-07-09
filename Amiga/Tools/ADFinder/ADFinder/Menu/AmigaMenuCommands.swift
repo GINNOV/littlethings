@@ -19,6 +19,13 @@ struct AmigaMenuCommands: Commands {
                 let isFileOpen = self.isFileOpen ?? false
                 let isEntrySelected = self.isEntrySelected ?? false
 
+                // enable at app's level the trapping of the space bar
+                Button("Quick Look") {
+                                NotificationCenter.default.post(name: .triggerQuickLook, object: nil)
+                            }
+                            .keyboardShortcut(" ", modifiers: [])
+                            .disabled(isEntrySelected == false)
+                
                 // MARK: - File Operations
                 Button("New Blank ADF...", action: actions.newADF)
                 Button("Save ADF As...", action: actions.saveADF)

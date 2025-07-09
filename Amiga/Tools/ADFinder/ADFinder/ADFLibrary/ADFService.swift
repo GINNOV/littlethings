@@ -351,7 +351,6 @@ class ADFService {
         }
     }
     
-    // AI_REVIEW: Helper to get the correct download URL, respecting user preferences and sandboxing.
     private func getDownloadURL() -> URL? {
         // Check for a user-set download location via a security-scoped bookmark.
         if let bookmarkData = UserDefaults.standard.data(forKey: "downloadLocationBookmark") {
@@ -502,9 +501,7 @@ class ADFService {
         string += (bits & ACCMASK_D_SWIFT) == 0 ? "d" : "-"
         return string
     }
-
-    // AI_REVIEW: This function is now state-safe. It saves the current path, navigates, recurses,
-    // and then explicitly restores the original path, preventing the stack overflow crash. #END_REVIEW
+    
     private func _recursiveList(pathPrefix: String) -> String {
             var resultString = ""
             let entries = self.listCurrentDirectory()

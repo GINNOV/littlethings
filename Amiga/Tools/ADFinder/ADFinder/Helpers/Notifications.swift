@@ -15,4 +15,5 @@ extension Notification.Name {
     // recent files
     static let openSpecificAdfFile = Notification.Name("com.adfinder.openSpecificAdfFile")
     static let showAboutWindow = Notification.Name("show-about-window")
+    static let triggerQuickLook = Notification.Name("trigger-quick-look")
 }

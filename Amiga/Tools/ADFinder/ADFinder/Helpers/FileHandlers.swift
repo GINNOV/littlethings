@@ -7,12 +7,53 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import Quartz
 
 extension DetailView {
 
     // MARK: - Core ADF Operations
     
-        func handleMoveToParent(sourceEntryID: AmigaEntry.ID) {
+    func showQuickLook(for entry: AmigaEntry) {
+        print("DEBUG: showQuickLook called for '\(entry.name)'.")
+        guard entry.type == .file else {
+            print("DEBUG: Entry is not a file. Aborting.")
+            return
+        }
+
+        guard let fileData = adfService.readFileContent(entry: entry) else {
+            print("DEBUG: Failed to read file data.")
+            showAlert(message: "Could not read data for \(entry.name).")
+            return
+        }
+        print("DEBUG: Successfully read \(fileData.count) bytes.")
+        
+        let tempDir = FileManager.default.temporaryDirectory
+        let tempURL = tempDir.appendingPathComponent(entry.name)
+        print("DEBUG: Temporary file URL: \(tempURL.path)")
+        
+        do {
+            try fileData.write(to: tempURL)
+            print("DEBUG: Successfully wrote temporary file.")
+        } catch {
+            print("DEBUG: Failed to write temporary file: \(error)")
+            showAlert(message: "Could not create temporary file for Quick Look: \(error.localizedDescription)")
+            return
+        }
+
+        if QLPreviewPanel.sharedPreviewPanelExists() && QLPreviewPanel.shared().isVisible {
+            print("DEBUG: Closing existing Quick Look panel.")
+            QLPreviewPanel.shared().orderOut(nil)
+        }
+        
+        print("DEBUG: Setting up Quick Look panel.")
+        self.quickLookHelper.previewItemURL = tempURL
+        QLPreviewPanel.shared().dataSource = self.quickLookHelper
+        QLPreviewPanel.shared().delegate = self.quickLookHelper
+        QLPreviewPanel.shared().makeKeyAndOrderFront(nil)
+        print("DEBUG: Called makeKeyAndOrderFront.")
+    }
+
+    func handleMoveToParent(sourceEntryID: AmigaEntry.ID) {
         guard let sourceEntry = currentEntries.first(where: { $0.id == sourceEntryID }) else {
             showAlert(message: "Could not find the source item to move.")
             return
@@ -25,23 +66,19 @@ extension DetailView {
         }
     }
     
-        func handleMove(sourceEntryID: AmigaEntry.ID, destinationEntry: AmigaEntry) {
-        // Find the source entry from the ID.
+    func handleMove(sourceEntryID: AmigaEntry.ID, destinationEntry: AmigaEntry) {
         guard let sourceEntry = currentEntries.first(where: { $0.id == sourceEntryID }) else {
             showAlert(message: "Could not find the source item to move.")
             return
         }
 
-        // Prevent illogical moves: dropping an item onto itself or onto a file.
         if sourceEntry.id == destinationEntry.id || destinationEntry.type != .directory {
             return
         }
         
-        // Call the ADFService to perform the actual move.
         if let errorMessage = adfService.moveEntry(entryNameToMove: sourceEntry.name, toDestinationDirName: destinationEntry.name) {
             showAlert(message: "Failed to move item: \(errorMessage)")
         } else {
-            // If the move is successful, reload the directory contents to reflect the change.
             loadDirectoryContents()
         }
     }
@@ -201,7 +238,6 @@ extension DetailView {
                 return
             }
             
-            // Attempt to decode as Amiga's standard text encoding.
             let string = String(data: data, encoding: .isoLatin1) ?? ""
             
             await MainActor.run {
@@ -219,7 +255,6 @@ extension DetailView {
         if let errorMessage = adfService.writeTextFile(entry: entry, content: textFileContent) {
             showAlert(message: "Failed to save file: \(errorMessage)")
         } else {
-            // Success, refresh the directory to show updated size
             loadDirectoryContents()
         }
     }
