@@ -7,19 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AC7C05D32E253EEB007F777F /* libuade.dylib in Embed & Sign Libraries */ = {isa = PBXBuildFile; fileRef = AC7C05D22E253EEB007F777F /* libuade.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		AC7C05DC2E255506007F777F /* libuade.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AC7C05392E253617007F777F /* libuade.dylib */; };
+		AC7C05DD2E255506007F777F /* libuade.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = AC7C05392E253617007F777F /* libuade.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		AC7C05E22E255890007F777F /* uadecore in Resources */ = {isa = PBXBuildFile; fileRef = AC7C05E12E255890007F777F /* uadecore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		AC7C05D02E253E15007F777F /* Embed & Sign Libraries */ = {
+		AC7C05DE2E255506007F777F /* Embed Libraries */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
+			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				AC7C05D32E253EEB007F777F /* libuade.dylib in Embed & Sign Libraries */,
+				AC7C05DD2E255506007F777F /* libuade.dylib in Embed Libraries */,
 			);
-			name = "Embed & Sign Libraries";
+			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -29,6 +31,7 @@
 		AC7C05392E253617007F777F /* libuade.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuade.dylib; path = ../../../../../../../../opt/homebrew/Cellar/uade/3.05/lib/libuade.dylib; sourceTree = "<group>"; };
 		AC7C053C2E253643007F777F /* AuDeluxe-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "AuDeluxe-Bridging-Header.h"; path = "AuDeluxe/AuDeluxe-Bridging-Header.h"; sourceTree = "<group>"; };
 		AC7C05D22E253EEB007F777F /* libuade.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libuade.dylib; sourceTree = "<group>"; };
+		AC7C05E12E255890007F777F /* uadecore */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = uadecore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -44,6 +47,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC7C05DC2E255506007F777F /* libuade.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,6 +57,7 @@
 		AC7C05202E253580007F777F = {
 			isa = PBXGroup;
 			children = (
+				AC7C05E12E255890007F777F /* uadecore */,
 				AC7C05D22E253EEB007F777F /* libuade.dylib */,
 				AC7C053C2E253643007F777F /* AuDeluxe-Bridging-Header.h */,
 				AC7C052B2E253580007F777F /* AuDeluxe */,
@@ -87,7 +92,7 @@
 				AC7C05252E253580007F777F /* Sources */,
 				AC7C05262E253580007F777F /* Frameworks */,
 				AC7C05272E253580007F777F /* Resources */,
-				AC7C05D02E253E15007F777F /* Embed & Sign Libraries */,
+				AC7C05DE2E255506007F777F /* Embed Libraries */,
 			);
 			buildRules = (
 			);
@@ -142,6 +147,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC7C05E22E255890007F777F /* uadecore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,12 +290,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AuDeluxe/AuDeluxe.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = /opt/homebrew/include;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
@@ -318,12 +326,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AuDeluxe/AuDeluxe.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = /opt/homebrew/include;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
