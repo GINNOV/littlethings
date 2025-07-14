@@ -8,95 +8,91 @@
 import SwiftUI
 import Foundation
 
-// MARK: - Settings Store (ObservableObject)
-
-// This class is the single source of truth for our application's settings.
-// By marking it with @MainActor, we ensure all its updates happen on the main thread,
-// which is required for UI changes.
 @MainActor
 final class SettingsStore: ObservableObject {
-    // @Published tells SwiftUI to update any views that use this property whenever it changes.
-    // We store the bookmark data for the ROMs folder, not the direct path.
+    // MARK: - Published Properties
     @Published var romsFolderBookmark: Data?
+    @Published var musicFolderBookmark: Data? // New property for the music folder
 
-    // We use UserDefaults to persist the settings between app launches.
+    // MARK: - Private Properties
     private let userDefaults = UserDefaults.standard
     private let romsFolderBookmarkKey = "romsFolderBookmark"
+    private let musicFolderBookmarkKey = "musicFolderBookmark" // New key
 
     init() {
-        // When the app starts, we immediately try to load the saved bookmark.
+        // Load both bookmarks on initialization
         self.romsFolderBookmark = userDefaults.data(forKey: romsFolderBookmarkKey)
-        print("SettingsStore initialized. Loaded bookmark: \(romsFolderBookmark != nil)")
+        self.musicFolderBookmark = userDefaults.data(forKey: musicFolderBookmarkKey)
+        print("SettingsStore initialized.")
     }
 
-    /// Resolves the stored bookmark data into a usable URL.
-    /// Bookmarks are Apple's recommended way to maintain access to file system locations
-    /// across app launches and system restarts, even if the user moves or renames the folder.
+    // MARK: - Computed URLs
     var romsFolderURL: URL? {
-        guard let bookmark = romsFolderBookmark else {
-            print("No bookmark data found.")
-            return nil
-        }
+        resolveBookmark(romsFolderBookmark)
+    }
 
-        do {
-            var isStale = false
-            // This is the crucial step: we resolve the bookmark data back into a URL.
-            let url = try URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
+    var musicFolderURL: URL? {
+        resolveBookmark(musicFolderBookmark)
+    }
 
-            if isStale {
-                // If the bookmark is stale, it means the original folder was moved.
-                // We should try to create a new bookmark from the resolved URL and save it.
-                print("Bookmark is stale, attempting to refresh.")
-                saveRomsFolder(url: url)
-            }
-            return url
-        } catch {
-            // If resolving fails, the bookmark is invalid. We should clear it.
-            print("Error resolving bookmark: \(error.localizedDescription)")
-            clearRomsFolder()
-            return nil
+    // MARK: - Public Methods
+    func selectRomsFolder() {
+        let url = selectFolder(title: "Select your Amiga Kickstart ROMs folder")
+        if let url {
+            saveBookmark(for: url, key: romsFolderBookmarkKey, property: \.romsFolderBookmark)
         }
     }
 
-    /// Prompts the user to select a folder and saves it as a security-scoped bookmark.
-    func selectRomsFolder() {
+    func selectMusicFolder() {
+        let url = selectFolder(title: "Select your Amiga Music folder")
+        if let url {
+            saveBookmark(for: url, key: musicFolderBookmarkKey, property: \.musicFolderBookmark)
+        }
+    }
+    
+    func clearRomsFolder() {
+        romsFolderBookmark = nil
+        userDefaults.removeObject(forKey: romsFolderBookmarkKey)
+    }
+
+    func clearMusicFolder() {
+        musicFolderBookmark = nil
+        userDefaults.removeObject(forKey: musicFolderBookmarkKey)
+    }
+
+    // MARK: - Private Helper Methods
+    private func selectFolder(title: String) -> URL? {
         let openPanel = NSOpenPanel()
-        openPanel.title = "Select your Amiga Kickstart ROMs folder"
+        openPanel.title = title
         openPanel.canChooseFiles = false
         openPanel.canChooseDirectories = true
         openPanel.allowsMultipleSelection = false
-
-        // This presents the folder selection dialog to the user.
-        if openPanel.runModal() == .OK {
-            if let url = openPanel.url {
-                print("Folder selected: \(url.path)")
-                saveRomsFolder(url: url)
-            }
-        }
+        return openPanel.runModal() == .OK ? openPanel.url : nil
     }
-
-    /// Saves the URL as security-scoped bookmark data to both the class property and UserDefaults.
-    private func saveRomsFolder(url: URL) {
+    
+    private func saveBookmark(for url: URL, key: String, property: ReferenceWritableKeyPath<SettingsStore, Data?>) {
         do {
-            // Create the bookmark data. The `.withSecurityScope` option is vital for sandboxed apps
-            // to maintain access to the selected folder.
             let bookmarkData = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
-            
-            // Update the @Published property, which will trigger UI updates.
-            self.romsFolderBookmark = bookmarkData
-            
-            // Persist the bookmark data to UserDefaults for the next app launch.
-            userDefaults.set(bookmarkData, forKey: romsFolderBookmarkKey)
-            print("Successfully saved bookmark data.")
+            self[keyPath: property] = bookmarkData
+            userDefaults.set(bookmarkData, forKey: key)
+            print("Successfully saved bookmark for key: \(key)")
         } catch {
-            print("Error creating bookmark: \(error.localizedDescription)")
+            print("Error creating bookmark for key \(key): \(error.localizedDescription)")
         }
     }
 
-    /// Clears the stored bookmark from the property and UserDefaults.
-    func clearRomsFolder() {
-        self.romsFolderBookmark = nil
-        userDefaults.removeObject(forKey: romsFolderBookmarkKey)
-        print("Cleared ROMs folder bookmark.")
+    private func resolveBookmark(_ bookmarkData: Data?) -> URL? {
+        guard let bookmark = bookmarkData else { return nil }
+        do {
+            var isStale = false
+            let url = try URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
+            if isStale {
+                print("Bookmark is stale, will be refreshed on next save.")
+            }
+            return url
+        } catch {
+            print("Error resolving bookmark: \(error.localizedDescription)")
+            return nil
+        }
     }
 }
