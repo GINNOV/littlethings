@@ -14,7 +14,7 @@ final class UADEEngine: ObservableObject {
     // MARK: - Published Properties
     @Published var isPlaying = false
     @Published var currentSongInfo: String?
-    @Published var songDetails: String? // New property for technical details
+    @Published var songDetails: String?
     
     @Published public private(set) var isUadeInitialized = false
 
@@ -29,9 +29,6 @@ final class UADEEngine: ObservableObject {
     // MARK: - UADE State
     private var uadeState: OpaquePointer?
     private var playbackTask: Task<Void, Error>?
-    
-    // A list of common Amiga module extensions for filtering.
-    private let supportedExtensions = ["mod", "s3m", "xm", "it", "med", "okt", "tfmx", "ahx"]
 
     // MARK: - Initialization
     init() {
@@ -47,25 +44,62 @@ final class UADEEngine: ObservableObject {
 
     // MARK: - Public Control Methods
 
-    func initializeUade(romsURL: URL) {
-        guard !isUadeInitialized else { return }
-        guard romsURL.startAccessingSecurityScopedResource() else { return }
-        defer { romsURL.stopAccessingSecurityScopedResource() }
+    func initializeUade(settings: SettingsStore) {
+        if isUadeInitialized { deinitialize() }
 
-        print("UADEEngine: Initializing UADE with ROMs at \(romsURL.path)...")
+        print("UADEEngine: Initializing UADE...")
         
-        guard let uadecorePath = Bundle.main.path(forResource: "uadecore", ofType: nil),
-              let uaercPath = Bundle.main.path(forResource: "uaerc", ofType: nil) else {
-            print("UADEEngine: FATAL - Core component not found in app bundle.")
+        // --- 1. Verify user has selected a ROMs folder ---
+        guard let romsURL = settings.romsFolderURL else {
+            print("UADEEngine: FATAL - ROMs folder not set in settings.")
+            return
+        }
+        guard romsURL.startAccessingSecurityScopedResource() else {
+            print("UADEEngine: FATAL - Could not access security-scoped ROMs folder.")
+            return
+        }
+        defer { romsURL.stopAccessingSecurityScopedResource() }
+        
+        // --- 2. Verify the bundled resources exist at the top level ---
+        guard let resourcePath = Bundle.main.resourcePath,
+              let uadecorePath = Bundle.main.path(forResource: "uadecore", ofType: nil) else {
+            print("UADEEngine: FATAL - 'uadecore' not found in the main resource bundle. Make sure it's included in 'Copy Bundle Resources'.")
             return
         }
         
+        // --- 3. Create a temporary uaerc file to point to the user's ROMs ---
+        let tempDir = FileManager.default.temporaryDirectory
+        let tempUaercURL = tempDir.appendingPathComponent("audeluxe.uaerc")
+        let uaercContent = "kickstart_dir=\(romsURL.path)"
+        do {
+            try uaercContent.write(to: tempUaercURL, atomically: true, encoding: .utf8)
+            print("UADEEngine: Wrote temporary uaerc to \(tempUaercURL.path)")
+        } catch {
+            print("UADEEngine: FATAL - Failed to write temporary uaerc file: \(error)")
+            return
+        }
+        
+        // --- 4. Configure and initialize UADE ---
         let config = uade_new_config()
-        uade_config_set_option(config, UC_BASE_DIR, romsURL.path)
+        // The Base Directory is the main Resources folder, where uade.conf and the players folder reside.
+        uade_config_set_option(config, UC_BASE_DIR, resourcePath)
+        // The Core File is the uadecore executable.
         uade_config_set_option(config, UC_UADECORE_FILE, uadecorePath)
-        uade_config_set_option(config, UC_UAE_CONFIG_FILE, uaercPath)
+        // Point UADE to our dynamically created uaerc file, which points to the user's ROMs.
+        uade_config_set_option(config, UC_UAE_CONFIG_FILE, tempUaercURL.path)
         uade_config_set_option(config, UC_FREQUENCY, "44100")
-        uade_config_set_option(config, UC_VERBOSE, "1")
+        
+        // Apply audio settings from the UI
+        uade_config_set_option(config, UC_FILTER_TYPE, settings.filterType.rawValue)
+        uade_config_set_option(config, UC_PANNING_VALUE, String(format: "%.2f", settings.panning))
+        uade_config_set_option(config, UC_GAIN, String(format: "%.2f", settings.gain))
+        
+        if settings.headphonesEnabled {
+            uade_config_set_option(config, UC_HEADPHONES, nil)
+        }
+        if settings.ntscEnabled {
+            uade_config_set_option(config, UC_NTSC, nil)
+        }
         
         self.uadeState = uade_new_state(config)
         free(config)
@@ -78,10 +112,11 @@ final class UADEEngine: ObservableObject {
         }
     }
 
-    /// Checks if a file is likely playable by checking its extension.
+    /// Checks if a file is playable by asking the UADE library directly.
     func isPlayable(fileURL: URL) -> Bool {
-        let fileExtension = fileURL.pathExtension.lowercased()
-        return supportedExtensions.contains(fileExtension)
+        guard isUadeInitialized, let state = uadeState else { return false }
+        // Now that uade.conf is bundled, this function should work reliably.
+        return uade_is_our_file(fileURL.path, state) == 1
     }
 
     func play(fileURL: URL) {
@@ -96,11 +131,10 @@ final class UADEEngine: ObservableObject {
 
         guard uade_play(fileURL.path, -1, state) == 1 else {
             print("UADEEngine: ERROR - uade_play failed for file \(fileURL.path)")
-            logLastUadeError() // Log the specific reason for failure
+            logLastUadeError()
             return
         }
 
-        // Get and display song details on successful play
         updateSongDetails()
 
         do {
@@ -129,17 +163,15 @@ final class UADEEngine: ObservableObject {
         
         isPlaying = false
         currentSongInfo = nil
-        songDetails = nil // Clear details on stop
+        songDetails = nil
     }
     
     // MARK: - Private Helper Methods
     
-    /// Reads and prints detailed error notifications from the UADE library.
     private func logLastUadeError() {
         guard let state = uadeState else { return }
         var notification = uade_notification()
         
-        // Read all available notifications from the queue
         while uade_read_notification(&notification, state) == 1 {
             if notification.type == UADE_NOTIFICATION_SONG_END {
                 if let reason = notification.song_end.reason {
@@ -147,21 +179,17 @@ final class UADEEngine: ObservableObject {
                     print("UADE Playback Failure Reason: \(reasonString)")
                 }
             }
-            // IMPORTANT: We must clean up each notification to prevent memory leaks.
             uade_cleanup_notification(&notification)
         }
     }
     
-    /// Retrieves song info from UADE and updates the published property.
     private func updateSongDetails() {
         guard let state = uadeState, let infoPtr = uade_get_song_info(state) else {
             self.songDetails = "No song info available."
             return
         }
         
-        // Safely convert C strings from the struct to Swift Strings
         let info = infoPtr.pointee
-        
         let formatName = stringFromCCharTuple(info.formatname)
         let playerName = stringFromCCharTuple(info.playername)
         let moduleName = stringFromCCharTuple(info.modulename)
@@ -173,7 +201,6 @@ final class UADEEngine: ObservableObject {
         self.songDetails = details
     }
     
-    /// A helper function to convert a C-style char tuple (fixed-size array) to a Swift String.
     private func stringFromCCharTuple<T>(_ tuple: T) -> String {
         var aTuple = tuple
         return withUnsafePointer(to: &aTuple) {
@@ -215,9 +242,18 @@ final class UADEEngine: ObservableObject {
         return pcmBuffer
     }
     
+    func deinitialize() {
+        if let state = uadeState {
+            print("UADEEngine: Deinitializing UADE state for settings change.")
+            uade_cleanup_state(state)
+        }
+        uadeState = nil
+        isUadeInitialized = false
+    }
+    
     deinit {
         if let state = uadeState {
-            print("UADEEngine: Cleaning up UADE state.")
+            print("UADEEngine: Cleaning up UADE state from deinit.")
             uade_cleanup_state(state)
         }
     }

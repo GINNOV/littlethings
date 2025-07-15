@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		AC7C05DC2E255506007F777F /* libuade.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AC7C05392E253617007F777F /* libuade.dylib */; };
 		AC7C05DD2E255506007F777F /* libuade.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = AC7C05392E253617007F777F /* libuade.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		AC7C05E22E255890007F777F /* uadecore in Resources */ = {isa = PBXBuildFile; fileRef = AC7C05E12E255890007F777F /* uadecore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,13 +30,17 @@
 		AC7C05392E253617007F777F /* libuade.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuade.dylib; path = ../../../../../../../../opt/homebrew/Cellar/uade/3.05/lib/libuade.dylib; sourceTree = "<group>"; };
 		AC7C053C2E253643007F777F /* AuDeluxe-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "AuDeluxe-Bridging-Header.h"; path = "AuDeluxe/AuDeluxe-Bridging-Header.h"; sourceTree = "<group>"; };
 		AC7C05D22E253EEB007F777F /* libuade.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libuade.dylib; sourceTree = "<group>"; };
-		AC7C05E12E255890007F777F /* uadecore */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = uadecore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		AC7C052B2E253580007F777F /* AuDeluxe */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AuDeluxe;
+			sourceTree = "<group>";
+		};
+		ACC46DF92E26B297005D33B9 /* uade */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = uade;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -57,7 +60,7 @@
 		AC7C05202E253580007F777F = {
 			isa = PBXGroup;
 			children = (
-				AC7C05E12E255890007F777F /* uadecore */,
+				ACC46DF92E26B297005D33B9 /* uade */,
 				AC7C05D22E253EEB007F777F /* libuade.dylib */,
 				AC7C053C2E253643007F777F /* AuDeluxe-Bridging-Header.h */,
 				AC7C052B2E253580007F777F /* AuDeluxe */,
@@ -100,6 +103,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				AC7C052B2E253580007F777F /* AuDeluxe */,
+				ACC46DF92E26B297005D33B9 /* uade */,
 			);
 			name = AuDeluxe;
 			packageProductDependencies = (
@@ -147,7 +151,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AC7C05E22E255890007F777F /* uadecore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

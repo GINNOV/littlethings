@@ -5,6 +5,13 @@
 //  Created by Mario Esposito on 7/14/25.
 //
 
+//
+//  ContentView.swift
+//  AuDeluxe
+//
+//  Created by Mario Esposito on 7/14/25.
+//
+
 import SwiftUI
 
 struct ContentView: View {
@@ -12,13 +19,11 @@ struct ContentView: View {
     @EnvironmentObject private var engine: UADEEngine
     
     @State private var musicFiles: [URL] = []
-    @State private var isShowingSettings = false
 
     var body: some View {
         VStack {
             headerView
             
-            // Show song details if available
             if let details = engine.songDetails {
                 Text(details)
                     .font(.caption)
@@ -27,6 +32,8 @@ struct ContentView: View {
                     .padding(.bottom, 5)
             }
             
+            // The UI is gated by selecting a music folder, but the engine's
+            // core functionality is now self-contained.
             if let musicURL = settings.musicFolderURL {
                 playlistView
                     .onAppear { scanMusicFolder(url: musicURL) }
@@ -38,14 +45,13 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 500, minHeight: 400)
-        .sheet(isPresented: $isShowingSettings) {
-            SettingsView()
-                .environmentObject(settings)
-        }
         .onAppear(perform: initializeEngineIfNeeded)
-        .onChange(of: settings.romsFolderURL) {
-            initializeEngineIfNeeded()
-        }
+        // Re-initialize the engine if any relevant setting changes.
+        .onChange(of: settings.filterType) { initializeEngineIfNeeded() }
+        .onChange(of: settings.panning) { initializeEngineIfNeeded() }
+        .onChange(of: settings.gain) { initializeEngineIfNeeded() }
+        .onChange(of: settings.headphonesEnabled) { initializeEngineIfNeeded() }
+        .onChange(of: settings.ntscEnabled) { initializeEngineIfNeeded() }
     }
 
     // MARK: - Subviews
@@ -54,15 +60,16 @@ struct ContentView: View {
             Text("AuDeluxe")
                 .font(.largeTitle)
             
-            if let songInfo = engine.currentSongInfo {
-                Text(songInfo)
+            HStack {
+                if engine.isPlaying {
+                    Button(action: { engine.stop() }) {
+                        Image(systemName: "stop.fill")
+                    }
+                }
+                Text(engine.currentSongInfo ?? "Select a song to play")
                     .font(.headline)
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(engine.isPlaying ? .accentColor : .secondary)
                     .lineLimit(1)
-            } else {
-                Text("Select a song to play")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
             }
         }
         .padding()
@@ -88,20 +95,16 @@ struct ContentView: View {
                 .foregroundColor(.secondary)
             Text("No Music Folder Selected")
                 .font(.title2)
-            Text("Please select your music folder in the settings.")
-            Button("Open Settings") {
-                isShowingSettings = true
-            }
-            .padding(.top)
+            Text("Please select your music folder in Settings (Cmd+,).")
             Spacer()
         }
     }
 
     // MARK: - Logic
     private func initializeEngineIfNeeded() {
-        if let url = settings.romsFolderURL, !engine.isUadeInitialized {
-            engine.initializeUade(romsURL: url)
-        }
+        // The engine can now initialize itself without the ROMs path,
+        // as it uses the bundled resources.
+        engine.initializeUade(settings: settings)
     }
     
     private func scanMusicFolder(url: URL?) {
@@ -115,7 +118,6 @@ struct ContentView: View {
         
         do {
             let contents = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
-            // Filter the list to only include files that UADE reports as playable.
             musicFiles = contents.filter { engine.isPlayable(fileURL: $0) }
                                  .sorted { $0.lastPathComponent < $1.lastPathComponent }
             print("Found \(musicFiles.count) playable files.")
