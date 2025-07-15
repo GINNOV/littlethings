@@ -13,7 +13,6 @@
   </head>
   <body class="dark-theme projects-page-dark-theme">
     <div id="header-placeholder"></div>
-
     <main>
       <section class="text-center mb-16">
         <img
@@ -22,59 +21,12 @@
           class="projects-title-image"
           onerror="this.onerror=null;this.src='https://placehold.co/700x150/0F172A/FF8800?text=PROJECT+SHOWCASE&font=press-start-2p';this.alt='Project Showcase';"
         />
+        A collection of tools and projects that I have built for the Amiga
+        community. They aim to support Amiga developers and users in their
+        daily tasks.
       </section>
-
+      <!-- ADFinder START -->
       <article class="project-card">
-        <div class="md-img-container">
-          <img
-            src="./images/tools/send2adf.png"
-            onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=send+to+ADF&font=press-start-2p';this.alt='send to ADF';"
-            alt="send to ADF"
-            class="project-image"
-          />
-        </div>
-        <div class="md-text-container">
-          <h3>send to ADF</h3>
-          <p>
-            <b>🤔:</b> Quite often I find myself to test out a demo that I
-            baked from source code. It's never just one file, add resources, a
-            startup sequence and so on. Often I do those things from command
-            line, including opening the file in
-            <a href="https://dirkwhoffmann.github.io/vAmiga/">vAmiga</a>. I know
-            about xdftool but I wanted something more independent that the whole
-            amitools package.
-          </p>
-          <p>
-            <br /><b>💡:</b> send2adf, it's a C based tool that you can
-            keep in your /usr/local/bin folder, no fancy installations. Straight from terminal
-            you give a folder and all files are added in one shot to an ADF.
-          </p>
-          <div class="project-button-container">
-            <a
-              href="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/send2adf.zip"
-              target="_blank"
-              class="download-button project-button"
-            >
-              <i class="fas fa-download"></i>Download
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/send2adf"
-              class="source-button project-button"
-            >
-              <i class="fab fa-github"></i>Source Code
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/send2adf/docs/learned_lesson.md"
-              target="_blank"
-              class="learn-button project-button"
-            >
-              <i class="fas fa-book"></i>Learn More
-            </a>
-          </div>
-        </div>
-      </article>
-
-      <article class="project-card reverse">
         <div class="md-img-container">
           <img
             src="./images/tools/adf-finder.png"
@@ -86,29 +38,46 @@
         <div class="md-text-container">
           <h3>ADF.inder</h3>
           <p>
-            There are many ADF tools out there but they almost feel to me that the author got a phone
-            call for an important meeting and decided to not go back to finish what they started. I wanted an Opus
-            File Manager for macOS users to handle Amiga disks. So I built it and when I got the call, I told to my non
-            existing secretary "no calls today, I am coding".
-          </p>  
+            There are many ADF tools out there but they almost feel to me that
+            the author got a phone call for an important meeting and decided to
+            not go back to finish what they started. I wanted an Opus File
+            Manager for macOS users to handle Amiga disks. So I built it and
+            when I got the call, I told to my non existing secretary "no calls
+            today, I am coding".
+          </p>
           <p>
-            <br />ADF.inder allows you to operate on Amiga Disk images like there's no tomorrow.
-            You can add/remove files, edit content, create images, I mean I haven't found a limitation yet. Click the learn more button to see the current list of features.
+            <br />ADF.inder allows you to operate on Amiga Disk images like
+            there's no tomorrow. You can add/remove files, edit content, create
+            images, I mean I haven't found a limitation yet. Click the learn
+            more button to see the current list of features.
           </p>
           <div class="project-button-container">
-            <a href="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/" target="_blank" class="download-button project-button">
+            <a
+              href="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/"
+              target="_blank"
+              class="download-button project-button"
+            >
               <i class="fas fa-download"></i>Download
             </a>
-            <a href="https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder" target="_blank" class="source-button project-button">
+            <a
+              href="https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder"
+              target="_blank"
+              class="source-button project-button"
+            >
               <i class="fab fa-github"></i>Source Code
             </a>
-            <a href="./adfinder_learnmore.html" class="learn-button project-button">
+            <a
+              href="./adfinder_learnmore.html"
+              class="learn-button project-button"
+            >
               <i class="fas fa-book"></i>Learn More
             </a>
           </div>
         </div>
       </article>
-      <!-- PixDeluxe START -->  
+      <!-- ADFinder END -->
+
+      <!-- PixDeluxe START -->
       <article class="project-card reverse">
         <div class="md-img-container">
           <img
@@ -122,12 +91,14 @@
           <h3>PixDeluxe</h3>
           <p>
             Say that you have a large collection of Amiga images and you want to
-            easily browse them, or you want to convert them to a different format, or snop meta details, or you want to
-            apply a filter to them. You probably got the point.
+            easily browse them, or you want to convert them to a different
+            format, or snop meta details, or you want to apply a filter to them.
+            You probably got the point.
           </p>
           <p>
-            Well...well, my dear fellow Amiganian. PixDeluxe is here to save the day. It opens
-            IFF images, it can convert them to PNG, show image format details and more.
+            Well...well, my dear fellow Amiganian. PixDeluxe is here to save the
+            day. It opens IFF images, it can convert them to PNG, show image
+            format details and more.
           </p>
           <div class="project-button-container">
             <a
@@ -154,7 +125,8 @@
         </div>
       </article>
       <!-- PixDeluxe END -->
-      <!-- PixDeluxe Quick Look Plugin START -->  
+
+      <!-- PixDeluxe Quick Look Plugin START -->
       <article class="project-card">
         <div class="md-img-container">
           <img
@@ -167,12 +139,16 @@
         <div class="md-text-container">
           <h3>PixDeluxe Quick Look</h3>
           <p>
-            Say that you have a large collection of Amiga images (IFF) and you want to
-            easily preview them while cruising through your macOS finder.
+            Say that you have a large collection of Amiga images (IFF) and you
+            want to easily preview them while cruising through your macOS
+            finder.
           </p>
           <p>
-            There has been a plugin around for about <a href="https://github.com/dalton-tulou/ql-iff">12 years</a> now but it doesn't work reliably anymore. So I brought it back to life.
-            Download, move the app inside your Applications folder and then run it once. The rest will be history.
+            There has been a plugin around for about
+            <a href="https://github.com/dalton-tulou/ql-iff">12 years</a> now
+            but it doesn't work reliably anymore. So I brought it back to life.
+            Download, move the app inside your Applications folder and then run
+            it once. The rest will be history.
           </p>
           <div class="project-button-container">
             <a
@@ -191,9 +167,63 @@
           </div>
         </div>
       </article>
-      <!-- PixDeluxe Quick View Plugin END -->  
-             <!-- ADF0 START --> 
-       <article class="project-card">
+      <!-- PixDeluxe Quick View Plugin END -->
+
+      <!-- Send2ADF START -->
+      <article class="project-card">
+        <div class="md-img-container">
+          <img
+            src="./images/tools/send2adf.png"
+            onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=send+to+ADF&font=press-start-2p';this.alt='send to ADF';"
+            alt="send to ADF"
+            class="project-image"
+          />
+        </div>
+        <div class="md-text-container">
+          <h3>send to ADF</h3>
+          <p>
+            <b>🤔:</b> Quite often I find myself to test out a demo that I baked
+            from source code. It's never just one file, add resources, a startup
+            sequence and so on. Often I do those things from command line,
+            including opening the file in
+            <a href="https://dirkwhoffmann.github.io/vAmiga/">vAmiga</a>. I know
+            about xdftool but I wanted something more independent that the whole
+            amitools package.
+          </p>
+          <p>
+            <br /><b>💡:</b> send2adf, it's a C based tool that you can keep in
+            your /usr/local/bin folder, no fancy installations. Straight from
+            terminal you give a folder and all files are added in one shot to an
+            ADF.
+          </p>
+          <div class="project-button-container">
+            <a
+              href="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/send2adf.zip"
+              target="_blank"
+              class="download-button project-button"
+            >
+              <i class="fas fa-download"></i>Download
+            </a>
+            <a
+              href="https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/send2adf"
+              class="source-button project-button"
+            >
+              <i class="fab fa-github"></i>Source Code
+            </a>
+            <a
+              href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/send2adf/docs/learned_lesson.md"
+              target="_blank"
+              class="learn-button project-button"
+            >
+              <i class="fas fa-book"></i>Learn More
+            </a>
+          </div>
+        </div>
+      </article>
+      <!-- Send2ADF END -->
+
+      <!-- ADF0 START -->
+      <article class="project-card reverse">
         <div class="md-img-container">
           <img
             src="./images/tools/ADFZero.png"
@@ -205,14 +235,16 @@
         <div class="md-text-container">
           <h3>ADF0 (in progress)</h3>
           <p>
-            The now legendary ADFinder for macOS has given you the power of click and joy when it comes
-            to manipulate disk images and Amiga files within those. A file manager for Amiga Disk that is by
-            far covering every need and beyond. But what if you wanted that level of
+            The now legendary ADFinder for macOS has given you the power of
+            click and joy when it comes to manipulate disk images and Amiga
+            files within those. A file manager for Amiga Disk that is by far
+            covering every need and beyond. But what if you wanted that level of
             power from a command line?
           </p>
           <p>
             Fret no more my dear fellow Amiganian. With ADF0 you can now
-            manipulate Amiga Disk images from the command line and perform almost every operation you can do with ADFinder.
+            manipulate Amiga Disk images from the command line and perform
+            almost every operation you can do with ADFinder.
           </p>
           <div class="project-button-container">
             <a
@@ -228,17 +260,13 @@
             >
               <i class="fab fa-github"></i>Source Code
             </a>
-            <a
-              href="#"
-              target="_blank"
-              class="learn-button project-button"
-            >
+            <a href="#" target="_blank" class="learn-button project-button">
               <i class="fas fa-book"></i>Learn More
             </a>
           </div>
         </div>
       </article>
-      <!-- ADF0 END --> 
+      <!-- ADF0 END -->
     </main>
 
     <div id="footer-placeholder"></div>
