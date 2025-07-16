@@ -27,6 +27,7 @@ final class OpenMPTEngine: ObservableObject {
     // MARK: - OpenMPT State
     private var module: OpaquePointer?
     private var currentlyAccessedURL: URL?
+    private var timeUpdateTask: Task<Void, Never>?
 
     private let supportedExtensions = [
         "mod", "s3m", "xm", "it", "med", "okt", "mtm", "669", "dsm", "far", "ptm", "ult",
@@ -171,6 +172,7 @@ final class OpenMPTEngine: ObservableObject {
             playerNode.play()
             isPlaying = true
             currentSongInfo = fileURL.lastPathComponent
+            startTimeUpdateTimer() // Start the timer for the playback bar
         } catch {
             print("OpenMPTEngine: ERROR - Could not start AVAudioEngine: \(error.localizedDescription)")
             openmpt_module_destroy(self.module)
@@ -190,6 +192,9 @@ final class OpenMPTEngine: ObservableObject {
         
         print("OpenMPTEngine: Stopping playback. Total cumulative frames rendered: \(cumulativeFramesRendered)")
 
+        timeUpdateTask?.cancel() // Stop the timer task
+        timeUpdateTask = nil
+        
         playerNode.stop()
         audioEngine.pause()
 
@@ -329,6 +334,18 @@ final class OpenMPTEngine: ObservableObject {
         if reachedEndOfFile && pendingBufferCount == 0 {
             print("OpenMPTEngine: All buffers played. Song finished.")
             stop()
+        }
+    }
+    
+    private func startTimeUpdateTimer() {
+        timeUpdateTask?.cancel()
+        timeUpdateTask = Task {
+            while !Task.isCancelled {
+                if let mod = self.module {
+                    self.currentPlaybackTime = openmpt_module_get_position_seconds(mod)
+                }
+                try? await Task.sleep(for: .milliseconds(100))
+            }
         }
     }
 
