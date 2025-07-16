@@ -34,13 +34,10 @@ final class OpenMPTEngine: ObservableObject {
         "amf", "ams", "dbm", "dmf", "imf", "j2b", "mdl", "mo3", "psm", "stm", "stx", "umx"
     ]
 
-    // MARK: - Debug Tracking
-    private var cumulativeFramesRendered: Int = 0
-
     // MARK: - Buffer Management
     private var pendingBufferCount = 0
     private var reachedEndOfFile = false
-    private let targetPendingBuffers = 3  // Keep this many ahead to avoid underruns
+    private let targetPendingBuffers = 3
 
     // MARK: - Initialization
     init() {
@@ -51,22 +48,12 @@ final class OpenMPTEngine: ObservableObject {
     private func setupAudioEngine() {
         audioEngine.attach(playerNode)
         audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: nil)
-
-        let actualFormat = playerNode.outputFormat(forBus: 0)
-        self.processingFormat = actualFormat
-        print("OpenMPTEngine: Using audio format - Sample Rate: \(actualFormat.sampleRate), Channels: \(actualFormat.channelCount), Interleaved: \(actualFormat.isInterleaved)")
-
+        self.processingFormat = playerNode.outputFormat(forBus: 0)
+        
         NotificationCenter.default.addObserver(
-            forName: .AVAudioEngineConfigurationChange,
-            object: nil,
-            queue: .main) { [weak self] _ in
-            guard let self else { return }
-            Task { @MainActor in
-                if self.isPlaying {
-                    print("OpenMPTEngine: Audio engine configuration changed. Attempting to restart.")
-                    await self.handleAudioEngineConfigurationChange()
-                }
-            }
+            forName: .AVAudioEngineConfigurationChange, object: nil, queue: .main) { [weak self] _ in
+            guard let self, self.isPlaying else { return }
+            Task { await self.handleAudioEngineConfigurationChange() }
         }
     }
 
@@ -75,35 +62,25 @@ final class OpenMPTEngine: ObservableObject {
         let currentFile = self.currentSongInfo
         let currentFolder = self.currentlyAccessedURL?.deletingLastPathComponent()
 
-        stop() // Fully stop and release resources.
+        stop()
 
         if wasPlaying, let fileName = currentFile, let folderURL = currentFolder {
             let fileURL = folderURL.appendingPathComponent(fileName)
-            print("OpenMPTEngine: Resuming playback after route change.")
             play(fileURL: fileURL, musicFolderURL: folderURL)
         }
     }
 
     // MARK: - Public Control Methods
     func scanMusicFolder(for musicFolderURL: URL) async {
-        print("OpenMPTEngine: Scanning for music in \(musicFolderURL.path)")
-        guard musicFolderURL.startAccessingSecurityScopedResource() else {
-            print("OpenMPTEngine: ERROR - Could not gain security access to music folder for scanning.")
-            return
-        }
-        defer {
-            musicFolderURL.stopAccessingSecurityScopedResource()
-            print("OpenMPTEngine_Debug: Stopped security access after scanning.")
-        }
+        guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
+        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
         
         var items: [PlaylistItem] = []
         do {
             let contents = try FileManager.default.contentsOfDirectory(at: musicFolderURL, includingPropertiesForKeys: nil)
             for fileURL in contents {
-                if isPlayable(fileURL: fileURL) {
-                    if let metadata = getMetadata(for: fileURL) {
-                        items.append(metadata)
-                    }
+                if isPlayable(fileURL: fileURL), let metadata = getMetadata(for: fileURL) {
+                    items.append(metadata)
                 }
             }
         } catch {
@@ -117,82 +94,58 @@ final class OpenMPTEngine: ObservableObject {
     func play(fileURL: URL, musicFolderURL: URL) {
         if isPlaying { stop() }
 
-        print("OpenMPTEngine: Attempting to play \(fileURL.lastPathComponent)")
-
-        guard musicFolderURL.startAccessingSecurityScopedResource() else {
-            print("OpenMPTEngine: ERROR - Could not gain security access to music folder.")
-            return
-        }
+        guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
         self.currentlyAccessedURL = musicFolderURL
-        print("OpenMPTEngine_Debug: Started security access for music folder.")
-
+        
         guard let data = try? Data(contentsOf: fileURL) else {
-            print("OpenMPTEngine: FATAL - Could not read file data from \(fileURL.path).")
-            stop()
-            return
+            stop(); return
         }
 
-        let logClosure: @convention(c) (UnsafePointer<CChar>?, UnsafeMutableRawPointer?) -> Void = { message, _ in
-            if let message {
-                let msg = String(cString: message)
-                print("OpenMPTEngine-Debug: libOpenMPT Log: \(msg)")
-            }
-        }
-
-        let modulePtr = data.withUnsafeBytes { (pointer: UnsafeRawBufferPointer) -> OpaquePointer? in
-            return openmpt_module_create_from_memory2(pointer.baseAddress, pointer.count, logClosure, nil, nil, nil, nil, nil, nil)
-        }
+        let modulePtr = data.withUnsafeBytes { openmpt_module_create_from_memory2($0.baseAddress, $0.count, nil, nil, nil, nil, nil, nil, nil) }
 
         guard let newModule = modulePtr else {
-            print("OpenMPTEngine: ERROR - libopenmpt could not create module from file.")
-            stop()
-            return
+            stop(); return
         }
-
+        
+        // Set render parameters for compatibility and quality.
+        openmpt_module_set_render_param(newModule, OPENMPT_MODULE_RENDER_STEREOSEPARATION_PERCENT, 100)
+        openmpt_module_set_render_param(newModule, OPENMPT_MODULE_RENDER_INTERPOLATIONFILTER_LENGTH, 8)
+        
         self.module = newModule
-        let durationSeconds = openmpt_module_get_duration_seconds(self.module)
-        self.currentSongDuration = durationSeconds
-        print("OpenMPTEngine-Debug: Module loaded. Estimated duration: \(durationSeconds) seconds.")
+        self.currentSongDuration = openmpt_module_get_duration_seconds(newModule)
+        openmpt_module_set_repeat_count(newModule, isLooping ? -1 : 0)
         updateSongDetails()
 
         do {
             try audioEngine.start()
             
-            cumulativeFramesRendered = 0
             pendingBufferCount = 0
             reachedEndOfFile = false
             
-            print("OpenMPTEngine: Pre-buffering audio...")
             for _ in 0..<targetPendingBuffers {
                 scheduleNextBuffer()
             }
             
-            print("OpenMPTEngine-Debug: Player presentation latency: \(playerNode.outputPresentationLatency)")
-            
             playerNode.play()
             isPlaying = true
             currentSongInfo = fileURL.lastPathComponent
-            startTimeUpdateTimer() // Start the timer for the playback bar
+            startTimeUpdateTimer()
         } catch {
             print("OpenMPTEngine: ERROR - Could not start AVAudioEngine: \(error.localizedDescription)")
-            openmpt_module_destroy(self.module)
-            self.module = nil
             stop()
         }
     }
 
     func stop() {
         guard isPlaying else {
-            if let url = currentlyAccessedURL {
+             if let url = currentlyAccessedURL {
                 url.stopAccessingSecurityScopedResource()
                 currentlyAccessedURL = nil
             }
             return
         }
         
-        print("OpenMPTEngine: Stopping playback. Total cumulative frames rendered: \(cumulativeFramesRendered)")
-
-        timeUpdateTask?.cancel() // Stop the timer task
+        timeUpdateTask?.cancel()
         timeUpdateTask = nil
         
         playerNode.stop()
@@ -213,7 +166,6 @@ final class OpenMPTEngine: ObservableObject {
 
         if let url = currentlyAccessedURL {
             url.stopAccessingSecurityScopedResource()
-            print("OpenMPTEngine_Debug: Stopped security access for music folder.")
             currentlyAccessedURL = nil
         }
     }
@@ -255,22 +207,10 @@ final class OpenMPTEngine: ObservableObject {
     }
     
     private func updateSongDetails() {
-        guard let mod = module else {
-            self.songDetails = "No song info available."
-            return
-        }
-
-        let title = String(cString: openmpt_module_get_metadata(mod, "title"))
-        let artist = String(cString: openmpt_module_get_metadata(mod, "artist"))
+        guard let mod = module else { return }
         let type = String(cString: openmpt_module_get_metadata(mod, "type_long"))
-
         let tracker = String(cString: openmpt_module_get_metadata(mod, "tracker"))
-        print("OpenMPTEngine-Debug: Tracker: \(tracker), Type: \(type)")
-
-        var details = "Type: \(type)"
-        if !title.isEmpty { details += "\nTitle: \(title)" }
-        if !artist.isEmpty { details += "\nArtist: \(artist)" }
-        self.songDetails = details
+        self.songDetails = "Type: \(type) | Tracker: \(tracker)"
     }
 
     private func scheduleNextBuffer() {
@@ -283,7 +223,6 @@ final class OpenMPTEngine: ObservableObject {
         }
 
         pendingBufferCount += 1
-
         playerNode.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
             Task { @MainActor in
                 guard let self else { return }
@@ -306,11 +245,7 @@ final class OpenMPTEngine: ObservableObject {
 
         let framesRendered = Int(openmpt_module_read_interleaved_float_stereo(mod, Int32(sampleRate), frameCount, buffer.assumingMemoryBound(to: Float.self)))
 
-        guard framesRendered > 0 else {
-            return nil
-        }
-
-        cumulativeFramesRendered += framesRendered
+        guard framesRendered > 0 else { return nil }
 
         guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: processingFormat, frameCapacity: AVAudioFrameCount(framesRendered)) else {
             return nil
@@ -326,7 +261,6 @@ final class OpenMPTEngine: ObservableObject {
         }
         
         pcmBuffer.frameLength = AVAudioFrameCount(framesRendered)
-        
         return pcmBuffer
     }
 

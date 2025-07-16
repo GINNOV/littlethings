@@ -13,6 +13,11 @@ struct PlaybackControlsView: View {
     
     @Binding var selectedFileID: PlaylistItem.ID?
 
+    private var currentItemIndex: Int? {
+        guard let selectedID = selectedFileID else { return nil }
+        return engine.playlistItems.firstIndex(where: { $0.id == selectedID })
+    }
+
     var body: some View {
         VStack(spacing: 5) {
             Slider(value: Binding(get: { engine.currentPlaybackTime }, set: { engine.seek(to: $0) }),
@@ -29,14 +34,21 @@ struct PlaybackControlsView: View {
             
             HStack(spacing: 30) {
                 Spacer()
-                Button(action: { /* Previous song */ }) { Image(systemName: "backward.fill").font(.title2) }.disabled(true)
+                Button(action: playPrevious) {
+                    Image(systemName: "backward.fill").font(.title2)
+                }
+                .disabled(currentItemIndex == nil || currentItemIndex == 0)
                 
                 Button(action: handlePlayPause) {
                     Image(systemName: engine.isPlaying ? "pause.fill" : "play.fill").font(.largeTitle)
                 }
                 .disabled(selectedFileID == nil && !engine.isPlaying)
                 
-                Button(action: { /* Next song */ }) { Image(systemName: "forward.fill").font(.title2) }.disabled(true)
+                Button(action: playNext) {
+                    Image(systemName: "forward.fill").font(.title2)
+                }
+                .disabled(currentItemIndex == nil || currentItemIndex == engine.playlistItems.count - 1)
+                
                 Spacer()
                 
                 Button(action: { engine.toggleLooping() }) {
@@ -57,6 +69,26 @@ struct PlaybackControlsView: View {
                   let musicURL = settings.musicFolderURL {
             engine.play(fileURL: selectedItem.fileURL, musicFolderURL: musicURL)
         }
+    }
+    
+    private func playNext() {
+        guard let index = currentItemIndex,
+              index + 1 < engine.playlistItems.count,
+              let musicURL = settings.musicFolderURL else { return }
+        
+        let nextItem = engine.playlistItems[index + 1]
+        selectedFileID = nextItem.id // Update selection
+        engine.play(fileURL: nextItem.fileURL, musicFolderURL: musicURL)
+    }
+    
+    private func playPrevious() {
+        guard let index = currentItemIndex,
+              index > 0,
+              let musicURL = settings.musicFolderURL else { return }
+        
+        let prevItem = engine.playlistItems[index - 1]
+        selectedFileID = prevItem.id // Update selection
+        engine.play(fileURL: prevItem.fileURL, musicFolderURL: musicURL)
     }
     
     private func formatTime(_ time: TimeInterval) -> String {
