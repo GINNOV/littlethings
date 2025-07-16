@@ -7,7 +7,6 @@
 
 #ifndef AuDeluxe_Bridging_Header_h
 #define AuDeluxe_Bridging_Header_h
-#import <uade/uade.h>
-#import <uade/options.h> 
+#import <libopenmpt/libopenmpt.h>
 
 #endif /* AuDeluxe_Bridging_Header_h */

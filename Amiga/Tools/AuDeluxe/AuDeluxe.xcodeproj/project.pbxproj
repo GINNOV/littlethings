@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AC7C05DC2E255506007F777F /* libuade.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AC7C05392E253617007F777F /* libuade.dylib */; };
-		AC7C05DD2E255506007F777F /* libuade.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = AC7C05392E253617007F777F /* libuade.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		AC33BC6D2E27BDB400436B63 /* libopenmpt.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AC33BC6C2E27BDB400436B63 /* libopenmpt.0.dylib */; };
+		AC33BC6E2E27BDB400436B63 /* libopenmpt.0.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = AC33BC6C2E27BDB400436B63 /* libopenmpt.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -18,7 +18,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				AC7C05DD2E255506007F777F /* libuade.dylib in Embed Libraries */,
+				AC33BC6E2E27BDB400436B63 /* libopenmpt.0.dylib in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -26,21 +26,16 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AC33BC6C2E27BDB400436B63 /* libopenmpt.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopenmpt.0.dylib; path = ../../../../../../../../opt/homebrew/Cellar/libopenmpt/0.8.1/lib/libopenmpt.0.dylib; sourceTree = "<group>"; };
 		AC7C05292E253580007F777F /* AuDeluxe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AuDeluxe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC7C05392E253617007F777F /* libuade.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuade.dylib; path = ../../../../../../../../opt/homebrew/Cellar/uade/3.05/lib/libuade.dylib; sourceTree = "<group>"; };
 		AC7C053C2E253643007F777F /* AuDeluxe-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "AuDeluxe-Bridging-Header.h"; path = "AuDeluxe/AuDeluxe-Bridging-Header.h"; sourceTree = "<group>"; };
-		AC7C05D22E253EEB007F777F /* libuade.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libuade.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		AC7C052B2E253580007F777F /* AuDeluxe */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AuDeluxe;
-			sourceTree = "<group>";
-		};
-		ACC46DF92E26B297005D33B9 /* uade */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = uade;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -50,7 +45,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AC7C05DC2E255506007F777F /* libuade.dylib in Frameworks */,
+				AC33BC6D2E27BDB400436B63 /* libopenmpt.0.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,8 +55,6 @@
 		AC7C05202E253580007F777F = {
 			isa = PBXGroup;
 			children = (
-				ACC46DF92E26B297005D33B9 /* uade */,
-				AC7C05D22E253EEB007F777F /* libuade.dylib */,
 				AC7C053C2E253643007F777F /* AuDeluxe-Bridging-Header.h */,
 				AC7C052B2E253580007F777F /* AuDeluxe */,
 				AC7C05382E253617007F777F /* Frameworks */,
@@ -80,6 +73,7 @@
 		AC7C05382E253617007F777F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AC33BC6C2E27BDB400436B63 /* libopenmpt.0.dylib */,
 				AC7C05392E253617007F777F /* libuade.dylib */,
 			);
 			name = Frameworks;
@@ -103,7 +97,6 @@
 			);
 			fileSystemSynchronizedGroups = (
 				AC7C052B2E253580007F777F /* AuDeluxe */,
-				ACC46DF92E26B297005D33B9 /* uade */,
 			);
 			name = AuDeluxe;
 			packageProductDependencies = (
@@ -296,7 +289,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -312,6 +305,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					/opt/homebrew/lib,
 					/opt/homebrew/Cellar/uade/3.05/lib,
+					/opt/homebrew/Cellar/libopenmpt/0.8.1/lib,
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe;
@@ -332,7 +326,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -348,6 +342,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					/opt/homebrew/lib,
 					/opt/homebrew/Cellar/uade/3.05/lib,
+					/opt/homebrew/Cellar/libopenmpt/0.8.1/lib,
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe;
