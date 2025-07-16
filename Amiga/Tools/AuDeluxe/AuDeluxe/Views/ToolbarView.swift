@@ -17,6 +17,7 @@ struct ToolbarItems: ToolbarContent {
     @Binding var isShowingRenameAlert: Bool
     @Binding var fileToRename: PlaylistItem?
     @Binding var isShowingAboutSheet: Bool
+    @Binding var fileToInspect: PlaylistItem?
 
     var body: some ToolbarContent {
         ToolbarItemGroup {
@@ -47,6 +48,15 @@ struct ToolbarItems: ToolbarContent {
                 Button("Clear Rating") { rateSelectedItem(0) }
             } label: {
                 Label("Rate", systemImage: "star")
+            }
+            .disabled(selectedFileID == nil)
+            
+            Button(action: {
+                if let selectedItem = engine.playlistItems.first(where: { $0.id == selectedFileID }) {
+                    fileToInspect = selectedItem
+                }
+            }) {
+                Label("Inspect", systemImage: "info.square")
             }
             .disabled(selectedFileID == nil)
 
