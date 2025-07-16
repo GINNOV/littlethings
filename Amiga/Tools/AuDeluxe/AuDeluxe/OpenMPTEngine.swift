@@ -127,7 +127,21 @@ final class OpenMPTEngine: ObservableObject {
         self.module = newModule
         self.currentSongDuration = openmpt_module_get_duration_seconds(newModule)
         openmpt_module_set_repeat_count(newModule, isLooping ? -1 : 0)
-        updateSongDetails()
+        
+        // Update song details directly from the playlist item's metadata
+        if let item = playlistItems.first(where: { $0.fileURL == fileURL }) {
+            let type = item.metadata["type_long"] ?? ""
+            let tracker = item.metadata["tracker"] ?? ""
+            let date = item.metadata["date"] ?? ""
+            let container = item.metadata["container_long"] ?? ""
+
+            var details: [String] = []
+            if !type.isEmpty { details.append("Type: \(type)") }
+            if !tracker.isEmpty { details.append("Tracker: \(tracker)") }
+            if !date.isEmpty { details.append("Date: \(date)") }
+            if !container.isEmpty { details.append("Container: \(container)") }
+            self.songDetails = details.joined(separator: " | ")
+        }
 
         do {
             try audioEngine.start()
@@ -247,21 +261,43 @@ final class OpenMPTEngine: ObservableObject {
         guard let mod = modulePtr else { return nil }
         defer { openmpt_module_destroy(mod) }
         
-        let internalTitle = String(cString: openmpt_module_get_metadata(mod, "title"))
-        let internalArtist = String(cString: openmpt_module_get_metadata(mod, "artist"))
-        let duration = openmpt_module_get_duration_seconds(mod)
+        var metadataDict: [String: String] = [:]
 
-        let customTitle = getStringAttribute(key: titleKey, forFileAt: fileURL)
-        let customArtist = getStringAttribute(key: artistKey, forFileAt: fileURL)
+        // Get all metadata keys from libopenmpt
+        if let keysCString = openmpt_module_get_metadata_keys(mod) {
+            let keysString = String(cString: keysCString)
+            let keys = keysString.components(separatedBy: ";")
+            openmpt_free_string(keysCString)
+
+            for key in keys {
+                if let valueCString = openmpt_module_get_metadata(mod, key) {
+                    let valueString = String(cString: valueCString)
+                    metadataDict[key] = valueString
+                    openmpt_free_string(valueCString)
+                }
+            }
+        }
+        
+        // Add duration separately as it's not a standard metadata key
+        let duration = openmpt_module_get_duration_seconds(mod)
+        metadataDict["duration"] = "\(duration)"
+        
+        // Prioritize custom metadata stored in extended attributes
+        if let customTitle = getStringAttribute(key: titleKey, forFileAt: fileURL) {
+            metadataDict["title"] = customTitle
+        } else if metadataDict["title"] == nil || metadataDict["title"]!.isEmpty {
+            // Fallback to filename if no internal or custom title exists
+            metadataDict["title"] = fileURL.deletingPathExtension().lastPathComponent
+        }
+        
+        if let customArtist = getStringAttribute(key: artistKey, forFileAt: fileURL) {
+            metadataDict["artist"] = customArtist
+        }
+
         let rating = getIntAttribute(key: ratingKey, forFileAt: fileURL)
 
-        let finalTitle = customTitle ?? (internalTitle.isEmpty ? fileURL.deletingPathExtension().lastPathComponent : internalTitle)
-        let finalArtist = customArtist ?? internalArtist
-
         return PlaylistItem(fileURL: fileURL,
-                            title: finalTitle,
-                            artist: finalArtist,
-                            duration: duration,
+                            metadata: metadataDict,
                             rating: rating)
     }
     
@@ -330,13 +366,6 @@ final class OpenMPTEngine: ObservableObject {
     private func getIntAttribute(key: String, forFileAt fileURL: URL) -> Int {
         guard let data = getAttribute(key: key, forFileAt: fileURL), data.count == MemoryLayout<Int>.size else { return 0 }
         return data.withUnsafeBytes { $0.load(as: Int.self) }
-    }
-    
-    private func updateSongDetails() {
-        guard let mod = module else { return }
-        let type = String(cString: openmpt_module_get_metadata(mod, "type_long"))
-        let tracker = String(cString: openmpt_module_get_metadata(mod, "tracker"))
-        self.songDetails = "Type: \(type) | Tracker: \(tracker)"
     }
 
     private func scheduleNextBuffer() {
