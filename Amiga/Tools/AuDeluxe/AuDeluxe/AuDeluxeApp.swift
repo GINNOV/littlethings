@@ -14,7 +14,7 @@ struct AuDeluxeApp: App {
     // Create and manage a single instance of our SettingsStore.
     @StateObject private var settings = SettingsStore()
     // Create and manage a single instance of our UADEEngine.
-    @StateObject private var engine = UADEEngine()
+    @StateObject private var engine = OpenMPTEngine()
 
     var body: some Scene {
         WindowGroup {

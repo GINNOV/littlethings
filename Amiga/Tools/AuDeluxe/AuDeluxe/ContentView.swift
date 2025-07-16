@@ -1,22 +1,9 @@
-//
-//  ContentView.swift
-//  AuDeluxe
-//
-//  Created by Mario Esposito on 7/14/25.
-//
-
-//
-//  ContentView.swift
-//  AuDeluxe
-//
-//  Created by Mario Esposito on 7/14/25.
-//
-
 import SwiftUI
 
 struct ContentView: View {
+    // The new engine is much simpler and always ready to go.
+    @EnvironmentObject private var engine: OpenMPTEngine
     @EnvironmentObject private var settings: SettingsStore
-    @EnvironmentObject private var engine: UADEEngine
     
     @State private var musicFiles: [URL] = []
 
@@ -32,10 +19,9 @@ struct ContentView: View {
                     .padding(.bottom, 5)
             }
             
-            // The UI is gated by selecting a music folder, but the engine's
-            // core functionality is now self-contained.
             if let musicURL = settings.musicFolderURL {
-                playlistView
+                // Pass the musicURL to the playlistView
+                playlistView(musicURL: musicURL)
                     .onAppear { scanMusicFolder(url: musicURL) }
                     .onChange(of: settings.musicFolderURL) { _, newValue in
                         scanMusicFolder(url: newValue)
@@ -45,13 +31,6 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 500, minHeight: 400)
-        .onAppear(perform: initializeEngineIfNeeded)
-        // Re-initialize the engine if any relevant setting changes.
-        .onChange(of: settings.filterType) { initializeEngineIfNeeded() }
-        .onChange(of: settings.panning) { initializeEngineIfNeeded() }
-        .onChange(of: settings.gain) { initializeEngineIfNeeded() }
-        .onChange(of: settings.headphonesEnabled) { initializeEngineIfNeeded() }
-        .onChange(of: settings.ntscEnabled) { initializeEngineIfNeeded() }
     }
 
     // MARK: - Subviews
@@ -75,16 +54,17 @@ struct ContentView: View {
         .padding()
     }
 
-    private var playlistView: some View {
+    // The playlistView now accepts the music folder URL as a parameter.
+    private func playlistView(musicURL: URL) -> some View {
         List(musicFiles, id: \.self) { fileURL in
             Button(action: {
-                engine.play(fileURL: fileURL)
+                // Pass the required musicFolderURL parameter to the play function.
+                engine.play(fileURL: fileURL, musicFolderURL: musicURL)
             }) {
                 Text(fileURL.lastPathComponent)
             }
             .buttonStyle(.plain)
         }
-        .disabled(!engine.isUadeInitialized)
     }
     
     private var setupPromptView: some View {
@@ -101,14 +81,8 @@ struct ContentView: View {
     }
 
     // MARK: - Logic
-    private func initializeEngineIfNeeded() {
-        // The engine can now initialize itself without the ROMs path,
-        // as it uses the bundled resources.
-        engine.initializeUade(settings: settings)
-    }
-    
     private func scanMusicFolder(url: URL?) {
-        guard let url = url, engine.isUadeInitialized else {
+        guard let url = url else {
             musicFiles = []
             return
         }
@@ -118,6 +92,7 @@ struct ContentView: View {
         
         do {
             let contents = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
+            // Use the new engine's isPlayable method for filtering.
             musicFiles = contents.filter { engine.isPlayable(fileURL: $0) }
                                  .sorted { $0.lastPathComponent < $1.lastPathComponent }
             print("Found \(musicFiles.count) playable files.")
