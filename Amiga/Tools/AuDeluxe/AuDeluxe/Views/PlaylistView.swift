@@ -14,6 +14,7 @@ struct PlaylistView: View {
     @Binding var selectedFileID: PlaylistItem.ID?
 
     var body: some View {
+        // FIX: Use the engine's playlistItems directly.
         List(engine.playlistItems, id: \.id, selection: $selectedFileID) { item in
             HStack {
                 VStack(alignment: .leading) {
@@ -32,12 +33,6 @@ struct PlaylistView: View {
                     .foregroundColor(.secondary)
             }
             .padding(.vertical, 4)
-            .contentShape(Rectangle())
-            .onTapGesture(count: 2) {
-                if let musicFolderURL = settings.musicFolderURL {
-                    engine.play(fileURL: item.fileURL, musicFolderURL: musicFolderURL)
-                }
-            }
         }
         .listStyle(.inset(alternatesRowBackgrounds: true))
     }
