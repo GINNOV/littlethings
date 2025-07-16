@@ -15,10 +15,11 @@ struct ContentView: View {
     @State private var selectedFileID: PlaylistItem.ID?
     @State private var isShowingDeleteAlert = false
     @State private var fileToDelete: PlaylistItem?
-    
-    // State to manage the rename dialog.
     @State private var isShowingRenameAlert = false
     @State private var fileToRename: PlaylistItem?
+    
+    // State to manage the About sheet presentation.
+    @State private var isShowingAboutSheet = false
 
     var body: some View {
         ZStack {
@@ -42,11 +43,17 @@ struct ContentView: View {
                     isShowingDeleteAlert: $isShowingDeleteAlert,
                     fileToDelete: $fileToDelete,
                     isShowingRenameAlert: $isShowingRenameAlert,
-                    fileToRename: $fileToRename
+                    fileToRename: $fileToRename,
+                    isShowingAboutSheet: $isShowingAboutSheet
                 )
             }
 
-            // This block displays the custom delete dialog as an overlay.
+            .sheet(isPresented: $isShowingAboutSheet) {
+                AboutView(closeAction: {
+                    isShowingAboutSheet = false
+                })
+            }
+
             if isShowingDeleteAlert, let fileToDelete = fileToDelete {
                 Color.black.opacity(0.4).edgesIgnoringSafeArea(.all)
                 DialogDeleteFile(
@@ -57,13 +64,11 @@ struct ContentView: View {
                 .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
             
-            // This block displays the custom rename dialog as an overlay.
             if isShowingRenameAlert, let fileToRename = fileToRename {
                 Color.black.opacity(0.4).edgesIgnoringSafeArea(.all)
                 DialogRenameFile(
                     file: fileToRename,
                     isPresented: $isShowingRenameAlert,
-                    // The onSave closure now passes all the new data to our updated handler function.
                     onSave: { newTitle, newArtist, newFilename in
                         updateFile(item: fileToRename, newTitle: newTitle, newArtist: newArtist, newFilename: newFilename)
                     }
@@ -103,7 +108,6 @@ struct ContentView: View {
         }
     }
     
-    // This function now correctly calls the engine's updateFile method with all the necessary data.
     private func updateFile(item: PlaylistItem, newTitle: String, newArtist: String, newFilename: String) {
         guard let musicFolderURL = settings.musicFolderURL else {
             print("Error updating file: Music folder URL is not available.")
@@ -118,7 +122,6 @@ struct ContentView: View {
         Task {
             let success = await engine.updateFile(from: item.fileURL, to: newURL, newTitle: newTitle, newArtist: newArtist, musicFolderURL: musicFolderURL)
             if success {
-                // After a successful update, rescan the folder to refresh the playlist.
                 await engine.scanMusicFolder(for: musicFolderURL)
             }
         }

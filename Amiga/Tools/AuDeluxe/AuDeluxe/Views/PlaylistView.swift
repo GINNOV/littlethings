@@ -14,8 +14,6 @@ struct PlaylistView: View {
     @Binding var selectedFileID: PlaylistItem.ID?
 
     var body: some View {
-        // FIX: Use the engine's playlistItems directly.
-        // I've added a header to the list for better organization.
         List(selection: $selectedFileID) {
             Section(header: HStack {
                 Text("Title")
@@ -36,7 +34,6 @@ struct PlaylistView: View {
                             }
                         }
                         Spacer()
-                        // I've added stars to visually represent the rating.
                         HStack {
                             ForEach(0..<item.rating, id: \.self) { _ in
                                 Image(systemName: "star.fill")

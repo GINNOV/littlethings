@@ -18,6 +18,14 @@ final class OpenMPTEngine: ObservableObject {
     @Published var currentPlaybackTime: TimeInterval = 0
     @Published var currentSongDuration: TimeInterval = 0
     @Published var isLooping = false
+    
+    // The current sort order is now a published property.
+    // When it changes, it will automatically re-sort the playlist.
+    @Published var sortOrder: SortOrder = .name {
+        didSet {
+            applySort()
+        }
+    }
 
     // MARK: - Audio Engine Properties
     private let audioEngine = AVAudioEngine()
@@ -47,7 +55,7 @@ final class OpenMPTEngine: ObservableObject {
     // MARK: - Initialization
     init() {
         setupAudioEngine()
-        print("OpenMPTEngine: AVAudioEngine initialized and ready.")
+        print("OpenMPTEngine: initialized and ready.")
     }
 
     private func setupAudioEngine() {
@@ -92,7 +100,8 @@ final class OpenMPTEngine: ObservableObject {
             print("OpenMPTEngine: Error scanning music folder: \(error.localizedDescription)")
         }
         
-        self.playlistItems = items.sorted { $0.title.lowercased() < $1.title.lowercased() }
+        self.playlistItems = items
+        applySort() // Apply the current sort order after scanning.
         print("OpenMPTEngine: Found \(self.playlistItems.count) playable files.")
     }
     
@@ -214,6 +223,17 @@ final class OpenMPTEngine: ObservableObject {
     }
 
     // MARK: - Private Helper Methods
+    private func applySort() {
+        switch sortOrder {
+        case .name:
+            playlistItems.sort { $0.title.lowercased() < $1.title.lowercased() }
+        case .duration:
+            playlistItems.sort { $0.duration < $1.duration }
+        case .rating:
+            playlistItems.sort { $0.rating > $1.rating } // Higher ratings first
+        }
+    }
+
     private func isPlayable(fileURL: URL) -> Bool {
         let fileExtension = fileURL.pathExtension.lowercased()
         return supportedExtensions.contains(fileExtension)
@@ -247,7 +267,6 @@ final class OpenMPTEngine: ObservableObject {
     
     // MARK: - Extended Attribute Helpers
     
-    // I have corrected this function to properly handle C-String conversion for both the path and the key.
     private func setAttribute(key: String, value: String, forFileAt fileURL: URL, in musicFolderURL: URL) {
         guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
         defer { musicFolderURL.stopAccessingSecurityScopedResource() }
@@ -266,7 +285,6 @@ final class OpenMPTEngine: ObservableObject {
         }
     }
 
-    // I have also corrected this function to handle C-String conversion.
     private func setAttribute(key: String, value: Int, forFileAt fileURL: URL, in musicFolderURL: URL) {
         guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
         defer { musicFolderURL.stopAccessingSecurityScopedResource() }
