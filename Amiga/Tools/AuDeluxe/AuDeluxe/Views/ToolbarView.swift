@@ -14,10 +14,9 @@ struct ToolbarItems: ToolbarContent {
     @Binding var selectedFileID: PlaylistItem.ID?
     @Binding var isShowingDeleteAlert: Bool
     @Binding var fileToDelete: PlaylistItem?
-    
-    // I've added bindings to control the new rename dialog.
     @Binding var isShowingRenameAlert: Bool
     @Binding var fileToRename: PlaylistItem?
+    @Binding var isShowingAboutSheet: Bool
 
     var body: some ToolbarContent {
         ToolbarItemGroup {
@@ -26,6 +25,17 @@ struct ToolbarItems: ToolbarContent {
             }
             
             Spacer()
+
+            Menu {
+                Picker("Sort By", selection: $engine.sortOrder) {
+                    ForEach(SortOrder.allCases) { order in
+                        Text(order.rawValue).tag(order)
+                    }
+                }
+                .pickerStyle(.inline)
+            } label: {
+                Label("Sort", systemImage: "arrow.up.arrow.down.circle")
+            }
 
             Menu {
                 Button("⭐️⭐️⭐️⭐️⭐️ - Five Stars") { rateSelectedItem(5) }
@@ -40,7 +50,6 @@ struct ToolbarItems: ToolbarContent {
             }
             .disabled(selectedFileID == nil)
 
-            // This button now triggers the rename dialog.
             Button(action: {
                 if let selectedItem = engine.playlistItems.first(where: { $0.id == selectedFileID }) {
                     fileToRename = selectedItem
@@ -60,6 +69,12 @@ struct ToolbarItems: ToolbarContent {
                 Label("Delete", systemImage: "trash")
             }
             .disabled(selectedFileID == nil)
+            
+            Button(action: {
+                isShowingAboutSheet = true
+            }) {
+                Label("About", systemImage: "info.circle")
+            }
         }
     }
     
