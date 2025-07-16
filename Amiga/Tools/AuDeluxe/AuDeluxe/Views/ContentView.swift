@@ -18,8 +18,9 @@ struct ContentView: View {
     @State private var isShowingRenameAlert = false
     @State private var fileToRename: PlaylistItem?
     
-    // State to manage the About sheet presentation.
+    // State to manage the About and Inspector sheets.
     @State private var isShowingAboutSheet = false
+    @State private var fileToInspect: PlaylistItem? // This now controls the inspector sheet
 
     var body: some View {
         ZStack {
@@ -44,14 +45,19 @@ struct ContentView: View {
                     fileToDelete: $fileToDelete,
                     isShowingRenameAlert: $isShowingRenameAlert,
                     fileToRename: $fileToRename,
-                    isShowingAboutSheet: $isShowingAboutSheet
+                    isShowingAboutSheet: $isShowingAboutSheet,
+                    fileToInspect: $fileToInspect
                 )
             }
-
             .sheet(isPresented: $isShowingAboutSheet) {
                 AboutView(closeAction: {
                     isShowingAboutSheet = false
                 })
+            }
+            // The sheet is now presented based on the 'fileToInspect' item.
+            // This is the idiomatic way to handle sheets that depend on data.
+            .sheet(item: $fileToInspect) { item in
+                InspectorView(item: item)
             }
 
             if isShowingDeleteAlert, let fileToDelete = fileToDelete {
