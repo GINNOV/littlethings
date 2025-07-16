@@ -33,6 +33,8 @@ final class OpenMPTEngine: ObservableObject {
         "mod", "s3m", "xm", "it", "med", "okt", "mtm", "669", "dsm", "far", "ptm", "ult",
         "amf", "ams", "dbm", "dmf", "imf", "j2b", "mdl", "mo3", "psm", "stm", "stx", "umx"
     ]
+    
+    private let ratingKey = "com.audeluxe.rating"
 
     // MARK: - Buffer Management
     private var pendingBufferCount = 0
@@ -79,7 +81,8 @@ final class OpenMPTEngine: ObservableObject {
         do {
             let contents = try FileManager.default.contentsOfDirectory(at: musicFolderURL, includingPropertiesForKeys: nil)
             for fileURL in contents {
-                if isPlayable(fileURL: fileURL), let metadata = getMetadata(for: fileURL) {
+                if isPlayable(fileURL: fileURL), var metadata = getMetadata(for: fileURL) {
+                    metadata.rating = getRating(for: fileURL)
                     items.append(metadata)
                 }
             }
@@ -107,7 +110,6 @@ final class OpenMPTEngine: ObservableObject {
             stop(); return
         }
         
-        // Set render parameters for compatibility and quality.
         openmpt_module_set_render_param(newModule, OPENMPT_MODULE_RENDER_STEREOSEPARATION_PERCENT, 100)
         openmpt_module_set_render_param(newModule, OPENMPT_MODULE_RENDER_INTERPOLATIONFILTER_LENGTH, 8)
         
@@ -181,6 +183,44 @@ final class OpenMPTEngine: ObservableObject {
         guard let mod = module else { return }
         openmpt_module_set_position_seconds(mod, time)
     }
+    
+    func rateFile(fileURL: URL, rating: Int, musicFolderURL: URL) {
+        guard musicFolderURL.startAccessingSecurityScopedResource() else {
+            print("Failed to gain security access to rate file.")
+            return
+        }
+        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
+
+        var ratingValue = rating
+        let result = withUnsafeBytes(of: &ratingValue) { (pointer) -> Int32 in
+            fileURL.path.withCString { cPath in
+                setxattr(cPath, ratingKey, pointer.baseAddress, pointer.count, 0, 0)
+            }
+        }
+
+        if result == -1 {
+            print("Failed to set rating for \(fileURL.lastPathComponent): \(String(cString: strerror(errno)))")
+        }
+    }
+    
+    // I've added this new method to handle the file renaming operation.
+    // It returns true on success and false on failure.
+    func renameFile(from oldURL: URL, to newURL: URL, musicFolderURL: URL) async -> Bool {
+        guard musicFolderURL.startAccessingSecurityScopedResource() else {
+            print("Failed to gain security access to rename file.")
+            return false
+        }
+        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
+
+        do {
+            try FileManager.default.moveItem(at: oldURL, to: newURL)
+            print("Successfully renamed file to \(newURL.lastPathComponent)")
+            return true
+        } catch {
+            print("Error renaming file: \(error)")
+            return false
+        }
+    }
 
     // MARK: - Private Helper Methods
     private func isPlayable(fileURL: URL) -> Bool {
@@ -203,7 +243,25 @@ final class OpenMPTEngine: ObservableObject {
         return PlaylistItem(fileURL: fileURL,
                             title: title.isEmpty ? fileURL.deletingPathExtension().lastPathComponent : title,
                             artist: artist,
-                            duration: duration)
+                            duration: duration,
+                            rating: getRating(for: fileURL))
+    }
+    
+    private func getRating(for fileURL: URL) -> Int {
+        let path = fileURL.path
+        let size = path.withCString { cPath in
+            getxattr(cPath, ratingKey, nil, 0, 0, 0)
+        }
+        guard size > 0 else { return 0 }
+        var data = Data(count: size)
+        let readBytes = data.withUnsafeMutableBytes { (pointer) -> Int in
+            path.withCString { cPath in
+                getxattr(cPath, ratingKey, pointer.baseAddress, size, 0, 0)
+            }
+        }
+        guard readBytes > 0 else { return 0 }
+        let rating = data.withUnsafeBytes { $0.load(as: Int.self) }
+        return rating
     }
     
     private func updateSongDetails() {

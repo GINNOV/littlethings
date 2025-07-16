@@ -14,6 +14,10 @@ struct ToolbarItems: ToolbarContent {
     @Binding var selectedFileID: PlaylistItem.ID?
     @Binding var isShowingDeleteAlert: Bool
     @Binding var fileToDelete: PlaylistItem?
+    
+    // I've added bindings to control the new rename dialog.
+    @Binding var isShowingRenameAlert: Bool
+    @Binding var fileToRename: PlaylistItem?
 
     var body: some ToolbarContent {
         ToolbarItemGroup {
@@ -24,11 +28,11 @@ struct ToolbarItems: ToolbarContent {
             Spacer()
 
             Menu {
-                Button("⭐️⭐️⭐️⭐️⭐️") { rateSelectedItem(5) }
-                Button("⭐️⭐️⭐️⭐️") { rateSelectedItem(4) }
-                Button("⭐️⭐️⭐️") { rateSelectedItem(3) }
-                Button("⭐️⭐️") { rateSelectedItem(2) }
-                Button("⭐️") { rateSelectedItem(1) }
+                Button("⭐️⭐️⭐️⭐️⭐️ - Five Stars") { rateSelectedItem(5) }
+                Button("⭐️⭐️⭐️⭐️ - Four Stars") { rateSelectedItem(4) }
+                Button("⭐️⭐️⭐️ - Three Stars") { rateSelectedItem(3) }
+                Button("⭐️⭐️ - Two Stars") { rateSelectedItem(2) }
+                Button("⭐️ - One Star") { rateSelectedItem(1) }
                 Divider()
                 Button("Clear Rating") { rateSelectedItem(0) }
             } label: {
@@ -36,7 +40,13 @@ struct ToolbarItems: ToolbarContent {
             }
             .disabled(selectedFileID == nil)
 
-            Button(action: { /* Rename logic to be implemented */ }) {
+            // This button now triggers the rename dialog.
+            Button(action: {
+                if let selectedItem = engine.playlistItems.first(where: { $0.id == selectedFileID }) {
+                    fileToRename = selectedItem
+                    isShowingRenameAlert = true
+                }
+            }) {
                 Label("Rename", systemImage: "pencil")
             }
             .disabled(selectedFileID == nil)
@@ -65,8 +75,13 @@ struct ToolbarItems: ToolbarContent {
     
     private func rateSelectedItem(_ rating: Int) {
         guard let selectedID = selectedFileID,
-              let item = engine.playlistItems.first(where: { $0.id == selectedID }) else { return }
-        print("Rating song '\(item.title)' with \(rating) stars.")
-        // Rating persistence logic would go here.
+              let item = engine.playlistItems.first(where: { $0.id == selectedID }),
+              let musicFolderURL = settings.musicFolderURL else { return }
+
+        engine.rateFile(fileURL: item.fileURL, rating: rating, musicFolderURL: musicFolderURL)
+
+        if let index = engine.playlistItems.firstIndex(where: { $0.id == selectedID }) {
+            engine.playlistItems[index].rating = rating
+        }
     }
 }
