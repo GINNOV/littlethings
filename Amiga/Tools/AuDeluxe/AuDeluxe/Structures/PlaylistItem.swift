@@ -15,4 +15,5 @@ struct PlaylistItem: Identifiable, Hashable {
     let title: String
     let artist: String
     let duration: TimeInterval
+    var rating: Int = 0
 }

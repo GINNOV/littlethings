@@ -15,35 +15,62 @@ struct ContentView: View {
     @State private var selectedFileID: PlaylistItem.ID?
     @State private var isShowingDeleteAlert = false
     @State private var fileToDelete: PlaylistItem?
+    
+    // I've added state to manage the rename dialog.
+    @State private var isShowingRenameAlert = false
+    @State private var fileToRename: PlaylistItem?
 
     var body: some View {
-        VStack(spacing: 0) {
-            HeaderView()
-            
-            if settings.musicFolderURL != nil {
-                PlaylistView(selectedFileID: $selectedFileID)
-            } else {
-                SetupPromptView()
+        ZStack {
+            VStack(spacing: 0) {
+                HeaderView()
+                
+                if settings.musicFolderURL != nil {
+                    PlaylistView(selectedFileID: $selectedFileID)
+                } else {
+                    SetupPromptView()
+                }
+                
+                PlaybackControlsView(selectedFileID: $selectedFileID)
+            }
+            .frame(minWidth: 550, minHeight: 450)
+            .onAppear(perform: scanMusicFolder)
+            .onChange(of: settings.musicFolderURL) { scanMusicFolder() }
+            .toolbar {
+                ToolbarItems(
+                    selectedFileID: $selectedFileID,
+                    isShowingDeleteAlert: $isShowingDeleteAlert,
+                    fileToDelete: $fileToDelete,
+                    isShowingRenameAlert: $isShowingRenameAlert,
+                    fileToRename: $fileToRename
+                )
+            }
+
+            // This block displays the custom delete dialog as an overlay.
+            if isShowingDeleteAlert, let fileToDelete = fileToDelete {
+                Color.black.opacity(0.4).edgesIgnoringSafeArea(.all)
+                DialogDeleteFile(
+                    file: fileToDelete,
+                    isPresented: $isShowingDeleteAlert,
+                    onDelete: { deleteFile(item: fileToDelete) }
+                )
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
             
-            PlaybackControlsView(selectedFileID: $selectedFileID)
+            // This block displays the new custom rename dialog as an overlay.
+            if isShowingRenameAlert, let fileToRename = fileToRename {
+                Color.black.opacity(0.4).edgesIgnoringSafeArea(.all)
+                DialogRenameFile(
+                    file: fileToRename,
+                    isPresented: $isShowingRenameAlert,
+                    onSave: { newFilename in
+                        renameFile(item: fileToRename, newFilename: newFilename)
+                    }
+                )
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
+            }
         }
-        .frame(minWidth: 550, minHeight: 450)
-        .onAppear(perform: scanMusicFolder)
-        .onChange(of: settings.musicFolderURL) { scanMusicFolder() }
-        .toolbar {
-            ToolbarItems(
-                selectedFileID: $selectedFileID,
-                isShowingDeleteAlert: $isShowingDeleteAlert,
-                fileToDelete: $fileToDelete
-            )
-        }
-        .alert("Delete File", isPresented: $isShowingDeleteAlert, presenting: fileToDelete) { file in
-            Button("Delete", role: .destructive) { deleteFile(item: file) }
-            Button("Cancel", role: .cancel) {}
-        } message: { file in
-            Text("Are you sure you want to delete '\(file.title)'? This action cannot be undone.")
-        }
+        .animation(.spring(), value: isShowingDeleteAlert || isShowingRenameAlert)
     }
 
     // MARK: - Logic
@@ -56,11 +83,43 @@ struct ContentView: View {
     }
     
     private func deleteFile(item: PlaylistItem) {
+        guard let musicFolderURL = settings.musicFolderURL else {
+            print("Error deleting file: Music folder URL is not available.")
+            return
+        }
+        
+        guard musicFolderURL.startAccessingSecurityScopedResource() else {
+            print("Error deleting file: Could not gain access to the music folder for deletion.")
+            return
+        }
+        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
+
         do {
             try FileManager.default.trashItem(at: item.fileURL, resultingItemURL: nil)
             scanMusicFolder() // Refresh the list
         } catch {
             print("Error deleting file: \(error)")
+        }
+    }
+    
+    // I've added this new function to handle the logic for renaming a file.
+    private func renameFile(item: PlaylistItem, newFilename: String) {
+        guard let musicFolderURL = settings.musicFolderURL else {
+            print("Error renaming file: Music folder URL is not available.")
+            return
+        }
+
+        let fileExtension = item.fileURL.pathExtension
+        let newURL = item.fileURL.deletingLastPathComponent()
+                                 .appendingPathComponent(newFilename)
+                                 .appendingPathExtension(fileExtension)
+
+        Task {
+            let success = await engine.renameFile(from: item.fileURL, to: newURL, musicFolderURL: musicFolderURL)
+            if success {
+                // After a successful rename, rescan the folder to update the playlist.
+                await engine.scanMusicFolder(for: musicFolderURL)
+            }
         }
     }
 }

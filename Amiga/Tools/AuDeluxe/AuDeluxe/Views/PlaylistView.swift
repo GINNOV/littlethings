@@ -15,24 +15,42 @@ struct PlaylistView: View {
 
     var body: some View {
         // FIX: Use the engine's playlistItems directly.
-        List(engine.playlistItems, id: \.id, selection: $selectedFileID) { item in
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(item.title)
-                        .fontWeight(item.id == selectedFileID ? .bold : .regular)
-                        .foregroundColor(item.fileURL.lastPathComponent == engine.currentSongInfo ? .accentColor : .primary)
-                    if !item.artist.isEmpty {
-                        Text(item.artist)
-                            .font(.caption)
+        // I've added a header to the list for better organization.
+        List(selection: $selectedFileID) {
+            Section(header: HStack {
+                Text("Title")
+                Spacer()
+                Text("Rating")
+                Text("Duration")
+            }.font(.caption.weight(.semibold))) {
+                ForEach(engine.playlistItems, id: \.id) { item in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(item.title)
+                                .fontWeight(item.id == selectedFileID ? .bold : .regular)
+                                .foregroundColor(item.fileURL.lastPathComponent == engine.currentSongInfo ? .accentColor : .primary)
+                            if !item.artist.isEmpty {
+                                Text(item.artist)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        Spacer()
+                        // I've added stars to visually represent the rating.
+                        HStack {
+                            ForEach(0..<item.rating, id: \.self) { _ in
+                                Image(systemName: "star.fill")
+                            }
+                        }
+                        .foregroundColor(.yellow)
+                        Text(formatTime(item.duration))
+                            .font(.caption.monospacedDigit())
                             .foregroundColor(.secondary)
                     }
+                    .padding(.vertical, 4)
+                    .tag(item.id)
                 }
-                Spacer()
-                Text(formatTime(item.duration))
-                    .font(.caption.monospacedDigit())
-                    .foregroundColor(.secondary)
             }
-            .padding(.vertical, 4)
         }
         .listStyle(.inset(alternatesRowBackgrounds: true))
     }
