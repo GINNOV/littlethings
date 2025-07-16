@@ -17,6 +17,7 @@ struct ToolbarItems: ToolbarContent {
     @Binding var isShowingRenameAlert: Bool
     @Binding var fileToRename: PlaylistItem?
     @Binding var isShowingAboutSheet: Bool
+    @Binding var isShowingInspectorSheet: Bool
     @Binding var fileToInspect: PlaylistItem?
 
     var body: some ToolbarContent {
@@ -54,6 +55,7 @@ struct ToolbarItems: ToolbarContent {
             Button(action: {
                 if let selectedItem = engine.playlistItems.first(where: { $0.id == selectedFileID }) {
                     fileToInspect = selectedItem
+                    isShowingInspectorSheet = true
                 }
             }) {
                 Label("Inspect", systemImage: "info.square")

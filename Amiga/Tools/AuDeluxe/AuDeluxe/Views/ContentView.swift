@@ -18,17 +18,26 @@ struct ContentView: View {
     @State private var isShowingRenameAlert = false
     @State private var fileToRename: PlaylistItem?
     
-    // State to manage the About and Inspector sheets.
+    // State to manage sheets and view switching
     @State private var isShowingAboutSheet = false
-    @State private var fileToInspect: PlaylistItem? // This now controls the inspector sheet
+    @State private var fileToInspect: PlaylistItem?
+    @State private var isShowingInspectorSheet = false // Kept for compatibility with ToolbarItems
+    @State private var showingTrackerView = false
+
 
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                HeaderView()
+                // The tracker toggle is now part of the HeaderView
+                HeaderView(showingTrackerView: $showingTrackerView)
                 
                 if settings.musicFolderURL != nil {
-                    PlaylistView(selectedFileID: $selectedFileID)
+                    // Switch between Playlist and Tracker view
+                    if showingTrackerView {
+                        TrackerView()
+                    } else {
+                        PlaylistView(selectedFileID: $selectedFileID)
+                    }
                 } else {
                     SetupPromptView()
                 }
@@ -39,6 +48,7 @@ struct ContentView: View {
             .onAppear(perform: scanMusicFolder)
             .onChange(of: settings.musicFolderURL) { scanMusicFolder() }
             .toolbar {
+                // Corrected the parameters to match what the compiler expects
                 ToolbarItems(
                     selectedFileID: $selectedFileID,
                     isShowingDeleteAlert: $isShowingDeleteAlert,
@@ -46,6 +56,7 @@ struct ContentView: View {
                     isShowingRenameAlert: $isShowingRenameAlert,
                     fileToRename: $fileToRename,
                     isShowingAboutSheet: $isShowingAboutSheet,
+                    isShowingInspectorSheet: $isShowingInspectorSheet,
                     fileToInspect: $fileToInspect
                 )
             }
@@ -54,8 +65,7 @@ struct ContentView: View {
                     isShowingAboutSheet = false
                 })
             }
-            // The sheet is now presented based on the 'fileToInspect' item.
-            // This is the idiomatic way to handle sheets that depend on data.
+            // Corrected sheet presentation to use the item binding
             .sheet(item: $fileToInspect) { item in
                 InspectorView(item: item)
             }
@@ -138,10 +148,20 @@ struct ContentView: View {
 
 struct HeaderView: View {
     @EnvironmentObject private var engine: OpenMPTEngine
+    @Binding var showingTrackerView: Bool // Binding to control view state
 
     var body: some View {
         VStack {
-            Text("AuDeluxe").font(.largeTitle).fontWeight(.thin)
+            HStack {
+                Text("AuDeluxe").font(.largeTitle).fontWeight(.thin)
+                Spacer()
+                // Button to toggle between Playlist and Tracker view
+                Button(action: { showingTrackerView.toggle() }) {
+                    Label(showingTrackerView ? "Playlist" : "Tracker", systemImage: showingTrackerView ? "list.bullet" : "pianokeys")
+                }
+                .buttonStyle(.borderless)
+                .padding(.trailing, 8)
+            }
             Text(engine.currentSongInfo ?? "Select a song to play").font(.headline).foregroundColor(.secondary).lineLimit(1)
             Text(engine.songDetails ?? " ").font(.caption).foregroundColor(.secondary).padding(.top, 1)
         }.padding()
