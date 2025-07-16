@@ -26,6 +26,12 @@ final class OpenMPTEngine: ObservableObject {
             applySort()
         }
     }
+    
+    // MARK: - Tracker Data Properties
+    @Published var patternData: [PatternRow] = []
+    @Published var currentRow: Int32 = -1
+    @Published var currentPattern: Int32 = -1
+    @Published var numChannels: Int32 = 0
 
     // MARK: - Audio Engine Properties
     private let audioEngine = AVAudioEngine()
@@ -142,6 +148,10 @@ final class OpenMPTEngine: ObservableObject {
             if !container.isEmpty { details.append("Container: \(container)") }
             self.songDetails = details.joined(separator: " | ")
         }
+        
+        // Initialize tracker data
+        self.numChannels = openmpt_module_get_num_channels(newModule)
+        updatePatternData()
 
         do {
             try audioEngine.start()
@@ -190,6 +200,12 @@ final class OpenMPTEngine: ObservableObject {
         reachedEndOfFile = false
         currentPlaybackTime = 0
         currentSongDuration = 0
+        
+        // Clear tracker data
+        patternData = []
+        currentRow = -1
+        currentPattern = -1
+        numChannels = 0
 
         if let url = currentlyAccessedURL {
             url.stopAccessingSecurityScopedResource()
@@ -367,6 +383,42 @@ final class OpenMPTEngine: ObservableObject {
         guard let data = getAttribute(key: key, forFileAt: fileURL), data.count == MemoryLayout<Int>.size else { return 0 }
         return data.withUnsafeBytes { $0.load(as: Int.self) }
     }
+    
+    // MARK: - Tracker Data Methods
+    
+    private func updatePatternData() {
+        guard let mod = module else { return }
+        
+        let pattern = openmpt_module_get_current_pattern(mod)
+        
+        // Only regenerate the pattern data if the pattern has changed.
+        guard pattern != self.currentPattern else { return }
+        self.currentPattern = pattern
+        
+        let numRows = openmpt_module_get_pattern_num_rows(mod, pattern)
+        var newPatternData: [PatternRow] = []
+        
+        for row in 0..<numRows {
+            var rowCells: [PatternCell] = []
+            rowCells.append(PatternCell(text: String(format: "%02X", row), type: .rowNumber))
+            
+            for channel in 0..<self.numChannels {
+                let note = String(cString: openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_NOTE))
+                let inst = String(cString: openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_INSTRUMENT))
+                let vol = String(cString: openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_VOLUMEEFFECT))
+                let eff = String(cString: openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_EFFECT))
+                let effParam = String(cString: openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_PARAMETER))
+                
+                rowCells.append(PatternCell(text: note, type: .note))
+                rowCells.append(PatternCell(text: inst, type: .instrument))
+                rowCells.append(PatternCell(text: vol, type: .volume))
+                rowCells.append(PatternCell(text: eff, type: .effect))
+                rowCells.append(PatternCell(text: effParam, type: .effectParam))
+            }
+            newPatternData.append(PatternRow(id: Int(row), cells: rowCells))
+        }
+        self.patternData = newPatternData
+    }
 
     private func scheduleNextBuffer() {
         guard !reachedEndOfFile, pendingBufferCount < targetPendingBuffers else { return }
@@ -430,10 +482,18 @@ final class OpenMPTEngine: ObservableObject {
         timeUpdateTask?.cancel()
         timeUpdateTask = Task {
             while !Task.isCancelled {
-                if let mod = self.module {
-                    self.currentPlaybackTime = openmpt_module_get_position_seconds(mod)
+                guard let mod = self.module else {
+                    try? await Task.sleep(for: .milliseconds(100))
+                    continue
                 }
-                try? await Task.sleep(for: .milliseconds(100))
+                
+                self.currentPlaybackTime = openmpt_module_get_position_seconds(mod)
+                self.currentRow = openmpt_module_get_current_row(mod)
+                
+                // This will trigger a pattern data refresh if the pattern has changed
+                self.updatePatternData()
+                
+                try? await Task.sleep(for: .milliseconds(20)) // Update more frequently for smooth tracker display
             }
         }
     }
