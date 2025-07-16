@@ -16,7 +16,7 @@ struct ContentView: View {
     @State private var isShowingDeleteAlert = false
     @State private var fileToDelete: PlaylistItem?
     
-    // I've added state to manage the rename dialog.
+    // State to manage the rename dialog.
     @State private var isShowingRenameAlert = false
     @State private var fileToRename: PlaylistItem?
 
@@ -57,14 +57,15 @@ struct ContentView: View {
                 .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
             
-            // This block displays the new custom rename dialog as an overlay.
+            // This block displays the custom rename dialog as an overlay.
             if isShowingRenameAlert, let fileToRename = fileToRename {
                 Color.black.opacity(0.4).edgesIgnoringSafeArea(.all)
                 DialogRenameFile(
                     file: fileToRename,
                     isPresented: $isShowingRenameAlert,
-                    onSave: { newFilename in
-                        renameFile(item: fileToRename, newFilename: newFilename)
+                    // The onSave closure now passes all the new data to our updated handler function.
+                    onSave: { newTitle, newArtist, newFilename in
+                        updateFile(item: fileToRename, newTitle: newTitle, newArtist: newArtist, newFilename: newFilename)
                     }
                 )
                 .transition(.opacity.combined(with: .scale(scale: 0.9)))
@@ -102,10 +103,10 @@ struct ContentView: View {
         }
     }
     
-    // I've added this new function to handle the logic for renaming a file.
-    private func renameFile(item: PlaylistItem, newFilename: String) {
+    // This function now correctly calls the engine's updateFile method with all the necessary data.
+    private func updateFile(item: PlaylistItem, newTitle: String, newArtist: String, newFilename: String) {
         guard let musicFolderURL = settings.musicFolderURL else {
-            print("Error renaming file: Music folder URL is not available.")
+            print("Error updating file: Music folder URL is not available.")
             return
         }
 
@@ -115,9 +116,9 @@ struct ContentView: View {
                                  .appendingPathExtension(fileExtension)
 
         Task {
-            let success = await engine.renameFile(from: item.fileURL, to: newURL, musicFolderURL: musicFolderURL)
+            let success = await engine.updateFile(from: item.fileURL, to: newURL, newTitle: newTitle, newArtist: newArtist, musicFolderURL: musicFolderURL)
             if success {
-                // After a successful rename, rescan the folder to update the playlist.
+                // After a successful update, rescan the folder to refresh the playlist.
                 await engine.scanMusicFolder(for: musicFolderURL)
             }
         }

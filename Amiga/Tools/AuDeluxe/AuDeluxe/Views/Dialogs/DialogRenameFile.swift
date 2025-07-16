@@ -15,38 +15,48 @@ struct DialogRenameFile: View {
     @Binding var isPresented: Bool
     
     // The action to perform when the user confirms the new name.
-    let onSave: (String) -> Void
+    // It now passes back the new title, artist, and filename.
+    let onSave: (_ newTitle: String, _ newArtist: String, _ newFilename: String) -> Void
 
-    // State to hold the new filename entered by the user.
+    // State to hold the new values entered by the user.
+    @State private var newTitle: String = ""
+    @State private var newArtist: String = ""
     @State private var newFilename: String = ""
 
     var body: some View {
         VStack(spacing: 15) {
-            Image(systemName: "pencil.circle.fill")
+            // As requested, using your "rename_files" image from the asset catalog.
+            Image("rename_files")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 56, height: 56)
-                .foregroundColor(.accentColor)
                 .padding(.top)
-                .symbolRenderingMode(.hierarchical)
 
-            Text("Rename File")
+            Text("Edit Information")
                 .font(.title3)
                 .fontWeight(.bold)
 
-            Text("Enter a new name for the file '\(file.fileURL.lastPathComponent)'. The file extension will be preserved.")
-                .font(.callout)
-                .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
-                .padding(.horizontal)
+            VStack(alignment: .leading, spacing: 10) {
+                Text("METADATA (READ-ONLY FOR NOW)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                TextField("Title", text: $newTitle)
+                    .textFieldStyle(.roundedBorder)
+                
+                TextField("Artist", text: $newArtist)
+                    .textFieldStyle(.roundedBorder)
 
-            TextField("New Filename", text: $newFilename)
-                .textFieldStyle(.roundedBorder)
-                .onAppear {
-                    // Initialize the text field with the current name, without the extension.
-                    newFilename = file.fileURL.deletingPathExtension().lastPathComponent
-                }
+                Text("FILENAME")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.top)
 
+                TextField("Filename", text: $newFilename)
+                    .textFieldStyle(.roundedBorder)
+            }
+            .padding(.horizontal)
+            
             HStack(spacing: 12) {
                 Button("Cancel") {
                     isPresented = false
@@ -55,7 +65,7 @@ struct DialogRenameFile: View {
                 .frame(maxWidth: .infinity)
 
                 Button("Save") {
-                    onSave(newFilename)
+                    onSave(newTitle, newArtist, newFilename)
                     isPresented = false
                 }
                 .buttonStyle(.borderedProminent)
@@ -64,8 +74,14 @@ struct DialogRenameFile: View {
             }
             .padding([.horizontal, .bottom])
         }
+        .onAppear {
+            // Initialize the text fields with the current item's data.
+            newTitle = file.title
+            newArtist = file.artist
+            newFilename = file.fileURL.deletingPathExtension().lastPathComponent
+        }
         .padding()
-        .frame(width: 400)
+        .frame(width: 420)
         .background(.regularMaterial)
         .cornerRadius(20)
         .shadow(color: .black.opacity(0.2), radius: 15, x: 0, y: 5)

@@ -34,7 +34,10 @@ final class OpenMPTEngine: ObservableObject {
         "amf", "ams", "dbm", "dmf", "imf", "j2b", "mdl", "mo3", "psm", "stm", "stx", "umx"
     ]
     
+    // Keys for our custom metadata attributes.
     private let ratingKey = "com.audeluxe.rating"
+    private let titleKey = "com.audeluxe.title"
+    private let artistKey = "com.audeluxe.artist"
 
     // MARK: - Buffer Management
     private var pendingBufferCount = 0
@@ -81,8 +84,7 @@ final class OpenMPTEngine: ObservableObject {
         do {
             let contents = try FileManager.default.contentsOfDirectory(at: musicFolderURL, includingPropertiesForKeys: nil)
             for fileURL in contents {
-                if isPlayable(fileURL: fileURL), var metadata = getMetadata(for: fileURL) {
-                    metadata.rating = getRating(for: fileURL)
+                if isPlayable(fileURL: fileURL), let metadata = getMetadata(for: fileURL) {
                     items.append(metadata)
                 }
             }
@@ -185,41 +187,30 @@ final class OpenMPTEngine: ObservableObject {
     }
     
     func rateFile(fileURL: URL, rating: Int, musicFolderURL: URL) {
-        guard musicFolderURL.startAccessingSecurityScopedResource() else {
-            print("Failed to gain security access to rate file.")
-            return
-        }
-        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
-
-        var ratingValue = rating
-        let result = withUnsafeBytes(of: &ratingValue) { (pointer) -> Int32 in
-            fileURL.path.withCString { cPath in
-                setxattr(cPath, ratingKey, pointer.baseAddress, pointer.count, 0, 0)
-            }
-        }
-
-        if result == -1 {
-            print("Failed to set rating for \(fileURL.lastPathComponent): \(String(cString: strerror(errno)))")
-        }
+        setAttribute(key: ratingKey, value: rating, forFileAt: fileURL, in: musicFolderURL)
     }
     
-    // I've added this new method to handle the file renaming operation.
-    // It returns true on success and false on failure.
-    func renameFile(from oldURL: URL, to newURL: URL, musicFolderURL: URL) async -> Bool {
-        guard musicFolderURL.startAccessingSecurityScopedResource() else {
-            print("Failed to gain security access to rename file.")
-            return false
-        }
-        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
+    func updateFile(from oldURL: URL, to newURL: URL, newTitle: String, newArtist: String, musicFolderURL: URL) async -> Bool {
+        setAttribute(key: titleKey, value: newTitle, forFileAt: oldURL, in: musicFolderURL)
+        setAttribute(key: artistKey, value: newArtist, forFileAt: oldURL, in: musicFolderURL)
 
-        do {
-            try FileManager.default.moveItem(at: oldURL, to: newURL)
-            print("Successfully renamed file to \(newURL.lastPathComponent)")
-            return true
-        } catch {
-            print("Error renaming file: \(error)")
-            return false
+        if oldURL.lastPathComponent != newURL.lastPathComponent {
+            guard musicFolderURL.startAccessingSecurityScopedResource() else {
+                print("Failed to gain security access to rename file.")
+                return false
+            }
+            defer { musicFolderURL.stopAccessingSecurityScopedResource() }
+
+            do {
+                try FileManager.default.moveItem(at: oldURL, to: newURL)
+                print("Successfully renamed file to \(newURL.lastPathComponent)")
+                return true
+            } catch {
+                print("Error renaming file: \(error)")
+                return false
+            }
         }
+        return true
     }
 
     // MARK: - Private Helper Methods
@@ -236,32 +227,91 @@ final class OpenMPTEngine: ObservableObject {
         guard let mod = modulePtr else { return nil }
         defer { openmpt_module_destroy(mod) }
         
-        let title = String(cString: openmpt_module_get_metadata(mod, "title"))
-        let artist = String(cString: openmpt_module_get_metadata(mod, "artist"))
+        let internalTitle = String(cString: openmpt_module_get_metadata(mod, "title"))
+        let internalArtist = String(cString: openmpt_module_get_metadata(mod, "artist"))
         let duration = openmpt_module_get_duration_seconds(mod)
 
+        let customTitle = getStringAttribute(key: titleKey, forFileAt: fileURL)
+        let customArtist = getStringAttribute(key: artistKey, forFileAt: fileURL)
+        let rating = getIntAttribute(key: ratingKey, forFileAt: fileURL)
+
+        let finalTitle = customTitle ?? (internalTitle.isEmpty ? fileURL.deletingPathExtension().lastPathComponent : internalTitle)
+        let finalArtist = customArtist ?? internalArtist
+
         return PlaylistItem(fileURL: fileURL,
-                            title: title.isEmpty ? fileURL.deletingPathExtension().lastPathComponent : title,
-                            artist: artist,
+                            title: finalTitle,
+                            artist: finalArtist,
                             duration: duration,
-                            rating: getRating(for: fileURL))
+                            rating: rating)
     }
     
-    private func getRating(for fileURL: URL) -> Int {
-        let path = fileURL.path
-        let size = path.withCString { cPath in
-            getxattr(cPath, ratingKey, nil, 0, 0, 0)
-        }
-        guard size > 0 else { return 0 }
-        var data = Data(count: size)
-        let readBytes = data.withUnsafeMutableBytes { (pointer) -> Int in
-            path.withCString { cPath in
-                getxattr(cPath, ratingKey, pointer.baseAddress, size, 0, 0)
+    // MARK: - Extended Attribute Helpers
+    
+    // I have corrected this function to properly handle C-String conversion for both the path and the key.
+    private func setAttribute(key: String, value: String, forFileAt fileURL: URL, in musicFolderURL: URL) {
+        guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
+        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
+        
+        guard let data = value.data(using: .utf8) else { return }
+        
+        let result = fileURL.path.withCString { cPath in
+            key.withCString { cKey in
+                data.withUnsafeBytes { valuePtr in
+                    setxattr(cPath, cKey, valuePtr.baseAddress, valuePtr.count, 0, 0)
+                }
             }
         }
-        guard readBytes > 0 else { return 0 }
-        let rating = data.withUnsafeBytes { $0.load(as: Int.self) }
-        return rating
+        if result == -1 {
+            print("Failed to set attribute '\(key)' for \(fileURL.lastPathComponent): \(String(cString: strerror(errno)))")
+        }
+    }
+
+    // I have also corrected this function to handle C-String conversion.
+    private func setAttribute(key: String, value: Int, forFileAt fileURL: URL, in musicFolderURL: URL) {
+        guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
+        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
+        
+        var value = value
+        let data = Data(bytes: &value, count: MemoryLayout<Int>.size)
+        
+        let result = fileURL.path.withCString { cPath in
+            key.withCString { cKey in
+                data.withUnsafeBytes { valuePtr in
+                    setxattr(cPath, cKey, valuePtr.baseAddress, valuePtr.count, 0, 0)
+                }
+            }
+        }
+        if result == -1 {
+            print("Failed to set attribute '\(key)' for \(fileURL.lastPathComponent): \(String(cString: strerror(errno)))")
+        }
+    }
+    
+    private func getAttribute(key: String, forFileAt fileURL: URL) -> Data? {
+        let result = fileURL.path.withCString { cPath -> Data? in
+            key.withCString { cKey -> Data? in
+                let size = getxattr(cPath, cKey, nil, 0, 0, 0)
+                guard size > 0 else { return nil }
+                
+                var data = Data(count: size)
+                let readBytes = data.withUnsafeMutableBytes { valuePtr -> Int in
+                    getxattr(cPath, cKey, valuePtr.baseAddress, size, 0, 0)
+                }
+                
+                guard readBytes > 0 else { return nil }
+                return data
+            }
+        }
+        return result
+    }
+    
+    private func getStringAttribute(key: String, forFileAt fileURL: URL) -> String? {
+        guard let data = getAttribute(key: key, forFileAt: fileURL) else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    private func getIntAttribute(key: String, forFileAt fileURL: URL) -> Int {
+        guard let data = getAttribute(key: key, forFileAt: fileURL), data.count == MemoryLayout<Int>.size else { return 0 }
+        return data.withUnsafeBytes { $0.load(as: Int.self) }
     }
     
     private func updateSongDetails() {
