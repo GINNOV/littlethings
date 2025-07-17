@@ -43,7 +43,7 @@ struct ToolbarItems: ToolbarContent {
             } label: {
                 Label("Sort", systemImage: "arrow.up.arrow.down.circle")
             }
-            .disabled(showingTrackerView) // Disable sorting in tracker view
+            .disabled(showingTrackerView || engine.isShuffling) // Disable sorting in tracker view or when shuffling
 
             Menu {
                 Button("⭐️⭐️⭐️⭐️⭐️ - Five Stars") { rateSelectedItem(5) }

@@ -166,6 +166,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     @Published var currentPlaybackTime: TimeInterval = 0
     @Published var currentSongDuration: TimeInterval = 0
     @Published var isLooping = false
+    @Published var isShuffling = false
     
     @Published var sortOrder: SortOrder = .name {
         didSet { Task { await applySort() } }
@@ -376,6 +377,28 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             await uiModuleActor.setRepeat(count: newLoopingState ? -1 : 0)
         }
     }
+
+    func toggleShuffle(selectionID: PlaylistItem.ID?) async {
+        let newShuffleState = !self.isShuffling
+        await MainActor.run { self.isShuffling = newShuffleState }
+
+        if newShuffleState {
+            // Shuffle is ON
+            await MainActor.run {
+                let selectedItem = playlistItems.first { $0.id == selectionID }
+                var shuffledItems = playlistItems.shuffled()
+
+                if let item = selectedItem, let index = shuffledItems.firstIndex(of: item) {
+                    shuffledItems.remove(at: index)
+                    shuffledItems.insert(item, at: 0)
+                }
+                self.playlistItems = shuffledItems
+            }
+        } else {
+            // Shuffle is OFF, restore sort order
+            await self.applySort()
+        }
+    }
     
     func seek(to time: TimeInterval) async {
         var effectiveTime = time
@@ -512,6 +535,9 @@ final class OpenMPTEngine: ObservableObject, Sendable {
 
     // MARK: - Other Private Helpers
     private func applySort() async {
+        // A sort action always disables shuffle
+        await MainActor.run { self.isShuffling = false }
+        
         var sortedItems = await MainActor.run { self.playlistItems }
         switch sortOrder {
         case .name: sortedItems.sort { $0.title.lowercased() < $1.title.lowercased() }
