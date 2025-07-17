@@ -21,18 +21,14 @@ struct ContentView: View {
     // State to manage sheets and view switching
     @State private var isShowingAboutSheet = false
     @State private var fileToInspect: PlaylistItem?
-    @State private var isShowingInspectorSheet = false // Kept for compatibility with ToolbarItems
     @State private var showingTrackerView = false
-
 
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                // The tracker toggle is now part of the HeaderView
-                HeaderView(showingTrackerView: $showingTrackerView)
+                HeaderView()
                 
                 if settings.musicFolderURL != nil {
-                    // Switch between Playlist and Tracker view
                     if showingTrackerView {
                         TrackerView()
                     } else {
@@ -46,9 +42,9 @@ struct ContentView: View {
             }
             .frame(minWidth: 550, minHeight: 450)
             .onAppear(perform: scanMusicFolder)
-            .onChange(of: settings.musicFolderURL) { scanMusicFolder() }
+            .onChange(of: settings.musicFolderURL) { _ in scanMusicFolder() }
             .toolbar {
-                // Corrected the parameters to match what the compiler expects
+                // This call now correctly matches the ToolbarItems definition
                 ToolbarItems(
                     selectedFileID: $selectedFileID,
                     isShowingDeleteAlert: $isShowingDeleteAlert,
@@ -56,8 +52,8 @@ struct ContentView: View {
                     isShowingRenameAlert: $isShowingRenameAlert,
                     fileToRename: $fileToRename,
                     isShowingAboutSheet: $isShowingAboutSheet,
-                    isShowingInspectorSheet: $isShowingInspectorSheet,
-                    fileToInspect: $fileToInspect
+                    fileToInspect: $fileToInspect,
+                    showingTrackerView: $showingTrackerView
                 )
             }
             .sheet(isPresented: $isShowingAboutSheet) {
@@ -65,7 +61,6 @@ struct ContentView: View {
                     isShowingAboutSheet = false
                 })
             }
-            // Corrected sheet presentation to use the item binding
             .sheet(item: $fileToInspect) { item in
                 InspectorView(item: item)
             }
@@ -86,7 +81,9 @@ struct ContentView: View {
                     file: fileToRename,
                     isPresented: $isShowingRenameAlert,
                     onSave: { newTitle, newArtist, newFilename in
-                        updateFile(item: fileToRename, newTitle: newTitle, newArtist: newArtist, newFilename: newFilename)
+                        Task {
+                            await updateFile(item: fileToRename, newTitle: newTitle, newArtist: newArtist, newFilename: newFilename)
+                        }
                     }
                 )
                 .transition(.opacity.combined(with: .scale(scale: 0.9)))
@@ -124,7 +121,7 @@ struct ContentView: View {
         }
     }
     
-    private func updateFile(item: PlaylistItem, newTitle: String, newArtist: String, newFilename: String) {
+    private func updateFile(item: PlaylistItem, newTitle: String, newArtist: String, newFilename: String) async {
         guard let musicFolderURL = settings.musicFolderURL else {
             print("Error updating file: Music folder URL is not available.")
             return
@@ -135,11 +132,9 @@ struct ContentView: View {
                                  .appendingPathComponent(newFilename)
                                  .appendingPathExtension(fileExtension)
 
-        Task {
-            let success = await engine.updateFile(from: item.fileURL, to: newURL, newTitle: newTitle, newArtist: newArtist, musicFolderURL: musicFolderURL)
-            if success {
-                await engine.scanMusicFolder(for: musicFolderURL)
-            }
+        let success = await engine.updateFile(from: item.fileURL, to: newURL, newTitle: newTitle, newArtist: newArtist, musicFolderURL: musicFolderURL)
+        if success {
+            await engine.scanMusicFolder(for: musicFolderURL)
         }
     }
 }
@@ -148,20 +143,10 @@ struct ContentView: View {
 
 struct HeaderView: View {
     @EnvironmentObject private var engine: OpenMPTEngine
-    @Binding var showingTrackerView: Bool // Binding to control view state
 
     var body: some View {
         VStack {
-            HStack {
-                Text("AuDeluxe").font(.largeTitle).fontWeight(.thin)
-                Spacer()
-                // Button to toggle between Playlist and Tracker view
-                Button(action: { showingTrackerView.toggle() }) {
-                    Label(showingTrackerView ? "Playlist" : "Tracker", systemImage: showingTrackerView ? "list.bullet" : "pianokeys")
-                }
-                .buttonStyle(.borderless)
-                .padding(.trailing, 8)
-            }
+            Text("AuDeluxe").font(.largeTitle).fontWeight(.thin)
             Text(engine.currentSongInfo ?? "Select a song to play").font(.headline).foregroundColor(.secondary).lineLimit(1)
             Text(engine.songDetails ?? " ").font(.caption).foregroundColor(.secondary).padding(.top, 1)
         }.padding()
