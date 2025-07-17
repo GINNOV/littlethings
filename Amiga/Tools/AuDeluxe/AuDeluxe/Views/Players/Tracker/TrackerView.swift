@@ -20,7 +20,8 @@ struct TrackerView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            if engine.isPlaying {
+            // The tracker is now shown as long as a song is loaded (duration > 0)
+            if engine.currentSongDuration > 0 {
                 TrackerHeaderView(offset: $contentOffset)
                 
                 ScrollViewReader { proxy in
@@ -84,29 +85,27 @@ struct TrackerHeaderView: View {
     @Binding var offset: CGPoint
     
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 0) {
-                Text("Row")
-                    .bold()
-                    .frame(width: 30, alignment: .leading)
-                    .padding(.horizontal, 2)
-                
-                ForEach(0..<Int(engine.numChannels), id: \.self) { channel in
-                    Group {
-                        Text("NTE").bold().frame(width: 45, alignment: .leading).padding(.horizontal, 2)
-                        Text("INS").bold().frame(width: 30, alignment: .leading).padding(.horizontal, 2)
-                        Text("VOL").bold().frame(width: 30, alignment: .leading).padding(.horizontal, 2)
-                        Text("EFF").bold().frame(width: 25, alignment: .leading).padding(.horizontal, 2)
-                        Text("PRM").bold().frame(width: 30, alignment: .leading).padding(.horizontal, 2)
-                    }
+        HStack(spacing: 0) {
+            Text("Row")
+                .bold()
+                .frame(width: 30, alignment: .leading)
+                .padding(.horizontal, 2)
+            
+            ForEach(0..<Int(engine.numChannels), id: \.self) { channel in
+                Group {
+                    Text("NTE").bold().frame(width: 45, alignment: .leading).padding(.horizontal, 2)
+                    Text("INS").bold().frame(width: 30, alignment: .leading).padding(.horizontal, 2)
+                    Text("VOL").bold().frame(width: 30, alignment: .leading).padding(.horizontal, 2)
+                    Text("EFF").bold().frame(width: 25, alignment: .leading).padding(.horizontal, 2)
+                    Text("PRM").bold().frame(width: 30, alignment: .leading).padding(.horizontal, 2)
                 }
             }
-            .font(.system(size: 10, design: .monospaced))
-            .padding(.vertical, 2)
-            .offset(x: offset.x)
         }
+        .font(.system(size: 10, design: .monospaced))
+        .padding(.vertical, 2)
+        .offset(x: offset.x)
         .frame(height: 20)
-        .background(Color(nsColor: .windowBackgroundColor))
+        .background(Color(NSColor.windowBackgroundColor))
         .overlay(
             Rectangle()
                 .frame(height: 1)
