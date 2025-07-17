@@ -241,17 +241,27 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     func scanMusicFolder(for musicFolderURL: URL) async {
         guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
         defer { musicFolderURL.stopAccessingSecurityScopedResource() }
-        
+
         var items: [PlaylistItem] = []
-        do {
-            let contents = try FileManager.default.contentsOfDirectory(at: musicFolderURL, includingPropertiesForKeys: nil)
-            for fileURL in contents {
-                if isPlayable(fileURL: fileURL), let metadata = getMetadata(for: fileURL) {
-                    items.append(metadata)
+        let fileManager = FileManager.default
+        let enumerator = fileManager.enumerator(at: musicFolderURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants])
+
+        guard let fileEnumerator = enumerator else {
+            if debug { print("OpenMPTEngine: Could not create enumerator for music folder.") }
+            return
+        }
+
+        for case let fileURL as URL in fileEnumerator {
+            do {
+                let resourceValues = try fileURL.resourceValues(forKeys: [.isRegularFileKey])
+                if resourceValues.isRegularFile == true {
+                    if isPlayable(fileURL: fileURL), let metadata = getMetadata(for: fileURL) {
+                        items.append(metadata)
+                    }
                 }
+            } catch {
+                if debug { print("OpenMPTEngine: Error getting resource values for \(fileURL): \(error.localizedDescription)") }
             }
-        } catch {
-            if debug { print("OpenMPTEngine: Error scanning music folder: \(error.localizedDescription)") }
         }
         
         await MainActor.run {
