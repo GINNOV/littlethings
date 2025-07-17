@@ -12,13 +12,25 @@ import Foundation
 final class SettingsStore: ObservableObject {
     // MARK: - Published Properties
     @Published var musicFolderBookmark: Data?
+    @Published var defaultSortOrder: SortOrder {
+        didSet {
+            userDefaults.set(defaultSortOrder.rawValue, forKey: defaultSortOrderKey)
+        }
+    }
 
     // MARK: - Private Properties
     private let userDefaults = UserDefaults.standard
     private let musicFolderBookmarkKey = "musicFolderBookmark"
+    private let defaultSortOrderKey = "defaultSortOrder"
 
     init() {
         self.musicFolderBookmark = userDefaults.data(forKey: musicFolderBookmarkKey)
+        if let savedSortOrder = userDefaults.string(forKey: defaultSortOrderKey),
+           let sortOrder = SortOrder(rawValue: savedSortOrder) {
+            self.defaultSortOrder = sortOrder
+        } else {
+            self.defaultSortOrder = .name
+        }
         print("SettingsStore initialized.")
     }
 
