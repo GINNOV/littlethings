@@ -16,7 +16,7 @@ let enableDebugSpew = false
 
 // Create a logger instance for better debugging.
 // You can view these logs in the Console app by filtering by subsystem.
-let logger = Logger(subsystem: "com.yourcompany.IFFViewer.IFFPreviewExtension", category: "Preview")
+let logger = Logger(subsystem: "com.theblifemovement.IFFViewer.IFFPreviewExtension", category: "Preview")
 
 class PreviewViewController: NSViewController, QLPreviewingController {
 

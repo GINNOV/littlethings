@@ -7,9 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AC33BC6D2E27BDB400436B63 /* libopenmpt.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AC33BC6C2E27BDB400436B63 /* libopenmpt.0.dylib */; };
-		AC33BC6E2E27BDB400436B63 /* libopenmpt.0.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = AC33BC6C2E27BDB400436B63 /* libopenmpt.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		AC0BF6622E29650D0096670E /* libopenmpt.0.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = AC0BF6602E29650D0096670E /* libopenmpt.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		AC0BF6A72E2969A20096670E /* libopenmpt.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AC0BF6602E29650D0096670E /* libopenmpt.0.dylib */; };
+		AC0BF6A82E2969AF0096670E /* libopenmpt.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AC0BF6602E29650D0096670E /* libopenmpt.0.dylib */; };
+		ACAD811A2E29417F002E64E7 /* AuDeluxeQL.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ACAD810B2E29417F002E64E7 /* AuDeluxeQL.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		ACAD81182E29417F002E64E7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AC7C05212E253580007F777F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ACAD810A2E29417F002E64E7;
+			remoteInfo = AuDeluxeQL;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		AC7C05DE2E255506007F777F /* Embed Libraries */ = {
@@ -18,7 +30,28 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				AC33BC6E2E27BDB400436B63 /* libopenmpt.0.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACAD811B2E29417F002E64E7 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				ACAD811A2E29417F002E64E7 /* AuDeluxeQL.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACAD813B2E294708002E64E7 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				AC0BF6622E29650D0096670E /* libopenmpt.0.dylib in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -26,16 +59,58 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		AC33BC6C2E27BDB400436B63 /* libopenmpt.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopenmpt.0.dylib; path = ../../../../../../../../opt/homebrew/Cellar/libopenmpt/0.8.1/lib/libopenmpt.0.dylib; sourceTree = "<group>"; };
+		AC0BF6602E29650D0096670E /* libopenmpt.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopenmpt.0.dylib; path = ../../../../../../../../opt/homebrew/Cellar/libopenmpt/0.8.1/lib/libopenmpt.0.dylib; sourceTree = "<group>"; };
+		AC0BF6632E2965820096670E /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = SDKROOT; };
+		AC0BF6662E2966CB0096670E /* libopenmpt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libopenmpt.a; path = ../../../../../../../../opt/homebrew/Cellar/libopenmpt/0.8.1/lib/libopenmpt.a; sourceTree = "<group>"; };
 		AC7C05292E253580007F777F /* AuDeluxe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AuDeluxe.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		AC7C05392E253617007F777F /* libuade.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuade.dylib; path = ../../../../../../../../opt/homebrew/Cellar/uade/3.05/lib/libuade.dylib; sourceTree = "<group>"; };
 		AC7C053C2E253643007F777F /* AuDeluxe-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "AuDeluxe-Bridging-Header.h"; path = "AuDeluxe/AuDeluxe-Bridging-Header.h"; sourceTree = "<group>"; };
+		ACAD810B2E29417F002E64E7 /* AuDeluxeQL.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AuDeluxeQL.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACAD810C2E29417F002E64E7 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
+		ACAD815D2E295A24002E64E7 /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = System/Library/Frameworks/QuickLook.framework; sourceTree = SDKROOT; };
+		ACAD815F2E295A2F002E64E7 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AC0BF6652E2965D40096670E /* Exceptions for "AuDeluxe" folder in "AuDeluxe" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = AC7C05282E253580007F777F /* AuDeluxe */;
+		};
+		ACAD811E2E29417F002E64E7 /* Exceptions for "AuDeluxeQL" folder in "AuDeluxeQL" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = ACAD810A2E29417F002E64E7 /* AuDeluxeQL */;
+		};
+		ACAD813D2E2947F9002E64E7 /* Exceptions for "AuDeluxe" folder in "AuDeluxeQL" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Structures/PlaylistItem.swift,
+				Views/InspectorView.swift,
+			);
+			target = ACAD810A2E29417F002E64E7 /* AuDeluxeQL */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		AC7C052B2E253580007F777F /* AuDeluxe */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AC0BF6652E2965D40096670E /* Exceptions for "AuDeluxe" folder in "AuDeluxe" target */,
+				ACAD813D2E2947F9002E64E7 /* Exceptions for "AuDeluxe" folder in "AuDeluxeQL" target */,
+			);
 			path = AuDeluxe;
+			sourceTree = "<group>";
+		};
+		ACAD810E2E29417F002E64E7 /* AuDeluxeQL */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				ACAD811E2E29417F002E64E7 /* Exceptions for "AuDeluxeQL" folder in "AuDeluxeQL" target */,
+			);
+			path = AuDeluxeQL;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -45,7 +120,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AC33BC6D2E27BDB400436B63 /* libopenmpt.0.dylib in Frameworks */,
+				AC0BF6A72E2969A20096670E /* libopenmpt.0.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACAD81082E29417F002E64E7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AC0BF6A82E2969AF0096670E /* libopenmpt.0.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,6 +140,7 @@
 			children = (
 				AC7C053C2E253643007F777F /* AuDeluxe-Bridging-Header.h */,
 				AC7C052B2E253580007F777F /* AuDeluxe */,
+				ACAD810E2E29417F002E64E7 /* AuDeluxeQL */,
 				AC7C05382E253617007F777F /* Frameworks */,
 				AC7C052A2E253580007F777F /* Products */,
 			);
@@ -66,6 +150,7 @@
 			isa = PBXGroup;
 			children = (
 				AC7C05292E253580007F777F /* AuDeluxe.app */,
+				ACAD810B2E29417F002E64E7 /* AuDeluxeQL.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -73,8 +158,12 @@
 		AC7C05382E253617007F777F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				AC33BC6C2E27BDB400436B63 /* libopenmpt.0.dylib */,
-				AC7C05392E253617007F777F /* libuade.dylib */,
+				AC0BF6662E2966CB0096670E /* libopenmpt.a */,
+				AC0BF6632E2965820096670E /* CoreAudioTypes.framework */,
+				AC0BF6602E29650D0096670E /* libopenmpt.0.dylib */,
+				ACAD815F2E295A2F002E64E7 /* SwiftUI.framework */,
+				ACAD815D2E295A24002E64E7 /* QuickLook.framework */,
+				ACAD810C2E29417F002E64E7 /* Quartz.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -90,10 +179,12 @@
 				AC7C05262E253580007F777F /* Frameworks */,
 				AC7C05272E253580007F777F /* Resources */,
 				AC7C05DE2E255506007F777F /* Embed Libraries */,
+				ACAD811B2E29417F002E64E7 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				ACAD81192E29417F002E64E7 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				AC7C052B2E253580007F777F /* AuDeluxe */,
@@ -104,6 +195,29 @@
 			productName = AuDeluxe;
 			productReference = AC7C05292E253580007F777F /* AuDeluxe.app */;
 			productType = "com.apple.product-type.application";
+		};
+		ACAD810A2E29417F002E64E7 /* AuDeluxeQL */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ACAD811F2E29417F002E64E7 /* Build configuration list for PBXNativeTarget "AuDeluxeQL" */;
+			buildPhases = (
+				ACAD81072E29417F002E64E7 /* Sources */,
+				ACAD81082E29417F002E64E7 /* Frameworks */,
+				ACAD81092E29417F002E64E7 /* Resources */,
+				ACAD813B2E294708002E64E7 /* Embed Libraries */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				ACAD810E2E29417F002E64E7 /* AuDeluxeQL */,
+			);
+			name = AuDeluxeQL;
+			packageProductDependencies = (
+			);
+			productName = AuDeluxeQL;
+			productReference = ACAD810B2E29417F002E64E7 /* AuDeluxeQL.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -116,6 +230,9 @@
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					AC7C05282E253580007F777F = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					ACAD810A2E29417F002E64E7 = {
 						CreatedOnToolsVersion = 16.4;
 					};
 				};
@@ -135,12 +252,20 @@
 			projectRoot = "";
 			targets = (
 				AC7C05282E253580007F777F /* AuDeluxe */,
+				ACAD810A2E29417F002E64E7 /* AuDeluxeQL */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		AC7C05272E253580007F777F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACAD81092E29417F002E64E7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -157,7 +282,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ACAD81072E29417F002E64E7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		ACAD81192E29417F002E64E7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ACAD810A2E29417F002E64E7 /* AuDeluxeQL */;
+			targetProxy = ACAD81182E29417F002E64E7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		AC7C05332E253581007F777F /* Debug */ = {
@@ -289,13 +429,16 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 82;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				EXCLUDED_ARCHS = x86_64;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = /opt/homebrew/include;
+				INFOPLIST_FILE = AuDeluxe/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -303,8 +446,7 @@
 					"@executable_path/../Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					/opt/homebrew/lib,
-					/opt/homebrew/Cellar/uade/3.05/lib,
+					"$(inherited)",
 					/opt/homebrew/Cellar/libopenmpt/0.8.1/lib,
 				);
 				MARKETING_VERSION = 1.0;
@@ -326,13 +468,16 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 82;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				EXCLUDED_ARCHS = x86_64;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = /opt/homebrew/include;
+				INFOPLIST_FILE = AuDeluxe/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -340,8 +485,7 @@
 					"@executable_path/../Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					/opt/homebrew/lib,
-					/opt/homebrew/Cellar/uade/3.05/lib,
+					"$(inherited)",
 					/opt/homebrew/Cellar/libopenmpt/0.8.1/lib,
 				);
 				MARKETING_VERSION = 1.0;
@@ -350,6 +494,68 @@
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/AuDeluxe/AuDeluxe-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		ACAD811C2E29417F002E64E7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AuDeluxeQL/AuDeluxeQL.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = QQ9PTQU945;
+				ENABLE_HARDENED_RUNTIME = YES;
+				EXCLUDED_ARCHS = x86_64;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = /opt/homebrew/include;
+				INFOPLIST_FILE = AuDeluxeQL/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AuDeluxeQL;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = /opt/homebrew/Cellar/libopenmpt/0.8.1/lib;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe.AuDeluxeQL;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/AuDeluxeQL/AuDeluxeQL-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		ACAD811D2E29417F002E64E7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AuDeluxeQL/AuDeluxeQL.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = QQ9PTQU945;
+				ENABLE_HARDENED_RUNTIME = YES;
+				EXCLUDED_ARCHS = x86_64;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = /opt/homebrew/include;
+				INFOPLIST_FILE = AuDeluxeQL/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AuDeluxeQL;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = /opt/homebrew/Cellar/libopenmpt/0.8.1/lib;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe.AuDeluxeQL;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/AuDeluxeQL/AuDeluxeQL-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -371,6 +577,15 @@
 			buildConfigurations = (
 				AC7C05362E253581007F777F /* Debug */,
 				AC7C05372E253581007F777F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ACAD811F2E29417F002E64E7 /* Build configuration list for PBXNativeTarget "AuDeluxeQL" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ACAD811C2E29417F002E64E7 /* Debug */,
+				ACAD811D2E29417F002E64E7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
