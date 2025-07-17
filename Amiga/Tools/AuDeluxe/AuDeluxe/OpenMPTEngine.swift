@@ -8,8 +8,138 @@
 import Foundation
 import AVFoundation
 
-@MainActor
-final class OpenMPTEngine: ObservableObject {
+// This actor safely encapsulates all direct interactions with the libopenmpt C library.
+// It ensures that all calls to the module are serialized and thread-safe, preventing crashes.
+private actor ModuleActor {
+    var module: OpaquePointer?
+    private var patternCache: [Int32: [PatternRow]] = [:]
+
+    func create(from data: Data) -> (module: OpaquePointer?, channels: Int32, duration: Double) {
+        let modulePtr = data.withUnsafeBytes { openmpt_module_create_from_memory2($0.baseAddress, $0.count, nil, nil, nil, nil, nil, nil, nil) }
+        guard let newModule = modulePtr else { return (nil, 0, 0) }
+        
+        self.module = newModule
+        openmpt_module_set_render_param(newModule, OPENMPT_MODULE_RENDER_STEREOSEPARATION_PERCENT, 100)
+        openmpt_module_set_render_param(newModule, OPENMPT_MODULE_RENDER_INTERPOLATIONFILTER_LENGTH, 8)
+        
+        let channels = openmpt_module_get_num_channels(newModule)
+        let duration = openmpt_module_get_duration_seconds(newModule)
+        
+        return (newModule, channels, duration)
+    }
+
+    func destroy() {
+        if let mod = module {
+            openmpt_module_destroy(mod)
+            module = nil
+        }
+        patternCache.removeAll()
+    }
+
+    func setRepeat(count: Int32) {
+        guard let mod = module else { return }
+        openmpt_module_set_repeat_count(mod, count)
+    }
+
+    func setPosition(seconds: Double) {
+        guard let mod = module else { return }
+        openmpt_module_set_position_seconds(mod, seconds)
+    }
+
+    func getPlaybackState() -> (pattern: Int32, row: Int32, time: Double, numRows: Int32) {
+        guard let mod = module else { return (-1, -1, 0, 0) }
+        let pattern = openmpt_module_get_current_pattern(mod)
+        let row = openmpt_module_get_current_row(mod)
+        let time = openmpt_module_get_position_seconds(mod)
+        let numRows = openmpt_module_get_pattern_num_rows(mod, pattern)
+        return (pattern, row, time, numRows)
+    }
+
+    func getNumPatterns() -> Int32 {
+        guard let mod = module else { return 0 }
+        return openmpt_module_get_num_patterns(mod)
+    }
+
+    func getPatternNumRows(_ pattern: Int32) -> Int32 {
+        guard let mod = module else { return 0 }
+        return openmpt_module_get_pattern_num_rows(mod, pattern)
+    }
+
+    func formatRow(pattern: Int32, row: Int32, numChannels: Int32) -> [PatternCell] {
+        guard let mod = module else { return [] }
+        var rowCells: [PatternCell] = []
+        rowCells.append(PatternCell(text: String(format: "%02X", row), type: .rowNumber))
+        for channel in 0..<numChannels {
+            let notePtr = openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_NOTE)
+            let instPtr = openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_INSTRUMENT)
+            let volPtr = openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_VOLUMEEFFECT)
+            let effPtr = openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_EFFECT)
+            let effParamPtr = openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_PARAMETER)
+            
+            let note = notePtr != nil ? String(cString: notePtr!) : ""
+            let inst = instPtr != nil ? String(cString: instPtr!) : ""
+            let vol = volPtr != nil ? String(cString: volPtr!) : ""
+            let eff = effPtr != nil ? String(cString: effPtr!) : ""
+            let effParam = effParamPtr != nil ? String(cString: effParamPtr!) : ""
+            
+            if let notePtr = notePtr { openmpt_free_string(notePtr) }
+            if let instPtr = instPtr { openmpt_free_string(instPtr) }
+            if let volPtr = volPtr { openmpt_free_string(volPtr) }
+            if let effPtr = effPtr { openmpt_free_string(effPtr) }
+            if let effParamPtr = effParamPtr { openmpt_free_string(effParamPtr) }
+            
+            rowCells.append(contentsOf: [
+                PatternCell(text: note, type: .note), PatternCell(text: inst, type: .instrument),
+                PatternCell(text: vol, type: .volume), PatternCell(text: eff, type: .effect),
+                PatternCell(text: effParam, type: .effectParam)
+            ])
+        }
+        return rowCells
+    }
+    
+    func getFormattedPattern(pattern: Int32, numRows: Int32, numChannels: Int32) -> [PatternRow] {
+        if let cached = patternCache[pattern] { return cached }
+        
+        var rows: [PatternRow] = []
+        for r in 0..<numRows {
+            let rowCells = formatRow(pattern: pattern, row: r, numChannels: numChannels)
+            rows.append(PatternRow(rowNumber: Int(r), cells: rowCells))
+        }
+        
+        patternCache[pattern] = rows
+        return rows
+    }
+
+    func render(format: AVAudioFormat, frameCount: Int) -> AVAudioPCMBuffer? {
+        guard let mod = module else { return nil }
+        
+        let channelCount = Int(format.channelCount)
+        let sampleRate = Int32(format.sampleRate)
+        let bufferSize = frameCount * channelCount * MemoryLayout<Float>.size
+        let buffer = UnsafeMutableRawPointer.allocate(byteCount: bufferSize, alignment: MemoryLayout<Float>.alignment)
+        defer { buffer.deallocate() }
+
+        let framesRendered = Int(openmpt_module_read_interleaved_float_stereo(mod, sampleRate, frameCount, buffer.assumingMemoryBound(to: Float.self)))
+
+        guard framesRendered > 0, let pcmBuffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(framesRendered)) else {
+            return nil
+        }
+        
+        if let channelData = pcmBuffer.floatChannelData {
+            let floatPtr = buffer.assumingMemoryBound(to: Float.self)
+            for frame in 0..<framesRendered {
+                for channel in 0..<channelCount {
+                    channelData[channel][frame] = floatPtr[frame * channelCount + channel]
+                }
+            }
+        }
+        pcmBuffer.frameLength = AVAudioFrameCount(framesRendered)
+        return pcmBuffer
+    }
+}
+
+// The engine is no longer a MainActor itself. It manages its own threading internally.
+final class OpenMPTEngine: ObservableObject, Sendable {
     // MARK: - Published Properties
     @Published var isPlaying = false
     @Published var currentSongInfo: String?
@@ -19,73 +149,66 @@ final class OpenMPTEngine: ObservableObject {
     @Published var currentSongDuration: TimeInterval = 0
     @Published var isLooping = false
     
-    // The current sort order is now a published property.
-    // When it changes, it will automatically re-sort the playlist.
     @Published var sortOrder: SortOrder = .name {
-        didSet {
-            applySort()
-        }
+        didSet { Task { await applySort() } }
     }
     
     // MARK: - Tracker Data Properties
-    @Published var patternData: [PatternRow] = []
+    @Published var visiblePatternRows: [PatternRow] = []
     @Published var currentRow: Int32 = -1
     @Published var currentPattern: Int32 = -1
     @Published var numChannels: Int32 = 0
 
-    // MARK: - Audio Engine Properties
+    // MARK: - Private Properties
     private let audioEngine = AVAudioEngine()
     private let playerNode = AVAudioPlayerNode()
     private var processingFormat: AVAudioFormat!
-
-    // MARK: - OpenMPT State
-    private var module: OpaquePointer?
     private var currentlyAccessedURL: URL?
     private var timeUpdateTask: Task<Void, Never>?
-
+    
+    private let moduleActor = ModuleActor()
+    private let uiModuleActor = ModuleActor()
+    
+    private let visibleWindowSize = 51
+    private var halfWindowSize: Int { visibleWindowSize / 2 }
+    
     private let supportedExtensions = [
         "mod", "s3m", "xm", "it", "med", "okt", "mtm", "669", "dsm", "far", "ptm", "ult",
         "amf", "ams", "dbm", "dmf", "imf", "j2b", "mdl", "mo3", "psm", "stm", "stx", "umx"
     ]
-    
-    // Keys for our custom metadata attributes.
     private let ratingKey = "com.audeluxe.rating"
     private let titleKey = "com.audeluxe.title"
     private let artistKey = "com.audeluxe.artist"
-
-    // MARK: - Buffer Management
     private var pendingBufferCount = 0
     private var reachedEndOfFile = false
     private let targetPendingBuffers = 3
 
-    // MARK: - Initialization
+    // MARK: - Initialization & Setup
     init() {
-        setupAudioEngine()
+        // This is a non-main actor, so we must dispatch to the main actor to set up the audio engine.
+        Task { @MainActor in
+            setupAudioEngine()
+        }
         print("OpenMPTEngine: initialized and ready.")
     }
 
+    @MainActor
     private func setupAudioEngine() {
         audioEngine.attach(playerNode)
         audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: nil)
         self.processingFormat = playerNode.outputFormat(forBus: 0)
-        
-        NotificationCenter.default.addObserver(
-            forName: .AVAudioEngineConfigurationChange, object: nil, queue: .main) { [weak self] _ in
-            guard let self, self.isPlaying else { return }
-            Task { await self.handleAudioEngineConfigurationChange() }
-        }
-    }
-
-    private func handleAudioEngineConfigurationChange() async {
-        let wasPlaying = isPlaying
-        let currentFile = self.currentSongInfo
-        let currentFolder = self.currentlyAccessedURL?.deletingLastPathComponent()
-
-        stop()
-
-        if wasPlaying, let fileName = currentFile, let folderURL = currentFolder {
-            let fileURL = folderURL.appendingPathComponent(fileName)
-            play(fileURL: fileURL, musicFolderURL: folderURL)
+        NotificationCenter.default.addObserver(forName: .AVAudioEngineConfigurationChange, object: nil, queue: .main) { [weak self] _ in
+            guard let self else { return }
+            Task {
+                let wasPlaying = self.isPlaying
+                let currentFile = self.currentSongInfo
+                let currentFolder = self.currentlyAccessedURL?.deletingLastPathComponent()
+                await self.stop()
+                if wasPlaying, let fileName = currentFile, let folderURL = currentFolder {
+                    let fileURL = folderURL.appendingPathComponent(fileName)
+                    await self.play(fileURL: fileURL, musicFolderURL: folderURL)
+                }
+            }
         }
     }
 
@@ -106,74 +229,74 @@ final class OpenMPTEngine: ObservableObject {
             print("OpenMPTEngine: Error scanning music folder: \(error.localizedDescription)")
         }
         
-        self.playlistItems = items
-        applySort() // Apply the current sort order after scanning.
-        print("OpenMPTEngine: Found \(self.playlistItems.count) playable files.")
+        await MainActor.run {
+            self.playlistItems = items
+        }
+        await applySort()
+        print("OpenMPTEngine: Found \(items.count) playable files.")
     }
-    
-    func play(fileURL: URL, musicFolderURL: URL) {
-        if isPlaying { stop() }
 
+    func play(fileURL: URL, musicFolderURL: URL) async {
+        if isPlaying { await stop() }
         guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
         self.currentlyAccessedURL = musicFolderURL
+        guard let data = try? Data(contentsOf: fileURL) else { await stop(); return }
         
-        guard let data = try? Data(contentsOf: fileURL) else {
-            stop(); return
+        let result = await moduleActor.create(from: data)
+        guard result.module != nil else { await stop(); return }
+        
+        let uiResult = await uiModuleActor.create(from: data)
+        guard uiResult.module != nil else { await stop(); return }
+        
+        let _isLooping = self.isLooping // Read before async call
+        await moduleActor.setRepeat(count: _isLooping ? -1 : 0)
+        await uiModuleActor.setRepeat(count: _isLooping ? -1 : 0)
+
+        // Dispatch UI updates to the main actor
+        await MainActor.run {
+            self.numChannels = result.channels
+            self.currentSongDuration = result.duration
+            if let item = self.playlistItems.first(where: { $0.fileURL == fileURL }) {
+                let type = item.metadata["type_long"] ?? "", tracker = item.metadata["tracker"] ?? "", date = item.metadata["date"] ?? "", container = item.metadata["container_long"] ?? ""
+                var details: [String] = []
+                if !type.isEmpty { details.append("Type: \(type)") }
+                if !tracker.isEmpty { details.append("Tracker: \(tracker)") }
+                if !date.isEmpty { details.append("Date: \(date)") }
+                if !container.isEmpty { details.append("Container: \(container)") }
+                self.songDetails = details.joined(separator: " | ")
+            }
         }
 
-        let modulePtr = data.withUnsafeBytes { openmpt_module_create_from_memory2($0.baseAddress, $0.count, nil, nil, nil, nil, nil, nil, nil) }
-
-        guard let newModule = modulePtr else {
-            stop(); return
+        let numPatterns = await uiModuleActor.getNumPatterns()
+        Task.detached(priority: .background) {
+            for p in 0..<numPatterns {
+                let nr = await self.uiModuleActor.getPatternNumRows(p)
+                _ = await self.uiModuleActor.getFormattedPattern(pattern: p, numRows: nr, numChannels: result.channels)
+            }
         }
         
-        openmpt_module_set_render_param(newModule, OPENMPT_MODULE_RENDER_STEREOSEPARATION_PERCENT, 100)
-        openmpt_module_set_render_param(newModule, OPENMPT_MODULE_RENDER_INTERPOLATIONFILTER_LENGTH, 8)
-        
-        self.module = newModule
-        self.currentSongDuration = openmpt_module_get_duration_seconds(newModule)
-        openmpt_module_set_repeat_count(newModule, isLooping ? -1 : 0)
-        
-        // Update song details directly from the playlist item's metadata
-        if let item = playlistItems.first(where: { $0.fileURL == fileURL }) {
-            let type = item.metadata["type_long"] ?? ""
-            let tracker = item.metadata["tracker"] ?? ""
-            let date = item.metadata["date"] ?? ""
-            let container = item.metadata["container_long"] ?? ""
-
-            var details: [String] = []
-            if !type.isEmpty { details.append("Type: \(type)") }
-            if !tracker.isEmpty { details.append("Tracker: \(tracker)") }
-            if !date.isEmpty { details.append("Date: \(date)") }
-            if !container.isEmpty { details.append("Container: \(container)") }
-            self.songDetails = details.joined(separator: " | ")
-        }
-        
-        // Initialize tracker data
-        self.numChannels = openmpt_module_get_num_channels(newModule)
-        updatePatternData()
-
         do {
-            try audioEngine.start()
+            try await MainActor.run {
+                try audioEngine.start()
+                playerNode.play()
+            }
             
             pendingBufferCount = 0
             reachedEndOfFile = false
+            for _ in 0..<targetPendingBuffers { await scheduleNextBuffer() }
             
-            for _ in 0..<targetPendingBuffers {
-                scheduleNextBuffer()
+            await MainActor.run {
+                self.isPlaying = true
+                self.currentSongInfo = fileURL.lastPathComponent
             }
-            
-            playerNode.play()
-            isPlaying = true
-            currentSongInfo = fileURL.lastPathComponent
             startTimeUpdateTimer()
         } catch {
             print("OpenMPTEngine: ERROR - Could not start AVAudioEngine: \(error.localizedDescription)")
-            stop()
+            await stop()
         }
     }
 
-    func stop() {
+    func stop() async {
         guard isPlaying else {
              if let url = currentlyAccessedURL {
                 url.stopAccessingSecurityScopedResource()
@@ -181,172 +304,235 @@ final class OpenMPTEngine: ObservableObject {
             }
             return
         }
-        
         timeUpdateTask?.cancel()
         timeUpdateTask = nil
         
-        playerNode.stop()
-        audioEngine.pause()
-
-        if let mod = module {
-            openmpt_module_destroy(mod)
-            module = nil
+        await MainActor.run {
+            playerNode.stop()
+            audioEngine.pause()
         }
-
-        isPlaying = false
-        currentSongInfo = nil
-        songDetails = nil
-        pendingBufferCount = 0
-        reachedEndOfFile = false
-        currentPlaybackTime = 0
-        currentSongDuration = 0
         
-        // Clear tracker data
-        patternData = []
-        currentRow = -1
-        currentPattern = -1
-        numChannels = 0
-
+        await moduleActor.destroy()
+        await uiModuleActor.destroy()
+        
+        await MainActor.run {
+            isPlaying = false
+            currentSongInfo = nil
+            songDetails = nil
+            pendingBufferCount = 0
+            reachedEndOfFile = false
+            currentPlaybackTime = 0
+            currentSongDuration = 0
+            visiblePatternRows = []
+            currentRow = -1
+            currentPattern = -1
+            numChannels = 0
+        }
+        
         if let url = currentlyAccessedURL {
             url.stopAccessingSecurityScopedResource()
             currentlyAccessedURL = nil
         }
     }
-    
-    func toggleLooping() {
-        isLooping.toggle()
-        if let mod = module, isPlaying {
-            openmpt_module_set_repeat_count(mod, isLooping ? -1 : 0)
+
+    func toggleLooping() async {
+        let newLoopingState = !self.isLooping
+        await MainActor.run {
+            self.isLooping = newLoopingState
+        }
+        if isPlaying {
+            await moduleActor.setRepeat(count: newLoopingState ? -1 : 0)
+            await uiModuleActor.setRepeat(count: newLoopingState ? -1 : 0)
         }
     }
     
-    func seek(to time: TimeInterval) {
-        guard let mod = module else { return }
-        openmpt_module_set_position_seconds(mod, time)
+    func seek(to time: TimeInterval) async {
+        var effectiveTime = time
+        if self.isLooping && self.currentSongDuration > 0 {
+            effectiveTime = time.truncatingRemainder(dividingBy: self.currentSongDuration)
+        }
+        await moduleActor.setPosition(seconds: effectiveTime)
+        await uiModuleActor.setPosition(seconds: effectiveTime)
     }
     
-    func rateFile(fileURL: URL, rating: Int, musicFolderURL: URL) {
-        setAttribute(key: ratingKey, value: rating, forFileAt: fileURL, in: musicFolderURL)
-    }
-    
-    func updateFile(from oldURL: URL, to newURL: URL, newTitle: String, newArtist: String, musicFolderURL: URL) async -> Bool {
-        setAttribute(key: titleKey, value: newTitle, forFileAt: oldURL, in: musicFolderURL)
-        setAttribute(key: artistKey, value: newArtist, forFileAt: oldURL, in: musicFolderURL)
-
-        if oldURL.lastPathComponent != newURL.lastPathComponent {
-            guard musicFolderURL.startAccessingSecurityScopedResource() else {
-                print("Failed to gain security access to rename file.")
-                return false
+    // MARK: - Tracker Data Methods
+    private func currentPlayedTime() async -> Double {
+        await MainActor.run {
+            guard let nodeTime = self.playerNode.lastRenderTime,
+                  let playerTime = self.playerNode.playerTime(forNodeTime: nodeTime) else {
+                return self.currentPlaybackTime // fallback
             }
-            defer { musicFolderURL.stopAccessingSecurityScopedResource() }
+            return Double(playerTime.sampleTime) / playerTime.sampleRate
+        }
+    }
+    
+    private func updateVisibleRows() async {
+        let playTime = await self.currentPlayedTime()
+        var effectiveTime = playTime
+        if self.isLooping && self.currentSongDuration > 0 {
+            effectiveTime = playTime.truncatingRemainder(dividingBy: self.currentSongDuration)
+        }
+        await self.uiModuleActor.setPosition(seconds: effectiveTime)
+        let state = await self.uiModuleActor.getPlaybackState()
+        let numChans = self.numChannels
+        
+        let centerIndex = Int(state.row)
+        let totalRows = Int(state.numRows)
+        
+        let allRows = await self.uiModuleActor.getFormattedPattern(pattern: state.pattern, numRows: state.numRows, numChannels: numChans)
+        
+        var newVisibleRows: [PatternRow] = []
+        var paddingId = -1
 
-            do {
-                try FileManager.default.moveItem(at: oldURL, to: newURL)
-                print("Successfully renamed file to \(newURL.lastPathComponent)")
-                return true
-            } catch {
-                print("Error renaming file: \(error)")
-                return false
+        for i in 0..<visibleWindowSize {
+            let rowIndex = centerIndex - halfWindowSize + i
+            
+            if rowIndex >= 0 && rowIndex < totalRows {
+                newVisibleRows.append(allRows[rowIndex])
+            } else {
+                newVisibleRows.append(PatternRow(rowNumber: paddingId, cells: []))
+                paddingId -= 1
             }
         }
-        return true
+        
+        // Dispatch all UI updates together
+        await MainActor.run {
+            self.currentRow = state.row
+            self.currentPlaybackTime = playTime
+            if state.pattern != self.currentPattern {
+                self.currentPattern = state.pattern
+            }
+            self.visiblePatternRows = newVisibleRows
+        }
     }
 
-    // MARK: - Private Helper Methods
-    private func applySort() {
+    private func startTimeUpdateTimer() {
+        timeUpdateTask = Task(priority: .userInitiated) {
+            var lastPattern: Int32 = -1
+            var lastRow: Int32 = -1
+            while !Task.isCancelled {
+                let playTime = await self.currentPlayedTime()
+                var effectiveTime = playTime
+                if self.isLooping && self.currentSongDuration > 0 {
+                    effectiveTime = playTime.truncatingRemainder(dividingBy: self.currentSongDuration)
+                }
+                await self.uiModuleActor.setPosition(seconds: effectiveTime)
+                let state = await self.uiModuleActor.getPlaybackState()
+                if state.pattern != lastPattern || state.row != lastRow {
+                    await self.updateVisibleRows()
+                    lastPattern = state.pattern
+                    lastRow = state.row
+                } else {
+                    await MainActor.run {
+                        self.currentPlaybackTime = playTime
+                    }
+                }
+                try? await Task.sleep(for: .milliseconds(50))
+            }
+        }
+    }
+    
+    private func renderBuffer() async -> AVAudioPCMBuffer? {
+        // Since this is called from the audio thread's callback, we ensure it's detached.
+        return await Task.detached(priority: .high) {
+            await self.moduleActor.render(format: self.processingFormat, frameCount: 4096)
+        }.value
+    }
+    
+    @MainActor
+    private func scheduleNextBuffer() async {
+        guard !reachedEndOfFile, pendingBufferCount < targetPendingBuffers else {
+            if !reachedEndOfFile { await checkForPlaybackCompletion() }
+            return
+        }
+        
+        guard let buffer = await renderBuffer() else {
+            reachedEndOfFile = true
+            await checkForPlaybackCompletion()
+            return
+        }
+
+        pendingBufferCount += 1
+        playerNode.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
+            Task {
+                guard let self else { return }
+                self.pendingBufferCount -= 1
+                await self.scheduleNextBuffer()
+            }
+        }
+    }
+    
+    @MainActor
+    private func checkForPlaybackCompletion() async {
+        if reachedEndOfFile && pendingBufferCount == 0 { await stop() }
+    }
+
+    // MARK: - Other Private Helpers
+    private func applySort() async {
+        var sortedItems = await MainActor.run { self.playlistItems }
         switch sortOrder {
-        case .name:
-            playlistItems.sort { $0.title.lowercased() < $1.title.lowercased() }
-        case .duration:
-            playlistItems.sort { $0.duration < $1.duration }
-        case .rating:
-            playlistItems.sort { $0.rating > $1.rating } // Higher ratings first
+        case .name: sortedItems.sort { $0.title.lowercased() < $1.title.lowercased() }
+        case .duration: sortedItems.sort { $0.duration < $1.duration }
+        case .rating: sortedItems.sort { $0.rating > $1.rating }
+        }
+        await MainActor.run {
+            self.playlistItems = sortedItems
         }
     }
 
     private func isPlayable(fileURL: URL) -> Bool {
-        let fileExtension = fileURL.pathExtension.lowercased()
-        return supportedExtensions.contains(fileExtension)
+        supportedExtensions.contains(fileURL.pathExtension.lowercased())
     }
     
     private func getMetadata(for fileURL: URL) -> PlaylistItem? {
         guard let data = try? Data(contentsOf: fileURL) else { return nil }
-        
         let modulePtr = data.withUnsafeBytes { openmpt_module_create_from_memory2($0.baseAddress, $0.count, nil, nil, nil, nil, nil, nil, nil) }
-        
         guard let mod = modulePtr else { return nil }
         defer { openmpt_module_destroy(mod) }
-        
         var metadataDict: [String: String] = [:]
-
-        // Get all metadata keys from libopenmpt
         if let keysCString = openmpt_module_get_metadata_keys(mod) {
             let keysString = String(cString: keysCString)
             let keys = keysString.components(separatedBy: ";")
             openmpt_free_string(keysCString)
-
             for key in keys {
                 if let valueCString = openmpt_module_get_metadata(mod, key) {
-                    let valueString = String(cString: valueCString)
-                    metadataDict[key] = valueString
+                    metadataDict[key] = String(cString: valueCString)
                     openmpt_free_string(valueCString)
                 }
             }
         }
-        
-        // Add duration separately as it's not a standard metadata key
-        let duration = openmpt_module_get_duration_seconds(mod)
-        metadataDict["duration"] = "\(duration)"
-        
-        // Prioritize custom metadata stored in extended attributes
+        metadataDict["duration"] = "\(openmpt_module_get_duration_seconds(mod))"
         if let customTitle = getStringAttribute(key: titleKey, forFileAt: fileURL) {
             metadataDict["title"] = customTitle
         } else if metadataDict["title"] == nil || metadataDict["title"]!.isEmpty {
-            // Fallback to filename if no internal or custom title exists
             metadataDict["title"] = fileURL.deletingPathExtension().lastPathComponent
         }
-        
         if let customArtist = getStringAttribute(key: artistKey, forFileAt: fileURL) {
             metadataDict["artist"] = customArtist
         }
-
         let rating = getIntAttribute(key: ratingKey, forFileAt: fileURL)
-
-        return PlaylistItem(fileURL: fileURL,
-                            metadata: metadataDict,
-                            rating: rating)
+        return PlaylistItem(fileURL: fileURL, metadata: metadataDict, rating: rating)
     }
     
-    // MARK: - Extended Attribute Helpers
-    
-    private func setAttribute(key: String, value: String, forFileAt fileURL: URL, in musicFolderURL: URL) {
+    private func setAttribute(key: String, value: Any, forFileAt fileURL: URL, in musicFolderURL: URL) {
         guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
         defer { musicFolderURL.stopAccessingSecurityScopedResource() }
         
-        guard let data = value.data(using: .utf8) else { return }
+        let data: Data?
+        if let intValue = value as? Int {
+            var val = intValue
+            data = Data(bytes: &val, count: MemoryLayout<Int>.size)
+        } else if let stringValue = value as? String {
+            data = stringValue.data(using: .utf8)
+        } else {
+            return
+        }
+        
+        guard let attrData = data else { return }
         
         let result = fileURL.path.withCString { cPath in
             key.withCString { cKey in
-                data.withUnsafeBytes { valuePtr in
-                    setxattr(cPath, cKey, valuePtr.baseAddress, valuePtr.count, 0, 0)
-                }
-            }
-        }
-        if result == -1 {
-            print("Failed to set attribute '\(key)' for \(fileURL.lastPathComponent): \(String(cString: strerror(errno)))")
-        }
-    }
-
-    private func setAttribute(key: String, value: Int, forFileAt fileURL: URL, in musicFolderURL: URL) {
-        guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
-        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
-        
-        var value = value
-        let data = Data(bytes: &value, count: MemoryLayout<Int>.size)
-        
-        let result = fileURL.path.withCString { cPath in
-            key.withCString { cKey in
-                data.withUnsafeBytes { valuePtr in
+                attrData.withUnsafeBytes { valuePtr in
                     setxattr(cPath, cKey, valuePtr.baseAddress, valuePtr.count, 0, 0)
                 }
             }
@@ -357,21 +543,15 @@ final class OpenMPTEngine: ObservableObject {
     }
     
     private func getAttribute(key: String, forFileAt fileURL: URL) -> Data? {
-        let result = fileURL.path.withCString { cPath -> Data? in
-            key.withCString { cKey -> Data? in
+        fileURL.path.withCString { cPath in
+            key.withCString { cKey in
                 let size = getxattr(cPath, cKey, nil, 0, 0, 0)
                 guard size > 0 else { return nil }
-                
                 var data = Data(count: size)
-                let readBytes = data.withUnsafeMutableBytes { valuePtr -> Int in
-                    getxattr(cPath, cKey, valuePtr.baseAddress, size, 0, 0)
-                }
-                
-                guard readBytes > 0 else { return nil }
-                return data
+                let readBytes = data.withUnsafeMutableBytes { getxattr(cPath, cKey, $0.baseAddress, size, 0, 0) }
+                return readBytes > 0 ? data : nil
             }
         }
-        return result
     }
     
     private func getStringAttribute(key: String, forFileAt fileURL: URL) -> String? {
@@ -384,127 +564,33 @@ final class OpenMPTEngine: ObservableObject {
         return data.withUnsafeBytes { $0.load(as: Int.self) }
     }
     
-    // MARK: - Tracker Data Methods
-    
-    private func updatePatternData() {
-        guard let mod = module else { return }
-        
-        let pattern = openmpt_module_get_current_pattern(mod)
-        
-        // Only regenerate the pattern data if the pattern has changed.
-        guard pattern != self.currentPattern else { return }
-        self.currentPattern = pattern
-        
-        let numRows = openmpt_module_get_pattern_num_rows(mod, pattern)
-        var newPatternData: [PatternRow] = []
-        
-        for row in 0..<numRows {
-            var rowCells: [PatternCell] = []
-            rowCells.append(PatternCell(text: String(format: "%02X", row), type: .rowNumber))
-            
-            for channel in 0..<self.numChannels {
-                let note = String(cString: openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_NOTE))
-                let inst = String(cString: openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_INSTRUMENT))
-                let vol = String(cString: openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_VOLUMEEFFECT))
-                let eff = String(cString: openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_EFFECT))
-                let effParam = String(cString: openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_PARAMETER))
-                
-                rowCells.append(PatternCell(text: note, type: .note))
-                rowCells.append(PatternCell(text: inst, type: .instrument))
-                rowCells.append(PatternCell(text: vol, type: .volume))
-                rowCells.append(PatternCell(text: eff, type: .effect))
-                rowCells.append(PatternCell(text: effParam, type: .effectParam))
-            }
-            newPatternData.append(PatternRow(id: Int(row), cells: rowCells))
-        }
-        self.patternData = newPatternData
-    }
-
-    private func scheduleNextBuffer() {
-        guard !reachedEndOfFile, pendingBufferCount < targetPendingBuffers else { return }
-
-        guard let buffer = renderBuffer() else {
-            reachedEndOfFile = true
-            checkForPlaybackCompletion()
-            return
-        }
-
-        pendingBufferCount += 1
-        playerNode.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
-            Task { @MainActor in
-                guard let self else { return }
-                self.pendingBufferCount -= 1
-                self.scheduleNextBuffer()
-                self.checkForPlaybackCompletion()
-            }
-        }
-    }
-
-    private func renderBuffer() -> AVAudioPCMBuffer? {
-        guard let mod = module else { return nil }
-
-        let frameCount: Int = 4096
-        let channelCount = Int(processingFormat.channelCount)
-        let sampleRate = processingFormat.sampleRate
-        let bufferSize = frameCount * channelCount * MemoryLayout<Float>.size
-        let buffer = UnsafeMutableRawPointer.allocate(byteCount: bufferSize, alignment: MemoryLayout<Float>.alignment)
-        defer { buffer.deallocate() }
-
-        let framesRendered = Int(openmpt_module_read_interleaved_float_stereo(mod, Int32(sampleRate), frameCount, buffer.assumingMemoryBound(to: Float.self)))
-
-        guard framesRendered > 0 else { return nil }
-
-        guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: processingFormat, frameCapacity: AVAudioFrameCount(framesRendered)) else {
-            return nil
-        }
-        
-        let floatPtr = buffer.assumingMemoryBound(to: Float.self)
-        if let channelData = pcmBuffer.floatChannelData {
-            for frame in 0..<framesRendered {
-                for channel in 0..<channelCount {
-                    channelData[channel][frame] = floatPtr[frame * channelCount + channel]
-                }
-            }
-        }
-        
-        pcmBuffer.frameLength = AVAudioFrameCount(framesRendered)
-        return pcmBuffer
-    }
-
-    private func checkForPlaybackCompletion() {
-        if reachedEndOfFile && pendingBufferCount == 0 {
-            print("OpenMPTEngine: All buffers played. Song finished.")
-            stop()
-        }
+    func rateFile(fileURL: URL, rating: Int, musicFolderURL: URL) {
+        setAttribute(key: ratingKey, value: rating, forFileAt: fileURL, in: musicFolderURL)
     }
     
-    private func startTimeUpdateTimer() {
-        timeUpdateTask?.cancel()
-        timeUpdateTask = Task {
-            while !Task.isCancelled {
-                guard let mod = self.module else {
-                    try? await Task.sleep(for: .milliseconds(100))
-                    continue
-                }
-                
-                self.currentPlaybackTime = openmpt_module_get_position_seconds(mod)
-                self.currentRow = openmpt_module_get_current_row(mod)
-                
-                // This will trigger a pattern data refresh if the pattern has changed
-                self.updatePatternData()
-                
-                try? await Task.sleep(for: .milliseconds(20)) // Update more frequently for smooth tracker display
+    func updateFile(from oldURL: URL, to newURL: URL, newTitle: String, newArtist: String, musicFolderURL: URL) async -> Bool {
+        setAttribute(key: titleKey, value: newTitle, forFileAt: oldURL, in: musicFolderURL)
+        setAttribute(key: artistKey, value: newArtist, forFileAt: oldURL, in: musicFolderURL)
+        if oldURL.lastPathComponent != newURL.lastPathComponent {
+            guard musicFolderURL.startAccessingSecurityScopedResource() else { return false }
+            defer { musicFolderURL.stopAccessingSecurityScopedResource() }
+            do {
+                try FileManager.default.moveItem(at: oldURL, to: newURL)
+                return true
+            } catch {
+                print("Error renaming file: \(error)")
+                return false
             }
         }
+        return true
     }
-
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
-        if let url = currentlyAccessedURL {
-            url.stopAccessingSecurityScopedResource()
-        }
-        if let mod = module {
-            openmpt_module_destroy(mod)
+        if let url = currentlyAccessedURL { url.stopAccessingSecurityScopedResource() }
+        Task {
+            await moduleActor.destroy()
+            await uiModuleActor.destroy()
         }
     }
 }

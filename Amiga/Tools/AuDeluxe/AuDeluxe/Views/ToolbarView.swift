@@ -17,8 +17,8 @@ struct ToolbarItems: ToolbarContent {
     @Binding var isShowingRenameAlert: Bool
     @Binding var fileToRename: PlaylistItem?
     @Binding var isShowingAboutSheet: Bool
-    @Binding var isShowingInspectorSheet: Bool
     @Binding var fileToInspect: PlaylistItem?
+    @Binding var showingTrackerView: Bool
 
     var body: some ToolbarContent {
         ToolbarItemGroup {
@@ -27,6 +27,11 @@ struct ToolbarItems: ToolbarContent {
             }
             
             Spacer()
+            
+            // Toggle between Playlist and Tracker view
+            Button(action: { showingTrackerView.toggle() }) {
+                Label(showingTrackerView ? "Playlist" : "Tracker", systemImage: showingTrackerView ? "list.bullet" : "pianokeys")
+            }
 
             Menu {
                 Picker("Sort By", selection: $engine.sortOrder) {
@@ -38,6 +43,7 @@ struct ToolbarItems: ToolbarContent {
             } label: {
                 Label("Sort", systemImage: "arrow.up.arrow.down.circle")
             }
+            .disabled(showingTrackerView) // Disable sorting in tracker view
 
             Menu {
                 Button("⭐️⭐️⭐️⭐️⭐️ - Five Stars") { rateSelectedItem(5) }
@@ -55,7 +61,6 @@ struct ToolbarItems: ToolbarContent {
             Button(action: {
                 if let selectedItem = engine.playlistItems.first(where: { $0.id == selectedFileID }) {
                     fileToInspect = selectedItem
-                    isShowingInspectorSheet = true
                 }
             }) {
                 Label("Inspect", systemImage: "info.square")
@@ -96,7 +101,10 @@ struct ToolbarItems: ToolbarContent {
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
         if panel.runModal() == .OK, let url = panel.url, let folderURL = settings.musicFolderURL {
-            engine.play(fileURL: url, musicFolderURL: folderURL)
+            // Wrap the async call in a Task
+            Task {
+                await engine.play(fileURL: url, musicFolderURL: folderURL)
+            }
         }
     }
     
