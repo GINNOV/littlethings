@@ -13,6 +13,11 @@ import AVFoundation
 private actor ModuleActor {
     var module: OpaquePointer?
     private var patternCache: [Int32: [PatternRow]] = [:]
+    private var debug = false
+
+    func setDebug(_ enabled: Bool) {
+        self.debug = enabled
+    }
 
     func create(from data: Data) -> (module: OpaquePointer?, channels: Int32, duration: Double) {
         let modulePtr = data.withUnsafeBytes { openmpt_module_create_from_memory2($0.baseAddress, $0.count, nil, nil, nil, nil, nil, nil, nil) }
@@ -66,7 +71,7 @@ private actor ModuleActor {
     }
 
     func formatRow(pattern: Int32, row: Int32, numChannels: Int32) -> [PatternCell] {
-        print("Formatting row \(row) in pattern \(pattern)")
+        if debug { print("Formatting row \(row) in pattern \(pattern)") }
         guard let mod = module else { return [] }
         var rowCells: [PatternCell] = []
         rowCells.append(PatternCell(text: String(format: "%02X", row), type: .rowNumber, position: 0))
@@ -104,11 +109,11 @@ private actor ModuleActor {
     func getFormattedPattern(pattern: Int32, numRows: Int32, numChannels: Int32) -> [PatternRow] {
         let startTime = Date()
         if let cached = patternCache[pattern] {
-            print("Pattern \(pattern) fetched from cache in \(Date().timeIntervalSince(startTime)) seconds")
+            if debug { print("Pattern \(pattern) fetched from cache in \(Date().timeIntervalSince(startTime)) seconds") }
             return cached
         }
         
-        print("Formatting pattern \(pattern) with \(numRows) rows")
+        if debug { print("Formatting pattern \(pattern) with \(numRows) rows") }
         var rows: [PatternRow] = []
         for r in 0..<numRows {
             let rowCells = formatRow(pattern: pattern, row: r, numChannels: numChannels)
@@ -116,12 +121,12 @@ private actor ModuleActor {
         }
         
         patternCache[pattern] = rows
-        print("Pattern \(pattern) formatted and cached in \(Date().timeIntervalSince(startTime)) seconds")
+        if debug { print("Pattern \(pattern) formatted and cached in \(Date().timeIntervalSince(startTime)) seconds") }
         return rows
     }
 
     func render(format: AVAudioFormat, frameCount: Int) -> AVAudioPCMBuffer? {
-        print("Rendering audio buffer with \(frameCount) frames")
+        if debug { print("Rendering audio buffer with \(frameCount) frames") }
         guard let mod = module else { return nil }
         
         let channelCount = Int(format.channelCount)
@@ -133,7 +138,7 @@ private actor ModuleActor {
         let framesRendered = Int(openmpt_module_read_interleaved_float_stereo(mod, sampleRate, frameCount, buffer.assumingMemoryBound(to: Float.self)))
 
         guard framesRendered > 0, let pcmBuffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(framesRendered)) else {
-            print("Failed to render buffer or framesRendered <= 0")
+            if debug { print("Failed to render buffer or framesRendered <= 0") }
             return nil
         }
         
@@ -146,7 +151,7 @@ private actor ModuleActor {
             }
         }
         pcmBuffer.frameLength = AVAudioFrameCount(framesRendered)
-        print("Buffer rendered with \(framesRendered) frames")
+        if debug { print("Buffer rendered with \(framesRendered) frames") }
         return pcmBuffer
     }
 }
@@ -173,6 +178,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     @Published var numChannels: Int32 = 0
 
     // MARK: - Private Properties
+    private let debug = false
     private let audioEngine = AVAudioEngine()
     private let playerNode = AVAudioPlayerNode()
     private var processingFormat: AVAudioFormat!
@@ -199,10 +205,15 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     // MARK: - Initialization & Setup
     init() {
         // This is a non-main actor, so we must dispatch to the main actor to set up the audio engine.
-        Task { @MainActor in
-            setupAudioEngine()
+        Task {
+            await moduleActor.setDebug(debug)
+            await uiModuleActor.setDebug(debug)
+            
+            await MainActor.run {
+                setupAudioEngine()
+            }
         }
-        print("OpenMPTEngine: initialized and ready.")
+        if debug { print("OpenMPTEngine: initialized and ready.") }
     }
 
     @MainActor
@@ -239,14 +250,14 @@ final class OpenMPTEngine: ObservableObject, Sendable {
                 }
             }
         } catch {
-            print("OpenMPTEngine: Error scanning music folder: \(error.localizedDescription)")
+            if debug { print("OpenMPTEngine: Error scanning music folder: \(error.localizedDescription)") }
         }
         
         await MainActor.run {
             self.playlistItems = items
         }
         await applySort()
-        print("OpenMPTEngine: Found \(items.count) playable files.")
+        if debug { print("OpenMPTEngine: Found \(items.count) playable files.") }
     }
 
     func play(fileURL: URL, musicFolderURL: URL) async {
@@ -286,14 +297,14 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         }
 
         let numPatterns = await uiModuleActor.getNumPatterns()
-        print("Starting background caching for \(numPatterns) patterns")
+        if debug { print("Starting background caching for \(numPatterns) patterns") }
         Task.detached(priority: .background) {
             let cachingStart = Date()
             for p in 0..<numPatterns {
                 let nr = await self.uiModuleActor.getPatternNumRows(p)
                 _ = await self.uiModuleActor.getFormattedPattern(pattern: p, numRows: nr, numChannels: result.channels)
             }
-            print("Background caching completed in \(Date().timeIntervalSince(cachingStart)) seconds")
+            if self.debug { print("Background caching completed in \(Date().timeIntervalSince(cachingStart)) seconds") }
         }
         
         do {
@@ -312,7 +323,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             }
             startTimeUpdateTimer()
         } catch {
-            print("OpenMPTEngine: ERROR - Could not start AVAudioEngine: \(error.localizedDescription)")
+            if debug { print("OpenMPTEngine: ERROR - Could not start AVAudioEngine: \(error.localizedDescription)") }
             await stop()
         }
     }
@@ -380,27 +391,27 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         await MainActor.run {
             guard let nodeTime = self.playerNode.lastRenderTime,
                   let playerTime = self.playerNode.playerTime(forNodeTime: nodeTime) else {
-                print("Fallback to currentPlaybackTime: \(self.currentPlaybackTime)")
+                if debug { print("Fallback to currentPlaybackTime: \(self.currentPlaybackTime)") }
                 return self.currentPlaybackTime // fallback
             }
             let time = Double(playerTime.sampleTime) / playerTime.sampleRate
-            print("Current played time: \(time)")
+            if debug { print("Current played time: \(time)") }
             return time
         }
     }
     
     private func updateVisibleRows() async {
         let startTime = Date()
-        print("Starting updateVisibleRows")
+        if debug { print("Starting updateVisibleRows") }
         let playTime = await self.currentPlayedTime()
         var effectiveTime = playTime
         if self.isLooping && self.currentSongDuration > 0 {
             effectiveTime = playTime.truncatingRemainder(dividingBy: self.currentSongDuration)
         }
-        print("Setting position to \(effectiveTime)")
+        if debug { print("Setting position to \(effectiveTime)") }
         await self.uiModuleActor.setPosition(seconds: effectiveTime)
         let state = await self.uiModuleActor.getPlaybackState()
-        print("Playback state: pattern \(state.pattern), row \(state.row), time \(state.time), numRows \(state.numRows)")
+        if debug { print("Playback state: pattern \(state.pattern), row \(state.row), time \(state.time), numRows \(state.numRows)") }
         
         // Ensure we have rows to process
         guard state.numRows > 0 else {
@@ -421,18 +432,18 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             self.currentRow = state.row
             self.currentPlaybackTime = playTime
             if state.pattern != self.currentPattern {
-                print("Pattern changed from \(self.currentPattern) to \(state.pattern)")
+                if debug { print("Pattern changed from \(self.currentPattern) to \(state.pattern)") }
                 self.currentPattern = state.pattern
             }
             self.visiblePatternRows = slice
-            print("Updating visiblePatternRows with \(slice.count) rows")
+            if debug { print("Updating visiblePatternRows with \(slice.count) rows") }
         }
-        print("updateVisibleRows completed in \(Date().timeIntervalSince(startTime)) seconds")
+        if debug { print("updateVisibleRows completed in \(Date().timeIntervalSince(startTime)) seconds") }
     }
 
     private func startTimeUpdateTimer() {
         timeUpdateTask = Task(priority: .userInitiated) {
-            print("Starting time update timer")
+            if debug { print("Starting time update timer") }
             var lastPattern: Int32 = -1
             var lastRow: Int32 = -1
             while !Task.isCancelled {
@@ -444,7 +455,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
                 await self.uiModuleActor.setPosition(seconds: effectiveTime)
                 let state = await self.uiModuleActor.getPlaybackState()
                 if state.pattern != lastPattern || state.row != lastRow {
-                    print("State changed: pattern \(state.pattern) (\(lastPattern)), row \(state.row) (\(lastRow)) - updating rows")
+                    if debug { print("State changed: pattern \(state.pattern) (\(lastPattern)), row \(state.row) (\(lastRow)) - updating rows") }
                     await self.updateVisibleRows()
                     lastPattern = state.pattern
                     lastRow = state.row
@@ -455,7 +466,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
                 }
                 try? await Task.sleep(for: .milliseconds(50))
             }
-            print("Time update timer cancelled")
+            if debug { print("Time update timer cancelled") }
         }
     }
     
@@ -468,26 +479,26 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     
     @MainActor
     private func scheduleNextBuffer() async {
-        print("Scheduling next buffer. Pending: \(pendingBufferCount), EOF: \(reachedEndOfFile)")
+        if debug { print("Scheduling next buffer. Pending: \(pendingBufferCount), EOF: \(reachedEndOfFile)") }
         guard !reachedEndOfFile, pendingBufferCount < targetPendingBuffers else {
             if !reachedEndOfFile { await checkForPlaybackCompletion() }
             return
         }
         
         guard let buffer = await renderBuffer() else {
-            print("Render buffer returned nil - setting EOF")
+            if debug { print("Render buffer returned nil - setting EOF") }
             reachedEndOfFile = true
             await checkForPlaybackCompletion()
             return
         }
 
         pendingBufferCount += 1
-        print("Buffer scheduled. New pending: \(pendingBufferCount)")
+        if debug { print("Buffer scheduled. New pending: \(pendingBufferCount)") }
         playerNode.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
             Task {
                 guard let self else { return }
                 self.pendingBufferCount -= 1
-                print("Buffer completed. New pending: \(self.pendingBufferCount)")
+                if self.debug { print("Buffer completed. New pending: \(self.pendingBufferCount)") }
                 await self.scheduleNextBuffer()
             }
         }
@@ -495,7 +506,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     
     @MainActor
     private func checkForPlaybackCompletion() async {
-        print("Checking playback completion. EOF: \(reachedEndOfFile), Pending: \(pendingBufferCount)")
+        if debug { print("Checking playback completion. EOF: \(reachedEndOfFile), Pending: \(pendingBufferCount)") }
         if reachedEndOfFile && pendingBufferCount == 0 { await stop() }
     }
 
@@ -570,7 +581,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             }
         }
         if result == -1 {
-            print("Failed to set attribute '\(key)' for \(fileURL.lastPathComponent): \(String(cString: strerror(errno)))")
+            if debug { print("Failed to set attribute '\(key)' for \(fileURL.lastPathComponent): \(String(cString: strerror(errno)))") }
         }
     }
     
@@ -610,7 +621,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
                 try FileManager.default.moveItem(at: oldURL, to: newURL)
                 return true
             } catch {
-                print("Error renaming file: \(error)")
+                if debug { print("Error renaming file: \(error)") }
                 return false
             }
         }
