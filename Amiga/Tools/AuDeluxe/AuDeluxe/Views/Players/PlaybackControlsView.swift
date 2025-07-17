@@ -19,59 +19,80 @@ struct PlaybackControlsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 5) {
-            Slider(value: Binding(
-                get: { engine.currentPlaybackTime },
-                set: { newTime in
-                    // Wrap the async call in a Task
-                    Task {
-                        await engine.seek(to: newTime)
-                    }
-                }),
-                   in: 0...(engine.currentSongDuration > 0 ? engine.currentSongDuration : 1))
-                .disabled(!engine.isPlaying)
-            
-            HStack {
+        VStack(spacing: 8) {
+            // --- Slider & Time ---
+            HStack(spacing: 8) {
                 Text(formatTime(engine.currentPlaybackTime))
-                Spacer()
+                    .font(.caption.monospacedDigit())
+                    .foregroundColor(.secondary)
+                    .frame(width: 50, alignment: .leading)
+
+                Slider(value: Binding(
+                    get: { engine.currentPlaybackTime },
+                    set: { newTime in
+                        Task { await engine.seek(to: newTime) }
+                    }),
+                       in: 0...(engine.currentSongDuration > 0 ? engine.currentSongDuration : 1))
+                    .disabled(!engine.isPlaying)
+
                 Text(formatTime(engine.currentSongDuration))
+                    .font(.caption.monospacedDigit())
+                    .foregroundColor(.secondary)
+                    .frame(width: 50, alignment: .trailing)
             }
-            .font(.caption.monospacedDigit())
-            .foregroundColor(.secondary)
-            
-            HStack(spacing: 30) {
-                Spacer()
-                Button(action: playPrevious) {
-                    Image(systemName: "backward.fill").font(.title2)
-                }
-                .disabled(currentItemIndex == nil || currentItemIndex == 0)
-                
-                Button(action: handlePlayPause) {
-                    Image(systemName: engine.isPlaying ? "pause.fill" : "play.fill").font(.largeTitle)
-                }
-                .disabled(selectedFileID == nil && !engine.isPlaying)
-                .keyboardShortcut(.space, modifiers: [])
-                
-                Button(action: playNext) {
-                    Image(systemName: "forward.fill").font(.title2)
-                }
-                .disabled(currentItemIndex == nil || currentItemIndex == engine.playlistItems.count - 1)
-                
-                Spacer()
-                
+
+            // --- Buttons ---
+            HStack(spacing: 20) {
+                // Shuffle Button
                 Button(action: {
-                    // Wrap the async call in a Task
-                    Task {
-                        await engine.toggleLooping()
-                    }
+                    Task { await engine.toggleShuffle(selectionID: selectedFileID) }
                 }) {
-                    Image(systemName: "repeat").font(.title2)
-                        .foregroundColor(engine.isLooping ? .accentColor : .secondary)
+                    Image(systemName: "shuffle")
+                        .font(.title2)
                 }
+                .foregroundColor(engine.isShuffling ? .accentColor : .secondary)
+
+                Spacer()
+
+                // Main Controls
+                HStack(spacing: 40) {
+                    Button(action: playPrevious) {
+                        Image(systemName: "backward.fill")
+                            .font(.title)
+                    }
+                    .disabled(currentItemIndex == nil || currentItemIndex == 0)
+
+                    Button(action: handlePlayPause) {
+                        Image(systemName: engine.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: 44)) // Larger central button
+                    }
+                    .disabled(selectedFileID == nil && !engine.isPlaying)
+                    .keyboardShortcut(.space, modifiers: [])
+                    .foregroundColor(engine.isPlaying ? .red : .primary)
+
+                    Button(action: playNext) {
+                        Image(systemName: "forward.fill")
+                            .font(.title)
+                    }
+                    .disabled(currentItemIndex == nil || currentItemIndex == engine.playlistItems.count - 1)
+                }
+                
+                Spacer()
+
+                // Repeat Button
+                Button(action: {
+                    Task { await engine.toggleLooping() }
+                }) {
+                    Image(systemName: "repeat")
+                        .font(.title2)
+                }
+                .foregroundColor(engine.isLooping ? .accentColor : .secondary)
             }
-            .padding(.top, 5)
+            .buttonStyle(.plain)
+            .padding(.vertical, 5)
         }
-        .padding()
+        .padding(.horizontal, 25)
+        .padding(.vertical, 15)
         .background(.regularMaterial)
     }
     
