@@ -66,9 +66,10 @@ private actor ModuleActor {
     }
 
     func formatRow(pattern: Int32, row: Int32, numChannels: Int32) -> [PatternCell] {
+        print("Formatting row \(row) in pattern \(pattern)")
         guard let mod = module else { return [] }
         var rowCells: [PatternCell] = []
-        rowCells.append(PatternCell(text: String(format: "%02X", row), type: .rowNumber))
+        rowCells.append(PatternCell(text: String(format: "%02X", row), type: .rowNumber, position: 0))
         for channel in 0..<numChannels {
             let notePtr = openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_NOTE)
             let instPtr = openmpt_module_format_pattern_row_channel_command(mod, pattern, row, channel, OPENMPT_MODULE_COMMAND_INSTRUMENT)
@@ -88,18 +89,26 @@ private actor ModuleActor {
             if let effPtr = effPtr { openmpt_free_string(effPtr) }
             if let effParamPtr = effParamPtr { openmpt_free_string(effParamPtr) }
             
+            let basePosition = 1 + Int(channel) * 5
             rowCells.append(contentsOf: [
-                PatternCell(text: note, type: .note), PatternCell(text: inst, type: .instrument),
-                PatternCell(text: vol, type: .volume), PatternCell(text: eff, type: .effect),
-                PatternCell(text: effParam, type: .effectParam)
+                PatternCell(text: note, type: .note, position: basePosition),
+                PatternCell(text: inst, type: .instrument, position: basePosition + 1),
+                PatternCell(text: vol, type: .volume, position: basePosition + 2),
+                PatternCell(text: eff, type: .effect, position: basePosition + 3),
+                PatternCell(text: effParam, type: .effectParam, position: basePosition + 4)
             ])
         }
         return rowCells
     }
     
     func getFormattedPattern(pattern: Int32, numRows: Int32, numChannels: Int32) -> [PatternRow] {
-        if let cached = patternCache[pattern] { return cached }
+        let startTime = Date()
+        if let cached = patternCache[pattern] {
+            print("Pattern \(pattern) fetched from cache in \(Date().timeIntervalSince(startTime)) seconds")
+            return cached
+        }
         
+        print("Formatting pattern \(pattern) with \(numRows) rows")
         var rows: [PatternRow] = []
         for r in 0..<numRows {
             let rowCells = formatRow(pattern: pattern, row: r, numChannels: numChannels)
@@ -107,10 +116,12 @@ private actor ModuleActor {
         }
         
         patternCache[pattern] = rows
+        print("Pattern \(pattern) formatted and cached in \(Date().timeIntervalSince(startTime)) seconds")
         return rows
     }
 
     func render(format: AVAudioFormat, frameCount: Int) -> AVAudioPCMBuffer? {
+        print("Rendering audio buffer with \(frameCount) frames")
         guard let mod = module else { return nil }
         
         let channelCount = Int(format.channelCount)
@@ -122,6 +133,7 @@ private actor ModuleActor {
         let framesRendered = Int(openmpt_module_read_interleaved_float_stereo(mod, sampleRate, frameCount, buffer.assumingMemoryBound(to: Float.self)))
 
         guard framesRendered > 0, let pcmBuffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(framesRendered)) else {
+            print("Failed to render buffer or framesRendered <= 0")
             return nil
         }
         
@@ -134,6 +146,7 @@ private actor ModuleActor {
             }
         }
         pcmBuffer.frameLength = AVAudioFrameCount(framesRendered)
+        print("Buffer rendered with \(framesRendered) frames")
         return pcmBuffer
     }
 }
@@ -238,6 +251,11 @@ final class OpenMPTEngine: ObservableObject, Sendable {
 
     func play(fileURL: URL, musicFolderURL: URL) async {
         if isPlaying { await stop() }
+        
+        await MainActor.run {
+            self.visiblePatternRows = []
+        }
+
         guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
         self.currentlyAccessedURL = musicFolderURL
         guard let data = try? Data(contentsOf: fileURL) else { await stop(); return }
@@ -268,11 +286,14 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         }
 
         let numPatterns = await uiModuleActor.getNumPatterns()
+        print("Starting background caching for \(numPatterns) patterns")
         Task.detached(priority: .background) {
+            let cachingStart = Date()
             for p in 0..<numPatterns {
                 let nr = await self.uiModuleActor.getPatternNumRows(p)
                 _ = await self.uiModuleActor.getFormattedPattern(pattern: p, numRows: nr, numChannels: result.channels)
             }
+            print("Background caching completed in \(Date().timeIntervalSince(cachingStart)) seconds")
         }
         
         do {
@@ -323,7 +344,6 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             reachedEndOfFile = false
             currentPlaybackTime = 0
             currentSongDuration = 0
-            visiblePatternRows = []
             currentRow = -1
             currentPattern = -1
             numChannels = 0
@@ -360,54 +380,59 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         await MainActor.run {
             guard let nodeTime = self.playerNode.lastRenderTime,
                   let playerTime = self.playerNode.playerTime(forNodeTime: nodeTime) else {
+                print("Fallback to currentPlaybackTime: \(self.currentPlaybackTime)")
                 return self.currentPlaybackTime // fallback
             }
-            return Double(playerTime.sampleTime) / playerTime.sampleRate
+            let time = Double(playerTime.sampleTime) / playerTime.sampleRate
+            print("Current played time: \(time)")
+            return time
         }
     }
     
     private func updateVisibleRows() async {
+        let startTime = Date()
+        print("Starting updateVisibleRows")
         let playTime = await self.currentPlayedTime()
         var effectiveTime = playTime
         if self.isLooping && self.currentSongDuration > 0 {
             effectiveTime = playTime.truncatingRemainder(dividingBy: self.currentSongDuration)
         }
+        print("Setting position to \(effectiveTime)")
         await self.uiModuleActor.setPosition(seconds: effectiveTime)
         let state = await self.uiModuleActor.getPlaybackState()
-        let numChans = self.numChannels
+        print("Playback state: pattern \(state.pattern), row \(state.row), time \(state.time), numRows \(state.numRows)")
         
-        let centerIndex = Int(state.row)
-        let totalRows = Int(state.numRows)
-        
-        let allRows = await self.uiModuleActor.getFormattedPattern(pattern: state.pattern, numRows: state.numRows, numChannels: numChans)
-        
-        var newVisibleRows: [PatternRow] = []
-        var paddingId = -1
-
-        for i in 0..<visibleWindowSize {
-            let rowIndex = centerIndex - halfWindowSize + i
-            
-            if rowIndex >= 0 && rowIndex < totalRows {
-                newVisibleRows.append(allRows[rowIndex])
-            } else {
-                newVisibleRows.append(PatternRow(rowNumber: paddingId, cells: []))
-                paddingId -= 1
-            }
+        // Ensure we have rows to process
+        guard state.numRows > 0 else {
+            await MainActor.run { self.visiblePatternRows = [] }
+            return
         }
+
+        let allRows = await self.uiModuleActor.getFormattedPattern(pattern: state.pattern, numRows: state.numRows, numChannels: self.numChannels)
         
+        // Your correct slicing logic
+        let first = max(0, Int(state.row) - halfWindowSize)
+        let last = min(Int(state.numRows) - 1, first + visibleWindowSize - 1)
+        
+        let slice = Array(allRows[first...last])
+
         // Dispatch all UI updates together
         await MainActor.run {
             self.currentRow = state.row
             self.currentPlaybackTime = playTime
             if state.pattern != self.currentPattern {
+                print("Pattern changed from \(self.currentPattern) to \(state.pattern)")
                 self.currentPattern = state.pattern
             }
-            self.visiblePatternRows = newVisibleRows
+            self.visiblePatternRows = slice
+            print("Updating visiblePatternRows with \(slice.count) rows")
         }
+        print("updateVisibleRows completed in \(Date().timeIntervalSince(startTime)) seconds")
     }
 
     private func startTimeUpdateTimer() {
         timeUpdateTask = Task(priority: .userInitiated) {
+            print("Starting time update timer")
             var lastPattern: Int32 = -1
             var lastRow: Int32 = -1
             while !Task.isCancelled {
@@ -419,6 +444,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
                 await self.uiModuleActor.setPosition(seconds: effectiveTime)
                 let state = await self.uiModuleActor.getPlaybackState()
                 if state.pattern != lastPattern || state.row != lastRow {
+                    print("State changed: pattern \(state.pattern) (\(lastPattern)), row \(state.row) (\(lastRow)) - updating rows")
                     await self.updateVisibleRows()
                     lastPattern = state.pattern
                     lastRow = state.row
@@ -429,6 +455,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
                 }
                 try? await Task.sleep(for: .milliseconds(50))
             }
+            print("Time update timer cancelled")
         }
     }
     
@@ -441,22 +468,26 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     
     @MainActor
     private func scheduleNextBuffer() async {
+        print("Scheduling next buffer. Pending: \(pendingBufferCount), EOF: \(reachedEndOfFile)")
         guard !reachedEndOfFile, pendingBufferCount < targetPendingBuffers else {
             if !reachedEndOfFile { await checkForPlaybackCompletion() }
             return
         }
         
         guard let buffer = await renderBuffer() else {
+            print("Render buffer returned nil - setting EOF")
             reachedEndOfFile = true
             await checkForPlaybackCompletion()
             return
         }
 
         pendingBufferCount += 1
+        print("Buffer scheduled. New pending: \(pendingBufferCount)")
         playerNode.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
             Task {
                 guard let self else { return }
                 self.pendingBufferCount -= 1
+                print("Buffer completed. New pending: \(self.pendingBufferCount)")
                 await self.scheduleNextBuffer()
             }
         }
@@ -464,6 +495,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     
     @MainActor
     private func checkForPlaybackCompletion() async {
+        print("Checking playback completion. EOF: \(reachedEndOfFile), Pending: \(pendingBufferCount)")
         if reachedEndOfFile && pendingBufferCount == 0 { await stop() }
     }
 
