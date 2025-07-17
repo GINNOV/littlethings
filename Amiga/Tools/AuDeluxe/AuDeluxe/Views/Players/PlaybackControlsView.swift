@@ -50,6 +50,7 @@ struct PlaybackControlsView: View {
                     Image(systemName: engine.isPlaying ? "pause.fill" : "play.fill").font(.largeTitle)
                 }
                 .disabled(selectedFileID == nil && !engine.isPlaying)
+                .keyboardShortcut(.space, modifiers: [])
                 
                 Button(action: playNext) {
                     Image(systemName: "forward.fill").font(.title2)
