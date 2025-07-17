@@ -97,13 +97,21 @@ struct PlaybackControlsView: View {
     }
     
     private func handlePlayPause() {
-        // Wrap the async calls in a Task
         Task {
+            guard let selectedItem = engine.playlistItems.first(where: { $0.id == selectedFileID }),
+                  let musicURL = settings.musicFolderURL else {
+                if engine.isPlaying { await engine.pause() }
+                return
+            }
+
             if engine.isPlaying {
-                await engine.stop()
-            } else if let selectedItem = engine.playlistItems.first(where: { $0.id == selectedFileID }),
-                      let musicURL = settings.musicFolderURL {
-                await engine.play(fileURL: selectedItem.fileURL, musicFolderURL: musicURL)
+                await engine.pause()
+            } else {
+                if selectedItem.fileURL == engine.currentlyPlayingFileURL {
+                    await engine.resume()
+                } else {
+                    await engine.play(fileURL: selectedItem.fileURL, musicFolderURL: musicURL)
+                }
             }
         }
     }

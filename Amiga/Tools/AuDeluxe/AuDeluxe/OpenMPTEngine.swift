@@ -183,7 +183,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     private let audioEngine = AVAudioEngine()
     private let playerNode = AVAudioPlayerNode()
     private var processingFormat: AVAudioFormat!
-    private var currentlyAccessedURL: URL?
+    var currentlyPlayingFileURL: URL?
     private var timeUpdateTask: Task<Void, Never>?
     
     private let moduleActor = ModuleActor()
@@ -226,11 +226,10 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             guard let self else { return }
             Task {
                 let wasPlaying = self.isPlaying
-                let currentFile = self.currentSongInfo
-                let currentFolder = self.currentlyAccessedURL?.deletingLastPathComponent()
-                await self.stop()
-                if wasPlaying, let fileName = currentFile, let folderURL = currentFolder {
-                    let fileURL = folderURL.appendingPathComponent(fileName)
+                let currentFile = self.currentlyPlayingFileURL
+                let currentFolder = currentFile?.deletingLastPathComponent()
+                await self.stopAndReset()
+                if wasPlaying, let fileURL = currentFile, let folderURL = currentFolder {
                     await self.play(fileURL: fileURL, musicFolderURL: folderURL)
                 }
             }
@@ -272,21 +271,18 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     }
 
     func play(fileURL: URL, musicFolderURL: URL) async {
-        if isPlaying { await stop() }
+        // This function now ALWAYS starts a song from a clean slate.
+        await stopAndReset()
         
-        await MainActor.run {
-            self.visiblePatternRows = []
-        }
-
         guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
-        self.currentlyAccessedURL = musicFolderURL
-        guard let data = try? Data(contentsOf: fileURL) else { await stop(); return }
+        self.currentlyPlayingFileURL = fileURL
+        guard let data = try? Data(contentsOf: fileURL) else { await stopAndReset(); return }
         
         let result = await moduleActor.create(from: data)
-        guard result.module != nil else { await stop(); return }
+        guard result.module != nil else { await stopAndReset(); return }
         
         let uiResult = await uiModuleActor.create(from: data)
-        guard uiResult.module != nil else { await stop(); return }
+        guard uiResult.module != nil else { await stopAndReset(); return }
         
         let _isLooping = self.isLooping // Read before async call
         await moduleActor.setRepeat(count: _isLooping ? -1 : 0)
@@ -335,24 +331,48 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             startTimeUpdateTimer()
         } catch {
             if debug { print("OpenMPTEngine: ERROR - Could not start AVAudioEngine: \(error.localizedDescription)") }
-            await stop()
+            await stopAndReset()
         }
     }
 
-    func stop() async {
-        guard isPlaying else {
-             if let url = currentlyAccessedURL {
-                url.stopAccessingSecurityScopedResource()
-                currentlyAccessedURL = nil
-            }
-            return
-        }
+    func pause() async {
+        guard isPlaying else { return }
+        
         timeUpdateTask?.cancel()
         timeUpdateTask = nil
         
         await MainActor.run {
             playerNode.stop()
             audioEngine.pause()
+            isPlaying = false
+        }
+    }
+    
+    func resume() async {
+        guard !isPlaying, currentlyPlayingFileURL != nil else { return }
+        
+        do {
+            try await MainActor.run {
+                try audioEngine.start()
+                playerNode.play()
+                self.isPlaying = true
+            }
+            startTimeUpdateTimer()
+        } catch {
+            if debug { print("OpenMPTEngine: ERROR - Could not resume AVAudioEngine: \(error.localizedDescription)") }
+        }
+    }
+
+    func stopAndReset() async {
+        timeUpdateTask?.cancel()
+        timeUpdateTask = nil
+        
+        await MainActor.run {
+            if audioEngine.isRunning {
+                playerNode.stop()
+                playerNode.reset()
+                audioEngine.pause()
+            }
         }
         
         await moduleActor.destroy()
@@ -366,14 +386,15 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             reachedEndOfFile = false
             currentPlaybackTime = 0
             currentSongDuration = 0
+            visiblePatternRows = []
             currentRow = -1
             currentPattern = -1
             numChannels = 0
-        }
-        
-        if let url = currentlyAccessedURL {
-            url.stopAccessingSecurityScopedResource()
-            currentlyAccessedURL = nil
+            
+            if let url = currentlyPlayingFileURL {
+                url.deletingLastPathComponent().stopAccessingSecurityScopedResource()
+            }
+            currentlyPlayingFileURL = nil
         }
     }
 
@@ -540,7 +561,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     @MainActor
     private func checkForPlaybackCompletion() async {
         if debug { print("Checking playback completion. EOF: \(reachedEndOfFile), Pending: \(pendingBufferCount)") }
-        if reachedEndOfFile && pendingBufferCount == 0 { await stop() }
+        if reachedEndOfFile && pendingBufferCount == 0 { await stopAndReset() }
     }
 
     // MARK: - Other Private Helpers
@@ -666,7 +687,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-        if let url = currentlyAccessedURL { url.stopAccessingSecurityScopedResource() }
+        if let url = currentlyPlayingFileURL { url.deletingLastPathComponent().stopAccessingSecurityScopedResource() }
         Task {
             await moduleActor.destroy()
             await uiModuleActor.destroy()
