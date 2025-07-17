@@ -42,7 +42,7 @@ struct ContentView: View {
             }
             .frame(minWidth: 550, minHeight: 450)
             .onAppear(perform: scanMusicFolder)
-            .onChange(of: settings.musicFolderURL) { _ in scanMusicFolder() }
+            .onChange(of: settings.musicFolderURL) { scanMusicFolder() }
             .toolbar {
                 // This call now correctly matches the ToolbarItems definition
                 ToolbarItems(
@@ -145,11 +145,32 @@ struct HeaderView: View {
     @EnvironmentObject private var engine: OpenMPTEngine
 
     var body: some View {
-        VStack {
-            Text("AuDeluxe").font(.largeTitle).fontWeight(.thin)
-            Text(engine.currentSongInfo ?? "Select a song to play").font(.headline).foregroundColor(.secondary).lineLimit(1)
-            Text(engine.songDetails ?? " ").font(.caption).foregroundColor(.secondary).padding(.top, 1)
-        }.padding()
+        HStack {
+            Image("screamer")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 64, height: 64)
+                .padding(.leading)
+            
+            Spacer()
+            
+            VStack {
+                Text("AuDeluxe").font(.largeTitle).fontWeight(.thin)
+                Text(engine.currentSongInfo ?? "Select a song to play").font(.headline).foregroundColor(.secondary).lineLimit(1)
+                Text(engine.songDetails ?? " ").font(.caption).foregroundColor(.secondary).padding(.top, 1)
+            }
+            
+            Spacer()
+            
+            // This invisible view is used to balance the one on the left
+            // ensuring the VStack above remains perfectly centered.
+            Rectangle()
+                .fill(Color.clear)
+                .frame(width: 64, height: 64)
+                .padding(.trailing)
+
+        }
+        .padding(.vertical, 8)
     }
 }
 
