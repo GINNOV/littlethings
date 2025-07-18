@@ -7,9 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AC0BF6622E29650D0096670E /* libopenmpt.0.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = AC0BF6602E29650D0096670E /* libopenmpt.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		AC0BF6A72E2969A20096670E /* libopenmpt.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AC0BF6602E29650D0096670E /* libopenmpt.0.dylib */; };
-		AC0BF6A82E2969AF0096670E /* libopenmpt.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AC0BF6602E29650D0096670E /* libopenmpt.0.dylib */; };
+		AC681E7B2E2A350F0082D5AC /* libopenmpt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681E7A2E2A34F50082D5AC /* libopenmpt.a */; };
+		AC681E7C2E2A35200082D5AC /* libopenmpt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681E7A2E2A34F50082D5AC /* libopenmpt.a */; };
+		AC681EBA2E2A38570082D5AC /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EB92E2A38570082D5AC /* libc++.tbd */; };
+		AC681EBB2E2A38650082D5AC /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EB92E2A38570082D5AC /* libc++.tbd */; };
+		AC681EBD2E2A38E00082D5AC /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EBC2E2A38E00082D5AC /* libz.tbd */; };
+		AC681EBE2E2A38FE0082D5AC /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EBC2E2A38E00082D5AC /* libz.tbd */; };
+		AC681EC32E2A3C900082D5AC /* libmpg123.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EC22E2A3C820082D5AC /* libmpg123.a */; };
 		ACAD811A2E29417F002E64E7 /* AuDeluxeQL.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ACAD810B2E29417F002E64E7 /* AuDeluxeQL.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -24,16 +28,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		AC7C05DE2E255506007F777F /* Embed Libraries */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Embed Libraries";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		ACAD811B2E29417F002E64E7 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -45,23 +39,14 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		ACAD813B2E294708002E64E7 /* Embed Libraries */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				AC0BF6622E29650D0096670E /* libopenmpt.0.dylib in Embed Libraries */,
-			);
-			name = "Embed Libraries";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		AC0BF6602E29650D0096670E /* libopenmpt.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopenmpt.0.dylib; path = ../../../../../../../../opt/homebrew/Cellar/libopenmpt/0.8.1/lib/libopenmpt.0.dylib; sourceTree = "<group>"; };
 		AC0BF6632E2965820096670E /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = SDKROOT; };
-		AC0BF6662E2966CB0096670E /* libopenmpt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libopenmpt.a; path = ../../../../../../../../opt/homebrew/Cellar/libopenmpt/0.8.1/lib/libopenmpt.a; sourceTree = "<group>"; };
+		AC681E7A2E2A34F50082D5AC /* libopenmpt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libopenmpt.a; path = Libraries/libopenmpt.a; sourceTree = "<group>"; };
+		AC681EB92E2A38570082D5AC /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		AC681EBC2E2A38E00082D5AC /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		AC681EC22E2A3C820082D5AC /* libmpg123.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmpg123.a; path = Libraries/libmpg123.a; sourceTree = "<group>"; };
 		AC7C05292E253580007F777F /* AuDeluxe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AuDeluxe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC7C053C2E253643007F777F /* AuDeluxe-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "AuDeluxe-Bridging-Header.h"; path = "AuDeluxe/AuDeluxe-Bridging-Header.h"; sourceTree = "<group>"; };
 		ACAD810B2E29417F002E64E7 /* AuDeluxeQL.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AuDeluxeQL.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -120,7 +105,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AC0BF6A72E2969A20096670E /* libopenmpt.0.dylib in Frameworks */,
+				AC681EBD2E2A38E00082D5AC /* libz.tbd in Frameworks */,
+				AC681EBA2E2A38570082D5AC /* libc++.tbd in Frameworks */,
+				AC681E7B2E2A350F0082D5AC /* libopenmpt.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -128,7 +115,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AC0BF6A82E2969AF0096670E /* libopenmpt.0.dylib in Frameworks */,
+				AC681EBE2E2A38FE0082D5AC /* libz.tbd in Frameworks */,
+				AC681EBB2E2A38650082D5AC /* libc++.tbd in Frameworks */,
+				AC681E7C2E2A35200082D5AC /* libopenmpt.a in Frameworks */,
+				AC681EC32E2A3C900082D5AC /* libmpg123.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,9 +148,11 @@
 		AC7C05382E253617007F777F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				AC0BF6662E2966CB0096670E /* libopenmpt.a */,
+				AC681EC22E2A3C820082D5AC /* libmpg123.a */,
+				AC681EBC2E2A38E00082D5AC /* libz.tbd */,
+				AC681EB92E2A38570082D5AC /* libc++.tbd */,
+				AC681E7A2E2A34F50082D5AC /* libopenmpt.a */,
 				AC0BF6632E2965820096670E /* CoreAudioTypes.framework */,
-				AC0BF6602E29650D0096670E /* libopenmpt.0.dylib */,
 				ACAD815F2E295A2F002E64E7 /* SwiftUI.framework */,
 				ACAD815D2E295A24002E64E7 /* QuickLook.framework */,
 				ACAD810C2E29417F002E64E7 /* Quartz.framework */,
@@ -178,7 +170,6 @@
 				AC7C05252E253580007F777F /* Sources */,
 				AC7C05262E253580007F777F /* Frameworks */,
 				AC7C05272E253580007F777F /* Resources */,
-				AC7C05DE2E255506007F777F /* Embed Libraries */,
 				ACAD811B2E29417F002E64E7 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
@@ -203,7 +194,6 @@
 				ACAD81072E29417F002E64E7 /* Sources */,
 				ACAD81082E29417F002E64E7 /* Frameworks */,
 				ACAD81092E29417F002E64E7 /* Resources */,
-				ACAD813B2E294708002E64E7 /* Embed Libraries */,
 			);
 			buildRules = (
 			);
@@ -429,7 +419,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 26;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -441,15 +431,13 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "";
 				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/opt/homebrew/Cellar/libopenmpt/0.8.1/lib,
+					"$(PROJECT_DIR)/Libraries",
+					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-lmpg123";
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -468,7 +456,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 26;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -480,15 +468,13 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "";
 				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/opt/homebrew/Cellar/libopenmpt/0.8.1/lib,
+					"$(PROJECT_DIR)/Libraries",
+					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-lmpg123";
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -504,7 +490,7 @@
 				CODE_SIGN_ENTITLEMENTS = AuDeluxeQL/AuDeluxeQL.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 26;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				EXCLUDED_ARCHS = x86_64;
@@ -513,13 +499,13 @@
 				INFOPLIST_FILE = AuDeluxeQL/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AuDeluxeQL;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@executable_path/../../../../Frameworks",
+				LD_RUNPATH_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/Libraries",
+					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
 				);
-				LIBRARY_SEARCH_PATHS = /opt/homebrew/Cellar/libopenmpt/0.8.1/lib;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-lmpg123";
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe.AuDeluxeQL;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -535,7 +521,7 @@
 				CODE_SIGN_ENTITLEMENTS = AuDeluxeQL/AuDeluxeQL.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 26;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				EXCLUDED_ARCHS = x86_64;
@@ -544,13 +530,13 @@
 				INFOPLIST_FILE = AuDeluxeQL/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AuDeluxeQL;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@executable_path/../../../../Frameworks",
+				LD_RUNPATH_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/Libraries",
+					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
 				);
-				LIBRARY_SEARCH_PATHS = /opt/homebrew/Cellar/libopenmpt/0.8.1/lib;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-lmpg123";
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe.AuDeluxeQL;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

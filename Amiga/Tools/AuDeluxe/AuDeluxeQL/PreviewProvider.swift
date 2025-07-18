@@ -1,54 +1,64 @@
-//
-//  PreviewProvider.swift
-//  AuDeluxeQL
-//
-//  Created by Mario Esposito on 7/17/25.
-//
+import SwiftUI
 
-import Cocoa
-import Quartz
+// A dedicated, simple view for the Quick Look extension.
+// It has no dependencies on the main app's environment.
+struct AuDeluxePreviewView: View {
+    let item: PlaylistItem
 
-class PreviewProvider: QLPreviewProvider, QLPreviewingController {
-    
+    private var sortedMetadataKeys: [String] {
+        item.metadata.keys.filter { $0 != "title" && $0 != "artist" && $0 != "duration" }.sorted()
+    }
 
-    /*
-     Use a QLPreviewProvider to provide data-based previews.
-     
-     To set up your extension as a data-based preview extension:
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Module Preview")
+                .font(.largeTitle.weight(.thin))
+                .padding(.bottom, 5)
 
-     - Modify the extension's Info.plist by setting
-       <key>QLIsDataBasedPreview</key>
-       <true/>
-     
-     - Add the supported content types to QLSupportedContentTypes array in the extension's Info.plist.
+            Text(item.title)
+                .font(.title2.weight(.semibold))
 
-     - Change the NSExtensionPrincipalClass to this class.
-       e.g.
-       <key>NSExtensionPrincipalClass</key>
-       <string>$(PRODUCT_MODULE_NAME).PreviewProvider</string>
-     
-     - Implement providePreview(for:)
-     */
-    
-    func providePreview(for request: QLFilePreviewRequest) async throws -> QLPreviewReply {
-    
-        //You can create a QLPreviewReply in several ways, depending on the format of the data you want to return.
-        //To return Data of a supported content type:
-        
-        let contentType = UTType.plainText // replace with your data type
-        
-        let reply = QLPreviewReply.init(dataOfContentType: contentType, contentSize: CGSize.init(width: 800, height: 800)) { (replyToUpdate : QLPreviewReply) in
+            if !item.artist.isEmpty {
+                Text("by \(item.artist)")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+            }
 
-            let data = Data("Hello world".utf8)
-            
-            //setting the stringEncoding for text and html data is optional and defaults to String.Encoding.utf8
-            replyToUpdate.stringEncoding = .utf8
-            
-            //initialize your data here
-            
-            return data
+            Divider()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top) {
+                        Text("Duration:")
+                            .fontWeight(.semibold)
+                            .frame(width: 120, alignment: .trailing)
+                        Text(formatTime(item.duration))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .font(.system(.body, design: .monospaced))
+
+                    ForEach(sortedMetadataKeys, id: \.self) { key in
+                        HStack(alignment: .top) {
+                            Text("\(key.capitalized):")
+                                .fontWeight(.semibold)
+                                .frame(width: 120, alignment: .trailing)
+                            Text(item.metadata[key] ?? "N/A")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .lineLimit(3)
+                        }
+                        .font(.system(.body, design: .monospaced))
+                    }
+                }
+                .padding()
+            }
         }
-                
-        return reply
+        .padding(30)
+        .frame(minWidth: 550, minHeight: 450)
+    }
+
+    private func formatTime(_ time: TimeInterval) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 }

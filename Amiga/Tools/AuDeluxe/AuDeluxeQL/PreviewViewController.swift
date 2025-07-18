@@ -1,6 +1,6 @@
 //
 //  PreviewViewController.swift
-//  AuDeluxeQuickLook
+//  AuDeluxeQL
 //
 //  Created by Mario Esposito on 7/17/25.
 //
@@ -8,56 +8,42 @@
 import Cocoa
 import Quartz
 import SwiftUI
-import os.log // 1. Import the logging framework
+import os.log
+
+let logger = Logger(subsystem: "com.theblifemovement.AuDeluxe.AuDeluxeQL", category: "Preview")
 
 class PreviewViewController: NSViewController, QLPreviewingController {
     
-    // 2. Create a logger instance for this view
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "QuickLook")
-    
-    override var nibName: NSNib.Name? {
-        return NSNib.Name("PreviewViewController")
-    }
-
-    override func loadView() {
-        super.loadView()
-        // Do any view setup here.
-    }
-    
-    func preparePreviewOfFile(at url: URL, completionHandler handler: @escaping (Error?) -> Void) {
+    func preparePreviewOfFile(at url: URL) async throws {
         
-        logger.log("Preparing preview for file: \(url.path, privacy: .public)")
+        logger.log("Starting async preview for file: \(url.path, privacy: .public)")
 
         guard let item = getMetadata(for: url) else {
-            logger.error("Failed to get metadata for file.")
-            let errorView = NSHostingView(rootView: Text("Unable to preview file."))
-            self.view.addSubview(errorView)
-            errorView.frame = self.view.bounds
-            handler(nil)
-            return
+            logger.error("Failed to get metadata for file. Throwing error.")
+            struct MetadataError: LocalizedError {
+                var errorDescription: String? { "Could not read the module's metadata." }
+            }
+            throw MetadataError()
         }
         
-        logger.log("Successfully got metadata: \(item.title)")
+        logger.log("Successfully got metadata for: \(item.title)")
         
-        let preview = InspectorView(item: item)
-        let hostingView = NSHostingView(rootView: preview)
+        // Use the new dedicated view
+        let previewSwiftUIView = AuDeluxePreviewView(item: item)
         
-        hostingView.translatesAutoresizingMaskIntoConstraints = false
-        self.view.addSubview(hostingView)
+        let hostingController = NSHostingController(rootView: previewSwiftUIView)
         
-        NSLayoutConstraint.activate([
-            hostingView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-            hostingView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-            hostingView.topAnchor.constraint(equalTo: self.view.topAnchor),
-            hostingView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
-        ])
+        self.view.addSubview(hostingController.view)
+        hostingController.view.frame = self.view.bounds
+        hostingController.view.autoresizingMask = [.width, .height]
         
-        logger.log("Preview view prepared successfully.")
+        self.preferredContentSize = NSSize(width: 550, height: 450)
         
-        handler(nil)
+        logger.log("Preview preparation complete.")
     }
     
     private func getMetadata(for fileURL: URL) -> PlaylistItem? {
+        // ... (this function remains the same) ...
         logger.log("Attempting to get metadata for URL: \(fileURL.path, privacy: .public)")
         
         guard let data = try? Data(contentsOf: fileURL) else {
