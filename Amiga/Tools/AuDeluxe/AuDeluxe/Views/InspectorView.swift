@@ -10,63 +10,102 @@ import SwiftUI
 struct InspectorView: View {
     let item: PlaylistItem
 
+    // Keys that have special handling or are displayed prominently.
+    private let excludedKeys = ["title", "artist", "duration"]
+    
+    // The remaining metadata keys, sorted for a consistent display order.
     private var sortedMetadataKeys: [String] {
-        // Exclude keys that are already displayed prominently or handled differently
-        item.metadata.keys.filter { $0 != "title" && $0 != "artist" && $0 != "duration" }.sorted()
+        item.metadata.keys.filter { !excludedKeys.contains($0) }.sorted()
     }
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Metadata Inspector")
-                .font(.largeTitle.weight(.thin))
-                .padding(.bottom, 5)
-            
-            Text(item.title)
-                .font(.title2.weight(.semibold))
-            
-            if !item.artist.isEmpty {
-                Text("by \(item.artist)")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
+        VStack(spacing: 18) {
+            // --- Header ---
+            VStack {
+                Text(item.title)
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                
+                if !item.artist.isEmpty {
+                    Text("by \(item.artist)")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
             }
+            .padding(.bottom, 10)
 
-            Divider()
+            // --- Main Details in a rounded box ---
+            VStack(alignment: .leading, spacing: 12) {
+                InfoRow(label: "Filename", value: item.fileURL.lastPathComponent)
+                Divider()
+                InfoRow(label: "Duration", value: formatTime(item.duration))
+            }
+            .padding()
+            .background(Color(NSColor.windowBackgroundColor).opacity(0.5))
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+            )
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    // Display duration prominently
-                    HStack(alignment: .top) {
-                        Text("Duration:")
-                            .fontWeight(.semibold)
-                            .frame(width: 120, alignment: .trailing)
-                        Text(formatTime(item.duration))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .font(.system(.body, design: .monospaced))
+            // --- Full Metadata ScrollView ---
+            if !sortedMetadataKeys.isEmpty {
+                VStack(alignment: .leading) {
+                    Text("Full Metadata")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.secondary)
+                        .padding(.leading)
                     
-                    // Display the rest of the metadata
-                    ForEach(sortedMetadataKeys, id: \.self) { key in
-                        HStack(alignment: .top) {
-                            Text("\(key.capitalized):")
-                                .fontWeight(.semibold)
-                                .frame(width: 120, alignment: .trailing)
-                            Text(item.metadata[key] ?? "N/A")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .lineLimit(3)
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 12) {
+                            ForEach(sortedMetadataKeys, id: \.self) { key in
+                                InfoRow(label: key.capitalized, value: item.metadata[key] ?? "N/A")
+                                if key != sortedMetadataKeys.last {
+                                    Divider()
+                                }
+                            }
                         }
-                        .font(.system(.body, design: .monospaced))
+                        .padding()
+                        .background(Color(NSColor.windowBackgroundColor).opacity(0.5))
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                        )
                     }
                 }
-                .padding()
             }
+            
+            Spacer()
         }
         .padding(30)
         .frame(minWidth: 550, minHeight: 450)
+        .background(.regularMaterial)
     }
 
     private func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
+    }
+}
+
+// A helper subview to keep the row layout consistent.
+struct InfoRow: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        HStack(alignment: .top) {
+            Text(label + ":")
+                .font(.system(.body, design: .monospaced).weight(.bold))
+                .foregroundColor(.secondary)
+                .frame(width: 120, alignment: .trailing)
+            
+            Text(value)
+                .font(.system(.body, design: .monospaced))
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 }

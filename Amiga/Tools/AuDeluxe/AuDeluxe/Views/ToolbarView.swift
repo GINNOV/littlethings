@@ -19,6 +19,8 @@ struct ToolbarItems: ToolbarContent {
     @Binding var isShowingAboutSheet: Bool
     @Binding var fileToInspect: PlaylistItem?
     @Binding var showingTrackerView: Bool
+    @Binding var isShowingManagePlaylists: Bool
+    @Binding var isShowingSelectPlaylist: Bool
 
     var body: some ToolbarContent {
         ToolbarItemGroup {
@@ -28,7 +30,6 @@ struct ToolbarItems: ToolbarContent {
             
             Spacer()
             
-            // Toggle between Playlist and Tracker view
             Button(action: { showingTrackerView.toggle() }) {
                 Label(showingTrackerView ? "Playlist" : "Tracker", systemImage: showingTrackerView ? "list.bullet" : "pianokeys")
             }
@@ -43,14 +44,22 @@ struct ToolbarItems: ToolbarContent {
             } label: {
                 Label("Sort", systemImage: "arrow.up.arrow.down.circle")
             }
-            .disabled(showingTrackerView || engine.isShuffling) // Disable sorting in tracker view or when shuffling
+            .disabled(showingTrackerView || engine.isShuffling)
+            
+            Menu {
+                Button("Manage Playlists...") { isShowingManagePlaylists = true }
+                Button("Select Playlist...") { isShowingSelectPlaylist = true }
+            } label: {
+                Label("Playlists", systemImage: "music.note.list")
+            }
+            .disabled(showingTrackerView)
 
             Menu {
-                Button("⭐️⭐️⭐️⭐️⭐️ - Five Stars") { rateSelectedItem(5) }
-                Button("⭐️⭐️⭐️⭐️ - Four Stars") { rateSelectedItem(4) }
-                Button("⭐️⭐️⭐️ - Three Stars") { rateSelectedItem(3) }
-                Button("⭐️⭐️ - Two Stars") { rateSelectedItem(2) }
-                Button("⭐️ - One Star") { rateSelectedItem(1) }
+                Button("⭐️⭐️⭐️⭐️⭐️ - Love it") { rateSelectedItem(5) }
+                Button("⭐️⭐️⭐️⭐️ - Awesome") { rateSelectedItem(4) }
+                Button("⭐️⭐️⭐️ - Wow") { rateSelectedItem(3) }
+                Button("⭐️⭐️ - Meh") { rateSelectedItem(2) }
+                Button("⭐️ - Don't even...") { rateSelectedItem(1) }
                 Divider()
                 Button("Clear Rating") { rateSelectedItem(0) }
             } label: {
@@ -101,7 +110,6 @@ struct ToolbarItems: ToolbarContent {
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
         if panel.runModal() == .OK, let url = panel.url, let folderURL = settings.musicFolderURL {
-            // Wrap the async call in a Task
             Task {
                 await engine.play(fileURL: url, musicFolderURL: folderURL)
             }
@@ -115,8 +123,9 @@ struct ToolbarItems: ToolbarContent {
 
         engine.rateFile(fileURL: item.fileURL, rating: rating, musicFolderURL: musicFolderURL)
 
-        if let index = engine.playlistItems.firstIndex(where: { $0.id == selectedID }) {
-            engine.playlistItems[index].rating = rating
+        // This is the corrected line
+        if let index = engine.allPlaylistItems.firstIndex(where: { $0.id == selectedID }) {
+            engine.allPlaylistItems[index].rating = rating
         }
     }
 }

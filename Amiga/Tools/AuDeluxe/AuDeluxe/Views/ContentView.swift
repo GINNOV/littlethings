@@ -22,6 +22,8 @@ struct ContentView: View {
     @State private var isShowingAboutSheet = false
     @State private var fileToInspect: PlaylistItem?
     @State private var showingTrackerView = false
+    @State private var isShowingManagePlaylists = false
+    @State private var isShowingSelectPlaylist = false
 
     var body: some View {
         ZStack {
@@ -44,7 +46,6 @@ struct ContentView: View {
             .onAppear(perform: scanMusicFolder)
             .onChange(of: settings.musicFolderURL) { scanMusicFolder() }
             .toolbar {
-                // This call now correctly matches the ToolbarItems definition
                 ToolbarItems(
                     selectedFileID: $selectedFileID,
                     isShowingDeleteAlert: $isShowingDeleteAlert,
@@ -53,7 +54,9 @@ struct ContentView: View {
                     fileToRename: $fileToRename,
                     isShowingAboutSheet: $isShowingAboutSheet,
                     fileToInspect: $fileToInspect,
-                    showingTrackerView: $showingTrackerView
+                    showingTrackerView: $showingTrackerView,
+                    isShowingManagePlaylists: $isShowingManagePlaylists,
+                    isShowingSelectPlaylist: $isShowingSelectPlaylist
                 )
             }
             .sheet(isPresented: $isShowingAboutSheet) {
@@ -63,6 +66,16 @@ struct ContentView: View {
             }
             .sheet(item: $fileToInspect) { item in
                 InspectorView(item: item)
+            }
+            .sheet(isPresented: $isShowingManagePlaylists) {
+                ManagePlaylistsView()
+                    .environmentObject(settings)
+                    .environmentObject(engine)
+            }
+            .sheet(isPresented: $isShowingSelectPlaylist) {
+                SelectPlaylistView()
+                    .environmentObject(settings)
+                    .environmentObject(engine)
             }
 
             if isShowingDeleteAlert, let fileToDelete = fileToDelete {
@@ -95,7 +108,7 @@ struct ContentView: View {
     // MARK: - Logic
     private func scanMusicFolder() {
         guard let url = settings.musicFolderURL else {
-            engine.playlistItems = []
+            engine.clearAllSongs()
             return
         }
         Task { await engine.scanMusicFolder(for: url) }
@@ -115,7 +128,7 @@ struct ContentView: View {
 
         do {
             try FileManager.default.trashItem(at: item.fileURL, resultingItemURL: nil)
-            scanMusicFolder() // Refresh the list
+            scanMusicFolder()
         } catch {
             print("Error deleting file: \(error)")
         }
@@ -162,8 +175,6 @@ struct HeaderView: View {
             
             Spacer()
             
-            // This invisible view is used to balance the one on the left
-            // ensuring the VStack above remains perfectly centered.
             Rectangle()
                 .fill(Color.clear)
                 .frame(width: 64, height: 64)
