@@ -17,11 +17,13 @@ final class SettingsStore: ObservableObject {
             userDefaults.set(defaultSortOrder.rawValue, forKey: defaultSortOrderKey)
         }
     }
+    @Published var playlists: [Playlist] = []
 
     // MARK: - Private Properties
     private let userDefaults = UserDefaults.standard
     private let musicFolderBookmarkKey = "musicFolderBookmark"
     private let defaultSortOrderKey = "defaultSortOrder"
+    private let playlistsKey = "customPlaylists"
 
     init() {
         self.musicFolderBookmark = userDefaults.data(forKey: musicFolderBookmarkKey)
@@ -31,6 +33,8 @@ final class SettingsStore: ObservableObject {
         } else {
             self.defaultSortOrder = .name
         }
+        
+        loadPlaylists()
         print("SettingsStore initialized.")
     }
 
@@ -55,6 +59,41 @@ final class SettingsStore: ObservableObject {
     func clearMusicFolder() {
         musicFolderBookmark = nil
         userDefaults.removeObject(forKey: musicFolderBookmarkKey)
+    }
+    
+    // MARK: - Playlist Management
+    func savePlaylist(_ playlist: Playlist) {
+        if let index = playlists.firstIndex(where: { $0.id == playlist.id }) {
+            playlists[index] = playlist
+        } else {
+            playlists.append(playlist)
+        }
+        persistPlaylists()
+    }
+    
+    func deletePlaylist(_ playlist: Playlist) {
+        playlists.removeAll { $0.id == playlist.id }
+        persistPlaylists()
+    }
+    
+    private func loadPlaylists() {
+        if let data = userDefaults.data(forKey: playlistsKey) {
+            do {
+                let decodedPlaylists = try JSONDecoder().decode([Playlist].self, from: data)
+                self.playlists = decodedPlaylists
+            } catch {
+                print("Error decoding playlists: \(error)")
+            }
+        }
+    }
+    
+    private func persistPlaylists() {
+        do {
+            let data = try JSONEncoder().encode(playlists)
+            userDefaults.set(data, forKey: playlistsKey)
+        } catch {
+            print("Error encoding playlists: \(error)")
+        }
     }
 
     // MARK: - Private Helper Methods

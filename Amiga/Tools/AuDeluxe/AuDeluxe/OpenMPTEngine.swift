@@ -162,7 +162,6 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     @Published var isPlaying = false
     @Published var currentSongInfo: String?
     @Published var songDetails: String?
-    @Published var playlistItems: [PlaylistItem] = []
     @Published var currentPlaybackTime: TimeInterval = 0
     @Published var currentSongDuration: TimeInterval = 0
     @Published var isLooping = false
@@ -172,6 +171,20 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         didSet { Task { await applySort() } }
     }
     
+    // MARK: - Playlist Properties
+    @Published var allPlaylistItems: [PlaylistItem] = []
+    @Published var activePlaylist: Playlist? = nil
+    
+    var playlistItems: [PlaylistItem] {
+        if let activePlaylist = activePlaylist {
+            let urls = Set(activePlaylist.fileURLs)
+            let filtered = allPlaylistItems.filter { urls.contains($0.fileURL) }
+            return sortItems(filtered)
+        } else {
+            return allPlaylistItems
+        }
+    }
+
     // MARK: - Tracker Data Properties
     @Published var visiblePatternRows: [PatternRow] = []
     @Published var currentRow: Int32 = -1
@@ -205,7 +218,6 @@ final class OpenMPTEngine: ObservableObject, Sendable {
 
     // MARK: - Initialization & Setup
     init() {
-        // This is a non-main actor, so we must dispatch to the main actor to set up the audio engine.
         Task {
             await moduleActor.setDebug(debug)
             await uiModuleActor.setDebug(debug)
@@ -237,6 +249,13 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     }
 
     // MARK: - Public Control Methods
+    @MainActor
+        func clearAllSongs() {
+            self.allPlaylistItems = []
+            self.activePlaylist = nil
+            self.objectWillChange.send()
+        }
+    
     func scanMusicFolder(for musicFolderURL: URL) async {
         guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
         defer { musicFolderURL.stopAccessingSecurityScopedResource() }
@@ -264,14 +283,14 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         }
         
         await MainActor.run {
-            self.playlistItems = items
+            self.allPlaylistItems = items
+            self.activePlaylist = nil
         }
         await applySort()
         if debug { print("OpenMPTEngine: Found \(items.count) playable files.") }
     }
 
     func play(fileURL: URL, musicFolderURL: URL) async {
-        // This function now ALWAYS starts a song from a clean slate.
         await stopAndReset()
         
         guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
@@ -284,15 +303,14 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         let uiResult = await uiModuleActor.create(from: data)
         guard uiResult.module != nil else { await stopAndReset(); return }
         
-        let _isLooping = self.isLooping // Read before async call
+        let _isLooping = self.isLooping
         await moduleActor.setRepeat(count: _isLooping ? -1 : 0)
         await uiModuleActor.setRepeat(count: _isLooping ? -1 : 0)
 
-        // Dispatch UI updates to the main actor
         await MainActor.run {
             self.numChannels = result.channels
             self.currentSongDuration = result.duration
-            if let item = self.playlistItems.first(where: { $0.fileURL == fileURL }) {
+            if let item = self.allPlaylistItems.first(where: { $0.fileURL == fileURL }) {
                 let type = item.metadata["type_long"] ?? "", tracker = item.metadata["tracker"] ?? "", date = item.metadata["date"] ?? "", container = item.metadata["container_long"] ?? ""
                 var details: [String] = []
                 if !type.isEmpty { details.append("Type: \(type)") }
@@ -414,19 +432,17 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         await MainActor.run { self.isShuffling = newShuffleState }
 
         if newShuffleState {
-            // Shuffle is ON
             await MainActor.run {
-                let selectedItem = playlistItems.first { $0.id == selectionID }
-                var shuffledItems = playlistItems.shuffled()
+                let selectedItem = allPlaylistItems.first { $0.id == selectionID }
+                var shuffledItems = allPlaylistItems.shuffled()
 
                 if let item = selectedItem, let index = shuffledItems.firstIndex(of: item) {
                     shuffledItems.remove(at: index)
                     shuffledItems.insert(item, at: 0)
                 }
-                self.playlistItems = shuffledItems
+                self.allPlaylistItems = shuffledItems
             }
         } else {
-            // Shuffle is OFF, restore sort order
             await self.applySort()
         }
     }
@@ -440,13 +456,19 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         await uiModuleActor.setPosition(seconds: effectiveTime)
     }
     
+    // MARK: - Playlist Methods
+    func setActivePlaylist(_ playlist: Playlist?) {
+        activePlaylist = playlist
+        objectWillChange.send()
+    }
+
     // MARK: - Tracker Data Methods
     private func currentPlayedTime() async -> Double {
         await MainActor.run {
             guard let nodeTime = self.playerNode.lastRenderTime,
                   let playerTime = self.playerNode.playerTime(forNodeTime: nodeTime) else {
                 if debug { print("Fallback to currentPlaybackTime: \(self.currentPlaybackTime)") }
-                return self.currentPlaybackTime // fallback
+                return self.currentPlaybackTime
             }
             let time = Double(playerTime.sampleTime) / playerTime.sampleRate
             if debug { print("Current played time: \(time)") }
@@ -467,7 +489,6 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         let state = await self.uiModuleActor.getPlaybackState()
         if debug { print("Playback state: pattern \(state.pattern), row \(state.row), time \(state.time), numRows \(state.numRows)") }
         
-        // Ensure we have rows to process
         guard state.numRows > 0 else {
             await MainActor.run { self.visiblePatternRows = [] }
             return
@@ -475,13 +496,11 @@ final class OpenMPTEngine: ObservableObject, Sendable {
 
         let allRows = await self.uiModuleActor.getFormattedPattern(pattern: state.pattern, numRows: state.numRows, numChannels: self.numChannels)
         
-        // Your correct slicing logic
         let first = max(0, Int(state.row) - halfWindowSize)
         let last = min(Int(state.numRows) - 1, first + visibleWindowSize - 1)
         
         let slice = Array(allRows[first...last])
 
-        // Dispatch all UI updates together
         await MainActor.run {
             self.currentRow = state.row
             self.currentPlaybackTime = playTime
@@ -502,12 +521,16 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             var lastRow: Int32 = -1
             while !Task.isCancelled {
                 let playTime = await self.currentPlayedTime()
-                var effectiveTime = playTime
-                if self.isLooping && self.currentSongDuration > 0 {
-                    effectiveTime = playTime.truncatingRemainder(dividingBy: self.currentSongDuration)
-                }
-                await self.uiModuleActor.setPosition(seconds: effectiveTime)
-                let state = await self.uiModuleActor.getPlaybackState()
+                
+                let state = await Task.detached(priority: .userInitiated) { () -> (pattern: Int32, row: Int32, time: Double, numRows: Int32) in
+                    var effectiveTime = playTime
+                    if self.isLooping && self.currentSongDuration > 0 {
+                        effectiveTime = playTime.truncatingRemainder(dividingBy: self.currentSongDuration)
+                    }
+                    await self.uiModuleActor.setPosition(seconds: effectiveTime)
+                    return await self.uiModuleActor.getPlaybackState()
+                }.value
+
                 if state.pattern != lastPattern || state.row != lastRow {
                     if debug { print("State changed: pattern \(state.pattern) (\(lastPattern)), row \(state.row) (\(lastRow)) - updating rows") }
                     await self.updateVisibleRows()
@@ -525,7 +548,6 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     }
     
     private func renderBuffer() async -> AVAudioPCMBuffer? {
-        // Since this is called from the audio thread's callback, we ensure it's detached.
         return await Task.detached(priority: .high) {
             await self.moduleActor.render(format: self.processingFormat, frameCount: 4096)
         }.value
@@ -566,18 +588,24 @@ final class OpenMPTEngine: ObservableObject, Sendable {
 
     // MARK: - Other Private Helpers
     private func applySort() async {
-        // A sort action always disables shuffle
-        await MainActor.run { self.isShuffling = false }
-        
-        var sortedItems = await MainActor.run { self.playlistItems }
+        if self.isShuffling {
+            await MainActor.run { self.isShuffling = false }
+        }
+        var sortedItems = await MainActor.run { self.allPlaylistItems }
+        sortedItems = sortItems(sortedItems)
+        await MainActor.run {
+            self.allPlaylistItems = sortedItems
+        }
+    }
+    
+    private func sortItems(_ items: [PlaylistItem]) -> [PlaylistItem] {
+        var sortedItems = items
         switch sortOrder {
         case .name: sortedItems.sort { $0.title.lowercased() < $1.title.lowercased() }
         case .duration: sortedItems.sort { $0.duration < $1.duration }
         case .rating: sortedItems.sort { $0.rating > $1.rating }
         }
-        await MainActor.run {
-            self.playlistItems = sortedItems
-        }
+        return sortedItems
     }
 
     private func isPlayable(fileURL: URL) -> Bool {
