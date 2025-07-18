@@ -4,7 +4,7 @@ set -e
 
 PROJECT_NAME="IFFViewer"
 PROJECT_PATH="../${PROJECT_NAME}.xcodeproj"
-SCHEME="ADFinder - Release" # Updated to use Release scheme
+SCHEME="IFFViewer - Release" # Updated to use Release scheme
 CONFIGURATION="Release"
 ARCHIVE_PATH="./build/${PROJECT_NAME}.xcarchive"
 EXPORT_PATH="./build"
@@ -13,7 +13,7 @@ DMG_BASE_PATH="../releases/${PROJECT_NAME}.dmg"
 README_PATH="dmg_assets/README.md"
 BACKGROUND_IMAGE="dmg_assets/dmg-background.png"
 VOLUME_ICON="dmg_assets/dmg-icon.icns"
-EXPORT_OPTIONS_PLIST="../exportOptions.plist"
+EXPORT_OPTIONS_PLIST="exportOptions.plist"
 MIN_SPACE_MB=1024
 
 usage() {
@@ -37,7 +37,7 @@ README_PATH="${SCRIPT_DIR}/${README_PATH}"
 BACKGROUND_IMAGE="${SCRIPT_DIR}/${BACKGROUND_IMAGE}"
 VOLUME_ICON="${SCRIPT_DIR}/${VOLUME_ICON}"
 EXPORT_OPTIONS_PLIST="${SCRIPT_DIR}/${EXPORT_OPTIONS_PLIST}"
-DMG_DIR="${SCRIPT_DIR}/../releases"
+DMG_DIR="${SCRIPT_DIR}/../../releases"
 DMG_BASE_PATH="${DMG_DIR}/${PROJECT_NAME}.dmg"
 PROJECT_PATH="${SCRIPT_DIR}/${PROJECT_PATH}"
 
