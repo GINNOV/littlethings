@@ -296,6 +296,16 @@ a.project-button:hover {
 .github-button:hover { background-color: #0891B2; }
 .learn-button { background-color: #F59E0B; }
 .learn-button:hover { background-color: #D97706; }
+.demo-button { background-color: #10B981; }
+.demo-button:hover { background-color: #059669; }
+
+/* Style for buttons that contain only an icon */
+a.project-button.icon-only {
+    padding: 0.75rem; /* Make it more square */
+}
+a.project-button.icon-only i {
+    margin-right: 0; /* Remove margin when there's no text */
+}
 
 .project-image {
     width: 100%;
