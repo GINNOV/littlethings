@@ -5,7 +5,8 @@ import React from 'react';
 import YouTube from 'react-youtube';
 
 const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurrentTime, duration, onPlayerReady, onPlayerStateChange }) => {
-  const videoId = "9hG_h21A3eM"; // Official Audio for Mrs. Robinson
+  // Swapped to a different karaoke version to ensure embedding is allowed.
+  const videoId = "Q_c4gZkI-FQ";
 
   const opts = {
     height: '0',
@@ -14,9 +15,21 @@ const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurren
       autoplay: 0,
       controls: 0,
     },
-    // This is the crucial fix: It now dynamically uses the correct origin
-    // for both localhost and your deployed Vercel site.
     origin: window.location.origin
+  };
+  
+  const handleReady = (event) => {
+    console.log("DEBUG: Player is ready.");
+    onPlayerReady(event);
+  };
+  
+  const handleError = (event) => {
+    console.error("DEBUG: Player Error:", event.data);
+  };
+  
+  const handleStateChange = (event) => {
+    console.log("DEBUG: Player State Changed:", event.data);
+    onPlayerStateChange(event);
   };
 
   const handlePlayPause = () => {
@@ -58,7 +71,15 @@ const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurren
       />
       <span className="time-display">{formatTime(duration)}</span>
       <div className="youtube-embed">
-        <YouTube key={videoId} videoId={videoId} opts={opts} onReady={onPlayerReady} onStateChange={onPlayerStateChange} />
+        <YouTube 
+            key={videoId} 
+            videoId={videoId} 
+            opts={opts} 
+            onReady={handleReady} 
+            onStateChange={handleStateChange}
+            onError={handleError}
+            referrerPolicy="strict-origin-when-cross-origin" 
+        />
       </div>
     </div>
   );

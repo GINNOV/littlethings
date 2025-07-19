@@ -3,12 +3,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css'; // Import the styles
-import LyricsViewer from './components/LyricsViewer'; //
-import LayerSelector from './components/LayerSelector'; //
+import LyricsViewer from './components/LyricsViewer';
+import LayerSelector from './components/LayerSelector';
 import Settings from './components/Settings';
 import YouTubePlayer from './components/YouTubePlayer';
 import ProgressBar from './components/ProgressBar';
-import { songData } from './data/lyricsData'; //
+import { songData } from './data/lyricsData';
+import packageJson from '../package.json'; // Import package.json
 
 export default function App() {
   const [activeLayer, setActiveLayer] = useState(1);
@@ -35,12 +36,17 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [activeWordIndex, setActiveWordIndex] = useState(-1);
-  const allWords = useRef(songData.stanzas.flat()); //
+  const allWords = useRef(songData.stanzas.flat());
   const intervalRef = useRef();
+  
+  // App Version
+  const appVersion = packageJson.version;
+  // This will generate a new 3-digit number for every build.
+  const buildNumber = (new Date().getTime() % 1000).toString().padStart(3, '0');
+
 
   useEffect(() => {
     localStorage.setItem('showTooltipSetting', JSON.stringify(showTooltipSetting));
-    // If the "Mostra esempio" checkbox is unchecked, also uncheck "Mostra italiano"
     if (!showTooltipSetting) {
       setShowItalianSetting(false);
     }
@@ -191,7 +197,8 @@ export default function App() {
         />
       </main>
       <footer className="App-footer">
-        (C) Garage Innovation LLC - USA
+        <div>(C) Garage Innovation LLC - USA</div>
+        <div className="version-info">{appVersion} (build {buildNumber})</div>
       </footer>
     </div>
   );

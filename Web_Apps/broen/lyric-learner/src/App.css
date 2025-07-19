@@ -375,6 +375,12 @@ main {
   text-align: center;
 }
 
+.version-info {
+  font-size: 0.8rem;
+  color: #adb5bd;
+  margin-top: 0.5rem;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
