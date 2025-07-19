@@ -25,6 +25,9 @@ body {
 
 .App {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .App-header {
@@ -45,13 +48,37 @@ body {
     margin-top: 0.25rem;
 }
 
+.instructions-button {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 8px;
+  border: 1px solid var(--primary-accent);
+  background-color: var(--primary-accent);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.instructions-button:hover {
+  background-color: #434190;
+  transform: translateY(-2px);
+}
+
 main {
+  flex: 1; /* Allows the main content to grow and push the footer down */
   padding: 0 1rem;
   max-width: 800px;
   margin: 0 auto;
+  width: 100%;
 }
 
-.controls-container {
+.top-controls {
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  align-items: flex-start; /* Align children to the left */
+  gap: 1rem; /* Add space between children */
   margin-bottom: 2.5rem;
   background-color: var(--card-bg);
   padding: 1.5rem;
@@ -61,9 +88,23 @@ main {
 }
 
 .selector-wrapper {
-  margin-bottom: 1.5rem;
   font-size: 1rem;
   color: #495057;
+}
+
+.settings-container {
+  font-size: 1rem;
+  color: #495057;
+}
+
+.settings-container label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.settings-container input {
+  margin-right: 0.5rem;
 }
 
 #layer-select {
@@ -89,6 +130,7 @@ main {
   flex-wrap: wrap;
   gap: 1rem;
   font-size: 0.9rem;
+  margin-top: 2rem;
 }
 
 .legend-item {
@@ -131,12 +173,11 @@ main {
   font-size: 1.1rem;
 }
 
-/* --- FIX IS HERE --- */
 .stanza {
-  display: flex; /* This makes the words line up horizontally */
-  flex-wrap: wrap; /* This allows the line to wrap to the next row */
-  margin-bottom: 1rem; /* Spacing between lines of lyrics */
-  line-height: 2.5; /* Increases space between wrapped lines */
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  line-height: 2.5;
 }
 
 .stanza:last-child {
@@ -187,7 +228,8 @@ main {
     border-color: #212529 transparent transparent transparent;
 }
 
-.word-wrapper:hover .word-tooltip {
+/* Show tooltip on hover ONLY if tooltips are enabled */
+.word-wrapper.tooltips-enabled:hover .word-tooltip {
     visibility: visible;
     opacity: 1;
 }
@@ -195,6 +237,13 @@ main {
 .word-wrapper {
     position: relative;
     display: inline-block;
+}
+
+.App-footer {
+  padding: 2rem 1rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+  text-align: center;
 }
 
 .sr-only {

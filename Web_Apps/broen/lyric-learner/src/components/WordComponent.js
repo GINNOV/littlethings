@@ -3,9 +3,8 @@
 
 import React from 'react';
 
-const WordComponent = ({ wordData, activeLayer, songData, onWordClick }) => {
+const WordComponent = ({ wordData, activeLayer, songData, onWordClick, showTooltipSetting }) => {
   const { text, layer, example } = wordData;
-  // Ensure layerInfo is not undefined before destructuring.
   const layerInfo = songData.layers[layer] || {};
   const isHighlighted = activeLayer === 'all' || layer === activeLayer;
 
@@ -28,9 +27,11 @@ const WordComponent = ({ wordData, activeLayer, songData, onWordClick }) => {
     }
   };
 
+  // Add a class to the wrapper if tooltips are enabled
+  const wrapperClassName = `word-wrapper ${showTooltipSetting ? 'tooltips-enabled' : ''}`;
+
   return (
-    // Changed the root element to a div for more stable layout behavior as a flex item.
-    <div className="word-wrapper">
+    <div className={wrapperClassName}>
         <span
           className="word"
           style={style}
