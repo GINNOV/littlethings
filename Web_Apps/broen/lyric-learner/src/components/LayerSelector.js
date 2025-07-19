@@ -12,12 +12,12 @@ const LayerSelector = ({ layers, activeLayer, setActiveLayer }) => {
   return (
     <div className="controls-container">
       <div className="selector-wrapper">
-        <label htmlFor="layer-select">Focus on a vocabulary layer to begin:</label>
+        <label htmlFor="layer-select">Concentrati inizialmente su uno strato di vocabolario:</label>
         <select id="layer-select" value={activeLayer} onChange={handleLayerChange}>
-          <option value="all">Show All Layers</option>
+          <option value="all">Mostra tutti gli strati</option>
           {Object.entries(layers).map(([layerNum, layerData]) => (
             <option key={layerNum} value={layerNum}>
-              Layer {layerNum}: {layerData.name}
+              Strato {layerNum}: {layerData.name}
             </option>
           ))}
         </select>

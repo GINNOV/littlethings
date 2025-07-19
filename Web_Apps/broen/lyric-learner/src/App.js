@@ -51,7 +51,7 @@ export default function App() {
     <div className="App">
       <header className="App-header">
         <h1>Lyric Learner</h1>
-        <h4>bro edition</h4>
+        <h4>⭐️ bro edition ⭐️</h4>
         <p>Impariamo l'inglese interattivamente con la musica.</p>
       </header>
       <main>

@@ -5,10 +5,10 @@ export const songData = {
   title: "Mrs. Robinson",
   author: "Simon & Garfunkel",
   layers: {
-    1: { name: "Core Vocabulary", color: "#EBF8FF", textColor: "#2A4365" },
-    2: { name: "Descriptive Words", color: "#F0FFF4", textColor: "#22543D" },
-    3: { name: "Abstract & Figurative", color: "#FFFBEB", textColor: "#744210" },
-    4: { name: "Cultural References", color: "#F9F5FF", textColor: "#44337A" },
+    1: { name: "Vocabolario essenziale", color: "#EBF8FF", textColor: "#2A4365" },
+    2: { name: "Parole descrittive", color: "#F0FFF4", textColor: "#22543D" },
+    3: { name: "Astratto & Figurativo", color: "#FFFBEB", textColor: "#744210" },
+    4: { name: "Riferimenti Culturali", color: "#F9F5FF", textColor: "#44337A" },
   },
   stanzas: [
     [
