@@ -3,11 +3,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css'; // Import the styles
-import LyricsViewer from './components/LyricsViewer';
-import LayerSelector from './components/LayerSelector';
+import LyricsViewer from './components/LyricsViewer'; //
+import LayerSelector from './components/LayerSelector'; //
 import Settings from './components/Settings';
 import YouTubePlayer from './components/YouTubePlayer';
-import { songData } from './data/lyricsData';
+import ProgressBar from './components/ProgressBar';
+import { songData } from './data/lyricsData'; //
 
 export default function App() {
   const [activeLayer, setActiveLayer] = useState(1);
@@ -19,11 +20,14 @@ export default function App() {
     return saved !== null ? JSON.parse(saved) : false;
   });
 
-  // New state for the Italian translation setting
   const [showItalianSetting, setShowItalianSetting] = useState(() => {
     const saved = localStorage.getItem('showItalianSetting');
     return saved !== null ? JSON.parse(saved) : false;
   });
+
+  // Gamification State
+  const [progress, setProgress] = useState(0);
+  const [stars, setStars] = useState(0);
 
   // YouTube Player State
   const [player, setPlayer] = useState(null);
@@ -31,17 +35,58 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [activeWordIndex, setActiveWordIndex] = useState(-1);
-  const allWords = useRef(songData.stanzas.flat());
+  const allWords = useRef(songData.stanzas.flat()); //
   const intervalRef = useRef();
 
   useEffect(() => {
     localStorage.setItem('showTooltipSetting', JSON.stringify(showTooltipSetting));
+    // If the "Mostra esempio" checkbox is unchecked, also uncheck "Mostra italiano"
+    if (!showTooltipSetting) {
+      setShowItalianSetting(false);
+    }
   }, [showTooltipSetting]);
   
-  // Save the new Italian setting to localStorage
   useEffect(() => {
     localStorage.setItem('showItalianSetting', JSON.stringify(showItalianSetting));
   }, [showItalianSetting]);
+
+  // Gamification Logic
+  useEffect(() => {
+    const today = new Date().toDateString();
+    const lastVisit = localStorage.getItem('lastVisit');
+    let currentStreak = parseInt(localStorage.getItem('streak') || '0');
+
+    if (lastVisit !== today) {
+      const lastVisitDate = new Date(lastVisit);
+      const todayDate = new Date(today);
+      const diffTime = todayDate - lastVisitDate;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) {
+        currentStreak++; // Increment streak
+      } else if (diffDays > 1) {
+        currentStreak = 1; // Reset streak
+      }
+      
+      localStorage.setItem('lastVisit', today);
+      localStorage.setItem('streak', currentStreak.toString());
+
+      if (currentStreak > 0 && currentStreak % 5 === 0) {
+        const newStars = currentStreak / 5;
+        setStars(newStars);
+        localStorage.setItem('stars', newStars.toString());
+        // Play celebratory message
+        const message = "Bravo, l'unico modo per imparare è farlo ogni giorno. Continua così!";
+        const utterance = new SpeechSynthesisUtterance(message);
+        utterance.lang = 'it-IT';
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+    
+    setStars(parseInt(localStorage.getItem('stars') || '0'));
+    setProgress(currentStreak % 5);
+
+  }, []);
 
   useEffect(() => {
     if (isPlaying && player) {
@@ -133,6 +178,7 @@ export default function App() {
             showItalianSetting={showItalianSetting}
             setShowItalianSetting={setShowItalianSetting}
           />
+          <ProgressBar progress={progress} stars={stars} />
         </div>
         <LyricsViewer
           songData={songData}
