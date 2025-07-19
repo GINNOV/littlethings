@@ -5,8 +5,7 @@ import React from 'react';
 import YouTube from 'react-youtube';
 
 const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurrentTime, duration, onPlayerReady, onPlayerStateChange }) => {
-  // Swapped to a different karaoke version to ensure embedding is allowed.
-  const videoId = "Q_c4gZkI-FQ";
+  const videoId = "Q_c4gZkI-FQ"; // A karaoke version that allows embedding
 
   const opts = {
     height: '0',
