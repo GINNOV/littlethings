@@ -23,12 +23,13 @@ const Settings = ({ showTooltipSetting, setShowTooltipSetting, showItalianSettin
         />
         Mostra esempio di uso
       </label>
-      <label htmlFor="italian-toggle" className="setting-item">
+      <label htmlFor="italian-toggle" className={`setting-item ${!showTooltipSetting ? 'disabled' : ''}`}>
         <input
           type="checkbox"
           id="italian-toggle"
           checked={showItalianSetting}
           onChange={handleItalianCheckboxChange}
+          disabled={!showTooltipSetting}
         />
         Mostra italiano
       </label>

@@ -14,9 +14,9 @@ const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurren
       autoplay: 0,
       controls: 0,
     },
-    // This is the crucial fix: It tells YouTube which origin is allowed to control the player.
-    // For development, this must match your local server address.
-    origin: 'http://localhost:3000'
+    // This is the crucial fix: It now dynamically uses the correct origin
+    // for both localhost and your deployed Vercel site.
+    origin: window.location.origin
   };
 
   const handlePlayPause = () => {
@@ -58,10 +58,6 @@ const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurren
       />
       <span className="time-display">{formatTime(duration)}</span>
       <div className="youtube-embed">
-        {/*
-          By adding the 'key' prop, we force React to re-create the component
-          if the videoId changes, which can help prevent state issues.
-        */}
         <YouTube key={videoId} videoId={videoId} opts={opts} onReady={onPlayerReady} onStateChange={onPlayerStateChange} />
       </div>
     </div>
