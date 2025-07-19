@@ -1,0 +1,210 @@
+/* FILE: src/App.css */
+/* This file contains all the styles for the application. */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+:root {
+  --bg-color: #f8f9fa;
+  --text-color: #212529;
+  --card-bg: #ffffff;
+  --border-color: #dee2e6;
+  --shadow: 0 4px 6px rgba(0,0,0,0.05);
+  --primary-accent: #4C51BF;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.App {
+  text-align: center;
+}
+
+.App-header {
+  padding: 2rem 1rem;
+  margin-bottom: 2rem;
+}
+
+.App-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-accent);
+    margin: 0;
+}
+
+.App-header p {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+main {
+  padding: 0 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.controls-container {
+  margin-bottom: 2.5rem;
+  background-color: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+}
+
+.selector-wrapper {
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  color: #495057;
+}
+
+#layer-select {
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  margin-left: 0.5rem;
+  background-color: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#layer-select:focus {
+    border-color: var(--primary-accent);
+    box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.2);
+    outline: none;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  background-color: #f1f3f5;
+}
+
+.legend-color-box {
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 50%;
+}
+
+.lyrics-container {
+  background-color: var(--card-bg);
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.poem-title {
+  margin-top: 0;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.75rem;
+}
+
+.poem-author {
+  text-align: center;
+  font-style: italic;
+  color: #6c757d;
+  margin-bottom: 2.5rem;
+  font-size: 1.1rem;
+}
+
+/* --- FIX IS HERE --- */
+.stanza {
+  display: flex; /* This makes the words line up horizontally */
+  flex-wrap: wrap; /* This allows the line to wrap to the next row */
+  margin-bottom: 1rem; /* Spacing between lines of lyrics */
+  line-height: 2.5; /* Increases space between wrapped lines */
+}
+
+.stanza:last-child {
+    margin-bottom: 0;
+}
+
+.word {
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background-color 0.2s, opacity 0.3s, color 0.2s, box-shadow 0.2s;
+  font-size: 1.15rem;
+  outline: none;
+  margin: 0 1px;
+}
+
+.word:hover, .word:focus {
+  box-shadow: 0 0 0 2px var(--primary-accent);
+}
+
+.word-tooltip {
+    visibility: hidden;
+    width: 200px;
+    background-color: #212529;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.word-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #212529 transparent transparent transparent;
+}
+
+.word-wrapper:hover .word-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.word-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
