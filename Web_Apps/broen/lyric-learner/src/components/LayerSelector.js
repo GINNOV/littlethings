@@ -22,14 +22,6 @@ const LayerSelector = ({ layers, activeLayer, setActiveLayer }) => {
           ))}
         </select>
       </div>
-      <div className="legend">
-        {Object.entries(layers).map(([layerNum, layerData]) => (
-          <div key={layerNum} className="legend-item">
-            <span className="legend-color-box" style={{ backgroundColor: layerData.color, border: `1px solid ${layerData.textColor}` }}></span>
-            {layerData.name}
-          </div>
-        ))}
-      </div>
     </div>
   );
 };

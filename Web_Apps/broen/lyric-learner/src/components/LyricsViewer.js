@@ -4,7 +4,7 @@
 import React from 'react';
 import WordComponent from './WordComponent';
 
-const LyricsViewer = ({ songData, activeLayer, onWordClick }) => {
+const LyricsViewer = ({ songData, activeLayer, onWordClick, layers, showTooltipSetting }) => {
   return (
     <div className="lyrics-container">
       <h2 className="poem-title">{songData.title}</h2>
@@ -18,10 +18,19 @@ const LyricsViewer = ({ songData, activeLayer, onWordClick }) => {
               activeLayer={activeLayer}
               songData={songData}
               onWordClick={onWordClick}
+              showTooltipSetting={showTooltipSetting} // Pass setting to each word
             />
           ))}
         </div>
       ))}
+      <div className="legend">
+        {Object.entries(layers).map(([layerNum, layerData]) => (
+          <div key={layerNum} className="legend-item">
+            <span className="legend-color-box" style={{ backgroundColor: layerData.color, border: `1px solid ${layerData.textColor}` }}></span>
+            {layerData.name}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
