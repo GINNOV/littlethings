@@ -8,6 +8,7 @@
 #include "adf_swift_helpers.h"
 #include "adf_env.h"
 #include "adf_dev_flop.h"
+#include "adf_dev_hdfile.h" // AI_REVIEW: Added for adfCreateHdFile #END_REVIEW
 #include "adf_blk.h"
 #include "adf_err.h"
 #include "adf_file.h"
@@ -80,12 +81,46 @@ ADF_RETCODE create_blank_adf_c(const char* path, const char* volName, uint8_t fs
     return rc;
 }
 
+ADF_RETCODE create_blank_hdf_c(const char* path, const char* volName, uint32_t sizeInMB, uint8_t fsType) {
+    char* mutablePath = strdup(path);
+    if (!mutablePath) { return ADF_RC_MALLOC; }
+
+    // Standard HDF geometry: 1 head, 32 sectors per track.
+    // Cylinders are calculated based on the desired size.
+    uint32_t heads = 1;
+    uint32_t sectors = 32;
+    uint32_t bytesPerCylinder = heads * sectors * 512;
+    uint32_t cylinders = (sizeInMB * 1024 * 1024) / bytesPerCylinder;
+
+    struct AdfDevice *device = adfDevCreate("dump", mutablePath, cylinders, heads, sectors);
+    free(mutablePath);
+    
+    if (!device) {
+        return ADF_RC_FOPEN;
+    }
+    
+    char* mutableVolName = strdup(volName);
+    if (!mutableVolName) {
+        adfDevClose(device);
+        return ADF_RC_MALLOC;
+    }
+
+    ADF_RETCODE rc = adfCreateHdFile(device, mutableVolName, fsType);
+    free(mutableVolName);
+    
+    adfDevClose(device);
+    
+    return rc;
+}
+
+
 ADF_RETCODE install_bootblock_c(struct AdfVolume* vol, const uint8_t* code) {
     if (!vol || !code) {
         return ADF_RC_NULLPTR;
     }
     return adfVolInstallBootBlock(vol, code);
 }
+
 
 ADF_RETCODE add_file_to_adf_c(
     struct AdfVolume* vol,

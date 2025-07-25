@@ -531,34 +531,67 @@ extension ADFService {
             return nil
         }
         
-        // Open the newly created ADF to install the bootblock if needed.
         if openADF(filePath: tempPath) {
             log("ADFService: Successfully created blank ADF. Now checking for boot block installation.")
             
             var installError: String? = nil
+            
             switch bootBlockType {
             case .generic:
-                // Do nothing, the generic boot block is already there.
                 log("ADFService: Generic boot block selected. No installation needed.")
                 break
             case .kick1_3:
-                log("ADFService: Installing Kickstart 1.3 boot block.")
+                log("ADFService: Installing Kickstart 1.3 (OFS) boot block.")
                 installError = installBootBlock(data: kick13BootBlock)
             case .kick2_0:
-                log("ADFService: Installing Kickstart 2.0+ boot block.")
+                log("ADFService: Installing Kickstart 2.0+ (FFS) boot block.")
                 installError = installBootBlock(data: kick20BootBlock)
+            case .sca:
+                log("ADFService: Installing SCA boot block.")
+                installError = installBootBlock(data: scaBootBlock)
+            case .bandit:
+                log("ADFService: Installing Bandit boot block.")
+                installError = installBootBlock(data: banditBootBlock)
             }
             
             if let error = installError {
                 log("ADFService: Boot block installation failed: \(error)")
-                closeADF() // clean up
-                return nil // Indicate failure
+                closeADF()
+                return nil
             }
             
             log("ADFService: Successfully created and configured new ADF.")
             return tempURL
         } else {
             log("ADFService: Failed to open the newly created ADF for boot block installation.")
+            return nil
+        }
+    }
+    
+    func createNewBlankHDF(volumeName: String, sizeMB: Int, fsType: UInt8) -> URL? {
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileName = "blank_\(UUID().uuidString).hdf"
+        let tempURL = tempDir.appendingPathComponent(fileName)
+        let tempPath = tempURL.path
+        
+        log("ADFService: Creating new blank HDF at: \(tempPath) with Size: \(sizeMB)MB, FS Type: \(fsType)")
+        
+        let success = tempPath.withCString { cPath in
+            volumeName.withCString { cVolName in
+                return create_blank_hdf_c(cPath, cVolName, UInt32(sizeMB), fsType).rawValue == ADF_RC_OK_SWIFT
+            }
+        }
+
+        guard success else {
+            log("ADFService: create_blank_hdf_c helper failed.")
+            return nil
+        }
+        
+        if openADF(filePath: tempPath) {
+            log("ADFService: Successfully created and opened new HDF.")
+            return tempURL
+        } else {
+            log("ADFService: Failed to open the newly created HDF.")
             return nil
         }
     }
@@ -575,7 +608,6 @@ extension ADFService {
 
         if result.rawValue == ADF_RC_OK_SWIFT {
             log("ADFService: Boot block installed successfully.")
-            // Re-populate disk info as the bootable status might have changed.
             populateDiskInfo()
             return nil
         } else {
