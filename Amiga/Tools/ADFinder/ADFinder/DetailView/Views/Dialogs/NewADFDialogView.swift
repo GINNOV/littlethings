@@ -11,7 +11,7 @@ struct NewADFDialogView: View {
     let config: NewADFDialogConfig
     
     enum BootBlockType: String, CaseIterable, Identifiable {
-        case generic = "Generic (Empty)"
+        case generic = "Generic (Non-Bootable)"
         case kick1_3 = "Kickstart 1.3 Compatible"
         case kick2_0 = "Kickstart 2.0+ Compatible"
         var id: Self { self }
