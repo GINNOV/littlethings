@@ -48,8 +48,8 @@ struct DetailView: View {
     private var detailActions: DetailToolbar.Actions {
         .init(
             newADF: {
-                newAdfConfig = NewADFDialogConfig(action: { volumeName, fsType in
-                    createNewAdf(volumeName: volumeName, fsType: fsType)
+                newAdfConfig = NewADFDialogConfig(action: { volumeName, fsType, bootBlockType in
+                    createNewAdf(volumeName: volumeName, fsType: fsType, bootBlockType: bootBlockType)
                 })
             },
             saveADF: saveAdf,

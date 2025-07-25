@@ -1,11 +1,11 @@
 ;vasm -Fhunkexe -o rainbow_bar.exe rainbow_bar.asm
-;vasm -Fbin -o rainbow_bar.bin rainbow_bar.asm
+;vasm -Fbin -o rainbow_bar.bin rainbow_bar.asm  for raw format
 
-; rainbow_bar.asm - Corrected Rainbow Sine Bar Demo
+; rainbow_bar.asm - Rainbow Sine Bar Demo
 ; Targets: Amiga 500 OCS, 512KB Chip RAM, PAL 50Hz
-; (c) Adjustments for crash fix
+; crashing edition with debugger stopper
 
-    SECTION CODE,CODE
+SECTION CODE,CODE
 
 ; Constants
 SCREEN_WIDTH	EQU	320		; Low-res mode
@@ -29,8 +29,8 @@ Wait		EQU	-312
 gfxName		DC.B	'graphics.library',0
 customBase	EQU	$dff000
 
-    CNOP 0,2
 START:
+	DC.W $4AFC ; causing a trap
     move.l	ExecBase,a6
     jsr	Forbid(a6)
 

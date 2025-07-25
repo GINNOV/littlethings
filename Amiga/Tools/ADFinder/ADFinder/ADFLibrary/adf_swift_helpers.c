@@ -80,6 +80,13 @@ ADF_RETCODE create_blank_adf_c(const char* path, const char* volName, uint8_t fs
     return rc;
 }
 
+ADF_RETCODE install_bootblock_c(struct AdfVolume* vol, const uint8_t* code) {
+    if (!vol || !code) {
+        return ADF_RC_NULLPTR;
+    }
+    return adfVolInstallBootBlock(vol, code);
+}
+
 ADF_RETCODE add_file_to_adf_c(
     struct AdfVolume* vol,
     const char* amigaPath,

@@ -9,5 +9,5 @@ import Foundation
 
 struct NewADFDialogConfig: Identifiable {
     let id = UUID()
-    let action: (String, UInt8) -> Void
+    let action: (String, UInt8, NewADFDialogView.BootBlockType) -> Void
 }

@@ -10,15 +10,24 @@ import SwiftUI
 struct NewADFDialogView: View {
     let config: NewADFDialogConfig
     
+    enum BootBlockType: String, CaseIterable, Identifiable {
+        case generic = "Generic (Empty)"
+        case kick1_3 = "Kickstart 1.3 Compatible"
+        case kick2_0 = "Kickstart 2.0+ Compatible"
+        var id: Self { self }
+    }
+    
     @State private var volumeName: String
     @State private var fsType: UInt8
-    
+    @State private var bootBlockType: BootBlockType
+
     @Environment(\.dismiss) var dismiss
 
     init(config: NewADFDialogConfig) {
         self.config = config
         _volumeName = State(initialValue: "Workbench")
         _fsType = State(initialValue: FS_TYPE_OFS_SWIFT)
+        _bootBlockType = State(initialValue: .generic)
     }
 
     var body: some View {
@@ -45,6 +54,14 @@ struct NewADFDialogView: View {
                 Text("FFS (Fast File System)").tag(FS_TYPE_FFS_SWIFT)
             }
             .pickerStyle(.radioGroup)
+            
+            Picker("Boot Block:", selection: $bootBlockType) {
+                ForEach(BootBlockType.allCases) { type in
+                    Text(type.rawValue).tag(type)
+                }
+            }
+            .pickerStyle(.menu)
+
 
             HStack(spacing: 12) {
                 Button(role: .cancel, action: { dismiss() }) {
@@ -54,7 +71,7 @@ struct NewADFDialogView: View {
                 .keyboardShortcut(.cancelAction)
 
                 Button(action: {
-                    config.action(volumeName, fsType)
+                    config.action(volumeName, fsType, bootBlockType)
                     dismiss()
                 }) {
                     Text("Create ADF")
