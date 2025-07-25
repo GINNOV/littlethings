@@ -59,7 +59,7 @@ struct AboutView: View {
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text("👷🏼‍♂️ Build [ADFLib](https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder/distribution/docs/build_adflib.md) for macOS.")
-                    Text("👷🏼‍♀️ Overall tool's [architecture](https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder/distribution/docs).")
+                    Text("🔌 vAmiga [Insights](https://github.com/dirkwhoffmann/vAmiga).")
                 }
             }
             .font(.caption)

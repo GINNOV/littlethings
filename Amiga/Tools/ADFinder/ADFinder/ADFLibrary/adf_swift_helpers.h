@@ -39,6 +39,7 @@ void adf_set_vol_name(struct AdfVolume* vol, const char* newName);
 
 // accepts a filesystem type parameter (OFS or FFS).
 ADF_RETCODE create_blank_adf_c(const char* path, const char* volName, uint8_t fsType);
+ADF_RETCODE create_blank_hdf_c(const char* path, const char* volName, uint32_t sizeInMB, uint8_t fsType);
 ADF_RETCODE install_bootblock_c(struct AdfVolume* vol, const uint8_t* code);
 ADF_RETCODE add_file_to_adf_c(
     struct AdfVolume* vol,

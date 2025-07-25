@@ -14,6 +14,8 @@ struct NewADFDialogView: View {
         case generic = "Generic (Non-Bootable)"
         case kick1_3 = "Kickstart 1.3 Compatible"
         case kick2_0 = "Kickstart 2.0+ Compatible"
+        case sca = "SCA Virus Killer"
+        case bandit = "Bandit Virus Killer"
         var id: Self { self }
     }
     
