@@ -139,13 +139,13 @@ extension DetailView {
         }
     }
     
-    func createNewAdf(volumeName: String, fsType: UInt8) {
-        if let newAdfUrl = adfService.createNewBlankADF(volumeName: volumeName, fsType: fsType) {
-            self.selectedFile = newAdfUrl
-        } else {
-            showAlert(message: "Failed to create a new blank ADF image.")
+    func createNewAdf(volumeName: String, fsType: UInt8, bootBlockType: NewADFDialogView.BootBlockType) {
+            if let newAdfUrl = adfService.createNewBlankADF(volumeName: volumeName, fsType: fsType, bootBlockType: bootBlockType) {
+                self.selectedFile = newAdfUrl
+            } else {
+                showAlert(message: "Failed to create a new blank ADF image.")
+            }
         }
-    }
     
     func saveAdf() {
         guard let url = selectedFile else { return }

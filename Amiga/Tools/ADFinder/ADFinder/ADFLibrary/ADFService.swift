@@ -36,7 +36,22 @@ class ADFService {
     var usedSizeString: String = "N/A"
     var freeSizeString: String = "N/A"
     var percentFullString: String = "N/A"
+    
+    // Standard Kickstart 1.3 Bootblock
+    private let kick13BootBlock: Data = Data([
+        0x44, 0x4F, 0x53, 0x00, 0xDF, 0x10, 0x1A, 0x2A, 0x00, 0x00, 0x03, 0x70, 0x43, 0xFA, 0x00, 0x18,
+        0x4E, 0xAE, 0xFF, 0xA0, 0x4A, 0x80, 0x67, 0x0A, 0x20, 0x40, 0x20, 0x68, 0x00, 0x16, 0x70, 0x00,
+        0x4E, 0x75, 0x70, 0xFF, 0x60, 0xFA, 0x64, 0x6F, 0x73, 0x2E, 0x6C, 0x69, 0x62, 0x72, 0x61, 0x72,
+        0x79, 0x00
+    ] + Data(repeating: 0, count: 1024 - 40))
 
+    // Standard Kickstart 2.0+ Bootblock
+    private let kick20BootBlock: Data = Data([
+        0x44, 0x4F, 0x53, 0x01, 0x43, 0x1A, 0x4A, 0x2A, 0x00, 0x00, 0x03, 0x70, 0x43, 0xFA, 0x00, 0x18,
+        0x4E, 0xAE, 0xFF, 0xA0, 0x4A, 0x80, 0x67, 0x0A, 0x20, 0x40, 0x20, 0x68, 0x00, 0x16, 0x70, 0x00,
+        0x4E, 0x75, 0x70, 0xFF, 0x60, 0xFA, 0x64, 0x6F, 0x73, 0x2E, 0x6C, 0x69, 0x62, 0x72, 0x61, 0x72,
+        0x79, 0x00
+    ] + Data(repeating: 0, count: 1024 - 40))
 
     init() {
         if adfLibInit() == ADF_RC_OK {
@@ -953,7 +968,7 @@ class ADFService {
         return nil
     }
 
-    func createNewBlankADF(volumeName: String, fsType: UInt8) -> URL? {
+    func createNewBlankADF(volumeName: String, fsType: UInt8, bootBlockType: NewADFDialogView.BootBlockType) -> URL? {
         let tempDir = FileManager.default.temporaryDirectory
         let fileName = "blank_\(UUID().uuidString).adf"
         let tempURL = tempDir.appendingPathComponent(fileName)
@@ -972,14 +987,60 @@ class ADFService {
             return nil
         }
         
+        // Open the newly created ADF to install the bootblock if needed.
         if openADF(filePath: tempPath) {
-            log("ADFService: Successfully created and opened new ADF.")
+            log("ADFService: Successfully created blank ADF. Now checking for boot block installation.")
+            
+            var installError: String? = nil
+            switch bootBlockType {
+            case .generic:
+                // Do nothing, the generic boot block is already there.
+                log("ADFService: Generic boot block selected. No installation needed.")
+                break
+            case .kick1_3:
+                log("ADFService: Installing Kickstart 1.3 boot block.")
+                installError = installBootBlock(data: kick13BootBlock)
+            case .kick2_0:
+                log("ADFService: Installing Kickstart 2.0+ boot block.")
+                installError = installBootBlock(data: kick20BootBlock)
+            }
+            
+            if let error = installError {
+                log("ADFService: Boot block installation failed: \(error)")
+                closeADF() // clean up
+                return nil // Indicate failure
+            }
+            
+            log("ADFService: Successfully created and configured new ADF.")
             return tempURL
         } else {
-            log("ADFService: Failed to open the newly created ADF.")
+            log("ADFService: Failed to open the newly created ADF for boot block installation.")
             return nil
         }
     }
+    
+    private func installBootBlock(data: Data) -> String? {
+        guard let vol = self.adfVolume else {
+            return "Volume is not mounted."
+        }
+
+        let result = data.withUnsafeBytes { (bufferPtr: UnsafeRawBufferPointer) -> ADF_RETCODE in
+            let unsafePointer = bufferPtr.baseAddress?.assumingMemoryBound(to: UInt8.self)
+            return install_bootblock_c(vol, unsafePointer)
+        }
+
+        if result.rawValue == ADF_RC_OK_SWIFT {
+            log("ADFService: Boot block installed successfully.")
+            // Re-populate disk info as the bootable status might have changed.
+            populateDiskInfo()
+            return nil
+        } else {
+            let errorMsg = "ADFlib failed to install the boot block. Check C-Log."
+            log("ADFService: \(errorMsg)")
+            return errorMsg
+        }
+    }
+
     
     func setProtectionBits(for entry: AmigaEntry, newBits: UInt32) -> String? {
         guard let vol = self.adfVolume else { return "Volume is not open." }

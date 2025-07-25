@@ -9,17 +9,17 @@ RESET="\033[0m"
 
 # Paths
 OUTPUT_DIR="$HOME/Downloads/Amiga_Testing/Disks"
-ADF_NAME="raindemo.adf"
+ADF_NAME="AmiDwnUnder.adf"
 ADF_PATH="$OUTPUT_DIR/$ADF_NAME"
 CONFIG_PATH="$OUTPUT_DIR/raindemo_debug.fs-uae"
 
 # Build
 echo -e "${HIGHLIGHT}BUILDING...${RESET}"
-vasm -Fhunkexe -o rainbow_bar.exe rainbow_bar.asm
+vasm -Fhunkexe -o AmiDwnUnder.bin AmiDwnUnder.s
 
 # Package
 echo -e "${HIGHLIGHT}PACKAGING...${RESET}"
-send2adf -o "$ADF_PATH" -N rainDEMO rainbow_bar.exe S C
+send2adf -o "$ADF_PATH" -N DownUndr AmiDwnUnder.bin S C
 
 # Generate FS-UAE config
 echo -e "${HIGHLIGHT}GENERATING FS-UAE CONFIGURATION...${RESET}"

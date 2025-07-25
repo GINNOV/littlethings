@@ -26,13 +26,25 @@ enum FilesystemType: String, AppEnum {
     ]
 }
 
+enum BootBlockType: String, AppEnum {
+    case generic = "Generic"
+    case kick1_3 = "Kickstart 1.3"
+    case kick2_0 = "Kickstart 2.0+"
+
+    static var typeDisplayRepresentation: TypeDisplayRepresentation = "Boot Block Type"
+    static var caseDisplayRepresentations: [BootBlockType: DisplayRepresentation] = [
+        .generic: "Generic (Empty)",
+        .kick1_3: "Kickstart 1.3 Compatible",
+        .kick2_0: "Kickstart 2.0+ Compatible"
+    ]
+}
 // MARK: - Create ADF Intent
 
 /// This intent allows users to create a new, blank ADF file via Shortcuts.
 struct CreateADFIntent: AppIntent {
     static var title: LocalizedStringResource = "Create Blank ADF"
     static var description: IntentDescription = "Creates a new, empty Amiga Disk File (ADF) with a specified volume name and filesystem type."
-    static var openAppWhenRun: Bool = false // This action can run in the background.
+    static var openAppWhenRun: Bool = false
 
     @Parameter(title: "Volume Name", default: "Workbench")
     var volumeName: String
@@ -40,8 +52,11 @@ struct CreateADFIntent: AppIntent {
     @Parameter(title: "Filesystem Type", default: .ofs)
     var fsType: FilesystemType
     
+    @Parameter(title: "Boot Block Type", default: .generic)
+    var bootBlockType: BootBlockType
+    
     static var parameterSummary: some ParameterSummary {
-        Summary("Create a new ADF named \(\.$volumeName) with filesystem \(\.$fsType)")
+        Summary("Create a new ADF named \(\.$volumeName) with filesystem \(\.$fsType) and boot block \(\.$bootBlockType)")
     }
 
     @MainActor
@@ -49,16 +64,26 @@ struct CreateADFIntent: AppIntent {
         let adfService = ADFService()
         let fsTypeRaw: UInt8 = (fsType == .ffs) ? FS_TYPE_FFS_SWIFT : FS_TYPE_OFS_SWIFT
         
-        guard let newAdfUrl = adfService.createNewBlankADF(volumeName: volumeName, fsType: fsTypeRaw) else {
+        let dialogBootBlockType: NewADFDialogView.BootBlockType
+        switch bootBlockType {
+        case .generic:
+            dialogBootBlockType = .generic
+        case .kick1_3:
+            dialogBootBlockType = .kick1_3
+        case .kick2_0:
+            dialogBootBlockType = .kick2_0
+        }
+
+        guard let newAdfUrl = adfService.createNewBlankADF(volumeName: volumeName, fsType: fsTypeRaw, bootBlockType: dialogBootBlockType) else {
             throw NSError(domain: "ADFServiceError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create the blank ADF file. Check ADFinder logs for more details."])
         }
         
-        // CORRECTED: The 'readImmediately' parameter is not valid in this initializer.
         let intentFile = IntentFile(fileURL: newAdfUrl)
         
         return .result(value: intentFile)
     }
 }
+
 
 // MARK: - Add Files to ADF Intent
 
