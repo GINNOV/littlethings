@@ -29,7 +29,7 @@ struct DiskInfoView: View {
             
             infoRow(label: "FS Type:", value: adfService.filesystemType)
             infoRow(label: "Bootable:", value: adfService.isBootable ? "YES" : "NO")
-            infoRow(label: "Label:", value: adfService.volumeLabel)
+            infoRow(label: "Boot Block:", value: adfService.bootBlockType.description)
             infoRow(label: "Created:", value: adfService.creationDateString)
             infoRow(label: "Size:", value: adfService.diskSizeString)
             infoRow(label: "Used:", value: adfService.usedSizeString)

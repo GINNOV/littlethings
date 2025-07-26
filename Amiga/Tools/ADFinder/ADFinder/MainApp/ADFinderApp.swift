@@ -22,6 +22,7 @@ struct ADFinderApp: App {
     @Environment(\.openWindow) private var openWindow
 
     static let adfUType = UTType("public.retro.adf")!
+    static let hdfUType = UTType("public.retro.hdf")!
     
     var body: some Scene {
         WindowGroup {

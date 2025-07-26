@@ -12,12 +12,12 @@ struct InputDialogView: View {
     
     @State private var inputText: String
     @Environment(\.dismiss) var dismiss
-
+    
     init(config: InputDialogConfig) {
         self.config = config
         _inputText = State(initialValue: config.initialText)
     }
-
+    
     var body: some View {
         VStack(spacing: 20) {
             // The image can now be an asset or an SF Symbol
@@ -34,10 +34,10 @@ struct InputDialogView: View {
                     .scaledToFit()
                     .frame(width: 80, height: 80)
             }
-
+            
             Text(config.title)
                 .font(.headline)
-
+            
             Text(config.message)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
@@ -46,14 +46,14 @@ struct InputDialogView: View {
             TextField(config.prompt, text: $inputText)
                 .textFieldStyle(.roundedBorder)
                 .autocorrectionDisabled()
-
+            
             HStack(spacing: 12) {
                 Button(role: .cancel, action: { dismiss() }) {
                     Text("Cancel")
                         .frame(maxWidth: .infinity)
                 }
                 .keyboardShortcut(.cancelAction)
-
+                
                 Button(action: {
                     config.action(inputText)
                     dismiss()
@@ -85,34 +85,34 @@ struct ActionConfirmationView: View {
     
     let onConfirm: () -> Void
     let onCancel: () -> Void
-
+    
     var body: some View {
         VStack(spacing: 20) {
             Image(imageName)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 80, height: 80)
-
+            
             Text(title)
                 .font(.headline)
-
+            
             Text(message)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-
+            
             if showsForceToggle {
                 Toggle("Override AmigaOS flags (force operation)", isOn: $forceFlag)
                     .toggleStyle(.checkbox)
             }
-
+            
             HStack(spacing: 12) {
                 Button(role: .cancel, action: onCancel) {
                     Text("Cancel")
                         .frame(maxWidth: .infinity)
                 }
                 .keyboardShortcut(.cancelAction)
-
+                
                 Button(role: confirmButtonRole, action: onConfirm) {
                     Text(confirmButtonTitle)
                         .frame(maxWidth: .infinity)
@@ -135,7 +135,7 @@ struct WelcomeView: View {
                 .frame(width: 100, height: 100)
                 .foregroundColor(.secondary)
                 .padding()
-            Text("Please open or drop an ADF file here.")
+            Text("Please open or drop an ADF/HDF file here.")
                 .font(.title)
                 .foregroundColor(.secondary)
         }
@@ -177,13 +177,13 @@ struct FileRowView: View {
 
 struct ProtectionBitsView: View {
     let bits: UInt32
-
+    
     private struct BitInfo {
         let label: String
         let flag: UInt32
     }
-
-        private let permissionFlags: [BitInfo] = [
+    
+    private let permissionFlags: [BitInfo] = [
         .init(label: "r", flag: ACCMASK_R_SWIFT),
         .init(label: "w", flag: ACCMASK_W_SWIFT),
         .init(label: "e", flag: ACCMASK_E_SWIFT),
@@ -196,7 +196,7 @@ struct ProtectionBitsView: View {
         .init(label: "p", flag: FIBF_PURE_SWIFT),
         .init(label: "a", flag: FIBF_ARCHIVE_SWIFT)
     ]
-
+    
     var body: some View {
         HStack(spacing: 16) {
             VStack(alignment: .leading) {
@@ -220,7 +220,7 @@ struct ProtectionBitsView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
                 HStack {
-                                        ForEach(attributeFlags, id: \.label) { flagInfo in
+                    ForEach(attributeFlags, id: \.label) { flagInfo in
                         ProtectionBitView(
                             label: flagInfo.label,
                             isSet: (bits & flagInfo.flag) != 0, // Direct logic
@@ -237,7 +237,7 @@ private struct ProtectionBitView: View {
     let label: String
     let isSet: Bool
     let isProtection: Bool
-
+    
     private var statusColor: Color {
         
         if isSet {
@@ -250,7 +250,7 @@ private struct ProtectionBitView: View {
     private var statusText: String {
         return isSet ? label : "-"
     }
-
+    
     var body: some View {
         Text(statusText.uppercased())
             .font(.system(.caption, design: .monospaced).bold())
@@ -265,7 +265,7 @@ private struct ProtectionBitView: View {
             .help(getHelpText())
     }
     
-        private func getHelpText() -> String {
+    private func getHelpText() -> String {
         switch label.lowercased() {
         case "d": return isSet ? "Deletable" : "Delete Protected"
         case "e": return isSet ? "Executable" : "Execute Protected"
@@ -305,8 +305,16 @@ extension View {
             NewADFDialogView(config: item)
         }
     }
+
+    func newHdfDialogSheet(
+        config: Binding<NewHDFDialogConfig?>
+    ) -> some View {
+        self.sheet(item: config) { item in
+            NewHDFDialogView(config: item)
+        }
+    }
     
-        func setPermissionsDialogSheet(
+    func setPermissionsDialogSheet(
         config: Binding<SetPermissionsDialogConfig?>
     ) -> some View {
         self.sheet(item: config) { item in
