@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var selectedFile: URL?
 
     static let adfUType = UTType("public.retro.adf")!
+    static let hdfUType = UTType("public.retro.hdf")!
 
     var body: some View {
         NavigationSplitView {

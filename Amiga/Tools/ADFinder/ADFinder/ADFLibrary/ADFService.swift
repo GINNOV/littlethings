@@ -24,10 +24,10 @@ class ADFService {
     internal var adfDevice: UnsafeMutablePointer<AdfDevice>?
     internal var adfVolume: UnsafeMutablePointer<AdfVolume>?
     private var adflibInitialized = false
-
+    
     var currentVolumeName: String?
     var currentPath: [String] = []
-
+    
     var filesystemType: String = "N/A"
     var isBootable: Bool = false
     var volumeLabel: String = "N/A"
@@ -38,36 +38,39 @@ class ADFService {
     var percentFullString: String = "N/A"
     var bootBlockType: String = "N/A"
     
-    // AI_REVIEW: Changed access level from private to internal to allow access from extensions. #END_REVIEW
+    
+    enum ImageKind { case adf, hdf }
+    @Published  @ObservationIgnored internal var currentImageKind: ImageKind = .adf
+    
     internal let kick13BootBlock: Data = Data([
         0x44, 0x4F, 0x53, 0x00, 0xDF, 0x10, 0x1A, 0x2A, 0x00, 0x00, 0x03, 0x70, 0x43, 0xFA, 0x00, 0x18,
         0x4E, 0xAE, 0xFF, 0xA0, 0x4A, 0x80, 0x67, 0x0A, 0x20, 0x40, 0x20, 0x68, 0x00, 0x16, 0x70, 0x00,
         0x4E, 0x75, 0x70, 0xFF, 0x60, 0xFA, 0x64, 0x6F, 0x73, 0x2E, 0x6C, 0x69, 0x62, 0x72, 0x61, 0x72,
         0x79, 0x00
     ] + Data(repeating: 0, count: 1024 - 40))
-
+    
     internal let kick20BootBlock: Data = Data([
         0x44, 0x4F, 0x53, 0x01, 0x43, 0x1A, 0x4A, 0x2A, 0x00, 0x00, 0x03, 0x70, 0x43, 0xFA, 0x00, 0x18,
         0x4E, 0xAE, 0xFF, 0xA0, 0x4A, 0x80, 0x67, 0x0A, 0x20, 0x40, 0x20, 0x68, 0x00, 0x16, 0x70, 0x00,
         0x4E, 0x75, 0x70, 0xFF, 0x60, 0xFA, 0x64, 0x6F, 0x73, 0x2E, 0x6C, 0x69, 0x62, 0x72, 0x61, 0x72,
         0x79, 0x00
     ] + Data(repeating: 0, count: 1024 - 40))
-
+    
     internal let scaBootBlock: Data = Data([
         0x44, 0x4f, 0x53, 0x06, 0x57, 0x02, 0x24, 0x4a, 0x00, 0x00, 0x03, 0x70, 0x43, 0xfa, 0x00, 0x18,
         0x4e, 0xae, 0xff, 0xa0, 0x4a, 0x80, 0x67, 0x0a, 0x20, 0x40, 0x20, 0x68, 0x00, 0x16, 0x70, 0x00,
         0x4e, 0x75, 0x70, 0xff, 0x60, 0xfa, 0x64, 0x6f, 0x73, 0x2e, 0x6c, 0x69, 0x62, 0x72, 0x61, 0x72,
         0x79, 0x00
     ] + Data(repeating: 0, count: 1024 - 40))
-
+    
     internal let banditBootBlock: Data = Data([
         0x44, 0x4f, 0x53, 0x07, 0x82, 0x2d, 0x53, 0x7a, 0x00, 0x00, 0x03, 0x70, 0x43, 0xfa, 0x00, 0x18,
         0x4e, 0xae, 0xff, 0xa0, 0x4a, 0x80, 0x67, 0x0a, 0x20, 0x40, 0x20, 0x68, 0x00, 0x16, 0x70, 0x00,
         0x4e, 0x75, 0x70, 0xff, 0x60, 0xfa, 0x64, 0x6f, 0x73, 0x2e, 0x6c, 0x69, 0x62, 0x72, 0x61, 0x72,
         0x79, 0x00
     ] + Data(repeating: 0, count: 1024 - 40))
-
-
+    
+    
     init() {
         if adfLibInit() == ADF_RC_OK {
             adflibInitialized = true
@@ -75,9 +78,9 @@ class ADFService {
             
             setup_logging()
             log("ADFService: ADFLib logging redirected to Swift console via C shim.")
-
+            
             adfEnvSetProperty(ADF_PR_IGNORE_CHECKSUM_ERRORS, 1)
-
+            
             if register_dump_driver_helper() != ADF_RC_OK {
                 log("ADFService: Warning - Failed to add dump device driver via helper.")
             }
@@ -85,7 +88,7 @@ class ADFService {
             log("ADFService: Error - Failed to initialize ADFLib.")
         }
     }
-
+    
     deinit {
         closeADF()
         if adflibInitialized {
@@ -116,13 +119,13 @@ class ADFService {
             log("ADFService: CRITICAL - Failed to re-initialize ADFLib.")
         }
     }
-
+    
     internal func getADFLibError(context: String) -> String {
         let errorMessage = "ADFLib operation failed: \(context)."
         log(errorMessage)
         return errorMessage
     }
-
+    
     private func resetDiskInfo() {
         filesystemType = "N/A"
         isBootable = false
@@ -135,29 +138,30 @@ class ADFService {
         currentVolumeName = nil
         bootBlockType = "N/A"
     }
-
+    
     func openADF(filePath: String) -> Bool {
+        currentImageKind = filePath.lowercased().hasSuffix(".hdf") ? .hdf : .adf
         closeADF()
         reinitializeAdfLib()
-
+        
         guard adflibInitialized else {
             log("ADFService.openADF: ABORT - ADFLib could not be re-initialized.")
             return false
         }
-
+        
         log("ADFService.openADF: === Starting Mount Process for: \"\(filePath)\" ===")
-
+        
         log("ADFService.openADF: -> Calling adfDevOpenWithDriver...")
         self.adfDevice = filePath.withCString { cFilePath -> UnsafeMutablePointer<AdfDevice>? in
             return adfDevOpenWithDriver("dump", cFilePath, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READWRITE_SWIFT)))
         }
-
+        
         if self.adfDevice == nil {
             log("ADFService.openADF: <- adfDevOpenWithDriver FAILED. Returned nil.")
             return false
         }
         log("ADFService.openADF: <- adfDevOpenWithDriver SUCCESS.")
-
+        
         log("ADFService.openADF: -> Calling adfDevMount...")
         let devMountResult = adfDevMount(self.adfDevice)
         if devMountResult != ADF_RC_OK {
@@ -183,17 +187,17 @@ class ADFService {
         log("ADFService.openADF: -> Populating disk info...")
         populateDiskInfo()
         log("ADFService.openADF: <- Disk info populated.")
-
+        
         log("ADFService.openADF: === Mount Process SUCCESS for volume: \(self.currentVolumeName ?? "N/A") ===")
         return true
     }
-
+    
     internal func populateDiskInfo() {
         guard let vol = self.adfVolume else {
             resetDiskInfo()
             return
         }
-
+        
         var fsTempType = ""
         if adfVolIsFFS(vol) == true {
             fsTempType = "FFS"
@@ -207,20 +211,20 @@ class ADFService {
             fsTempType += " DIRCACHE"
         }
         self.filesystemType = fsTempType.trimmingCharacters(in: .whitespaces)
-
+        
         if let volNameCStr = vol.pointee.volName {
             self.volumeLabel = String(cString: volNameCStr)
         } else {
             self.volumeLabel = "Unnamed"
         }
         self.currentVolumeName = self.volumeLabel
-
+        
         var bootBlock = AdfBootBlock()
         if adfReadBootBlock(vol, &bootBlock) == ADF_RC_OK {
             let dosTypeBytes = [bootBlock.dosType.0, bootBlock.dosType.1, bootBlock.dosType.2, bootBlock.dosType.3]
             let dosTypeString = String(cString: [bootBlock.dosType.0, bootBlock.dosType.1, bootBlock.dosType.2].map { UInt8(bitPattern: $0) } + [0])
             isBootable = (dosTypeString == "DOS")
-
+            
             if isBootable {
                 switch dosTypeBytes[3] {
                 case 0:
@@ -242,7 +246,7 @@ class ADFService {
             bootBlockType = "N/A (Read Error)"
             log("ADFService: Could not read boot block.")
         }
-
+        
         let rootBlockSector = adfVolCalcRootBlk(vol)
         var rootBlock = AdfRootBlock()
         if adfReadRootBlock(vol, UInt32(rootBlockSector), &rootBlock) == ADF_RC_OK {
@@ -267,12 +271,12 @@ class ADFService {
             creationDateString = "N/A (RootBlock Error)"
             log("ADFService: Failed to read root block.")
         }
-
+        
         let totalBlocks = Int64(adfVolGetSizeInBlocks(vol))
         let freeBlocks = Int64(adfCountFreeBlocks(vol))
         let usedBlocks = totalBlocks - freeBlocks
         let blockSize = Int64(vol.pointee.blockSize)
-
+        
         if blockSize > 0 {
             let totalSizeKB = (totalBlocks * blockSize) / 1024
             let usedSizeKB = (usedBlocks * blockSize) / 1024
@@ -281,7 +285,7 @@ class ADFService {
             diskSizeString = "\(totalSizeKB) KB"
             usedSizeString = "\(usedSizeKB) KB"
             freeSizeString = "\(freeSizeKB) KB"
-
+            
             if totalBlocks > 0 {
                 let percent = Double(usedBlocks) * 100.0 / Double(totalBlocks)
                 percentFullString = String(format: "%.0f%%", percent)
@@ -293,8 +297,8 @@ class ADFService {
             log("ADFService: Invalid block size from volume.")
         }
     }
-
-
+    
+    
     func closeADF() {
         if let vol = self.adfVolume {
             adfVolUnMount(vol)

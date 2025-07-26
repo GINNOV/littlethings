@@ -31,7 +31,8 @@ struct AmigaMenuCommands: Commands {
                 Button("Save ADF As...", action: actions.saveADF)
                     .disabled(!isFileOpen)
                     .keyboardShortcut("s", modifiers: .command)
-                
+                Button("New HDF...", action: actions.newHDF)
+                    .keyboardShortcut("n", modifiers: [.command, .shift])
                 Divider()
 
                 // MARK: - Item Creation

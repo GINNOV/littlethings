@@ -32,7 +32,7 @@ struct SidebarView: View {
             Button {
                 showingFileImporter = true
             } label: {
-                Label("Open ADF Disk", systemImage: "doc.badge.plus")
+                Label("Open Disk", systemImage: "doc.badge.plus")
             }
             .padding(.bottom)
 
@@ -62,7 +62,11 @@ struct SidebarView: View {
         }
         .padding()
         .navigationSplitViewColumnWidth(min: 280, ideal: 300, max: 500)
-        .fileImporter(isPresented: $showingFileImporter, allowedContentTypes: [ContentView.adfUType], allowsMultipleSelection: false) { result in
+        .fileImporter(
+            isPresented: $showingFileImporter,
+            allowedContentTypes: [ContentView.adfUType, ContentView.hdfUType],
+            allowsMultipleSelection: false
+        ) { result in
             switch result {
             case .success(let urls):
                 guard let url = urls.first else { return }

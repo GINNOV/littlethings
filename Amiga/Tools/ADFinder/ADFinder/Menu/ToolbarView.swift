@@ -18,6 +18,7 @@ struct DetailToolbar: ToolbarContent {
     // Using a nested struct to group all the action closures together neatly.
     struct Actions {
         let newADF: () -> Void
+        let newHDF: () -> Void
         let saveADF: () -> Void
         let addFile: () -> Void
         let newFolder: () -> Void
@@ -46,6 +47,11 @@ struct DetailToolbar: ToolbarContent {
                 Label("New", systemImage: "doc.badge.plus")
             }
             .help("Create New Blank ADF")
+            
+            Button(action: actions.newHDF) {
+                Label("New", systemImage: "internaldrive.fill")
+            }
+            .help("Create New Blank HDF")
             
             // Save ADF Button
             Button(action: actions.saveADF) {

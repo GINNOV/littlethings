@@ -147,6 +147,18 @@ extension DetailView {
             }
         }
     
+    func createNewHdf(volumeName: String, sizeMB: Int, fsType: UInt8) {
+        if let newHdfUrl = adfService.createNewBlankHDF(
+            volumeName: volumeName,
+            sizeMB: sizeMB,
+            fsType: fsType
+        ) {
+            self.selectedFile = newHdfUrl
+        } else {
+            showAlert(message: "Failed to create a new blank HDF image.")
+        }
+    }
+    
     func saveAdf() {
         guard let url = selectedFile else { return }
         

@@ -32,24 +32,15 @@ class RecentFilesService {
     /// Adds a new URL to the top of the recents list.
     /// It ensures the URL is for an ADF file, removes any existing duplicate,
     // and trims the list to the maximum allowed count.
+    // RecentFilesService.swift
     func addRecentFile(_ url: URL) {
-        // We only want to track .adf files.
-        guard url.pathExtension.lowercased() == "adf" else { return }
-        
+        let ext = url.pathExtension.lowercased()
+        guard ["adf", "hdf"].contains(ext) else { return }
+
         let path = url.path
-        
-        // Remove the path if it already exists to avoid duplicates and move it to the top.
         recentFilePaths.removeAll { $0 == path }
-        
-        // Add the new path to the beginning of the array.
         recentFilePaths.insert(path, at: 0)
-        
-        // Make sure the list doesn't exceed the maximum count.
-        if recentFilePaths.count > maxRecents {
-            recentFilePaths = Array(recentFilePaths.prefix(maxRecents))
-        }
-        
-        // Save the updated list.
+        recentFilePaths = Array(recentFilePaths.prefix(maxRecents))
         save()
     }
     

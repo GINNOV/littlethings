@@ -69,7 +69,7 @@ struct ADFCompareView: View {
                     }
                 }
             } else {
-                Text("Drop two ADF files above and click Compare.")
+                Text("Drop two disk images above and click Compare.")
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }

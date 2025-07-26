@@ -22,6 +22,7 @@ struct DetailView: View {
     @State var inputDialogConfig: InputDialogConfig?
     @State var infoDialogConfig: InfoDialogConfig?
     @State var newAdfConfig: NewADFDialogConfig?
+    @State var newHDFConfig: NewHDFDialogConfig?
     @State var setPermissionsConfig: SetPermissionsDialogConfig?
     @State var forceFlag: Bool = false
     @State var showingAboutView = false
@@ -45,12 +46,30 @@ struct DetailView: View {
         return currentEntries.first { $0.id == selectedEntryID }
     }
     
+    // MARK: – 1. Dynamic UTType & file-name helpers
+    private var currentContentType: UTType {
+        adfService.currentImageKind == .hdf ? ContentView.hdfUType : ContentView.adfUType
+    }
+    
+    private var defaultSaveName: String {
+        let base = adfService.volumeLabel.isEmpty ? "Disk" : adfService.volumeLabel
+        let ext  = adfService.currentImageKind == .hdf ? "hdf" : "adf"
+        return base.replacingOccurrences(of: "[:/\\?%*|\"<>]", with: "_", options: .regularExpression) + ".\(ext)"
+    }
+    
     private var detailActions: DetailToolbar.Actions {
         .init(
             newADF: {
                 newAdfConfig = NewADFDialogConfig(action: { volumeName, fsType, bootBlockType in
                     createNewAdf(volumeName: volumeName, fsType: fsType, bootBlockType: bootBlockType)
                 })
+            },
+            newHDF: {
+                newHDFConfig = NewHDFDialogConfig { volumeName, sizeMB, fsType in
+                    createNewHdf(volumeName: volumeName,
+                                 sizeMB: sizeMB,
+                                 fsType: fsType)
+                }
             },
             saveADF: saveAdf,
             addFile: { showingFileImporter = true },
@@ -162,6 +181,7 @@ struct DetailView: View {
         .inputDialogSheet(config: $inputDialogConfig)
         .infoDialogSheet(config: $infoDialogConfig)
         .newAdfDialogSheet(config: $newAdfConfig)
+        .newHdfDialogSheet(config: $newHDFConfig)
         .setPermissionsDialogSheet(config: $setPermissionsConfig)
         .sheet(isPresented: $showingFileViewer) {
             if let entry = selectedEntryForView, let data = fileContentData {
@@ -183,17 +203,18 @@ struct DetailView: View {
         } message: {
             Text(alertMessage ?? "An unknown error occurred.")
         }
+        
         .fileExporter(
             isPresented: $showingFileExporter,
             document: adfDocumentToSave,
-            contentType: ContentView.adfUType,
-            defaultFilename: adfDocumentToSave?.defaultFileName
+            contentType: currentContentType,
+            defaultFilename: defaultSaveName
         ) { result in
             handleFileExport(result: result)
         }
         .fileImporter(
             isPresented: $showingFileImporter,
-            allowedContentTypes: [UTType.data],
+            allowedContentTypes: [ContentView.adfUType, ContentView.hdfUType],
             allowsMultipleSelection: true
         ) { result in
             handleFileImport(result: result)

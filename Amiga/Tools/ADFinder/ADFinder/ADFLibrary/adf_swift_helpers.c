@@ -8,7 +8,7 @@
 #include "adf_swift_helpers.h"
 #include "adf_env.h"
 #include "adf_dev_flop.h"
-#include "adf_dev_hdfile.h" // AI_REVIEW: Added for adfCreateHdFile #END_REVIEW
+#include "adf_dev_hdfile.h"
 #include "adf_blk.h"
 #include "adf_err.h"
 #include "adf_file.h"
