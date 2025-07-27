@@ -20,7 +20,7 @@ struct ADFinderApp: App {
     @State private var showWhatsNew = false
     
     @Environment(\.openWindow) private var openWindow
-
+    
     static let adfUType = UTType("public.retro.adf")!
     static let hdfUType = UTType("public.retro.hdf")!
     
@@ -29,19 +29,26 @@ struct ADFinderApp: App {
             ContentView(recentFilesService: recentFilesService)
                 .environment(logStore)
                 .sheet(isPresented: $showWhatsNew) {
-                                    WhatsNewView(showWhatsNew: $showWhatsNew)
-                                }
-                                .onAppear {
-                                    checkForUpdates()
-                                }
+                    WhatsNewView(showWhatsNew: $showWhatsNew)
+                }
+                .onAppear {
+                    checkForUpdates()
+                }
         }
         .commands {
             AmigaMenuCommands()
             
-                        CommandGroup(replacing: .appInfo) {
+            CommandGroup(replacing: .appInfo) {
                 Button("About ADFinder") {
                     
                     NotificationCenter.default.post(name: .showAboutWindow, object: nil)
+                }
+            }
+            
+            CommandGroup(after: .appInfo) {
+                Button("What's new...") {
+                    
+                    NotificationCenter.default.post(name: .showWhatsNewWindow, object: nil)
                 }
             }
             
@@ -68,7 +75,7 @@ struct ADFinderApp: App {
                     }
                 }
             }
-
+            
             CommandGroup(after: .windowList) {
                 Button("Show ADFlib Console") {
                     openWindow(id: "console-window")
