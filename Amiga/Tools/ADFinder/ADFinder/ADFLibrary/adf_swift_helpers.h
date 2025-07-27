@@ -31,13 +31,14 @@ int32_t  get_AdfEntry_type(const struct AdfEntry* entry);
 const char* get_AdfEntry_name_ptr(const struct AdfEntry* entry);
 const char* get_AdfEntry_comment_ptr(const struct AdfEntry* entry);
 
-ADF_RETCODE register_dump_driver_helper(void);
+uint32_t get_AdfEntry_header_block(const struct AdfEntry* entry);
 
 void setup_logging(void);
 
 void adf_set_vol_name(struct AdfVolume* vol, const char* newName);
 
 // accepts a filesystem type parameter (OFS or FFS).
+ADF_RETCODE register_dump_driver_helper(void);
 ADF_RETCODE create_blank_adf_c(const char* path, const char* volName, uint8_t fsType);
 ADF_RETCODE create_blank_hdf_c(const char* path, const char* volName, uint32_t sizeInMB, uint8_t fsType);
 ADF_RETCODE install_bootblock_c(struct AdfVolume* vol, const uint8_t* code);
@@ -47,7 +48,6 @@ ADF_RETCODE add_file_to_adf_c(
     const uint8_t* buffer,
     uint32_t bufferSize
 );
-
 ADF_RETCODE parse_boot_block(const uint8_t* data, struct AdfBootBlock* boot);
 ADF_RETCODE parse_root_block(const uint8_t* adf_data, uint32_t block_size, uint32_t root_block_sector, struct AdfRootBlock* root);
 

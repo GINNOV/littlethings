@@ -183,7 +183,7 @@ extension ADFService {
                     let sizeStr = String(entry.size).padding(toLength: 8, withPad: " ", startingAt: 0)
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "dd-MMM-yyyy"
-                    let dateStr = (entry.date != nil ? dateFormatter.string(from: entry.date!) : "-----------").padding(toLength: 12, withPad: " ", startingAt: 0)
+                    let dateStr = dateFormatter.string(from: entry.date).padding(toLength: 12, withPad: " ", startingAt: 0)
 
                     let line = "\(perms)    0    0 \(sizeStr) \(sizeStr) 100.0%%    ---- \(dateStr) \(fullPath)\n"
                     resultString += line

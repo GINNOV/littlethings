@@ -28,11 +28,10 @@ struct InfoDialogView: View {
                 InfoRow(label: "Name:", value: config.entry.name)
                 InfoRow(label: "Type:", value: config.entry.type.rawValue)
                 InfoRow(label: "Size:", value: "\(config.entry.size) bytes")
-                if let date = config.entry.date {
-                    InfoRow(label: "Date:", value: date.formatted(date: .long, time: .standard))
-                }
-                if let comment = config.entry.comment, !comment.isEmpty {
-                    InfoRow(label: "Comment:", value: comment)
+                InfoRow(label: "Date:", value: config.entry.date.formatted(date: .long, time: .standard))
+                
+                if !config.entry.comment.isEmpty {
+                    InfoRow(label: "Comment:", value: config.entry.comment)
                 }
                 
                 HStack(alignment: .top) {

@@ -30,7 +30,7 @@ struct NewHDFDialogView: View {
         }
     }
     
-    @State private var volumeName: String = "Work"
+    @State private var volumeName: String = "PlayHard"
     @State private var fsType: UInt8 = FS_TYPE_FFS_SWIFT
     @State private var selectedSizeType: HDFSizeType = .mb20
     @State private var customSizeText: String = "20"
