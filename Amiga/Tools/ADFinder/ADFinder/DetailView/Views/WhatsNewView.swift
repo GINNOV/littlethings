@@ -20,13 +20,17 @@ struct WhatsNewView: View {
 
             VStack(alignment: .leading, spacing: 15) {
                 FeatureView(
-                    title: "Quick Look Support",
+                    title: "🔍 Quick Look Support",
                     description: "You can use the spacebar on files and if you have the right plugin installed, Quick Look will show you the preview. Install IFFViewer for IFF images"
                 )
                 
                 FeatureView(
-                    title: "Disk Analysis",
+                    title: "💿 Disk Analysis",
                     description: "You can now compare two images by sectors. This is useful for checking for data corruption or comparing two versions of an image."
+                )
+                FeatureView(
+                    title: "🪖 Hard Drive Files",
+                    description: "You can now create Hard Drive files or disks with specific boot blocks."
                 )
             }
             
@@ -42,26 +46,28 @@ struct WhatsNewView: View {
             }
         }
         .padding(30)
-        .frame(width: 450, height: 300)
+        .frame(width: 450, height: 400)
     }
 }
 
-// Helper view for displaying a feature.
 struct FeatureView: View {
     let title: String
     let description: String
 
     var body: some View {
-        HStack(alignment: .top) {
+        HStack(alignment: .top, spacing: 8) {
             Text("•")
                 .font(.title)
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)
                     .fontWeight(.semibold)
+                    .multilineTextAlignment(.leading)
                 Text(description)
                     .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

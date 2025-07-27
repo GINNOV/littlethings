@@ -26,6 +26,7 @@ struct DetailView: View {
     @State var setPermissionsConfig: SetPermissionsDialogConfig?
     @State var forceFlag: Bool = false
     @State var showingAboutView = false
+    @State var showingWhatsnewView = false
     @State var showingFileViewer = false
     @State var selectedEntryForView: AmigaEntry?
     @State var fileContentData: Data?
@@ -198,6 +199,9 @@ struct DetailView: View {
         .sheet(isPresented: $showingAboutView) {
             AboutView()
         }
+        .sheet(isPresented: $showingWhatsnewView) {
+            WhatsNewView(showWhatsNew: $showingWhatsnewView)
+        }
         .alert("Notice", isPresented: $showingAlert) {
             Button("OK", role: .cancel) { alertMessage = nil }
         } message: {
@@ -224,6 +228,9 @@ struct DetailView: View {
         .focusedSceneValue(\.isEntrySelected, selectedEntry != nil)
         .onReceive(NotificationCenter.default.publisher(for: .showAboutWindow)) { _ in
             showingAboutView = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showWhatsNewWindow)) { _ in
+            showingWhatsnewView = true
         }
 
         .onReceive(NotificationCenter.default.publisher(for: .triggerQuickLook)) { _ in
