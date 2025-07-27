@@ -44,12 +44,14 @@ struct DetailToolbar: ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
             // New ADF Button
             Button(action: actions.newADF) {
-                Label("New", systemImage: "doc.badge.plus")
+                Label("New", systemImage: "doc.fill.badge.plus")
+                    .foregroundColor(.accentColor)
             }
             .help("Create New Blank ADF")
             
             Button(action: actions.newHDF) {
-                Label("New", systemImage: "internaldrive.fill")
+                Label("New", systemImage: "externaldrive.fill.badge.plus")
+                    .foregroundColor(.yellow)
             }
             .help("Create New Blank HDF")
             

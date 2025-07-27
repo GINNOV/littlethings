@@ -9,40 +9,26 @@ import SwiftUI
 
 struct NewADFDialogView: View {
     let config: NewADFDialogConfig
-    
-    enum BootBlockType: String, CaseIterable, Identifiable {
-        case generic = "Generic (Non-Bootable)"
-        case kick1_3 = "Kickstart 1.3 Compatible"
-        case kick2_0 = "Kickstart 2.0+ Compatible"
-        case sca = "SCA Virus Killer"
-        case bandit = "Bandit Virus Killer"
-        var id: Self { self }
-    }
-    
-    @State private var volumeName: String
-    @State private var fsType: UInt8
-    @State private var bootBlockType: BootBlockType
 
+    @State private var volumeName: String = "Workbench"
+    @State private var fsType: FileSystem = .ffs
+    @State private var selectedBootBlock: BootBlockType = .generic
+    
     @Environment(\.dismiss) var dismiss
-
-    init(config: NewADFDialogConfig) {
-        self.config = config
-        _volumeName = State(initialValue: "Workbench")
-        _fsType = State(initialValue: FS_TYPE_OFS_SWIFT)
-        _bootBlockType = State(initialValue: .generic)
-    }
 
     var body: some View {
         VStack(spacing: 20) {
-            Image("disk_maker")
+            Image(systemName: "opticaldiscdrive.fill")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 80, height: 80)
+                .frame(width: 60, height: 60)
+                .symbolRenderingMode(.hierarchical)
+                .foregroundColor(.accentColor)
 
             Text("Create New Blank ADF")
                 .font(.headline)
 
-            Text("Specify a volume name and filesystem type for the new disk image.")
+            Text("Specify a volume name, filesystem, and boot block for the new disk image.")
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -52,18 +38,18 @@ struct NewADFDialogView: View {
                 .autocorrectionDisabled()
 
             Picker("Filesystem:", selection: $fsType) {
-                Text("OFS (Original File System)").tag(FS_TYPE_OFS_SWIFT)
-                Text("FFS (Fast File System)").tag(FS_TYPE_FFS_SWIFT)
+                ForEach(FileSystem.allCases) { fs in
+                    Text(fs.rawValue).tag(fs)
+                }
             }
             .pickerStyle(.radioGroup)
             
-            Picker("Boot Block:", selection: $bootBlockType) {
+            Picker("Boot Block:", selection: $selectedBootBlock) {
                 ForEach(BootBlockType.allCases) { type in
                     Text(type.rawValue).tag(type)
                 }
             }
             .pickerStyle(.menu)
-
 
             HStack(spacing: 12) {
                 Button(role: .cancel, action: { dismiss() }) {
@@ -73,7 +59,8 @@ struct NewADFDialogView: View {
                 .keyboardShortcut(.cancelAction)
 
                 Button(action: {
-                    config.action(volumeName, fsType, bootBlockType)
+                    let fsTypeUInt8 = (fsType == .ofs) ? FS_TYPE_OFS_SWIFT : FS_TYPE_FFS_SWIFT
+                    config.action(volumeName, fsTypeUInt8, selectedBootBlock)
                     dismiss()
                 }) {
                     Text("Create ADF")
@@ -84,6 +71,6 @@ struct NewADFDialogView: View {
             }
         }
         .padding(30)
-        .frame(width: 400)
+        .frame(width: 420)
     }
 }

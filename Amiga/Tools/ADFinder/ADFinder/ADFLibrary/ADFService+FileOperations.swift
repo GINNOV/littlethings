@@ -48,12 +48,12 @@ extension ADFService {
                 let name = entryNamePtr != nil ? String(cString: entryNamePtr!) : "Invalid Name"
                 
                 let entryTypeCInt = get_AdfEntry_type(adfEntryOpaquePtr)
-                let type: EntryType
+                let type: AmigaEntry.EntryType
                 switch entryTypeCInt {
                     case ST_FILE_SWIFT: type = .file
                     case ST_DIR_SWIFT: type = .directory
-                    case ST_LFILE_SWIFT: type = .softLinkFile
-                    case ST_LDIR_SWIFT: type = .softLinkDir
+                    case ST_LFILE_SWIFT: type = .link
+                    case ST_LDIR_SWIFT: type = .link
                     default: type = .unknown
                 }
                 
@@ -78,14 +78,21 @@ extension ADFService {
 
                 var commentStr: String? = nil
                 if let commentCStringPtr = get_AdfEntry_comment_ptr(adfEntryOpaquePtr) {
-                     commentStr = String(cString: commentCStringPtr)
+                        commentStr = String(cString: commentCStringPtr)
                 }
                 
                 let entrySize = get_AdfEntry_size(adfEntryOpaquePtr)
                 let entryAccess = get_AdfEntry_access(adfEntryOpaquePtr)
+                let id = Int(get_AdfEntry_header_block(adfEntryOpaquePtr))
                 
-                entries.append(AmigaEntry(name: name, type: type, size: Int32(entrySize),
-                                          protectionBits: entryAccess, date: date, comment: commentStr))
+                entries.append(AmigaEntry(id: id,
+                                          name: name,
+                                          type: type,
+                                          size: Int(entrySize),
+                                          date: date ?? Date(),
+                                          protection: protectionString(from: entryAccess),
+                                          comment: commentStr ?? "",
+                                          protectionBits: entryAccess))
             }
             if currentNode.next == nil { break }
             currentAdfListNode = currentNode.next
@@ -106,8 +113,8 @@ extension ADFService {
             if currentPath.isEmpty { return false }
             currentPath.removeLast()
             if !navigateToInternalPath() {
-                 log("ADFService: Failed to navigate up to parent directory.")
-                 return false
+                log("ADFService: Failed to navigate up to parent directory.")
+                return false
             }
             return true
         } else {
@@ -122,9 +129,9 @@ extension ADFService {
     }
 
     func goUpDirectory() -> Bool {
-         if currentPath.isEmpty { return false }
-         currentPath.removeLast()
-         return navigateToInternalPath()
+        if currentPath.isEmpty { return false }
+        currentPath.removeLast()
+        return navigateToInternalPath()
     }
 
     func readFileContent(entry: AmigaEntry) -> Data? {
@@ -316,7 +323,7 @@ extension ADFService {
             }
             
             if !goUpDirectory() {
-                 return "Failed to navigate out of directory '\(entryToDelete.name)' after emptying it. Cannot complete deletion."
+                return "Failed to navigate out of directory '\(entryToDelete.name)' after emptying it. Cannot complete deletion."
             }
         }
         
@@ -505,68 +512,68 @@ extension ADFService {
             }
             
             if !goUpDirectory() {
-                 return "Failed to navigate out of directory '\(entry.name)' after emptying it. Cannot complete deletion."
+                return "Failed to navigate out of directory '\(entry.name)' after emptying it. Cannot complete deletion."
             }
         }
         
         return nil
     }
 
-    func createNewBlankADF(volumeName: String, fsType: UInt8, bootBlockType: NewADFDialogView.BootBlockType) -> URL? {
-        let tempDir = FileManager.default.temporaryDirectory
-        let fileName = "blank_\(UUID().uuidString).adf"
-        let tempURL = tempDir.appendingPathComponent(fileName)
-        let tempPath = tempURL.path
-        
-        log("ADFService: Creating new blank ADF at: \(tempPath) with FS Type: \(fsType)")
-        
-        let success = tempPath.withCString { cPath in
-            volumeName.withCString { cVolName in
-                return create_blank_adf_c(cPath, cVolName, fsType).rawValue == ADF_RC_OK_SWIFT
+    func createNewBlankADF(volumeName: String, fsType: UInt8, bootBlockType: BootBlockType) -> URL? {
+            let tempDir = FileManager.default.temporaryDirectory
+            let fileName = "blank_\(UUID().uuidString).adf"
+            let tempURL = tempDir.appendingPathComponent(fileName)
+            let tempPath = tempURL.path
+            
+            log("ADFService: Creating new blank ADF at: \(tempPath) with FS Type: \(fsType)")
+            
+            let success = tempPath.withCString { cPath in
+                volumeName.withCString { cVolName in
+                    return create_blank_adf_c(cPath, cVolName, fsType).rawValue == ADF_RC_OK_SWIFT
+                }
             }
-        }
 
-        guard success else {
-            log("ADFService: create_blank_adf_c helper failed.")
-            return nil
-        }
-        
-        if openADF(filePath: tempPath) {
-            log("ADFService: Successfully created blank ADF. Now checking for boot block installation.")
-            
-            var installError: String? = nil
-            
-            switch bootBlockType {
-            case .generic:
-                log("ADFService: Generic boot block selected. No installation needed.")
-                break
-            case .kick1_3:
-                log("ADFService: Installing Kickstart 1.3 (OFS) boot block.")
-                installError = installBootBlock(data: kick13BootBlock)
-            case .kick2_0:
-                log("ADFService: Installing Kickstart 2.0+ (FFS) boot block.")
-                installError = installBootBlock(data: kick20BootBlock)
-            case .sca:
-                log("ADFService: Installing SCA boot block.")
-                installError = installBootBlock(data: scaBootBlock)
-            case .bandit:
-                log("ADFService: Installing Bandit boot block.")
-                installError = installBootBlock(data: banditBootBlock)
-            }
-            
-            if let error = installError {
-                log("ADFService: Boot block installation failed: \(error)")
-                closeADF()
+            guard success else {
+                log("ADFService: create_blank_adf_c helper failed.")
                 return nil
             }
             
-            log("ADFService: Successfully created and configured new ADF.")
-            return tempURL
-        } else {
-            log("ADFService: Failed to open the newly created ADF for boot block installation.")
-            return nil
+            if openADF(filePath: tempPath) {
+                log("ADFService: Successfully created blank ADF. Now checking for boot block installation.")
+                
+                var installError: String? = nil
+                
+                switch bootBlockType {
+                case .generic:
+                    log("ADFService: Generic boot block selected. No installation needed.")
+                    break
+                case .kick1_3:
+                    log("ADFService: Installing Kickstart 1.3 (OFS) boot block.")
+                    installError = installBootBlock(data: kick13BootBlock)
+                case .kick2_0:
+                    log("ADFService: Installing Kickstart 2.0+ (FFS) boot block.")
+                    installError = installBootBlock(data: kick20BootBlock)
+                case .sca:
+                    log("ADFService: Installing SCA boot block.")
+                    installError = installBootBlock(data: scaBootBlock)
+                case .bandit:
+                    log("ADFService: Installing Bandit boot block.")
+                    installError = installBootBlock(data: banditBootBlock)
+                }
+                
+                if let error = installError {
+                    log("ADFService: Boot block installation failed: \(error)")
+                    closeADF()
+                    return nil
+                }
+                
+                log("ADFService: Successfully created and configured new ADF.")
+                return tempURL
+            } else {
+                log("ADFService: Failed to open the newly created ADF for boot block installation.")
+                return nil
+            }
         }
-    }
     
     func createNewBlankHDF(volumeName: String, sizeMB: Int, fsType: UInt8) -> URL? {
         let tempDir = FileManager.default.temporaryDirectory
@@ -636,6 +643,25 @@ extension ADFService {
         } else {
             log("ADFService: adfSetEntryAccess failed for '\(entry.name)'. Check C-Log for details.")
             return "ADFLib failed to set permissions for the entry."
+        }
+    }
+    
+    private func protectionString(from bits: UInt32) -> String {
+        var result = "----"
+        if (bits & ACCMASK_R_SWIFT) == 0 { result.replace(at: 0, with: "r") }
+        if (bits & ACCMASK_W_SWIFT) == 0 { result.replace(at: 1, with: "w") }
+        if (bits & ACCMASK_E_SWIFT) == 0 { result.replace(at: 2, with: "e") }
+        if (bits & ACCMASK_D_SWIFT) == 0 { result.replace(at: 3, with: "d") }
+        return result
+    }
+}
+
+fileprivate extension String {
+    mutating func replace(at index: Int, with character: Character) {
+        var chars = Array(self)
+        if index < chars.count {
+            chars[index] = character
+            self = String(chars)
         }
     }
 }

@@ -160,19 +160,23 @@ struct FileRowView: View {
         }
     }
     
-    private func iconForEntry(_ type: EntryType) -> String {
-        switch type {
-        case .file: return "doc.fill"; case .directory: return "folder.fill"
-        case .softLinkFile, .softLinkDir: return "link"; default: return "questionmark.diamond.fill"
-        }
-    }
-    
-    private func colorForEntry(_ type: EntryType) -> Color {
-        switch type {
-        case .file: return .blue; case .directory: return .orange
-        case .softLinkFile, .softLinkDir: return .purple; default: return .gray
-        }
-    }
+    private func iconForEntry(_ type: AmigaEntry.EntryType) -> String {
+           switch type {
+           case .file: return "doc.fill"
+           case .directory: return "folder.fill"
+           case .link: return "link" // Assuming .softLinkFile and .softLinkDir map to .link
+           default: return "questionmark.diamond.fill"
+           }
+       }
+       
+       private func colorForEntry(_ type: AmigaEntry.EntryType) -> Color {
+           switch type {
+           case .file: return .blue
+           case .directory: return .orange
+           case .link: return .purple // Assuming .softLinkFile and .softLinkDir map to .link
+           default: return .gray
+           }
+       }
 }
 
 struct ProtectionBitsView: View {

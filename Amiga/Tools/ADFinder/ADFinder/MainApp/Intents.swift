@@ -26,18 +26,6 @@ enum FilesystemType: String, AppEnum {
     ]
 }
 
-enum BootBlockType: String, AppEnum {
-    case generic = "Generic"
-    case kick1_3 = "Kickstart 1.3"
-    case kick2_0 = "Kickstart 2.0+"
-
-    static var typeDisplayRepresentation: TypeDisplayRepresentation = "Boot Block Type"
-    static var caseDisplayRepresentations: [BootBlockType: DisplayRepresentation] = [
-        .generic: "Generic (Empty)",
-        .kick1_3: "Kickstart 1.3 Compatible",
-        .kick2_0: "Kickstart 2.0+ Compatible"
-    ]
-}
 // MARK: - Create ADF Intent
 
 /// This intent allows users to create a new, blank ADF file via Shortcuts.
@@ -64,17 +52,7 @@ struct CreateADFIntent: AppIntent {
         let adfService = ADFService()
         let fsTypeRaw: UInt8 = (fsType == .ffs) ? FS_TYPE_FFS_SWIFT : FS_TYPE_OFS_SWIFT
         
-        let dialogBootBlockType: NewADFDialogView.BootBlockType
-        switch bootBlockType {
-        case .generic:
-            dialogBootBlockType = .generic
-        case .kick1_3:
-            dialogBootBlockType = .kick1_3
-        case .kick2_0:
-            dialogBootBlockType = .kick2_0
-        }
-
-        guard let newAdfUrl = adfService.createNewBlankADF(volumeName: volumeName, fsType: fsTypeRaw, bootBlockType: dialogBootBlockType) else {
+        guard let newAdfUrl = adfService.createNewBlankADF(volumeName: volumeName, fsType: fsTypeRaw, bootBlockType: bootBlockType) else {
             throw NSError(domain: "ADFServiceError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create the blank ADF file. Check ADFinder logs for more details."])
         }
         
@@ -178,7 +156,7 @@ struct RenameVolumeIntent: AppIntent {
         do {
             try FileManager.default.copyItem(at: sourceAdfURL, to: tempAdfURL)
         } catch {
-             throw NSError(domain: "FileError", code: 5, userInfo: [NSLocalizedDescriptionKey: "Failed to create a temporary copy of the ADF file: \(error.localizedDescription)"])
+            throw NSError(domain: "FileError", code: 5, userInfo: [NSLocalizedDescriptionKey: "Failed to create a temporary copy of the ADF file: \(error.localizedDescription)"])
         }
 
         guard adfService.openADF(filePath: tempAdfURL.path) else {

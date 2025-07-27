@@ -164,6 +164,13 @@ const char* get_AdfEntry_comment_ptr(const struct AdfEntry* entry) {
     return NULL;
 }
 
+uint32_t get_AdfEntry_header_block(const struct AdfEntry* entry) {
+    if (entry) {
+        return entry->sector;
+    }
+    return 0; // Using 0 as an invalid ID for null entries.
+}
+
 ADF_RETCODE register_dump_driver_helper(void) {
     return adfAddDeviceDriver(&adfDeviceDriverDump);
 }
