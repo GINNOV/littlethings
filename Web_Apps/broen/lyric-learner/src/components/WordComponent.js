@@ -1,4 +1,3 @@
-// FILE: src/components/WordComponent.js
 import React from 'react';
 import { useSettings } from '../context/SettingsContext';
 
@@ -44,11 +43,13 @@ const WordComponent = ({ wordData, activeLayer, songData, onWordClick, isCurrent
         {text}
       </span>
       <div className="word-tooltip">
-        <strong>Esempio d'uso</strong><br />
+        {/* FIX: Replaced ' with &apos; to escape the character */}
+        <strong>Esempio d&apos;uso</strong><br />
         <em>🇺🇸 {example}</em>
-        {showItalianSetting && italian && <><br /><i>🇮🇹 {italian}</i></>}
+        {showItalianSetting && italian && <><br /><i>🇮� {italian}</i></>}
       </div>
     </div>
   );
 };
+
 export default WordComponent;

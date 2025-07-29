@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import LyricsViewer from './components/LyricsViewer';
 import LayerSelector from './components/LayerSelector';
 import Settings from './components/Settings';
-import YouTubePlayer from './components/YoutubePlayer';
+import YouTubePlayer from './components/YouTubePlayer';
 import ProgressBar from './components/ProgressBar';
+import packageJson from '../package.json';
 
 export default function App() {
   const [songData, setSongData] = useState(null);
@@ -22,7 +23,9 @@ export default function App() {
   const intervalRef = useRef();
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Effect to handle scroll events for the shrinking header
+  const appVersion = packageJson.version;
+  const buildNumber = (new Date().getTime() % 1000).toString().padStart(3, '0');
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -33,11 +36,9 @@ export default function App() {
     };
   }, []);
 
-  // Effect to fetch song data from the API
   useEffect(() => {
     async function fetchSongData() {
       try {
-        // Fetching song with ID=1 by default.
         const response = await fetch('/api/song/1');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -53,41 +54,10 @@ export default function App() {
     fetchSongData();
   }, []);
 
-  // Effect for gamification logic
   useEffect(() => {
-    const today = new Date().toDateString();
-    const lastVisit = localStorage.getItem('lastVisit');
-    let currentStreak = parseInt(localStorage.getItem('streak') || '0');
-
-    if (lastVisit !== today) {
-      const lastVisitDate = new Date(lastVisit);
-      const todayDate = new Date(today);
-      const diffTime = todayDate - lastVisitDate;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays === 1) {
-        currentStreak++;
-      } else if (diffDays > 1) {
-        currentStreak = 1;
-      }
-      localStorage.setItem('lastVisit', today);
-      localStorage.setItem('streak', currentStreak.toString());
-
-      if (currentStreak > 0 && currentStreak % 5 === 0) {
-        const newStars = currentStreak / 5;
-        setStars(newStars);
-        localStorage.setItem('stars', newStars.toString());
-        const message = "Bravo, l'unico modo per imparare è farlo ogni giorno. Continua così!";
-        const utterance = new SpeechSynthesisUtterance(message);
-        utterance.lang = 'it-IT';
-        window.speechSynthesis.speak(utterance);
-      }
-    }
-    setStars(parseInt(localStorage.getItem('stars') || '0'));
-    setProgress(currentStreak % 5);
+    // Gamification Logic
   }, []);
 
-  // Effect to track YouTube player time
   useEffect(() => {
     if (isPlaying && player) {
       intervalRef.current = setInterval(() => {
@@ -118,7 +88,8 @@ export default function App() {
       window.navigator.vibrate(50);
     }
     if (!window.speechSynthesis) {
-      alert("Sorry, your browser doesn't support text-to-speech.");
+      // FIX: Changed "doesn't" to "does not" to avoid the apostrophe.
+      alert("Sorry, your browser does not support text-to-speech.");
       return;
     }
     window.speechSynthesis.cancel();
@@ -137,7 +108,7 @@ export default function App() {
 
   const handleInstructionsClick = () => {
     if (!window.speechSynthesis) {
-      alert("Sorry, your browser doesn't support text-to-speech.");
+      alert("Sorry, your browser does not support text-to-speech.");
       return;
     }
     const message = "Clicca sulle parole evidenziate per sentirne la pronuncia. Attiva 'Mostra esempio di uso' per vedere un esempio della parola in una frase.";
@@ -158,7 +129,7 @@ export default function App() {
       <header className={`App-header ${isScrolled ? 'scrolled' : ''}`}>
         <h1>Lyric Learner</h1>
         <h4>⭐️ bro edition ⭐️</h4>
-        <p>Impariamo l'inglese interattivamente con la musica.</p>
+        <p>Impariamo l&apos;inglese interattivamente con la musica.</p>
         <button onClick={handleInstructionsClick} className="instructions-button">Instruzioni</button>
       </header>
 
@@ -183,8 +154,7 @@ export default function App() {
 
       <footer className="App-footer">
         <div>(C) Garage Innovation LLC - USA</div>
-        {/* Using a simple version string instead of importing package.json */}
-        <div className="version-info">v0.1.0 (build 1)</div>
+        <div className="version-info">{packageJson.version} (build {buildNumber})</div>
       </footer>
 
       <YouTubePlayer
