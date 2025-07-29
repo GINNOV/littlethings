@@ -12,6 +12,9 @@ const YouTubePlayer = dynamic(() => import('./components/YouTubePlayer'), {
 });
 
 export default function App() {
+  // --- NEW: State to hold available browser voices for TTS ---
+  const [voices, setVoices] = useState([]);
+
   const [songList, setSongList] = useState([]);
   const [selectedSongId, setSelectedSongId] = useState(1);
   const [songData, setSongData] = useState(null);
@@ -33,13 +36,27 @@ export default function App() {
   const appVersion = packageJson.version;
   const buildNumber = (new Date().getTime() % 1000).toString().padStart(3, '0');
 
+  // --- NEW: Effect to reliably load speech synthesis voices ---
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      const loadVoices = () => {
+        setVoices(window.speechSynthesis.getVoices());
+      };
+      // Load voices initially
+      loadVoices();
+      // The 'voiceschanged' event is crucial for some browsers
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      if (window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
     };
   }, []);
 
@@ -112,21 +129,51 @@ export default function App() {
 
   const handlePlayerError = (event) => {
     console.error("YouTube Player Error:", event.data);
-    console.error("Error codes:", {
-      2: "Invalid video ID",
-      5: "HTML5 player error",
-      100: "Video not found or private",
-      101: "Embedding not allowed by video owner",
-      150: "Embedding not allowed by video owner (this is often the same as 101)"
-    });
   };
 
+  // --- UPDATED: Word click handler to use loaded voices ---
   const handleWordClick = (wordText) => {
-    // word click logic
+    if (window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(50);
+    }
+    if (!window.speechSynthesis) return;
+
+    window.speechSynthesis.cancel();
+    clearTimeout(lastWordClicked.timer);
+
+    const utterance = new SpeechSynthesisUtterance(wordText);
+    // Find a suitable English voice
+    const englishVoice = voices.find(voice => voice.lang.startsWith('en-'));
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+
+    if (lastWordClicked.word === wordText) {
+      utterance.rate = 1.0;
+      setLastWordClicked({ word: null, timer: null });
+    } else {
+      utterance.rate = settings.slowSpeed;
+      const timer = setTimeout(() => setLastWordClicked({ word: null, timer: null }), 3000);
+      setLastWordClicked({ word: wordText, timer });
+    }
+    window.speechSynthesis.speak(utterance);
   };
+
 
   const handleInstructionsClick = () => {
-    // instructions logic
+    if (!window.speechSynthesis) return;
+    
+    const message = "Clicca sulle parole evidenziate per sentirne la pronuncia. Attiva 'Mostra esempio di uso' per vedere un esempio della parola in una frase.";
+    const utterance = new SpeechSynthesisUtterance(message);
+    
+    // Find a suitable Italian voice
+    const italianVoice = voices.find(voice => voice.lang.startsWith('it-'));
+    if (italianVoice) {
+      utterance.voice = italianVoice;
+    }
+    utterance.lang = 'it-IT';
+    
+    window.speechSynthesis.speak(utterance);
   };
   
   const handleSongChange = (songId) => {
@@ -184,7 +231,6 @@ export default function App() {
       </footer>
 
       <YouTubePlayer
-        // --- FIX: Pass the dynamic videoId to the player ---
         videoId={songData.youtubeVideoId}
         player={player}
         isPlaying={isPlaying}
