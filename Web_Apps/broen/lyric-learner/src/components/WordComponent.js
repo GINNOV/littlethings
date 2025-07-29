@@ -46,7 +46,7 @@ const WordComponent = ({ wordData, activeLayer, songData, onWordClick, isCurrent
         {/* FIX: Replaced ' with &apos; to escape the character */}
         <strong>Esempio d&apos;uso</strong><br />
         <em>🇺🇸 {example}</em>
-        {showItalianSetting && italian && <><br /><i>🇮� {italian}</i></>}
+        {showItalianSetting && italian && <><br /><i>🇮🇹 {italian}</i></>}
       </div>
     </div>
   );

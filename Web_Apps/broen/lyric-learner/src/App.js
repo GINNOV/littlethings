@@ -5,14 +5,15 @@ import LayerSelector from './components/LayerSelector';
 import Settings from './components/Settings';
 import ProgressBar from './components/ProgressBar';
 import packageJson from '../package.json';
+import SongSelector from './components/SongSelector';
 
-// --- NEW: Dynamically import the YouTubePlayer with SSR disabled ---
 const YouTubePlayer = dynamic(() => import('./components/YouTubePlayer'), {
-  ssr: false, 
+  ssr: false,
 });
 
 export default function App() {
-
+  const [songList, setSongList] = useState([]);
+  const [selectedSongId, setSelectedSongId] = useState(1);
   const [songData, setSongData] = useState(null);
   const [error, setError] = useState(null);
   const allWords = useRef([]);
@@ -43,9 +44,29 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    async function fetchSongData() {
+    async function fetchSongList() {
       try {
-        const response = await fetch('/api/song/1');
+        const response = await fetch('/api/songs');
+        if (!response.ok) {
+          throw new Error('Failed to fetch song list');
+        }
+        const data = await response.json();
+        setSongList(data);
+      } catch (e) {
+        console.error("Failed to fetch song list:", e);
+      }
+    }
+    fetchSongList();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedSongId) return;
+
+    async function fetchSongData() {
+      setSongData(null);
+      setError(null);
+      try {
+        const response = await fetch(`/api/song/${selectedSongId}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -58,7 +79,7 @@ export default function App() {
       }
     }
     fetchSongData();
-  }, []);
+  }, [selectedSongId]);
 
   useEffect(() => {
     // Gamification Logic
@@ -107,6 +128,13 @@ export default function App() {
   const handleInstructionsClick = () => {
     // instructions logic
   };
+  
+  const handleSongChange = (songId) => {
+    setSelectedSongId(songId);
+    if (player && isPlaying) {
+      player.stopVideo();
+    }
+  };
 
   if (error) {
     return <div className="App"><header className="App-header"><h1>Error</h1><p>{error}</p></header></div>;
@@ -126,6 +154,11 @@ export default function App() {
 
       <main>
         <div className="top-controls">
+          <SongSelector 
+            songs={songList}
+            selectedSongId={selectedSongId}
+            onSongChange={handleSongChange}
+          />
           <LayerSelector
             layers={songData.layers}
             activeLayer={activeLayer}
@@ -150,8 +183,9 @@ export default function App() {
         </div>
       </footer>
 
-      {/* The dynamic import handles client-side rendering automatically */}
       <YouTubePlayer
+        // --- FIX: Pass the dynamic videoId to the player ---
+        videoId={songData.youtubeVideoId}
         player={player}
         isPlaying={isPlaying}
         setIsPlaying={setIsPlaying}
