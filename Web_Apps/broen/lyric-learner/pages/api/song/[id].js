@@ -1,7 +1,13 @@
 import { createPool } from '@vercel/postgres';
 
 export default async function handler(req, res) {
-  // Explicitly create a database pool using your custom environment variable.
+  // --- DIAGNOSTIC CHECK ---
+  // Check if the environment variable exists. This is the most likely point of failure.
+  if (!process.env.STORAGE_POSTGRES_URL) {
+    console.error('[API] FATAL: Missing STORAGE_POSTGRES_URL environment variable.');
+    return res.status(500).json({ error: 'Server configuration error: Database URL is missing.' });
+  }
+
   const pool = createPool({
     connectionString: process.env.STORAGE_POSTGRES_URL,
   });
@@ -13,7 +19,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Fetch all song data in parallel for efficiency
     const [songResult, stanzasResult, wordsResult] = await Promise.all([
       pool.sql`SELECT id, title, author, youtube_video_id FROM songs WHERE id = ${id};`,
       pool.sql`SELECT id, stanza_index FROM stanzas WHERE song_id = ${id} ORDER BY stanza_index ASC;`,
@@ -27,12 +32,11 @@ export default async function handler(req, res) {
     ]);
 
     if (songResult.rowCount === 0) {
-      return res.status(404).json({ error: 'Song not found' });
+      return res.status(404).json({ error: 'Song not found in the database.' });
     }
 
     const song = songResult.rows[0];
 
-    // Reconstruct the songData object
     const stanzas = stanzasResult.rows.map((stanzaInfo) => {
       return wordsResult.rows
         .filter((word) => word.stanza_index === stanzaInfo.stanza_index)
@@ -63,7 +67,7 @@ export default async function handler(req, res) {
 
     res.status(200).json(responseData);
   } catch (error) {
-    console.error('[API] CRITICAL ERROR:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('[API] CRITICAL ERROR during database query:', error);
+    res.status(500).json({ error: 'Internal Server Error during database query.' });
   }
 }
