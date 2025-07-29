@@ -1,9 +1,16 @@
-// FILE: src/components/YouTubePlayer.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import YouTube from 'react-youtube';
 
 const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurrentTime, duration, onPlayerReady, onPlayerStateChange }) => {
-  const videoId = "Q_c4gZkI-FQ";
+  // --- FIX: State to ensure this component only renders on the client ---
+  const [isClient, setIsClient] = useState(false);
+
+  // This effect runs once after the component mounts, setting isClient to true.
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const videoId = "Q_c4gZkI-FQ"; // A karaoke version that allows embedding
 
   const opts = {
     height: '0',
@@ -11,6 +18,7 @@ const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurren
     playerVars: {
       autoplay: 0,
       controls: 0,
+      // This will now be safely set only on the client
       origin: typeof window !== 'undefined' ? window.location.origin : '',
     },
   };
@@ -54,16 +62,20 @@ const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurren
       />
       <span className="time-display">{formatTime(duration)}</span>
       <div className="youtube-embed">
-        <YouTube
+        {/* --- FIX: Conditionally render the YouTube component only on the client --- */}
+        {isClient && (
+          <YouTube
             key={videoId}
             videoId={videoId}
             opts={opts}
             onReady={onPlayerReady}
             onStateChange={onPlayerStateChange}
             onError={(e) => console.error("YouTube Player Error:", e.data)}
-        />
+          />
+        )}
       </div>
     </div>
   );
 };
+
 export default YouTubePlayer;
