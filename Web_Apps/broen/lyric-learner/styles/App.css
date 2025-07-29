@@ -39,6 +39,19 @@ body {
   margin-top: 0.25rem;
 }
 
+.App-footer {
+  padding: 2rem 1rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+  text-align: center;
+}
+
+.version-info {
+  font-size: 0.8rem;
+  color: #adb5bd;
+  margin-top: 0.5rem;
+  font-family: monospace;
+}
 .instructions-button {
   margin-top: 1rem;
   padding: 0.6rem 1.2rem;
