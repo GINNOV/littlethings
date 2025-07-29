@@ -1,18 +1,14 @@
-// FILE: src/components/LyricsViewer.js
-// This component displays the song title, artist, and all the stanzas.
-
 import React from 'react';
 import WordComponent from './WordComponent';
 
-const LyricsViewer = ({ songData, activeLayer, onWordClick, layers, showTooltipSetting, showItalianSetting, activeWordIndex }) => {
+const LyricsViewer = ({ songData, activeLayer, onWordClick, layers, activeWordIndex }) => {
   let wordCounter = -1;
-  const youtubeLink = "https://www.youtube.com/watch?v=9C1BCAgu2I8&list=RD9C1BCAgu2I8&start_radio=1"; // Your provided link
 
   return (
     <div className="lyrics-container">
       <h2 className="poem-title">
-        <a href={youtubeLink} target="_blank" rel="noopener noreferrer">
-            {songData.title}
+        <a href={songData.youtubeLink} target="_blank" rel="noopener noreferrer">
+          {songData.title}
         </a>
       </h2>
       <p className="poem-author">by {songData.author}</p>
@@ -28,8 +24,6 @@ const LyricsViewer = ({ songData, activeLayer, onWordClick, layers, showTooltipS
                 activeLayer={activeLayer}
                 songData={songData}
                 onWordClick={onWordClick}
-                showTooltipSetting={showTooltipSetting}
-                showItalianSetting={showItalianSetting}
                 isCurrentWord={isCurrentWord}
               />
             );
@@ -47,5 +41,4 @@ const LyricsViewer = ({ songData, activeLayer, onWordClick, layers, showTooltipS
     </div>
   );
 };
-
 export default LyricsViewer;

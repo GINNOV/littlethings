@@ -1,6 +1,4 @@
 // FILE: src/components/ProgressBar.js
-// This component displays the user's learning progress.
-
 import React from 'react';
 
 const ProgressBar = ({ progress, stars }) => {
@@ -14,13 +12,12 @@ const ProgressBar = ({ progress, stars }) => {
         ))}
       </div>
       <div className="progress-bar-background">
-        <div 
-          className="progress-bar-foreground" 
+        <div
+          className="progress-bar-foreground"
           style={{ width: `${progressPercentage}%` }}
         ></div>
       </div>
     </div>
   );
 };
-
 export default ProgressBar;
