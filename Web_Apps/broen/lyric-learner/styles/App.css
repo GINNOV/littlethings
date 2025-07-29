@@ -471,3 +471,131 @@ main {
 .App-header.scrolled h1 {
   padding-right: 120px;
 }
+
+/* --- Admin Page Styles --- */
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Poppins', sans-serif;
+  color: var(--text-color);
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+  color: var(--primary-accent);
+  margin: 0;
+}
+
+.back-link {
+  text-decoration: none;
+  color: var(--primary-accent);
+  font-weight: 600;
+}
+
+.admin-section {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  margin-bottom: 2rem;
+}
+
+.add-song-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.add-song-form input {
+  padding: 0.8rem;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.add-song-form button {
+  padding: 0.8rem;
+  font-size: 1rem;
+  background: var(--primary-accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.message {
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.song-select {
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+/* Timing Tool Styles */
+.timing-tool {
+  margin-top: 1rem;
+}
+
+.player-and-lyrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.timing-lyrics {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.word-timing-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.word-timing-row:nth-child(odd) {
+  background-color: #f8f9fa;
+}
+
+.word-text {
+  flex: 1;
+  font-weight: 600;
+}
+
+.time-inputs input {
+  width: 60px;
+  text-align: center;
+}
+
+.save-button {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.2rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 1rem;
+}
