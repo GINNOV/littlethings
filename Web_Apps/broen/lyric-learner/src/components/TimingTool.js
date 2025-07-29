@@ -55,21 +55,29 @@ const TimingTool = ({ songId }) => {
     setSongData(prev => ({ ...prev, stanzas: newStanzas }));
   };
 
-  // --- FIX: Read time directly from the player object ---
+  // --- NEW, MORE ROBUST FIX ---
   const handleSetTime = (stanzaIndex, wordIndex, type) => {
-    if (!player || typeof player.getCurrentTime !== 'function') {
-      console.error("Player is not ready.");
+    if (!player || typeof player.getPlayerState !== 'function' || typeof player.getCurrentTime !== 'function') {
+      setMessage("Player is not ready.");
       return;
     }
-    // Get the time at the exact moment of the click
+
+    const playerState = player.getPlayerState();
+    // The player state is -1 if it has never been played.
+    // We only want to set the time if the video has been played, paused, or ended.
+    if (playerState === -1) {
+        setMessage("Please play the video at least once before setting time.");
+        return;
+    }
+
     const time = player.getCurrentTime();
     if (time === undefined || time === null) return;
     
     const newTime = parseFloat(time.toFixed(2));
 
-    // Add a check to ensure the parsed time is a valid number
     if (!isNaN(newTime)) {
       updateWordTime(stanzaIndex, wordIndex, type, newTime);
+      setMessage(''); // Clear any previous message
     } else {
       console.error("Could not get a valid time from the player.");
     }
