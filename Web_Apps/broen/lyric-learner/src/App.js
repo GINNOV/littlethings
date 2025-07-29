@@ -1,13 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import LyricsViewer from './components/LyricsViewer';
 import LayerSelector from './components/LayerSelector';
 import Settings from './components/Settings';
-import YouTubePlayer from './components/YouTubePlayer';
 import ProgressBar from './components/ProgressBar';
 import packageJson from '../package.json';
 
+// --- NEW: Dynamically import the YouTubePlayer with SSR disabled ---
+const YouTubePlayer = dynamic(() => import('./components/YouTubePlayer'), {
+  ssr: false, 
+});
+
 export default function App() {
-  const [isClient, setIsClient] = useState(false);
+
   const [songData, setSongData] = useState(null);
   const [error, setError] = useState(null);
   const allWords = useRef([]);
@@ -24,12 +29,10 @@ export default function App() {
   const intervalRef = useRef();
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // --- VERSION AND BUILD NUMBER ---
   const appVersion = packageJson.version;
   const buildNumber = (new Date().getTime() % 1000).toString().padStart(3, '0');
 
   useEffect(() => {
-    setIsClient(true);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
@@ -122,10 +125,24 @@ export default function App() {
       </header>
 
       <main>
-        {/* ... main content ... */}
+        <div className="top-controls">
+          <LayerSelector
+            layers={songData.layers}
+            activeLayer={activeLayer}
+            setActiveLayer={setActiveLayer}
+          />
+          <Settings />
+          <ProgressBar progress={progress} stars={stars} />
+        </div>
+        <LyricsViewer
+          songData={songData}
+          activeLayer={activeLayer}
+          onWordClick={handleWordClick}
+          layers={songData.layers}
+          activeWordIndex={activeWordIndex}
+        />
       </main>
 
-      {/* --- UPDATED FOOTER --- */}
       <footer className="App-footer">
         <div>(C) Garage Innovation LLC - USA</div>
         <div className="version-info">
@@ -133,19 +150,18 @@ export default function App() {
         </div>
       </footer>
 
-      {isClient && (
-        <YouTubePlayer
-          player={player}
-          isPlaying={isPlaying}
-          setIsPlaying={setIsPlaying}
-          currentTime={currentTime}
-          setCurrentTime={setCurrentTime}
-          duration={duration}
-          onPlayerReady={handlePlayerReady}
-          onPlayerStateChange={handlePlayerStateChange}
-          onPlayerError={handlePlayerError}
-        />
-      )}
+      {/* The dynamic import handles client-side rendering automatically */}
+      <YouTubePlayer
+        player={player}
+        isPlaying={isPlaying}
+        setIsPlaying={setIsPlaying}
+        currentTime={currentTime}
+        setCurrentTime={setCurrentTime}
+        duration={duration}
+        onPlayerReady={handlePlayerReady}
+        onPlayerStateChange={handlePlayerStateChange}
+        onPlayerError={handlePlayerError}
+      />
     </div>
   );
 }
