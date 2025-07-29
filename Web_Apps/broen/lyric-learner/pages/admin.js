@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link'; // Import the Link component
 
+// Dynamically import the TimingTool to ensure it only loads on the client
 const TimingTool = dynamic(() => import('../src/components/TimingTool'), {
   ssr: false,
 });
@@ -11,6 +13,7 @@ export default function AdminPage() {
   const [newSong, setNewSong] = useState({ title: '', author: '', youtubeVideoId: '', lyrics: '' });
   const [message, setMessage] = useState('');
 
+  // Fetch the list of songs when the component mounts
   useEffect(() => {
     fetchSongs();
   }, []);
@@ -61,7 +64,10 @@ export default function AdminPage() {
     <div className="admin-container">
       <header className="admin-header">
         <h1>Lyric Learner Admin</h1>
-        <a href="/" className="back-link">← Back to App</a>
+        {/* FIX: Replaced <a> with <Link> for client-side navigation */}
+        <Link href="/" className="back-link">
+          ← Back to App
+        </Link>
       </header>
       
       <div className="admin-section">
@@ -117,6 +123,7 @@ export default function AdminPage() {
           ))}
         </select>
         
+        {/* The TimingTool will only appear if a song is selected */}
         {selectedSongId && <TimingTool songId={selectedSongId} />}
       </div>
     </div>
