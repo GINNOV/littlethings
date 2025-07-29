@@ -1,10 +1,8 @@
 import React from 'react';
 import YouTube from 'react-youtube';
 
-// --- NEW: Destructure onPlayerError from props ---
-const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurrentTime, duration, onPlayerReady, onPlayerStateChange, onPlayerError }) => {
-
-  const videoId = "9C1BCAgu2I8";
+// --- FIX: Accept videoId as a prop ---
+const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurrentTime, duration, onPlayerReady, onPlayerStateChange, onPlayerError, videoId }) => {
 
   const opts = {
     height: '0',
@@ -56,12 +54,12 @@ const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurren
       <span className="time-display">{formatTime(duration)}</span>
       <div className="youtube-embed">
         <YouTube
+          // --- FIX: Use the videoId prop and add a key to force re-renders ---
           key={videoId}
           videoId={videoId}
           opts={opts}
           onReady={onPlayerReady}
           onStateChange={onPlayerStateChange}
-          // --- NEW: Use the passed-in error handler ---
           onError={onPlayerError}
         />
       </div>
