@@ -7,9 +7,7 @@ import ProgressBar from './components/ProgressBar';
 import packageJson from '../package.json';
 
 export default function App() {
-  // --- State to ensure player only renders on the client ---
   const [isClient, setIsClient] = useState(false);
-
   const [songData, setSongData] = useState(null);
   const [error, setError] = useState(null);
   const allWords = useRef([]);
@@ -26,13 +24,12 @@ export default function App() {
   const intervalRef = useRef();
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // --- VERSION AND BUILD NUMBER ---
   const appVersion = packageJson.version;
   const buildNumber = (new Date().getTime() % 1000).toString().padStart(3, '0');
 
-  // This effect now handles setting isClient to true after mounting
   useEffect(() => {
     setIsClient(true);
-
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
@@ -89,12 +86,23 @@ export default function App() {
     setIsPlaying(event.data === 1);
   };
 
+  const handlePlayerError = (event) => {
+    console.error("YouTube Player Error:", event.data);
+    console.error("Error codes:", {
+      2: "Invalid video ID",
+      5: "HTML5 player error",
+      100: "Video not found or private",
+      101: "Embedding not allowed by video owner",
+      150: "Embedding not allowed by video owner (this is often the same as 101)"
+    });
+  };
+
   const handleWordClick = (wordText) => {
-    // ... (word click logic remains the same)
+    // word click logic
   };
 
   const handleInstructionsClick = () => {
-    // ... (instructions logic remains the same)
+    // instructions logic
   };
 
   if (error) {
@@ -117,11 +125,14 @@ export default function App() {
         {/* ... main content ... */}
       </main>
 
+      {/* --- UPDATED FOOTER --- */}
       <footer className="App-footer">
-        {/* ... footer content ... */}
+        <div>(C) Garage Innovation LLC - USA</div>
+        <div className="version-info">
+          v{appVersion} (build {buildNumber})
+        </div>
       </footer>
 
-      {/* --- FIX: Conditionally render the YouTubePlayer only on the client --- */}
       {isClient && (
         <YouTubePlayer
           player={player}
@@ -132,6 +143,7 @@ export default function App() {
           duration={duration}
           onPlayerReady={handlePlayerReady}
           onPlayerStateChange={handlePlayerStateChange}
+          onPlayerError={handlePlayerError}
         />
       )}
     </div>
