@@ -1,11 +1,9 @@
 // FILE: src/components/YouTubePlayer.js
-// This component renders a fixed YouTube player bar with custom controls.
-
 import React from 'react';
 import YouTube from 'react-youtube';
 
 const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurrentTime, duration, onPlayerReady, onPlayerStateChange }) => {
-  const videoId = "Q_c4gZkI-FQ"; // A karaoke version that allows embedding
+  const videoId = "Q_c4gZkI-FQ";
 
   const opts = {
     height: '0',
@@ -13,22 +11,8 @@ const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurren
     playerVars: {
       autoplay: 0,
       controls: 0,
+      origin: typeof window !== 'undefined' ? window.location.origin : '',
     },
-    origin: window.location.origin
-  };
-  
-  const handleReady = (event) => {
-    console.log("DEBUG: Player is ready.");
-    onPlayerReady(event);
-  };
-  
-  const handleError = (event) => {
-    console.error("DEBUG: Player Error:", event.data);
-  };
-  
-  const handleStateChange = (event) => {
-    console.log("DEBUG: Player State Changed:", event.data);
-    onPlayerStateChange(event);
   };
 
   const handlePlayPause = () => {
@@ -70,18 +54,16 @@ const YouTubePlayer = ({ player, isPlaying, setIsPlaying, currentTime, setCurren
       />
       <span className="time-display">{formatTime(duration)}</span>
       <div className="youtube-embed">
-        <YouTube 
-            key={videoId} 
-            videoId={videoId} 
-            opts={opts} 
-            onReady={handleReady} 
-            onStateChange={handleStateChange}
-            onError={handleError}
-            referrerPolicy="strict-origin-when-cross-origin" 
+        <YouTube
+            key={videoId}
+            videoId={videoId}
+            opts={opts}
+            onReady={onPlayerReady}
+            onStateChange={onPlayerStateChange}
+            onError={(e) => console.error("YouTube Player Error:", e.data)}
         />
       </div>
     </div>
   );
 };
-
 export default YouTubePlayer;
