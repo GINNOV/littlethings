@@ -14,7 +14,9 @@ const YouTubePlayer = dynamic(() => import('./components/YouTubePlayer'), {
 export default function App() {
   const [voices, setVoices] = useState([]);
   const [songList, setSongList] = useState([]);
-  const [selectedSongId, setSelectedSongId] = useState(1);
+  // rationale: Defaulting to null instead of a hardcoded ID. The app will now
+  // dynamically set this ID after fetching the available songs.
+  const [selectedSongId, setSelectedSongId] = useState(null);
   const [songData, setSongData] = useState(null);
   const [error, setError] = useState(null);
   const allWords = useRef([]);
@@ -64,14 +66,23 @@ export default function App() {
         }
         const data = await response.json();
         setSongList(data);
+        // rationale: This is the core of the fix. After fetching the list,
+        // we check if it's valid and then set the selected song to the first
+        // one in the list. This avoids the 404 error.
+        if (data && data.length > 0 && !selectedSongId) {
+          setSelectedSongId(data[0].id);
+        }
       } catch (e) {
         console.error("Failed to fetch song list:", e);
+        setError("Could not load the list of songs.");
       }
     }
     fetchSongList();
-  }, []);
+  }, [selectedSongId]); // Rerunning if selectedSongId changes allows for refetching if needed
 
   useEffect(() => {
+    // rationale: This guard is now more important. It prevents the fetch from
+    // running when selectedSongId is null on initial load.
     if (!selectedSongId) return;
 
     async function fetchSongData() {
@@ -148,16 +159,15 @@ export default function App() {
     window.speechSynthesis.speak(utterance);
   };
 
-  // rationale: New handler for the Tutor feature TTS.
   const handleExampleSpeak = (exampleText) => {
     if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel(); // Stop any other speech
+    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(exampleText);
     const englishVoice = voices.find(voice => voice.lang.startsWith('en-'));
     if (englishVoice) {
       utterance.voice = englishVoice;
     }
-    utterance.rate = 1.0; // Speak the example at a normal rate
+    utterance.rate = 1.0;
     window.speechSynthesis.speak(utterance);
   };
 
@@ -220,7 +230,7 @@ export default function App() {
           onWordClick={handleWordClick}
           layers={songData.layers}
           activeWordIndex={activeWordIndex}
-          onExampleSpeak={handleExampleSpeak} // Pass the new handler down
+          onExampleSpeak={handleExampleSpeak}
         />
       </main>
 

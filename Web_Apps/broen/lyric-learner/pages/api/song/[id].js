@@ -16,8 +16,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // rationale: Using a parameterized query ($1) instead of template literal (${id})
-    // prevents SQL injection vulnerabilities by ensuring the input is treated as data, not executable code.
     const songResult = await pool.query('SELECT id, title, author, youtube_video_id FROM songs WHERE id = $1', [id]);
 
     if (songResult.rowCount === 0) {
@@ -26,11 +24,11 @@ export default async function handler(req, res) {
 
     const song = songResult.rows[0];
 
-    // rationale: Parameterized queries are also used here for consistency and safety.
     const [stanzasResult, wordsResult] = await Promise.all([
       pool.query('SELECT id, stanza_index FROM stanzas WHERE song_id = $1 ORDER BY stanza_index ASC', [id]),
+      // rationale: Added the 'pronunciation' column to the SELECT statement.
       pool.query(`
-        SELECT w.text, w.layer, w.example, w.italian, w.start_time, w.end_time, s.stanza_index, w.word_index
+        SELECT w.text, w.layer, w.example, w.italian, w.start_time, w.end_time, s.stanza_index, w.word_index, w.pronunciation
         FROM words w
         JOIN stanzas s ON w.stanza_id = s.id
         WHERE s.song_id = $1
@@ -48,6 +46,8 @@ export default async function handler(req, res) {
           italian: word.italian,
           startTime: word.start_time,
           endTime: word.end_time,
+          // rationale: Added the pronunciation data to the response object for each word.
+          pronunciation: word.pronunciation,
         }));
     });
 
