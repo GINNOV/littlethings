@@ -20,8 +20,6 @@ export default async function handler(req, res) {
   try {
     await client.query('BEGIN');
 
-    // To update correctly, we need to find each word's unique ID.
-    // First, fetch all word IDs for the given song in their correct order.
     const existingWordsResult = await client.query(
       `SELECT w.id FROM words w 
        JOIN stanzas s ON w.stanza_id = s.id 
@@ -36,17 +34,32 @@ export default async function handler(req, res) {
       throw new Error("Word count mismatch between database and submission. Cannot update.");
     }
 
-    // Create an array of promises to update all words
-    const updatePromises = flatNewWords.map((newWordData, index) => {
-      const wordId = existingWordIds[index];
-      return client.query(
-        'UPDATE words SET start_time = $1, end_time = $2 WHERE id = $3',
-        [newWordData.startTime || 0, newWordData.endTime || 0, wordId]
-      );
-    });
+    if (flatNewWords.length === 0) {
+      await client.query('COMMIT');
+      return res.status(200).json({ message: 'No timings to update.' });
+    }
 
-    // Execute all update queries in parallel
-    await Promise.all(updatePromises);
+    const wordIds = existingWordIds;
+    const startTimes = flatNewWords.map(word => word.startTime || 0);
+    const endTimes = flatNewWords.map(word => word.endTime || 0);
+
+    // rationale: This is the defense-in-depth fix. We explicitly cast the incoming data
+    // to the correct column type (`real`) within the SQL query itself. This directly
+    // addresses the database error and makes the API more resilient to data type issues.
+    const updateQuery = `
+      UPDATE words AS w SET
+        start_time = u.start_time::real,
+        end_time = u.end_time::real
+      FROM (
+        SELECT 
+          unnest($1::int[]) AS id,
+          unnest($2::numeric[]) AS start_time,
+          unnest($3::numeric[]) AS end_time
+      ) AS u
+      WHERE w.id = u.id
+    `;
+    
+    await client.query(updateQuery, [wordIds, startTimes, endTimes]);
 
     await client.query('COMMIT');
     res.status(200).json({ message: 'Timings updated successfully.' });

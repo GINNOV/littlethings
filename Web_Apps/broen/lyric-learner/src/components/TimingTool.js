@@ -15,7 +15,6 @@ const TimingTool = ({ songId }) => {
       try {
         const res = await fetch(`/api/song/${songId}`);
         const data = await res.json();
-        // Ensure times are numbers for the input fields
         const sanitizedStanzas = data.stanzas.map(stanza => 
           stanza.map(word => ({
             ...word,
@@ -32,7 +31,6 @@ const TimingTool = ({ songId }) => {
   }, [songId]);
 
   useEffect(() => {
-    // This effect is for updating the displayed time
     if (player && typeof player.getCurrentTime === 'function') {
       intervalRef.current = setInterval(() => {
         const time = player.getCurrentTime();
@@ -55,7 +53,6 @@ const TimingTool = ({ songId }) => {
     setSongData(prev => ({ ...prev, stanzas: newStanzas }));
   };
 
-  // --- NEW, MORE ROBUST FIX ---
   const handleSetTime = (stanzaIndex, wordIndex, type) => {
     if (!player || typeof player.getPlayerState !== 'function' || typeof player.getCurrentTime !== 'function') {
       setMessage("Player is not ready.");
@@ -63,8 +60,6 @@ const TimingTool = ({ songId }) => {
     }
 
     const playerState = player.getPlayerState();
-    // The player state is -1 if it has never been played.
-    // We only want to set the time if the video has been played, paused, or ended.
     if (playerState === -1) {
         setMessage("Please play the video at least once before setting time.");
         return;
@@ -77,7 +72,7 @@ const TimingTool = ({ songId }) => {
 
     if (!isNaN(newTime)) {
       updateWordTime(stanzaIndex, wordIndex, type, newTime);
-      setMessage(''); // Clear any previous message
+      setMessage('');
     } else {
       console.error("Could not get a valid time from the player.");
     }
@@ -85,23 +80,44 @@ const TimingTool = ({ songId }) => {
 
   const handleTimeInputChange = (stanzaIndex, wordIndex, type, event) => {
     const value = event.target.value;
+    // rationale: Allow empty string in the state so the user can clear the input field.
+    // The sanitization will happen in handleSaveTimings before sending to the API.
     updateWordTime(stanzaIndex, wordIndex, type, value === '' ? '' : parseFloat(value));
   };
 
   const handleSaveTimings = async () => {
     setMessage('Saving...');
     try {
-      const res = await fetch('/api/songs/update-timings', {
+      // rationale: This is the primary fix. Before sending the data, we ensure all timing values
+      // are valid numbers. An empty string or other falsy value becomes 0.
+      // This prevents sending invalid data that the database would reject.
+      const sanitizedStanzas = songData.stanzas.map(stanza =>
+        stanza.map(word => ({
+          ...word,
+          startTime: Number(word.startTime) || 0,
+          endTime: Number(word.endTime) || 0,
+        }))
+      );
+
+      const res = await fetch('/api/songs/update-timing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           songId: songId,
-          stanzas: songData.stanzas
+          stanzas: sanitizedStanzas // Use the sanitized data
         }),
       });
+
+      if (!res.ok) {
+        try {
+            const errorData = await res.json();
+            throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+        } catch (jsonError) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+      }
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to save.');
-      setMessage('Timings saved successfully!');
+      setMessage(data.message || 'Timings saved successfully!');
     } catch (error) {
       setMessage(`Error: ${error.message}`);
     }
