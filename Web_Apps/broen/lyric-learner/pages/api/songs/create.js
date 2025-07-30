@@ -39,9 +39,10 @@ export default async function handler(req, res) {
 
       const words = stanzaText.split(' ').filter(word => word.trim() !== '');
       for (const [wordIndex, wordText] of words.entries()) {
+        // rationale: Added the 'pronunciation' column to the INSERT statement with a default placeholder.
         await client.query(
-          'INSERT INTO words (stanza_id, word_index, text, layer, example, italian, start_time, end_time) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-          [newStanzaId, wordIndex, wordText, 1, 'Example needed', 'Italian needed', 0, 0] // Default values
+          'INSERT INTO words (stanza_id, word_index, text, layer, example, italian, start_time, end_time, pronunciation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+          [newStanzaId, wordIndex, wordText, 1, 'Example needed', 'Italian needed', 0, 0, 'Pronunciation needed'] // Default values
         );
       }
     }

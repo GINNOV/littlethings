@@ -22,7 +22,6 @@ const Settings = () => {
       <div className="setting-group">
         <span className="setting-label">Aiutino:</span>
         <div className="radio-group">
-          {/* rationale: Added the "Nessuno" (None) option as requested. */}
           <label>
             <input
               type="radio"
@@ -32,6 +31,17 @@ const Settings = () => {
               onChange={handleAiutinoChange}
             />
             Nessuno
+          </label>
+          {/* rationale: Added the "Pronuncia" option as requested. */}
+          <label>
+            <input
+              type="radio"
+              name="aiutino"
+              value="pronuncia"
+              checked={aiutino === 'pronuncia'}
+              onChange={handleAiutinoChange}
+            />
+            🗣️ Pronuncia
           </label>
           <label>
             <input
@@ -66,9 +76,8 @@ const Settings = () => {
               checked={tutor}
               onChange={handleTutorChange}
               // The tutor is only useful if an example is shown.
-              disabled={aiutino === 'none'}
+              disabled={aiutino === 'none' || aiutino === 'pronuncia'}
             />
-            {/* rationale: Replaced the unescaped apostrophe ' with &apos; to fix the build error. */}
             Pronuncia l&apos;aiutino
           </label>
         </div>

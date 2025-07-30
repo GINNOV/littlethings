@@ -346,6 +346,11 @@ main {
   color: #f8f9fa;
 }
 
+/* rationale: Added a style for the new pronunciation text. */
+.pronunciation-text {
+  font-style: italic;
+  color: #e9ecef;
+}
 
 .youtube-player-container {
   position: fixed;
