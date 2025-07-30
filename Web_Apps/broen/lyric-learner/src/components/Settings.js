@@ -57,7 +57,8 @@ const Settings = () => {
               // The tutor is only useful if an example is shown.
               disabled={aiutino === 'none'}
             />
-            Pronuncia l'aiutino
+            {/* rationale: Replaced the unescaped apostrophe ' with &apos; to fix the build error. */}
+            Pronuncia l&apos;aiutino
           </label>
         </div>
       </div>
