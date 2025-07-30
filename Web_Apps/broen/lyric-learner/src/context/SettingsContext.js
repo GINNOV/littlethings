@@ -5,40 +5,48 @@ const SettingsContext = createContext();
 export const useSettings = () => useContext(SettingsContext);
 
 export const SettingsProvider = ({ children }) => {
-  // Initialize state with a default value, NOT from localStorage.
-  const [showTooltipSetting, setShowTooltipSetting] = useState(false);
-  const [showItalianSetting, setShowItalianSetting] = useState(false);
+  // rationale: 'aiutino' state now manages the helper visibility.
+  // 'none' = off, 'esempio' = show example, 'bilingue' = show example + italian.
+  const [aiutino, setAiutino] = useState('none');
+  // rationale: 'tutor' state manages the text-to-speech feature for examples.
+  const [tutor, setTutor] = useState(false);
 
-  // Use useEffect to load the saved state from localStorage only on the client-side.
+  // Load saved settings from localStorage on initial client-side render.
   useEffect(() => {
-    const savedTooltip = localStorage.getItem('showTooltipSetting');
-    if (savedTooltip !== null) {
-      setShowTooltipSetting(JSON.parse(savedTooltip));
+    const savedAiutino = localStorage.getItem('aiutino');
+    if (savedAiutino !== null) {
+      setAiutino(savedAiutino);
     }
 
-    const savedItalian = localStorage.getItem('showItalianSetting');
-    if (savedItalian !== null) {
-      setShowItalianSetting(JSON.parse(savedItalian));
+    const savedTutor = localStorage.getItem('tutor');
+    if (savedTutor !== null) {
+      setTutor(JSON.parse(savedTutor));
     }
-  }, []); // The empty array [] ensures this runs only once after the component mounts in the browser.
+  }, []);
 
-  // Effects for SAVING state to localStorage.
+  // Save 'aiutino' setting to localStorage whenever it changes.
   useEffect(() => {
-    localStorage.setItem('showTooltipSetting', JSON.stringify(showTooltipSetting));
-    if (!showTooltipSetting) {
-      setShowItalianSetting(false);
-    }
-  }, [showTooltipSetting]);
+    localStorage.setItem('aiutino', aiutino);
+  }, [aiutino]);
 
+  // Save 'tutor' setting to localStorage whenever it changes.
   useEffect(() => {
-    localStorage.setItem('showItalianSetting', JSON.stringify(showItalianSetting));
-  }, [showItalianSetting]);
+    localStorage.setItem('tutor', JSON.stringify(tutor));
+  }, [tutor]);
+
+  // Deprecated states are kept for now to avoid breaking other components,
+  // but they are now controlled by the new 'aiutino' state.
+  const showTooltipSetting = aiutino !== 'none';
+  const showItalianSetting = aiutino === 'bilingue';
 
   const value = {
+    aiutino,
+    setAiutino,
+    tutor,
+    setTutor,
+    // Provide the derived legacy values for compatibility during refactoring.
     showTooltipSetting,
-    setShowTooltipSetting,
     showItalianSetting,
-    setShowItalianSetting,
   };
 
   return (

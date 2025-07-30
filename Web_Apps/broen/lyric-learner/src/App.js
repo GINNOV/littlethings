@@ -12,9 +12,7 @@ const YouTubePlayer = dynamic(() => import('./components/YouTubePlayer'), {
 });
 
 export default function App() {
-  // --- NEW: State to hold available browser voices for TTS ---
   const [voices, setVoices] = useState([]);
-
   const [songList, setSongList] = useState([]);
   const [selectedSongId, setSelectedSongId] = useState(1);
   const [songData, setSongData] = useState(null);
@@ -36,15 +34,12 @@ export default function App() {
   const appVersion = packageJson.version;
   const buildNumber = (new Date().getTime() % 1000).toString().padStart(3, '0');
 
-  // --- NEW: Effect to reliably load speech synthesis voices ---
   useEffect(() => {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       const loadVoices = () => {
         setVoices(window.speechSynthesis.getVoices());
       };
-      // Load voices initially
       loadVoices();
-      // The 'voiceschanged' event is crucial for some browsers
       window.speechSynthesis.onvoiceschanged = loadVoices;
     }
 
@@ -99,10 +94,6 @@ export default function App() {
   }, [selectedSongId]);
 
   useEffect(() => {
-    // Gamification Logic
-  }, []);
-
-  useEffect(() => {
     if (isPlaying && player) {
       intervalRef.current = setInterval(() => {
         const time = player.getCurrentTime();
@@ -131,7 +122,6 @@ export default function App() {
     console.error("YouTube Player Error:", event.data);
   };
 
-  // --- UPDATED: Word click handler to use loaded voices ---
   const handleWordClick = (wordText) => {
     if (window.navigator && window.navigator.vibrate) {
       window.navigator.vibrate(50);
@@ -142,7 +132,6 @@ export default function App() {
     clearTimeout(lastWordClicked.timer);
 
     const utterance = new SpeechSynthesisUtterance(wordText);
-    // Find a suitable English voice
     const englishVoice = voices.find(voice => voice.lang.startsWith('en-'));
     if (englishVoice) {
       utterance.voice = englishVoice;
@@ -159,6 +148,18 @@ export default function App() {
     window.speechSynthesis.speak(utterance);
   };
 
+  // rationale: New handler for the Tutor feature TTS.
+  const handleExampleSpeak = (exampleText) => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel(); // Stop any other speech
+    const utterance = new SpeechSynthesisUtterance(exampleText);
+    const englishVoice = voices.find(voice => voice.lang.startsWith('en-'));
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+    utterance.rate = 1.0; // Speak the example at a normal rate
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleInstructionsClick = () => {
     if (!window.speechSynthesis) return;
@@ -166,7 +167,6 @@ export default function App() {
     const message = "Clicca sulle parole evidenziate per sentirne la pronuncia. Attiva 'Mostra esempio di uso' per vedere un esempio della parola in una frase.";
     const utterance = new SpeechSynthesisUtterance(message);
     
-    // Find a suitable Italian voice
     const italianVoice = voices.find(voice => voice.lang.startsWith('it-'));
     if (italianVoice) {
       utterance.voice = italianVoice;
@@ -220,6 +220,7 @@ export default function App() {
           onWordClick={handleWordClick}
           layers={songData.layers}
           activeWordIndex={activeWordIndex}
+          onExampleSpeak={handleExampleSpeak} // Pass the new handler down
         />
       </main>
 

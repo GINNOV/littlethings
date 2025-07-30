@@ -1,49 +1,64 @@
-// FILE: src/components/Settings.js
 import React from 'react';
 import { useSettings } from '../context/SettingsContext';
 
 const Settings = () => {
   const {
-    showTooltipSetting,
-    setShowTooltipSetting,
-    showItalianSetting,
-    setShowItalianSetting
+    aiutino,
+    setAiutino,
+    tutor,
+    setTutor
   } = useSettings();
 
-  const handleTooltipCheckboxChange = (e) => {
-    setShowTooltipSetting(e.target.checked);
+  const handleAiutinoChange = (e) => {
+    setAiutino(e.target.value);
   };
 
-  const handleItalianCheckboxChange = (e) => {
-    setShowItalianSetting(e.target.checked);
+  const handleTutorChange = (e) => {
+    setTutor(e.target.checked);
   };
 
   return (
     <div className="settings-container">
-      <div className="setting-item">
-        <span>Mostra esempio di uso</span>
-        <div>
-          <input
-            type="checkbox"
-            id="tooltip-toggle"
-            checked={showTooltipSetting}
-            onChange={handleTooltipCheckboxChange}
-          />
-          <label htmlFor="tooltip-toggle">Toggle</label>
+      <div className="setting-group">
+        <span className="setting-label">Aiutino:</span>
+        <div className="radio-group">
+          <label>
+            <input
+              type="radio"
+              name="aiutino"
+              value="esempio"
+              checked={aiutino === 'esempio'}
+              onChange={handleAiutinoChange}
+            />
+            🇺🇸 Mostra esempio
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="aiutino"
+              value="bilingue"
+              checked={aiutino === 'bilingue'}
+              onChange={handleAiutinoChange}
+            />
+            🇺🇸 + 🇮🇹 bilingue
+          </label>
         </div>
       </div>
 
-      <div className={`setting-item ${!showTooltipSetting ? 'disabled' : ''}`}>
-        <span>Mostra italiano</span>
-        <div>
-          <input
-            type="checkbox"
-            id="italian-toggle"
-            checked={showItalianSetting}
-            onChange={handleItalianCheckboxChange}
-            disabled={!showTooltipSetting}
-          />
-          <label htmlFor="italian-toggle">Toggle</label>
+      <div className="setting-group">
+        <span className="setting-label">Tutor:</span>
+        <div className="checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              id="tutor-toggle"
+              checked={tutor}
+              onChange={handleTutorChange}
+              // The tutor is only useful if an example is shown.
+              disabled={aiutino === 'none'}
+            />
+            Pronuncia l'aiutino
+          </label>
         </div>
       </div>
     </div>
