@@ -1,14 +1,9 @@
 import React from 'react';
 import WordComponent from './WordComponent';
 
-const LyricsViewer = ({ songData, activeLayer, onWordClick, layers, activeWordIndex }) => {
+const LyricsViewer = ({ songData, activeLayer, onWordClick, layers, activeWordIndex, onExampleSpeak }) => {
   let wordCounter = -1;
 
-  // --- DIAGNOSTIC LOG ---
-  // This will show us the exact data being received by this component in the browser console.
-  //console.log("LyricsViewer received songData:", songData);
-
-  // Check if stanzas exist and have content
   const hasLyrics = songData && songData.stanzas && songData.stanzas.length > 0 && songData.stanzas.some(stanza => stanza.length > 0);
 
   return (
@@ -20,7 +15,6 @@ const LyricsViewer = ({ songData, activeLayer, onWordClick, layers, activeWordIn
       </h2>
       <p className="poem-author">by {songData.author}</p>
       
-      {/* --- FIX: Conditional rendering for lyrics --- */}
       {hasLyrics ? (
         songData.stanzas.map((stanza, stanzaIndex) => (
           <div className="stanza" key={stanzaIndex}>
@@ -35,6 +29,7 @@ const LyricsViewer = ({ songData, activeLayer, onWordClick, layers, activeWordIn
                   songData={songData}
                   onWordClick={onWordClick}
                   isCurrentWord={isCurrentWord}
+                  onExampleSpeak={onExampleSpeak} // Pass the handler through
                 />
               );
             })}

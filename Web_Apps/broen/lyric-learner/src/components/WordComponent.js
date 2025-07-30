@@ -1,8 +1,10 @@
 import React from 'react';
 import { useSettings } from '../context/SettingsContext';
+import SpeakerIcon from './SpeakerIcon'; // Import the new icon component
 
-const WordComponent = ({ wordData, activeLayer, songData, onWordClick, isCurrentWord }) => {
-  const { showTooltipSetting, showItalianSetting } = useSettings();
+const WordComponent = ({ wordData, activeLayer, songData, onWordClick, isCurrentWord, onExampleSpeak }) => {
+  // rationale: Destructuring the new context values.
+  const { showTooltipSetting, showItalianSetting, tutor } = useSettings();
   const { text, layer, example, italian } = wordData;
   const isHighlighted = activeLayer === 'all' || layer === activeLayer;
   const canShowTooltip = showTooltipSetting && isHighlighted;
@@ -26,6 +28,12 @@ const WordComponent = ({ wordData, activeLayer, songData, onWordClick, isCurrent
     }
   };
 
+  const handleSpeakerClick = () => {
+    if (onExampleSpeak) {
+      onExampleSpeak(example);
+    }
+  };
+
   const wrapperClassName = `word-wrapper ${canShowTooltip ? 'tooltips-enabled' : ''}`;
   const wordClassName = `word ${isCurrentWord ? 'current-word' : ''}`;
 
@@ -43,9 +51,12 @@ const WordComponent = ({ wordData, activeLayer, songData, onWordClick, isCurrent
         {text}
       </span>
       <div className="word-tooltip">
-        {/* FIX: Replaced ' with &apos; to escape the character */}
         <strong>Esempio d&apos;uso</strong><br />
-        <em>🇺🇸 {example}</em>
+        <em className="example-text">
+          🇺🇸 {example}
+          {/* rationale: The speaker icon is now displayed next to the example when the tutor setting is enabled. */}
+          {tutor && <SpeakerIcon onClick={handleSpeakerClick} className="speaker-icon" />}
+        </em>
         {showItalianSetting && italian && <><br /><i>🇮🇹 {italian}</i></>}
       </div>
     </div>
