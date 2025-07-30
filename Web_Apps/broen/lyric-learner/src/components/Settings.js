@@ -22,6 +22,17 @@ const Settings = () => {
       <div className="setting-group">
         <span className="setting-label">Aiutino:</span>
         <div className="radio-group">
+          {/* rationale: Added the "Nessuno" (None) option as requested. */}
+          <label>
+            <input
+              type="radio"
+              name="aiutino"
+              value="none"
+              checked={aiutino === 'none'}
+              onChange={handleAiutinoChange}
+            />
+            Nessuno
+          </label>
           <label>
             <input
               type="radio"
