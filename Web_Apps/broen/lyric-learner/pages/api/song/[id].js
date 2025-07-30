@@ -16,7 +16,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const songResult = await pool.sql`SELECT id, title, author, youtube_video_id FROM songs WHERE id = ${id};`;
+    // rationale: Using a parameterized query ($1) instead of template literal (${id})
+    // prevents SQL injection vulnerabilities by ensuring the input is treated as data, not executable code.
+    const songResult = await pool.query('SELECT id, title, author, youtube_video_id FROM songs WHERE id = $1', [id]);
 
     if (songResult.rowCount === 0) {
       return res.status(404).json({ error: 'Song not found' });
@@ -24,15 +26,16 @@ export default async function handler(req, res) {
 
     const song = songResult.rows[0];
 
+    // rationale: Parameterized queries are also used here for consistency and safety.
     const [stanzasResult, wordsResult] = await Promise.all([
-      pool.sql`SELECT id, stanza_index FROM stanzas WHERE song_id = ${id} ORDER BY stanza_index ASC;`,
-      pool.sql`
+      pool.query('SELECT id, stanza_index FROM stanzas WHERE song_id = $1 ORDER BY stanza_index ASC', [id]),
+      pool.query(`
         SELECT w.text, w.layer, w.example, w.italian, w.start_time, w.end_time, s.stanza_index, w.word_index
         FROM words w
         JOIN stanzas s ON w.stanza_id = s.id
-        WHERE s.song_id = ${id}
+        WHERE s.song_id = $1
         ORDER BY s.stanza_index ASC, w.word_index ASC;
-      `,
+      `, [id]),
     ]);
 
     const stanzas = stanzasResult.rows.map((stanzaInfo) => {
@@ -58,7 +61,6 @@ export default async function handler(req, res) {
     const responseData = {
       title: song.title,
       author: song.author,
-      // --- FIX: Add the video ID to the response ---
       youtubeVideoId: song.youtube_video_id,
       layers: layers,
       stanzas: stanzas,
