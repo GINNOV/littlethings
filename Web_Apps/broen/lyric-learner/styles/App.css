@@ -1,5 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
+/* rationale: The universal selector with box-sizing: border-box is a foundational CSS reset.
+   It prevents padding and borders from adding to an element's specified width, which is
+   the most common cause of horizontal overflow and the "empty space" bug on mobile. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 :root {
   --bg-color: #f8f9fa;
   --text-color: #212529;
@@ -17,8 +26,19 @@ body {
   padding-bottom: 80px; /* Space for the bottom player */
 }
 
+/* rationale: This is the definitive fix, part 1. In Next.js, the app is rendered inside
+   a div with the id "__next". By targeting this root element directly and preventing
+   it from overflowing, we contain the entire application and fix the horizontal scroll issue at its source. */
+#__next {
+  overflow-x: hidden;
+}
+
 .App {
   text-align: center;
+  /* rationale: This is the definitive fix, part 2. Ensuring the main app container
+     also prevents overflow provides an extra layer of safety. */
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .App-header {
@@ -105,7 +125,6 @@ main {
   width: 100%;
 }
 
-/* rationale: New styles for the settings redesign */
 .setting-group {
   display: flex;
   align-items: center;
@@ -123,6 +142,7 @@ main {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap; /* Allow options to wrap if needed */
 }
 
 .radio-group label, .checkbox-group label {
@@ -307,7 +327,6 @@ main {
   display: inline-block;
 }
 
-/* rationale: New styles for the example text and speaker icon */
 .example-text {
   display: flex;
   align-items: center;
@@ -444,6 +463,8 @@ main {
 .App-header.scrolled h1 {
   font-size: 1.25rem;
   margin: 0;
+  /* rationale: This padding was causing overflow on mobile. It's now removed from the base style
+     and applied only on larger screens via the media query below. */
 }
 
 .App-header.scrolled h4,
@@ -462,10 +483,6 @@ main {
   right: 1rem;
   top: 50%;
   transform: translateY(-50%);
-}
-
-.App-header.scrolled h1 {
-  padding-right: 120px;
 }
 
 /* --- Admin Page Styles --- */
@@ -595,4 +612,67 @@ main {
   border-radius: 8px;
   cursor: pointer;
   margin-top: 1rem;
+}
+
+/* Desktop-only styles for the scrolled header */
+@media (min-width: 601px) {
+  .App-header.scrolled h1 {
+    padding-right: 120px;
+  }
+}
+
+
+/* Mobile responsive styles */
+@media (max-width: 600px) {
+  .setting-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .radio-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding-left: 0.5rem; /* Indent options slightly under the label */
+  }
+
+  .checkbox-group {
+     padding-left: 0.5rem;
+  }
+
+  .selector-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  #layer-select, #song-select {
+    margin-left: 0;
+    width: 100%; /* Make dropdowns full width on mobile */
+  }
+
+  .lyrics-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .player-and-lyrics {
+    grid-template-columns: 1fr;
+  }
+
+  /* rationale: This is the fix. On mobile, we use flexbox for a safe layout.
+     The absolute positioning of the button is removed, and the title no longer
+     needs the large padding that was causing the overflow. */
+  .App-header.scrolled {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .App-header.scrolled .instructions-button {
+    position: static;
+    transform: none;
+    flex-shrink: 0; /* Prevents the button from shrinking */
+  }
 }
