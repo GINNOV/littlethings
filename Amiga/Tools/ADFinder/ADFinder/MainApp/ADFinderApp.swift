@@ -12,6 +12,7 @@ import UniformTypeIdentifiers
 struct ADFinderApp: App {
     @AppStorage("rememberWindowSize") private var rememberWindowSize = false
     @AppStorage("autoEnableTabs") private var autoEnableTabs = false
+    @AppStorage("openLastKnownDisk") private var openLastKnownDisk = false
     @AppStorage("lastVersionPromptedFor") private var lastVersionPromptedFor: String = ""
     @AppStorage("dontShowWhatsNew") private var dontShowWhatsNew = false
     
@@ -23,31 +24,34 @@ struct ADFinderApp: App {
     
     static let adfUType = UTType("public.retro.adf")!
     static let hdfUType = UTType("public.retro.hdf")!
+
+    init() {
+        let openLast = UserDefaults.standard.bool(forKey: "openLastKnownDisk")
+        let autoTabs = UserDefaults.standard.bool(forKey: "autoEnableTabs")
+        if openLast || autoTabs {
+            NSWindow.allowsAutomaticWindowTabbing = true
+        } else {
+            NSWindow.allowsAutomaticWindowTabbing = false
+        }
+    }
     
     var body: some Scene {
-        WindowGroup {
-            ContentView(recentFilesService: recentFilesService)
+        // rationale: This WindowGroup handles opening files via URL (e.g., from Finder or Dock).
+        WindowGroup(for: URL.self) { $url in
+            ContentView(recentFilesService: recentFilesService, initialURL: url)
                 .environment(logStore)
-                .sheet(isPresented: $showWhatsNew) {
-                    WhatsNewView(showWhatsNew: $showWhatsNew)
-                }
-                .onAppear {
-                    checkForUpdates()
-                }
         }
         .commands {
             AmigaMenuCommands()
             
             CommandGroup(replacing: .appInfo) {
                 Button("About ADFinder") {
-                    
                     NotificationCenter.default.post(name: .showAboutWindow, object: nil)
                 }
             }
             
             CommandGroup(after: .appInfo) {
                 Button("What's new...") {
-                    
                     NotificationCenter.default.post(name: .showWhatsNewWindow, object: nil)
                 }
             }
@@ -63,7 +67,7 @@ struct ADFinderApp: App {
                 Menu("Open Recent") {
                     ForEach(recentFilesService.recentFiles, id: \.self) { url in
                         Button(url.lastPathComponent) {
-                            NotificationCenter.default.post(name: .openSpecificAdfFile, object: url)
+                            openWindow(value: url)
                         }
                     }
                     
@@ -89,6 +93,18 @@ struct ADFinderApp: App {
             }
         }
         
+
+        WindowGroup("ADFinder", id: "main") {
+            ContentView(recentFilesService: recentFilesService)
+                .environment(logStore)
+                .sheet(isPresented: $showWhatsNew) {
+                    WhatsNewView(showWhatsNew: $showWhatsNew)
+                }
+                .onAppear {
+                    checkForUpdates()
+                }
+        }
+
         Settings {
             PreferencesView()
         }
