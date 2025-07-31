@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import Quartz // Needed for QuickLook panel access
 
 struct DetailView: View {
     @Environment(\.openWindow) private var openWindow
@@ -14,8 +15,17 @@ struct DetailView: View {
     @Bindable var recentFilesService: RecentFilesService
     @Binding var selectedFile: URL?
 
+    // MARK: - State Properties
     @State var currentEntries: [AmigaEntry] = []
-    @State var selectedEntryID: AmigaEntry.ID?
+    @State var selectedEntryIDs: Set<AmigaEntry.ID> = []
+    @State private var sortedEntries: [AmigaEntry] = []
+    @State private var entryLookup: [AmigaEntry.ID: AmigaEntry] = [:]
+    
+    // MARK: - Advanced Selection Handling State
+    @State private var isProcessingSelection = false
+    @State private var selectionUpdateTask: Task<Void, Never>?
+
+    // MARK: - UI State
     @State var alertMessage: String?
     @State var showingAlert = false
     @State var confirmationConfig: ConfirmationConfig?
@@ -42,12 +52,12 @@ struct DetailView: View {
     @State var adfDocumentToSave: ADFDocument?
     @State var quickLookHelper = QuickLookHelper()
     
-    var selectedEntry: AmigaEntry? {
-        guard let selectedEntryID = selectedEntryID else { return nil }
-        return currentEntries.first { $0.id == selectedEntryID }
+    // MARK: - Computed Properties
+    var selectedEntries: [AmigaEntry] {
+        // Use the lookup dictionary for O(1) access per item
+        return selectedEntryIDs.compactMap { entryLookup[$0] }
     }
     
-    // MARK: – 1. Dynamic UTType & file-name helpers
     private var currentContentType: UTType {
         adfService.currentImageKind == .hdf ? ContentView.hdfUType : ContentView.adfUType
     }
@@ -58,7 +68,26 @@ struct DetailView: View {
         return base.replacingOccurrences(of: "[:/\\?%*|\"<>]", with: "_", options: .regularExpression) + ".\(ext)"
     }
     
-    private var detailActions: DetailToolbar.Actions {
+    // MARK: - Custom Selection Binding
+    // This is the core of the advanced solution. It intercepts selection changes from the List.
+    private var customSelectionBinding: Binding<Set<AmigaEntry.ID>> {
+        Binding(
+            get: { selectedEntryIDs },
+            set: { newSelection in
+                // For large changes, use our custom chunking processor.
+                if abs(newSelection.count - selectedEntryIDs.count) > 50 {
+                    self.processLargeSelectionChange(newSelection)
+                } else {
+                    // For small changes, update directly for immediate feedback.
+                    self.selectedEntryIDs = newSelection
+                }
+            }
+        )
+    }
+    
+    // MARK: - Actions Closure
+    // This connects the UI to the real methods in the FileHandlers extension.
+    var detailActions: DetailToolbar.Actions {
         .init(
             newADF: {
                 newAdfConfig = NewADFDialogConfig(action: { volumeName, fsType, bootBlockType in
@@ -67,9 +96,7 @@ struct DetailView: View {
             },
             newHDF: {
                 newHDFConfig = NewHDFDialogConfig { volumeName, sizeMB, fsType in
-                    createNewHdf(volumeName: volumeName,
-                                 sizeMB: sizeMB,
-                                 fsType: fsType)
+                    createNewHdf(volumeName: volumeName, sizeMB: sizeMB, fsType: fsType)
                 }
             },
             saveADF: saveAdf,
@@ -87,12 +114,14 @@ struct DetailView: View {
                 }
             },
             getInfo: {
-                if let entry = selectedEntry {
-                    infoDialogConfig = InfoDialogConfig(entry: entry)
+                if selectedEntries.count == 1, let entry = selectedEntries.first {
+                    showInfoAlert(for: entry)
+                } else {
+                    showAlert(message: "Please select exactly one item to get info.")
                 }
             },
             setPermissions: {
-                if let entry = selectedEntry {
+                if selectedEntries.count == 1, let entry = selectedEntries.first {
                     setPermissionsConfig = SetPermissionsDialogConfig(
                         entryName: entry.name,
                         initialBits: entry.protectionBits,
@@ -103,28 +132,43 @@ struct DetailView: View {
                             loadDirectoryContents()
                         }
                     )
+                } else {
+                    showAlert(message: "Please select exactly one item to set permissions.")
                 }
             },
             viewContent: {
-                if let entry = selectedEntry { viewFileContent(entry) }
+                if selectedEntries.count == 1, let entry = selectedEntries.first {
+                    viewFileContent(entry)
+                } else {
+                    showAlert(message: "Please select exactly one file to view content.")
+                }
             },
             viewAsText: {
-                if let entry = selectedEntry { viewTextContent(entry) }
+                if selectedEntries.count == 1, let entry = selectedEntries.first {
+                    viewTextContent(entry)
+                } else {
+                    showAlert(message: "Please select exactly one file to view as text.")
+                }
             },
-            export: exportSelectedItem,
+            export: exportSelectedItems,
             rename: {
-                if let entry = selectedEntry {
+                if selectedEntries.count == 1, let entry = selectedEntries.first {
                     inputDialogConfig = RenameEntryDialogConfig.config(entry: entry) { newName in
                         renameEntry(entry: entry, newName: newName)
                     }
+                } else {
+                    showAlert(message: "Please select exactly one item to rename.")
                 }
             },
             delete: {
-                if let entry = selectedEntry {
-                    presentConfirmation(config: .delete(entry: entry, action: { force in
-                        deleteEntry(entry, force: force)
-                    }))
+                let entriesToDelete = selectedEntries
+                if entriesToDelete.isEmpty {
+                    showAlert(message: "No items selected to delete.")
+                    return
                 }
+                presentConfirmation(config: .deleteEntries(entries: entriesToDelete, action: { force in
+                    deleteEntries(entriesToDelete, force: force)
+                }))
             },
             about: { showingAboutView = true },
             showConsole: { openWindow(id: "console-window") },
@@ -132,31 +176,190 @@ struct DetailView: View {
             diskDump: {
                 guard let url = selectedFile else { return }
                 let (error, path) = adfService.createDiskDump(fileURL: url)
-                if let error = error {
-                    showAlert(message: error)
-                } else if let path = path {
-                    showAlert(message: "Disk dump saved to:\n\(path.path)")
-                }
+                if let error = error { showAlert(message: error) }
+                else if let path = path { showAlert(message: "Disk dump saved to:\n\(path.path)") }
             },
             generateList: {
                 let (error, path) = adfService.generateDirectoryListing()
-                if let error = error {
-                    showAlert(message: error)
-                } else if let path = path {
-                    showAlert(message: "Directory list saved to:\n\(path.path)")
-                }
+                if let error = error { showAlert(message: error) }
+                else if let path = path { showAlert(message: "Directory list saved to:\n\(path.path)") }
             }
         )
     }
     
-    var sortedEntries: [AmigaEntry] {
-        let directories = currentEntries.filter { $0.type == .directory }
-        let files = currentEntries.filter { $0.type != .directory }
+    // MARK: - Body
+    var body: some View {
+        ZStack {
+            mainContent
+                .zIndex(1)
+            
+            if isProcessingSelection {
+                VStack(spacing: 8) {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                    Text("Processing \(selectedEntryIDs.count) items...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .shadow(radius: 10)
+                .transition(.opacity.animation(.easeInOut))
+                .zIndex(100)
+            }
+        }
+        .confirmationSheet(config: $confirmationConfig, forceFlag: $forceFlag)
+        .inputDialogSheet(config: $inputDialogConfig)
+        .infoDialogSheet(config: $infoDialogConfig)
+        .newAdfDialogSheet(config: $newAdfConfig)
+        .newHdfDialogSheet(config: $newHDFConfig)
+        .setPermissionsDialogSheet(config: $setPermissionsConfig)
+        .sheet(isPresented: $showingFileViewer) {
+            if let entry = selectedEntryForView, let data = fileContentData {
+                FileHexView(fileName: entry.name, data: data)
+            }
+        }
+        .sheet(isPresented: $showingTextViewer) {
+            if let entry = selectedEntryForTextEdit {
+                FileTextView(fileName: entry.name, textContent: $textFileContent, onSave: saveTextContent)
+            }
+        }
+        .sheet(isPresented: $showingAboutView) { AboutView() }
+        .sheet(isPresented: $showingWhatsnewView) { WhatsNewView(showWhatsNew: $showingWhatsnewView) }
+        .alert("Notice", isPresented: $showingAlert) {
+            Button("OK", role: .cancel) { alertMessage = nil }
+        } message: {
+            Text(alertMessage ?? "An unknown error occurred.")
+        }
+        .fileExporter(isPresented: $showingFileExporter, document: adfDocumentToSave, contentType: currentContentType, defaultFilename: defaultSaveName, onCompletion: handleFileExport)
+        .fileImporter(isPresented: $showingFileImporter, allowedContentTypes: [ContentView.adfUType, ContentView.hdfUType], allowsMultipleSelection: true, onCompletion: handleFileImport)
+        .focusedSceneValue(\.amigaActions, detailActions)
+        .focusedSceneValue(\.isFileOpen, selectedFile != nil)
+        .focusedSceneValue(\.isEntrySelected, !selectedEntryIDs.isEmpty)
+        .onReceive(NotificationCenter.default.publisher(for: .showAboutWindow)) { _ in showingAboutView = true }
+        .onReceive(NotificationCenter.default.publisher(for: .showWhatsNewWindow)) { _ in showingWhatsnewView = true }
+        .onReceive(NotificationCenter.default.publisher(for: .triggerQuickLook)) { _ in
+            if selectedEntries.count == 1, let entry = selectedEntries.first {
+                showQuickLook(for: entry)
+            } else {
+                showAlert(message: "Please select exactly one file for Quick Look.")
+            }
+        }
+        .onChange(of: currentEntries) { _, _ in updateSortedEntries() }
+        .onChange(of: sortOrder) { _, _ in updateSortedEntries() }
+    }
+
+    @ViewBuilder
+    private var mainContent: some View {
+        VStack {
+            if selectedFile == nil {
+                WelcomeView()
+            } else {
+                FileListView(
+                    // Pass the custom binding to the list view.
+                    selectedEntryIDs: customSelectionBinding,
+                    sortedEntries: sortedEntries,
+                    currentPath: adfService.currentPath,
+                    goUpDirectory: goUpDirectory,
+                    handleEntryTap: handleEntryTap,
+                    showInfoAlert: showInfoAlert,
+                    viewFileContent: viewFileContent,
+                    viewAsText: viewTextContent,
+                    handleMove: handleMove,
+                    handleMoveToParent: handleMoveToParent
+                )
+                .refreshable { loadDirectoryContents() }
+            }
+        }
+        .navigationTitle(selectedFile?.lastPathComponent ?? "ADFinder")
+        .toolbar {
+            DetailToolbar(selectedFile: $selectedFile, sortOrder: $sortOrder, selectedEntry: selectedEntries.first, actions: detailActions)
+        }
+        .onDrop(of: [ContentView.adfUType, UTType.fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
+            handleDrop(providers: providers)
+        }
+        .overlay(isDetailViewTargetedForDrop ? RoundedRectangle(cornerRadius: 10).stroke(Color.accentColor, lineWidth: 3).background(Color.accentColor.opacity(0.2)).padding(5) : nil)
+        .overlay {
+            if isLoadingFileContent {
+                LoadingSpinnerView(isLoading: $isLoadingFileContent, onCancel: {
+                    loadingTask?.cancel()
+                    isLoadingFileContent = false
+                    loadingTask = nil
+                })
+            }
+        }
+        .onChange(of: selectedFile) { _, newValue in
+            if let newFile = newValue {
+                processDroppedURL(newFile)
+                recentFilesService.addRecentFile(newFile)
+            } else {
+                currentEntries = []
+                sortedEntries = []
+                entryLookup = [:]
+            }
+        }
+    }
+    
+    // MARK: - Advanced Selection Processing
+    private func processLargeSelectionChange(_ newSelection: Set<AmigaEntry.ID>) {
+        selectionUpdateTask?.cancel()
+        isProcessingSelection = true
+        
+        selectionUpdateTask = Task { @MainActor in
+            let diff = newSelection.symmetricDifference(selectedEntryIDs)
+            let batchSize = 100
+            var processedCount = 0
+            
+            var currentSelection = selectedEntryIDs
+            
+            for itemID in diff {
+                if Task.isCancelled { break }
+                
+                if newSelection.contains(itemID) {
+                    currentSelection.insert(itemID)
+                } else {
+                    currentSelection.remove(itemID)
+                }
+                
+                processedCount += 1
+                if processedCount % batchSize == 0 {
+                    self.selectedEntryIDs = currentSelection
+                    try? await Task.sleep(for: .milliseconds(2))
+                }
+            }
+            
+            if !Task.isCancelled {
+                self.selectedEntryIDs = newSelection
+            }
+            
+            isProcessingSelection = false
+        }
+    }
+    
+    // MARK: - Data Handling
+    private func updateSortedEntries() {
+        let entries = self.currentEntries
+        let order = self.sortOrder
+        
+        Task(priority: .userInitiated) {
+            let sortedResult = await performSort(entries: entries, order: order)
+            let lookupResult = Dictionary(uniqueKeysWithValues: sortedResult.map { ($0.id, $0) })
+            
+            await MainActor.run {
+                self.sortedEntries = sortedResult
+                self.entryLookup = lookupResult
+            }
+        }
+    }
+    
+    private func performSort(entries: [AmigaEntry], order: SortOrder) async -> [AmigaEntry] {
+        let directories = entries.filter { $0.type == .directory }
+        let files = entries.filter { $0.type != .directory }
 
         let sortedDirectories: [AmigaEntry]
         let sortedFiles: [AmigaEntry]
 
-        switch sortOrder {
+        switch order {
         case .nameAscending:
             sortedDirectories = directories.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
             sortedFiles = files.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
@@ -173,128 +376,6 @@ struct DetailView: View {
         
         return sortedDirectories + sortedFiles
     }
-
-    var body: some View {
-        ZStack {
-            mainContent
-        }
-        .confirmationSheet(config: $confirmationConfig, forceFlag: $forceFlag)
-        .inputDialogSheet(config: $inputDialogConfig)
-        .infoDialogSheet(config: $infoDialogConfig)
-        .newAdfDialogSheet(config: $newAdfConfig)
-        .newHdfDialogSheet(config: $newHDFConfig)
-        .setPermissionsDialogSheet(config: $setPermissionsConfig)
-        .sheet(isPresented: $showingFileViewer) {
-            if let entry = selectedEntryForView, let data = fileContentData {
-                FileHexView(fileName: entry.name, data: data)
-            }
-        }
-        .sheet(isPresented: $showingTextViewer) {
-            if let entry = selectedEntryForTextEdit {
-                FileTextView(fileName: entry.name, textContent: $textFileContent) {
-                    saveTextContent()
-                }
-            }
-        }
-        .sheet(isPresented: $showingAboutView) {
-            AboutView()
-        }
-        .sheet(isPresented: $showingWhatsnewView) {
-            WhatsNewView(showWhatsNew: $showingWhatsnewView)
-        }
-        .alert("Notice", isPresented: $showingAlert) {
-            Button("OK", role: .cancel) { alertMessage = nil }
-        } message: {
-            Text(alertMessage ?? "An unknown error occurred.")
-        }
-        
-        .fileExporter(
-            isPresented: $showingFileExporter,
-            document: adfDocumentToSave,
-            contentType: currentContentType,
-            defaultFilename: defaultSaveName
-        ) { result in
-            handleFileExport(result: result)
-        }
-        .fileImporter(
-            isPresented: $showingFileImporter,
-            allowedContentTypes: [ContentView.adfUType, ContentView.hdfUType],
-            allowsMultipleSelection: true
-        ) { result in
-            handleFileImport(result: result)
-        }
-        .focusedSceneValue(\.amigaActions, detailActions)
-        .focusedSceneValue(\.isFileOpen, selectedFile != nil)
-        .focusedSceneValue(\.isEntrySelected, selectedEntry != nil)
-        .onReceive(NotificationCenter.default.publisher(for: .showAboutWindow)) { _ in
-            showingAboutView = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .showWhatsNewWindow)) { _ in
-            showingWhatsnewView = true
-        }
-
-        .onReceive(NotificationCenter.default.publisher(for: .triggerQuickLook)) { _ in
-            print("DEBUG: Received triggerQuickLook notification.")
-            if let entry = selectedEntry {
-                showQuickLook(for: entry)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var mainContent: some View {
-        VStack {
-            if selectedFile == nil {
-                WelcomeView()
-            } else {
-                FileListView(
-                    selectedEntryID: $selectedEntryID,
-                    sortedEntries: sortedEntries,
-                    currentPath: adfService.currentPath,
-                    goUpDirectory: goUpDirectory,
-                    handleEntryTap: handleEntryTap,
-                    showInfoAlert: { entry in infoDialogConfig = InfoDialogConfig(entry: entry) },
-                    viewFileContent: viewFileContent,
-                    viewAsText: viewTextContent,
-                    handleMove: handleMove,
-                    handleMoveToParent: handleMoveToParent
-                )
-                .refreshable { loadDirectoryContents() }
-            }
-        }
-        .navigationTitle(selectedFile?.lastPathComponent ?? "ADFinder")
-        .toolbar {
-            DetailToolbar(
-                selectedFile: $selectedFile,
-                sortOrder: $sortOrder,
-                selectedEntry: selectedEntry,
-                actions: detailActions
-            )
-        }
-        .onDrop(of: [ContentView.adfUType, UTType.fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
-            handleDrop(providers: providers)
-        }
-        .overlay(
-            isDetailViewTargetedForDrop ?
-                RoundedRectangle(cornerRadius: 10).stroke(Color.accentColor, lineWidth: 3).background(Color.accentColor.opacity(0.2)).padding(5)
-                : nil
-        )
-        .overlay {
-            if isLoadingFileContent {
-                LoadingSpinnerView(isLoading: $isLoadingFileContent, onCancel: {
-                    loadingTask?.cancel()
-                    isLoadingFileContent = false
-                    loadingTask = nil
-                })
-            }
-        }
-        .onChange(of: selectedFile) { _, newValue in
-            if let newFile = newValue {
-                processDroppedURL(newFile)
-                recentFilesService.addRecentFile(newFile)
-            } else {
-                currentEntries = []
-            }
-        }
-    }
 }
+
+// Generated: DetailView.swift @ 04:23

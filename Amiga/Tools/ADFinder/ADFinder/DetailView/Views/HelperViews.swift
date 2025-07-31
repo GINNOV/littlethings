@@ -4,20 +4,15 @@
 //
 //  Created by Mario Esposito on 5/23/25.
 //
-
 import SwiftUI
-
 struct InputDialogView: View {
     let config: InputDialogConfig
-    
     @State private var inputText: String
     @Environment(\.dismiss) var dismiss
-    
     init(config: InputDialogConfig) {
         self.config = config
         _inputText = State(initialValue: config.initialText)
     }
-    
     var body: some View {
         VStack(spacing: 20) {
             // The image can now be an asset or an SF Symbol
@@ -34,26 +29,21 @@ struct InputDialogView: View {
                     .scaledToFit()
                     .frame(width: 80, height: 80)
             }
-            
             Text(config.title)
                 .font(.headline)
-            
             Text(config.message)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            
             TextField(config.prompt, text: $inputText)
                 .textFieldStyle(.roundedBorder)
                 .autocorrectionDisabled()
-            
             HStack(spacing: 12) {
                 Button(role: .cancel, action: { dismiss() }) {
                     Text("Cancel")
                         .frame(maxWidth: .infinity)
                 }
                 .keyboardShortcut(.cancelAction)
-                
                 Button(action: {
                     config.action(inputText)
                     dismiss()
@@ -70,8 +60,6 @@ struct InputDialogView: View {
         .frame(width: 380)
     }
 }
-
-
 // AI_TRACK: This generic confirmation view is now used for all destructive actions.
 struct ActionConfirmationView: View {
     let title: String
@@ -80,39 +68,31 @@ struct ActionConfirmationView: View {
     let confirmButtonTitle: String
     let confirmButtonRole: ButtonRole
     var showsForceToggle: Bool = false
-    
     @Binding var forceFlag: Bool
-    
     let onConfirm: () -> Void
     let onCancel: () -> Void
-    
     var body: some View {
         VStack(spacing: 20) {
             Image(imageName)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 80, height: 80)
-            
             Text(title)
                 .font(.headline)
-            
             Text(message)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            
             if showsForceToggle {
                 Toggle("Override AmigaOS flags (force operation)", isOn: $forceFlag)
                     .toggleStyle(.checkbox)
             }
-            
             HStack(spacing: 12) {
                 Button(role: .cancel, action: onCancel) {
                     Text("Cancel")
                         .frame(maxWidth: .infinity)
                 }
                 .keyboardShortcut(.cancelAction)
-                
                 Button(role: confirmButtonRole, action: onConfirm) {
                     Text(confirmButtonTitle)
                         .frame(maxWidth: .infinity)
@@ -124,8 +104,6 @@ struct ActionConfirmationView: View {
         .frame(width: 380)
     }
 }
-
-
 struct WelcomeView: View {
     var body: some View {
         VStack {
@@ -142,65 +120,67 @@ struct WelcomeView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
-
 struct FileRowView: View {
     let entry: AmigaEntry
-    
     var body: some View {
         HStack {
             Image(systemName: iconForEntry(entry.type))
                 .foregroundColor(colorForEntry(entry.type))
+                .fixedSize()
+            
             Text(entry.name)
+                .lineLimit(1)
+                .truncationMode(.middle)
+            
             Spacer()
+            
             if entry.type == .file {
-                Text("\(entry.size) bytes")
+                Text(entry.sizeFormatted)
                     .font(.caption)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
             }
         }
+        .padding(.horizontal, 8)
+        .frame(height: 24)
+        .fixedSize(horizontal: false, vertical: true)
     }
     
     private func iconForEntry(_ type: AmigaEntry.EntryType) -> String {
-           switch type {
-           case .file: return "doc.fill"
-           case .directory: return "folder.fill"
-           case .link: return "link" // Assuming .softLinkFile and .softLinkDir map to .link
-           default: return "questionmark.diamond.fill"
-           }
-       }
-       
-       private func colorForEntry(_ type: AmigaEntry.EntryType) -> Color {
-           switch type {
-           case .file: return .blue
-           case .directory: return .orange
-           case .link: return .purple // Assuming .softLinkFile and .softLinkDir map to .link
-           default: return .gray
-           }
-       }
+        switch type {
+        case .file: return "doc.fill"
+        case .directory: return "folder.fill"
+        case .link: return "link" // Assuming .softLinkFile and .softLinkDir map to .link
+        default: return "questionmark.diamond.fill"
+        }
+    }
+    
+    private func colorForEntry(_ type: AmigaEntry.EntryType) -> Color {
+        switch type {
+        case .file: return .blue
+        case .directory: return .orange
+        case .link: return .purple // Assuming .softLinkFile and .softLinkDir map to .link
+        default: return .gray
+        }
+    }
 }
-
 struct ProtectionBitsView: View {
     let bits: UInt32
-    
     private struct BitInfo {
         let label: String
         let flag: UInt32
     }
-    
     private let permissionFlags: [BitInfo] = [
         .init(label: "r", flag: ACCMASK_R_SWIFT),
         .init(label: "w", flag: ACCMASK_W_SWIFT),
         .init(label: "e", flag: ACCMASK_E_SWIFT),
         .init(label: "d", flag: ACCMASK_D_SWIFT)
     ]
-    
     private let attributeFlags: [BitInfo] = [
         .init(label: "h", flag: FIBF_HOLD_SWIFT),
         .init(label: "s", flag: FIBF_SCRIPT_SWIFT),
         .init(label: "p", flag: FIBF_PURE_SWIFT),
         .init(label: "a", flag: FIBF_ARCHIVE_SWIFT)
     ]
-    
     var body: some View {
         HStack(spacing: 16) {
             VStack(alignment: .leading) {
@@ -208,7 +188,6 @@ struct ProtectionBitsView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
                 HStack {
-                    
                     ForEach(permissionFlags, id: \.label) { flagInfo in
                         ProtectionBitView(
                             label: flagInfo.label,
@@ -218,7 +197,6 @@ struct ProtectionBitsView: View {
                     }
                 }
             }
-            
             VStack(alignment: .leading) {
                 Text("Attributes")
                     .font(.caption2)
@@ -236,25 +214,20 @@ struct ProtectionBitsView: View {
         }
     }
 }
-
 private struct ProtectionBitView: View {
     let label: String
     let isSet: Bool
     let isProtection: Bool
-    
     private var statusColor: Color {
-        
         if isSet {
             return isProtection ? .green.opacity(0.8) : .blue.opacity(0.8)
         } else {
             return .gray.opacity(0.3)
         }
     }
-    
     private var statusText: String {
         return isSet ? label : "-"
     }
-    
     var body: some View {
         Text(statusText.uppercased())
             .font(.system(.caption, design: .monospaced).bold())
@@ -268,7 +241,6 @@ private struct ProtectionBitView: View {
             )
             .help(getHelpText())
     }
-    
     private func getHelpText() -> String {
         switch label.lowercased() {
         case "d": return isSet ? "Deletable" : "Delete Protected"
@@ -283,8 +255,6 @@ private struct ProtectionBitView: View {
         }
     }
 }
-
-
 extension View {
     func inputDialogSheet(
         config: Binding<InputDialogConfig?>
@@ -293,7 +263,6 @@ extension View {
             InputDialogView(config: item)
         }
     }
-    
     func infoDialogSheet(
         config: Binding<InfoDialogConfig?>
     ) -> some View {
@@ -301,7 +270,6 @@ extension View {
             InfoDialogView(config: item)
         }
     }
-    
     func newAdfDialogSheet(
         config: Binding<NewADFDialogConfig?>
     ) -> some View {
@@ -309,7 +277,6 @@ extension View {
             NewADFDialogView(config: item)
         }
     }
-
     func newHdfDialogSheet(
         config: Binding<NewHDFDialogConfig?>
     ) -> some View {
@@ -317,7 +284,6 @@ extension View {
             NewHDFDialogView(config: item)
         }
     }
-    
     func setPermissionsDialogSheet(
         config: Binding<SetPermissionsDialogConfig?>
     ) -> some View {

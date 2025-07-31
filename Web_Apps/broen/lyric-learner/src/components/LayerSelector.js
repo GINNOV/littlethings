@@ -14,7 +14,7 @@ const LayerSelector = ({ layers, activeLayer, setActiveLayer }) => {
         <option value="all">Mostra tutti gli strati</option>
         {Object.entries(layers).map(([layerNum, layerData]) => (
           <option key={layerNum} value={layerNum}>
-            Strato {layerNum}: {layerData.name}
+            {layerData.name}
           </option>
         ))}
       </select>
