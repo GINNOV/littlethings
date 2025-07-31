@@ -12,6 +12,17 @@ import Quartz
 extension DetailView {
     // MARK: - Core ADF Operations
     
+    func openWithEmulator() {
+        guard let url = selectedFile else {
+            showAlert(message: "No file is currently open.")
+            return
+        }
+        
+        if !NSWorkspace.shared.open(url) {
+            showAlert(message: "Could not open \(url.lastPathComponent). Make sure you have a default application set for .adf or .hdf files.")
+        }
+    }
+
     func showQuickLook(for entry: AmigaEntry) {
         print("DEBUG: showQuickLook called for '\(entry.name)'.")
         guard entry.type == .file else {

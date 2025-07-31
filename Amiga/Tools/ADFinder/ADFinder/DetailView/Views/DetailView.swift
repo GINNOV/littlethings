@@ -183,7 +183,8 @@ struct DetailView: View {
                 let (error, path) = adfService.generateDirectoryListing()
                 if let error = error { showAlert(message: error) }
                 else if let path = path { showAlert(message: "Directory list saved to:\n\(path.path)") }
-            }
+            },
+            openWithEmulator: openWithEmulator
         )
     }
     
@@ -377,5 +378,3 @@ struct DetailView: View {
         return sortedDirectories + sortedFiles
     }
 }
-
-// Generated: DetailView.swift @ 04:23
