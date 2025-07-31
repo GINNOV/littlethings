@@ -2,52 +2,64 @@
 //  ConsoleView.swift
 //  ADFinder
 //
-//  Created by Mario Esposito on 6/15/25.
+//  Created by Mario Esposito on 6/13/25.
 //
 
 import SwiftUI
 
 struct ConsoleView: View {
     @Environment(LogStore.self) private var logStore
+    @State private var autoScroll = true
     
-    private var logText: String {
-        logStore.entries.joined()
-    }
-
     var body: some View {
         VStack(spacing: 0) {
-            // Header with title and Clear button
-            HStack {
-                Text("ADFlib Console Log")
-                    .font(.headline)
-                    .padding(.leading)
-                Spacer()
-                Button("Clear") {
-                    logStore.clear()
-                }
-                .padding()
-            }
-            .frame(height: 40)
-            .background(.thinMaterial)
-
-            
             ScrollViewReader { proxy in
-                ScrollView(.vertical) {
-                    Text(logText)
-                        .font(.system(.body, design: .monospaced))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(5)
-                        .textSelection(.enabled)
-                        .id("logContent") // ID for auto-scrolling
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 4) {
+                        ForEach(logStore.messages) { entry in
+                            HStack(alignment: .top, spacing: 8) {
+                                Text(entry.formattedTimestamp)
+                                    .foregroundColor(.secondary)
+                                
+                                Text(entry.text)
+                                    .textSelection(.enabled)
+                            }
+                            .padding(.horizontal, 8)
+                            .id(entry.id)
+                        }
+                    }
                 }
-                .onChange(of: logStore.entries) {
-                    // Automatically scroll to the bottom when new entries are added.
-                    withAnimation {
-                        proxy.scrollTo("logContent", anchor: .bottom)
+                .font(.system(.body, design: .monospaced))
+                .onChange(of: logStore.messages.count) {
+                    if autoScroll, let lastMessageId = logStore.messages.last?.id {
+                        proxy.scrollTo(lastMessageId, anchor: .bottom)
                     }
                 }
             }
+            
+            Divider()
+            
+            HStack {
+                Toggle(isOn: $autoScroll) {
+                    Text("Auto-Scroll")
+                }
+                .toggleStyle(.checkbox)
+                
+                Spacer()
+                
+                Button("Clear") {
+                    logStore.clear()
+                }
+            }
+            .padding(8)
+            .background(.bar)
         }
-        .frame(minWidth: 600, idealWidth: 800, minHeight: 300, idealHeight: 500)
+        .frame(minWidth: 600, minHeight: 400)
+        .navigationTitle("ADFlib Console")
     }
+}
+
+#Preview {
+    ConsoleView()
+        .environment(LogStore.shared)
 }

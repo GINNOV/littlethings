@@ -2,35 +2,52 @@
 //  LogStore.swift
 //  ADFinder
 //
-//  Created by Mario Esposito on 6/15/25.
+//  Created by Mario Esposito on 6/13/25.
 //
 
-import SwiftUI
-import Combine
+import Foundation
+import Observation
 
-@Observable
-class LogStore {
-    // A shared singleton instance for easy access throughout the app.
-    static let shared = LogStore()
+struct LogEntry: Identifiable, Equatable {
+    let id = UUID()
+    let timestamp: Date
+    let text: String
 
-    // The array of log messages that views will observe.
-    var entries: [String] = []
-    
-    // A private constructor to enforce the singleton pattern.
-    private init() {}
-    
-    /// Adds a new message to the log store.
-    /// This will be called from the C-to-Swift logging bridge.
-    @MainActor
-    func add(message: String) {
-        // Append new messages to the store.
-        // The @MainActor attribute ensures this is done safely on the main thread.
-        entries.append(message)
+
+    private static let formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss.SSS"
+        return formatter
+    }()
+
+    var formattedTimestamp: String {
+        return LogEntry.formatter.string(from: timestamp)
     }
 
-    /// Clears all messages from the log store.
-    @MainActor
+    init(text: String) {
+        self.timestamp = Date()
+        self.text = text
+    }
+}
+
+
+@Observable
+@MainActor
+class LogStore {
+    static let shared = LogStore()
+    
+    private(set) var messages: [LogEntry] = []
+    
+    private init() {}
+    
+    func add(message: String) {
+        let cleanedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !cleanedMessage.isEmpty {
+            messages.append(LogEntry(text: cleanedMessage))
+        }
+    }
+    
     func clear() {
-        entries.removeAll()
+        messages.removeAll()
     }
 }
