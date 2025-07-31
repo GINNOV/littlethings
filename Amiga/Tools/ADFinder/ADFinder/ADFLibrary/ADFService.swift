@@ -140,7 +140,10 @@ class ADFService {
     }
     
     func openADF(filePath: String) -> Bool {
-        currentImageKind = filePath.lowercased().hasSuffix(".hdf") ? .hdf : .adf
+        // rationale: The URL is now correctly created from the file path. This was the source of the bug.
+        let fileURL = URL(fileURLWithPath: filePath)
+        
+        currentImageKind = fileURL.pathExtension.lowercased() == "hdf" ? .hdf : .adf
         closeADF()
         reinitializeAdfLib()
         
@@ -149,12 +152,10 @@ class ADFService {
             return false
         }
         
-        log("ADFService.openADF: === Starting Mount Process for: \"\(filePath)\" ===")
+        log("ADFService.openADF: === Starting Mount Process for: \"\(fileURL.path)\" ===")
         
         log("ADFService.openADF: -> Calling adfDevOpenWithDriver...")
-        self.adfDevice = filePath.withCString { cFilePath -> UnsafeMutablePointer<AdfDevice>? in
-            return adfDevOpenWithDriver("dump", cFilePath, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READWRITE_SWIFT)))
-        }
+        self.adfDevice = adfDevOpenWithDriver("dump", fileURL.path, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READWRITE_SWIFT)))
         
         if self.adfDevice == nil {
             log("ADFService.openADF: <- adfDevOpenWithDriver FAILED. Returned nil.")
