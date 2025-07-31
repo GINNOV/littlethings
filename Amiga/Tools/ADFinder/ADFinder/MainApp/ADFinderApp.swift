@@ -17,6 +17,7 @@ struct ADFinderApp: App {
     @AppStorage("dontShowWhatsNew") private var dontShowWhatsNew = false
     
     @State private var recentFilesService = RecentFilesService()
+    // rationale: LogStore now conforms to @Observable, so it can be used with .environment().
     @State private var logStore = LogStore.shared
     @State private var showWhatsNew = false
     
@@ -36,7 +37,6 @@ struct ADFinderApp: App {
     }
     
     var body: some Scene {
-        // rationale: This WindowGroup handles opening files via URL (e.g., from Finder or Dock).
         WindowGroup(for: URL.self) { $url in
             ContentView(recentFilesService: recentFilesService, initialURL: url)
                 .environment(logStore)
@@ -46,12 +46,14 @@ struct ADFinderApp: App {
             
             CommandGroup(replacing: .appInfo) {
                 Button("About ADFinder") {
+                    
                     NotificationCenter.default.post(name: .showAboutWindow, object: nil)
                 }
             }
             
             CommandGroup(after: .appInfo) {
                 Button("What's new...") {
+                    
                     NotificationCenter.default.post(name: .showWhatsNewWindow, object: nil)
                 }
             }
@@ -93,7 +95,6 @@ struct ADFinderApp: App {
             }
         }
         
-
         WindowGroup("ADFinder", id: "main") {
             ContentView(recentFilesService: recentFilesService)
                 .environment(logStore)
@@ -122,7 +123,6 @@ struct ADFinderApp: App {
     private func checkForUpdates() {
         let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
         
-        // Show the dialog if the user hasn't opted out and the current version is new.
         if !dontShowWhatsNew && currentVersion != lastVersionPromptedFor {
             showWhatsNew = true
             lastVersionPromptedFor = currentVersion
