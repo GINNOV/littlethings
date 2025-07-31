@@ -108,32 +108,36 @@ extension DetailView {
     }
     
     func handleDrop(providers: [NSItemProvider]) -> Bool {
-        guard let provider = providers.first else { return false }
-        
-        if provider.hasItemConformingToTypeIdentifier(ContentView.adfUType.identifier) {
-            provider.loadItem(forTypeIdentifier: ContentView.adfUType.identifier, options: nil) { (item, error) in
-                DispatchQueue.main.async {
-                    if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
+        // rationale: We only care about file URLs, so we find the first provider that can give us one.
+        guard let provider = providers.first(where: { $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) }) else {
+            return false
+        }
+
+        _ = provider.loadObject(ofClass: URL.self) { url, error in
+            DispatchQueue.main.async {
+                guard let url = url else {
+                    self.showAlert(message: "Could not read the dropped file.")
+                    return
+                }
+
+                // rationale: Added a check to ensure only files with .adf or .hdf extensions are processed.
+                let fileExtension = url.pathExtension.lowercased()
+                guard ["adf", "hdf"].contains(fileExtension) else {
+                    self.showAlert(message: "Only .adf and .hdf files can be opened.")
+                    return
+                }
+                
+                // rationale: If a file is already open, show a confirmation dialog before proceeding.
+                if self.selectedFile != nil {
+                    self.presentConfirmation(config: .replaceOpenDisk {
                         self.selectedFile = url
-                    } else if let url = item as? URL {
-                        self.selectedFile = url
-                    } else {
-                        self.showAlert(message: "Could not read the dropped file.")
-                    }
+                    })
+                } else {
+                    self.selectedFile = url
                 }
             }
-            return true
         }
-        
-        if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
-            _ = provider.loadObject(ofClass: URL.self) { (url, error) in
-                DispatchQueue.main.async {
-                    if let url = url { self.selectedFile = url }
-                }
-            }
-            return true
-        }
-        return false
+        return true
     }
     
     func processDroppedURL(_ url: URL) {

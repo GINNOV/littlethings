@@ -226,7 +226,7 @@ struct DetailView: View {
         }
         .sheet(isPresented: $showingAboutView) { AboutView() }
         .sheet(isPresented: $showingWhatsnewView) { WhatsNewView(showWhatsNew: $showingWhatsnewView) }
-        .alert("Notice", isPresented: $showingAlert) {
+        .alert("ADFinder Wisdom", isPresented: $showingAlert) {
             Button("OK", role: .cancel) { alertMessage = nil }
         } message: {
             Text(alertMessage ?? "An unknown error occurred.")
