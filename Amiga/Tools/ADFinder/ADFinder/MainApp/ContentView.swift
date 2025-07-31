@@ -13,6 +13,11 @@ struct ContentView: View {
     @Bindable var recentFilesService: RecentFilesService
 
     @State private var selectedFile: URL?
+    var initialURL: URL?
+
+    @AppStorage("openLastKnownDisk") private var openLastKnownDisk = false
+    @Environment(\.openWindow) private var openWindow
+    private static var didRunStartupLogic = false
 
     static let adfUType = UTType("public.retro.adf")!
     static let hdfUType = UTType("public.retro.hdf")!
@@ -38,5 +43,33 @@ struct ContentView: View {
                 self.selectedFile = url
             }
         }
+        .onAppear {
+            if let url = initialURL {
+                // This window was opened for a specific file (e.g., from Finder or the Recent menu).
+                selectedFile = url
+            } else {
+                // This is the initial, blank window that appears on app launch.
+                // We check if we should run the startup logic.
+                if !Self.didRunStartupLogic {
+                    Self.didRunStartupLogic = true
+                    if openLastKnownDisk {
+                        let recentFiles = recentFilesService.recentFiles.prefix(5)
+                        if let firstFile = recentFiles.first {
+                            // Load the first recent file into this initial window.
+                            selectedFile = firstFile
+                            // Open the rest of the recent files in new windows, which will be tabbed.
+                            for file in recentFiles.dropFirst() {
+                                openWindow(value: file)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    init(recentFilesService: RecentFilesService, initialURL: URL? = nil) {
+        self.recentFilesService = recentFilesService
+        self.initialURL = initialURL
     }
 }

@@ -10,6 +10,7 @@ import SwiftUI
 struct PreferencesView: View {
     @AppStorage("autoEnableTabs") private var autoEnableTabs = false
     @AppStorage("rememberWindowSize") private var rememberWindowSize = false
+    @AppStorage("openLastKnownDisk") private var openLastKnownDisk = false
     @AppStorage("downloadLocationBookmark") private var downloadLocationBookmark: Data?
 
     // State for displaying the resolved path
@@ -31,6 +32,7 @@ struct PreferencesView: View {
                 
                 Toggle("Auto enable tabs for new windows", isOn: $autoEnableTabs)
                 Toggle("Remember window size and position", isOn: $rememberWindowSize)
+                Toggle("Open the last known disk on startup", isOn: $openLastKnownDisk)
 
                 Divider()
 
