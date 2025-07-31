@@ -170,6 +170,13 @@ extension ADFService {
             return getADFLibError(context: "navigateToInternalPath for \(entry.name) before writeTextFile")
         }
 
+        // rationale: Added check for write protection before attempting to write to the file. This prevents the crash.
+        if (entry.protectionBits & ACCMASK_W_SWIFT) != 0 {
+            let errorMessage = "File '\(entry.name)' is (Amiga) write-protected. Cannot save changes."
+            log("ADFService: \(errorMessage)")
+            return errorMessage
+        }
+
         var processedContent = content
             .replacingOccurrences(of: "“", with: "\"")
             .replacingOccurrences(of: "”", with: "\"")
