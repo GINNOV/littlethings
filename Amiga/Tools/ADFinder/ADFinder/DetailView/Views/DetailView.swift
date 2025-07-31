@@ -227,7 +227,7 @@ struct DetailView: View {
         }
         .sheet(isPresented: $showingAboutView) { AboutView() }
         .sheet(isPresented: $showingWhatsnewView) { WhatsNewView(showWhatsNew: $showingWhatsnewView) }
-        .alert("ADFinder Wisdom", isPresented: $showingAlert) {
+        .alert("Notice", isPresented: $showingAlert) {
             Button("OK", role: .cancel) { alertMessage = nil }
         } message: {
             Text(alertMessage ?? "An unknown error occurred.")
@@ -276,7 +276,9 @@ struct DetailView: View {
         .toolbar {
             DetailToolbar(selectedFile: $selectedFile, sortOrder: $sortOrder, selectedEntry: selectedEntries.first, actions: detailActions)
         }
-        .onDrop(of: [ContentView.adfUType, UTType.fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
+        // rationale: This is the first part of the fix. We explicitly tell the onDrop modifier
+        // to accept UTType.fileURL. This ensures macOS provides the correct data type in the drop provider.
+        .onDrop(of: [UTType.fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
             handleDrop(providers: providers)
         }
         .overlay(isDetailViewTargetedForDrop ? RoundedRectangle(cornerRadius: 10).stroke(Color.accentColor, lineWidth: 3).background(Color.accentColor.opacity(0.2)).padding(5) : nil)

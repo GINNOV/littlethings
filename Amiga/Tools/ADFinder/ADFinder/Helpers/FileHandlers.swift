@@ -119,27 +119,34 @@ extension DetailView {
     }
     
     func handleDrop(providers: [NSItemProvider]) -> Bool {
-        // rationale: We only care about file URLs, so we find the first provider that can give us one.
-        guard let provider = providers.first(where: { $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) }) else {
-            return false
-        }
+        guard let provider = providers.first else { return false }
 
-        _ = provider.loadObject(ofClass: URL.self) { url, error in
+        // rationale: This is the definitive fix. We use `loadItem` for the `fileURL` identifier,
+        // which provides bookmark data that can be reliably resolved into a security-scoped URL,
+        // solving the sandbox issue for files on external volumes or with complex paths.
+        provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { (itemData, error) in
             DispatchQueue.main.async {
-                guard let url = url else {
-                    self.showAlert(message: "Could not read the dropped file.")
+                guard
+                    let data = itemData as? Data,
+                    let url = URL(dataRepresentation: data, relativeTo: nil),
+                    url.isFileURL
+                else {
+                    self.adfService.log("handleDrop: Could not create URL from dropped item data. Error: \(error?.localizedDescription ?? "Unknown")")
+                    self.showAlert(message: "Could not open the dropped item.")
                     return
                 }
 
-                // rationale: Added a check to ensure only files with .adf or .hdf extensions are processed.
+                self.adfService.log("handleDrop: Successfully loaded URL from bookmark data: \(url.absoluteString)")
+
                 let fileExtension = url.pathExtension.lowercased()
                 guard ["adf", "hdf"].contains(fileExtension) else {
+                    self.adfService.log("handleDrop: Invalid file type dropped: \(fileExtension)")
                     self.showAlert(message: "Only .adf and .hdf files can be opened.")
                     return
                 }
                 
-                // rationale: If a file is already open, show a confirmation dialog before proceeding.
                 if self.selectedFile != nil {
+                    self.adfService.log("handleDrop: A file is already open. Showing confirmation dialog.")
                     self.presentConfirmation(config: .replaceOpenDisk {
                         self.selectedFile = url
                     })
@@ -152,13 +159,15 @@ extension DetailView {
     }
     
     func processDroppedURL(_ url: URL) {
+        adfService.log("processDroppedURL: Processing URL: \(url.path)")
         let didStartAccessing = url.startAccessingSecurityScopedResource()
         defer { if didStartAccessing { url.stopAccessingSecurityScopedResource() } }
         
         if adfService.openADF(filePath: url.path) {
             loadDirectoryContents()
         } else {
-            showAlert(message: "Failed to open or mount ADF: \"\(url.lastPathComponent)\". Check console for ADFlib errors.")
+            adfService.log("processDroppedURL: Failed to open or mount ADF.")
+            showAlert(message: "Failed to open or mount ADF: \"\(url.lastPathComponent)\". The file path may contain invalid characters.")
             selectedFile = nil
         }
     }
