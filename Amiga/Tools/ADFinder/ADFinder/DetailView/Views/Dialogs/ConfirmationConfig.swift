@@ -42,4 +42,15 @@ struct ConfirmationConfig: Identifiable {
             action: action
         )
     }
+    
+    static func deleteEntries(entries: [AmigaEntry], action: @escaping (Bool) -> Void) -> ConfirmationConfig {
+        ConfirmationConfig(
+            title: "Delete \(entries.count) Items",
+            message: "Are you sure you want to permanently delete \(entries.count) items? This action cannot be undone.",
+            imageName: "trash_file",
+            confirmButtonTitle: "Delete",
+            showsForceToggle: true,
+            action: action
+        )
+    }
 }

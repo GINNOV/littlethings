@@ -10,7 +10,6 @@ import UniformTypeIdentifiers
 import Quartz
 
 extension DetailView {
-
     // MARK: - Core ADF Operations
     
     func showQuickLook(for entry: AmigaEntry) {
@@ -19,7 +18,7 @@ extension DetailView {
             print("DEBUG: Entry is not a file. Aborting.")
             return
         }
-
+        
         guard let fileData = adfService.readFileContent(entry: entry) else {
             print("DEBUG: Failed to read file data.")
             showAlert(message: "Could not read data for \(entry.name).")
@@ -39,7 +38,7 @@ extension DetailView {
             showAlert(message: "Could not create temporary file for Quick Look: \(error.localizedDescription)")
             return
         }
-
+        
         if QLPreviewPanel.sharedPreviewPanelExists() && QLPreviewPanel.shared().isVisible {
             print("DEBUG: Closing existing Quick Look panel.")
             QLPreviewPanel.shared().orderOut(nil)
@@ -52,52 +51,62 @@ extension DetailView {
         QLPreviewPanel.shared().makeKeyAndOrderFront(nil)
         print("DEBUG: Called makeKeyAndOrderFront.")
     }
-
-    func handleMoveToParent(sourceEntryID: AmigaEntry.ID) {
-        guard let sourceEntry = currentEntries.first(where: { $0.id == sourceEntryID }) else {
-            showAlert(message: "Could not find the source item to move.")
-            return
+    
+    func handleMoveToParent(sourceEntryIDs: Set<AmigaEntry.ID>) {
+        var errors: [String] = []
+        for id in sourceEntryIDs {
+            guard let sourceEntry = currentEntries.first(where: { $0.id == id }) else {
+                errors.append("Could not find source item with ID \(id).")
+                continue
+            }
+            if let errorMessage = adfService.moveEntryToParent(entryNameToMove: sourceEntry.name) {
+                errors.append("Failed to move \(sourceEntry.name): \(errorMessage)")
+            }
         }
-
-        if let errorMessage = adfService.moveEntryToParent(entryNameToMove: sourceEntry.name) {
-            showAlert(message: "Failed to move item up: \(errorMessage)")
-        } else {
-            loadDirectoryContents()
+        if !errors.isEmpty {
+            showAlert(message: errors.joined(separator: "\n"))
         }
+        loadDirectoryContents()
     }
     
-    func handleMove(sourceEntryID: AmigaEntry.ID, destinationEntry: AmigaEntry) {
-        guard let sourceEntry = currentEntries.first(where: { $0.id == sourceEntryID }) else {
-            showAlert(message: "Could not find the source item to move.")
-            return
-        }
-
-        if sourceEntry.id == destinationEntry.id || destinationEntry.type != .directory {
-            return
-        }
+    func handleMove(sourceEntryIDs: Set<AmigaEntry.ID>, destinationEntry: AmigaEntry) {
+        guard destinationEntry.type == .directory else { return }
         
-        if let errorMessage = adfService.moveEntry(entryNameToMove: sourceEntry.name, toDestinationDirName: destinationEntry.name) {
-            showAlert(message: "Failed to move item: \(errorMessage)")
-        } else {
-            loadDirectoryContents()
+        var errors: [String] = []
+        for id in sourceEntryIDs {
+            guard let sourceEntry = currentEntries.first(where: { $0.id == id }) else {
+                errors.append("Could not find source item with ID \(id).")
+                continue
+            }
+            if sourceEntry.id == destinationEntry.id {
+                continue
+            }
+            if let errorMessage = adfService.moveEntry(entryNameToMove: sourceEntry.name, toDestinationDirName: destinationEntry.name) {
+                errors.append("Failed to move \(sourceEntry.name): \(errorMessage)")
+            }
         }
+        if !errors.isEmpty {
+            showAlert(message: errors.joined(separator: "\n"))
+        }
+        loadDirectoryContents()
     }
-
+    
     func loadDirectoryContents() {
         guard selectedFile != nil else {
             currentEntries = []
+            selectedEntryIDs = []
             return
         }
         currentEntries = adfService.listCurrentDirectory()
-        selectedEntryID = nil
+        selectedEntryIDs = []
     }
-
+    
     func goUpDirectory() {
         if adfService.goUpDirectory() {
             loadDirectoryContents()
         }
     }
-
+    
     func handleDrop(providers: [NSItemProvider]) -> Bool {
         guard let provider = providers.first else { return false }
         
@@ -115,7 +124,7 @@ extension DetailView {
             }
             return true
         }
-
+        
         if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
             _ = provider.loadObject(ofClass: URL.self) { (url, error) in
                 DispatchQueue.main.async {
@@ -130,7 +139,7 @@ extension DetailView {
     func processDroppedURL(_ url: URL) {
         let didStartAccessing = url.startAccessingSecurityScopedResource()
         defer { if didStartAccessing { url.stopAccessingSecurityScopedResource() } }
-
+        
         if adfService.openADF(filePath: url.path) {
             loadDirectoryContents()
         } else {
@@ -180,7 +189,7 @@ extension DetailView {
             showAlert(message: "Failed to save file: \(error.localizedDescription)")
         }
     }
-
+    
     func handleFileImport(result: Result<[URL], Error>) {
         switch result {
         case .success(let urls):
@@ -198,9 +207,9 @@ extension DetailView {
             showAlert(message: "Failed to import files: \(error.localizedDescription)")
         }
     }
-
+    
     // MARK: - Entry Actions
-
+    
     func handleEntryTap(_ entry: AmigaEntry) {
         switch entry.type {
         case .directory:
@@ -291,6 +300,19 @@ extension DetailView {
         }
     }
     
+    func deleteEntries(_ entries: [AmigaEntry], force: Bool) {
+        var errors: [String] = []
+        for entry in entries {
+            if let errorMessage = adfService.deleteEntryRecursively(entry: entry, force: force) {
+                errors.append("Failed to delete \"\(entry.name)\": \(errorMessage)")
+            }
+        }
+        if !errors.isEmpty {
+            showAlert(message: errors.joined(separator: "\n"))
+        }
+        loadDirectoryContents()
+    }
+    
     func renameEntry(entry: AmigaEntry, newName: String) {
         guard !newName.isEmpty else {
             showAlert(message: "New name cannot be empty.")
@@ -303,30 +325,37 @@ extension DetailView {
         }
     }
     
-    func exportSelectedItem() {
-        guard let selectedEntry = selectedEntry else {
-            showAlert(message: "No item selected to export.")
+    func exportSelectedItems() {
+        let selected = selectedEntries
+        if selected.isEmpty {
+            showAlert(message: "No items selected to export.")
             return
         }
-
+        
         let panel = NSOpenPanel()
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
-        panel.title = "Choose destination for \"\(selectedEntry.name)\""
-        panel.message = "The selected item will be exported into the folder you choose."
+        panel.title = "Choose destination folder"
+        panel.message = "The selected items will be exported into the folder you choose."
         panel.prompt = "Export Here"
-
+        
         panel.begin { response in
             if response == .OK, let destinationURL = panel.url {
                 DispatchQueue.global(qos: .userInitiated).async {
-                    let errorMessage = self.adfService.exportEntry(entry: selectedEntry, toDirectory: destinationURL)
+                    var errorMessages: [String] = []
+                    for entry in selected {
+                        if let errorMessage = self.adfService.exportEntry(entry: entry, toDirectory: destinationURL) {
+                            errorMessages.append(errorMessage)
+                        }
+                    }
                     
                     DispatchQueue.main.async {
-                        if let errorMessage = errorMessage {
-                            self.showAlert(message: "Export failed: \(errorMessage)")
+                        if errorMessages.isEmpty {
+                            let names = selected.map { $0.name }.joined(separator: ", ")
+                            self.showAlert(message: "\(selected.count) item(s) (\(names)) were successfully exported.")
                         } else {
-                            self.showAlert(message: "'\(selectedEntry.name)' was successfully exported.")
+                            self.showAlert(message: "Some exports failed:\n\(errorMessages.joined(separator: "\n"))")
                         }
                     }
                 }
