@@ -233,7 +233,8 @@ struct DetailView: View {
             Text(alertMessage ?? "An unknown error occurred.")
         }
         .fileExporter(isPresented: $showingFileExporter, document: adfDocumentToSave, contentType: currentContentType, defaultFilename: defaultSaveName, onCompletion: handleFileExport)
-        .fileImporter(isPresented: $showingFileImporter, allowedContentTypes: [ContentView.adfUType, ContentView.hdfUType], allowsMultipleSelection: true, onCompletion: handleFileImport)
+//        .fileImporter(isPresented: $showingFileImporter, allowedContentTypes: [ContentView.adfUType, ContentView.hdfUType], allowsMultipleSelection: true, onCompletion: handleFileImport)
+        .fileImporter(isPresented: $showingFileImporter, allowedContentTypes: [UTType.data], allowsMultipleSelection: true, onCompletion: handleFileImport)
         .focusedSceneValue(\.amigaActions, detailActions)
         .focusedSceneValue(\.isFileOpen, selectedFile != nil)
         .focusedSceneValue(\.isEntrySelected, !selectedEntryIDs.isEmpty)
