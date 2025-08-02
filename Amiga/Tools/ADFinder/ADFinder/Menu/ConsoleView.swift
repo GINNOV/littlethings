@@ -48,7 +48,6 @@ struct ConsoleView: View {
                 
                 Spacer()
                 
-                // rationale: This new button copies the entire log to the clipboard.
                 Button("Copy", systemImage: "doc.on.doc") {
                     copyLogToClipboard()
                 }

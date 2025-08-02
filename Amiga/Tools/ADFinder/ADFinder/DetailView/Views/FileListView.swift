@@ -41,7 +41,6 @@ struct FileListView: View {
                     onTap: { handleSelection(for: entry) },
                     onDoubleTap: { handleEntryTap(entry) },
                     onContextMenu: { contextMenuItems(for: entry) },
-                    // rationale: The drag provider now correctly encodes the set of Int IDs.
                     onDrag: {
                         let idsToDrag = selectedEntryIDs.contains(entry.id) ? selectedEntryIDs : [entry.id]
                         let idString = idsToDrag.map { String($0) }.joined(separator: ",")
@@ -126,7 +125,6 @@ struct FileListView: View {
         return true
     }
     
-    // rationale: The completion handler now correctly creates a Set<Int> (aka Set<AmigaEntry.ID>).
     private func loadSourceIDs(from providers: [NSItemProvider], completion: @escaping (Set<AmigaEntry.ID>) -> Void) {
         guard let provider = providers.first else {
             completion([])
