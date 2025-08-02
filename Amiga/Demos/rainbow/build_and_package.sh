@@ -35,7 +35,7 @@ ASM_FILE="$1"
 BASENAME=$(basename "$ASM_FILE" .asm)
 
 # Paths
-OUTPUT_DIR="$HOME/Downloads/Amiga_Testing/Disks"
+OUTPUT_DIR="$HOME/Downloads/Amiga_Testing/Disks/bins/Demos"
 ADF_NAME="${BASENAME}.adf"
 ADF_PATH="$OUTPUT_DIR/$ADF_NAME"
 CONFIG_PATH="$OUTPUT_DIR/${BASENAME}_debug.fs-uae"
@@ -46,7 +46,7 @@ vasm -Fhunkexe -o "${BASENAME}.exe" "$ASM_FILE"
 
 # Package
 echo -e "${HIGHLIGHT}PACKAGING...${RESET}"
-send2adf -o ~/Downloads/Amiga_Testing/Disks/${ADF_NAME} -N "${BASENAME}" ~/Downloads/Amiga_Testing/Disks/bins/unzipped-disk1
+send2adf -o ~/Downloads/Amiga_Testing/Disks/bins/Demos/${ADF_NAME} -N "${BASENAME}" ~/Downloads/Amiga_Testing/Disks/bins/unzipped-disk1/C ~/Downloads/Amiga_Testing/Disks/bins/unzipped-disk1/S "${BASENAME}.exe"
 
 # Generate FS-UAE config
 echo -e "${HIGHLIGHT}GENERATING FS-UAE CONFIGURATION...${RESET}"
