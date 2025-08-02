@@ -110,6 +110,8 @@ struct ADFinderApp: App {
                     }
                 }
                 .onOpenURL { url in
+                    // rationale: This log message will confirm if the app is receiving the "Open With" event from Finder.
+                    logStore.add(message: "ADFinderApp: Received URL from onOpenURL: \(url.path)")
                     NotificationCenter.default.post(name: .openSpecificAdfFile, object: url)
                 }
         }
