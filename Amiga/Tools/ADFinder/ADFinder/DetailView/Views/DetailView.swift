@@ -277,8 +277,7 @@ struct DetailView: View {
         .toolbar {
             DetailToolbar(selectedFile: $selectedFile, sortOrder: $sortOrder, selectedEntry: selectedEntries.first, actions: detailActions)
         }
-        // rationale: This is the first part of the fix. We explicitly tell the onDrop modifier
-        // to accept UTType.fileURL. This ensures macOS provides the correct data type in the drop provider.
+
         .onDrop(of: [UTType.fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
             handleDrop(providers: providers)
         }

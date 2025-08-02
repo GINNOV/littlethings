@@ -170,7 +170,6 @@ extension ADFService {
             return getADFLibError(context: "navigateToInternalPath for \(entry.name) before writeTextFile")
         }
 
-        // rationale: Added check for write protection before attempting to write to the file. This prevents the crash.
         if (entry.protectionBits & ACCMASK_W_SWIFT) != 0 {
             let errorMessage = "File '\(entry.name)' is (Amiga) write-protected. Cannot save changes."
             log("ADFService: \(errorMessage)")
@@ -527,6 +526,8 @@ extension ADFService {
     }
 
     func createNewBlankADF(volumeName: String, fsType: UInt8, bootBlockType: BootBlockType) -> URL? {
+            closeADF()
+            
             let tempDir = FileManager.default.temporaryDirectory
             let fileName = "blank_\(UUID().uuidString).adf"
             let tempURL = tempDir.appendingPathComponent(fileName)
@@ -583,32 +584,34 @@ extension ADFService {
         }
     
     func createNewBlankHDF(volumeName: String, sizeMB: Int, fsType: UInt8) -> URL? {
-        let tempDir = FileManager.default.temporaryDirectory
-        let fileName = "blank_\(UUID().uuidString).hdf"
-        let tempURL = tempDir.appendingPathComponent(fileName)
-        let tempPath = tempURL.path
-        
-        log("ADFService: Creating new blank HDF at: \(tempPath) with Size: \(sizeMB)MB, FS Type: \(fsType)")
-        
-        let success = tempPath.withCString { cPath in
-            volumeName.withCString { cVolName in
-                return create_blank_hdf_c(cPath, cVolName, UInt32(sizeMB), fsType).rawValue == ADF_RC_OK_SWIFT
+            closeADF()
+
+            let tempDir = FileManager.default.temporaryDirectory
+            let fileName = "blank_\(UUID().uuidString).hdf"
+            let tempURL = tempDir.appendingPathComponent(fileName)
+            let tempPath = tempURL.path
+            
+            log("ADFService: Creating new blank HDF at: \(tempPath) with Size: \(sizeMB)MB, FS Type: \(fsType)")
+            
+            let success = tempPath.withCString { cPath in
+                volumeName.withCString { cVolName in
+                    return create_blank_hdf_c(cPath, cVolName, UInt32(sizeMB), fsType).rawValue == ADF_RC_OK_SWIFT
+                }
+            }
+
+            guard success else {
+                log("ADFService: create_blank_hdf_c helper failed.")
+                return nil
+            }
+            
+            if openADF(filePath: tempPath) {
+                log("ADFService: Successfully created and opened new HDF.")
+                return tempURL
+            } else {
+                log("ADFService: Failed to open the newly created HDF.")
+                return nil
             }
         }
-
-        guard success else {
-            log("ADFService: create_blank_hdf_c helper failed.")
-            return nil
-        }
-        
-        if openADF(filePath: tempPath) {
-            log("ADFService: Successfully created and opened new HDF.")
-            return tempURL
-        } else {
-            log("ADFService: Failed to open the newly created HDF.")
-            return nil
-        }
-    }
     
     private func installBootBlock(data: Data) -> String? {
         guard let vol = self.adfVolume else {

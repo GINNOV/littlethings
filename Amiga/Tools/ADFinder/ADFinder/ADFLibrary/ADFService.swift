@@ -40,7 +40,7 @@ class ADFService {
     
     
     enum ImageKind { case adf, hdf }
-    @Published  @ObservationIgnored internal var currentImageKind: ImageKind = .adf
+    @ObservationIgnored var currentImageKind: ImageKind = .adf
     
     internal let kick13BootBlock: Data = Data([
         0x44, 0x4F, 0x53, 0x00, 0xDF, 0x10, 0x1A, 0x2A, 0x00, 0x00, 0x03, 0x70, 0x43, 0xFA, 0x00, 0x18,
@@ -97,12 +97,12 @@ class ADFService {
     }
     
     internal func log(_ message: String) {
-        print(message)
         Task {
-            await LogStore.shared.add(message: message + "\n")
+            await LogStore.shared.add(message: message)
         }
     }
     
+    // This function was the source of a previous bug and is kept for recovery.
     private func reinitializeAdfLib() {
         log("ADFService: Re-initializing ADFLib due to previous error...")
         adfLibCleanUp()
@@ -140,54 +140,48 @@ class ADFService {
     }
     
     func openADF(filePath: String) -> Bool {
-        // rationale: The URL is now correctly created from the file path. This was the source of the bug.
         let fileURL = URL(fileURLWithPath: filePath)
         
         currentImageKind = fileURL.pathExtension.lowercased() == "hdf" ? .hdf : .adf
         closeADF()
-        reinitializeAdfLib()
         
         guard adflibInitialized else {
-            log("ADFService.openADF: ABORT - ADFLib could not be re-initialized.")
+            log("ADFService.openADF: ABORT - ADFLib is not initialized.")
             return false
         }
         
         log("ADFService.openADF: === Starting Mount Process for: \"\(fileURL.path)\" ===")
         
-        log("ADFService.openADF: -> Calling adfDevOpenWithDriver...")
         self.adfDevice = adfDevOpenWithDriver("dump", fileURL.path, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READWRITE_SWIFT)))
         
         if self.adfDevice == nil {
-            log("ADFService.openADF: <- adfDevOpenWithDriver FAILED. Returned nil.")
-            return false
+            log("ADFService.openADF: adfDevOpenWithDriver FAILED. Attempting to recover by re-initializing library.")
+            reinitializeAdfLib() // As a last resort, try to recover the library state.
+            self.adfDevice = adfDevOpenWithDriver("dump", fileURL.path, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READWRITE_SWIFT)))
+            if self.adfDevice == nil {
+                log("ADFService.openADF: Second attempt to open device failed. Aborting.")
+                return false
+            }
         }
-        log("ADFService.openADF: <- adfDevOpenWithDriver SUCCESS.")
         
-        log("ADFService.openADF: -> Calling adfDevMount...")
-        let devMountResult = adfDevMount(self.adfDevice)
-        if devMountResult != ADF_RC_OK {
-            log("ADFService.openADF: <- adfDevMount FAILED. Return code: \(devMountResult)")
+        if adfDevMount(self.adfDevice) != ADF_RC_OK {
+            log("ADFService.openADF: adfDevMount FAILED.")
             adfDevClose(self.adfDevice)
             self.adfDevice = nil
             return false
         }
-        log("ADFService.openADF: <- adfDevMount SUCCESS.")
         
-        log("ADFService.openADF: -> Calling adfVolMount...")
         self.adfVolume = adfVolMount(self.adfDevice, 0, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READWRITE_SWIFT)))
         if self.adfVolume == nil {
-            log("ADFService.openADF: <- adfVolMount FAILED. Returned nil. Check C-Log for details.")
+            log("ADFService.openADF: adfVolMount FAILED.")
             adfDevUnMount(self.adfDevice)
             adfDevClose(self.adfDevice)
             self.adfDevice = nil
             return false
         }
-        log("ADFService.openADF: <- adfVolMount SUCCESS.")
         
         currentPath = []
-        log("ADFService.openADF: -> Populating disk info...")
         populateDiskInfo()
-        log("ADFService.openADF: <- Disk info populated.")
         
         log("ADFService.openADF: === Mount Process SUCCESS for volume: \(self.currentVolumeName ?? "N/A") ===")
         return true
@@ -222,22 +216,16 @@ class ADFService {
         
         var bootBlock = AdfBootBlock()
         if adfReadBootBlock(vol, &bootBlock) == ADF_RC_OK {
-            let dosTypeBytes = [bootBlock.dosType.0, bootBlock.dosType.1, bootBlock.dosType.2, bootBlock.dosType.3]
             let dosTypeString = String(cString: [bootBlock.dosType.0, bootBlock.dosType.1, bootBlock.dosType.2].map { UInt8(bitPattern: $0) } + [0])
             isBootable = (dosTypeString == "DOS")
             
             if isBootable {
-                switch dosTypeBytes[3] {
-                case 0:
-                    bootBlockType = "Kickstart 1.3 Compatible (OFS)"
-                case 1:
-                    bootBlockType = "Kickstart 2.0+ Compatible (FFS)"
-                case 6:
-                    bootBlockType = "SCA Virus Killer"
-                case 7:
-                    bootBlockType = "Bandit Virus Killer"
-                default:
-                    bootBlockType = "Custom/Unknown"
+                switch bootBlock.dosType.3 {
+                case 0: bootBlockType = "Kickstart 1.3 Compatible (OFS)"
+                case 1: bootBlockType = "Kickstart 2.0+ Compatible (FFS)"
+                case 6: bootBlockType = "SCA Virus Killer"
+                case 7: bootBlockType = "Bandit Virus Killer"
+                default: bootBlockType = "Custom/Unknown"
                 }
             } else {
                 bootBlockType = "Not Bootable"
