@@ -16,6 +16,8 @@ struct ADFinderApp: App {
     @AppStorage("lastVersionPromptedFor") private var lastVersionPromptedFor: String = ""
     @AppStorage("dontShowWhatsNew") private var dontShowWhatsNew = false
     
+    // rationale: By creating the services here, we ensure they are singletons for the app's lifetime.
+    @State private var adfService = ADFService()
     @State private var recentFilesService = RecentFilesService()
     @State private var logStore = LogStore.shared
     @State private var showWhatsNew = false
@@ -36,8 +38,9 @@ struct ADFinderApp: App {
     }
     
     var body: some Scene {
+        // rationale: The single adfService instance is now passed to the ContentView.
         WindowGroup(for: URL.self) { $url in
-            ContentView(recentFilesService: recentFilesService, initialURL: url)
+            ContentView(adfService: adfService, recentFilesService: recentFilesService, initialURL: url)
                 .environment(logStore)
         }
         .commands {
@@ -94,8 +97,9 @@ struct ADFinderApp: App {
             }
         }
         
+        // rationale: The single adfService instance is also passed to the main ContentView.
         WindowGroup("ADFinder", id: "main") {
-            ContentView(recentFilesService: recentFilesService)
+            ContentView(adfService: adfService, recentFilesService: recentFilesService)
                 .environment(logStore)
                 .sheet(isPresented: $showWhatsNew) {
                     WhatsNewView(showWhatsNew: $showWhatsNew)

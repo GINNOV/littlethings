@@ -13,7 +13,6 @@ struct LogEntry: Identifiable, Equatable {
     let timestamp: Date
     let text: String
 
-
     private static let formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss.SSS"
@@ -35,8 +34,11 @@ struct LogEntry: Identifiable, Equatable {
 @MainActor
 class LogStore {
     static let shared = LogStore()
-    
     private(set) var messages: [LogEntry] = []
+    
+    var fullLogAsText: String {
+        messages.map { "\($0.formattedTimestamp) \($0.text)" }.joined(separator: "\n")
+    }
     
     private init() {}
     

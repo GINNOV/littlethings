@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AppKit // Required for NSPasteboard
 
 struct ConsoleView: View {
     @Environment(LogStore.self) private var logStore
@@ -47,6 +48,12 @@ struct ConsoleView: View {
                 
                 Spacer()
                 
+                // rationale: This new button copies the entire log to the clipboard.
+                Button("Copy", systemImage: "doc.on.doc") {
+                    copyLogToClipboard()
+                }
+                .help("Copy the entire log to the clipboard")
+
                 Button("Clear") {
                     logStore.clear()
                 }
@@ -56,6 +63,12 @@ struct ConsoleView: View {
         }
         .frame(minWidth: 600, minHeight: 400)
         .navigationTitle("ADFlib Console")
+    }
+
+    private func copyLogToClipboard() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(logStore.fullLogAsText, forType: .string)
     }
 }
 
