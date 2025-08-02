@@ -54,7 +54,6 @@ struct ConfirmationConfig: Identifiable {
         )
     }
 
-    // rationale: This new static method creates a confirmation dialog for replacing an open disk image.
     static func replaceOpenDisk(action: @escaping () -> Void) -> ConfirmationConfig {
         ConfirmationConfig(
             title: "Replace Open Disk?",

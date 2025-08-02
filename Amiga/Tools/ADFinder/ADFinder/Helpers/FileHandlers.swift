@@ -121,9 +121,6 @@ extension DetailView {
     func handleDrop(providers: [NSItemProvider]) -> Bool {
         guard let provider = providers.first else { return false }
 
-        // rationale: This is the definitive fix. We use `loadItem` for the `fileURL` identifier,
-        // which provides bookmark data that can be reliably resolved into a security-scoped URL,
-        // solving the sandbox issue for files on external volumes or with complex paths.
         provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { (itemData, error) in
             DispatchQueue.main.async {
                 guard

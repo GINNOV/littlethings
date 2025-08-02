@@ -145,8 +145,6 @@ struct DetailToolbar: ToolbarContent {
                     Label("Generate List", systemImage: "list.bullet.rectangle.portrait")
                 }
                 .disabled(selectedFile == nil)
-
-                // rationale: This new button opens the current ADF/HDF file with the default registered application.
                 Button(action: actions.openWithEmulator) {
                     Label("Open with Emulator", systemImage: "play.display")
                 }

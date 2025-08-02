@@ -17,7 +17,6 @@ struct ADFinderApp: App {
     @AppStorage("dontShowWhatsNew") private var dontShowWhatsNew = false
     
     @State private var recentFilesService = RecentFilesService()
-    // rationale: LogStore now conforms to @Observable, so it can be used with .environment().
     @State private var logStore = LogStore.shared
     @State private var showWhatsNew = false
     
