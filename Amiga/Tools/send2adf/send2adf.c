@@ -6,16 +6,13 @@
 #include <time.h>
 #include <stdarg.h>
 #include <libgen.h>
-
-// For directory handling and stat
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <getopt.h>
 
 /*
- * ADFlib headers from your working copy.
- * Ensure these paths are correct for your build environment (e.g., via -I flags).
+ * ADFlib headers.
  */
 #include "adflib.h"
 #include "adf_env.h"
@@ -23,11 +20,9 @@
 #include "adf_vol.h"
 #include "adf_file.h"
 #include "adf_blk.h"
-#include "adf_types.h"
 #include "adf_err.h"
 #include "adf_dev_flop.h"
 #include "adf_dev_drivers.h"
-#include "adf_dev_driver_dump.h"
 #include "adf_dir.h"
 
 // ANSI Color Codes
@@ -37,25 +32,40 @@
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_YELLOW  "\x1b[33m"
 
+// Version information
+#define VERSION_MAJOR "1"
+#define VERSION_MINOR "1"
+
 // Global verbosity level
 int verbosity_level = 0;
 
-// Version information
-#define VERSION_MAJOR "0"
-#define VERSION_MINOR "5" 
+// Boot Block Data (from ADFinder project)
+unsigned char kick13BootBlock[] = {
+    0x44, 0x4F, 0x53, 0x00, 0xDF, 0x10, 0x1A, 0x2A, 0x00, 0x00, 0x03, 0x70, 0x43, 0xFA, 0x00, 0x18,
+    0x4E, 0xAE, 0xFF, 0xA0, 0x4A, 0x80, 0x67, 0x0A, 0x20, 0x40, 0x20, 0x68, 0x00, 0x16, 0x70, 0x00,
+    0x4E, 0x75, 0x70, 0xFF, 0x60, 0xFA, 0x64, 0x6F, 0x73, 0x2E, 0x6C, 0x69, 0x62, 0x72, 0x61, 0x72,
+    0x79, 0x00
+};
+
+unsigned char kick20BootBlock[] = {
+    0x44, 0x4F, 0x53, 0x01, 0x43, 0x1A, 0x4A, 0x2A, 0x00, 0x00, 0x03, 0x70, 0x43, 0xFA, 0x00, 0x18,
+    0x4E, 0xAE, 0xFF, 0xA0, 0x4A, 0x80, 0x67, 0x0A, 0x20, 0x40, 0x20, 0x68, 0x00, 0x16, 0x70, 0x00,
+    0x4E, 0x75, 0x70, 0xFF, 0x60, 0xFA, 0x64, 0x6F, 0x73, 0x2E, 0x6C, 0x69, 0x62, 0x72, 0x61, 0x72,
+    0x79, 0x00
+};
 
 // Forward declarations
-static bool add_host_file_to_adf(struct AdfVolume *vol, const char *host_filepath, const char *amiga_filename);
-static bool add_host_directory_to_adf_recursive(struct AdfVolume *vol, const char *host_dirpath, const char *current_amiga_path_for_log);
+static bool add_host_directory_to_adf_recursive(struct AdfVolume *vol, const char *host_dirpath);
+static bool install_bootblock(struct AdfVolume *vol, const char* bootblock_name);
 
 
 void debug_printf(int required_level, const char *format, ...) {
     if (verbosity_level >= required_level) {
         va_list args;
-        if (required_level == 1 && verbosity_level == 1) { 
+        if (required_level == 1 && verbosity_level == 1) {
             fprintf(stderr, ANSI_COLOR_YELLOW "[INFO]  " ANSI_COLOR_RESET);
-        } else if (verbosity_level >= 2) { 
-             fprintf(stderr, ANSI_COLOR_YELLOW "[DEBUG] " ANSI_COLOR_RESET);
+        } else if (verbosity_level >= 2) {
+            fprintf(stderr, ANSI_COLOR_YELLOW "[DEBUG] " ANSI_COLOR_RESET);
         }
         va_start(args, format);
         vfprintf(stderr, format, args);
@@ -75,15 +85,14 @@ void print_usage(const char *prog_name) {
     char* build_date = get_build_date();
     printf(ANSI_COLOR_CYAN "Create ADF Images by x.com/WINDRAGO. Version %s.%s build (%s)\n" ANSI_COLOR_RESET,
            VERSION_MAJOR, VERSION_MINOR, build_date);
-    printf("Usage: %s -o <output.adf> -N <volname> [-v] <file_or_dir1> [file_or_dir2 ...]\n", prog_name);
+    printf("Usage: %s -o <output.adf> -N <volname> [-B <bootblock>] [-v] <file_or_dir1> ...\n", prog_name);
     printf("Options:\n");
-    printf("  -o, --output  <filename>   Specify the output ADF filename (required).\n");
-    printf("  -N, --volname <name>       Specify the volume name for the ADF (required).\n");
-    printf("  -v, --verbose              Enable verbose messages. Use -vv for extensive debug.\n");
-    printf("  -h, --help                 Display this help message.\n");
-    printf("If a directory is provided as input, its contents will be added recursively.\n");
-    printf("Example:\n");
-    printf("  %s -o mydisk.adf -N MyVolume -vv fileA.txt my_project_dir\n", prog_name);
+    printf("  -o, --output    <filename>      Specify the output ADF filename (required).\n");
+    printf("  -N, --volname   <name>          Specify the volume name for the ADF (required).\n");
+    printf("  -B, --bootblock <name>          Specify the bootblock to install. Default is '1.3'.\n");
+    printf("                                  Available: 'none', '1.3', '2.0'.\n");
+    printf("  -v, --verbose                 Enable verbose messages. Use -vv for extensive debug.\n");
+    printf("  -h, --help                    Display this help message.\n");
 }
 
 char* get_amiga_basename(const char *path) {
@@ -93,80 +102,59 @@ char* get_amiga_basename(const char *path) {
         return NULL;
     }
     char *bname = basename(path_copy);
-    char *result = strdup(bname); 
+    char *result = strdup(bname);
     free(path_copy);
-    if(!result){
+    if (!result) {
         perror("strdup failed for basename result");
     }
-    return result; 
+    return result;
 }
 
-// amiga_filename is the simple name of the file, to be created in the current ADF directory
 static bool add_host_file_to_adf(struct AdfVolume *vol, const char *host_filepath, const char *amiga_filename) {
-    // Construct full conceptual amiga path for logging
-    // char full_amiga_path_log[FILENAME_MAX] = "";
-    // Note: adfGetPathName is not a standard ADFlib function, this is conceptual for logging.
-    // If you have a way to get current path from 'vol', use it. Otherwise, log simple name.
-    // For now, we'll just use the simple name for logging consistency with creation.
-    // If adfGetCurrentPath(vol, path_buffer, size) existed, it would be useful here.
-    debug_printf(1, "Processing host file: '%s' -> ADF as '%s' (in current ADF dir)\n", host_filepath, amiga_filename);
+    debug_printf(1, "Adding host file '%s' -> ADF as '%s'\n", host_filepath, amiga_filename);
 
-    debug_printf(2, "Opening host file '%s' for reading...\n", host_filepath);
     FILE *host_file_ptr = fopen(host_filepath, "rb");
     if (!host_file_ptr) {
-        fprintf(stderr, ANSI_COLOR_RED "Error: " ANSI_COLOR_RESET "Could not open host input file '%s': %s\n", host_filepath, strerror(errno));
+        fprintf(stderr, ANSI_COLOR_RED "Error: Could not open host input file '%s': %s\n" ANSI_COLOR_RESET, host_filepath, strerror(errno));
         return false;
     }
-    debug_printf(2, "Host file '%s' opened.\n", host_filepath);
 
-    debug_printf(2, "Opening Amiga file '%s' in current ADF volume directory for writing...\n", amiga_filename);
     struct AdfFile *amiga_file_ptr = adfFileOpen(vol, amiga_filename, ADF_FILE_MODE_WRITE);
     if (!amiga_file_ptr) {
-        fprintf(stderr, ANSI_COLOR_RED "Error: Could not create/open Amiga file '%s' in current ADF directory. ADFLib error occurred.\n" ANSI_COLOR_RESET, amiga_filename);
+        fprintf(stderr, ANSI_COLOR_RED "Error: Could not create Amiga file '%s' in ADF.\n" ANSI_COLOR_RESET, amiga_filename);
         fclose(host_file_ptr);
         return false;
     }
-    debug_printf(2, "Amiga file '%s' opened in current ADF volume directory.\n", amiga_filename);
 
-    unsigned char buffer[1024 * 4];
+    unsigned char buffer[4096];
     size_t bytes_read;
-    uint32_t bytes_written_total = 0;
     bool success = true;
 
-    debug_printf(2, "Copying '%s' to ADF as '%s'...\n", host_filepath, amiga_filename);
     while ((bytes_read = fread(buffer, 1, sizeof(buffer), host_file_ptr)) > 0) {
-        uint32_t current_bytes_written = adfFileWrite(amiga_file_ptr, (uint32_t)bytes_read, buffer);
-        bytes_written_total += current_bytes_written;
-        if (current_bytes_written != (uint32_t)bytes_read) {
-            fprintf(stderr, ANSI_COLOR_RED "Warning: Failed to write all %zu bytes to Amiga file '%s' (wrote %u). Disk full? ADFLib error occurred.\n" ANSI_COLOR_RESET,
-                    bytes_read, amiga_filename, current_bytes_written);
+        uint32_t bytes_written = adfFileWrite(amiga_file_ptr, bytes_read, buffer);
+        if (bytes_written != bytes_read) {
+            fprintf(stderr, ANSI_COLOR_RED "Warning: Failed to write all bytes to '%s'. Disk full?\n" ANSI_COLOR_RESET, amiga_filename);
             success = false;
             break;
         }
     }
+    
     if (ferror(host_file_ptr)) {
-        fprintf(stderr, ANSI_COLOR_RED "Warning: Error reading host file '%s'\n" ANSI_COLOR_RESET, host_filepath);
+        fprintf(stderr, ANSI_COLOR_RED "Error: Failure reading host file '%s'\n" ANSI_COLOR_RESET, host_filepath);
         success = false;
     }
-    debug_printf(2, "Finished copying data. Total bytes written: %u\n", bytes_written_total);
 
-    debug_printf(2, "Closing Amiga file '%s'...\n", amiga_filename);
-    adfFileClose(amiga_file_ptr); 
-    debug_printf(2, "Closing host file '%s'...\n", host_filepath);
+    adfFileClose(amiga_file_ptr);
     fclose(host_file_ptr);
 
-    if (success) {
-        debug_printf(1, "Successfully added '%s' to ADF as '%s' (in current ADF dir).\n", host_filepath, amiga_filename);
-    }
     return success;
 }
 
-// current_amiga_path_for_log is for logging the conceptual full path being built.
-static bool add_host_directory_to_adf_recursive(struct AdfVolume *vol, const char *host_dirpath, const char *current_amiga_path_for_log) {
-    debug_printf(1, "Recursively processing host directory '%s' -> to ADF path context '%s/'\n", host_dirpath, current_amiga_path_for_log);
+static bool add_host_directory_to_adf_recursive(struct AdfVolume *vol, const char *host_dirpath) {
+    debug_printf(1, "Processing host directory '%s'\n", host_dirpath);
     DIR *dir = opendir(host_dirpath);
     if (!dir) {
-        fprintf(stderr, ANSI_COLOR_RED "Error: " ANSI_COLOR_RESET "Could not open host directory '%s': %s\n", host_dirpath, strerror(errno));
+        fprintf(stderr, ANSI_COLOR_RED "Error: Could not open host directory '%s': %s\n" ANSI_COLOR_RESET, host_dirpath, strerror(errno));
         return false;
     }
 
@@ -177,88 +165,123 @@ static bool add_host_directory_to_adf_recursive(struct AdfVolume *vol, const cha
             continue;
         }
 
-        char host_entry_path[FILENAME_MAX]; 
+        char host_entry_path[FILENAME_MAX];
         snprintf(host_entry_path, sizeof(host_entry_path), "%s/%s", host_dirpath, entry->d_name);
-        
-        // Construct the conceptual full Amiga path for logging
-        char next_amiga_path_for_log[FILENAME_MAX];
-        if (strlen(current_amiga_path_for_log) == 0) {
-            strncpy(next_amiga_path_for_log, entry->d_name, sizeof(next_amiga_path_for_log) -1);
-             next_amiga_path_for_log[sizeof(next_amiga_path_for_log)-1] = '\0';
-        } else {
-            snprintf(next_amiga_path_for_log, sizeof(next_amiga_path_for_log), "%s/%s", current_amiga_path_for_log, entry->d_name);
-        }
-
 
         struct stat entry_stat;
         if (stat(host_entry_path, &entry_stat) == -1) {
-            fprintf(stderr, ANSI_COLOR_RED "Error: " ANSI_COLOR_RESET "Could not stat host path '%s': %s\n", host_entry_path, strerror(errno));
+            fprintf(stderr, ANSI_COLOR_RED "Error: Could not stat host path '%s': %s\n" ANSI_COLOR_RESET, host_entry_path, strerror(errno));
             all_success = false;
             continue;
         }
 
         if (S_ISDIR(entry_stat.st_mode)) {
-            // entry->d_name is the simple name of the directory to create in current ADF dir
-            debug_printf(2, "Creating Amiga directory '%s' (simple name: '%s') in current ADF directory (sector %u).\n", 
-                         next_amiga_path_for_log, entry->d_name, (unsigned int)vol->curDirPtr);
-            
+            debug_printf(2, "Creating Amiga directory '%s'\n", entry->d_name);
             if (adfCreateDir(vol, vol->curDirPtr, entry->d_name) != ADF_RC_OK) {
-                fprintf(stderr, ANSI_COLOR_RED "Error: Failed to create Amiga directory '%s'. ADFLib error occurred.\n" ANSI_COLOR_RESET, next_amiga_path_for_log);
+                fprintf(stderr, ANSI_COLOR_RED "Error: Failed to create Amiga directory '%s'.\n" ANSI_COLOR_RESET, entry->d_name);
                 all_success = false;
             } else {
-                debug_printf(2, "Successfully created Amiga directory '%s'. Changing into it.\n", next_amiga_path_for_log);
                 if (adfChangeDir(vol, entry->d_name) == ADF_RC_OK) {
-                    debug_printf(2, "Changed ADF current directory to '%s'. Recursing into host '%s'.\n", next_amiga_path_for_log, host_entry_path);
-                    if (!add_host_directory_to_adf_recursive(vol, host_entry_path, next_amiga_path_for_log)) {
-                        all_success = false; 
+                    if (!add_host_directory_to_adf_recursive(vol, host_entry_path)) {
+                        all_success = false;
                     }
-                    debug_printf(2, "Returning from recursion of '%s'. Changing to parent ADF directory.\n", next_amiga_path_for_log);
                     if (adfParentDir(vol) != ADF_RC_OK) {
-                        fprintf(stderr, ANSI_COLOR_RED "Error: Failed to return to parent ADF directory from '%s'.\n" ANSI_COLOR_RESET, next_amiga_path_for_log);
-                        // This is a more serious issue, might affect subsequent operations
-                        all_success = false; 
-                        // break; // Optionally stop all processing if context is lost
-                    } else {
-                        debug_printf(2, "Returned to parent ADF directory of '%s'.\n", next_amiga_path_for_log);
+                        fprintf(stderr, ANSI_COLOR_RED "Error: Failed to return to parent ADF directory from '%s'.\n" ANSI_COLOR_RESET, entry->d_name);
+                        all_success = false;
+                        break;
                     }
                 } else {
-                    fprintf(stderr, ANSI_COLOR_RED "Error: Failed to change into newly created Amiga directory '%s'.\n" ANSI_COLOR_RESET, next_amiga_path_for_log);
+                    fprintf(stderr, ANSI_COLOR_RED "Error: Failed to change into newly created Amiga directory '%s'.\n" ANSI_COLOR_RESET, entry->d_name);
                     all_success = false;
                 }
             }
         } else if (S_ISREG(entry_stat.st_mode)) {
-            // entry->d_name is the simple filename to create in current ADF dir
             if (!add_host_file_to_adf(vol, host_entry_path, entry->d_name)) {
-                all_success = false; 
+                all_success = false;
             }
         } else {
             debug_printf(1, "Skipping non-regular file/directory: '%s'\n", host_entry_path);
         }
     }
     closedir(dir);
-    debug_printf(1, "Exiting recursive processing for host directory '%s' (ADF context: '%s/')\n", host_dirpath, current_amiga_path_for_log);
     return all_success;
 }
 
+struct AdfDevice* create_blank_adf(const char* filename, const char* vol_name) {
+    debug_printf(2, "Creating new ADF device for '%s'\n", filename);
+    struct AdfDevice *device = adfDevCreate("dump", filename, 80, 2, 11);
+    if (!device) {
+        fprintf(stderr, ANSI_COLOR_RED "Error: Failed to create ADF device '%s'.\n" ANSI_COLOR_RESET, filename);
+        return NULL;
+    }
+
+    debug_printf(2, "Formatting volume as OFS with name '%s'\n", vol_name);
+    if (adfCreateFlop(device, vol_name, ADF_DOSFS_OFS) != ADF_RC_OK) {
+        fprintf(stderr, ANSI_COLOR_RED "Error: Failed to format floppy volume '%s'.\n" ANSI_COLOR_RESET, vol_name);
+        adfDevClose(device);
+        return NULL;
+    }
+    
+    return device;
+}
+
+static bool install_bootblock(struct AdfVolume *vol, const char* bootblock_name) {
+    if (strcmp(bootblock_name, "none") == 0) {
+        debug_printf(1, "Bootblock installation skipped by user.\n");
+        return true;
+    }
+
+    unsigned char* boot_data = NULL;
+    size_t boot_size = 0;
+
+    if (strcmp(bootblock_name, "1.3") == 0) {
+        boot_data = kick13BootBlock;
+        boot_size = sizeof(kick13BootBlock);
+        debug_printf(1, "Selected Kickstart 1.3 bootblock for installation.\n");
+    } else if (strcmp(bootblock_name, "2.0") == 0) {
+        boot_data = kick20BootBlock;
+        boot_size = sizeof(kick20BootBlock);
+        debug_printf(1, "Selected Kickstart 2.0+ bootblock for installation.\n");
+    } else {
+        fprintf(stderr, ANSI_COLOR_RED "Error: Invalid bootblock type '%s'.\n" ANSI_COLOR_RESET, bootblock_name);
+        return false;
+    }
+    
+    unsigned char full_block[1024] = {0};
+    memcpy(full_block, boot_data, boot_size);
+    
+    debug_printf(2, "Calling adfVolInstallBootBlock...\n");
+    // rationale: Corrected the function name from adfInstallBootBlock to adfVolInstallBootBlock
+    // as per the compiler's suggestion and the library header.
+    if (adfVolInstallBootBlock(vol, full_block) != ADF_RC_OK) {
+        fprintf(stderr, ANSI_COLOR_RED "Error: Failed to install bootblock.\n" ANSI_COLOR_RESET);
+        return false;
+    }
+
+    debug_printf(1, "Bootblock installed successfully.\n");
+    return true;
+}
 
 int main(int argc, char *argv[]) {
     char *output_filename = NULL;
-    char *volume_name_arg = NULL; 
+    char *volume_name_arg = NULL;
+    char *bootblock_arg = "1.3";
     int opt;
 
     static struct option long_options[] = {
-        {"output",  required_argument, 0, 'o'},
-        {"volname", required_argument, 0, 'N'},
-        {"verbose", no_argument,       0, 'v'},
-        {"help",    no_argument,       0, 'h'},
+        {"output",    required_argument, 0, 'o'},
+        {"volname",   required_argument, 0, 'N'},
+        {"bootblock", required_argument, 0, 'B'},
+        {"verbose",   no_argument,       0, 'v'},
+        {"help",      no_argument,       0, 'h'},
         {0, 0, 0, 0}
     };
 
-    int option_index = 0;
-    while ((opt = getopt_long(argc, argv, "o:N:vh", long_options, &option_index)) != -1) {
+    while ((opt = getopt_long(argc, argv, "o:N:B:vh", long_options, NULL)) != -1) {
         switch (opt) {
             case 'o': output_filename = optarg; break;
             case 'N': volume_name_arg = optarg; break;
+            case 'B': bootblock_arg = optarg; break;
             case 'v': verbosity_level++; break;
             case 'h': print_usage(argv[0]); return EXIT_SUCCESS;
             default: print_usage(argv[0]); return EXIT_FAILURE;
@@ -266,86 +289,49 @@ int main(int argc, char *argv[]) {
     }
 
     if (!output_filename || !volume_name_arg || optind >= argc) {
-        if (!output_filename) fprintf(stderr, ANSI_COLOR_RED "Error: " ANSI_COLOR_RESET "Output ADF filename missing.\n");
-        if (!volume_name_arg) fprintf(stderr, ANSI_COLOR_RED "Error: " ANSI_COLOR_RESET "Volume name missing.\n");
-        if (optind >= argc) fprintf(stderr, ANSI_COLOR_RED "Error: " ANSI_COLOR_RESET "No input files or directories specified.\n");
+        if (!output_filename) fprintf(stderr, ANSI_COLOR_RED "Error: Output ADF filename missing.\n" ANSI_COLOR_RESET);
+        if (!volume_name_arg) fprintf(stderr, ANSI_COLOR_RED "Error: Volume name missing.\n" ANSI_COLOR_RESET);
+        if (optind >= argc) fprintf(stderr, ANSI_COLOR_RED "Error: No input files or directories specified.\n" ANSI_COLOR_RESET);
         print_usage(argv[0]);
         return EXIT_FAILURE;
     }
 
-    if (verbosity_level == 1) {
-      debug_printf(1, "Verbose mode enabled.\n");
-    } else if (verbosity_level >= 2) {
-      debug_printf(2, "Extensive debug mode enabled (level %d).\n", verbosity_level);
-    }
-    
-    if (argc - optind > 0) { 
-        debug_printf(2, "First input item: %s%s\n", argv[optind], (argc - optind > 1) ? " (and others)" : "");
-    }
-    debug_printf(2, "Output ADF: %s\n", output_filename);
-    debug_printf(2, "Volume name: %s\n", volume_name_arg);
+    debug_printf(1, "Verbose mode enabled (level %d).\n", verbosity_level);
+    debug_printf(2, "Output ADF: %s, Volume Name: %s, Bootblock: %s\n", output_filename, volume_name_arg, bootblock_arg);
 
-    struct AdfDevice *device = NULL;
-    struct AdfVolume *volume = NULL;
-    bool adflib_initialized = false;
-
-    debug_printf(2, "Initializing ADFlib with adfLibInit()...\n");
     if (adfLibInit() != ADF_RC_OK) {
         fprintf(stderr, ANSI_COLOR_RED "Error: Failed to initialize ADFLib.\n" ANSI_COLOR_RESET);
         return EXIT_FAILURE;
     }
-    adflib_initialized = true;
-    debug_printf(2, "ADFlib initialized.\n");
-
-    debug_printf(2, "Explicitly adding dump device driver...\n");
-    if (adfAddDeviceDriver(&adfDeviceDriverDump) != ADF_RC_OK) {
-        fprintf(stderr, ANSI_COLOR_YELLOW "Warning: Failed to explicitly add dump device driver. Continuing anyway...\n" ANSI_COLOR_RESET);
-    } else {
-        debug_printf(2, "Dump device driver explicitly added successfully.\n");
-    }
-
-    debug_printf(2, "Attempting to create device with adfDevCreate(\"dump\", \"%s\", 80, 2, 11)\n", output_filename);
-    device = adfDevCreate("dump", output_filename, 80, 2, 11); 
-    if (!device) {
-        fprintf(stderr, ANSI_COLOR_RED "Error: Failed to create ADF device '%s'. ADFLib error occurred.\n" ANSI_COLOR_RESET, output_filename);
-        if (adflib_initialized) adfLibCleanUp();
-        return EXIT_FAILURE;
-    }
-    debug_printf(2, "Device '%s' created successfully.\n", output_filename);
-
-    debug_printf(2, "Creating floppy volume '%s' on device with adfCreateFlop()...\n", volume_name_arg);
-    if (adfCreateFlop(device, volume_name_arg, ADF_DOSFS_OFS) != ADF_RC_OK) {
-        fprintf(stderr, ANSI_COLOR_RED "Error: Failed to create/format floppy volume '%s'. ADFLib error occurred.\n" ANSI_COLOR_RESET, volume_name_arg);
-        if (device) adfDevClose(device);
-        if (adflib_initialized) adfLibCleanUp();
-        return EXIT_FAILURE;
-    }
-    debug_printf(2, "Floppy volume '%s' created/formatted successfully by adfCreateFlop.\n", volume_name_arg);
-
-    debug_printf(2, "Mounting device '%s' with adfDevMount()...\n", output_filename);
-    if (adfDevMount(device) != ADF_RC_OK) {
-        fprintf(stderr, ANSI_COLOR_RED "Error: Failed to mount device '%s'. ADFLib error occurred.\n" ANSI_COLOR_RESET, output_filename);
-        if (device) adfDevClose(device);
-        if (adflib_initialized) adfLibCleanUp();
-        return EXIT_FAILURE;
-    }
-    debug_printf(2, "Device '%s' mounted successfully via adfDevMount.\n", output_filename);
     
-    debug_printf(2, "Attempting to mount volume 0 from device '%s' with adfVolMount()...\n", output_filename);
-    volume = adfVolMount(device, 0, ADF_ACCESS_MODE_READWRITE);
-    if (!volume) {
-        fprintf(stderr, ANSI_COLOR_RED "Error: Failed to mount volume 0 from device '%s'. ADFLib error occurred.\n" ANSI_COLOR_RESET, output_filename);
-        if (device) adfDevUnMount(device); 
-        if (device) adfDevClose(device);
-        if (adflib_initialized) adfLibCleanUp();
+    struct AdfDevice *device = create_blank_adf(output_filename, volume_name_arg);
+    if (!device) {
+        adfLibCleanUp();
         return EXIT_FAILURE;
     }
-    const char *current_vol_name_display = volume->volName ? volume->volName : volume_name_arg;
-    debug_printf(2, "Volume '%s' (from partition 0) mounted successfully via adfVolMount.\n", current_vol_name_display);
-    if (volume->mounted) {
-         debug_printf(2, "Volume '%s' reports itself as MOUNTED (volume->mounted is true) after adfVolMount.\n", current_vol_name_display);
-    } else {
-         debug_printf(2, ANSI_COLOR_RED "CRITICAL WARNING - Volume '%s' reports itself as NOT MOUNTED even after successful adfVolMount call.\n" ANSI_COLOR_RESET, current_vol_name_display);
+    
+    if (adfDevMount(device) != ADF_RC_OK) {
+        fprintf(stderr, ANSI_COLOR_RED "Error: Failed to mount device '%s'.\n" ANSI_COLOR_RESET, output_filename);
+        adfDevClose(device);
+        adfLibCleanUp();
+        return EXIT_FAILURE;
+    }
+    
+    struct AdfVolume *volume = adfVolMount(device, 0, ADF_ACCESS_MODE_READWRITE);
+    if (!volume) {
+        fprintf(stderr, ANSI_COLOR_RED "Error: Failed to mount volume from device.\n" ANSI_COLOR_RESET);
+        adfDevUnMount(device);
+        adfDevClose(device);
+        adfLibCleanUp();
+        return EXIT_FAILURE;
+    }
+
+    if (!install_bootblock(volume, bootblock_arg)) {
+        adfVolUnMount(volume);
+        adfDevUnMount(device);
+        adfDevClose(device);
+        adfLibCleanUp();
+        return EXIT_FAILURE;
     }
 
     bool all_items_success = true;
@@ -354,79 +340,61 @@ int main(int argc, char *argv[]) {
         struct stat item_stat;
 
         debug_printf(2, "Processing top-level host item: '%s'\n", host_item_path);
-        // Ensure ADF is at root for each top-level host item
+        
         if (adfToRootDir(volume) != ADF_RC_OK) {
-            fprintf(stderr, ANSI_COLOR_RED "Error: Failed to set ADF current directory to root before processing '%s'.\n" ANSI_COLOR_RESET, host_item_path);
+            fprintf(stderr, ANSI_COLOR_RED "Error: Failed to set ADF to root before processing '%s'.\n" ANSI_COLOR_RESET, host_item_path);
             all_items_success = false;
-            continue; 
+            continue;
         }
-        debug_printf(2, "ADF current directory set to root (sector %u).\n", (unsigned int)volume->curDirPtr);
-
 
         if (stat(host_item_path, &item_stat) == -1) {
-            fprintf(stderr, ANSI_COLOR_RED "Error: " ANSI_COLOR_RESET "Could not stat host path '%s': %s\n", host_item_path, strerror(errno));
+            fprintf(stderr, ANSI_COLOR_RED "Error: Could not stat host path '%s': %s\n" ANSI_COLOR_RESET, host_item_path, strerror(errno));
             all_items_success = false;
             continue;
         }
 
         char *amiga_item_basename = get_amiga_basename(host_item_path);
-        if (!amiga_item_basename) { 
+        if (!amiga_item_basename) {
             all_items_success = false;
             continue;
         }
 
         if (S_ISDIR(item_stat.st_mode)) {
-            debug_printf(1, "Processing host directory: '%s' -> ADF as '%s/' (at root)\n", host_item_path, amiga_item_basename);
-            // Create top-level directory in the root of the volume (vol->curDirPtr is root here)
+            debug_printf(1, "Adding host directory '%s' as '%s/'\n", host_item_path, amiga_item_basename);
             if (adfCreateDir(volume, volume->curDirPtr, amiga_item_basename) != ADF_RC_OK) {
-                fprintf(stderr, ANSI_COLOR_RED "Error: Failed to create top-level Amiga directory '%s'. ADFLib error occurred.\n" ANSI_COLOR_RESET, amiga_item_basename);
+                fprintf(stderr, ANSI_COLOR_RED "Error: Failed to create top-level directory '%s'.\n" ANSI_COLOR_RESET, amiga_item_basename);
                 all_items_success = false;
             } else {
-                debug_printf(2, "Successfully created top-level Amiga directory '%s'. Changing into it.\n", amiga_item_basename);
                 if (adfChangeDir(volume, amiga_item_basename) == ADF_RC_OK) {
-                    debug_printf(2, "Changed ADF current directory to '%s'. Recursing into host '%s'.\n", amiga_item_basename, host_item_path);
-                    // Pass amiga_item_basename as the current Amiga path for logging purposes
-                    if (!add_host_directory_to_adf_recursive(volume, host_item_path, amiga_item_basename)) {
+                    if (!add_host_directory_to_adf_recursive(volume, host_item_path)) {
                         all_items_success = false;
                     }
-                    // After recursion, return to root for the next top-level item processing
-                    debug_printf(2, "Returning ADF current directory to root after processing '%s'.\n", amiga_item_basename);
-                    if (adfToRootDir(volume) != ADF_RC_OK) {
-                         fprintf(stderr, ANSI_COLOR_RED "Error: Failed to return to root ADF directory after '%s'.\n" ANSI_COLOR_RESET, amiga_item_basename);
-                         all_items_success = false; // Critical if context is lost
-                    }
                 } else {
-                     fprintf(stderr, ANSI_COLOR_RED "Error: Failed to change into newly created Amiga directory '%s'.\n" ANSI_COLOR_RESET, amiga_item_basename);
-                     all_items_success = false;
+                    fprintf(stderr, ANSI_COLOR_RED "Error: Failed to change into top-level directory '%s'.\n" ANSI_COLOR_RESET, amiga_item_basename);
+                    all_items_success = false;
                 }
             }
         } else if (S_ISREG(item_stat.st_mode)) {
-            // Add file to the root of the ADF (vol->curDirPtr is root here)
             if (!add_host_file_to_adf(volume, host_item_path, amiga_item_basename)) {
                 all_items_success = false;
             }
         } else {
-            fprintf(stderr, ANSI_COLOR_YELLOW "Warning: " ANSI_COLOR_RESET "Skipping unsupported file type: '%s'\n", host_item_path);
+            fprintf(stderr, ANSI_COLOR_YELLOW "Warning: Skipping unsupported file type: '%s'\n" ANSI_COLOR_RESET, host_item_path);
         }
-        free(amiga_item_basename); 
+        free(amiga_item_basename);
     }
 
-    debug_printf(2, "Unmounting volume '%s'...\n", current_vol_name_display);
-    if (volume) adfVolUnMount(volume);
-    debug_printf(2, "Unmounting device '%s'...\n", output_filename);
-    if (device) adfDevUnMount(device); 
-    debug_printf(2, "Closing device '%s'...\n", output_filename);
-    if (device) adfDevClose(device);
-
-    debug_printf(2, "Cleaning up ADFlib environment...\n");
-    if (adflib_initialized) adfLibCleanUp();
+    debug_printf(2, "Unmounting volume and device...\n");
+    adfVolUnMount(volume);
+    adfDevUnMount(device);
+    adfDevClose(device);
+    adfLibCleanUp();
 
     if (all_items_success) {
-        printf(ANSI_COLOR_GREEN "ADF file '%s' processed successfully with disk name '%s'.\n" ANSI_COLOR_RESET, output_filename, volume_name_arg);
-        printf(ANSI_COLOR_GREEN "Processed %d input item(s).\n" ANSI_COLOR_RESET, argc - optind);
+        printf(ANSI_COLOR_GREEN "ADF file '%s' created successfully.\n" ANSI_COLOR_RESET, output_filename);
     } else {
-        fprintf(stderr, ANSI_COLOR_RED "ADF creation completed with errors processing some items.\n" ANSI_COLOR_RESET);
-        return EXIT_FAILURE; 
+        fprintf(stderr, ANSI_COLOR_RED "ADF creation completed with one or more errors.\n" ANSI_COLOR_RESET);
+        return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;
