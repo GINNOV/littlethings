@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct FileListView: View {
     @Binding var selectedEntryIDs: Set<AmigaEntry.ID>
@@ -32,7 +33,6 @@ struct FileListView: View {
                 upDirectoryButton
             }
 
-            // The ForEach now uses the new, optimized row view.
             ForEach(sortedEntries) { entry in
                 FileEntryRowView(
                     entry: entry,
@@ -41,11 +41,13 @@ struct FileListView: View {
                     onTap: { handleSelection(for: entry) },
                     onDoubleTap: { handleEntryTap(entry) },
                     onContextMenu: { contextMenuItems(for: entry) },
-                    onDrag: { NSItemProvider(object: "\(entry.id)" as NSString) },
-                    onDrop: { providers in handleDropOnEntry(providers: providers, entry: entry) }
+                    // rationale: The drag provider now correctly encodes the set of Int IDs.
+                    onDrag: {
+                        let idsToDrag = selectedEntryIDs.contains(entry.id) ? selectedEntryIDs : [entry.id]
+                        let idString = idsToDrag.map { String($0) }.joined(separator: ",")
+                        return NSItemProvider(object: idString as NSString)
+                    }
                 )
-                // THE FIX: The drag target binding needs to be applied here,
-                // outside the Equatable view, to ensure it updates correctly.
                 .onDrop(of: [.plainText], isTargeted: dragTargetBinding(for: entry.id)) { providers -> Bool in
                     handleDropOnEntry(providers: providers, entry: entry)
                 }
@@ -67,7 +69,7 @@ struct FileListView: View {
         }
     }
     
-    // MARK: - Manual Selection Handling (with improved Shift-click)
+    // MARK: - Manual Selection Handling
     private func handleSelection(for entry: AmigaEntry) {
         guard let event = NSApp.currentEvent else { return }
         let modifierFlags = event.modifierFlags
@@ -124,19 +126,23 @@ struct FileListView: View {
         return true
     }
     
-    private func loadSourceIDs(from providers: [NSItemProvider], completion: @escaping (Set<Int>) -> Void) {
-        let group = DispatchGroup()
-        var sourceIDs: Set<Int> = []
-        for provider in providers {
-            group.enter()
-            provider.loadObject(ofClass: NSString.self) { string, _ in
-                if let idString = string as? String, let sourceID = Int(idString) {
-                    sourceIDs.insert(sourceID)
+    // rationale: The completion handler now correctly creates a Set<Int> (aka Set<AmigaEntry.ID>).
+    private func loadSourceIDs(from providers: [NSItemProvider], completion: @escaping (Set<AmigaEntry.ID>) -> Void) {
+        guard let provider = providers.first else {
+            completion([])
+            return
+        }
+        
+        provider.loadObject(ofClass: NSString.self) { string, _ in
+            DispatchQueue.main.async {
+                guard let idString = string as? String else {
+                    completion([])
+                    return
                 }
-                group.leave()
+                let ids = idString.split(separator: ",").compactMap { Int($0) }
+                completion(Set(ids))
             }
         }
-        group.notify(queue: .main) { completion(sourceIDs) }
     }
     
     @ViewBuilder
@@ -150,7 +156,6 @@ struct FileListView: View {
 }
 
 // MARK: - Equatable Row View
-// This view is now generic to accept any kind of Context Menu content.
 struct FileEntryRowView<ContextMenuContent: View>: View, Equatable {
     let entry: AmigaEntry
     let isSelected: Bool
@@ -159,13 +164,10 @@ struct FileEntryRowView<ContextMenuContent: View>: View, Equatable {
     // Closures for actions
     let onTap: () -> Void
     let onDoubleTap: () -> Void
-    let onContextMenu: () -> ContextMenuContent // THE FIX: Use a generic type instead of AnyView
+    let onContextMenu: () -> ContextMenuContent
     let onDrag: () -> NSItemProvider
-    let onDrop: ([NSItemProvider]) -> Bool
     
     static func == (lhs: FileEntryRowView, rhs: FileEntryRowView) -> Bool {
-        // This Equatable conformance is the key to performance.
-        // It prevents SwiftUI from re-rendering rows whose state hasn't changed.
         return lhs.entry.id == rhs.entry.id &&
                lhs.isSelected == rhs.isSelected &&
                lhs.isDragTarget == rhs.isDragTarget
@@ -173,8 +175,7 @@ struct FileEntryRowView<ContextMenuContent: View>: View, Equatable {
     
     var body: some View {
         FileRowView(entry: entry)
-            .listRowBackground(isSelected ? Color.accentColor.opacity(0.3) : Color.clear)
-            .background(isDragTarget && entry.type == .directory ? Color.accentColor.opacity(0.5) : Color.clear)
+            .listRowBackground(isSelected ? Color.accentColor.opacity(0.3) : (isDragTarget ? Color.accentColor.opacity(0.5) : Color.clear))
             .contentShape(Rectangle())
             .contextMenu { onContextMenu() }
             .onDrag { onDrag() }
@@ -185,5 +186,3 @@ struct FileEntryRowView<ContextMenuContent: View>: View, Equatable {
             )
     }
 }
-
-// Generated: FileListView.swift @ 04:38
