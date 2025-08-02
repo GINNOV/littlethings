@@ -16,14 +16,14 @@ struct ADFinderApp: App {
     @AppStorage("lastVersionPromptedFor") private var lastVersionPromptedFor: String = ""
     @AppStorage("dontShowWhatsNew") private var dontShowWhatsNew = false
     
-    // rationale: By creating the services here, we ensure they are singletons for the app's lifetime.
     @State private var adfService = ADFService()
     @State private var recentFilesService = RecentFilesService()
     @State private var logStore = LogStore.shared
-    @State private var showWhatsNew = false
     
     @Environment(\.openWindow) private var openWindow
     
+    private static var didRunUpdateCheck = false
+
     static let adfUType = UTType("public.retro.adf")!
     static let hdfUType = UTType("public.retro.hdf")!
 
@@ -38,24 +38,27 @@ struct ADFinderApp: App {
     }
     
     var body: some Scene {
-        // rationale: The single adfService instance is now passed to the ContentView.
         WindowGroup(for: URL.self) { $url in
             ContentView(adfService: adfService, recentFilesService: recentFilesService, initialURL: url)
                 .environment(logStore)
+                .onAppear {
+                    if !Self.didRunUpdateCheck {
+                        checkForUpdates()
+                        Self.didRunUpdateCheck = true
+                    }
+                }
         }
         .commands {
             AmigaMenuCommands()
             
             CommandGroup(replacing: .appInfo) {
                 Button("About ADFinder") {
-                    
                     NotificationCenter.default.post(name: .showAboutWindow, object: nil)
                 }
             }
             
             CommandGroup(after: .appInfo) {
                 Button("What's new...") {
-                    
                     NotificationCenter.default.post(name: .showWhatsNewWindow, object: nil)
                 }
             }
@@ -97,15 +100,17 @@ struct ADFinderApp: App {
             }
         }
         
-        // rationale: The single adfService instance is also passed to the main ContentView.
         WindowGroup("ADFinder", id: "main") {
             ContentView(adfService: adfService, recentFilesService: recentFilesService)
                 .environment(logStore)
-                .sheet(isPresented: $showWhatsNew) {
-                    WhatsNewView(showWhatsNew: $showWhatsNew)
-                }
                 .onAppear {
-                    checkForUpdates()
+                    if !Self.didRunUpdateCheck {
+                        checkForUpdates()
+                        Self.didRunUpdateCheck = true
+                    }
+                }
+                .onOpenURL { url in
+                    NotificationCenter.default.post(name: .openSpecificAdfFile, object: url)
                 }
         }
 
@@ -127,8 +132,7 @@ struct ADFinderApp: App {
         let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
         
         if !dontShowWhatsNew && currentVersion != lastVersionPromptedFor {
-            showWhatsNew = true
-            lastVersionPromptedFor = currentVersion
+            NotificationCenter.default.post(name: .showWhatsNewWindow, object: nil)
         }
     }
 }

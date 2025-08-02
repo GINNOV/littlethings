@@ -13,6 +13,9 @@ struct PreferencesView: View {
     @AppStorage("openLastKnownDisk") private var openLastKnownDisk = false
     @AppStorage("downloadLocationBookmark") private var downloadLocationBookmark: Data?
 
+    @AppStorage("lastVersionPromptedFor") private var lastVersionPromptedFor: String = ""
+    @AppStorage("dontShowWhatsNew") private var dontShowWhatsNew = false
+
     // State for displaying the resolved path
     @State private var downloadPath: String = ""
 
@@ -59,7 +62,23 @@ struct PreferencesView: View {
                     }
                 }
 
-                Spacer()
+                Divider()
+                
+                // rationale: A temporary section for debugging the "What's New" feature.
+//                Text("Debugging")
+//                    .font(.headline)
+//                
+//                Button("Reset 'What's New' Dialog") {
+//                    lastVersionPromptedFor = ""
+//                    dontShowWhatsNew = false
+//                }
+//                .buttonStyle(.bordered)
+//                Text("This will make the 'What's New' screen appear on the next launch.")
+//                    .font(.caption)
+//                    .foregroundColor(.secondary)
+//
+//
+//                Spacer()
             }
             .padding(.top, 5)
         }

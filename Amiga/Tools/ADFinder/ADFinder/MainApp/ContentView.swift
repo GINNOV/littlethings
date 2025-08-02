@@ -9,8 +9,6 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ContentView: View {
-    // rationale: The adfService is now received from the parent, not created here.
-    // @State is used because the service is a reference type (@Observable class).
     @State var adfService: ADFService
     @Bindable var recentFilesService: RecentFilesService
 
@@ -63,7 +61,6 @@ struct ContentView: View {
         }
     }
     
-    // rationale: The initializer is updated to accept the shared adfService instance.
     init(adfService: ADFService, recentFilesService: RecentFilesService, initialURL: URL? = nil) {
         self.adfService = adfService
         self.recentFilesService = recentFilesService
