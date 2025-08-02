@@ -9,7 +9,9 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ContentView: View {
-    @State private var adfService = ADFService()
+    // rationale: The adfService is now received from the parent, not created here.
+    // @State is used because the service is a reference type (@Observable class).
+    @State var adfService: ADFService
     @Bindable var recentFilesService: RecentFilesService
 
     @State private var selectedFile: URL?
@@ -24,14 +26,12 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-        
             SidebarView(
                 adfService: adfService,
                 recentFilesService: recentFilesService,
                 selectedFile: $selectedFile
             )
         } detail: {
-            
             DetailView(
                 adfService: adfService,
                 recentFilesService: recentFilesService,
@@ -45,19 +45,14 @@ struct ContentView: View {
         }
         .onAppear {
             if let url = initialURL {
-                // This window was opened for a specific file (e.g., from Finder or the Recent menu).
                 selectedFile = url
             } else {
-                // This is the initial, blank window that appears on app launch.
-                // We check if we should run the startup logic.
                 if !Self.didRunStartupLogic {
                     Self.didRunStartupLogic = true
                     if openLastKnownDisk {
                         let recentFiles = recentFilesService.recentFiles.prefix(5)
                         if let firstFile = recentFiles.first {
-                            // Load the first recent file into this initial window.
                             selectedFile = firstFile
-                            // Open the rest of the recent files in new windows, which will be tabbed.
                             for file in recentFiles.dropFirst() {
                                 openWindow(value: file)
                             }
@@ -68,7 +63,9 @@ struct ContentView: View {
         }
     }
     
-    init(recentFilesService: RecentFilesService, initialURL: URL? = nil) {
+    // rationale: The initializer is updated to accept the shared adfService instance.
+    init(adfService: ADFService, recentFilesService: RecentFilesService, initialURL: URL? = nil) {
+        self.adfService = adfService
         self.recentFilesService = recentFilesService
         self.initialURL = initialURL
     }
