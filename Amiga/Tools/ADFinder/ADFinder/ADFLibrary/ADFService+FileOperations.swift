@@ -165,48 +165,53 @@ extension ADFService {
     }
     
     func writeTextFile(entry: AmigaEntry, content: String) -> String? {
-        guard let vol = self.adfVolume, entry.type == .file else { return "Invalid entry or volume." }
-        if !navigateToInternalPath() {
-            return getADFLibError(context: "navigateToInternalPath for \(entry.name) before writeTextFile")
-        }
+            guard let vol = self.adfVolume, entry.type == .file else { return "Invalid entry or volume." }
+            if !navigateToInternalPath() {
+                return getADFLibError(context: "navigateToInternalPath for \(entry.name) before writeTextFile")
+            }
 
-        if (entry.protectionBits & ACCMASK_W_SWIFT) != 0 {
-            let errorMessage = "File '\(entry.name)' is (Amiga) write-protected. Cannot save changes."
-            log("ADFService: \(errorMessage)")
-            return errorMessage
-        }
+            if (entry.protectionBits & ACCMASK_W_SWIFT) != 0 {
+                let errorMessage = "File '\(entry.name)' is (Amiga) write-protected. Cannot save changes."
+                log("ADFService: \(errorMessage)")
+                return errorMessage
+            }
+        
+            // First, delete the old entry to ensure a clean write.
+            if let deleteError = deleteEntryRecursively(entry: entry, force: true) {
+                return "Could not delete original file before saving: \(deleteError)"
+            }
 
-        var processedContent = content
-            .replacingOccurrences(of: "“", with: "\"")
-            .replacingOccurrences(of: "”", with: "\"")
-            .replacingOccurrences(of: "‘", with: "'")
-            .replacingOccurrences(of: "’", with: "'")
-            .replacingOccurrences(of: "…", with: "...")
-            .replacingOccurrences(of: "—", with: "--")
-        
-        processedContent = processedContent.replacingOccurrences(of: "\r\n", with: "\n")
-        
-        guard let data = processedContent.data(using: .isoLatin1) else {
-            return "Failed to encode string to Amiga-compatible format."
-        }
-        
-        let result = data.withUnsafeBytes { (bufferPtr: UnsafeRawBufferPointer) -> ADF_RETCODE in
-            let unsafePointer = bufferPtr.baseAddress?.assumingMemoryBound(to: UInt8.self)
+            var processedContent = content
+                .replacingOccurrences(of: "“", with: "\"")
+                .replacingOccurrences(of: "”", with: "\"")
+                .replacingOccurrences(of: "‘", with: "'")
+                .replacingOccurrences(of: "’", with: "'")
+                .replacingOccurrences(of: "…", with: "...")
+                .replacingOccurrences(of: "—", with: "--")
             
-            return entry.name.withCString { cAmigaPath in
-                return add_file_to_adf_c(vol, cAmigaPath, unsafePointer, UInt32(data.count))
+            processedContent = processedContent.replacingOccurrences(of: "\r\n", with: "\n")
+            
+            guard let data = processedContent.data(using: .isoLatin1) else {
+                return "Failed to encode string to Amiga-compatible format."
+            }
+            
+            let result = data.withUnsafeBytes { (bufferPtr: UnsafeRawBufferPointer) -> ADF_RETCODE in
+                let unsafePointer = bufferPtr.baseAddress?.assumingMemoryBound(to: UInt8.self)
+                
+                return entry.name.withCString { cAmigaPath in
+                    return add_file_to_adf_c(vol, cAmigaPath, unsafePointer, UInt32(data.count))
+                }
+            }
+            
+            if result.rawValue == ADF_RC_OK_SWIFT {
+                log("ADFService: Successfully wrote to '\(entry.name)'.")
+                populateDiskInfo()
+                return nil
+            } else {
+                log("ADFService: add_file_to_adf_c failed for '\(entry.name)'. Check C-Log for details.")
+                return "ADFlib failed to write the file. The disk may be full."
             }
         }
-        
-        if result.rawValue == ADF_RC_OK_SWIFT {
-            log("ADFService: Successfully wrote to '\(entry.name)'.")
-            populateDiskInfo()
-            return nil
-        } else {
-            log("ADFService: add_file_to_adf_c failed for '\(entry.name)'. Check C-Log for details.")
-            return "ADFlib failed to write the file. The disk may be full."
-        }
-    }
     
     func addFile(from url: URL) -> String? {
         guard let vol = self.adfVolume else { return "Volume not mounted." }
