@@ -42,11 +42,11 @@ CONFIG_PATH="$OUTPUT_DIR/${BASENAME}_debug.fs-uae"
 
 # Build
 echo -e "${HIGHLIGHT}BUILDING...${RESET}"
-vasm -Fhunkexe -o ~/Downloads/Amiga_Testing/Disks/bins/unzipped-disk2/"${BASENAME}.bin" "$ASM_FILE"
+vasm -Fhunkexe -o ~/Downloads/Amiga_Testing/Disks/bins/unzipped-disk1/"${BASENAME}.bin" "$ASM_FILE"
 
 # Package
 echo -e "${HIGHLIGHT}PACKAGING...${RESET}"
-send2adf -o ~/Downloads/Amiga_Testing/Disks/bins/Demos/${ADF_NAME} -N "${BASENAME}" ~/Downloads/Amiga_Testing/Disks/bins/unzipped-disk2/C ~/Downloads/Amiga_Testing/Disks/bins/unzipped-disk2/S ~/Downloads/Amiga_Testing/Disks/bins/unzipped-disk2/"${BASENAME}.bin"
+send2adf -o ~/Downloads/Amiga_Testing/Disks/bins/Demos/${ADF_NAME} -N "${BASENAME}" ~/Downloads/Amiga_Testing/Disks/bins/unzipped-disk1/C ~/Downloads/Amiga_Testing/Disks/bins/unzipped-disk1/S ~/Downloads/Amiga_Testing/Disks/bins/unzipped-disk1/"${BASENAME}.bin"
 
 # Generate FS-UAE config
 echo -e "${HIGHLIGHT}GENERATING FS-UAE CONFIGURATION...${RESET}"
