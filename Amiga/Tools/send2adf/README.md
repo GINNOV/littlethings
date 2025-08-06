@@ -61,6 +61,11 @@ I have provided the [compiled](https://github.com/GINNOV/littlethings/raw/master
     ./send2adf -h
     ```
 
+## Change log
+1.0 basic implementation. Create a disk with one file in it.
+1.1 you can now add multiple files and pass folders that are added entirely
+1.5 you can now set what type of boot block and file system you want to add to the creating disk
+
 ## Notes for Developers
 
 * The directory recursion uses POSIX-standard functions (`dirent.h`, `sys/stat.h`).
