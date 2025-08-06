@@ -34,7 +34,7 @@
 
 // Version information
 #define VERSION_MAJOR "1"
-#define VERSION_MINOR "1"
+#define VERSION_MINOR "5"
 
 // Global verbosity level
 int verbosity_level = 0;
@@ -75,9 +75,30 @@ void debug_printf(int required_level, const char *format, ...) {
 
 char* get_build_date() {
     static char build_date_str[9];
-    time_t t = time(NULL);
-    struct tm *tm_info = localtime(&t);
-    strftime(build_date_str, sizeof(build_date_str), "%Y%m%d", tm_info);
+    static bool initialized = false;
+    
+    if (!initialized) {
+        // __DATE__ is in format "Mmm dd yyyy" (e.g., "Jan 15 2024")
+        char month_str[4];
+        int day, year;
+        sscanf(__DATE__, "%s %d %d", month_str, &day, &year);
+        
+        // Convert month name to number
+        int month = 1; // default to January
+        const char* months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+        for (int i = 0; i < 12; i++) {
+            if (strcmp(month_str, months[i]) == 0) {
+                month = i + 1;
+                break;
+            }
+        }
+        
+        // Format as YYYYMMDD
+        snprintf(build_date_str, sizeof(build_date_str), "%04d%02d%02d", year, month, day);
+        initialized = true;
+    }
+    
     return build_date_str;
 }
 
@@ -86,6 +107,8 @@ void print_usage(const char *prog_name) {
     printf(ANSI_COLOR_CYAN "Create ADF Images by x.com/WINDRAGO. Version %s.%s build (%s)\n" ANSI_COLOR_RESET,
            VERSION_MAJOR, VERSION_MINOR, build_date);
     printf("Usage: %s -o <output.adf> -N <volname> [-B <bootblock>] [-v] <file_or_dir1> ...\n", prog_name);
+    printf("Example: %s -o disk1.adf -N myDisk1 demo.exe anotherfile.raw a_directory_here \n", prog_name);
+    printf("*------------------------------------------------------------------------------* \n");
     printf("Options:\n");
     printf("  -o, --output    <filename>      Specify the output ADF filename (required).\n");
     printf("  -N, --volname   <name>          Specify the volume name for the ADF (required).\n");
