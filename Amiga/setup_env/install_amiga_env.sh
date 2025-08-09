@@ -23,7 +23,7 @@ NDK_URL="https://fsck.technology/software/Commodore/Amiga/Amiga%20Applications/A
 # Colors
 C_RESET=$'\033[0m'; C_RED=$'\033[0;31m'; C_GRN=$'\033[0;32m'; C_YEL=$'\033[0;33m'; C_BLU=$'\033[0;34m'; C_BOLD=$'\033[1m'
 
-print_header(){ echo -e "\n${C_BLU}${C_BOLD}--- $1 ---${C_RESET}"; }
+print_header(){ echo -e "\n${C_BLUE}${C_BOLD}--- $1 ---${C_RESET}"; }
 
 clear
 echo -e "${C_BOLD}Starting the Definitive Amiga Environment From-Source Installation...${C_RESET}"
@@ -193,8 +193,8 @@ echo -e "${C_BOLD}Run: exec \$SHELL -l${C_RESET}  (reloads your shell config)"
 echo -e "\n${C_BOLD}Installed Versions:${C_RESET}"
 
 printf "vasm:  "
-("$INSTALL_DIR/bin/vasmm68k_mot" -version 2>/dev/null || true)
+("$INSTALL_DIR/bin/vasmm68k_mot" -quiet 2>/dev/null || true)
 printf "vlink: "
-("$INSTALL_DIR/bin/vlink" -V 2>&1 || true) | head -n 1
+("$INSTALL_DIR/bin/vlink" -h 2>&1 || true) | head -n 1
 printf "vbcc:  "
 VBCC="$INSTALL_DIR" "$INSTALL_DIR/bin/vc" +aos68k -v 2>&1 | head -n 1 || true
