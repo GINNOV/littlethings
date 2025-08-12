@@ -26,6 +26,9 @@ struct FileListView: View {
     let viewAsText: (AmigaEntry) -> Void
     let handleMove: (Set<AmigaEntry.ID>, AmigaEntry) -> Void
     let handleMoveToParent: (Set<AmigaEntry.ID>) -> Void
+    let renameAction: (AmigaEntry) -> Void
+    let deleteAction: ([AmigaEntry]) -> Void
+    let newFolderAction: () -> Void
 
     var body: some View {
         List {
@@ -149,6 +152,14 @@ struct FileListView: View {
         if entry.type == .file {
             Button("View as Hex") { viewFileContent(entry) }
             Button("Edit as Text") { viewAsText(entry) }
+        }
+        Divider()
+        Button("New Folder...") { newFolderAction() }
+        Divider()
+        Button("Rename...") { renameAction(entry) }
+        Button("Delete") {
+            let entriesToDelete = selectedEntryIDs.contains(entry.id) ? sortedEntries.filter { selectedEntryIDs.contains($0.id) } : [entry]
+            deleteAction(entriesToDelete)
         }
     }
 }
