@@ -2,7 +2,7 @@
 //  SidebarView.swift
 //  ADFinder
 //
-//  Created by Mario Esposito on 5/23/25.
+//  Created by Mario Esposito on 5/23/25
 //
 
 import SwiftUI
@@ -29,12 +29,43 @@ struct SidebarView: View {
             }
             .padding(.bottom)
             
-            Button {
-                showingFileImporter = true
-            } label: {
-                Label("Open Disk", systemImage: "doc.badge.plus")
+            // --- Custom Split Button ---
+            HStack(spacing: 0) {
+                // Main button area
+                Button(action: { showingFileImporter = true }) {
+                    Text("Open Disk...")
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+                .buttonStyle(.plain) // Removes default button styling
+                .padding(.horizontal, 12)
+
+                // Menu area
+                Menu {
+                    if !recentFilesService.recentFiles.isEmpty {
+                        Section(header: Text("Open Recent")) {
+                            ForEach(recentFilesService.recentFiles.prefix(5), id: \.self) { url in
+                                Button(url.lastPathComponent) {
+                                    selectedFile = url
+                                }
+                            }
+                        }
+                    } else {
+                        Text("No Recent Items")
+                    }
+                } label: {
+                    Color.clear
+                        .frame(maxHeight: .infinity)
+                        .padding(.horizontal, 10)
+                }
+                .menuStyle(.borderlessButton) // Removes button styling from the menu trigger
             }
+            .frame(maxWidth: .infinity, minHeight: 36) // Set a fixed height for the whole component
+            .background(Color.accentColor)
+            .foregroundColor(.white)
+            .cornerRadius(8)
             .padding(.bottom)
+            // --- End Custom Split Button ---
+
 
             if selectedFile != nil {
                 Text("Disk file:")
