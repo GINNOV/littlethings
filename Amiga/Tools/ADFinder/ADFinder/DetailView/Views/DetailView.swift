@@ -10,7 +10,7 @@ import UniformTypeIdentifiers
 import Quartz // Needed for QuickLook panel access
 
 struct DetailView: View {
-    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openWindow) internal var openWindow
     @Bindable var adfService: ADFService
     @Bindable var recentFilesService: RecentFilesService
     @Binding var selectedFile: URL?

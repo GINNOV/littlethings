@@ -119,37 +119,66 @@ extension DetailView {
     }
     
     func handleDrop(providers: [NSItemProvider]) -> Bool {
-        guard let provider = providers.first else { return false }
+        var adfURLsToOpen: [URL] = []
+        var itemsToImport: [URL] = []
+        var processingErrors: [String] = []
+        let group = DispatchGroup()
 
-        provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { (itemData, error) in
-            DispatchQueue.main.async {
-                guard
-                    let data = itemData as? Data,
-                    let url = URL(dataRepresentation: data, relativeTo: nil),
-                    url.isFileURL
-                else {
-                    self.adfService.log("handleDrop: Could not create URL from dropped item data. Error: \(error?.localizedDescription ?? "Unknown")")
-                    self.showAlert(message: "Could not open the dropped item.")
+        for provider in providers {
+            group.enter()
+            _ = provider.loadObject(ofClass: URL.self) { url, error in
+                defer { group.leave() }
+                
+                guard let url = url else {
+                    if let error = error {
+                        DispatchQueue.main.async { processingErrors.append("Failed to process a dropped item: \(error.localizedDescription)") }
+                    }
                     return
                 }
 
-                self.adfService.log("handleDrop: Successfully loaded URL from bookmark data: \(url.absoluteString)")
-
                 let fileExtension = url.pathExtension.lowercased()
-                guard ["adf", "hdf"].contains(fileExtension) else {
-                    self.adfService.log("handleDrop: Invalid file type dropped: \(fileExtension)")
-                    self.showAlert(message: "Only .adf and .hdf files can be opened.")
+                if ["adf", "hdf"].contains(fileExtension) {
+                    DispatchQueue.main.async { adfURLsToOpen.append(url) }
+                } else {
+                    DispatchQueue.main.async { itemsToImport.append(url) }
+                }
+            }
+        }
+
+        group.notify(queue: .main) {
+            // 1. Handle opening disk images in new windows
+            for url in adfURLsToOpen {
+                self.openWindow(value: url)
+            }
+
+            // 2. Handle importing files/folders into the current disk
+            if !itemsToImport.isEmpty {
+                guard selectedFile != nil else {
+                    self.showAlert(message: "Cannot import files because no disk image is open. Please open an ADF/HDF first.")
                     return
                 }
                 
-                if self.selectedFile != nil {
-                    self.adfService.log("handleDrop: A file is already open. Showing confirmation dialog.")
-                    self.presentConfirmation(config: .replaceOpenDisk {
-                        self.selectedFile = url
-                    })
-                } else {
-                    self.selectedFile = url
+                isLoadingFileContent = true // Show a spinner
+                Task {
+                    var importErrors: [String] = []
+                    for url in itemsToImport {
+                        if let errorMessage = self.adfService.importItem(from: url) {
+                            importErrors.append(errorMessage)
+                        }
+                    }
+                    
+                    // After all imports are done, update the UI
+                    self.loadDirectoryContents()
+                    self.isLoadingFileContent = false // Hide spinner
+                    
+                    let allErrors = processingErrors + importErrors
+                    if !allErrors.isEmpty {
+                        self.showAlert(message: "Import completed with errors:\n\n\(allErrors.joined(separator: "\n\n"))")
+                    }
                 }
+            } else if !processingErrors.isEmpty {
+                // Show errors only if no import was attempted
+                self.showAlert(message: "Could not process all dropped items:\n\(processingErrors.joined(separator: "\n"))")
             }
         }
         return true
