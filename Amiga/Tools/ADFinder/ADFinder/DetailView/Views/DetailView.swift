@@ -268,7 +268,26 @@ struct DetailView: View {
                     viewFileContent: viewFileContent,
                     viewAsText: viewTextContent,
                     handleMove: handleMove,
-                    handleMoveToParent: handleMoveToParent
+                    handleMoveToParent: handleMoveToParent,
+                    renameAction: { entry in
+                        inputDialogConfig = RenameEntryDialogConfig.config(entry: entry) { newName in
+                            renameEntry(entry: entry, newName: newName)
+                        }
+                    },
+                    deleteAction: { entries in
+                        if entries.isEmpty {
+                            showAlert(message: "No items to delete.")
+                            return
+                        }
+                        presentConfirmation(config: .deleteEntries(entries: entries, action: { force in
+                            deleteEntries(entries, force: force)
+                        }))
+                    },
+                    newFolderAction: {
+                        inputDialogConfig = NewFolderDialogConfig.config { newName in
+                            createFolder(name: newName)
+                        }
+                    }
                 )
                 .refreshable { loadDirectoryContents() }
             }
