@@ -267,6 +267,69 @@ extension ADFService {
         }
     }
 
+    func importItem(from url: URL) -> String? {
+        guard self.adfVolume != nil else { return "Volume not mounted." }
+
+        let didStartAccessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if didStartAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) else {
+            return "Source item does not exist at \(url.path)."
+        }
+
+        if isDirectory.boolValue {
+            return _recursiveImportDirectory(from: url)
+        } else {
+            return addFile(from: url)
+        }
+    }
+
+    private func _recursiveImportDirectory(from sourceURL: URL) -> String? {
+        // 1. Create directory in current Amiga path
+        let dirName = sourceURL.lastPathComponent
+        if let error = createDirectory(name: dirName, force: true) {
+            return "Failed to create directory '\(dirName)': \(error)"
+        }
+
+        // 2. Navigate into new Amiga directory
+        if !navigateToDirectory(dirName) {
+            return "Failed to navigate into new Amiga directory '\(dirName)'."
+        }
+
+        // 3. Get contents of source macOS directory
+        let contents: [URL]
+        do {
+            contents = try FileManager.default.contentsOfDirectory(at: sourceURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+        } catch {
+            _ = goUpDirectory() // Attempt to restore state
+            return "Could not read contents of '\(dirName)': \(error.localizedDescription)"
+        }
+
+        // 4. Recursively import each item
+        var errors: [String] = []
+        for itemURL in contents {
+            if let error = importItem(from: itemURL) { // Recursive call
+                errors.append(error)
+            }
+        }
+
+        // 5. Navigate back up
+        if !goUpDirectory() {
+            return "CRITICAL: Failed to navigate out of '\(dirName)'. State is inconsistent. Errors during import: \(errors.joined(separator: ", "))"
+        }
+        
+        if errors.isEmpty {
+            return nil
+        } else {
+            return "Errors occurred while importing '\(dirName)':\n" + errors.joined(separator: "\n")
+        }
+    }
+
     func createDirectory(name: String, force: Bool) -> String? {
         guard let vol = self.adfVolume else {
             return "Cannot create directory, volume is nil."
