@@ -110,7 +110,7 @@ BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST_
 DMG_NAME="${PROJECT_NAME}-${VERSION}_${BUILD_NUMBER}.dmg"
 DMG_FINAL_PATH="${DMG_DIR}/${DMG_NAME}"
 APPCAST_PATH="${DMG_DIR}/appcast.xml"
-RELEASE_NOTES_URL="https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/changelogs.md"
+RELEASE_NOTES_URL="https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/changelogs.html#ADFinder"
 
 # Check if the final DMG exists before proceeding
 if [ ! -f "$DMG_FINAL_PATH" ]; then

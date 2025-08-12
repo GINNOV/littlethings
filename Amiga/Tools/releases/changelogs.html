@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ChangeLog</title>
+  <style>
+    :root {
+      --bg:#0b0c10; --fg:#e6e6e6; --muted:#a9b0b8; --card:#111318; --accent:#87e1a8;
+      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      --sans: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+    }
+    html,body { margin:0; padding:0; background:var(--bg); color:var(--fg); font-family:var(--sans); line-height:1.5; }
+    .wrap { max-width: 820px; margin: 48px auto; padding: 0 20px 64px; }
+    header.site { margin-bottom: 24px; }
+    header.site h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: .3px; }
+    header.site .hint { color: var(--muted); font-size: 14px; }
+    .product { background: var(--card); border: 1px solid #1d2129; border-radius: 14px; padding: 20px; margin-top: 28px; }
+    .product h2 { margin: 0 0 6px; font-size: 22px; }
+    .meta { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+    .version { display: inline-block; font-family: var(--mono); background: #0f1220; border: 1px solid #24283b; padding: 2px 8px; border-radius: 8px; color: var(--accent); }
+    .changelog { margin: 14px 0 0; padding-left: 22px; }
+    .changelog li { margin: 6px 0; }
+    .muted { color: var(--muted); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    hr { border: none; border-top: 1px solid #1d2129; margin: 28px 0; }
+    .small { font-size: 13px; }
+    /* Optional sticky mini-nav if you add multiple products later */
+    nav.toc { position: sticky; top: 0; background: linear-gradient(180deg, rgba(11,12,16,.95), rgba(11,12,16,.85)); backdrop-filter: blur(6px); border-bottom: 1px solid #1d2129; }
+    nav.toc .row { max-width: 820px; margin: 0 auto; padding: 10px 20px; display: flex; gap: 14px; flex-wrap: wrap; }
+    nav.toc a { font-size: 14px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <!-- Optional top links; add more anchors as you add products -->
+  <nav class="toc" aria-label="On-page links">
+    <div class="row">
+      <a href="#header">ADFinder</a>
+      <!-- Example future product: <a href="#pixdeluxe">PixDeluxe</a> -->
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <header class="site">
+      <h1>🪵 ChangeLog</h1>
+      <div class="hint small">History was made here!<code>#SPARTAAAAKLE</code></div>
+    </header>
+
+    <!-- ADFinder section: anchor id is exactly "header" as requested -->
+    <section class="product" id="header">
+      <h2>ADFinder</h2>
+      <div class="meta">Latest: <span class="version">1.2.4</span></div>
+      <ul class="changelog">
+        <li>you can drop file structures now</li>
+        <li>Recent files from open button</li>
+        <li>version checker added</li>
+      </ul>
+
+      <hr />
+
+      <h3 class="muted">Other versions</h3>
+      <p class="muted small">(to be filled)</p>
+      
+      <details>
+        <summary><code>1.2.3</code> – 2025‑08‑01</summary>
+        <ul class="changelog">
+          <li>Fix: …</li>
+          <li>Change: …</li>
+        </ul>
+      </details>
+      
+    </section>
+
+    <!-- Template for additional products on the same page
+    <section class="product" id="pixdeluxe">
+      <h2>PixDeluxe</h2>
+      <div class="meta">Latest: <span class="version">x.y.z</span></div>
+      <ul class="changelog">
+        <li>…</li>
+      </ul>
+      <hr />
+      <h3 class="muted">Other versions</h3>
+      <p class="muted small">(to be filled)</p>
+    </section>
+    -->
+  </div>
+</body>
+</html>
