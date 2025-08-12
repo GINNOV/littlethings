@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+    <channel>
+        <title>ADFinder Changelog</title>
+        <item>
+            <title>Version 1.2.1</title>
+            <sparkle:releaseNotesLink>
+                https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/changelogs.md
+            </sparkle:releaseNotesLink>
+            <pubDate>Tue, 12 Aug 2025 12:00:00 +0000</pubDate>
+            <enclosure
+                url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.1_1184.dmg"
+                sparkle:version="1184"
+                sparkle:shortVersionString="1.2.1"
+                length="0"
+                type="application/octet-stream" />
+        </item>
+    </channel>
+</rss>

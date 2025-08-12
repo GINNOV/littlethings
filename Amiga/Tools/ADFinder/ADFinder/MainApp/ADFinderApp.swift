@@ -20,7 +20,10 @@ struct ADFinderApp: App {
     @State private var recentFilesService = RecentFilesService()
     @State private var logStore = LogStore.shared
     
-    @Environment(\.openWindow) private var openWindow
+    // Create an instance of our updater controller.
+    private let updaterController = UpdaterController()
+    
+    @Environment(\.openWindow) internal var openWindow
     
     private static var didRunUpdateCheck = false
 
@@ -54,6 +57,11 @@ struct ADFinderApp: App {
             CommandGroup(replacing: .appInfo) {
                 Button("About ADFinder") {
                     NotificationCenter.default.post(name: .showAboutWindow, object: nil)
+                }
+                
+                // Add the "Check for Updates..." button.
+                Button("Check for Updates...") {
+                    updaterController.checkForUpdates()
                 }
             }
             
