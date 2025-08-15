@@ -1,69 +1,59 @@
-# ===== Amiga m68k (vbcc) Makefile =====
+# ===== Amiga m68k (vbcc) Makefile — fixed for standalone ASM exe =====
 
-# Toolchain roots (override with environment if you like)
 VBCC    ?= /opt/vbcc
-
-# Compilers/Tools
 VC      := $(VBCC)/bin/vc +aos68k
 VAS     := $(VBCC)/bin/vasmm68k_mot
 
-# NDK include paths (override if yours live elsewhere)
 NDK_H   ?= /opt/amiga-ndk-3.9/NDK_3.9/Include/include_h
 NDK_I   ?= /opt/amiga-ndk-3.9/NDK_3.9/Include/include_i
 
-# Flags
 CFLAGS  ?= -O1 -I"$(NDK_H)" -I"$(NDK_I)"
-ASFLAGS ?= -quiet -Fhunk -nowarn=62 -devpac -I"$(NDK_I)"
+ASFLAGS ?= -quiet -nowarn=62 -devpac -I"$(NDK_I)"
+ASFLAGS_EXE ?= -quiet -Fhunkexe -nowarn=62 -devpac -I"$(NDK_I)"
 LDFLAGS ?= -lamiga
 
-# Folders
 SRC_DIR := src
 OBJ_DIR := build/obj
 BIN_DIR := build
+BIN_EXT := .exe
 
-# Programs to build (add more .c files and they’ll get a matching binary)
-PROGRAMS := dos_hello reaction_hello
-BINS     := $(addprefix $(BIN_DIR)/,$(PROGRAMS))
+PROGRAMS_C   := dos_hello reaction_hello
+PROGRAMS_ASM := asm_sample
+PROGRAMS     := $(PROGRAMS_C) $(PROGRAMS_ASM)
 
-# Common objects (optional)
-OBJS_COMMON := $(OBJ_DIR)/asm_sample.o
+BINS := $(addprefix $(BIN_DIR)/,$(addsuffix $(BIN_EXT),$(PROGRAMS)))
+OBJ_C := $(addprefix $(OBJ_DIR)/,$(addsuffix .o,$(PROGRAMS_C)))
 
-# Per-program objects (1:1 with the .c file)
-OBJ_C := $(addprefix $(OBJ_DIR)/,$(addsuffix .o,$(PROGRAMS)))
+.SECONDARY: $(OBJ_C)
 
-# All objects
-OBJS  := $(OBJS_COMMON) $(OBJ_C)
-
-# Default
 all: $(BINS)
 
-# --- Link rules (each program links its own .o + common objs) ---
-$(BIN_DIR)/%: $(OBJ_DIR)/%.o $(OBJS_COMMON) | $(BIN_DIR)
-	$(VC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+# --- C programs ---
+$(BIN_DIR)/%$(BIN_EXT): $(OBJ_DIR)/%.o | $(BIN_DIR)
+	$(VC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 
-# --- Compile rules ---
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(VC) $(CFLAGS) -c $< -o $@
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.s | $(OBJ_DIR)
-	$(VAS) $(ASFLAGS) $< -o $@
+# --- ASM programs built directly to exe ---
+$(BIN_DIR)/%$(BIN_EXT): $(SRC_DIR)/%.s | $(BIN_DIR)
+	$(VAS) $(ASFLAGS_EXE) $< -o $@
+
+$(BIN_DIR)/%$(BIN_EXT): $(SRC_DIR)/%.asm | $(BIN_DIR)
+	$(VAS) $(ASFLAGS_EXE) $< -o $@
 
 # --- Dirs ---
 $(OBJ_DIR) $(BIN_DIR):
 	mkdir -p $@
 
-# --- Convenience targets ---
+# --- Convenience ---
 .PHONY: clean info $(PROGRAMS)
-$(PROGRAMS): %: $(BIN_DIR)/%
+$(PROGRAMS): %: $(BIN_DIR)/%$(BIN_EXT)
 
 clean:
 	rm -rf $(BIN_DIR)
 
 info:
-	@echo "VC       = $(VC)"
-	@echo "VAS      = $(VAS)"
-	@echo "NDK_H    = $(NDK_H)"
-	@echo "NDK_I    = $(NDK_I)"
-	@echo "PROGRAMS = $(PROGRAMS)"
-	@echo "BINS     = $(BINS)"
-	@echo "OBJS     = $(OBJS)"
+	@echo "PROGRAMS_C   = $(PROGRAMS_C)"
+	@echo "PROGRAMS_ASM = $(PROGRAMS_ASM)"
+	@echo "BINS         = $(BINS)"
