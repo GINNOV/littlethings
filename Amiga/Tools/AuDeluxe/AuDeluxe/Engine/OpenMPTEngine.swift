@@ -85,6 +85,17 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     private var scannedMusicFolderURL: URL?
     var onSongChange: ((PlaylistItem.ID) -> Void)?
     private var configChangeObserver: Any?
+    
+    private var cacheURL: URL? {
+        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+        guard let folderPath = scannedMusicFolderURL?.path.data(using: .utf8)?.base64EncodedString() else {
+            return nil
+        }
+        let appDirectory = appSupport.appendingPathComponent("AuDeluxe")
+        return appDirectory.appendingPathComponent("\(folderPath).audeluxecache")
+    }
 
     // MARK: - Initialization & Setup
     init() {
@@ -124,29 +135,29 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     
     func scanMusicFolder(for musicFolderURL: URL) async {
         self.scannedMusicFolderURL = musicFolderURL
-        
+
+        if await loadPlaylistFromCache(for: musicFolderURL) {
+            if debug { print("Successfully loaded playlist from cache.") }
+            return
+        }
+
+        if debug { print("Cache invalid or not found. Performing full scan.") }
         let items = await Task.detached(priority: .userInitiated) { [supportedExtensions, ratingKey, titleKey, artistKey] () -> [PlaylistItem] in
             guard musicFolderURL.startAccessingSecurityScopedResource() else { return [] }
             defer { musicFolderURL.stopAccessingSecurityScopedResource() }
 
             var playlistItems: [PlaylistItem] = []
             let fileManager = FileManager.default
-            guard let enumerator = fileManager.enumerator(at: musicFolderURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) else {
+            guard let enumerator = fileManager.enumerator(at: musicFolderURL, includingPropertiesForKeys: [.isRegularFileKey, .contentModificationDateKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) else {
                 return []
             }
             
             let allURLs = enumerator.allObjects as? [URL] ?? []
 
             for fileURL in allURLs {
-                do {
-                    let resourceValues = try fileURL.resourceValues(forKeys: [.isRegularFileKey])
-                    if resourceValues.isRegularFile == true,
-                       isPlayable(fileURL: fileURL, supportedExtensions: supportedExtensions),
-                       let metadata = getMetadata(for: fileURL, ratingKey: ratingKey, titleKey: titleKey, artistKey: artistKey) {
-                        playlistItems.append(metadata)
-                    }
-                } catch {
-                    // This error is expected for some system files, so we don't log it unless debugging.
+                if isPlayable(fileURL: fileURL, supportedExtensions: supportedExtensions),
+                   let metadata = getMetadata(for: fileURL, ratingKey: ratingKey, titleKey: titleKey, artistKey: artistKey) {
+                    playlistItems.append(metadata)
                 }
             }
             return playlistItems
@@ -155,7 +166,9 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         self.allPlaylistItems = items
         self.activePlaylist = nil
         await applySort()
-        if debug { print("OpenMPTEngine: Found \(items.count) playable files.") }
+        await savePlaylistToCache(items: items, for: musicFolderURL)
+
+        if debug { print("OpenMPTEngine: Found \(items.count) playable files and saved to cache.") }
     }
 
     func play(fileURL: URL, musicFolderURL: URL) async {
@@ -488,6 +501,50 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             }
         }
         return true
+    }
+    
+    // MARK: - Caching Logic
+    private func loadPlaylistFromCache(for musicFolderURL: URL) async -> Bool {
+        guard let cacheURL = self.cacheURL, FileManager.default.fileExists(atPath: cacheURL.path) else { return false }
+
+        do {
+            let folderAttributes = try FileManager.default.attributesOfItem(atPath: musicFolderURL.path)
+            guard let folderModificationDate = folderAttributes[.modificationDate] as? Date else { return false }
+
+            let data = try Data(contentsOf: cacheURL)
+            let cache = try JSONDecoder().decode(PlaylistCache.self, from: data)
+
+            if Calendar.current.compare(folderModificationDate, to: cache.folderModificationDate, toGranularity: .second) == .orderedSame {
+                self.allPlaylistItems = cache.items
+                await self.applySort()
+                return true
+            }
+        } catch {
+            if debug { print("Error loading cache: \(error.localizedDescription)") }
+            try? FileManager.default.removeItem(at: cacheURL)
+            return false
+        }
+
+        return false
+    }
+
+    private func savePlaylistToCache(items: [PlaylistItem], for musicFolderURL: URL) async {
+        guard let cacheURL = self.cacheURL else { return }
+
+        do {
+            let folderAttributes = try FileManager.default.attributesOfItem(atPath: musicFolderURL.path)
+            guard let folderModificationDate = folderAttributes[.modificationDate] as? Date else { return }
+
+            let cache = PlaylistCache(folderModificationDate: folderModificationDate, items: items)
+            let data = try JSONEncoder().encode(cache)
+            
+            let directoryURL = cacheURL.deletingLastPathComponent()
+            try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+            
+            try data.write(to: cacheURL)
+        } catch {
+            if debug { print("Error saving cache: \(error.localizedDescription)") }
+        }
     }
     
     deinit {
