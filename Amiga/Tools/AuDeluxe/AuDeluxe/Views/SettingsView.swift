@@ -24,7 +24,7 @@ struct SettingsView: View {
 
             // Right Side: Controls
             VStack(alignment: .leading, spacing: 25) {
-                Text("Settings")
+                Text("PREFERENCES")
                     .font(.largeTitle)
                     .frame(maxWidth: .infinity)
                     .padding(.bottom)
@@ -64,12 +64,14 @@ struct SettingsView: View {
                         }
                     }
                     .pickerStyle(.radioGroup)
+                    
+                    Toggle("Automatically play next mod", isOn: $settings.automaticallyPlayNext)
                 }
 
                 Spacer()
             }
             .padding(30)
-            .frame(minWidth: 400)
+            .frame(minWidth: 350)
         }
         .frame(minHeight: 350)
     }

@@ -18,12 +18,18 @@ final class SettingsStore: ObservableObject {
         }
     }
     @Published var playlists: [Playlist] = []
+    @Published var automaticallyPlayNext: Bool {
+        didSet {
+            userDefaults.set(automaticallyPlayNext, forKey: automaticallyPlayNextKey)
+        }
+    }
 
     // MARK: - Private Properties
     private let userDefaults = UserDefaults.standard
     private let musicFolderBookmarkKey = "musicFolderBookmark"
     private let defaultSortOrderKey = "defaultSortOrder"
     private let playlistsKey = "customPlaylists"
+    private let automaticallyPlayNextKey = "automaticallyPlayNext"
 
     init() {
         self.musicFolderBookmark = userDefaults.data(forKey: musicFolderBookmarkKey)
@@ -33,6 +39,9 @@ final class SettingsStore: ObservableObject {
         } else {
             self.defaultSortOrder = .name
         }
+        
+        // Default to 'true' if the key doesn't exist yet.
+        self.automaticallyPlayNext = userDefaults.object(forKey: automaticallyPlayNextKey) as? Bool ?? true
         
         loadPlaylists()
         print("SettingsStore initialized.")

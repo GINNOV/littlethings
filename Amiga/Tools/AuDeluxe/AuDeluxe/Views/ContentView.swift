@@ -43,7 +43,15 @@ struct ContentView: View {
                 PlaybackControlsView(selectedFileID: $selectedFileID)
             }
             .frame(minWidth: 550, minHeight: 450)
-            .onAppear(perform: scanMusicFolder)
+            .onAppear {
+                // Give the engine a reference to the settings store
+                engine.settingsStore = settings
+                // Set up the callback to update the selection
+                engine.onSongChange = { newID in
+                    self.selectedFileID = newID
+                }
+                scanMusicFolder()
+            }
             .onChange(of: settings.musicFolderURL) { scanMusicFolder() }
             .toolbar {
                 ToolbarItems(

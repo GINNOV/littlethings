@@ -100,15 +100,15 @@ struct PlaybackControlsView: View {
         Task {
             guard let selectedItem = engine.playlistItems.first(where: { $0.id == selectedFileID }),
                   let musicURL = settings.musicFolderURL else {
-                if engine.isPlaying { await engine.pause() }
+                if engine.isPlaying { engine.pause() }
                 return
             }
 
             if engine.isPlaying {
-                await engine.pause()
+                engine.pause()
             } else {
                 if selectedItem.fileURL == engine.currentlyPlayingFileURL {
-                    await engine.resume()
+                    engine.resume()
                 } else {
                     await engine.play(fileURL: selectedItem.fileURL, musicFolderURL: musicURL)
                 }
@@ -117,27 +117,25 @@ struct PlaybackControlsView: View {
     }
     
     private func playNext() {
-        // Wrap the async call in a Task
         Task {
             guard let index = currentItemIndex,
                   index + 1 < engine.playlistItems.count,
                   let musicURL = settings.musicFolderURL else { return }
             
             let nextItem = engine.playlistItems[index + 1]
-            selectedFileID = nextItem.id // Update selection
+            selectedFileID = nextItem.id
             await engine.play(fileURL: nextItem.fileURL, musicFolderURL: musicURL)
         }
     }
     
     private func playPrevious() {
-        // Wrap the async call in a Task
         Task {
             guard let index = currentItemIndex,
                   index > 0,
                   let musicURL = settings.musicFolderURL else { return }
             
             let prevItem = engine.playlistItems[index - 1]
-            selectedFileID = prevItem.id // Update selection
+            selectedFileID = prevItem.id
             await engine.play(fileURL: prevItem.fileURL, musicFolderURL: musicURL)
         }
     }
