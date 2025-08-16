@@ -14,6 +14,7 @@
 		AC681EBD2E2A38E00082D5AC /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EBC2E2A38E00082D5AC /* libz.tbd */; };
 		AC681EBE2E2A38FE0082D5AC /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EBC2E2A38E00082D5AC /* libz.tbd */; };
 		AC681EC32E2A3C900082D5AC /* libmpg123.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EC22E2A3C820082D5AC /* libmpg123.a */; };
+		AC9B77D22E50B1E700D609FB /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = AC9B77D12E50B1E700D609FB /* Sparkle */; };
 		ACAD811A2E29417F002E64E7 /* AuDeluxeQL.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ACAD810B2E29417F002E64E7 /* AuDeluxeQL.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -106,6 +107,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AC681EBD2E2A38E00082D5AC /* libz.tbd in Frameworks */,
+				AC9B77D22E50B1E700D609FB /* Sparkle in Frameworks */,
 				AC681EBA2E2A38570082D5AC /* libc++.tbd in Frameworks */,
 				AC681E7B2E2A350F0082D5AC /* libopenmpt.a in Frameworks */,
 			);
@@ -182,6 +184,7 @@
 			);
 			name = AuDeluxe;
 			packageProductDependencies = (
+				AC9B77D12E50B1E700D609FB /* Sparkle */,
 			);
 			productName = AuDeluxe;
 			productReference = AC7C05292E253580007F777F /* AuDeluxe.app */;
@@ -236,6 +239,9 @@
 			);
 			mainGroup = AC7C05202E253580007F777F;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AC20ED5C2E50B0BC0079CD05 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AC7C052A2E253580007F777F /* Products */;
 			projectDirPath = "";
@@ -419,7 +425,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 45;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -436,7 +442,7 @@
 					"$(PROJECT_DIR)/Libraries",
 					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.5.0;
 				OTHER_LDFLAGS = "-lmpg123";
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -456,7 +462,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 45;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -473,7 +479,7 @@
 					"$(PROJECT_DIR)/Libraries",
 					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.5.0;
 				OTHER_LDFLAGS = "-lmpg123";
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -490,7 +496,7 @@
 				CODE_SIGN_ENTITLEMENTS = AuDeluxeQL/AuDeluxeQL.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 45;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				EXCLUDED_ARCHS = x86_64;
@@ -504,7 +510,7 @@
 					"$(PROJECT_DIR)/Libraries",
 					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.5.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe.AuDeluxeQL;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -520,7 +526,7 @@
 				CODE_SIGN_ENTITLEMENTS = AuDeluxeQL/AuDeluxeQL.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 45;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				EXCLUDED_ARCHS = x86_64;
@@ -534,7 +540,7 @@
 					"$(PROJECT_DIR)/Libraries",
 					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.5.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe.AuDeluxeQL;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -575,6 +581,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AC20ED5C2E50B0BC0079CD05 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AC9B77D12E50B1E700D609FB /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AC20ED5C2E50B0BC0079CD05 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AC7C05212E253580007F777F /* Project object */;
 }

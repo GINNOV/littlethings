@@ -115,9 +115,9 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         configChangeObserver = NotificationCenter.default.addObserver(forName: .AVAudioEngineConfigurationChange, object: nil, queue: .main) { [weak self] _ in
             guard let self = self else { return }
             Task {
-                let wasPlaying = self.isPlaying
-                let currentFile = self.currentlyPlayingFileURL
-                let currentFolder = self.scannedMusicFolderURL
+                let wasPlaying = await self.isPlaying
+                let currentFile = await self.currentlyPlayingFileURL
+                let currentFolder = await self.scannedMusicFolderURL
                 await self.stopAndReset()
                 if wasPlaying, let fileURL = currentFile, let folderURL = currentFolder {
                     await self.play(fileURL: fileURL, musicFolderURL: folderURL)
