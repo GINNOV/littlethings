@@ -200,8 +200,6 @@ tree.write(appcast_path, encoding='utf-8', xml_declaration=True)
 print(f'Successfully added Version {version} (Build {build_number}) to {appcast_path}')
 " "$APPCAST_PATH" "$VERSION" "$BUILD_NUMBER" "$DOWNLOAD_URL" "$DMG_SIZE" "$PUB_DATE" "$DESCRIPTION_PLACEHOLDER"
 
-# AI_REVIEW: Replaced the fragile sed command with a more robust perl command.
-# Perl handles multi-line replacements gracefully, fixing the "unescaped newline" error. #END_REVIEW
 perl -i -p0e "s|${DESCRIPTION_PLACEHOLDER}|<![CDATA[${RELEASE_NOTES_CONTENT}]]>|g" "$APPCAST_PATH"
 
 
