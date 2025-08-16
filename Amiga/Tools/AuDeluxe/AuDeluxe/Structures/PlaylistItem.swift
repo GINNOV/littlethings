@@ -8,7 +8,8 @@
 import Foundation
 
 struct PlaylistItem: Identifiable, Hashable, Codable {
-    let id = UUID()
+
+    private(set) var id = UUID()
     let fileURL: URL
     var metadata: [String: String]
     var rating: Int = 0
