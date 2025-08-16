@@ -47,6 +47,11 @@ struct ContentView: View {
             .onAppear {
                 // Give the engine a reference to the settings store
                 engine.settingsStore = settings
+                
+                // AI_REVIEW: This is the fix. The engine's sort order is now synchronized
+                // with the saved default from settings when the app's main view first appears. #END_REVIEW
+                engine.sortOrder = settings.defaultSortOrder
+                
                 // Set up the callback to update the selection
                 engine.onSongChange = { newID in
                     self.selectedFileID = newID
