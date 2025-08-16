@@ -167,6 +167,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     @Published var currentSongDuration: TimeInterval = 0
     @Published var isLooping = false
     @Published var isShuffling = false
+    @Published var searchText: String = ""
     
     @Published var sortOrder: SortOrder = .name {
         didSet { Task { await applySort() } }
@@ -177,13 +178,24 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     @Published var activePlaylist: Playlist? = nil
     
     var playlistItems: [PlaylistItem] {
+        var itemsToShow: [PlaylistItem]
+        
         if let activePlaylist = activePlaylist {
             let urls = Set(activePlaylist.fileURLs)
-            let filtered = allPlaylistItems.filter { urls.contains($0.fileURL) }
-            return sortItems(filtered)
+            itemsToShow = allPlaylistItems.filter { urls.contains($0.fileURL) }
         } else {
-            return allPlaylistItems
+            itemsToShow = allPlaylistItems
         }
+        
+        if !searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+            itemsToShow = itemsToShow.filter { item in
+                let titleMatch = item.title.range(of: searchText, options: .caseInsensitive) != nil
+                let artistMatch = item.artist.range(of: searchText, options: .caseInsensitive) != nil
+                return titleMatch || artistMatch
+            }
+        }
+        
+        return sortItems(itemsToShow)
     }
 
     // MARK: - Tracker Data Properties
@@ -308,9 +320,12 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             guard let data = try? Data(contentsOf: fileURL) else { return (0, 0, false) }
             
             let createResult = await self.moduleActor.create(from: data)
-            guard createResult.module != nil else { return (0, 0, false) }
+            guard createResult.module != nil else {
+                await self.moduleActor.destroy()
+                await self.uiModuleActor.destroy()
+                return (0, 0, false)
+            }
             
-            // Also create the module for the UI actor
             _ = await self.uiModuleActor.create(from: data)
             
             return (createResult.channels, createResult.duration, true)
