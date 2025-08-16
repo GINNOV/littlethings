@@ -46,10 +46,24 @@ struct PlaylistView: View {
                     }
                     .padding(.vertical, 4)
                     .tag(item.id)
+                    .contentShape(Rectangle()) // Defines the hit-test area for the entire row.
+                    .simultaneousGesture( // Use simultaneous to avoid conflicts with List's selection.
+                        TapGesture(count: 2).onEnded {
+                            selectedFileID = item.id
+                            play(item: item)
+                        }
+                    )
                 }
             }
         }
         .listStyle(.inset(alternatesRowBackgrounds: true))
+    }
+    
+    private func play(item: PlaylistItem) {
+        Task {
+            guard let musicURL = settings.musicFolderURL else { return }
+            await engine.play(fileURL: item.fileURL, musicFolderURL: musicURL)
+        }
     }
     
     private func formatTime(_ time: TimeInterval) -> String {
