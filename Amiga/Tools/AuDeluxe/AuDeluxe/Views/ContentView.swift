@@ -35,6 +35,7 @@ struct ContentView: View {
                         TrackerView()
                     } else {
                         PlaylistView(selectedFileID: $selectedFileID)
+                            .searchable(text: $engine.searchText, prompt: "Search Songs or Artists")
                     }
                 } else {
                     SetupPromptView()
