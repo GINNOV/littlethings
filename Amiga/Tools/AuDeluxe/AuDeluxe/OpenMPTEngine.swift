@@ -556,23 +556,36 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     @MainActor
     private func scheduleNextBuffer() async {
         if debug { print("Scheduling next buffer. Pending: \(pendingBufferCount), EOF: \(reachedEndOfFile)") }
-        guard !reachedEndOfFile, pendingBufferCount < targetPendingBuffers else {
-            if !reachedEndOfFile { await checkForPlaybackCompletion() }
+
+        // If we've reached the end of the file, we just need to wait for pending buffers to finish.
+        // The completion handler will keep calling this method, and we'll check for completion each time.
+        if reachedEndOfFile {
+            await checkForPlaybackCompletion()
             return
         }
         
+        // If we have enough buffers queued up, we don't need to do anything right now.
+        guard pendingBufferCount < targetPendingBuffers else {
+            return
+        }
+        
+        // Try to render the next chunk of audio.
         guard let buffer = await renderBuffer() else {
+            // A nil buffer means the song has finished rendering. Mark it and check for completion.
             if debug { print("Render buffer returned nil - setting EOF") }
             reachedEndOfFile = true
             await checkForPlaybackCompletion()
             return
         }
 
+        // We successfully rendered a buffer. Increment the pending count and schedule it.
         pendingBufferCount += 1
         if debug { print("Buffer scheduled. New pending: \(pendingBufferCount)") }
         playerNode.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
             Task {
                 guard let self else { return }
+                // This block is called on a background thread when the buffer finishes playing.
+                // We decrement the pending count and immediately try to schedule the next one.
                 self.pendingBufferCount -= 1
                 if self.debug { print("Buffer completed. New pending: \(self.pendingBufferCount)") }
                 await self.scheduleNextBuffer()
@@ -583,7 +596,10 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     @MainActor
     private func checkForPlaybackCompletion() async {
         if debug { print("Checking playback completion. EOF: \(reachedEndOfFile), Pending: \(pendingBufferCount)") }
-        if reachedEndOfFile && pendingBufferCount == 0 { await stopAndReset() }
+        if reachedEndOfFile && pendingBufferCount == 0 {
+            if debug { print("Playback complete. Stopping and resetting.") }
+            await stopAndReset()
+        }
     }
 
     // MARK: - Other Private Helpers
