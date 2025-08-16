@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>AuDeluxe Changelog</title>
+        <item>
+            <title>Version 1.5.0</title>
+            <sparkle:releaseNotesLink>
+                https://raw.githubusercontent.com/your_github_username/your_repo/main/changelogs-audeluxe.md
+            </sparkle:releaseNotesLink>
+            <pubDate>Sat, 16 Aug 2025 12:00:00 +0000</pubDate>
+            <enclosure 
+                url="https://github.com/your_github_username/your_repo/raw/main/releases/AuDeluxe-1.5.0.dmg" 
+                sparkle:version="1500" 
+                sparkle:shortVersionString="1.5.0" 
+                length="0" 
+                type="application/octet-stream" />
+        </item>
+    </channel>
+</rss>
