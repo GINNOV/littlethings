@@ -1,19 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
-<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+<?xml version='1.0' encoding='utf-8'?>
+<rss version="2.0">
     <channel>
-        <title>AuDeluxe Changelog</title>
-        <item>
-            <title>Version 1.5.0</title>
-            <sparkle:releaseNotesLink>
-                https://raw.githubusercontent.com/your_github_username/your_repo/main/changelogs-audeluxe.md
-            </sparkle:releaseNotesLink>
-            <pubDate>Sat, 16 Aug 2025 12:00:00 +0000</pubDate>
-            <enclosure 
-                url="https://github.com/your_github_username/your_repo/raw/main/releases/AuDeluxe-1.5.0.dmg" 
-                sparkle:version="1500" 
-                sparkle:shortVersionString="1.5.0" 
-                length="0" 
-                type="application/octet-stream" />
-        </item>
-    </channel>
+        <item><title>Version 1.5.0</title><description><![CDATA[
+<h4>New Features</h4>
+<ul>
+    <li>Added Sparkle for automatic application updates.</li>
+    <li>Implemented a caching system for faster startup times.</li>
+    <li>Added a search bar to the playlist view.</li>
+</ul>
+<h4>Bug Fixes</h4>
+<ul>
+    <li>Fixed an issue where the default sort order was not applied on launch.</li>
+    <li>Resolved several concurrency warnings and potential hangs.</li>
+</ul>
+]]></description><pubDate>Sat, 16 Aug 2025 17:05:21 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.5.0_47.dmg" sparkle:version="47" sparkle:shortVersionString="1.5.0" length="13413769" type="application/octet-stream" /></item><title>AuDeluxe Changelog</title>
+        </channel>
 </rss>
