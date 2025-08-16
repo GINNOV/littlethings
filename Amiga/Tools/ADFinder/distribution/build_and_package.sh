@@ -114,7 +114,6 @@ BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST_
 
 DMG_NAME="${PROJECT_NAME}-${VERSION}_${BUILD_NUMBER}.dmg"
 DMG_FINAL_PATH="${DMG_DIR}/${DMG_NAME}"
-# AI_REVIEW: Corrected the appcast filename to be project-specific. #END_REVIEW
 APPCAST_PATH="${DMG_DIR}/appcast-adfinder.xml"
 
 if [ ! -f "$DMG_FINAL_PATH" ]; then
@@ -168,12 +167,13 @@ signature = sys.argv[8]
 sparkle_namespace = 'http://www.andymatuschak.org/xml-namespaces/sparkle'
 ET.register_namespace('sparkle', sparkle_namespace)
 
+# AI_REVIEW: This is the robust fix. Read the file as text, fix the namespace with a regex if missing, then parse. #END_REVIEW
 with open(appcast_path, 'r') as f:
     xml_content = f.read()
 
-if 'xmlns:sparkle' not in xml_content:
+if not re.search(r'<rss[^>]*xmlns:sparkle=', xml_content):
     print('Sparkle namespace missing from appcast root. Fixing...')
-    xml_content = xml_content.replace('<rss version=\"2.0\">', f'<rss xmlns:sparkle=\"{sparkle_namespace}\" version=\"2.0\">')
+    xml_content = re.sub(r'(<rss[^>]*)', r'\\1 xmlns:sparkle=\"' + sparkle_namespace + '\"', xml_content, count=1)
 
 tree = ET.ElementTree(ET.fromstring(xml_content))
 root = tree.getroot()
