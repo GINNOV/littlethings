@@ -143,6 +143,7 @@ if [ ! -f "$APPCAST_PATH" ]; then
 </rss>' > "$APPCAST_PATH"
 fi
 
+# AI_REVIEW: This block fixes the "unbound prefix" error by ensuring the sparkle namespace exists before parsing. #END_REVIEW
 if ! grep -q 'xmlns:sparkle' "$APPCAST_PATH"; then
     echo "Sparkle namespace missing from appcast. Fixing..."
     TMP_FILE=$(mktemp)
