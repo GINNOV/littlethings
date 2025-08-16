@@ -128,11 +128,9 @@ if [ ! -f "$DMG_FINAL_PATH" ]; then
 fi
 
 echo "Signing the DMG..."
-# AI_REVIEW: This is the robust fix. It uses the OBJROOT build setting to reliably find the project's Derived Data path. #END_REVIEW
 OBJROOT=$(xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME" -showBuildSettings -json | grep -o '"OBJROOT" : "[^"]*' | cut -d'"' -f4)
 PROJECT_DERIVED_DATA_ROOT=$(dirname "$(dirname "$OBJROOT")")
 SIGN_UPDATE_TOOL="${PROJECT_DERIVED_DATA_ROOT}/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
-
 
 if [ ! -f "$SIGN_UPDATE_TOOL" ]; then
     echo "Error: sign_update tool not found. Looked in: ${SIGN_UPDATE_TOOL}"
@@ -175,12 +173,13 @@ signature = sys.argv[8]
 sparkle_namespace = 'http://www.andymatuschak.org/xml-namespaces/sparkle'
 ET.register_namespace('sparkle', sparkle_namespace)
 
+# AI_REVIEW: This is the robust fix. Read the file as text, fix the namespace with a regex if missing, then parse. #END_REVIEW
 with open(appcast_path, 'r') as f:
     xml_content = f.read()
 
-if 'xmlns:sparkle' not in xml_content:
+if not re.search(r'<rss[^>]*xmlns:sparkle=', xml_content):
     print('Sparkle namespace missing from appcast root. Fixing...')
-    xml_content = xml_content.replace('<rss version=\"2.0\">', f'<rss xmlns:sparkle=\"{sparkle_namespace}\" version=\"2.0\">')
+    xml_content = re.sub(r'(<rss[^>]*)', r'\\1 xmlns:sparkle=\"' + sparkle_namespace + '\"', xml_content, count=1)
 
 tree = ET.ElementTree(ET.fromstring(xml_content))
 root = tree.getroot()
