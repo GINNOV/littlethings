@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PlaylistItem: Identifiable, Hashable {
+struct PlaylistItem: Identifiable, Hashable, Codable {
     let id = UUID()
     let fileURL: URL
     var metadata: [String: String]
