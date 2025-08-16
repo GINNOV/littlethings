@@ -4,5 +4,7 @@
 <dict>
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/appcast-audeluxe.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>Oq4b/BX26tC2nXfh+dmMFoHFP9RN8lyqxcgrZPY+Pd8=</string>
 </dict>
 </plist>
