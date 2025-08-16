@@ -59,7 +59,7 @@ PROJECT_PATH="${SCRIPT_DIR}/${PROJECT_PATH}"
 
 for file in "$PROJECT_PATH" "$README_PATH" "$BACKGROUND_IMAGE" "$VOLUME_ICON" "$EXPORT_OPTIONS_PLIST" "./gendmg.sh"; do
     if [ ! -e "$file" ]; then
-        echo "Error: File not found at $file"
+        echo "Error: Required file not found at $file"
         exit 1
     fi
 done
@@ -100,7 +100,6 @@ if [ ! -d "$APP_PATH" ]; then
 fi
 
 echo "Creating DMG with gendmg.sh..."
-echo "Running: bash \"$SCRIPT_DIR/gendmg.sh\" --readme \"$README_PATH\" --app \"$APP_PATH\" --dmg \"$DMG_BASE_PATH\" --background \"$BACKGROUND_IMAGE\" --volicon \"$VOLUME_ICON\""
 bash "$SCRIPT_DIR/gendmg.sh" \
     --readme "$README_PATH" \
     --app "$APP_PATH" \
@@ -127,6 +126,21 @@ if [ ! -f "$DMG_FINAL_PATH" ]; then
     echo "Error: Final DMG not found at $DMG_FINAL_PATH after running gendmg.sh"
     exit 1
 fi
+
+echo "Signing the DMG..."
+# AI_REVIEW: This is the robust fix. It uses the OBJROOT build setting to reliably find the project's Derived Data path. #END_REVIEW
+OBJROOT=$(xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME" -showBuildSettings -json | grep -o '"OBJROOT" : "[^"]*' | cut -d'"' -f4)
+PROJECT_DERIVED_DATA_ROOT=$(dirname "$(dirname "$OBJROOT")")
+SIGN_UPDATE_TOOL="${PROJECT_DERIVED_DATA_ROOT}/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
+
+
+if [ ! -f "$SIGN_UPDATE_TOOL" ]; then
+    echo "Error: sign_update tool not found. Looked in: ${SIGN_UPDATE_TOOL}"
+    exit 1
+fi
+
+SIGNATURE=$("$SIGN_UPDATE_TOOL" "$DMG_FINAL_PATH")
+echo "Signature: $SIGNATURE"
 
 DMG_SIZE=$(stat -f %z "$DMG_FINAL_PATH")
 PUB_DATE=$(date -R)
@@ -156,11 +170,11 @@ dmg_url = sys.argv[4]
 dmg_size = sys.argv[5]
 pub_date = sys.argv[6]
 description_placeholder = sys.argv[7]
+signature = sys.argv[8]
 
 sparkle_namespace = 'http://www.andymatuschak.org/xml-namespaces/sparkle'
 ET.register_namespace('sparkle', sparkle_namespace)
 
-# AI_REVIEW: This is the robust fix. Read the file as text, fix the namespace if missing, then parse. #END_REVIEW
 with open(appcast_path, 'r') as f:
     xml_content = f.read()
 
@@ -196,15 +210,15 @@ enclosure.set(f'{{{sparkle_namespace}}}version', build_number)
 enclosure.set(f'{{{sparkle_namespace}}}shortVersionString', version)
 enclosure.set('length', dmg_size)
 enclosure.set('type', 'application/octet-stream')
+enclosure.set(f'{{{sparkle_namespace}}}edSignature', signature)
 
 channel.insert(0, new_item)
 tree.write(appcast_path, encoding='utf-8', xml_declaration=True)
 
 print(f'Successfully added Version {version} (Build {build_number}) to {appcast_path}')
-" "$APPCAST_PATH" "$VERSION" "$BUILD_NUMBER" "$DOWNLOAD_URL" "$DMG_SIZE" "$PUB_DATE" "$DESCRIPTION_PLACEHOLDER"
+" "$APPCAST_PATH" "$VERSION" "$BUILD_NUMBER" "$DOWNLOAD_URL" "$DMG_SIZE" "$PUB_DATE" "$DESCRIPTION_PLACEHOLDER" "$SIGNATURE"
 
 perl -i -p0e "s|${DESCRIPTION_PLACEHOLDER}|<![CDATA[${RELEASE_NOTES_CONTENT}]]>|g" "$APPCAST_PATH"
-
 
 # --- END: Appcast Update Logic ---
 
