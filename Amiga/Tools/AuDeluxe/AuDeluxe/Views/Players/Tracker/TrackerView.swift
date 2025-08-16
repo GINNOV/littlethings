@@ -40,8 +40,9 @@ struct TrackerView: View {
                         contentOffset = offset
                     }
                     .background(Color.black)
-                    .onChange(of: engine.currentRow) { _ in
-                        proxy.scrollTo(Int(engine.currentRow), anchor: .center)
+                    // Updated onChange syntax to resolve deprecation warning.
+                    .onChange(of: engine.currentRow) { oldValue, newValue in
+                        proxy.scrollTo(Int(newValue), anchor: .center)
                     }
                 }
             } else {
