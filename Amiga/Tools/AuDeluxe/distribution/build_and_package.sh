@@ -7,6 +7,20 @@ PROJECT_NAME="AuDeluxe"
 PROJECT_PATH="../${PROJECT_NAME}.xcodeproj"
 SCHEME="AuDeluxe - Release"
 CONFIGURATION="Release"
+# AI_REVIEW: Place your HTML release notes for the current version here. #END_REVIEW
+RELEASE_NOTES_CONTENT='
+<h4>New Features</h4>
+<ul>
+    <li>Added Sparkle for automatic application updates.</li>
+    <li>Implemented a caching system for faster startup times.</li>
+    <li>Added a search bar to the playlist view.</li>
+</ul>
+<h4>Bug Fixes</h4>
+<ul>
+    <li>Fixed an issue where the default sort order was not applied on launch.</li>
+    <li>Resolved several concurrency warnings and potential hangs.</li>
+</ul>
+'
 # --- END: Configuration for AuDeluxe ---
 
 ARCHIVE_PATH="./build/${PROJECT_NAME}.xcarchive"
@@ -109,8 +123,6 @@ BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST_
 DMG_NAME="${PROJECT_NAME}-${VERSION}_${BUILD_NUMBER}.dmg"
 DMG_FINAL_PATH="${DMG_DIR}/${DMG_NAME}"
 APPCAST_PATH="${DMG_DIR}/appcast-audeluxe.xml"
-# AI_REVIEW: Updated URL to point to the unified changelog with the specific anchor for AuDeluxe. #END_REVIEW
-RELEASE_NOTES_URL="https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/changelogs.html#audeluxe"
 
 if [ ! -f "$DMG_FINAL_PATH" ]; then
     echo "Error: Final DMG not found at $DMG_FINAL_PATH after running gendmg.sh"
@@ -121,7 +133,6 @@ DMG_SIZE=$(stat -f %z "$DMG_FINAL_PATH")
 PUB_DATE=$(date -R)
 DOWNLOAD_URL="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/$DMG_NAME"
 
-# Create the appcast file if it doesn't exist
 if [ ! -f "$APPCAST_PATH" ]; then
     echo "Creating new appcast file at ${APPCAST_PATH}"
     echo '<?xml version="1.0" encoding="utf-8"?>
@@ -132,43 +143,46 @@ if [ ! -f "$APPCAST_PATH" ]; then
 </rss>' > "$APPCAST_PATH"
 fi
 
+if ! grep -q 'xmlns:sparkle' "$APPCAST_PATH"; then
+    echo "Sparkle namespace missing from appcast. Fixing..."
+    TMP_FILE=$(mktemp)
+    sed 's|<rss version="2.0">|<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">|' "$APPCAST_PATH" > "$TMP_FILE"
+    mv "$TMP_FILE" "$APPCAST_PATH"
+fi
+
+DESCRIPTION_PLACEHOLDER="##SPARKLE_DESCRIPTION_PLACEHOLDER##"
+
 python3 -c "
 import xml.etree.ElementTree as ET
 import sys
 
-# Get variables from shell
 appcast_path = sys.argv[1]
 version = sys.argv[2]
 build_number = sys.argv[3]
 dmg_url = sys.argv[4]
 dmg_size = sys.argv[5]
 pub_date = sys.argv[6]
-release_notes_url = sys.argv[7]
+description_placeholder = sys.argv[7]
 
-# Register the sparkle namespace to prevent it from being renamed to ns0:
 ET.register_namespace('sparkle', 'http://www.andymatuschak.org/xml-namespaces/sparkle')
-
-# Parse the XML file
 tree = ET.parse(appcast_path)
 root = tree.getroot()
 channel = root.find('channel')
 
-# --- Check for and remove existing item for this version ---
 for item in channel.findall('item'):
     enclosure = item.find('enclosure')
     if enclosure is not None:
         short_version = enclosure.get('{http://www.andymatuschak.org/xml-namespaces/sparkle}shortVersionString')
         if short_version == version:
-            print(f'Found existing item for version {version}. Removing it before adding the new one.')
+            print(f'Found existing item for version {version}. Removing it.')
             channel.remove(item)
 
-# Create the new <item> element and its children
 new_item = ET.Element('item')
 title = ET.SubElement(new_item, 'title')
 title.text = f'Version {version}'
 
-release_notes = ET.SubElement(new_item, '{http://www.andymatuschak.org/xml-namespaces/sparkle}releaseNotesLink')
-release_notes.text = release_notes_url
+description = ET.SubElement(new_item, 'description')
+description.text = description_placeholder
 
 pub_date_element = ET.SubElement(new_item, 'pubDate')
 pub_date_element.text = pub_date
@@ -180,14 +194,16 @@ enclosure.set('sparkle:shortVersionString', version)
 enclosure.set('length', dmg_size)
 enclosure.set('type', 'application/octet-stream')
 
-# Insert the new item at the beginning of the channel
 channel.insert(0, new_item)
-
-# Write the changes back to the file
 tree.write(appcast_path, encoding='utf-8', xml_declaration=True)
 
 print(f'Successfully added Version {version} (Build {build_number}) to {appcast_path}')
-" "$APPCAST_PATH" "$VERSION" "$BUILD_NUMBER" "$DOWNLOAD_URL" "$DMG_SIZE" "$PUB_DATE" "$RELEASE_NOTES_URL"
+" "$APPCAST_PATH" "$VERSION" "$BUILD_NUMBER" "$DOWNLOAD_URL" "$DMG_SIZE" "$PUB_DATE" "$DESCRIPTION_PLACEHOLDER"
+
+# AI_REVIEW: Replaced the fragile sed command with a more robust perl command.
+# Perl handles multi-line replacements gracefully, fixing the "unescaped newline" error. #END_REVIEW
+perl -i -p0e "s|${DESCRIPTION_PLACEHOLDER}|<![CDATA[${RELEASE_NOTES_CONTENT}]]>|g" "$APPCAST_PATH"
+
 
 # --- END: Appcast Update Logic ---
 

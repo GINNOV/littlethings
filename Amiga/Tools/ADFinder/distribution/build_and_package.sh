@@ -2,14 +2,24 @@
 
 set -e
 
+# --- START: Configuration for ADFinder ---
 PROJECT_NAME="ADFinder"
 PROJECT_PATH="../${PROJECT_NAME}.xcodeproj"
-SCHEME="ADFinder - Release" # Updated to use Release scheme
+SCHEME="ADFinder - Release"
 CONFIGURATION="Release"
+# AI_REVIEW: Place your HTML release notes for the current version here. #END_REVIEW
+RELEASE_NOTES_CONTENT='
+<ul>
+    <li>you can drop file structures now</li>
+    <li>Recent files from open button</li>
+    <li>version checker added</li>
+</ul>
+'
+# --- END: Configuration for ADFinder ---
+
 ARCHIVE_PATH="./build/${PROJECT_NAME}.xcarchive"
 EXPORT_PATH="./build"
 APP_PATH="${EXPORT_PATH}/${PROJECT_NAME}.app"
-# This is the base path gendmg.sh will use to construct the final versioned name
 DMG_BASE_PATH="../releases/${PROJECT_NAME}.dmg"
 README_PATH="dmg_assets/README.md"
 BACKGROUND_IMAGE="dmg_assets/dmg-background.png"
@@ -19,7 +29,7 @@ MIN_SPACE_MB=1024
 
 usage() {
     echo "Usage: $0 [--project <project_path>] [--scheme <scheme>] [--configuration <config>]"
-    echo "Example: $0 --project ../${PROJECT_NAME}.xcodeproj --scheme ${SCHEME} --configuration Release"
+    echo "Example: $0 --project ../${PROJECT_NAME}.xcodeproj --scheme \"${SCHEME}\" --configuration Release"
     exit 1
 }
 
@@ -75,7 +85,6 @@ xcodebuild archive \
     -skipMacroValidation \
     || { echo "Error: Archive failed"; exit 1; }
 
-# Replace exportArchive with direct copy
 echo "Copying .app from archive..."
 cp -R "$ARCHIVE_PATH/Products/Applications/${PROJECT_NAME}.app" "$APP_PATH" \
     || { echo "Error: Copying app failed"; exit 1; }
@@ -101,67 +110,73 @@ echo "Build and packaging complete."
 
 echo "--- Updating appcast.xml ---"
 
-# Dynamically get version and build number from the app's Info.plist
 INFO_PLIST_PATH="${APP_PATH}/Contents/Info.plist"
 VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST_PATH")
 BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST_PATH")
 
-# Construct the final DMG name, which is what gendmg.sh already created
 DMG_NAME="${PROJECT_NAME}-${VERSION}_${BUILD_NUMBER}.dmg"
 DMG_FINAL_PATH="${DMG_DIR}/${DMG_NAME}"
 APPCAST_PATH="${DMG_DIR}/appcast.xml"
-RELEASE_NOTES_URL="https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/changelogs.html#ADFinder"
 
-# Check if the final DMG exists before proceeding
 if [ ! -f "$DMG_FINAL_PATH" ]; then
     echo "Error: Final DMG not found at $DMG_FINAL_PATH after running gendmg.sh"
     exit 1
 fi
 
-# Get required info for the appcast item
 DMG_SIZE=$(stat -f %z "$DMG_FINAL_PATH")
 PUB_DATE=$(date -R)
 DOWNLOAD_URL="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/$DMG_NAME"
 
-# Use an embedded Python script for robust XML parsing
+if [ ! -f "$APPCAST_PATH" ]; then
+    echo "Creating new appcast file at ${APPCAST_PATH}"
+    echo '<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>ADFinder Changelog</title>
+    </channel>
+</rss>' > "$APPCAST_PATH"
+fi
+
+if ! grep -q 'xmlns:sparkle' "$APPCAST_PATH"; then
+    echo "Sparkle namespace missing from appcast. Fixing..."
+    TMP_FILE=$(mktemp)
+    sed 's|<rss version="2.0">|<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">|' "$APPCAST_PATH" > "$TMP_FILE"
+    mv "$TMP_FILE" "$APPCAST_PATH"
+fi
+
+DESCRIPTION_PLACEHOLDER="##SPARKLE_DESCRIPTION_PLACEHOLDER##"
+
 python3 -c "
 import xml.etree.ElementTree as ET
 import sys
 
-# Get variables from shell
 appcast_path = sys.argv[1]
 version = sys.argv[2]
 build_number = sys.argv[3]
 dmg_url = sys.argv[4]
 dmg_size = sys.argv[5]
 pub_date = sys.argv[6]
-release_notes_url = sys.argv[7]
+description_placeholder = sys.argv[7]
 
-# Register the sparkle namespace to prevent it from being renamed to ns0:
 ET.register_namespace('sparkle', 'http://www.andymatuschak.org/xml-namespaces/sparkle')
-
-# Parse the XML file
 tree = ET.parse(appcast_path)
 root = tree.getroot()
 channel = root.find('channel')
 
-# --- Check for and remove existing item for this version ---
 for item in channel.findall('item'):
     enclosure = item.find('enclosure')
     if enclosure is not None:
         short_version = enclosure.get('{http://www.andymatuschak.org/xml-namespaces/sparkle}shortVersionString')
         if short_version == version:
-            print(f'Found existing item for version {version}. Removing it before adding the new one.')
+            print(f'Found existing item for version {version}. Removing it.')
             channel.remove(item)
 
-# Create the new <item> element and its children
 new_item = ET.Element('item')
 title = ET.SubElement(new_item, 'title')
 title.text = f'Version {version}'
 
-# Add the release notes link
-release_notes = ET.SubElement(new_item, '{http://www.andymatuschak.org/xml-namespaces/sparkle}releaseNotesLink')
-release_notes.text = release_notes_url
+description = ET.SubElement(new_item, 'description')
+description.text = description_placeholder
 
 pub_date_element = ET.SubElement(new_item, 'pubDate')
 pub_date_element.text = pub_date
@@ -173,14 +188,15 @@ enclosure.set('sparkle:shortVersionString', version)
 enclosure.set('length', dmg_size)
 enclosure.set('type', 'application/octet-stream')
 
-# Insert the new item at the beginning of the channel
 channel.insert(0, new_item)
-
-# Write the changes back to the file
 tree.write(appcast_path, encoding='utf-8', xml_declaration=True)
 
-print(f'Successfully added Version {version} (Build {build_number}) to appcast.xml')
-" "$APPCAST_PATH" "$VERSION" "$BUILD_NUMBER" "$DOWNLOAD_URL" "$DMG_SIZE" "$PUB_DATE" "$RELEASE_NOTES_URL"
+print(f'Successfully added Version {version} (Build {build_number}) to {appcast_path}')
+" "$APPCAST_PATH" "$VERSION" "$BUILD_NUMBER" "$DOWNLOAD_URL" "$DMG_SIZE" "$PUB_DATE" "$DESCRIPTION_PLACEHOLDER"
+
+# AI_REVIEW: Replaced the fragile sed command with a more robust perl command.
+# Perl handles multi-line replacements gracefully, fixing the "unescaped newline" error. #END_REVIEW
+perl -i -p0e "s|${DESCRIPTION_PLACEHOLDER}|<![CDATA[${RELEASE_NOTES_CONTENT}]]>|g" "$APPCAST_PATH"
 
 # --- END: Appcast Update Logic ---
 

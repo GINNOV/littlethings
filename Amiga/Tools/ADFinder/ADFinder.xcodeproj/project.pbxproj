@@ -10,6 +10,18 @@
 		AC5FA94D2E4BBE7F00823F5D /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = AC5FA94C2E4BBE7F00823F5D /* Sparkle */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		AC9B79042E50CD0E00D609FB /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		AC779D402DE101C300210E27 /* ADFinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ADFinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC779D712DE1039800210E27 /* ADFinder-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ADFinder-Bridging-Header.h"; path = "ADFinder/ADFinder-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -75,6 +87,7 @@
 				AC779D3C2DE101C300210E27 /* Sources */,
 				AC779D3D2DE101C300210E27 /* Frameworks */,
 				AC779D3E2DE101C300210E27 /* Resources */,
+				AC9B79042E50CD0E00D609FB /* CopyFiles */,
 			);
 			buildRules = (
 			);

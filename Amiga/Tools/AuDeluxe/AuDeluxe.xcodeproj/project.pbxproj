@@ -14,7 +14,7 @@
 		AC681EBD2E2A38E00082D5AC /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EBC2E2A38E00082D5AC /* libz.tbd */; };
 		AC681EBE2E2A38FE0082D5AC /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EBC2E2A38E00082D5AC /* libz.tbd */; };
 		AC681EC32E2A3C900082D5AC /* libmpg123.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EC22E2A3C820082D5AC /* libmpg123.a */; };
-		AC9B77D22E50B1E700D609FB /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = AC9B77D12E50B1E700D609FB /* Sparkle */; };
+		AC9B79092E50CED500D609FB /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = AC9B79082E50CED500D609FB /* Sparkle */; };
 		ACAD811A2E29417F002E64E7 /* AuDeluxeQL.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ACAD810B2E29417F002E64E7 /* AuDeluxeQL.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -107,7 +107,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AC681EBD2E2A38E00082D5AC /* libz.tbd in Frameworks */,
-				AC9B77D22E50B1E700D609FB /* Sparkle in Frameworks */,
+				AC9B79092E50CED500D609FB /* Sparkle in Frameworks */,
 				AC681EBA2E2A38570082D5AC /* libc++.tbd in Frameworks */,
 				AC681E7B2E2A350F0082D5AC /* libopenmpt.a in Frameworks */,
 			);
@@ -184,7 +184,7 @@
 			);
 			name = AuDeluxe;
 			packageProductDependencies = (
-				AC9B77D12E50B1E700D609FB /* Sparkle */,
+				AC9B79082E50CED500D609FB /* Sparkle */,
 			);
 			productName = AuDeluxe;
 			productReference = AC7C05292E253580007F777F /* AuDeluxe.app */;
@@ -240,7 +240,7 @@
 			mainGroup = AC7C05202E253580007F777F;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				AC20ED5C2E50B0BC0079CD05 /* XCRemoteSwiftPackageReference "Sparkle" */,
+				AC9B79072E50CED500D609FB /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AC7C052A2E253580007F777F /* Products */;
@@ -437,7 +437,10 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Libraries",
 					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
@@ -474,7 +477,10 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Libraries",
 					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
@@ -583,7 +589,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		AC20ED5C2E50B0BC0079CD05 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+		AC9B79072E50CED500D609FB /* XCRemoteSwiftPackageReference "Sparkle" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sparkle-project/Sparkle.git";
 			requirement = {
@@ -594,9 +600,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		AC9B77D12E50B1E700D609FB /* Sparkle */ = {
+		AC9B79082E50CED500D609FB /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AC20ED5C2E50B0BC0079CD05 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			package = AC9B79072E50CED500D609FB /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
