@@ -7,7 +7,6 @@ PROJECT_NAME="AuDeluxe"
 PROJECT_PATH="../${PROJECT_NAME}.xcodeproj"
 SCHEME="AuDeluxe - Release"
 CONFIGURATION="Release"
-# AI_REVIEW: Place your HTML release notes for the current version here. #END_REVIEW
 RELEASE_NOTES_CONTENT='
 <h4>New Features</h4>
 <ul>
@@ -143,19 +142,12 @@ if [ ! -f "$APPCAST_PATH" ]; then
 </rss>' > "$APPCAST_PATH"
 fi
 
-# AI_REVIEW: This block fixes the "unbound prefix" error by ensuring the sparkle namespace exists before parsing. #END_REVIEW
-if ! grep -q 'xmlns:sparkle' "$APPCAST_PATH"; then
-    echo "Sparkle namespace missing from appcast. Fixing..."
-    TMP_FILE=$(mktemp)
-    sed 's|<rss version="2.0">|<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">|' "$APPCAST_PATH" > "$TMP_FILE"
-    mv "$TMP_FILE" "$APPCAST_PATH"
-fi
-
 DESCRIPTION_PLACEHOLDER="##SPARKLE_DESCRIPTION_PLACEHOLDER##"
 
 python3 -c "
 import xml.etree.ElementTree as ET
 import sys
+import re
 
 appcast_path = sys.argv[1]
 version = sys.argv[2]
@@ -165,15 +157,25 @@ dmg_size = sys.argv[5]
 pub_date = sys.argv[6]
 description_placeholder = sys.argv[7]
 
-ET.register_namespace('sparkle', 'http://www.andymatuschak.org/xml-namespaces/sparkle')
-tree = ET.parse(appcast_path)
+sparkle_namespace = 'http://www.andymatuschak.org/xml-namespaces/sparkle'
+ET.register_namespace('sparkle', sparkle_namespace)
+
+# AI_REVIEW: This is the robust fix. Read the file as text, fix the namespace if missing, then parse. #END_REVIEW
+with open(appcast_path, 'r') as f:
+    xml_content = f.read()
+
+if 'xmlns:sparkle' not in xml_content:
+    print('Sparkle namespace missing from appcast root. Fixing...')
+    xml_content = xml_content.replace('<rss version=\"2.0\">', f'<rss xmlns:sparkle=\"{sparkle_namespace}\" version=\"2.0\">')
+
+tree = ET.ElementTree(ET.fromstring(xml_content))
 root = tree.getroot()
 channel = root.find('channel')
 
 for item in channel.findall('item'):
     enclosure = item.find('enclosure')
     if enclosure is not None:
-        short_version = enclosure.get('{http://www.andymatuschak.org/xml-namespaces/sparkle}shortVersionString')
+        short_version = enclosure.get(f'{{{sparkle_namespace}}}shortVersionString')
         if short_version == version:
             print(f'Found existing item for version {version}. Removing it.')
             channel.remove(item)
@@ -190,8 +192,8 @@ pub_date_element.text = pub_date
 
 enclosure = ET.SubElement(new_item, 'enclosure')
 enclosure.set('url', dmg_url)
-enclosure.set('sparkle:version', build_number)
-enclosure.set('sparkle:shortVersionString', version)
+enclosure.set(f'{{{sparkle_namespace}}}version', build_number)
+enclosure.set(f'{{{sparkle_namespace}}}shortVersionString', version)
 enclosure.set('length', dmg_size)
 enclosure.set('type', 'application/octet-stream')
 

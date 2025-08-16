@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<rss version="2.0">
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <item><title>Version 1.5.0</title><description><![CDATA[
 <h4>New Features</h4>
@@ -13,6 +13,6 @@
     <li>Fixed an issue where the default sort order was not applied on launch.</li>
     <li>Resolved several concurrency warnings and potential hangs.</li>
 </ul>
-]]></description><pubDate>Sat, 16 Aug 2025 17:44:20 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.5.0_52.dmg" sparkle:version="52" sparkle:shortVersionString="1.5.0" length="13414933" type="application/octet-stream" /></item><title>AuDeluxe Changelog</title>
+]]></description><pubDate>Sat, 16 Aug 2025 17:50:05 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.5.0_52.dmg" sparkle:version="52" sparkle:shortVersionString="1.5.0" length="13415171" type="application/octet-stream" /></item><title>AuDeluxe Changelog</title>
         </channel>
 </rss>
