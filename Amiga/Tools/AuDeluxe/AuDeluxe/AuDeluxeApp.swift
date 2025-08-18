@@ -15,11 +15,12 @@ struct AuDeluxeApp: App {
     @StateObject private var engine = OpenMPTEngine()
     
     private let updaterController = UpdaterController()
-
+    @State private var selectedFileID: PlaylistItem.ID?
+    
     var body: some Scene {
         WindowGroup {
             // Inject both the settings and the engine into the environment.
-            ContentView()
+            ContentView(selectedFileID: $selectedFileID)
                 .environmentObject(settings)
                 .environmentObject(engine)
         }
@@ -29,7 +30,7 @@ struct AuDeluxeApp: App {
                     
                     // Create the window instance FIRST.
                     let window = NSWindow(
-                        contentRect: NSRect(x: 0, y: 0, width: 450, height: 400),
+                        contentRect: NSRect(x: 0, y: 0, width: 650, height: 400),
                         styleMask: [.titled, .closable],
                         backing: .buffered,
                         defer: false)
@@ -46,6 +47,22 @@ struct AuDeluxeApp: App {
             }
             UpdaterCommands(updaterController: updaterController)
         }
+        
+        MenuBarExtra {
+                    MenuBarView(selectedFileID: $selectedFileID)
+                        .environmentObject(settings)
+                        .environmentObject(engine)
+                } label: {
+                    // The icon changes based on the playback state.
+                    Image(systemName: engine.isPlaying ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                        .onTapGesture {
+                            // This allows a single-click on the menu bar icon to also act as a play/pause button.
+                            handlePlayPause(engine: engine, settings: settings, selectedFileID: selectedFileID)
+                        }
+                }
+                .menuBarExtraStyle(.window) // This style provides a popover window.
+
+        
         Settings {
             SettingsView()
                 .environmentObject(settings)

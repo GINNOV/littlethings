@@ -9,6 +9,8 @@ import SwiftUI
 
 struct InspectorView: View {
     let item: PlaylistItem
+    
+    @State private var didCopy = false
 
     // Keys that have special handling or are displayed prominently.
     private let excludedKeys = ["title", "artist", "duration"]
@@ -37,7 +39,24 @@ struct InspectorView: View {
 
             // --- Main Details in a rounded box ---
             VStack(alignment: .leading, spacing: 12) {
-                InfoRow(label: "Filename", value: item.fileURL.lastPathComponent)
+                // AI_REVIEW: Replaced the standard InfoRow with a custom HStack to accommodate the copy button. #END_REVIEW
+                HStack(alignment: .top) {
+                    Text("Filename:")
+                        .font(.system(.body, design: .monospaced).weight(.bold))
+                        .foregroundColor(.secondary)
+                        .frame(width: 120, alignment: .trailing)
+                    
+                    Text(item.fileURL.lastPathComponent)
+                        .font(.system(.body, design: .monospaced))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    Button(action: copyPath) {
+                        Image(systemName: didCopy ? "checkmark" : "doc.on.doc")
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(didCopy ? .green : .secondary)
+                }
+                
                 Divider()
                 InfoRow(label: "Duration", value: formatTime(item.duration))
             }
@@ -82,6 +101,18 @@ struct InspectorView: View {
         .padding(30)
         .frame(minWidth: 550, minHeight: 450)
         .background(.regularMaterial)
+    }
+
+    private func copyPath() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(item.fileURL.path, forType: .string)
+        
+        didCopy = true
+        // Reset the icon after a short delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            didCopy = false
+        }
     }
 
     private func formatTime(_ time: TimeInterval) -> String {

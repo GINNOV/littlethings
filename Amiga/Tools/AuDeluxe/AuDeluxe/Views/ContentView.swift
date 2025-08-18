@@ -11,8 +11,9 @@ struct ContentView: View {
     @EnvironmentObject private var engine: OpenMPTEngine
     @EnvironmentObject private var settings: SettingsStore
     
-    // State for the playlist selection and dialogs is managed here.
-    @State private var selectedFileID: PlaylistItem.ID?
+    // AI_REVIEW: This is now a Binding so it can be shared with the MenuBarExtra scene. #END_REVIEW
+    @Binding var selectedFileID: PlaylistItem.ID?
+    
     @State private var isShowingDeleteAlert = false
     @State private var fileToDelete: PlaylistItem?
     @State private var isShowingRenameAlert = false
