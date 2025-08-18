@@ -63,7 +63,7 @@ struct PlaybackControlsView: View {
 
             HStack(spacing: 20) {
                 Button(action: {
-                    Task { await engine.toggleShuffle(selectionID: selectedFileID) }
+                    engine.toggleShuffle(selectionID: selectedFileID)
                 }) {
                     Image(systemName: "shuffle")
                         .font(.title2)
@@ -97,7 +97,7 @@ struct PlaybackControlsView: View {
                 Spacer()
 
                 Button(action: {
-                    Task { await engine.toggleLooping() }
+                    engine.toggleLooping()
                 }) {
                     Image(systemName: "repeat")
                         .font(.title2)
