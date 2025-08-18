@@ -10,8 +10,6 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var engine: OpenMPTEngine
     @EnvironmentObject private var settings: SettingsStore
-    
-    // AI_REVIEW: This is now a Binding so it can be shared with the MenuBarExtra scene. #END_REVIEW
     @Binding var selectedFileID: PlaylistItem.ID?
     
     @State private var isShowingDeleteAlert = false

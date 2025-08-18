@@ -39,7 +39,6 @@ struct InspectorView: View {
 
             // --- Main Details in a rounded box ---
             VStack(alignment: .leading, spacing: 12) {
-                // AI_REVIEW: Replaced the standard InfoRow with a custom HStack to accommodate the copy button. #END_REVIEW
                 HStack(alignment: .top) {
                     Text("Filename:")
                         .font(.system(.body, design: .monospaced).weight(.bold))
