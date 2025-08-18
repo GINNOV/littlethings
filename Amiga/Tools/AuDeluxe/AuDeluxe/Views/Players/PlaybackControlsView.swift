@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-// The play/pause logic is now in a dedicated, reusable function
-// so it can be called from both the main window and the new menu bar extra.
 func handlePlayPause(engine: OpenMPTEngine, settings: SettingsStore, selectedFileID: PlaylistItem.ID?) {
     Task {
         guard let selectedItem = await engine.playlistItems.first(where: { $0.id == selectedFileID }),
@@ -43,7 +41,6 @@ struct PlaybackControlsView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            // --- Slider & Time ---
             HStack(spacing: 8) {
                 Text(formatTime(engine.currentPlaybackTime))
                     .font(.caption.monospacedDigit())
@@ -64,9 +61,7 @@ struct PlaybackControlsView: View {
                     .frame(width: 50, alignment: .trailing)
             }
 
-            // --- Buttons ---
             HStack(spacing: 20) {
-                // Shuffle Button
                 Button(action: {
                     Task { await engine.toggleShuffle(selectionID: selectedFileID) }
                 }) {
@@ -77,7 +72,6 @@ struct PlaybackControlsView: View {
 
                 Spacer()
 
-                // Main Controls
                 HStack(spacing: 40) {
                     Button(action: playPrevious) {
                         Image(systemName: "backward.fill")
@@ -87,7 +81,7 @@ struct PlaybackControlsView: View {
 
                     Button(action: { handlePlayPause(engine: engine, settings: settings, selectedFileID: selectedFileID) }) {
                         Image(systemName: engine.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: 44)) // Larger central button
+                            .font(.system(size: 44))
                     }
                     .disabled(selectedFileID == nil && !engine.isPlaying)
                     .keyboardShortcut(.space, modifiers: [])
@@ -102,7 +96,6 @@ struct PlaybackControlsView: View {
                 
                 Spacer()
 
-                // Repeat Button
                 Button(action: {
                     Task { await engine.toggleLooping() }
                 }) {

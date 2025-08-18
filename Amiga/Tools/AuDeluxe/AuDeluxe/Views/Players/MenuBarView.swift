@@ -11,8 +11,12 @@ struct MenuBarView: View {
     @EnvironmentObject private var engine: OpenMPTEngine
     @EnvironmentObject private var settings: SettingsStore
     
-    // This needs to be coordinated with the main ContentView
     @Binding var selectedFileID: PlaylistItem.ID?
+    
+    private var currentItemIndex: Int? {
+        guard let selectedID = selectedFileID else { return nil }
+        return engine.playlistItems.firstIndex(where: { $0.id == selectedID })
+    }
     
     var body: some View {
         VStack(spacing: 15) {
@@ -27,13 +31,28 @@ struct MenuBarView: View {
                     .lineLimit(1)
             }
             
-            Button(action: { handlePlayPause(engine: engine, settings: settings, selectedFileID: selectedFileID) }) {
-                Image(systemName: engine.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.title)
+            HStack(spacing: 30) {
+                Button(action: playPrevious) {
+                    Image(systemName: "backward.fill")
+                        .font(.title2)
+                }
+                .disabled(currentItemIndex == nil || currentItemIndex == 0)
+
+                Button(action: { handlePlayPause(engine: engine, settings: settings, selectedFileID: selectedFileID) }) {
+                    Image(systemName: engine.isPlaying ? "pause.fill" : "play.fill")
+                        .font(.title)
+                }
+                .tint(.green)
+                .disabled(selectedFileID == nil && !engine.isPlaying)
+                
+                Button(action: playNext) {
+                    Image(systemName: "forward.fill")
+                        .font(.title2)
+                }
+                .disabled(currentItemIndex == nil || currentItemIndex == engine.playlistItems.count - 1)
             }
             .buttonStyle(.plain)
-            .disabled(selectedFileID == nil && !engine.isPlaying)
-            
+
             Divider()
             
             Button("Quit AuDeluxe") {
@@ -43,6 +62,30 @@ struct MenuBarView: View {
             
         }
         .padding()
-        .frame(minWidth: 250)
+        .frame(minWidth: 300)
+    }
+    
+    private func playNext() {
+        Task {
+            guard let index = currentItemIndex,
+                  index + 1 < engine.playlistItems.count,
+                  let musicURL = settings.musicFolderURL else { return }
+            
+            let nextItem = engine.playlistItems[index + 1]
+            selectedFileID = nextItem.id
+            await engine.play(fileURL: nextItem.fileURL, musicFolderURL: musicURL)
+        }
+    }
+    
+    private func playPrevious() {
+        Task {
+            guard let index = currentItemIndex,
+                  index > 0,
+                  let musicURL = settings.musicFolderURL else { return }
+            
+            let prevItem = engine.playlistItems[index - 1]
+            selectedFileID = prevItem.id
+            await engine.play(fileURL: prevItem.fileURL, musicFolderURL: musicURL)
+        }
     }
 }
