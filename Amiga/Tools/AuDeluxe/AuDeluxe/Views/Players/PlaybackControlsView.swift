@@ -7,6 +7,29 @@
 
 import SwiftUI
 
+// AI_REVIEW: The play/pause logic is now in a dedicated, reusable function
+// so it can be called from both the main window and the new menu bar extra. #END_REVIEW
+func handlePlayPause(engine: OpenMPTEngine, settings: SettingsStore, selectedFileID: PlaylistItem.ID?) {
+    Task {
+        guard let selectedItem = await engine.playlistItems.first(where: { $0.id == selectedFileID }),
+              let musicURL = await settings.musicFolderURL else {
+            if await engine.isPlaying { await engine.pause() }
+            return
+        }
+
+        if await engine.isPlaying {
+            await engine.pause()
+        } else {
+            if await selectedItem.fileURL == engine.currentlyPlayingFileURL {
+                await engine.resume()
+            } else {
+                await engine.play(fileURL: selectedItem.fileURL, musicFolderURL: musicURL)
+            }
+        }
+    }
+}
+
+
 struct PlaybackControlsView: View {
     @EnvironmentObject private var engine: OpenMPTEngine
     @EnvironmentObject private var settings: SettingsStore
@@ -62,7 +85,7 @@ struct PlaybackControlsView: View {
                     }
                     .disabled(currentItemIndex == nil || currentItemIndex == 0)
 
-                    Button(action: handlePlayPause) {
+                    Button(action: { handlePlayPause(engine: engine, settings: settings, selectedFileID: selectedFileID) }) {
                         Image(systemName: engine.isPlaying ? "pause.fill" : "play.fill")
                             .font(.system(size: 44)) // Larger central button
                     }
@@ -94,26 +117,6 @@ struct PlaybackControlsView: View {
         .padding(.horizontal, 25)
         .padding(.vertical, 15)
         .background(.regularMaterial)
-    }
-    
-    private func handlePlayPause() {
-        Task {
-            guard let selectedItem = engine.playlistItems.first(where: { $0.id == selectedFileID }),
-                  let musicURL = settings.musicFolderURL else {
-                if engine.isPlaying { engine.pause() }
-                return
-            }
-
-            if engine.isPlaying {
-                engine.pause()
-            } else {
-                if selectedItem.fileURL == engine.currentlyPlayingFileURL {
-                    engine.resume()
-                } else {
-                    await engine.play(fileURL: selectedItem.fileURL, musicFolderURL: musicURL)
-                }
-            }
-        }
     }
     
     private func playNext() {
