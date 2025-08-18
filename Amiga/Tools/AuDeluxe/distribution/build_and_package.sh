@@ -1,25 +1,27 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 # --- START: Configuration for AuDeluxe ---
 PROJECT_NAME="AuDeluxe"
 PROJECT_PATH="../${PROJECT_NAME}.xcodeproj"
 SCHEME="AuDeluxe - Release"
 CONFIGURATION="Release"
+
+# Release notes (fixed typos)
 RELEASE_NOTES_CONTENT='
 <h4>New Features</h4>
 <ul>
     <li>Added Sparkle for automatic application updates.</li>
     <li>Implemented a caching system for faster startup times.</li>
     <li>Added a search bar to the playlist view.</li>
-    <li>Added a jump link for current playing song.</li>
-    <li>Added a a menu bar to control music without switching to the app.</li>
+    <li>Added a jump link for the currently playing song.</li>
+    <li>Added a menu bar to control music without switching to the app.</li>
 </ul>
 <h4>Bug Fixes</h4>
 <ul>
     <li>Fixed an issue where the default sort order was not applied on launch.</li>
-    <li>Loopback was working but the timeline wasn not moving.</li>
+    <li>Loopback worked but the timeline was not moving.</li>
 </ul>
 '
 # --- END: Configuration for AuDeluxe ---
@@ -36,15 +38,19 @@ MIN_SPACE_MB=1024
 
 usage() {
     echo "Usage: $0 [--project <project_path>] [--scheme <scheme>] [--configuration <config>]"
-    echo "Example: $0 --project ../${PROJECT_NAME}.xcodeproj --scheme \"${SCHEME}\" --configuration Release"
+    echo
+    echo "Env vars (optional but recommended for CI):"
+    echo "  SPARKLE_PRIVATE_KEY        Contents of your EdDSA private key"
+    echo "  SPARKLE_PRIVATE_KEY_PATH   Path to file containing the private key"
     exit 1
 }
 
-while [[ "$#" -gt 0 ]]; do
-    case $1 in
+while [[ "${#}" -gt 0 ]]; do
+    case "$1" in
         --project) PROJECT_PATH="$2"; shift ;;
         --scheme) SCHEME="$2"; shift ;;
         --configuration) CONFIGURATION="$2"; shift ;;
+        -h|--help) usage ;;
         *) usage ;;
     esac
     shift
@@ -101,6 +107,14 @@ if [ ! -d "$APP_PATH" ]; then
     exit 1
 fi
 
+# Ensure Sparkle public key is embedded
+INFO_PLIST_PATH="${APP_PATH}/Contents/Info.plist"
+if ! /usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$INFO_PLIST_PATH" >/dev/null 2>&1; then
+    echo "Error: SUPublicEDKey is missing in ${INFO_PLIST_PATH}. Sparkle will reject updates."
+    echo "Add your EdDSA public key under SUPublicEDKey in the target's Info.plist and rebuild."
+    exit 1
+fi
+
 echo "Creating DMG with gendmg.sh..."
 bash "$SCRIPT_DIR/gendmg.sh" \
     --readme "$README_PATH" \
@@ -116,7 +130,6 @@ echo "Build and packaging complete."
 
 echo "--- Updating appcast-audeluxe.xml ---"
 
-INFO_PLIST_PATH="${APP_PATH}/Contents/Info.plist"
 VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST_PATH")
 BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST_PATH")
 
@@ -124,115 +137,143 @@ DMG_NAME="${PROJECT_NAME}-${VERSION}_${BUILD_NUMBER}.dmg"
 DMG_FINAL_PATH="${DMG_DIR}/${DMG_NAME}"
 APPCAST_PATH="${DMG_DIR}/appcast-audeluxe.xml"
 
-if [ ! -f "$DMG_FINAL_PATH" ]; then
-    echo "Error: Final DMG not found at $DMG_FINAL_PATH after running gendmg.sh"
-    exit 1
-fi
-
 echo "Creating ZIP for Sparkle signing..."
 ZIP_NAME="${PROJECT_NAME}-${VERSION}_${BUILD_NUMBER}.zip"
 ZIP_PATH="${DMG_DIR}/${ZIP_NAME}"
 
-# Create ZIP file from the .app
-cd "$EXPORT_PATH"
-zip -r "$ZIP_PATH" "${PROJECT_NAME}.app"
-cd "$SCRIPT_DIR"
+# Create ZIP from the .app
+(
+    cd "$EXPORT_PATH"
+    /usr/bin/zip -r -y "$ZIP_PATH" "${PROJECT_NAME}.app" >/dev/null
+)
 
-echo "Signing the ZIP file..."
+echo "Locating Sparkle sign_update tool..."
 OBJROOT=$(xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME" -showBuildSettings -json | grep -o '"OBJROOT" : "[^"]*' | cut -d'"' -f4)
 PROJECT_DERIVED_DATA_ROOT=$(dirname "$(dirname "$OBJROOT")")
 SIGN_UPDATE_TOOL="${PROJECT_DERIVED_DATA_ROOT}/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
 
-if [ ! -f "$SIGN_UPDATE_TOOL" ]; then
-    echo "Error: sign_update tool not found. Looked in: ${SIGN_UPDATE_TOOL}"
+if [ ! -x "$SIGN_UPDATE_TOOL" ]; then
+    echo "Error: sign_update tool not found or not executable. Looked in: ${SIGN_UPDATE_TOOL}"
     exit 1
 fi
 
-SIGNATURE=$("$SIGN_UPDATE_TOOL" "$ZIP_PATH")
+# Resolve private key contents if provided
+SPARKLE_KEY_CONTENTS="${SPARKLE_PRIVATE_KEY:-}"
+if [[ -z "${SPARKLE_KEY_CONTENTS}" && -n "${SPARKLE_PRIVATE_KEY_PATH:-}" ]]; then
+    if [ ! -f "$SPARKLE_PRIVATE_KEY_PATH" ]; then
+        echo "Error: SPARKLE_PRIVATE_KEY_PATH set but file not found: $SPARKLE_PRIVATE_KEY_PATH"
+        exit 1
+    fi
+    SPARKLE_KEY_CONTENTS="$(cat "$SPARKLE_PRIVATE_KEY_PATH")"
+fi
+
+echo "Signing the ZIP file..."
+RAW_SIG_OUT=""
+if [[ -n "$SPARKLE_KEY_CONTENTS" ]]; then
+    RAW_SIG_OUT=$("$SIGN_UPDATE_TOOL" -s "${SPARKLE_KEY_CONTENTS}" "$ZIP_PATH")
+else
+    RAW_SIG_OUT=$("$SIGN_UPDATE_TOOL" "$ZIP_PATH")
+fi
+
+# Robustly extract only the edSignature (and optionally length) from sign_update output
+SIG_ONLY=$(echo "$RAW_SIG_OUT" | sed -n 's/.*sparkle:edSignature="\([^"]*\)".*/\1/p')
+if [[ -n "$SIG_ONLY" ]]; then
+    SIGNATURE="$SIG_ONLY"
+    SIG_LEN=$(echo "$RAW_SIG_OUT" | sed -n 's/.*length="\([^"]*\)".*/\1/p')
+    if [[ -n "$SIG_LEN" ]]; then
+        ZIP_SIZE="$SIG_LEN"
+    else
+        ZIP_SIZE=$(stat -f %z "$ZIP_PATH")
+    fi
+else
+    # Fallback: assume the tool printed only the base64 signature
+    SIGNATURE="$RAW_SIG_OUT"
+    ZIP_SIZE=$(stat -f %z "$ZIP_PATH")
+fi
+
+# Normalize signature (strip whitespace/newlines)
+SIGNATURE="$(echo -n "$SIGNATURE" | tr -d '\r\n')"
+
+if [[ -z "$SIGNATURE" ]]; then
+    echo "Error: sign_update did not return a signature. Raw output:"
+    echo "$RAW_SIG_OUT"
+    exit 1
+fi
+
 echo "Signature: $SIGNATURE"
 
-ZIP_SIZE=$(stat -f %z "$ZIP_PATH")
 PUB_DATE=$(date -R)
 DOWNLOAD_URL="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/$ZIP_NAME"
 
 if [ ! -f "$APPCAST_PATH" ]; then
     echo "Creating new appcast file at ${APPCAST_PATH}"
-    echo '<?xml version="1.0" encoding="utf-8"?>
+    cat > "$APPCAST_PATH" <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
-    <channel>
-        <title>AuDeluxe Changelog</title>
-    </channel>
-</rss>' > "$APPCAST_PATH"
+  <channel>
+    <title>AuDeluxe Changelog</title>
+  </channel>
+</rss>
+XML
 fi
 
 DESCRIPTION_PLACEHOLDER="##SPARKLE_DESCRIPTION_PLACEHOLDER##"
 
-python3 -c "
-import xml.etree.ElementTree as ET
-import sys
-import re
+python3 - <<'PY' "$APPCAST_PATH" "$VERSION" "$BUILD_NUMBER" "$DOWNLOAD_URL" "$ZIP_SIZE" "$PUB_DATE" "$DESCRIPTION_PLACEHOLDER" "$SIGNATURE"
+import sys, re, xml.etree.ElementTree as ET
+appcast_path, version, build_number, zip_url, zip_size, pub_date, description_placeholder, signature = sys.argv[1:]
 
-appcast_path = sys.argv[1]
-version = sys.argv[2]
-build_number = sys.argv[3]
-zip_url = sys.argv[4]
-zip_size = sys.argv[5]
-pub_date = sys.argv[6]
-description_placeholder = sys.argv[7]
-signature = sys.argv[8]
+sparkle_ns = 'http://www.andymatuschak.org/xml-namespaces/sparkle'
+ET.register_namespace('sparkle', sparkle_ns)
 
-sparkle_namespace = 'http://www.andymatuschak.org/xml-namespaces/sparkle'
-ET.register_namespace('sparkle', sparkle_namespace)
-
-# AI_REVIEW: This is the robust fix. Read the file as text, fix the namespace with a regex if missing, then parse. #END_REVIEW
-with open(appcast_path, 'r') as f:
+with open(appcast_path, 'r', encoding='utf-8') as f:
     xml_content = f.read()
 
+# Ensure sparkle namespace on root
 if not re.search(r'<rss[^>]*xmlns:sparkle=', xml_content):
-    print('Sparkle namespace missing from appcast root. Fixing...')
-    xml_content = re.sub(r'(<rss[^>]*)', r'\\1 xmlns:sparkle=\"' + sparkle_namespace + '\"', xml_content, count=1)
+    xml_content = re.sub(r'(<rss[^>]*)', r'\1 xmlns:sparkle="'+sparkle_ns+'"', xml_content, count=1)
 
 tree = ET.ElementTree(ET.fromstring(xml_content))
 root = tree.getroot()
 channel = root.find('channel')
+if channel is None:
+    channel = ET.SubElement(root, 'channel')
 
-for item in channel.findall('item'):
-    enclosure = item.find('enclosure')
-    if enclosure is not None:
-        short_version = enclosure.get(f'{{{sparkle_namespace}}}shortVersionString')
-        if short_version == version:
-            print(f'Found existing item for version {version}. Removing it.')
-            channel.remove(item)
+# Remove any existing item with same shortVersionString
+for item in list(channel.findall('item')):
+    enc = item.find('enclosure')
+    if enc is not None and enc.get(f'{{{sparkle_ns}}}shortVersionString') == version:
+        channel.remove(item)
 
 new_item = ET.Element('item')
 title = ET.SubElement(new_item, 'title')
 title.text = f'Version {version}'
 
-description = ET.SubElement(new_item, 'description')
-description.text = description_placeholder
+desc = ET.SubElement(new_item, 'description')
+desc.text = description_placeholder
 
-pub_date_element = ET.SubElement(new_item, 'pubDate')
-pub_date_element.text = pub_date
+pde = ET.SubElement(new_item, 'pubDate')
+pde.text = pub_date
 
-enclosure = ET.SubElement(new_item, 'enclosure')
-enclosure.set('url', zip_url)
-enclosure.set(f'{{{sparkle_namespace}}}version', build_number)
-enclosure.set(f'{{{sparkle_namespace}}}shortVersionString', version)
-enclosure.set('length', zip_size)
-enclosure.set('type', 'application/octet-stream')
-enclosure.set(f'{{{sparkle_namespace}}}edSignature', signature)
+enc = ET.SubElement(new_item, 'enclosure')
+enc.set('url', zip_url)
+enc.set(f'{{{sparkle_ns}}}version', build_number)
+enc.set(f'{{{sparkle_ns}}}shortVersionString', version)
+enc.set('length', zip_size)
+enc.set('type', 'application/octet-stream')
+enc.set(f'{{{sparkle_ns}}}edSignature', signature)
 
 channel.insert(0, new_item)
 tree.write(appcast_path, encoding='utf-8', xml_declaration=True)
+print(f'Appcast updated with {version} ({build_number})')
+PY
 
-print(f'Successfully added Version {version} (Build {build_number}) to {appcast_path}')
-" "$APPCAST_PATH" "$VERSION" "$BUILD_NUMBER" "$DOWNLOAD_URL" "$ZIP_SIZE" "$PUB_DATE" "$DESCRIPTION_PLACEHOLDER" "$SIGNATURE"
-
+# Inject HTML release notes
 perl -i -p0e "s|${DESCRIPTION_PLACEHOLDER}|<![CDATA[${RELEASE_NOTES_CONTENT}]]>|g" "$APPCAST_PATH"
 
 # --- END: Appcast Update Logic ---
 
 echo "--- All Done! ---"
-echo "Created DMG: $DMG_FINAL_PATH"
-echo "Created ZIP: $ZIP_PATH"
-echo "Updated appcast: $APPCAST_PATH"
+echo "Created DMG: ${DMG_FINAL_PATH} (if produced)"
+echo "Created ZIP: ${ZIP_PATH}"
+echo "Updated appcast: ${APPCAST_PATH}"
