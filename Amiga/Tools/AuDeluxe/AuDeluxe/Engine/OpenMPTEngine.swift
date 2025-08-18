@@ -59,7 +59,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     var isTrackerVisible = false
 
     // MARK: - Private Properties
-    private let debug = false
+    private let debug = true // Enabled for detailed performance logging
     private let audioEngine = AVAudioEngine()
     private let playerNode = AVAudioPlayerNode()
     private var processingFormat: AVAudioFormat!
@@ -81,7 +81,9 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     let artistKey = "com.audeluxe.artist"
     private var pendingBufferCount = 0
     private var reachedEndOfFile = false
-    private let targetPendingBuffers = 3
+    
+    // AI_REVIEW: Increased the target buffer count to create a larger safety margin against stuttering. #END_REVIEW
+    private let targetPendingBuffers = 10
     
     weak var settingsStore: SettingsStore?
     private var scannedMusicFolderURL: URL?
@@ -106,13 +108,14 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             await uiModuleActor.setDebug(debug)
             setupAudioEngine()
         }
-        if debug { print("OpenMPTEngine: initialized and ready.") }
+        if debug { print("OpenMPTEngine: Initialized and ready.") }
     }
 
     private func setupAudioEngine() {
         audioEngine.attach(playerNode)
         audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: nil)
         self.processingFormat = playerNode.outputFormat(forBus: 0)
+        if debug { print("OpenMPTEngine: Audio engine setup with format: \(String(describing: self.processingFormat))") }
         
         configChangeObserver = NotificationCenter.default.addObserver(forName: .AVAudioEngineConfigurationChange, object: nil, queue: .main) { [weak self] _ in
             guard let self = self else { return }
@@ -139,11 +142,11 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         self.scannedMusicFolderURL = musicFolderURL
 
         if await loadPlaylistFromCache(for: musicFolderURL) {
-            if debug { print("Successfully loaded playlist from cache.") }
+            if debug { print("OpenMPTEngine: Successfully loaded playlist from cache.") }
             return
         }
 
-        if debug { print("Cache invalid or not found. Performing full scan.") }
+        if debug { print("OpenMPTEngine: Cache invalid or not found. Performing full scan.") }
         let items = await Task.detached(priority: .userInitiated) { [supportedExtensions, ratingKey, titleKey, artistKey] () -> [PlaylistItem] in
             guard musicFolderURL.startAccessingSecurityScopedResource() else { return [] }
             defer { musicFolderURL.stopAccessingSecurityScopedResource() }
@@ -227,13 +230,13 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         let debug = self.debug
         Task.detached(priority: .background) {
             let numPatterns = await uiActor.getNumPatterns()
-            if debug { print("Starting background caching for \(numPatterns) patterns") }
+            if debug { print("OpenMPTEngine: Starting background caching for \(numPatterns) patterns") }
             let cachingStart = Date()
             for p in 0..<numPatterns {
                 let nr = await uiActor.getPatternNumRows(p)
                 _ = await uiActor.getFormattedPattern(pattern: p, numRows: nr, numChannels: numChannels)
             }
-            if debug { print("Background caching completed in \(Date().timeIntervalSince(cachingStart)) seconds") }
+            if debug { print("OpenMPTEngine: Background caching completed in \(Date().timeIntervalSince(cachingStart)) seconds") }
         }
         
         do {
@@ -242,7 +245,23 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             
             pendingBufferCount = 0
             reachedEndOfFile = false
-            for _ in 0..<targetPendingBuffers { await scheduleNextBuffer() }
+            
+            // This is the core of the performance fix. We pre-render a number of buffers
+            // before playback even starts. This creates a large safety margin and prevents stuttering.
+            var preRenderedBuffers: [AVAudioPCMBuffer] = []
+            for i in 1...targetPendingBuffers {
+                if let buffer = await renderBuffer() {
+                    preRenderedBuffers.append(buffer)
+                    if debug { print("OpenMPTEngine: Pre-rendered buffer \(i)/\(targetPendingBuffers)") }
+                } else {
+                    reachedEndOfFile = true
+                    break
+                }
+            }
+            
+            for buffer in preRenderedBuffers {
+                scheduleBuffer(buffer)
+            }
             
             self.isPlaying = true
             self.currentSongInfo = fileURL.lastPathComponent
@@ -355,6 +374,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     }
     
     private func updateVisibleRows() {
+        let halfWindow = self.halfWindowSize
         Task.detached(priority: .userInitiated) {
             let playTime = await self.currentPlayedTime()
             let isLooping = await self.isLooping
@@ -375,7 +395,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
 
             let allRows = await self.uiModuleActor.getFormattedPattern(pattern: state.pattern, numRows: state.numRows, numChannels: numChannels)
             
-            let first = await max(0, Int(state.row) - self.halfWindowSize)
+            let first = max(0, Int(state.row) - halfWindow)
             let last = min(Int(state.numRows) - 1, first + self.visibleWindowSize - 1)
             let slice = Array(allRows[first...last])
 
@@ -417,23 +437,13 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     }
     
     private func renderBuffer() async -> AVAudioPCMBuffer? {
-        return await moduleActor.render(format: self.processingFormat, frameCount: 4096)
+        return await moduleActor.render(format: self.processingFormat, frameCount: 8192)
     }
     
-    private func scheduleNextBuffer() async {
-        if reachedEndOfFile || pendingBufferCount >= targetPendingBuffers {
-            await checkForPlaybackCompletion()
-            return
-        }
-        
-        guard let buffer = await renderBuffer() else {
-            reachedEndOfFile = true
-            await checkForPlaybackCompletion()
-            return
-        }
-
+    private func scheduleBuffer(_ buffer: AVAudioPCMBuffer) {
         pendingBufferCount += 1
-        playerNode.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
+        if debug { print("OpenMPTEngine: Scheduled buffer, pending: \(pendingBufferCount)") }
+        playerNode.scheduleBuffer(buffer) { [weak self] in
             Task {
                 await self?.handleBufferCompletion()
             }
@@ -442,11 +452,23 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     
     private func handleBufferCompletion() async {
         pendingBufferCount -= 1
-        await scheduleNextBuffer()
+        if debug { print("OpenMPTEngine: Buffer completed, pending: \(pendingBufferCount)") }
+
+        if !reachedEndOfFile {
+            if let newBuffer = await renderBuffer() {
+                scheduleBuffer(newBuffer)
+            } else {
+                if debug { print("OpenMPTEngine: Rendered nil buffer, marking reachedEndOfFile.") }
+                reachedEndOfFile = true
+            }
+        }
+        
+        await checkForPlaybackCompletion()
     }
     
     private func checkForPlaybackCompletion() async {
         if reachedEndOfFile && pendingBufferCount == 0 {
+            if debug { print("OpenMPTEngine: Playback complete.") }
             if settingsStore?.automaticallyPlayNext == true && !isLooping {
                 guard let currentURL = currentlyPlayingFileURL,
                       let musicFolderURL = self.scannedMusicFolderURL,
@@ -458,6 +480,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
                 let nextIndex = currentIndex + 1
                 if playlistItems.indices.contains(nextIndex) {
                     let nextItem = playlistItems[nextIndex]
+                    if debug { print("OpenMPTEngine: Playing next track: \(nextItem.fileURL.lastPathComponent)") }
                     await play(fileURL: nextItem.fileURL, musicFolderURL: musicFolderURL)
                 } else {
                     await stopAndReset()

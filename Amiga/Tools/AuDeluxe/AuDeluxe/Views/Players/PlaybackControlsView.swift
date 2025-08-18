@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-// AI_REVIEW: The play/pause logic is now in a dedicated, reusable function
-// so it can be called from both the main window and the new menu bar extra. #END_REVIEW
+// The play/pause logic is now in a dedicated, reusable function
+// so it can be called from both the main window and the new menu bar extra.
 func handlePlayPause(engine: OpenMPTEngine, settings: SettingsStore, selectedFileID: PlaylistItem.ID?) {
     Task {
         guard let selectedItem = await engine.playlistItems.first(where: { $0.id == selectedFileID }),
