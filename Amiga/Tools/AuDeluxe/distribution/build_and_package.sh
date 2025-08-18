@@ -129,7 +129,16 @@ if [ ! -f "$DMG_FINAL_PATH" ]; then
     exit 1
 fi
 
-echo "Signing the DMG..."
+echo "Creating ZIP for Sparkle signing..."
+ZIP_NAME="${PROJECT_NAME}-${VERSION}_${BUILD_NUMBER}.zip"
+ZIP_PATH="${DMG_DIR}/${ZIP_NAME}"
+
+# Create ZIP file from the .app
+cd "$EXPORT_PATH"
+zip -r "$ZIP_PATH" "${PROJECT_NAME}.app"
+cd "$SCRIPT_DIR"
+
+echo "Signing the ZIP file..."
 OBJROOT=$(xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME" -showBuildSettings -json | grep -o '"OBJROOT" : "[^"]*' | cut -d'"' -f4)
 PROJECT_DERIVED_DATA_ROOT=$(dirname "$(dirname "$OBJROOT")")
 SIGN_UPDATE_TOOL="${PROJECT_DERIVED_DATA_ROOT}/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
@@ -139,12 +148,12 @@ if [ ! -f "$SIGN_UPDATE_TOOL" ]; then
     exit 1
 fi
 
-SIGNATURE=$("$SIGN_UPDATE_TOOL" "$DMG_FINAL_PATH")
+SIGNATURE=$("$SIGN_UPDATE_TOOL" "$ZIP_PATH")
 echo "Signature: $SIGNATURE"
 
-DMG_SIZE=$(stat -f %z "$DMG_FINAL_PATH")
+ZIP_SIZE=$(stat -f %z "$ZIP_PATH")
 PUB_DATE=$(date -R)
-DOWNLOAD_URL="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/$DMG_NAME"
+DOWNLOAD_URL="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/$ZIP_NAME"
 
 if [ ! -f "$APPCAST_PATH" ]; then
     echo "Creating new appcast file at ${APPCAST_PATH}"
@@ -166,8 +175,8 @@ import re
 appcast_path = sys.argv[1]
 version = sys.argv[2]
 build_number = sys.argv[3]
-dmg_url = sys.argv[4]
-dmg_size = sys.argv[5]
+zip_url = sys.argv[4]
+zip_size = sys.argv[5]
 pub_date = sys.argv[6]
 description_placeholder = sys.argv[7]
 signature = sys.argv[8]
@@ -206,10 +215,10 @@ pub_date_element = ET.SubElement(new_item, 'pubDate')
 pub_date_element.text = pub_date
 
 enclosure = ET.SubElement(new_item, 'enclosure')
-enclosure.set('url', dmg_url)
+enclosure.set('url', zip_url)
 enclosure.set(f'{{{sparkle_namespace}}}version', build_number)
 enclosure.set(f'{{{sparkle_namespace}}}shortVersionString', version)
-enclosure.set('length', dmg_size)
+enclosure.set('length', zip_size)
 enclosure.set('type', 'application/octet-stream')
 enclosure.set(f'{{{sparkle_namespace}}}edSignature', signature)
 
@@ -217,10 +226,13 @@ channel.insert(0, new_item)
 tree.write(appcast_path, encoding='utf-8', xml_declaration=True)
 
 print(f'Successfully added Version {version} (Build {build_number}) to {appcast_path}')
-" "$APPCAST_PATH" "$VERSION" "$BUILD_NUMBER" "$DOWNLOAD_URL" "$DMG_SIZE" "$PUB_DATE" "$DESCRIPTION_PLACEHOLDER" "$SIGNATURE"
+" "$APPCAST_PATH" "$VERSION" "$BUILD_NUMBER" "$DOWNLOAD_URL" "$ZIP_SIZE" "$PUB_DATE" "$DESCRIPTION_PLACEHOLDER" "$SIGNATURE"
 
 perl -i -p0e "s|${DESCRIPTION_PLACEHOLDER}|<![CDATA[${RELEASE_NOTES_CONTENT}]]>|g" "$APPCAST_PATH"
 
 # --- END: Appcast Update Logic ---
 
 echo "--- All Done! ---"
+echo "Created DMG: $DMG_FINAL_PATH"
+echo "Created ZIP: $ZIP_PATH"
+echo "Updated appcast: $APPCAST_PATH"

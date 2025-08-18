@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
-        <item><title>Version 1.5.0</title><description><![CDATA[
+        <item><title>Version 1.6</title><description><![CDATA[
 <h4>New Features</h4>
 <ul>
     <li>Added Sparkle for automatic application updates.</li>
@@ -15,6 +15,20 @@
     <li>Fixed an issue where the default sort order was not applied on launch.</li>
     <li>Loopback was working but the timeline wasn not moving.</li>
 </ul>
-]]></description><pubDate>Mon, 18 Aug 2025 18:49:59 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.5.0_76.dmg" sparkle:version="76" sparkle:shortVersionString="1.5.0" length="13430683" type="application/octet-stream" sparkle:edSignature="sparkle:edSignature=&quot;CzH7QTCuzPMsVjc84AwsTSnC09zzaIn8d88L1v3TbbrGlZsYJ0Jya9teijytWjz6IqkHZGSN63PGxrJiyn08Ag==&quot; length=&quot;13430683&quot;" /></item><title>AuDeluxe Changelog</title>
+]]></description><pubDate>Mon, 18 Aug 2025 19:06:42 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.6_77.zip" sparkle:version="77" sparkle:shortVersionString="1.6" length="11762951" type="application/octet-stream" sparkle:edSignature="sparkle:edSignature=&quot;DD1nnABTM2T+AXiGXfE6QQnzTf/m5OYtqKgyJUyx/Rm6SXf1L4+FWGswoSkt4fZeR1uLrV0qMs7B4JNnpf4DAw==&quot; length=&quot;11762951&quot;" /></item><item><title>Version 1.5.0</title><description>
+&lt;h4&gt;New Features&lt;/h4&gt;
+&lt;ul&gt;
+    &lt;li&gt;Added Sparkle for automatic application updates.&lt;/li&gt;
+    &lt;li&gt;Implemented a caching system for faster startup times.&lt;/li&gt;
+    &lt;li&gt;Added a search bar to the playlist view.&lt;/li&gt;
+    &lt;li&gt;Added a jump link for current playing song.&lt;/li&gt;
+    &lt;li&gt;Added a a menu bar to control music without switching to the app.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;Bug Fixes&lt;/h4&gt;
+&lt;ul&gt;
+    &lt;li&gt;Fixed an issue where the default sort order was not applied on launch.&lt;/li&gt;
+    &lt;li&gt;Loopback was working but the timeline wasn not moving.&lt;/li&gt;
+&lt;/ul&gt;
+</description><pubDate>Mon, 18 Aug 2025 18:49:59 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.5.0_76.dmg" sparkle:version="76" sparkle:shortVersionString="1.5.0" length="13430683" type="application/octet-stream" sparkle:edSignature="sparkle:edSignature=&quot;CzH7QTCuzPMsVjc84AwsTSnC09zzaIn8d88L1v3TbbrGlZsYJ0Jya9teijytWjz6IqkHZGSN63PGxrJiyn08Ag==&quot; length=&quot;13430683&quot;" /></item><title>AuDeluxe Changelog</title>
         </channel>
 </rss>
