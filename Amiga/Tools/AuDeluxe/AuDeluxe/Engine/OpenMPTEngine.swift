@@ -55,6 +55,8 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     @Published var currentRow: Int32 = -1
     @Published var currentPattern: Int32 = -1
     @Published var numChannels: Int32 = 0
+    
+    var isTrackerVisible = false
 
     // MARK: - Private Properties
     private let debug = false
@@ -352,38 +354,40 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         return Double(playerTime.sampleTime) / playerTime.sampleRate
     }
     
-    private func updateVisibleRows() async {
-        let playTime = self.currentPlayedTime()
-        let isLooping = self.isLooping
-        let duration = self.currentSongDuration
-        let numChannels = self.numChannels
-        
-        let state = await Task.detached(priority: .userInitiated) {
+    private func updateVisibleRows() {
+        Task.detached(priority: .userInitiated) {
+            let playTime = await self.currentPlayedTime()
+            let isLooping = await self.isLooping
+            let duration = await self.currentSongDuration
+            let numChannels = await self.numChannels
+            
             var effectiveTime = playTime
             if isLooping && duration > 0 {
                 effectiveTime = playTime.truncatingRemainder(dividingBy: duration)
             }
             await self.uiModuleActor.setPosition(seconds: effectiveTime)
-            return await self.uiModuleActor.getPlaybackState()
-        }.value
+            let state = await self.uiModuleActor.getPlaybackState()
 
-        guard state.numRows > 0 else {
-            self.visiblePatternRows = []
-            return
+            guard state.numRows > 0 else {
+                await MainActor.run { self.visiblePatternRows = [] }
+                return
+            }
+
+            let allRows = await self.uiModuleActor.getFormattedPattern(pattern: state.pattern, numRows: state.numRows, numChannels: numChannels)
+            
+            let first = await max(0, Int(state.row) - self.halfWindowSize)
+            let last = min(Int(state.numRows) - 1, first + self.visibleWindowSize - 1)
+            let slice = Array(allRows[first...last])
+
+            await MainActor.run {
+                self.currentRow = state.row
+                self.currentPlaybackTime = playTime
+                if state.pattern != self.currentPattern {
+                    self.currentPattern = state.pattern
+                }
+                self.visiblePatternRows = slice
+            }
         }
-
-        let allRows = await self.uiModuleActor.getFormattedPattern(pattern: state.pattern, numRows: state.numRows, numChannels: numChannels)
-        
-        let first = max(0, Int(state.row) - halfWindowSize)
-        let last = min(Int(state.numRows) - 1, first + visibleWindowSize - 1)
-        let slice = Array(allRows[first...last])
-
-        self.currentRow = state.row
-        self.currentPlaybackTime = playTime
-        if state.pattern != self.currentPattern {
-            self.currentPattern = state.pattern
-        }
-        self.visiblePatternRows = slice
     }
 
     private func startTimeUpdateTimer() {
@@ -392,25 +396,21 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             var lastRow: Int32 = -1
             while !Task.isCancelled {
                 let playTime = self.currentPlayedTime()
-                let isLooping = self.isLooping
-                let duration = self.currentSongDuration
                 
-                let state = await Task.detached(priority: .userInitiated) {
-                    var effectiveTime = playTime
-                    if isLooping && duration > 0 {
-                        effectiveTime = playTime.truncatingRemainder(dividingBy: duration)
-                    }
-                    await self.uiModuleActor.setPosition(seconds: effectiveTime)
-                    return await self.uiModuleActor.getPlaybackState()
-                }.value
+                if self.isTrackerVisible {
+                    let state = await self.uiModuleActor.getPlaybackState()
 
-                if state.pattern != lastPattern || state.row != lastRow {
-                    await self.updateVisibleRows()
-                    lastPattern = state.pattern
-                    lastRow = state.row
+                    if state.pattern != lastPattern || state.row != lastRow {
+                        self.updateVisibleRows()
+                        lastPattern = state.pattern
+                        lastRow = state.row
+                    } else {
+                        self.currentPlaybackTime = playTime
+                    }
                 } else {
                     self.currentPlaybackTime = playTime
                 }
+
                 try? await Task.sleep(for: .milliseconds(50))
             }
         }

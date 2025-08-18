@@ -46,20 +46,20 @@ struct PlaylistView: View {
                     }
                     .padding(.vertical, 4)
                     .tag(item.id)
+                    .id(item.id) // to find the song scrolled to
                     .contentShape(Rectangle())
-                    .highPriorityGesture(
+                    .gesture(
                         TapGesture(count: 2).onEnded {
+                            self.selectedFileID = item.id
                             if let musicURL = settings.musicFolderURL {
                                 Task {
                                     await engine.play(fileURL: item.fileURL, musicFolderURL: musicURL)
                                 }
                             }
                         }
-                    )
-                    .simultaneousGesture(
-                        TapGesture().onEnded {
+                        .exclusively(before: TapGesture().onEnded {
                             self.selectedFileID = item.id
-                        }
+                        })
                     )
                 }
             }
