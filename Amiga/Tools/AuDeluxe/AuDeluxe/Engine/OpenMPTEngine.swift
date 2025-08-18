@@ -59,7 +59,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     var isTrackerVisible = false
 
     // MARK: - Private Properties
-    private let debug = false // Enabled for detailed performance logging
+    private let debug = false
     private let audioEngine = AVAudioEngine()
     private let playerNode = AVAudioPlayerNode()
     private var processingFormat: AVAudioFormat!
@@ -81,7 +81,6 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     let artistKey = "com.audeluxe.artist"
     private var pendingBufferCount = 0
     private var reachedEndOfFile = false
-    
     private let targetPendingBuffers = 10
     
     weak var settingsStore: SettingsStore?
@@ -321,15 +320,20 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         currentlyPlayingFileURL = nil
     }
 
-    func toggleLooping() async {
+    func toggleLooping() {
         self.isLooping.toggle()
+        if debug { print("Toggling loop to: \(self.isLooping)") }
         if isPlaying {
-            await moduleActor.setRepeat(count: self.isLooping ? -1 : 0)
-            await uiModuleActor.setRepeat(count: self.isLooping ? -1 : 0)
+            let repeatCount: Int32 = self.isLooping ? -1 : 0
+            if debug { print("Setting repeat count to: \(repeatCount)") }
+            Task {
+                await moduleActor.setRepeat(count: repeatCount)
+                await uiModuleActor.setRepeat(count: repeatCount)
+            }
         }
     }
 
-    func toggleShuffle(selectionID: PlaylistItem.ID?) async {
+    func toggleShuffle(selectionID: PlaylistItem.ID?) {
         self.isShuffling.toggle()
         if isShuffling {
             let selectedItem = allPlaylistItems.first { $0.id == selectionID }
@@ -340,7 +344,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             }
             self.allPlaylistItems = shuffledItems
         } else {
-            await self.applySort()
+            Task { await self.applySort() }
         }
     }
     
@@ -412,20 +416,32 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             var lastPattern: Int32 = -1
             var lastRow: Int32 = -1
             while !Task.isCancelled {
-                let playTime = self.currentPlayedTime()
+                let state = await self.moduleActor.getPlaybackState()
+                
+                // Always log when looping is enabled to see what's happening
+                if self.isLooping || self.debug {
+                    if self.debug {
+                        print("Timer - Time: \(state.time), Duration: \(self.currentSongDuration), Pattern: \(state.pattern), Row: \(state.row), Looping: \(self.isLooping)")
+                    }
+                }
+                
+                // Handle looping manually if libopenmpt isn't resetting time properly
+                var effectiveTime = state.time
+                if self.isLooping && self.currentSongDuration > 0 && state.time >= self.currentSongDuration {
+                    effectiveTime = state.time.truncatingRemainder(dividingBy: self.currentSongDuration)
+                    if self.debug {
+                        print("Manual loop reset - Original: \(state.time), Effective: \(effectiveTime)")
+                    }
+                }
+                
+                self.currentPlaybackTime = effectiveTime
                 
                 if self.isTrackerVisible {
-                    let state = await self.uiModuleActor.getPlaybackState()
-
                     if state.pattern != lastPattern || state.row != lastRow {
                         self.updateVisibleRows()
                         lastPattern = state.pattern
                         lastRow = state.row
-                    } else {
-                        self.currentPlaybackTime = playTime
                     }
-                } else {
-                    self.currentPlaybackTime = playTime
                 }
 
                 try? await Task.sleep(for: .milliseconds(50))
