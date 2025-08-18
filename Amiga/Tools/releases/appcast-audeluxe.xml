@@ -7,12 +7,14 @@
     <li>Added Sparkle for automatic application updates.</li>
     <li>Implemented a caching system for faster startup times.</li>
     <li>Added a search bar to the playlist view.</li>
+    <li>Added a jump link for current playing song.</li>
+    <li>Added a a menu bar to control music without switching to the app.</li>
 </ul>
 <h4>Bug Fixes</h4>
 <ul>
     <li>Fixed an issue where the default sort order was not applied on launch.</li>
-    <li>Resolved several concurrency warnings and potential hangs.</li>
+    <li>Loopback was working but the timeline wasn not moving.</li>
 </ul>
-]]></description><pubDate>Sat, 16 Aug 2025 18:51:41 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.5.0_53.dmg" sparkle:version="53" sparkle:shortVersionString="1.5.0" length="13414735" type="application/octet-stream" sparkle:edSignature="sparkle:edSignature=&quot;Ri9nE+EDsaC15BanrV0G0pc46KFKp//JcmnKKT1ZfQ6+R9XXrfcj5ENDxrTr4WiHKZd1+B51lrFYe/Ji0jjpCA==&quot; length=&quot;13414735&quot;" /></item><title>AuDeluxe Changelog</title>
+]]></description><pubDate>Mon, 18 Aug 2025 18:49:59 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.5.0_76.dmg" sparkle:version="76" sparkle:shortVersionString="1.5.0" length="13430683" type="application/octet-stream" sparkle:edSignature="sparkle:edSignature=&quot;CzH7QTCuzPMsVjc84AwsTSnC09zzaIn8d88L1v3TbbrGlZsYJ0Jya9teijytWjz6IqkHZGSN63PGxrJiyn08Ag==&quot; length=&quot;13430683&quot;" /></item><title>AuDeluxe Changelog</title>
         </channel>
 </rss>
