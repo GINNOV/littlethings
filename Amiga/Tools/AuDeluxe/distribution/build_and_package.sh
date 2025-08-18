@@ -13,11 +13,13 @@ RELEASE_NOTES_CONTENT='
     <li>Added Sparkle for automatic application updates.</li>
     <li>Implemented a caching system for faster startup times.</li>
     <li>Added a search bar to the playlist view.</li>
+    <li>Added a jump link for current playing song.</li>
+    <li>Added a a menu bar to control music without switching to the app.</li>
 </ul>
 <h4>Bug Fixes</h4>
 <ul>
     <li>Fixed an issue where the default sort order was not applied on launch.</li>
-    <li>Resolved several concurrency warnings and potential hangs.</li>
+    <li>Loopback was working but the timeline wasn not moving.</li>
 </ul>
 '
 # --- END: Configuration for AuDeluxe ---
