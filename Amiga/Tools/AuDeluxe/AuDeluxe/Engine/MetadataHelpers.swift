@@ -7,8 +7,6 @@
 
 import Foundation
 
-// AI_REVIEW: These helper functions are marked `nonisolated` so they can be called from the detached `Task`
-// in `scanMusicFolder`. This is safe because they don't access any mutable state of the `OpenMPTEngine` class. #END_REVIEW
 nonisolated func isPlayable(fileURL: URL, supportedExtensions: [String]) -> Bool {
     supportedExtensions.contains(fileURL.pathExtension.lowercased())
 }

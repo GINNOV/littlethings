@@ -14,7 +14,6 @@ struct AuDeluxeApp: App {
     @StateObject private var settings = SettingsStore()
     @StateObject private var engine = OpenMPTEngine()
     
-    // AI_REVIEW: The UpdaterController is created once here and holds the Sparkle engine. #END_REVIEW
     private let updaterController = UpdaterController()
 
     var body: some Scene {
@@ -45,7 +44,6 @@ struct AuDeluxeApp: App {
                     window.makeKeyAndOrderFront(nil)
                 }
             }
-            // AI_REVIEW: The UpdaterCommands are added to the scene here, which adds the menu item. #END_REVIEW
             UpdaterCommands(updaterController: updaterController)
         }
         Settings {

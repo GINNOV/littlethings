@@ -48,8 +48,6 @@ struct ContentView: View {
                 // Give the engine a reference to the settings store
                 engine.settingsStore = settings
                 
-                // AI_REVIEW: This is the fix. The engine's sort order is now synchronized
-                // with the saved default from settings when the app's main view first appears. #END_REVIEW
                 engine.sortOrder = settings.defaultSortOrder
                 
                 // Set up the callback to update the selection
@@ -171,6 +169,18 @@ struct ContentView: View {
 struct HeaderView: View {
     @EnvironmentObject private var engine: OpenMPTEngine
 
+    private var statusText: String {
+        if let songInfo = engine.currentSongInfo {
+            return songInfo
+        } else {
+            if engine.allPlaylistItems.isEmpty {
+                return "Select a music folder in Settings"
+            } else {
+                return "Select a song to play (out of \(engine.allPlaylistItems.count))"
+            }
+        }
+    }
+
     var body: some View {
         HStack {
             Image("screamer")
@@ -183,7 +193,10 @@ struct HeaderView: View {
             
             VStack {
                 Text("AuDeluxe").font(.largeTitle).fontWeight(.thin)
-                Text(engine.currentSongInfo ?? "Select a song to play").font(.headline).foregroundColor(.secondary).lineLimit(1)
+                Text(statusText)
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
                 Text(engine.songDetails ?? " ").font(.caption).foregroundColor(.secondary).padding(.top, 1)
             }
             
