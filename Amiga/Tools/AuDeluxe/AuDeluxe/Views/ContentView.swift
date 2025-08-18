@@ -24,18 +24,43 @@ struct ContentView: View {
     @State private var showingTrackerView = false
     @State private var isShowingManagePlaylists = false
     @State private var isShowingSelectPlaylist = false
+    
+    @State private var scrollToSongID: PlaylistItem.ID?
 
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                HeaderView()
+                HeaderView {
+                    if engine.isPlaying, let currentID = selectedFileID {
+                        if showingTrackerView {
+                            showingTrackerView = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                scrollToSongID = currentID
+                            }
+                        } else {
+                            scrollToSongID = currentID
+                        }
+                    }
+                }
                 
                 if settings.musicFolderURL != nil {
                     if showingTrackerView {
                         TrackerView()
+                            .onAppear { engine.isTrackerVisible = true }
+                            .onDisappear { engine.isTrackerVisible = false }
                     } else {
-                        PlaylistView(selectedFileID: $selectedFileID)
-                            .searchable(text: $engine.searchText, prompt: "Search Songs or Artists")
+                        ScrollViewReader { proxy in
+                            PlaylistView(selectedFileID: $selectedFileID)
+                                .searchable(text: $engine.searchText, prompt: "Search Songs or Artists")
+                                .onChange(of: scrollToSongID) { _, newID in
+                                    if let id = newID {
+                                        withAnimation {
+                                            proxy.scrollTo(id, anchor: .center)
+                                        }
+                                        scrollToSongID = nil
+                                    }
+                                }
+                        }
                     }
                 } else {
                     SetupPromptView()
@@ -45,12 +70,8 @@ struct ContentView: View {
             }
             .frame(minWidth: 550, minHeight: 450)
             .onAppear {
-                // Give the engine a reference to the settings store
                 engine.settingsStore = settings
-                
                 engine.sortOrder = settings.defaultSortOrder
-                
-                // Set up the callback to update the selection
                 engine.onSongChange = { newID in
                     self.selectedFileID = newID
                 }
@@ -168,6 +189,7 @@ struct ContentView: View {
 
 struct HeaderView: View {
     @EnvironmentObject private var engine: OpenMPTEngine
+    var onTitleClick: (() -> Void)?
 
     private var statusText: String {
         if let songInfo = engine.currentSongInfo {
@@ -193,10 +215,16 @@ struct HeaderView: View {
             
             VStack {
                 Text("AuDeluxe").font(.largeTitle).fontWeight(.thin)
-                Text(statusText)
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
+                
+                Button(action: { onTitleClick?() }) {
+                    Text(statusText)
+                        .font(.headline)
+                        .foregroundColor(engine.isPlaying ? .accentColor : .secondary)
+                        .lineLimit(1)
+                }
+                .buttonStyle(.plain)
+                .disabled(!engine.isPlaying)
+                
                 Text(engine.songDetails ?? " ").font(.caption).foregroundColor(.secondary).padding(.top, 1)
             }
             
