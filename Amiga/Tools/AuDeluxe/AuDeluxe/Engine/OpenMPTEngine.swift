@@ -59,7 +59,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     var isTrackerVisible = false
 
     // MARK: - Private Properties
-    private let debug = true // Enabled for detailed performance logging
+    private let debug = false // Enabled for detailed performance logging
     private let audioEngine = AVAudioEngine()
     private let playerNode = AVAudioPlayerNode()
     private var processingFormat: AVAudioFormat!
@@ -82,7 +82,6 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     private var pendingBufferCount = 0
     private var reachedEndOfFile = false
     
-    // AI_REVIEW: Increased the target buffer count to create a larger safety margin against stuttering. #END_REVIEW
     private let targetPendingBuffers = 10
     
     weak var settingsStore: SettingsStore?
@@ -246,8 +245,6 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             pendingBufferCount = 0
             reachedEndOfFile = false
             
-            // This is the core of the performance fix. We pre-render a number of buffers
-            // before playback even starts. This creates a large safety margin and prevents stuttering.
             var preRenderedBuffers: [AVAudioPCMBuffer] = []
             for i in 1...targetPendingBuffers {
                 if let buffer = await renderBuffer() {
