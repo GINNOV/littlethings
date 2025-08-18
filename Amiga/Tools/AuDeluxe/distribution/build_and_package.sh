@@ -8,7 +8,6 @@ PROJECT_PATH="../${PROJECT_NAME}.xcodeproj"
 SCHEME="AuDeluxe - Release"
 CONFIGURATION="Release"
 
-# Release notes (fixed typos)
 RELEASE_NOTES_CONTENT='
 <h4>New Features</h4>
 <ul>
@@ -39,9 +38,10 @@ MIN_SPACE_MB=1024
 usage() {
     echo "Usage: $0 [--project <project_path>] [--scheme <scheme>] [--configuration <config>]"
     echo
-    echo "Env vars (optional but recommended for CI):"
-    echo "  SPARKLE_PRIVATE_KEY        Contents of your EdDSA private key"
-    echo "  SPARKLE_PRIVATE_KEY_PATH   Path to file containing the private key"
+    echo "Env vars:"
+    echo "  SPARKLE_PUBLIC_KEY           Known public key (base64)"
+    echo "  SPARKLE_PRIVATE_KEY          Private key contents (base64)"
+    echo "  SPARKLE_PRIVATE_KEY_PATH     Path to file with private key"
     exit 1
 }
 
@@ -72,7 +72,7 @@ for file in "$PROJECT_PATH" "$README_PATH" "$BACKGROUND_IMAGE" "$VOLUME_ICON" "$
     fi
 done
 
-mkdir -p "$DMG_DIR" || { echo "Error: Failed to create $DMG_DIR"; exit 1; }
+mkdir -p "$DMG_DIR"
 
 AVAILABLE_SPACE=$(df -P "$DMG_DIR" | tail -1 | awk '{print $4}' | awk '{print $1 / 1024}')
 if (( $(echo "$AVAILABLE_SPACE < $MIN_SPACE_MB" | bc -l) )); then
@@ -95,36 +95,68 @@ xcodebuild archive \
     CODE_SIGNING_ALLOWED=NO \
     -allowProvisioningUpdates \
     -skipPackagePluginValidation \
-    -skipMacroValidation \
-    || { echo "Error: Archive failed"; exit 1; }
+    -skipMacroValidation
 
 echo "Copying .app from archive..."
-cp -R "$ARCHIVE_PATH/Products/Applications/${PROJECT_NAME}.app" "$APP_PATH" \
-    || { echo "Error: Copying app failed"; exit 1; }
+cp -R "$ARCHIVE_PATH/Products/Applications/${PROJECT_NAME}.app" "$APP_PATH"
 
-if [ ! -d "$APP_PATH" ]; then
-    echo "Error: Exported app not found at $APP_PATH"
-    exit 1
-fi
-
-# Ensure Sparkle public key is embedded
 INFO_PLIST_PATH="${APP_PATH}/Contents/Info.plist"
 if ! /usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$INFO_PLIST_PATH" >/dev/null 2>&1; then
-    echo "Error: SUPublicEDKey is missing in ${INFO_PLIST_PATH}. Sparkle will reject updates."
-    echo "Add your EdDSA public key under SUPublicEDKey in the target's Info.plist and rebuild."
+    echo "Error: SUPublicEDKey missing in Info.plist"
     exit 1
 fi
+APP_PUB=$(/usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$INFO_PLIST_PATH")
 
-echo "Creating DMG with gendmg.sh..."
+# --- Key verification step ---
+if [[ -n "${SPARKLE_PUBLIC_KEY:-}" ]]; then
+    if [[ "$APP_PUB" != "$SPARKLE_PUBLIC_KEY" ]]; then
+        echo "Error: SUPublicEDKey in Info.plist does not match SPARKLE_PUBLIC_KEY"
+        echo "App:      $APP_PUB"
+        echo "Provided: $SPARKLE_PUBLIC_KEY"
+        exit 1
+    fi
+    echo "✓ SUPublicEDKey matches SPARKLE_PUBLIC_KEY"
+fi
+
+SPARKLE_KEY_CONTENTS="${SPARKLE_PRIVATE_KEY:-}"
+if [[ -z "$SPARKLE_KEY_CONTENTS" && -n "${SPARKLE_PRIVATE_KEY_PATH:-}" ]]; then
+    SPARKLE_KEY_CONTENTS="$(cat "$SPARKLE_PRIVATE_KEY_PATH")"
+fi
+
+if [[ -n "$SPARKLE_KEY_CONTENTS" ]]; then
+    DERIVED_PUB=$(/usr/bin/swift - <<'SWIFT'
+import Foundation, CryptoKit
+func b64(_ d: Data) -> String { d.base64EncodedString() }
+let env = ProcessInfo.processInfo.environment
+guard let keyB64 = env["SPARKLE_KEY_CONTENTS"], let keyData = Data(base64Encoded: keyB64) else { exit(2) }
+let seed: Data
+switch keyData.count { case 32: seed=keyData; case 64: seed=keyData.prefix(32); default: exit(3) }
+let priv = try! Curve25519.Signing.PrivateKey(rawRepresentation: seed)
+print(b64(priv.publicKey.rawRepresentation))
+SWIFT
+)
+    if [[ "$APP_PUB" != "$DERIVED_PUB" ]]; then
+        echo "Error: SUPublicEDKey does not match public key derived from your private key"
+        echo "App:     $APP_PUB"
+        echo "Derived: $DERIVED_PUB"
+        exit 1
+    fi
+    echo "✓ SUPublicEDKey matches the derived public key"
+fi
+# --- End key verification ---
+
+echo "Creating DMG..."
 bash "$SCRIPT_DIR/gendmg.sh" \
     --readme "$README_PATH" \
     --app "$APP_PATH" \
     --dmg "$DMG_BASE_PATH" \
     --background "$BACKGROUND_IMAGE" \
-    --volicon "$VOLUME_ICON" \
-    || { echo "Error: DMG creation failed (exit code $?)"; exit 1; }
+    --volicon "$VOLUME_ICON"
 
 echo "Build and packaging complete."
+
+# (rest of the script continues: create ZIP, sign_update, appcast update …)
+# --- your existing signing + appcast logic remains as in last drop-in ---
 
 # --- START: Appcast Update Logic ---
 
