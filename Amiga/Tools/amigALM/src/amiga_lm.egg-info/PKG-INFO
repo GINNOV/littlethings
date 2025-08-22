@@ -1,0 +1,103 @@
+Metadata-Version: 2.4
+Name: amiga_lm
+Version: 0.1.0
+Summary: Amiga-focused Large Language Model fine-tuning project
+Author-email: Your Name <your.email@example.com>
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/ginnov/amiga-lm
+Project-URL: Repository, https://github.com/ginnov/amiga-lm.git
+Project-URL: Issues, https://github.com/ginnov/amiga-lm/issues
+Keywords: machine-learning,nlp,fine-tuning,transformers,amiga
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Requires-Python: <3.13,>=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: torch>=2.1.0
+Requires-Dist: transformers>=4.46.0
+Requires-Dist: datasets>=2.19.0
+Requires-Dist: accelerate>=0.32.0
+Requires-Dist: peft>=0.12.0
+Requires-Dist: trl>=0.10.0
+Requires-Dist: sentencepiece>=0.2.0
+Requires-Dist: protobuf>=3.20.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: pandas>=2.0.0
+Requires-Dist: scikit-learn>=1.3.0
+Requires-Dist: matplotlib>=3.7.0
+Requires-Dist: seaborn>=0.12.0
+Requires-Dist: tqdm>=4.65.0
+Requires-Dist: wandb>=0.15.0
+Requires-Dist: tensorboard>=2.14.0
+Requires-Dist: pymupdf>=1.24.0
+Provides-Extra: nvidia
+Requires-Dist: bitsandbytes>=0.43.0; extra == "nvidia"
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: isort>=5.12.0; extra == "dev"
+Requires-Dist: flake8>=6.0.0; extra == "dev"
+Requires-Dist: mypy>=1.5.0; extra == "dev"
+Requires-Dist: pre-commit>=3.0.0; extra == "dev"
+Provides-Extra: jupyter
+Requires-Dist: jupyter>=1.0.0; extra == "jupyter"
+Requires-Dist: ipykernel>=6.25.0; extra == "jupyter"
+Requires-Dist: ipywidgets>=8.0.0; extra == "jupyter"
+Requires-Dist: notebook>=7.0.0; extra == "jupyter"
+Provides-Extra: evaluation
+Requires-Dist: evaluate>=0.4.0; extra == "evaluation"
+Requires-Dist: rouge-score>=0.1.2; extra == "evaluation"
+Requires-Dist: sacrebleu>=2.0.0; extra == "evaluation"
+Provides-Extra: apple-silicon
+Provides-Extra: all
+Requires-Dist: amiga_lm[apple-silicon,dev,evaluation,jupyter,nvidia]; extra == "all"
+
+# Install uv if you don't have it yet
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Create and activate a new project environment
+uv venv amiga-finetune
+source amiga-finetune/bin/activate
+
+# Install all the necessary libraries
+uv pip install torch torchvision torchaudio
+uv pip install transformers datasets accelerate peft trl bitsandbytes sentencepiece
+
+# Test Environment Setup
+`uv run check_gpu.py`
+
+
+# Build Dataset
+You can build the dataset using as much code as you can find. The sources I used in the first commit are here hardcoded.
+`uv run src/amiga_lm/prepare_dataset.py`
+
+
+### \#\# Next Step: Train the Model 🚀
+
+You're all set to begin the fine-tuning process. This is the most computationally intensive part, where the model will learn from the Amiga assembly data you've just collected.
+
+**1. Run the Training Script**
+
+Execute the `train_model.py` script from your terminal:
+
+```bash
+uv run src/amiga_lm/train_model.py
+```
+
+**2. Monitor the Progress (Optional)**
+
+While the model is training, you can open a **new, separate terminal window** and launch TensorBoard to watch the training loss decrease in real-time. This helps you see if the model is learning effectively.
+
+In the new terminal, navigate to your project folder and run:
+
+```bash
+tensorboard --logdir amiga_codegemma_finetuned
+```
+
+This will give you a local web address to open in your browser.
+
