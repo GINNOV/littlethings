@@ -1,0 +1,2923 @@
+@database TMapFAQ.guide
+@$VER:TmapFAQ.guide 1.51
+@wordwrap
+
+@node Main "Amiga Texturemapped Games FAQ V 1.51"
+
+@{b}Amiga Texturemapped Games FAQ V 1.51@{ub}
+
+
+@{u}Table of contents@{uu}
+
+    I.   @{" Introduction                                         " link intro}
+
+    II.  @{" Short reviews of all demos/games/sources known to me " link Reviews}
+
+    III. @{" Rumours and other infos department                   " link Rumors}
+
+    IV.  @{" Doing texturemapping with emulators                  " link Emulators}
+
+    V.   @{" Algorithms                                           " link Algorithms}
+
+    VI.  @{" The Amiga Texturemapping online conference           " link conference}
+
+    VII. @{" What can YOU do to support this FAQ ?                " link Support}
+@endnode
+
+
+@node intro "Amiga Texturemapped Games FAQ V 1.51"
+@toc Main
+
+@{b}Introduction@{ub}
+
+ 1. @{" History                                                " link History}
+ 2. @{" What is Texturemapping ?                               " link Whatis}
+ 3. @{" What are the problems of Texturemapping on the Amiga ? " link Problems}
+ 4. @{" How can they be solved ?                               " link Solve}
+@endnode
+
+@node History "Amiga Texturemapped Games FAQ V 1.51"
+@toc intro
+
+@{b}History@{ub}
+
+V 0.1  First release
+V 0.25 Added some more demos, layout is 80 charachters/line
+V 0.26 Added History, layout is 75 characters/line
+V 0.3  Added some additional info, added 3d-demo,
+       added Albas engine, added Wayne engine, added 
+       source section.
+V 0.35 Added A1200 smoothness values. Thanks to all the people
+       who sent me email, by the way... they help improving
+       the FAQ :))) Added some frame rates ...
+V 0.4  Added short reviews of TextDemo57 and Alien Breed 3D
+V 0.5  FAQ converted to AmigaGuide format by John Corigliano
+       Basics of Raycasting article added by John Corigliano
+       Some minor changes in the introduction by me.
+       Invitation to the second TMap converence on irc at 1st March.
+V 0.55 Added info about Union Interactive's engine.
+       Added full review of the current working executable of Reality AGA.
+       Added Basics of Copper Chunky chapter.
+       Keep on sending algorithms, coder guys !!!
+V 0.60 Added info about the game that will be made out of the Motion engine.
+       Added info about ongoing work with Warp_S.       
+       Added info about Waynes Engine.
+       Added info about John Hendrikx RTG library project 
+       (section TextDemo57). Graphics Libraries for use in games.
+       Corrected some minor things.
+V 0.61 Added some BAD news about DSA 2 in the info section
+       Added some GOOD news about Whales Voyage II in the info section
+       Info about third texturemapping conference in may included
+V 0.65 Added latest info about Albas engine ("Breathless")
+V 0.70 Included information about preview of Commercial Fears, the first
+       real playable DOOM clone demo on Amiga, with Monsters and all...
+       Some info updated in infos and rumour section
+       Some questions from me :
+       1. Does anybody know, what got out of POOM ? If i remember correct,
+          it was said, the REAL V 0.3 should be there in April... now
+          IS April... :)))
+       2. Somebody interested in another texturemapping conference ?
+       By the way, at 20th/21th April Commodore will be sold !!! :)))))
+V 0.71 Included some things i heard about a game called Za Zelazna Brama
+       (and yes, the source IS reliable...), updated info about commercial
+       Fears...
+V 0.73 Latest info about Warp_S, POOM, Dentaku26 and AlienBreed3D included...
+       Updated rumours section.
+V 0.74 Included info about rtg.library
+V 0.75 Created game-demos entry about Gloom
+       Included info about possible pickup of Rot3D engine
+V 0.80 Updated info about playable Beta of Warp_S (!!!)
+       Updated info about Gloom
+V 0.85 The statement about Gloom being No-AGA was wrong. I corrected this.
+       I inserted the info about Phoenix, a new engine.
+V 0.90 Added information about Damagewolf, Lech and Deep. Added rumoured
+       release dates for GLOOM, AB3D and Whales Voyage II. Added something
+       about another texturemapping conference (the third...) in June.
+       By the way, if i do not list your FAVOURITE not-Game-Demo, sorry...
+       there are SO MUCH Not-Game-Demos... simply send me mail what Not-Game-Demo
+       you want to get included (but i think that FAQ will now mainly review
+       the Game-Demos...)
+       Added latest info about rtg.library
+V 0.95 Corrected bug in V 0.90 (concerning DamageWolf)
+       Added info about "Behind the iron gate"
+       Added info about "Frank's Engine"
+       Added info about "Donald's Engine"
+       Updated info about Fears, Textdemo and Dentaku26
+V 1.00 Updated info about Behind the Iron Gate
+       Updated info about Union Interactives Engine (GREAT NEWS !!!!!!!!! :))))) )
+V 1.05 Updated info about Fears (New demo !!!) and Dentaku26
+       Included info about Whales Voyage II Demo
+       Updated info about Switchworld, DamageWolf and rtg.library
+       Updated info about the Amiga Texturemapping Conference
+       Updated rumour department
+V 1.10 Moved info about GLOOM from Game-Demos to Games (!!!)
+       Updated info about Whales Voyage II Demo
+       Included info about Speed Demo
+       Updated info about rtg.library
+       Updated Texturemapping Conference info
+       Updated info about the Phoenix Engine
+       Still no Switchworld demo :(
+       From now on, the latest version of this FAQ is available over WWW
+       on http://www.informatik.uni-stuttgart.de/fachschaft/adressen/haeuser.html
+V 1.15 Updated Info about Warp_S (concerning Warp_S, ESCOM and VR-Equipment :) )
+       Included emulation info about Shapeshifter and Dark Forces Demo for Mac
+       Included info about Fruitkitchen Demo
+       Added info about different GFX boards to the link about rtg.library,
+       including info about the "50 german marks graphics board specially
+       created for GAMING... uuuhhh... ESCOM? Are you reading? Put that
+       in A1200 !!!"
+       Still no Switchworld demo, but Gloom is now released for sure
+       About the Phoenix Demo, i got the info that the version 3.0 engine
+       is coming to something soon...
+       Next Texturemapping Conference at 31st October.
+       Corrected the FAQ (in the AmigaGuide-links to the Fears Demo and to Lech there were some bugs)
+       This FAQ is available on my WWW homepage (see below) and on the
+       Birdland BBS (telnet 194.55.101.51 between 18.30 GMT and 19.30
+       GMT, fileboard files/allgemein/texte.
+       As far as i know, "Behind the iron Gate" is released now
+V 1.20 Added info about Cytadela
+       Added info in rumour section
+       Added info about latest engine of A. Lankila
+       Updated info about Breathless
+       Some minimal changes
+       Added more info about "50 marks graphics board"
+       Added sections "Released games"
+       moved Commercial Fears to "Games"
+       Updated info about "Behind the iron gate"
+V 1.25 Updated "Breathless" info
+       Included info about My3DEngine
+       Announcement : Soon release of rtg.library
+V 1.26 Bad news about Warp_S... no Warp_S as A1200 bundle probably...
+       Added rumour about GLOOM II
+V 1.30 Alien Breed 3D released (moved it from Game-Demos to Games...) !!!
+       Virtual Karting should be released by now !
+       Starfighter announced by OPM !
+       News regarding Graffiti GFX Board and rtg.library
+       Still no Switchworld or Breathless demo
+       News regarding to Brassman/Warp_S
+       News about Fears full version and about new engine of Damagewolf author
+       Alex Amsel, PLEASE CONTACT ME !!! I DON'T HAVE A VALID EMAIL ADRESS
+       FROM YOU ANY LONGER !!! I NEED NEW INFO ABOUT DENTAKU !!!
+V 1.35 Nemac_4 (Ex "Warp_S", Ex "Brassman" reviewed), first Amiga
+       Texturemapping Gamedemo running on most Amiga Graphics Boards !!!
+       Changed Warp_S entry to "Nemac 4"
+V 1.50 Included info about XTR, Alien Breed 3D Special Edition,
+       GLOOM Deluxe, updated info about CyberGraphX 3.0, Power Amiga
+       and new Graphics Boards in the rtg.library section. Included
+       info about rtg.library there too. Updated Nemac IV info.
+       Changed "Albas Engine" to "Breatless". Updated Breathless info.
+       Updated info about Textdemo.
+       Updated info about "Franks Engine" and Dentaku (bad news...)
+       Included info about Marathon II to the Emulation section.
+       Updated rumours section (Programmer, be sure to read this !!!)
+V 1.51 Important infos about Breathless
+       Some infos about Nemac IV, Gloom Deluxe,rtg.library and AB3DSE
+       Maybe i will throw out some old stuff in the next version (redo
+       the entries about all that demos that have now 2 pages of stuff about
+       all in-between-versions :) In January probably...)
+
+@endnode
+
+@node Whatis "Amiga Texturemapped Games FAQ V 1.51"
+@toc intro
+
+@{u}@{b}What is Texturemapping ?@{uu}@{ub}
+
+Texturemapping is a method of wrapping bitmapgraphics around
+vectors or 3D based graphics in common. For games, texturemapping
+is mostly used doing very realistic Dungeons.
+
+In contrary to a dungeon like in Dungeonmaster or Eye of the Beholder,
+the player is not limited to some few directions, but he can turn
+around in TRUE 360 degrees, like in real life. Often the graphics
+gives a more realistic feel than the graphics of such block graphics 
+games and especially the opponents of the player are done very well
+(using texturemapping and vector graphics ...)
+
+Texturemapping is used for role playing games and for dungeon action
+games (some of them able to handle more than one player at the same time).
+The most famous such games are Castle Wolfenstein and DOOM. Castle
+Wolfenstein is for PC and Mac, DOOM is for PC (and soon for Mac too).
+There are probably more texturemapping action games than texturemapping
+role playing games.
+
+The original creators of DOOM did no port to the Amiga and won't do
+so in the future. All the talk about "Amiga DOOM" is to do a similar
+game on Amiga, not the original DOOM. Most people speak of "Wolfenstein
+style" and "DOOM style" graphics engines to describe how GOOD the used
+texturemapping in a game is. DOOM engines are superior to Wolfenstein 
+engines.
+@endnode
+
+@node Problems "Amiga Texturemapped Games FAQ V 1.51"
+@toc intro
+
+@{b}What are the problems of Texturemapping on the Amiga ?@{ub}
+
+Texturemapping needs to put single pixels to a screen, not only LINES 
+like in vector graphics. So you need both a fast CPU and a fast graphics 
+for doing texture mapping.
+
+On PC (and on Mac) the color of each pixel is described by ONE BYTE... 
+this is the so-called CHUNKY PIXEL MODE. On Amiga, the color of each pixel 
+is described by EIGHT VALUES (for 256 colors). This is the so-called
+BITPLANE GRAPHICS. Easy to understand, Chunky pixel is better for 
+texturemapping than bitplane graphics, as bitplane graphics only 
+has 12.5% of the speed of chunky graphics (if you take a simple algorithm
+that only takes one pixel at a time. Of course you can speed things up
+handling 8 pixels at a time (eight Bytes). Of course, if you take less
+thean 256 colors the speed is better, and i was told, in this way you even
+may get a better speed than doing chunky graphics.
+
+Second thing, even if the 68040 is very fast, not everybody has got such 
+a thing(i have :)))) ). But on PC most gamers have got a 80486 (Which 
+probably is slower than the '040, but much faster than the '020). It is 
+probably not possible doing texturemapping with an 68000. In addition, 
+texturemapping should probably have 64 colors AT LEAST (maybe extra 
+halfbrite on ECS ...)
+
+Third, a lot of companies let the Amiga alone (Boooooh... :((( ), and in 
+special they did not want to risk coding something DIFFICULT on Amiga. 
+And some coders simply are moronic DOS-lovers (greetings to ID Software 
+(they did DOOM) and to Richard Garriot of Origin at this place... i hope 
+they $"&$/&$"/$"/& (censored) !!!)
+@endnode
+
+@node Solve "Amiga Texturemapped Games FAQ V 1.51"
+@toc intro
+
+@{b}How can Problems of Texturemapping on the Amiga be solved ?@{ub}
+
+A) @{i}Copper Chunky Modes@{ui}
+
+I told you before, that the Amiga is not capable of doing chunky modes. 
+That is not 100% the truth. There is a type of copper cheat (the copper 
+is one of the Amiga's graphics coprocessors), that in fact DOES chunky 
+modes. The problem with this graphics mode is, it can only handle a 
+resolution about 100x100 to 130x120 pixels (i do not know exactly, as i 
+am no specialist in coding texturemapping ...) Compared to PC Games with 
+320x200 texturemapping this may look ugly ... (but it should be mentioned, 
+games on PCs (at least on PCs that are not these absolute high-powered
+ones...) often do not use full screen graphics, and so often too use such 
+resolutions. Copper chunky can't do 1x1 or 2x1 pixel resolution or
+something like that (i do not know exactly what are the limits for that
+Copper tricks... maybe an expert inc coding such things could tell me ?)
+Of course, to get a real nice graphics it is better to take the more
+CPU intensive Chunky to Planar routines... just compare Alien Breed 3D
+and TextDemo57 :)))
+
+B) @{i}Chunky to Planar Conversion Routines@{ui}
+
+A Chunky to Planar Conversion Routine is a part of a texturemapping code, 
+that takes graphics in chunky (one Byte per pixel) as input, and puts it 
+as Bitplane Graphics on the Screen. Of course, this method needs much 
+CPU-power. For most demos/games, you should have at least a '030 to get 
+it smooth... and a lot of demos using this technique do not have FULL 
+texturemapping... that is, they for example have no stairs, and everything 
+on screen is on the same height level. Copper Chunky does this better, but
+has a low resolution... of course a '040 with a Conversion Routine can 
+do fine things...
+
+C) @{i}Using a graphics board@{ui}
+
+Graphics boards for the Amiga do not use Bitplane graphics, but, in fact, 
+Chunky graphics. The problem is, not many people have such boards in their 
+systems, in difference to the PC, where all graphics is based on such 
+boards. But some coders said, they maybe will do an additional "graphics 
+board version", that features the fast graphics chips with their chunky 
+graphics... there is even a texturemapping demo running on EGS (EGS is
+a standard for Amiga graphics boards).
+
+D) @{i}Demo-Groups do the Games@{ui}
+
+As those people who can do texturemapping best (on PC) often are 
+DOS-lovers, on Amiga a lot of people of the demo-scene and others, who 
+are not employed at software firms, began to code... and as software firms 
+want to SELL, they will probably sell the finished products, even if they 
+are Amiga-only... And of course there are firms DEDICATED to the Amiga, 
+like Team17 ... they are in this texturemapping business, too ...
+@endnode
+
+@node Reviews "Amiga Texturemapped Games FAQ V 1.51"
+@toc Main
+
+@{b}Short reviews of all demos/games known to me@{ub}
+
+ 1. @{" Demos          " link "Demos"}
+ 2. @{" Game-Demos     " link "Game-Demos"}
+ 3. @{" Games          " link "Games"}
+ 4. @{" Sources        " link "Sources"}
+ 5. @{" Released Games " link "Released"}
+
+The short reviews are done in a specific format, mentioning Name, Author 
+Name (or name of one of the authors), Minimum System, Recommended System, 
+Engine style, How smooth the scrolling is and how good the pixelresolution 
+is. Then they are followed by a short description of the demo (of course i 
+could say more of the most, but there are a lot of demos reviewed...) Then 
+i list the E-Mail of the author (if available) and where on Aminet sites to 
+find the demo (if possible). I recommend using ftp.uni-paderborn.de or 
+src.doc.ic.ac.uk or another site with complete Aminet. Some smaller sites 
+only have got the latest uploads to Aminet. Wuarchive is a good choice, 
+too. And there is another good site called ftp.netnet.com or something 
+like that. You could look at ftp.luth.se, too.
+
+All speed remarks are relative to my own system (hehehe...), an A4000/040 
+with 14 MB RAM and a Piccolo SD64 graphics board (not the standard Amiga, 
+isn't it ?) If you have an Amiga 1200 without accelator and did some tests 
+you may wish to mail your results to me ...
+
+I have to remark too, that the comments are NOT objective... i like some
+demos and games, and do not like others... no one should take it as an 
+insult, if i give his favourite demo a bad mark... it is only a try done 
+by me... if you think the other way round, tell me... maybe you can 
+convince me to change the FAQ as to one specific demo :))) I chose to be 
+STRICT in the remarks i had to do ... in order to show the differences 
+between the tested engines ... but of course i know how much work it is 
+even to do a texturemapping demo in LOW resolution with a TM-Engine that 
+suxx...
+
+Sometimes i wrote something like Low/Wolf... then i did not want to say 
+Low, and not Wolf... again... everything very subjective ...
+
+Ah... about that "recommended system" things... Just guesses...
+
+Nearly all of the demos are on Aminet and for most of the demos
+you will find in the FAQ in which directory. Most of the demos
+also are (for the Germans reading this FAQ) available on the
+Birdland BBS (number found at the end of this FAQ).
+@endnode
+
+@node system "Amiga Texturemapped Games FAQ V 1.51"
+Minimum/Recommended System
+
+All  = All Amigas with 1 MB chip at least
+020  = All Amigas with 68020 at least
+AGA  = All Amigas with AGA
+030  = All Amigas with '030 at least
+040  = All Amigas with '040 at least
+060  = All Amigas with '060 at least (Joke! :))) )
+FPU  = All Amigas with FPU at least
+EGS  = All Amigas with EGS graphics boards
+
+ - Click @{b}Retrace@{ub} to return...
+@endnode
+
+@node engine "Amiga Texturemapped Games FAQ V 1.51"
+Engine style
+
+Low  = Engine worse than Wolfenstein, 
+Wolf = Wolfenstein-style engine
+:)   = A little Better than Wolfenstein, worse than DOOM
+:):) = MUCH better than :), but not DOOM ...
+DOOM = DOOM-style engine
+Bey  = Engine BEYOND DOOM
+Simply SUXX = This is the special entry for the 3D Part of Jurassic Parc :)
+
+ - Click @{b}Retrace@{ub} to return...
+@endnode
+
+@node smoothness "Amiga Texturemapped Games FAQ V 1.51"
+Smoothness
+
+VSm  = Graphics very Smooth
+Smo  = Graphics smooth
+NSm  = Graphics nearly smooth
+Not  = Not very smooth graphics
+
+ - Click @{b}Retrace@{ub} to return...
+@endnode
+
+@node resolution "Amiga Texturemapped Games FAQ V 1.51"
+Pixel resolution
+
+Cop  = Probably copper chunky or some other copper cheat, maybe i am 
+       wrong. In special CopL says low pixel resolution, CopM medium
+       and CopH says high resolution (but i think it is impossible
+       of doing a copper display with a pixel resolution you could call
+       HIGH). CopM probably is worse than Med. I used the CopL-CopM
+       abbreviations only to have SOME METHOD to differentiate
+       between different kinds of copper displays.
+Low  = Low resolution (probably something around 2x2 or worse...)
+Med  = Medium resolution (probably something around 2x1 or 1x2 ...)
+High = High resolution (probably 1x1 ...)
+
+ - Click @{b}Retrace@{ub} to return...
+@endnode
+
+@node coded "Amiga Texturemapped Games FAQ V 1.51"
+Coded by
+
+(P)  = Single Person
+(G)  = Demo group
+(PO) = listed person is one of those doing the thing... but there are 
+       others...
+(SF) = Software firm
+
+ - Click @{b}Retrace@{ub} to return...
+@endnode
+
+@node Demos "Amiga Texturemapped Games FAQ V 1.51"
+@toc Reviews
+
+@{b}Demos@{ub}
+
+Only Demos with texturemapping parts that could be used in games are 
+mentioned... no textured spheres, cubes and such things... all things 
+mentioned in the chapter "Demos" will probably never get games ...
+
+    @{" Mindflow        " link "mindflow"}
+    @{" Motion          " link "motion"}
+    @{" Doomed          " link "doomed"}
+    @{" Phobos          " link "phobos"}
+    @{" Fullmoon        " link "fullmoon"}
+    @{" HOI-SAGAIII     " link "hoi"}
+    @{" Waynes Engine   " link "wayne"}
+    @{" Lech            " link "lech"}
+    @{" Fruitkitchen    " link "fruit"}
+    @{" Deep            " link "deep"}
+@endnode
+
+@node mindflow "Amiga Texturemapped Games FAQ V 1.51"
+@toc Demos
+
+Mindflow      Stellar (G)     AGA (4 MB RAM)     AGA (4 MB RAM)
+:)            NSmo            CopL
+
+One of the effects of this demo is a dungeon that looks nearly like the 
+dungeons of the game Ambermoon. The textures of the ceiling and floor 
+are MUCH better than in Ambermoon, but Ambermoon is smoother ...
+
+Author : Stellar (One email of a Stellar-Member is 
+         jsaarinen@kone.fipnet.fi, this is Nose/Stellar)
+File   : /pub/aminet/demo/aga/mindflow.lha
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node motion "Amiga Texturemapped Games FAQ V 1.51"
+@toc Demos
+
+Motion        Bomb (G)        AGA                AGA
+:)/DOOM       Not/NSm         CopL
+
+One of the effects of this demo is a FULL texturemapped DOOM engine with 
+stairs and all. Bravo, Bomb !!! You should do a game out of this :))) 
+This demo did not run on my A4000/040, but i did get a patch from some-
+one... i do not think this patch is on Aminet, though ... one last word
+to the engine... there are stairs and all included, but the Speed i think
+is not that sufficent for a game ... okay for a demo though...
+The walls are only rectangular.
+
+Latest info about this : Bomb decided to do a game with this engine, and
+the game is already 85% complete. It will be called FEARS (a little
+strange, as Bomb already released a Wolfenstein clone with this name).
+But this FEARS will use the Motion-engine. It should be out next month.
+It will be a commercial game. Bomb started a new company called Manyk
+to market this game. As soon as i know more, i will move the Motion
+entry to Game-Demos.
+
+Some Info even later : A preview of this game ("Commercial Fears") is out.
+Take a look to the game-demos-section about it...
+
+Author : Gengis/Bomb
+File   : /pub/aminet/demo/par94/MotionDisk1.dms
+         /pub/aminet/demo/par94/MotionDisk2.dms
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node fruit "Amiga Texturemapped Games FAQ V 1.51"
+@toc Demos
+
+Fruitkitchen  The Silents(G)  AGA                AGA
+DOOM+         Smo/VSm         CopM
+
+One effect of this great demo is a dungeon FLIGHT with effects like rotation
+and all that what we know of the PC Game Descent. Of course the graphics resolution of
+Descent is much better, but anyways, i would not have thought THAT being possible
+on an Amiga without graphics board. It is really absolute free FLIGHT !!! :)
+I hope this code will find its way to a game... but that would be trouble
+for some coders/publishers, then... (but the demo had no monsters up to now...)
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node doomed "Amiga Texturemapped Games FAQ V 1.51"
+@toc Demos
+
+Doomed        Pearl (G)       All                All
+Low           VSm             CopL
+
+A demo where you can use the joystick to wander around... but i decided
+not to do it to the Game-Demos, because the only intention to do this one 
+was, to prove it is possible of getting 50 fps on a plain A500. Someone 
+of Pearl tried to enhance the engine, but as this did not work, the demo 
+died. Talking about resolutions, there are copper chunky demos with 
+better resolution.
+
+Author : Netrunner/Pearl (9308938m@lux.levels.unisa.edu.au)
+File   : /pub/aminet/demo/euro/Pearl.Doomed.lha
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node phobos "Amiga Texturemapped Games FAQ V 1.51"
+@toc Demos
+
+Phobos        Cydonia (G)     All (???)          All (???)
+Low           Smo             CopL
+
+One of the earlier approaches to Amiga texture mapping. It has no floor 
+textures and turning around does not look like it SHOULD... but asides 
+from that the speed is impressive. You can use your joystick to walk the
+dungeon, in contrary to most not-game demos. The resolution is weak.
+
+Author : ???
+File   : ???
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node fullmoon "Amiga Texturemapped Games FAQ V 1.51"
+@toc Demos
+
+Fullmoon      Fairlight (G)   AGA                AGA
+Low           NSm/Not         Med
+
+Even if Fullmoon is a very nice demo, the texturemapping part is not very 
+well done. The scrolling is not smooth, there are no floor and ceiling 
+textures and the resolution is low. The not texturemapping related parts 
+of the demo are nevertheless great !
+
+Author : ???
+File   : ???
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node hoi "Amiga Texturemapped Games FAQ V 1.51"
+@toc Demos
+
+HOI-SAGAIII   TEAM HOI (G)    AGA                AGA
+Low           NSm/Smo         Low
+
+The texturemapping part of the demo has no ceiling textures, and the floor 
+textures are not very well done. The speed is better than that of most 
+such "little hacks", but there are better texturemapping demos than this 
+one. Aside from this flaw, HOI-SAGA III is (looked upen on it as demo in 
+common) okay.
+
+Author : Teamhoi@SterrBBS.nl (or was it TeamHoi@SterBBS.nl ???)
+File   : ???
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node wayne "Amiga Texturemapped Games FAQ V 1.51"
+@toc Demos
+
+Waynes Engine Wayne Mendoza   ???                020+Fast Ram
+DOOM          ???             ???
+
+This one will be DOOM-like graphics. But sadly Wayne_m said on irc he
+would probably not do a game with it. I HOPE he changes his mind about
+this :))) I do not know what the final name of the thing will be.
+According to the author, The engine runs with 24-30 fps on a 4000/040, 
+14 fps on a 1200 with Fast Ram. There are 1x1, 1x2, 2x1 and 2x2 pixel 
+resolutions available. It uses c2p and NO copper tricks. Uses Data
+from DOOM .wad-Files.
+
+Author : wayne@msq.ruhr.de
+File   : Not yet available
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node lech "Amiga Texturemapped Games FAQ V 1.51"
+@toc Demos      
+
+Lech          Freezers(G)      ???                020+Fast Ram
+:)            Smo/VSm         Low/Med
+
+A little dungeon effect doing 10 fps on an A1200 with Fastram. Looks a bit
+"Ambermoon-like". The rest of the demo is fine too...
+
+Author : ??? (Freezers probably :)))))) )
+File   : On Aminet ? Maybe ftp-Site "Papa" (on irc /dcc chat Papa,/query =papa,ls)
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node deep "Amiga Texturemapped Games FAQ V 1.51"
+@toc Demos        
+
+Deep          Parallax (G)    AGA                 AGA
+Wolf          VSm             CopL
+
+Nice effect with a blurring chunky copper dungeon, but probably not useful for a
+game. Nice effect in a nice demo... by the same Group like POOM... (by the way, if
+someone of Parallax reads that... someone from your group (i think it was Bandog)
+said some time ago on irc, there would be soon a new POOM release... what about
+that ?)
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode     
+
+@node Game-Demos "Amiga Texturemapped Games FAQ V 1.51"
+@toc Reviews
+
+@{b}Game-Demos@{ub}
+
+Game-Demos are Demos that are probably on their best way of getting games. 
+Some of them actually will get Games, some not ...
+
+    @{" Nemac 4                   " link warp_s}
+    @{" POOM                      " link poom}
+    @{" BSP                       " link bsp}
+    @{" Speed!                    " link speed}
+    @{" Tmapdemo                  " link tmapdemo}
+    @{" Dentaku26                 " link dentaku26}
+    @{" ChunkyMaze                " link chunkymaze}
+    @{" TextDemo                  " link textdemo}
+    @{" Rtg.library               " link Rtg}
+    @{" Phoenix                   " link phoenix}   
+    @{" Reality                   " link reality}
+    @{" Breathless                " link albas}
+    @{" Dogenstein3D              " link dogenstein3d}
+    @{" 3D-Demo                   " link 3d-demo}
+    @{" Switchworld               " link Union}
+    @{" Wolf23_ish                " link wolf32_ish}
+    @{" Wolf3D                    " link wolf3d}
+    @{" Rot3D                     " link rot3d}
+    @{" DamageWolf + new engine   " link damwolf}
+    @{" Frank's Engine            " link frank}
+    @{" Amos-Engine               " link donald}
+    @{" Whales Voyage II          " link whale}
+    @{" My3DEngine                " link my3D}
+    @{" XTR                       " link XTR}
+    @{" GLOOM Deluxe              " link gdeluxe}
+    @{" Alien Breed 3D SE         " link ab3dse}
+
+@endnode
+
+@node warp_s "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Nemac 4       O. Groth (PO)   020+HD             AGA + Fast Ram
+:):)          Smo/Vsm         Low/Med
+
+Really a nice engine, the only DOOM style engine on Amiga with monsters 
+running around. This one will be a game 100%. Playable demo will be out 
+maybe February or March. The resolution and graphics are not the best at 
+the moment, but the next Demo out will (according to the beta i saw) be 
+much better. They got a new graphician, who is very good (i know this 
+one :))) ). Maybe the most promising demo of them all. It will get a 
+graphics board version, too, and an extra version that is '040-optimized 
+(higher resolution !!!) was promised sometimes... Was in the beginning 
+called Texmapp... The release version probably will be faster than the 
+demo. Uses not only 90 degree walls. Decompresses monster GFX in real 
+time. Just got a new beta from Oliver. Some bugfixes, you can shoot
+(but there is no explosion graphics yet) and you have the option of
+doing a speedup of the graphics. And next beta : You can getting objects 
+lying on the ground (munition) and you can shoot with real shooting
+graphics. The monsters shoot back. But nobody dies, and the shooting
+graphics is up to now a bit poor.
+
+Latest info : Soon they will have finished a Beta release, which is
+PLAYABLE... but probably only the NEXT version after this beta will
+get a public release... they are working hard on graphics board versions,
+are interested in versions with WB-Emus as well as in John Hendrikx
+rtg.library. They are looking for contacts to software firms currently.
+Interested firms would get that Beta-Release as soon as this one is finished.
+
+NOW i got the playable demo. As to the level design there has to be done
+a LOT of work, but as to the graphics engine : It is fantastic. Now i would
+say Warp_S is the most promising DOOM clone for Amiga. As to its features
+there is nothing new (maybe some smaller changes in the textures), but the
+greatest thing is, it is real playable. And NO copper chunky crap... on
+my A4000/040 it is still playable with around 200x136 to 240x136 with
+a pixel resolution of 1x1. 2x2 is VERY playable (probably on low powered
+systems too), but there some bugs with the graphics left. This version
+up to now does not run on graphics boards.
+
+To talk another time of the features : No different height walls, but a
+nice resolution, explosions, fighting monsters (some sort of robots...),
+some things standing on the floor, not rectangular walls, bobbing
+movement. I do not know what is wrong with the frame rate in this latest
+version. Some times i got 40 fps, sometimes 8 fps. But anyway, if the
+frame rate tells the truth or not, it is good playable (if you got a
+030 at least or use 2x2... as soon as the bugs in 2x2 are fixed...)
+The windowsize is free configurable (but in y direction, 136 is the
+maximum...). The graphics is, as i said, really cool, for that sort of
+game on Amiga (because being playable AND high resolution), but there
+is no great gameplay up to now... but one thing after the other probably...
+
+Latest info : Oliver Groth talked to those guys of Amiga Technologies, and we will
+probably see Warp_S/Brassman bundled to new A1200 at the beginning of 1996. As to
+the game, there already exists a 2-level-playable-demo (2 or 3 bugs left, but
+they are probably soon corrected). The game will probably support those I-Glassed,
+the new VR-Equipment made by ESCOM !!! I did not see the 2-level-demo up to now,
+but i probably will get it in about 1 or 2 weeks, then i will test it.
+
+Yesterday i was told, that AT/ESCOM-guy demanded of Oliver Groth to change nearly
+EVERYTHING in Warp_S/Brassman, the story, the graphics, the game design, to get
+it accepted as game for an A1200 bundle. Answer of O. Groth "Okay, then we will
+look for another publisher." After this event the guy with whom Oliver Groth had to
+speak about that bundle thing went on holidays for 4 weeks... sounds too me like
+good (???) old Commodore...
+
+As to the publishing of Warp_S, they give it a last try for a commercial release,
+and if THIS publisher does not want it too, the game will be Shareware. No CD
+release and stuff like that, then, certainly...
+
+Latest stuff : Current Beta is about 3.7 MB big, i will receive a copy soon.
+Publisher still not sure, but a release is planned (full version and demo
+version on Aminet) for this month, if everything goes well... Oliver Groth
+received his Graffiti Board some time ago (and liked it...), so probably the
+Graffiti will be supported... If i got it right, a A1200 bundled version is
+STILL possible, so hold your thumbs...
+
+The latest version of Warp_S ("Nemac 4") runs at a quite good speed (okay,
+Alien Breed 3D runs faster, but Nemac 4 runs on 1x1. And "Nemac 4" supports
+the Picasso II graphics board !!!
+
+And it runs even on ANY Board using Cybergraphics Software, using the Picasso II
+emulation of the CyberGFX software. On my Piccolo SD64 it runs on about 200x200
+at more speed as Alien Breed 3D in 1x1. There is a short intro too, but
+level design and better monster graphics should still be done (the graphics
+of the textures is very nice, thanks to Alex Grasso, the graphician...).
+Oliver Groth wants to finish the game till November. It is harddrive only.
+
+Okay, probably one of the last entries for this game ... Nemac IV will probably
+be out in December, shipping on 10 disks unpacking to 20 MB on your harddrive
+(harddrive only...). It will be published by the coder him self, no software
+house seemed to be interested enough... but it will be a COOL GAME, even if
+no software house took it (probably it was too high end for them... sad thing...)
+EGS and CyberGraphX drivers for the game are on its way, but it is unsure, if
+they will be finished in time or added later as patch. Maybe there will be
+game bundles with I-Glasses, but not sure...
+
+I now checked out the new demo on Aminet. Quite cool, another speedup and a
+enhancement of the graphics. For people who have problems running it under
+CyberGraphX : Be sure you have a CYBERGRAPHX Screenmode of 320x240 or
+320x200 that works (those PICASSO: Emulation modes in fact use CyberGraphX
+modes...). The final version of the game (6-8 disks now) will have faster
+GFX Board code. Orders for the final version are taken in NOW (orderform is included
+with the demo). It will be at 50 german marks (about $35...), quite cheap for
+such a game, i would say :)
+
+Author : O.Groth@link-M.muc.de
+File   : /pub/aminet/gfx/misc/warp_s.lha (A very old version...)
+A1200  : Smoothness Smo
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node poom "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+POOM          Parallax (G)    AGA                030+AGA
+:):)          Smo             High
+
+Maybe the most famous Amiga texturemapping demo. But it got very quiet 
+around it since October '94. Maybe they dropped it? Or maybe they will 
+bring out a complete game from one day to the other? There is a V0.3 on a 
+finnish BBS ... the coders did some talk about a "maybe" graphics 
+board version. POOM0.2 only has rectangular walls. The phone number of 
+the Finnish BBS is +358 18 161 763.
+POOM0.2 is on Aminet ... As to V0.3 Beta, it is much smoother, you can
+select a resolution from 32x32 up to 320x256 (the latter did not work
+on my system, though...), you see the gun and there are some new
+textures (a complete floor texture too...). As soon as you quit the
+Beta, it crashes. The Beta does not run with 2 MB. Someone said,
+the guys of Parallax would be working on something else at the moment,
+so the next release of POOM would be some time away.
+THE AUTHORS DO NOT WANT THE 0.3b BEING SPREAD. The real V0.3 will be
+there somewhere in april.
+
+Latest info : POOM will get the official V0.3 SOON, BUT NOT TOO SOON.
+This release will feature different height walls, monsters, you can shoot,
+and simply, it will be nearly a game... at least, that Parallax guy on
+irc (Bandog) said so...
+
+Author : Jussi_Salmi@sonata.fipnet.fi
+File   : /pub/aminet/gfx/aga/poom_02.lha
+A1200  : Smoothness Not (V0.2)
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node bsp "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+BSP           John Fehr (P)   All                040
+DOOM          Not             Low/Med
+
+This Demo reads an original DOOM-Wad-File and tries to interpret it. This 
+is SLOW. The WAD-interpreter BSP has no ceiling or floor, but many features 
+(because of the WAD ...) As it is No-Aga and not very smooth, i do not 
+think it is more interesting than for example POOM or Warp_S. But it was 
+probably VERY MUCH work to make this thing reading .wad-Files ... and 
+those multiple textures things probably cost a lot of speed too... there 
+are AGA versions in the archive too... they too do not have floor and 
+ceiling, but look better than the ECS-version ... I was told, it seems, 
+John Fehr now is doing something further with his engine, but as to now i 
+have no conformation from himself (so, what about, this, John, if you 
+read this FAQ ? :) )
+
+Author : fehr@rpm2.aes.mb.doe.ca
+File   : /pub/aminet/gfx/misc/bsp1.0.lha
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node my3D "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+My3DEngine    Petri Häkinnen  AGA                AGA
+Wolf          Smo             CopL
+
+This is a pre-beta release of an engine coded in Amos Pro. The graphics resolution
+is VERY LOW, but full screen. There are doors, that can be opened, and a monster
+is floating around. (But if this should get a game, the resolution probably has
+to be enhanced, as it is even lower than that of GLOOM...) The speed is fine.
+There is a floor texture, too, but only rectangular walls.
+
+Author: mystic@tlti.tokem.fi
+File: On Aminet
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node damwolf "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Damagewolf    A. Lankila      All                030 + Fastram
+:)            Not-VSm
+
+Damagewolf is another Wolfenstein 3D Clone on Amiga. From the abilities of the engine
+it is about the same as POOM V0.2 (but no doors and worse GFX). It has independent floor
+and ceiling textures and a lot of different textures. There are two different screen
+sizes and of each there are versions for ECS and AGA. The BIG versions are quite slow,
+the SMALL versions quite FAAAAAAST.
+
+The author now works on an "Amiga Rise of the Triad clone" engine. That is a DOOM type
+engine that supports JUMPING and such things. He wants to bring out a demo as soon as
+possible. As to texturesizes, he wants to use 64x64 and 128x128. He probably will use
+rtg.library, if it is out soon.
+
+I now saw the first version of this new engine. It is VERY fast (even the jumping),
+the graphics looks VERY good... but up to now it has a bug concerning 040 compatibility.
+On 040 systems it crashes after some seconds. No public release up to now.
+
+I now tried the Beta on a 4000/030... there the Crash-Bug appeared too... very sadly
+for such a nice engine... i hope, this bug gets fixed...
+
+Author : andezl@kastelli.otol.fi
+File   : On Aminet...    
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode   
+
+@node frank "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos                                     
+
+I did not see this demo up to now, but what i can tell you about it up to now :
+The author is Frank Hoffmann, a guy with whom i swapped a LOT of mail since i
+heard of his engine. The engine is probably the first engine, that ONLY runs on
+graphics board equipped Amigas (!!!) It is a Wolfenstein Engine, but it even
+uses 15 Bit modes (>32000 colors !) It runs using CyberGraphics, but as the author
+is interested in maybe doing the CyberGraphics-version of rtg.library somewhen in
+the future, maybe we will see it running on rtg.library too... but up to now, no
+releases are planned...
+
+This engine died before its first release. The author now does Mac games, what
+a shame :((( But he gave me some hints about how to do a rtg sublibrary for
+CyberGraphX, before he left for Mac... he said, maybe he could be back for Power Amiga,
+but unsure at best...
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode         
+
+@node donald "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos                                     
+
+Uuhm... i only know the name of the author from his email... it is Donald J somewhat...
+in any case, this engine is coded in AMOS. But no texturemapping, this time, instead,
+some blitter tricks, according to the author. The very early Beta i received shows
+nearly full screen, very fast 3D freely scrolling graphics (at least in turning around,
+in moving forward, similar to Deathmasque...). As it is no real texturemapping, the
+perspective is not ABSOLUTELY correct when turning around, but that could be the fault
+of the very early stage of the developpement too... it probably will be some kind of
+Wolfenstein engine. The author maybe will get a new graphician soon, but nothing sure...
+and he will probably switch from AMOS to C. The engine is coded on a 68000, and is not
+too slow on such a system... so if he manages to make it looking a bit more "real" (it
+looks quite fine, but as i said, not as good as some others...), that may get a great thing
+for the low end... even if he does not manage to correct this FULLY, it may get a
+REVOLUTION for 68000 games and maybe even 68020 games... there is no public release up
+to now and no one planned...
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode         
+
+@node tmapdemo "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Tmapdemo      C. Green (P)    AGA                AGA
+???           NSm             High
+
+This demo comes with complete source... the author allowed doing a game 
+with his routine (he probably won't do himself ...) The engine is quite 
+cool, but very incomplete... just some blocks with Pics on the walls... 
+no collision check... but a floor...
+
+Author : chrisg@commodore.COM (this email of course does not work ...)
+File   : /pub/aminet/gfx/aga/tmapdemo.lha
+
+*************************************************************************
+
+Tmapdemo      S. Boberg (P)   EGS                EGS + EGS board
+???           VSmo            High
+
+A Port of Chris Green's texturemapping engine to EGS... according to the 
+author a quick hack... probably won't get any further...
+
+Author : ???
+File   : ???
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node dentaku26 "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Dentaku26     A.J.Amsel (PO)  AGA/CD32           AGA/CD32
+Wolf          VSm             CopL/CopM
+
+Dentaku will be a Wolfenstein/DOOM-style game (probably with level editor 
+and serial device support). A.J.Amsel said to me, a demo will probably be 
+released in April 1995. An older demo (executable from September) is
+available on ftp.luth.se. According to the mail information A.J.Amsel gave 
+me, he and the others formed now a software company which is called 
+Silltunna Software. They are two Coders (one of them A.J. Amsel), one 
+artist and Alistair Brimble doing the sound. The game uses a copper display 
+for its texture mapping routine. If you are a coder, an artist or a sound
+specialist, you may wish to contact Mr. Amsel. Maybe you could join them 
+in there project (Mail to A.J.Amsel@exeter.ac.uk). A former Demo of 
+Dentaku was DentAWolf, but it has not much to do with Dentaku as
+it is now. The ratings for DentAWolf are Low/Wolf,VSmo,Low.
+The version of Dentaku found at ftp.luth.se is only optimized for
+low end machines (but in my opinion it is good enough on high
+end machines... maybe there is even room for an improvement of
+the engine :))) And the engine does >20 fps on low end machines
+too...) On high end machines you can even do 50 fps. The graphics
+is of lower resolution as other games, but looks great anyway.
+
+Not too much news about this one... Alex Amsel currently does Finals, as he
+said... and has not that much time for his game... but there IS work in
+progress at least...  just little time ago, he told me, they intend
+to do MUCH MORE level design in the thing than other guys... they intend
+to get the leading Amiga 3D game as what level design concerns...
+
+Some days ago i got some info from Silltuna Sofware concerning Dentaku26,
+including that Alex Amsel now again is fulltime coding for Dentaku.
+
+And here the infos go (I write it here, like i got it from Silltuna) :
+
+- HD installable
+- Serial link AND splitscreen (and single player, of course...)
+- cool soundtrack
+- More monsters than in DOOM and DOOM II together
+- Weapons : Single/Double barralled shotguns, 3 types of plasma guns, chainsaw,
+  rifles, mini-gun, knifes, missile launchers, laser pistols,...
+- special effects : scrolling floors, walls, strobing, weather,...
+- Dozens of different textures and (scrolling) backgrounds
+- More GORE than any other Amiga game... you can even shoot the dead bodies...
+- 2 death scenes per creature, dependent of the power of your weapon
+- Lots of different scenery and graphics (and animated scenery and objects)
+- Varying screen sizes
+- Sound FX by Alistair Brimble
+- Different behaviour for different creature types
+- Wide variety of level design (10 different level designers...)
+- Colored windows
+- 25 levels, each level with a lot of secret areas
+- Player inertia
+- Power-Up system based on chemical intake
+- Lots of lighting effects
+- Walls of any angle and length
+- Lots of cheat modes (the way this is done in DOOM...)
+- 17-25 fps on a standard A1200
+
+This engine probably is dead. As the author said "if it comes back, then as
+Amiga/PC/PSX game". Currently Alex Amsel works on XTR that is nearly finished
+now...
+
+Author : A.J.Amsel@exeter.ac.uk
+File   : /pub/aminet/demo/aga/dentwolf.lha (DentAWolf...)
+         /pub/aminet/demo/aga/dentects.lha (Sept. Executable of Dentaku)
+A1200  : Smoothness VSm
+Frame  : 50 fps on A4000/040
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node chunkymaze "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+ChunkyMaze    D. Bryson (P)   AGA                AGA
+Wolf          VSmo            Med
+
+A little dungeon with flickering torches and some pictures pinned to the 
+wall. It has no floor or ceiling textures and in some distance the 
+textures do not look nice. But there are worse tries. This project is 
+(even if there are better approaches) still alive, but as David Bryson 
+told me, the problem is the TIME. Anybody willing to help him, should 
+contact him per email. He did not do anything further by himself, but 
+Lee Metcalfe did some very nice graphics for the demo, and Paul Heams 
+coded a little further. David would like it, if someone with LOTS of time 
+picked this demo up. He would help this one with the source, of course.
+I found a very similar demo on my harddisk (even the same textures...) 
+which is called wolf. I think it is an earlier or later version of 
+ChunkyMaze, but i do not have the docs.
+
+Author : ceedb@cee.hw.ac.uk
+File   : /pub/aminet/gfx/aga/maze.lha
+A1200  : Smoothness VSm
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node textdemo "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+TextDemo5     J. Hendricks(P) 020                030                    
+:)            VSmo            Med
+
+In Fullscreen probably the fastest engine on Amiga (okay, POOM has floor 
+and ceiling textures and is not much slower...). Textdemo has Lightsources, 
+not-rectangular walls and the resolution and screen size can be 
+customized. The demo has OCS, ECS and AGA versions. It uses some very 
+tricky Chunky2Planar code (using even the blitter...). There is a 
+TextDemo6 in work, and as i was told this one will probably be one of the 
+best texturemapping demos on Amiga.
+
+Author : john.hendrikx@grafix.xs4all.nl
+File   : /pub/aminet/gfx/misc/TextDemo5.lha
+A1200  : Smoothness Not to VSm, according to screen size
+
+*************************************************************************
+
+TextDemo57    J. Hendricks(P) 020                030+Fast Ram
+:):)/DOOM     VSmo            High
+
+A long time, there was nothing new about Textdemo, but now it is on
+Aminet !!! And it is probably the BEST texturemapping engine available
+on Amiga, striking even Alien Breed 3D, POOM and Warp_S. I hope the
+other coders won't take it this harsh and continue their projects
+nevertheless :). On a fast '030 or a '040 it FLIES at near full screen.
+I did it at 224x168 with 1x1 pixel resolution on my A4000/040 and
+that looked ABSOLUT PHANTASTIC. John Hendrikx claimed he will do
+a texturemapping engines for high end Amigas that will be AT LEAST
+as good as DOOM, if not better...
+
+Some features :
+
+- Realtime movement (smoother on better systems, but not faster
+  than acceptable...)
+- 128x128 textures (looks MUCH better ...)
+- Multiple height walls :)))
+- Floor textures (no ceiling textures yet...)
+- "Bouncing movement" (I think the bouncing movement of TextDemo
+  looks better than that of DOOM !!!)
+- Object-mapping-code for monsters included (but no animated
+  monsters implemented yet...)
+- Textures take 24 Bit as original (so port to graphics board version
+  would be easy)
+- something that looks like water (and the bouncing movement looks
+  like swimming :))) )
+
+There are two teams doing games with this engine, John doing the engine
+itself. The first team (the "Shade-Team") are five guys. They intend
+to do a game with RPG elements that will be a mixture of DOOM, Dungeon
+Master and Magic Carpet. The other Team ("Mystic tank") is doing a
+two-person tank game.
+
+Look forward to the next release (that shouldn't be a insult to the other
+coders, but TextDemo is really GREAT ... did a long way from Textdemo5).
+Maybe with that graphics board talk it would be nice if John did a
+Cybergraphics version (if he reads this suggestion ... :) )
+
+John currently leads a project for a set of graphics board custom
+libraries that offer a standard interface for coding games, with the
+same library calls on ANY graphics board. There are currently versions
+for Picasso II (by John himself), Retina (i do not know who does that
+version), EGS (by me) and if i heard right, Merlin, in the making.
+The first engine that will use these libraries will be TextDemo6.
+The libraries routines offer functions for opening/closing screens,
+writing chunky pixels in 8/24 Bit, choosing screenmodes, modyfing
+8 bit color palettes and double buffering. But it is probably some
+way to go till the library package will be released, as for some
+functions there is not even a specification of the interface. The
+current working name is "rtg.library" (good, joke, guys... Commodore
+never brought RTG to a release... now the Amiga users themselves
+will do it ... but probably this RTG is very different from Commodores
+RTG ...)
+
+TextDemo57 is a sort of pre-release to TextDemo6. (Yeah! It is possible
+on the Amiga! :))))))))))) )
+
+In the meanwhile, TextDemo has floors AND ceilings... and John is beginning
+to convert the engine to rtg.library ...
+
+... and it seems we will see the first demo of "Shade", the game basing
+on the Textdemo engine soon. GFX Board adaption is now partially done
+using rtgmaster.library, partially CyberGraphX.
+
+Author: John.Hendrikx@grafix.xs4all.nl
+File: wuarchive.wustl.edu/pub/aminet/gfx/misc/TextDemo57.lha
+Frame: 8-26 fps according to screen and pixel resolution (according 
+       to the fps display... sometimes it seems to me better than the
+       display says... at the low rates...)
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+
+@node reality "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Reality AGA   K.Picone(PO)     AGA                ???
+Wolf          Not              High
+
+This project is at present a Wolfenstein type engine that has up to now
+not made it to a public release. I got some infos about it :
+
+- Aimed for A1200 and CD 32
+- Static and moving objects
+- Solid and see through walls
+- Floor and ceiling textures (will be done later)
+- 1x1, 2x1, 1x2 and 2x2 pixel resolutions
+- walls at any angle and of any length
+- 64 colour GFX, maybe soon 128 or 256 colour GFX
+- external back drop pictures
+- simple multi height walls
+- graphics board version (will be done later)
+- ECS/OCS version (later, with some reduction)
+- 320x256 1x2 in 7-8 fps on A1200 with 4 MB Fast
+- 320x256 1x1 in 5-6 fps on A1200 with 4 MB Fast
+
+There will probably be a demo release in 2-3 weeks ...
+
+As to the beta up to now... there are quite some problems the coder has
+with it and it is some way to go to a public released... it does not
+run optimal on A4000, because of the bigger caches and the slower
+chip ram, as the coder said. This will change in the future (i think
+the current speed is in no way related to the speed at the release
+version...) There is a polygon "monster" already in the beta ...
+The graphics now changed to 256 colors...
+
+Author: ???
+File  : Not yet publicly available
+Frame : 8 fps on A1200 with Fast Ram
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node ab3dse "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+AB3DSE        TEAM 17          ECS + 030           Graphics Board + 030/040
+DOOM +        ???              High
+
+Due to the demand of the Amiga Freaks to high end games, Team 17 started creating
+another masterpiece :). AB3DSE (or whatever it will be called now) is primarily
+a Breathless clone, even bypassing the Breathless-graphics. In addition, you
+can look upwards and downwards, like with Marathon on the Mac. The graphics simply
+looks phantastic (screenshots available on the Goodies page at the Team 17 WWW site
+http://www.team17.com). The game will support ECS, AGA and Picasso II, maybe
+other graphics Boards too. If nothing happens, this will be the last Team 17
+Amiga game. It will include a phantastic level editor, and you even may load
+the AB3D levels with the new enhanced graphics. On slower Amigas, this game
+will use the "normal" AB3D graphics, using copper chunky. On faster ones, it
+uses c2p ... Should be out end 95 or beginning 96.
+
+News : Will support ECS, AGA, Picasso II and CyberGraphX...
+The release dates about December/January won't make it... probably something
+like April/May... the project is in a early stage...
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node XTR "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+XTR           Silltunna        AGA                AGA + 28 MHz 68020
+Racing game   ???              Med-High
+
+XTR is a texturemapping racing game much like Virtual Karting, but with
+much better graphics :) using c2p. There will be a 2-player-mode, too.
+It should be out till december. The main coder is Alex Amsel (the coder
+of Dentaku).It will be published by Silltunna/Black Magic.
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node rtg "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos    
+
+rtg.library is a Library project leaded by John Hendrikx (TextDemo),
+to provide a standard interface for coding Texturemapping with
+ECS/AGA AND graphics boards. The library contains the c2p routines
+of TextDemo for ECS/AGA. It provides code to directly access the
+video RAM of the graphics boards. Asides the ECS/AGA c2p routines
+there is NO texturemapping code in this library. It is coded in
+ASM. Up to now, there is work in progress for ECS, AGA, EGS and
+Picasso II. But the goal is to support ALL boards. Up to now there
+are functions (at least in the EGS version finished, i currently do not
+know how far John is with his code...) to o0pen and close screens,
+do doubble buffering, get the adresses of the video ram of the Boards,
+and to support segmentation on the boards that need to do so...
+With the adresses of the video memory it is already possible to use that
+library (functions for screen locking and unlocking are finished too...)
+Later there will be library functions to write to the screen (but you can
+still do it yourselves then, by writing directly...) and for the graphics
+board blitters... The library will be freeware, so if you are interested,
+write to the authors !!!
+
+Rtg.library got now most primary functions finished, and we are starting
+putting our code together. I just finished the Triple Buffering code in
+my EGS part of it, and there probably will be a "developper only" Beta soon...
+We have still to do some things about the Screenmode-Requester and finish
+to put our code together...
+
+Up to now, rtg.library still is not out. But should be soon. Maybe the
+creators of Switchworld will do a Retina and a Impact Vision version of
+the library. Someone other maybe will do a Merlin version now.
+
+Currently the rtg library concept is going to be changed a bit (because
+of that, no release up to now...). Now the library uses a master library
+(rtgmaster.library) and several sub-libraries (rtgecs.library,rtgegs.library,
+rtgreti.library...). Principially, everybody who has the developement
+documentation is able to do a sub-library for his graphics board.
+There is no need to put everything into one source (like it was up
+to now...). Hopefully we will be finished with this soon.
+
+NEWS ABOUT RTG.LIBRARY : the first version with ECS/AGA-support is
+finished now. In the next days i will write documentation and example
+source. Sorry, no GFX Board stuff finished up to now (my EGS sublibrary
+has some strange bugs and i will try to bugfix that as soon as possible...)
+If there will be a Graffiti version : I will think over it, after the
+EGS code works...
+
+And here some info about some different GFX hardware up to now available
+on the Amiga (not all being supported by rtg.library up to now, sorry...)
+Prices only in german marks, sorry... (a surprise at the end of the
+list...)
+
+Picasso II : The Original. Probably the Zorro II board with the best
+existing software. Made by Villagetronics, using the Cirrus Logic
+chipset. 2 MB. About 600 german marks. CyberGFX available, Rtg.library
+on its way.
+
+EGS Piccolo : One of the most used EGS graphics boards. It supports
+Zorro II AND Zorro III, uses the Cirrus Logic chipset. 2 MB. About
+500-600 DM, i think. I do not know if it is still in production,
+as Ingenieurbuero Helfrich now created a more enhanced version, the
+Piccolo SD64. CyberGFX available, Rtg.library on its way.
+
+EGS Spectrum, EGS Graffity : Piccolo clones of GVP and bsc. I do not
+think they are still under production. For the Spectrum there is CyberGFX
+available. And rtg.library supports it too.
+
+Merlin : The famous, not-very-well-functioning board of X-Pert. But i heard
+with the hardware update done by ProDev it would be a quite well board.
+If one has not to wait ONE YEAR for it, like a friend of mine... The
+Merlin is no longer under production, and there is no CyberGFX for
+it. Maybe rtg.library. Using ET4000. 4 MB.
+
+Retina Z3 : One of the fastest available graphics boards for the Amiga.
+Probably only the Cybervision is faster, the SD64 a bit slower. 4 MB.
+CyberGFX available, no rtg.library on its way up to now (but this may
+change in the future...) . I don't know the exact price, but possibly
+something between 700 and 900 DM. Only Zorro III.
+
+Retina Z2 : The older Retina. Very slow board. 1 MB. I do not think it
+is still under production.
+
+Cybervision64 : The fastest Amiga graphics board available. Around 650 DM,
+2 MB or 4 MB version. Using the famous "Trio S3" graphics chip. There
+is (obviously :) ) CyberGFX for it. Rtg.library on its way. Second Amiga
+64 Bit graphics board. Only Zorro III.
+
+Piccolo SD64 : First Amiga 64 Bit graphics board. Enhanced version of the
+Picollo. Cybervision and Retina Z3 are probably faster. There is CyberGFX
+available for it and rtg.library on its way. Price about the same as the
+Cybervision, maybe a bit more expensive. 2 or 4 MB version. Only Zorro III.
+
+EGS110 : This old board from Commodore. No working WB-Emulation. There
+may be some day Cybergraphics for it, maybe not. Rumours tell from a
+partially finished AGA-emulator for this board, i do not know what is
+true in this. MAYBE the rtg-EGS-Code will work with this EGS system
+for EGS110, maybe not.
+
+Highblitters GFX-Board : This could be something great, if the speed is
+okay (i do not know anything about the speed of the Board). The board
+will be connected directly to the video output of your Amiga (so it
+is connectable even to A1200, even to A500, but of course to A4000 too...)
+The board only has got ONE screenmode, 320x256 8 bit chunky. But that is
+EXACTLY what games need. And so this board is intended for gamers.
+It can be used as dongle too (Highblitter stated he would be able to
+create 1000 different versions of the board to use it as dongle).
+The price : About 50-60 marks... this is maybe $30-$40 !!! Highblitter
+currently is looking for people creating games for his board. He won't
+release it before there are games for it. Interested coders are able
+to get a board at manufacturing prices. Interested people, mail to :
+sysop@nostlgic.tng.oche.de (Jens Schoenfeld,"Highblitter").
+
+Some information about the board :
+
+You open a screen using Hires mode with 4 bitplanes and Genlock Audio
+bit set (that means => this is a graphics board screen, not a Amiga
+screen). The board uses the chip-mem of the Amiga, and you can even
+use the hardware as you did before (copperlists, all that stuff). What
+you have to change, is :
+
+- Some initialization code after opening the screen
+- The way you put graphics on the screen (it is organized as follows) :
+  First Byte First Bitplane, First Byte, Second Bitplane, First Byte
+  third Bitplane, First Byte Fourth Bitplane, Second Byte First Bitplane
+  ...
+  So you have chunky, but you still use old structures/hardware registers.
+  It should be quite easy to port AGA-code to this code.
+
+Exact information is available from the author (the manual of the board).
+Write to him, if you are interested.
+
+News from Highblitter : The board will be called GRAFFITI BOARD and with
+a bit luck it will be available on the Computer 95 in November 95 at
+Cologne in Germany. As he now did not publish the thing himself, but did
+this by using a professional firm, the board will be a bit more expensive
+than announced. The price will be 149 german marks (on the Computer 95 :
+129 marks, if available). There are already 50 independent games and demo
+coders working on Graffiti stuff, including Oliver Groth, the coder of
+Warp_S ...
+
+News about rtgmaster.library :
+
+- EGS and ECS/AGA versions are working.
+- CyberGraphX version nearly finished.
+- Screenmoderequester buggy like hell, but works.
+- I myself (MagicSN) started a 640x480 8 Bit Dungeonmaster clone
+  with the library... the library is okay, my first comment :)))
+- The soon to expect Shade demo will use it too...
+
+News about Graphics Boards and other things:
+
+- There will soon be a Picasso III (early next year), available for
+  Zorro-Bus, NuBus (Mac), PCI (Mac) and A1200.
+
+- There will be a new version of the Cybervision, featuring REAL VRAM
+  (no DRAM anymore), and probably 8 MB VRAM...
+
+- Amiga Technologies announced they will use Power PC and Phase 5 announced
+  a Power PC board for A1200, A3000 and A4000 (read docs/misc/GDListe.lzh
+  on Aminet as to game/demo programmer support for these Power Amigas :))) )
+
+- Coming with the Power UP Power PC Board in summer will be CyberGraphX 3.0
+  for 680x0 and for Power PC Native (two versions). It will feature (citing)
+  "enhanced multimedia, 3D, audio and video functions for application and
+  games programmers". I was told now that this will be (among others)
+  Double Buffering, direct VRAM access (already in the most recent CyberGraphX)
+  and texturemapping functions...
+
+- The first Amiga Compiler with Power PC support probably will be Storm C/C++,
+  the developpement system used by Amiga Technologies.
+
+More news about rtg :
+
+- An Amigaguide document that uses the rtg code of rtgEGS.library
+  and rtgCGX.library (with documented source, but without the library
+  itself) is now on Aminet... dev/misc/gfxstuff13.lha and a Bugfix in
+  dev/misc/gfxupd.lha).
+- Nearly finished now : Sublibs for ECS/AGA, EGS, CyberGraphX.
+- Something about CyberGraphX : The problem about that WB-Emu is, for
+  Double Buffering stuff it only supports slow MoveScreen up to now.
+  Frank Mariak said to Oliver Groth on irc, the next version of
+  CyberGraphX that should be out soon, will support the
+  faster ScreenPosition too...
+
+Author : John.Hendrikx@grafix.xs4all.nl (nearly all of the code)
+         Me (EGS-version)
+File   : Not yet publicly available
+Frame  : Like TextDemo57, better on graphics boards
+A1200  : Like TextDemo57
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode   
+
+@node albas "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Albas Engine  F. of Vision(G) AGA                AGA+030
+DOOM          NSm-VSm         Low-High
+
+A DOOM style engine
+with 1x1 and 2x2 pixel resolution. It is done by the italian
+team "Fields of Vision". There goal is to do a DOOM type game
+that is playable on a standard A1200, but better on better
+systems.
+
+The game will have NO copper screen and will support variable
+window size (320x200, 288x180, 256x160,...,32x20) and variable
+pixel sizes (1x1, 2x1, 1x2, 2x2), ceiling and floor textures,
+variable height floors and ceiling, lifts and doors, bouncing
+movement, sky textures in the open, animated textures, variable
+lighting, multitasking, AGA and Picasso II graphics board.
+
+The game will be called Breathless and if this date is still valid,
+it will come out in June. The engine still gets optimized. It
+will get a commercial game. Up to now there are no demo versions
+(and probably won't be till the release of the full game).
+
+The main author is Alberto Longo whose email is given below.
+
+On http://www.maxonline.it/html/fov/fov.html there are some
+screenshots of the game to be found. Look quite good. The email
+of Alberto Longo changed now. As to my opinion it looks MUCH
+better than DOOM II on PC !!! Playable demo announced for October,
+game announced for Christmas !!! At first only AGA version,
+later maybe a graphics board version...
+
+There is now a nonplayable demo version available that looks VERY
+GOOD. In fact it looks like DOOM II with enhanced graphics.
+Frame rate and all that depends on pixel resolution and which
+Amiga you own :) The demo runs on Graphics Boards, but not faster.
+If a real GFX Board version will appear, depends on sales.
+
+Just recently, there was a 1-level-playable demo of Breathless
+released on the Cover disk of some English Amiga Mag (AUI or
+Amiga Format, if i am right...) These Mags come quite late in
+germany (about 1 Month later...), so i did not see the demo
+myself up to now... and it did not appear on Aminet, up to now...
+
+Also it is said, Breathless is now sold (Power Computing...),
+but in Germany it did not appear up to now and probably it
+won't make it to Germany before XMas :(
+
+I was told the following by Alberto Longo, the author :
+
+- If Breathless sells well, there will be a GFX Board
+  supporting version starting of '96 (probably upgradable,
+  but he did not state that for sure...)
+- In february/march there probably will be another upgrade,
+  that will bring a level editor and the possibility for
+  network gaming to you.
+
+Author: alblon@maxonline.it
+File  : On Aminet...
+Frame :  8 fps on 50 MHz 68030    1x1 320x200
+        16 fps on 50 Mhz 68030    1x1 224x140
+        22 fps on 50 MHz 68030    2x2 320x200
+         8 fps on A1200 + Fastram 2x2 320x200
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node comfears "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Fears         BOMB (G)         AGA                AGA
+DOOM          VSm              CopL
+
+As i wrote in the section about the Motion-Demo, BOMB started doing a game out of their
+engine. A preview of this game with one playable level is already out. (Yes, you can shoot
+the monsters, they shoot back, you can die, they can die, you can pick up things, and all
+that,...)
+
+The engine looks very similar to that of the Motion demo, but it is MUCH faster and smoother.
+And they say, the release version will be faster than the preview.
+
+The only critics i could say aboutthis GAME :
+
+- The control keya are LAME (but in the preview is said they will change the controls
+  till the release)
+- If you go to the map, and than back to the game, the machine crashes... at least my
+  A 4000/040... i think this is a BUG ... THIS BUG DOES NOT APPEAR ON A1200, as i now
+  know... Please, BOMB, correct this Bug before the release... your game
+  CRASHED on A4000/040, as soon as you go to the Automap and then back
+  to the game...
+- If you stand near a wall or corner, and start turning around, it looks a bit strange.
+- I did not find any teleporters or lifting platforms in the demo
+- The pixel resolution is LOW.
+- It is not Harddrive installable
+
+But anyway, with all that stairs, switches, monsters, weapons, bobbing movement, and all
+that stuff, this may be one main competitor for Alien Breed 3D. Bomb even announced a
+serial link option for the full version. And that resolution stuff... probably they
+can't change it much, because they do copper chunky. But to be reasonable, most of
+the games intending for a SOON release use copper chunky, and there, Fears does not look
+bad (of course it is no challange for TextDemo, but TextDemo lacks of monsters, weapons
+and is no game up to now...)
+
+I think maybe before such PERFECT texturemapping games like Shade and Brassman will come,
+maybe there will be some cool copper chunky games. Fears sure will be one of the leading
+ones...
+
+The releasing company is called Manyk.
+
+Frederic Heintz, the author, just said, there would be ANOTHER demo out THIS WEEK.
+By the way, that "full version", that, according to Frederic Heintz (he reported it on
+comp.sys.amiga.misc himself), was illegally spreaded, is only a some MONTHS old
+Beta not intended to be spreaded !!!
+
+At this point i want to emphasize : If you get Beta releases of future games from the
+author of a game... DON'T SPREAD THEM, IF THE AUTHOR DOES NOT WANT IT... about spreading
+Betas from someone NOT being the author, i probably do not need to say ANYTHING... this
+is as illegal as spreading the FULL VERSIONS !!! DON'T DO IT !!! You want those authors to
+continue their work for the Amiga, hmmm ? :)
+
+New info : The June version of Fears looks a bit different. The textures are MUCH better,
+there is a dithering option added (makes the graphics look much less blocky), there are
+four weapons in the demo, and in the game menu there are menu items for a map editor and
+for serial link (but up to now these menu items do not do anything...). There are new monsters,
+too, that look much better. Everything together i would say, if i hadn't see it, i would not
+believe something like that with copper chunky possible... there are water textures (but
+no mirroring effects like in AB3D) and the whole thing turned from  "motion demo that got
+a game" to a "demo of a game". You can now change screen sizes with function keys, by the
+way...
+
+Ah, by the way, in Germany the game will be distributed by Attic... so it is a professional
+work now... :)
+
+After all that positive things, now the negative ones :
+
+- Still not HD installable
+- Map still crashes on A4000/040 (on 030 it works...)
+- There are some locations in the demo, if you fall down there,
+  you will never come up again...
+- turning around in a corner still looks a bit strange
+
+The final version :
+
+- supports serial
+- Features Level Editor (but you can't save the new levels)
+- still not HD installable
+- the 040 bug disappeared in the full version :)
+
+Author : Frederik Heintz/Bomb
+File   : Aminet
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node speed "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Speed!        M.Andrzejak     ???                ???
+DOOM+         VSmo            CopL o. Low (???)
+
+As to the engine, Speed! has everything that DOOM has (if you do not look
+at floor and ceiling that are not real textured, but shaded instead...).
+In addition you are able to JUMP like in Rise of the Triad !!!
+The demo consists out of a labyrinth, where you walk and jump up and
+jump down, and a clock counts how many seconds you need to get
+out of the labyrinth. I am not sure, if it is ECS or AGA,
+if it is Chunky Copper or Chunky2Planar (as there was NO
+documentation with the demo...), but i think it is Chunky Copper
+and ECS. The speed of Speed! is PHANTASTIC (with switched of
+caches :))) Even then...) There runs a mod while one plays
+(composed by Jester/Sanity). The textures are as to my opinion
+not that great... but maybe that is because the resolution
+of Speed! is very Low.
+
+
+Author: mandrzej@et.put.poznan.pl
+File  : On Aminet
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node alien "Amiga Texturemapped Games FAQ V 1.51"
+@toc Games
+
+Alien Breed3D Team17 (G)      AGA                AGA+Fast Ram
+DOOM          NSm/Smo         CopL
+
+The famous Alien Breed 3D Demo is finally there. What do i have to say ?
+It is a full Doom engine based on chunky copper. The demo is non playable,
+but it seems to me, the game is nearly finished. I think the full game
+should show up in 2 months or something like that. The demo does not
+run on A4000 properly up to now, but it is said they will fix that
+before the release. The graphics resolution is low, but as to nearly
+finished games, it is probably the nearest to DOOM available on the
+Amiga up to now. I think it will sell fine. :)))
+
+There is a playable demo for Alien Breed 3D out on Aminet. I think it
+plays quite cool (it supports Fast-RAM :) ), but of course it is still
+a copper screen, and that probably won't change :( As to a rumour,
+there will be a serial link demo out in some time... The level design
+is much better as in Fears2, but there is no Automapping. The game
+runs perfectly even on A4000/040.
+
+As to what i heard, the game is out now. The graphics of Fears seems to be
+better (full screen, Fears resolution maybe a bit better), but Alien Breed 3D
+has nicer textures and really a LOT of them. The enemies of Alien Breed 3D look
+much better than those of Fears or Gloom.
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node dogenstein3d "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Dogenstien3D  J.D.Doig (P)    AGA                AGA                    
+Low/Wolf      VSmo            Low
+
+Texturemapping engine where you can see the gun while walking around. As 
+to the graphics, most other engines are better. I don't think this one is 
+still around. The first version was called Dog3D.
+
+Author : jasond@cee.hw.ac.uk (it seems, that this is no longer valid)
+File   : /pub/aminet/gfx/misc (if it is still there ...)
+A1200  : Smoothness VSm
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node Union "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Switchworld   Union Int.      020+Fastram        020+Fastram at least or CD32
+:)-DOOM(???)  Smo(???)        Mid/High
+
+SwitchWorld is a fully 3D texturemapped game, that will use NO chunky copper, and
+therefor it will support pixel resolutions from 1x1 to 2x2. Screen resolutions are
+available from 32x32 to 320x192. The calculation of the graphics will be done
+using the main processor (c2p...). It will work on DblPal and on GFX boards too.
+The CD32 version will use Aikiko and has music created by synthesizers. A special
+language for all objects will be used to make them programmable and more intelligent.
+There are walls, floors and ceilings (floors of any height, steps etc. are possible...),
+where floors and ceilings can be switched off or on. There are TEN weapons available,
+including grenades and flamethrowers. The game itself consists of five episodes, each
+of them consisting of some stages. The game is, according to Union Interactive, fast
+on a A1200 with Fastram. On CD32 the speed will be achieved using Aikiko. If i got it
+right, the AGA version will come first, an ECS version later. The game will be released
+BEFORE September (before AB3D and Fears...). A first running demo will be available end
+of this month on Aminet. :)))) This game is from the creators of "Behind the Iron Gate".
+
+Latest info : Date for the demo now is first or second week of July. You may also want
+to read the transcript of the third Amiga texturemapping conference, where a guy from
+Union Interactive was present. If rtg.library will be out soon, Switchworld maybe will
+use it.
+
+Still no demo available :(.
+
+Author : Union Interactive
+File   : Not yet publicly available ...
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness "link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node phoenix "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos      
+
+Phoenix       Posse (G)       AGA                030/040
+Wolf          Smo/NSm         CopL/High
+
+This nice demo was done by Stuart MacLean of Posse Interactive Software (the coding). He is
+known as Bonez too. Graphics were done by Shamus and Artvark, and Music was done by Feekzoid.
+The engine is a Wolfenstein engine without ceiling and floor. It is only a single room, but
+there is a Mod in the background. A unique thing is : This demo supports two copper chunky
+modes AND 5 different resolutions in a c2p mode !!! I never saw something like that before...
+GOOD IDEA !!!
+
+It does not run perfectly (i got some graphics errors on my 4000/040), and turning around
+is very slow. The mapping, though, is very fine, even if the walls strech a bit. If that
+engine would not be that slow in turning around (but i am not completely sure if that is because
+it is that slow or because they wanted it that way...), this would probably be one of the
+leading engines. The graphics is smooth (but slow, as i said).
+
+But in any way : Bonez showed he really KNEW how to do Texturemapping on the Amiga. And now
+the real BIG thing : This engine probably won't get developped any further, if i take it
+right. BUT Bonez will work on a NEW AND BETTER engine. Some of the deatures that he is
+promising : Full raycasting, matrix transformation, Z-Buffer algorithms, BSP tree
+structures for polygon storage, new and improved texturemapping routines and Cyrus-Beck
+polygon clipping algorithms. As he says he finished all the theory for it, and can start
+to do the coding :) What comes out of this shall be a commercial game by Posse called
+"Rise of the Dawn".
+
+Bonez told me just recentlyhe now would be finished with the Theory work about Phoenix3.0.
+Now he would start to write a test version in Blitz Basic, before writing everything
+in Assembly Language.
+
+Author : s.a.maclean@pp.dundee.ac.uk
+File   : Should be on Aminet soon...
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness "link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode     
+
+@node 3d-demo "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+3D-Demo       J.Corigliano(P) 020+2MB+OS2.0      030+2MB+OS2.0
+Low/Wolf      Smo/VSmo        Low
+
+The first try of a completely OS-friendly texturemapping engine. Does
+9 fps on my A4000/040. As to the Smoothness i HAD to say VSmo, but the
+movement is very slow and you can see a bit of the screen refresh when
+you turn around. But if this is the first try (the file is not very big),
+maybe later versions will get much better. The main problem of the engine
+probably is the speed... maybe an updated graphics would enhance it
+too... up to now it does not have floor or ceiling textures and the 
+other "serious" engines are better... but remember, that is not a
+public available demo version, but a frist executable...
+
+Author : jcorig@strauss.udel.edu
+File   : Not yet publicly available ...
+Frame  : 9 fps
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node wolf23_ish "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Wolf23_ish    Chris Colman(P) AGA                AGA                    
+Low           VSmo            Low
+
+A "first try" texturemapping demo. In the Readme the author writes he will 
+make this one better. It is NO copper chunky. But "as is" it is not very 
+good. An older version was wolf2.lha. Maybe another demo i found 
+somewhere (but lost the readme...) is an older or newer version of this
+demo (it is quite similar). It is called wolf10. But maybe it is only a 
+similar demo from another author.
+
+Author : cpc16@mp-s4.phy.cam.ac.uk
+File   : /pub/aminet/gfx/misc/wolf3.lha 
+         (wolf10 is /pub/aminet/gfx/misc/wolf.lha)
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node wolf3d "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Wolf3D        T. Russell (P)  All                All                    
+Low           NSm             Low
+
+Another "first try" demo. I do not know anything about what got with it 
+after this release.
+
+Author : russell@cpsc.ucalgary.ca
+File   : /pub/aminet/dev/src/Wolf3D-2.lha (with source)
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node rot3d "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Rot3D         J. Freund (PO)  FPU+1.5 MB         FPU+1.5 MB             
+Wolf          VSmo            Med/High
+
+One of the first, if not THE first texturemapping engine on Amiga 
+(now in its latest version). The wood textures of the demo look quite 
+well, as do the stone textures, but there are no floor or ceiling 
+textures and POOM, TextDemo5 and Warp_S are better. If no one picks this 
+one up, it will die. The authors said they would help a potential 
+"up-picker". It now seems it is dead. (I chatted with someone just
+reasently who said, he maybe pick up than one...)
+
+Author : freund@cis.uab.edu
+File   : /pub/aminet/demo/euro/rot3d.lha
+
+@node gdeluxe "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+GLOOM Deluxe  Black Magic      ECS                ECS or AGA or CyberGraphX
+???           ???              Low-High
+
+The successor of GLOOM not longer is copper chunky, but a c2p engine.
+I do not know much more about it, but it will support CyberGraphX Graphics
+Boards. The author currently has some problems with the Double Buffering
+under CyberGraphX (that is not really possible), but we will see, how it
+will run on CyberGraphX Boards, after it is finished. Yes, Phase 5, there
+is REALLY a market for CyberGraphX 3 (supporting Double Buffering...)
+
+As far as i know, demo versions for Gloom Deluxe were sent for previews
+to Englisch Computer Mags like Amiga Format and AUI a short time ago... no
+public released demo up to now, though...
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node whale "Amiga Texturemapped Games FAQ V 1.51"
+@toc Game-Demos
+
+Whales Voy. 2 NEO             ECS,AGA,CD32       030 or 040
+Wolf          Smo             Low/Mid
+
+Whales Voyage 2 is a mixture between tradinggame and role playing game.
+The dungeon section of the game features a chunky 2 planar texturemapping
+engine. The guys from NEO said, on a 4000/040 it should be comparable to
+the PC version of the game.
+
+I simply HOPE, this demo is only some sort of FIRST DEMO, because it did
+not impress me that much. The textures do not look very nice (I think,
+Warp_S and Textdemo use much better textures), there is no real floor and
+ceiling (but i remember having seen floors and ceiling in screenshots...
+i really hope, that Whales Voyage 2 won't get a "crippled" Amiga version,
+in case these Screenshots were from the PC version...
+
+The speed of the engine is a bit slow, but as the Texturemapping itself works
+fine, i think, maybe only the speed of the code used to walk around is slow,
+not the engine itself...
+
+I think, using that engine (that probably is not THAT bad...) they could do
+much better... but probably this only was a first demo...
+
+About the engine speed... i found out there exists an "A 4000 mode". In this
+mode, the speed is okay (tested on an A4000/040 and on an A1200/030 50 MHz),
+if not to say, fine. But the graphics is not better even in that mode :(((
+But the speed... really fine...
+
+Author  : NEO
+File    : Maybe on your local BBS ?
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node Games "Amiga Texturemapped Games FAQ V 1.51"
+@toc Reviews
+
+@{b}Games@{ub}
+
+    @{" TrickOrTreat        " link trickortreat}
+    @{" Fears               " link fears}
+    @{" Ambermoon           " link ambermoon}
+    @{" Za Zelazna Brama    " link brama}
+    @{" Legend of Valour    " link legend}
+    @{" Liberation          " link liberation}
+    @{" Jurassic Parc       " link jurassic}
+    @{" Behind the Iron Gate" link behind}
+    @{" Gloom               " link gloom}
+    @{" Commercial Fears    " link comfears}
+    @{" Cytadela            " link Cytadela}
+    @{" Alien Breed3D       " link alien}
+    @{" Virtual Karting     " link Virtual}
+
+A last remark for this chapter : The game DeathMask is no real 
+texturemapping. It is a block graphics game which scrolls around while you 
+turn 90 degrees. Better play Hired Guns ...
+@endnode
+
+@node trickortreat "Amiga Texturemapped Games FAQ V 1.51"
+@toc Games
+
+TrickOrTreat  D. Stuart (P)   All                All                    
+Wolf          Smo             Low
+
+Little texturemapping game, where two players try to shoot each other. The 
+graphics is not the best and there is no floor or ceiling texture, but it 
+is the first texture mapping action game on Amiga (yes, it is this one, NOT
+Fears !!!) Even if the graphics is not comparable to Wolfenstein, the game 
+is a lot of FUN. The author wrote he was looking for some work in coding 
+the Amiga.
+
+Author : ???
+File   : Amiga User International 11/94 (Coverdisk 45)
+         Or : Duncan Stuart,10, Bramble Close, The Beeches, Uppingham, 
+         Rutland, LE15 9PH
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node Virtual "Amiga Texturemapped Games FAQ V 1.51"
+@toc Games
+
+Virt. Karting F. Bizzetti(P)  AGA                AGA
+Racing Game   ???             ???
+
+This game, published by OTM Publications & Promotions ltd. will be a fully
+texturemapped racing game on Amiga. It should be out by now. The author
+states, there would be a way to convert any chunky algorithm to a planar
+algorithm. The engine is coded "the Amiga way to Texturemapping" and supports
+1x1 to 2x2. There are screenshots available on Aminet, but those look as of
+a very LOW resolution to me. I hope there are better modes in the final
+game... There should be a space game named "Starfighter" till December,
+of OTM too... this game, among other things, will contain a "DOOM" style
+game section.
+
+Author: OTM@OTMltd.demon.co.uk
+File  : Demo version should too be soon available on Aminet as i heard...
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node gloom "Amiga Texturemapped Games FAQ V 1.51"
+@toc Games
+
+Gloom         Black Magic(G)  AGA                AGA
+Low/Wolf      VSmo            CopL
+
+Gloom is a Texturemapping action game in the way of Castle Wolfenstein.
+The resolution of the game is low, even compared to AlienBreed3D and
+other copper chunky games/demos. But it seems, there was much work
+about level design already done, and the sound is quite cool.  There
+are no different height walls, only slight floor and ceiling textures
+and no Automapping. But the game supports one player, split screen
+and serial link modes. You can modify the game resolution and window
+size. The dying sequences of the monsters are, quite... hmm... bloody
+(if you know what they are, with all that big pixels on screen...).
+There are two player cooperative and death match modes. The game is
+a lot of fun in two player mode (but the split of the screen is quite
+strange, one window is above, the other one below, instead of left and
+right). The demo consists of one playable level. Gloom is one of the
+two rumoured texturemapping games of Acid Software (probably the one
+for the low powered Amigas...) In an interview in "The One Amiga" Mark
+Sibly said he probably would do MORE 3D graphics on Amiga ... As to a rumour,
+this one will be out in july.
+
+As to what i heard from very reliable sources, GLOOM IS OUT !!! The graphics is,
+as i was told, the same like in the demo (:(((), but the level design would
+be very fine... i heard even PC users would have stated that the level
+design of GLOOM would be better than that of DOOM II (even without stairs
+and the much worse graphics of GLOOM !!!) Sadly i did not see the game
+myself... but it seems to be something where you can look forward to GET
+it... the difficulty level of the game would be quite HARD, i was told...
+Some people stated it would be ECS, but i do not know what's about this.
+I did not find a shop where one could buy it up to now... but it seems,
+the release of GLOOM is more than a rumour...
+
+Author : Mark Sibly/Black Magic
+File   : Demo on Aminet, full version probably at your software dealer
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node liberation "Amiga Texturemapped Games FAQ V 1.51"
+@toc Games
+
+Liberation    ???             All/AGA (???)      AGA+Hard drive or CD32
+???           ???             ???
+
+This is a SF RPG that uses texturemapping. If you have a harddisk you are able to get
+a lot of stuff preculculated (already done on the CD using a CD32). I do not know much
+of this game at all. It is a commercial game.
+
+Author : ???
+File   : Several Software Shops...
+            
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode     
+
+@node jurassic "Amiga Texturemapped Games FAQ V 1.51"
+@toc Games       
+
+Jurassic Parc ???             AGA                AGA
+Simply SUXX!  ???             ???
+
+Okay, i only saw it once... but the 3D part of this game really SUXX on Amiga. I do not
+think it is even real texturemapping. Maybe they do every 30 degrees or such things.
+Unplayable, if you ask me... Commercial Game.
+
+Author : ???
+File   : Several Software Shops ...
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode     
+
+@node fears "Amiga Texturemapped Games FAQ V 1.51"
+@toc Games
+
+Fears         BOMB (G)        AGA                AGA                    
+Low/Wolf      VSmo            Low/Med
+
+This is a Wolfenstein clone for Amiga. The walls are better than nothing, 
+the floor textures nearly nothing, the monsters do slide instead of walk, 
+but it is a COMPLETE GAME. It is shareware. There is even sound while 
+playing. And it is really FAST.
+
+Author : Gengis/Bomb
+File   : /pub/aminet/games/demo/fears.lha
+A1200  : Smoothness Smo/NSm
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node ambermoon "Amiga Texturemapped Games FAQ V 1.51"
+@toc Games
+
+Ambermoon     Thalion (SF)    All                030                    
+:)            VSmo            Med
+
+Ambermoon (do i have to explain this ?) is probably the best fantasy RPG on 
+Amiga. Using a cool texturemapping routine. Okay, the monsters of Ultima 
+Underworld on PC are better, but what do you want? This one is LoRes, 32 
+colors !!! One minute of silence for Thalion... may they rest in peace... 
+OR be back and do something like that in AGA ??? :))) But sure, that won't 
+happen... and the programmers for Ambermoon are now at Blue Byte, doing 
+Ambermoon's sequel Albion for PC only... BLUE BYTE SUXXXXXXXXXXXXXXX!!! 
+Ambermoon is a commercial game.
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node brama "Amiga Texturemapped Games FAQ V 1.51"
+@toc Games
+
+Za Zelazna Brama ???          All                No-Aga
+Shading Trick    VSmo         Low
+
+This game, made by some polnish guys, has (i think) no real
+texturemapping, but it does some tricks using shading. The graphics
+does not look very well (at least this is what i heard about it, as i
+did not see it myself...) I heard, it does not run 100% on AGA
+machines... As i only heard of this game, i do not know who the
+coders etc. are, and if it is commercial... but i think Fears
+does a MUCH better job... these guys should kick off No-Aga and
+do a ChunkyCopper screen instead of those ugly shading tricks...
+The main function could be used by both, i suppose :)
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode 
+
+@node legend "Amiga Texturemapped Games FAQ V 1.51"
+@toc Games
+
+Legend of valour ???          All                ???                    
+Wolf(???)        ???          Low (???)
+
+Legend of Valour is a texturemapping fantasy RPG on Amiga. It is a 
+commercial game. I do not own it and only saw it once, so i can't say much 
+about this one. But it is not such BIG stuff like Ambermoon.
+
+A1200 : Smoothness NSm (on the biggest screen)
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node behind "Amiga Texturemapped Games FAQ V 1.51"
+@toc Games  
+
+Behind the ...   Bl.Legend(G) All                All
+Shading Trick    ???          ???
+
+Behind the Iron Gate is, strictly, no texturemapping game. It uses some kind of
+shading ... which looks worse than a texturemapping engine, but is much faster.
+It is some sort of Wolfenstein-Engine. The monsters are shaded robots, that look
+quite nice on the screenshots i saw. I do not know, how fast this game is in fact,
+but as to the article about it in the German "Amiga Magazin" it is intended for
+68000 systems and low-end A1200 (And even the screenshots i saw were only very
+small...) There shall be an AGA version later , with (i am citating the mag
+article) "additional textures". Hmmm, up to now there were no Textures at all...
+so is "more" more shading or Texturemapping at all ? :)
+
+As to what i heard now, the creators of this game are UNION INTERACTIVE, Black Legend
+probably is only the publisher of the game, not the creator...
+
+This game is now released. It is not HD installable, but if you apply DiskSalv
+to the first (DOS-)Disk of the Game, you will find a Commodore-Installer-Script,
+that works on MOST Amigas, and was deleted, because it did not work for all.
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness " link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode      
+
+@node Cytadela "Amiga Texturemapped Games FAQ V 1.51"
+@toc Games
+
+
+Cytadela         ???          4 MB(???)          030/040, 4 MB
+Wolf+            NSm          Med
+
+I don't have First-hand information about this game, but what i was told is :
+
+This is a Wolf-Clone with c2p engine. Graphics looks okay, nice intro, floor and
+ceiling suppported, will be released by some polnish company, the engine is
+very slow (even on 040) and there is a certain lack of level design. You are
+able to switch detail level and screen size.
+
+@{" System " link system} @{" Engine " link engine} @{" Smoothness "link smoothness} @{" Resolution " link resolution} @{" Coded By " link coded}
+@endnode
+
+@node Sources "Amiga Texturemapped Games FAQ V 1.51"
+@toc Reviews
+
+@{b}Sources@{ub}
+
+There are some demos available with sources. Additional you can find
+the sources of Chunky2Planar routines on Aminet. My comments to these
+will be rather short, as i am not familiar in coding texturemapping.
+If you have comments to some of these sources, mail me ...
+The format of the short reviews of the sources of course is different
+to that of the demo reviews. I will download these sources too and
+look them through. Maybe then there is something more i could say
+about them.
+
+*************************************************************************
+
+c2p4.lha          /pub/aminet/dev/src     31KB
+
+Very fast c2p converter using cpu+blitter for the conversion. Needs
+68020 at least.
+
+*************************************************************************
+
+chnky2plnr.lha    /pub/aminet/dev/src     14KB
+
+Various fast c2p conversion algorithms.
+
+*************************************************************************
+
+fastc2p.lha       /pub/aminet/dev/src     25KB
+
+Two fast c2p converters.
+
+*************************************************************************
+
+chunky.lha        /pub/aminet/dev/src     54KB
+
+Example of how to create a chunky copper display.
+
+*************************************************************************
+
+rot3dsrc.lha      /pub/aminet/dev/src    184KB
+
+Complete source of the above reviewed Rot3D texturemapping demo.
+
+*************************************************************************
+
+wolf3d-2.lha        /pub/aminet/dev/src   56KB
+
+Above reviewed texturemapping demo including source.
+
+*************************************************************************
+
+tmapdemo.lha        /pub/aminet/gfx/aga  131KB
+
+Above reviewed texturemapping demo including source.
+
+*************************************************************************
+
+flick-14.lha        /pub/aminet/gfx/show 71KB
+
+FLI/FLC viewer with source including a c2p routine.
+
+*************************************************************************
+@endnode
+
+@node Rumors "Amiga Texturemapped Games FAQ V 1.51"
+@toc Main
+
+@{b}Rumours and other infos department@{ub}
+
+1. It is said Renegade is doing a Wolf/DOOM clone.
+2. There should be a playable demo of a game called MOOM. As it did not work
+   on any Amiga of people i know, where the thing worked, it may be a fake.
+   (I did not try it myself, as i don't have the file).
+3. (This one is NO rumour !!!) Attic Software considers doing an Amiga
+   Role Playing Game with Texturemapping !!! For 68030 at least, called
+   "DSA III". But this only will come into truth, if they will find an
+   Amiga programmer who is able to do the DSA 3D Engine on Amiga, else
+   this will die. Alex Amsel and Oliver Groth seemed to be interested,
+   but i do not know if they finally will contact Attic Software for
+   this coding job...
+
+   Contact Address at Attic :
+
+   Attic Entertainment Software
+   z.Hd. Herrn Hamma
+   Sigmaringer Strasse 84
+   D 72458 Albstadt
+
+By the way, i deleted some older rumours, that probably were not true...
+
+@endnode
+
+@node Emulators  "Amiga Texturemapped Games FAQ V 1.51"
+@toc Main
+
+@{b}Doing texturemapping with emulators@{ub}
+ 1. @{" Hardware-Emulators                                     " link Hardware}
+ 2. @{" Software-Emulators                                     " link Software}
+@endnode
+
+@node Hardware "Amiga Texturemapped Games FAQ V 1.51"
+@toc Emulators
+
+@{b}Hardware-Emulators@{ub}
+
+Hardware-Emulators, that is ... putting INTEL-PROCESSORS in your poor 
+little Amiga. You want to do THIS ? Oh, than you are running PC games, 
+not Amiga ones... therefore i do not write ANYTHING about it in my FAQ. 
+Because this is nearly no emulation anymore... it is ... gaming on PC ... 
+there are quite well emulators of this style called "GoldenGate".
+@endnode
+
+@node Software "Amiga Texturemapped Games FAQ V 1.51"
+@toc Emulators
+
+ @{b}Software-Emulators@{ub}
+
+There are some software PC emulators, but for games like DOOM they are not  useful.
+They are slow and only emulate a 8088 or 80286. DOOM needs a  80386 AT LEAST to run.
+Maybe on PC Task 3.0 Wolfenstein will run. But the  speed (espescially the speed of
+the graphics) surely is a problem. Maybe  with a graphics board, but probably even
+this is too slow. So ... wait for  PC Emplant's CPU transcription mode (this one
+will not be included in the  first version of the emulation software, it will come
+as a free update  later ...)
+
+As far as i heard Emplant PC is now capable to run DOOM and Wolf3D using V2.0 of its
+emulation software (but CPU transcription is not finished, as far as i heard...)
+
+Second ... Mac emulation with software... there are three emulators...  AMaxIV,
+Emplant and Shapeshifter... as i heard AMaxIV does not run on AGA ... and it uses
+tricks to be able running with a 128KB ROM ... i doubt games running on  this one,
+but maybe i am wrong...
+
+On Emplant (which i owned once myself) i tested four texturemapping games for Mac: The
+demoversions of these games (which i tried...) are on ftp.hawaii.edu in
+/pub/mac/info-mac/game/com. You will need StuffItExpander to decrunch  them.
+
+Wolfenstein : Runs on my A4000/040 with reasonable speed (even if i do not  use the
+graphics board ... with PAL Hires AGA ...), but only with the  smallest screen. Not
+very well coded, as it is not very smooth on the  graphics board either... (okay,
+with 320x256 it is something near  smooth ...)
+
+Sensory Overload : Wolfenstein Clone, but i do not like the graphics...  okay, the
+screen is bigger than most of these demos for Amiga... but the  graphics is not much
+better... i think worse... Sensory Overload does not  run well without a graphics
+board.
+
+Pathways into Darkness : Wolfenstein clone from Bungie (Bungie1@aol.com),  i think
+the graphics is better than Wolfenstein, but Wolfenstein has a  background music and
+PID don't ... it is slow, but in LoRes playable  without graphics board... not much
+faster with graphics board, though ...
+
+Marathon : The absolute Mega-Game ... rating, if we do it as with the Amiga  demos
+above : BEY !!! (Yes, this one is MUCH better than DOOM ...) If you  are doing
+EVERYTHING to play DOOM on Amiga, take this one, take the  smallest screen size, no
+music, select that the game only displays every  second line... and run it on at
+least a 4000/030. But do not show it to  your PC friends, they will LAUGH at you, if
+you do not own a graphics  board... (i did, before i got mine :((( ) On a graphics
+board, Marathon is  FANTASTIC, better speed than Amiga graphics demos, maybe even
+better than  DOOM on PC (remember, Marathon is 640x480 ...) I use a resolution of
+probably 400x300 in Lores, and it is absolute smooth on the SD 64 ...  Marathon is
+the sequel to Pathways into Darkness. On a Cyberstorm Amiga, Marathon runs on
+fullscreen.
+
+Marathon II : Successor of Marathon, the DEMO VERSION comes on 10 MB. The
+graphics is a bit faster, and there are much more colours. The Bobs are now
+fighting back the monsters, by the way...
+
+One Last : It is rumoured, at 15th April, DOOM II will be released for  Mac... 68040
+and PowerMac, to be exact...
+
+As to Shapeshifter, after my experiences (which i registrated after i sold my
+Emplant) this emulator is a bit slower than the Emplant, but its graphics capabilities
+are a bit faster than the Emplant. And of course, it is very cheap (50 german marks,
+no hardware needed). The Speed of the games tested on Emplant is about the same,
+maybe a bit better.
+
+And i tested a new emulated game now : The Dark Forces Demo. The speed of the game
+is in my opinion slower than Marathon (but the graphics look better). On the other hand,
+on slower Amigas the Monsters of Marathon slow the animation down. On Dark Forces
+the monsters are very smoothly animated even on those systems (but the problem with this
+game is the screensize... a bit bigger screen, and everything goes down in speed).
+As to the game, both are about the same, kind of DOOM/Heretic-Clones. I like the
+monster animations and the puzzles of Marathon better (but to be honest, of Dark
+Forces, i only played a 1-level-playable-demo, of Marathon around 13 levels of the
+full version :))
+
+@endnode
+
+@node Algorithms "Amiga Texturemapped Games FAQ V 1.51"
+@toc Main
+
+@{b}Algorithms@{ub}
+
+In this chapter i will put algorithms or coding hints sent to me.
+Please do not send code (this would be MUCH to specific for this
+FAQ).
+
+    @{" Terence Russells algorithms used in Wolf3D-2.lha " link russell}
+    @{" Basics of Ray Casting                            " link raycast}
+    @{" Basics of Copper Chunky                          " link copper}
+
+@endnode
+
+@node russell "Amiga Texturemapped Games FAQ V 1.51"
+@toc Algorithms
+
+@{b}Terence Russells algorithms used in Wolf3D-2.lha@{ub}
+
+Basic structures and algorithms used to create the Amiga Wolf3D demo.
+
+The techniques I have used do not involve ray-casting for the rendering
+or BSP trees for hidden object removal. Instead my style of rendering
+has more in common with flat-shaded polygon rendering used in many
+older demos.
+
+Sorry for the crappy organization. I'm a fourth year computer science
+student and I haven't much time to do this properly.
+
+The Maze and basic objects:
+
+The maze is essentially two dimensional and if looked at from above it
+would appear to be a grid whose squares are outlined with walls or are
+bisected with doors.
+
+Each square from above is 64 x 64 pixels in dimension. I use pixels as a
+unit of measurement since in fact each point is represented by a pixel
+column in a bitmap.
+
+The use of the grid analogy is purely conceptual, however, since using a
+grid structure would create some complications (which are described under
+'collision detection' and 'door movement'). For purposes of discussion I
+will refer to the X and Y axis' as being the east-west and north-south
+axis' (respectively) of the grid from an above view. The Z axis will
+refer to the axis that comes up out of the grid. (This runs contrary to
+how I actually programmed the demo as the Y and Z axis are swapped).
+
+Walls and doors are represented by the same basic unit: the block.
+A 'block' is from a structural standpoint the canvas onto which wall and
+door imagery is 'painted' or 'mapped'. Every wall and every door in
+the maze is associated with a block. In fact a block may consist of
+up to 4 walls that represent the 'north', 'west', 'south', and 'east'
+faces of the block.
+
+>From a programming view a block consists of 256 points plus a center
+point. The center point positions the block relative to the bottom-left
+corner (0,0,0) of the maze. The remaining 256 are divided into 4 groups
+of 64 points, each of which are associated with a particular block face.
+All 256 points are relative to the block's center point. (Hence,
+only one set of these points need be maintained for all blocks within a
+maze). As can be imagined the end-points for each face overlap.
+
+The walls points are given the following offset ranges:
+
+SOUTH: (-32,-32,0) to (31,-32,0)
+NORTH: (31,31,0) to (-32,31,0)
+EAST: (31,-32,0) to (31,31,0)
+WEST: (-32,31,0) to (-32,-32,0)
+
+Notice that for each face the ranges are given in an order which implies
+counter-clockwise as viewed from above the grid. This is important for
+properly rendering the wall graphics and for backface culling, that is,
+removing walls that are facing away from the observer/player.
+
+Each wall/door has an associated 64 x 64 pixel bitmap.  Each 1 pixel wide
+column of the bitmap is represented by one of the points found along the
+wall/block face. Hence point 0 of the south wall of a block may represent
+the 0th column of a 'stone wall' bitmap. From the programmer's view I use
+the wall point's ordinal value (it's relative position) to offset/toc
+into the bitmap image.
+
+Previously I mentioned that blocks are used for BOTH walls and doors.
+The attentive reader may have noticed that the offsets for the walls
+would create doors that are not located in the center of a block. Since
+my aim was to create a near Id wolf-clone I had to specify extra offsets
+just for the doors. These new offsets simply have either the X or Y
+component zeroed depending on which direction the door is to lie along.
+This allows the doors to appear in the center of a block. This also makes
+it easy to have sliding doors since all I really need to do is move the
+associated block's center point in the direction the door opens. The door
+then slides 'into' an adjacent wall block which takes care of hiding the
+door. (This is explained later in the next section).
+
+RENDERING - this is just a quick and dirty algorithm
+
+Translate the block centers by an amount equal to the players relative
+maze position. Now rotate these centers using the players attitude or
+angle of direction, also relative to the 0,0,0 point of the maze.
+
+Next rotate the 256 wall points using the same players direction angle.
+For each block center, translate a copy of the 256 wall points to the
+block center such that the block center is in the middle of the points.
+
+Now that we have a list of block points that are relative to the player's
+position we want to render the blocks. To determine what blocks are
+visible I simply sort them by there Y value, (which is now relative to
+the player's position). I used this method since at the time I did not
+know of the BSP tree method for determining visible polygons.
+
+Once we have a list of sorted blocks, we can immediately discard the
+blocks that fall behind the viewer. From this point we render each block
+until the player's view is completely filled with graphics.
+
+Since I don't want to draw all of the blocks that are in front of the user,
+(just the ones that fill up the view), I use a pre-render loop which
+determines what portions of walls/doors are visible. 
+
+To determine what is visible I use the sorted list of blocks and an array
+called the xBuffer. This buffer is one dimensional and has an entry for
+every vertical column of the user's game display.
+
+The algorithm involves a lot of simple parts that when put together create
+a fairly complex program. Hence I will attempt explain it using two similar
+explanations.
+
+EXPLANATION 1:
+
+I use the following algorithm:
+
+clear the xBuffer
+
+while xBuffer is not full do
+    get the block closest to the player
+
+    for each face of the current block do
+        if current face is invisible then
+            skip face
+        else "current face is visible"
+
+            for each of the current face's 64 points do
+                perform a perspective calculation on the point to
+                  get a screen X1,Y1 point.
+
+                duplicate X1 into X2
+                mirror Y1 across the center of the display to get Y2
+
+                the line (X1,Y1)-(X2,Y2) forms a column of screen points
+                  onto which a column slice of the wall/door bitmap will
+                  be mapped/scaled.
+
+                if X1 lies with in the range of the xBuffer
+                   (usually 0-319 for a full screen) then
+                    check xBuffer[X1].height to see if a column
+                    hasn't already been written there.
+
+                    IF height of current line > xBuffer[X1].height THEN
+                        xBuffer[X1] = current column and it's associated
+                                      bitmap imagery.
+                    else
+                        discard this column as being invisible.
+                    endif
+
+                    "If all I did was insert just the columns into the
+                        xBuffer there would be gaps in-between the columns
+                        do to the perspective transformation, hence
+                        I need a little loop that makes a copy of the
+                        current column back to the previous column of the
+                        same wall."
+
+        end-if
+    end-for
+end-while
+
+For example suppose my maze viewing area is 320 pixels across the screen.
+Then the xBuffer has 320 elements. Each element is a structure that
+records: the half-height of the wall/door from the horizon or the equator
+of the viewing area; the bitmap identifier; the pixel column offset into
+the bitmap
+
+Now using the xBuffer I have a routine take each element and read a column
+of pixels from a bitmap and then stretch and clip the bitmap into the
+hidden rendering buffer.
+
+EXPLANATION 2:
+
+while not done do
+    check closest wall/door's extents
+    (i.e. the starting and ending X locations as project on the view)
+
+    if the extents are outside the viewing area then
+        discard the wall/door
+    else
+        for each of the 64 points/columns of the wall/door
+            determine where the column is relative to the view area
+            if the column lies in the view area then
+                check the corresponding xBuffer element to see if
+                   something hasn't already been written there
+                if empty then
+                        write the columns height and bitmap column offset
+                           and bitmap identifier to the xBuffer.
+                else
+                    if current column's height is greater then
+                        write it
+                    else
+                        this part of the wall lies behind some other wall
+                    end
+                end
+            end
+        end
+    end
+end
+
+Starting with the closest block I check each face to determine if it is
+visible. Since the faces of the blocks are at angles of 90 and 180 degrees
+from each other, at most 2 faces will be visible at any one time.
+
+Once I determine a visible face I use the associated 64 points for that
+face to determine visible columns. To each point I add to the Z component
+an amount equal to have the height of a wall. Then I run the point
+through a simple perspective calculation and I now have a somewhat correct
+position for projecting the point onto the player's view.
+
+I next create a duplicate of the point and mirror it across the middle
+of the player's view. This gives me two points that represent a line or
+column of the wall's bitmap. Since each point of a face is uniquely
+associated with a column of pixels in a wall bitmap I can perform some
+sort of 'texture' mapping now. Only one thing remains, and that is to
+determine the next columns position. Since as you get closer to a wall
+the 64 points will be spread out over a greater viewing area, gaps will
+start to appear between the columns. These gaps are eliminated by copying
+a column up to the next column.
+
+
+Collision Detection:
+
+Some authors have suggested using a static grid to perform collision
+detection with walls. Generally this works very nicely, however, in the
+case of Id's Wolf3D there is a slight problem. Id's game supports moving
+walls (in other words the secret passage-ways). To perform collision
+detection on these moving walls while using the static grid meant that
+I would need to either create special case for checking when a wall was
+moving, or would have to create a special kind of block: i.e. a moving
+wall block. At the time I decided this was unsatisfactory so instead of
+using a grid I decided to use the block's center point and a bounding box
+around the player. Using this method, collision detection involves
+checking each block center to see if it lies within the players bounding
+box. This allows me to move blocks at will without worrying about special
+cases and is generally pretty quick.
+
+There are many more points to the algorithms I have used, and if you
+are interested in understanding them and want to learn a maze rendering
+technique that does not involves ray-casting then send some email.
+
+Terence Russell
+russell@cpsc.ucalgary.ca
+@endnode
+
+@node raycast "Amiga Texturemapped Games FAQ V 1.51"
+@toc Algorithms
+
+@{b}Basics of RayCasting@{ub}
+
+[REFERENCES: @{i}Tricks of the Game Programming Gurus@{ui} by LaMothe, Ratcliff,
+Seminatore, and Tyler. It's blatantly geared towards PeeCee programming
+("The Mysteries of the VGA Card", etc) but there's plenty of generic code
+that applies to all computers.]
+
+RayCasting (RC) is a fast and elegant way to create a psuedo 3D world. If
+you've ever played Wolfenstein 3D, you've seen it in action. To achieve
+the high speed of RC, some concessions are made: walls and doors are all
+the same height/width, there are no curved or diagonal walls, there is no
+floor or ceiling. Yet, even with these drawbacks, RC is a powerful tool.
+
+The world of an RC game, if viewed from a bird's perspective, would be
+a very structured 2D grid. Through the use of basic trigonometry, the
+2D world is reconstructed, at run time, as a 3D illusion. For instance:
+
+        ---------------------------------------------
+        |   |   |   |   |   |   |   |   |   |   |   |
+        ---------------------------------------------
+        |   | W | W | W | W | W | W | W |   |   |   |  W = wall
+        ----------------\----------/-----------------  D = door
+        |   | W |   |   |\  |   | / | W |   |   |   |  P = player
+        ------------------\------/-------------------
+        |   | W |   |   |  \|   /   | D |   |   |   |
+        --------------------\--/---------------------
+        |   | W |   |   |   | P |   | W | W | W |   |
+        ---------------------------------------------
+        |   |   |   |   |   |   |   | W |   |   |   |
+        --------------------------------------------
+
+Imagine this is part our game world as seen from above and 'P' is the
+player. He is facing 'North' (90 degrees) and looking at a wall. The two
+angled lines represent his Field of Vision (FOV) - in the real world, this
+is about 90 degrees, but for the game-world 60 degrees works fine. Also,
+assume the whole game-world is 64x64 cells, with each cell being 64x64
+'virtual units' - making the entire game world 4096x4096 units.
+
+To create the 3D illusion, we must cast some rays. What this entails is
+casting out a series of 'rays' or 2-D vectors - each originating at the
+players position (xp, yp) until they hit something - a wall, door, etc.
+How many rays? The number of rays equals the number of vertical columns
+on the video display - assume we are using a 320x200 display, so we must
+cast out 320 rays. The rays must encompass the player's FOV - from player
+view angle (p_ang) minus 30 degrees to p_ang + 30 degrees - which yields
+a FOV of 60 degrees. So let's cast the first ray at p_ang - 30.
+
+Now comes the trig. You may remember the 'point-slope' equation of a line:
+
+             y2 - y1
+        M =  -------
+             x2 - x1
+
+where M=slope of line and (x1,y1) and (x2,y2) are two points on that line.
+We know M - the slope will be tangent(ray_ang) - where ray_ang is the
+angle of the ray (60 degrees for our first ray). We also know x1 and
+y1 - they are xp and yp (the player's position). The only things left
+are x2 and y2 (let's call them xi and yi - for "intercept").
+
+We need to cast each ray twice: one cast checks for horizontal intercepts
+and the other one checks for vertical intercepts. For example - our first
+ray gets cast at 60 degrees. If you look at the map you see it first
+intersects with a horizontal line then a vertical line, etc. Things
+become greatly simplified if we only check for either the vertical
+intercepts or the horizontal: look at the first intersection - the
+x-coord is unknown but the y-coord is easily determined: (yp / 64) * 64
+(since each cell is 64 units). Now, look past the next intercept (which
+is a vertical one) and look at the next intercept. Again, the x-coord is
+unknown but the y-coord is the last y-coord minus 64. The same holds true
+if you look at the vertical intercepts - the x-coord is divisible by
+64 but the y-coord is unknown. This is why we cast each ray twice.
+
+Okay. Let's cast the first ray - looking for horizontal intercepts. We
+can get the y-coord (yi in our point-slope equation): (yp / 64) * 64.
+The only unknown left is xi. Using the point-slope, we solve for xi:
+ 
+        xi = [(1 / tan(ray_ang)) * (yi - yp)] + xp
+        yi = [tan(ray_ang) * (xi - xp)] + y         <- For vertical ray
+
+This yeilds the coords of the first intercept. Now we need to check the
+cell above this coord to see if there's a wall. If there is we stop
+casting - if not, we need to continue. In our map that cell is empty,
+so we continue casting. The next y-coord is easy: yi - 64. However,
+the x-coord is again a problem. Fortunately, trig comes the the rescue:
+
+        xi = xi + [(1 / tan(ray_ang)) * 64]
+        yi = yi + [tan(ray_ang) * 64]               <- For vertical ray
+
+So, we continue casting until we find a cell with something in it. Then,
+do the same thing for the vertical ray.
+
+Now, we've cast the ray twice. Next, we need to determine the relative
+distances of each intercept to the player, and we'll use the closest
+one:
+        y_distance = (xi - xp) / cos(ray_ang)
+        x_distance = (yi - yp) / sin(ray_ang)
+
+You may have been expecting to use the Pytagorean thm. here, but this
+method is much simpler. Remember your trig!
+
+               /|
+              / |
+           r /  |          sin(a) = y/r  <==> r = y/sin(a)
+            /   | y        cos(a) = x/r  <==> r = x/cos(a)
+           /    |
+          /a    |
+         --------
+             x
+
+Okay. Now that we have the distances, we choose the shorter of the two
+since the one further away will be blocked out by the closer one. Now,
+we need to calculate the scale - this will be the 'height' of the wall
+sliver. Remember, we not trying to build a whole wall here, just the
+part that will be represented on the particular video column. Imagine
+cutting a thin slit in a piece of cardboard and looking through that.
+Then, pan it right to left real fast, over and over. That's pretty
+much how we're building our world.
+
+Scale is very hard to calculate: scale = 1 / dist. Whew, that was
+difficult! Actually, there's more to it. To make our world seem 'real'
+we also need to multiply by some mysterious constant - K. Also, since
+we've been mixing rectangular and polar coordinates in our calculations
+we are going to end up with a sine wave modulated on top of everything.
+This is easily fixed by multiplying by the inverse cosine. Thus:
+
+        scale = K * (1 / cos(ray_num)) * (1 / dist)
+
+Note that we did not use ray_ang here, but rather we used ray_num 
+(ray_num will range from 319 to 0). This is because the sine wave
+modulation is going to adversely affect the video display.
+
+The last thing we need is which column of the wall have we hit? This
+will be used by the texture mapping algorithm - i.e. which column of
+pixels of the texture gets mapped onto the wall? The answer:
+
+        column = yi % 64
+
+That's it! Now, we need to repeat this for all rays, and we're done!
+
+John Corigliano
+jcorig@strauss.udel.edu
+@endnode
+
+@node copper "Amiga Texturemapped Games FAQ V 1.51"
+@toc Algorithms
+
+@{b}Basics of Copper Chunky@{ub}
+
+Explanation of copper-chunky mode.
+
+A "copper-chunky" mode is nothing else than a i.e. 7-bpl pattern in the
+bitplanes + a real big copperlist. First you have to generate the
+pattern in the bitplanes, which goes like this:
+Color0,Color1,Color2,Color3,Color4,Color5...
+Ofcourse you cannot display all 256 colors per line, just because
+the copper is too slow for doing this, so we are restricted to
+something about 128 colors per line to get a good look. A good way
+to display a full-screen view would be to use a 2.5x2.5 resolution,
+which exactly means something like that:
+
+Color0,Color0,Color1,Color1,Color1,Color2,Color2,Color3,Color3,Color3..
+
+You just perform alternating pixel widths of 2 and 3 and this way
+you get to 128 colors throughout the full line (320 pixels width)
+What you do to actually SET the colors you want on the screen
+is to generate a big copperlist, with instructions like that:
+
+[...]
+dc.w $10C,$8000         ;display upper 128 colors
+dc.w $106,$0020         ;change lower 128 colors
+dc.w $180,Pix0,$182,Pix1,$184,Pix2,$186,Pix3...
+dc.w $106,$2020
+dc.w $180,Pix32,$182,Pix33,$184,Pix34,$186,Pix35...
+[...]
+dc.w $xx01,$FFFE        ;wait for next (2.5) row
+dc.w $10C,$0000         ;display lower 128 colors
+dc.w $106,$8020         ;change upper 128 colors
+dc.w $180,Pix0,$182,Pix1,$184,Pix2,$186,Pix3...
+dc.w $106,$A020
+dc.w $180,Pix32,$182,Pix33,$184,Pix34,$186,Pix35...
+[...]
+
+Where Pixn is the color for the (2.5) pixel at position n.
+This way you can set 128 pixels in one (2.5) row. This can be
+seen as a 12-Bit RGB-Chunky-Pixel-Mode, as you can set all colors
+available under ECS freely on the screen.
+To prevent the pixels on the next row from looking strange because
+of changing the copperlist AFTER the pixel has been displayed by the
+video hardware, we have to use a trick (sometimes called
+"Copper-Doublebuffering").
+
+Now something about the $DFF10C register:
+
+BPLTCON4 - Bit Plane Control Register (display masks)
+
++------+------------+----------------------------------------------------+
+| BIT# | BPLCON4    | DESCRIPTION                                        |
++------+------------+----------------------------------------------------+
+| 15   | BPLAM7=3D0 | This 8 bit field is XOR`ed with the 8 bit plane    |
+|      |            | color address, thereby altering the color address  |
+|      |            | sent to the color table (x=3D1-8)                  |
+| 14   | BPLAM6=3D0 |                                                    |
+| 13   | BPLAM5=3D0 |                                                    |
+| 12   | BPLAM4=3D0 |                                                    |
+| 11   | BPLAM3=3D0 |                                                    |
+| 10   | BPLAM2=3D0 |                                                    |
+| 09   | BPLAM1=3D0 |                                                    |
+| 08   | BPLAM0=3D0 |                                                    |
+| 07   | ESPRM7=3D0 | 4 Bit field provides the 4 high order colortable-  |
+|      |            | address bits for even sprites: SPR0,SPR2,SPR4,SPR6.|
+|      |            | Default value is 0001 binary. (x=3D7-4)            |
+| 06   | ESPRM6=3D0 |                                                    |
+| 05   | ESPRM5=3D0 |                                                    |
+| 04   | ESPRM4=3D1 |                                                    |
+| 03   | OSPRM7=3D0 | 4 Bit field provides the 4 high order colortable   |
+|      |            | adress bits for odd sprites: SPR1,SPR3,SPR5,SPR7.  |
+|      |            | Default value is 0001 binary. (x=3D7-4)            |
+| 02   | OSPRM6=3D0 |                                                    |
+| 01   | OSPRM5=3D0 |                                                    |
+| 00   | OSPRM4=3D1 |                                                    |
++------+------------+----------------------------------------------------+
+
+If you change bits 08-15, you can define an "offset" to the color table
+in the copperlist. So you change $10C to $8000 and then you change to 
+the upper 128 colors in the copper-palette. The trick is to display the 
+previous changed colors while changing the other colors.
+@endnode
+
+@node conference
+@toc main
+
+@{b}The Amiga Texturemapping online conference@{ub}
+
+ 1. @{" The invitation                                         " link Invite}
+ 2. @{" Some hints for people who do not use IRC often         " link Hints}
+@endnode
+
+@node Invite "Amiga Texturemapped Games FAQ V 1.51"
+@toc conference
+
+@{b}The invitation@{ub}
+
+The next texturemapping conference will be at 2nd February
+17:00 GMT. Coders, who are interested in coming, please send me
+mail (so i know, if there is interest for a fourth conference...).
+There was NO conference at 31st July, because there seemed to be no
+interest for it. (Anyways i was ill at that time and probably couldn't
+be there at that time even if theere WOULD have been interest because
+of that ...) There was no conference at the 1st December due to a lack
+of interest, too. Up to now there were three succesfull conferences...
+
+
+@endnode
+
+@node Hints "Amiga Texturemapped Games FAQ V 1.51"
+@toc conference
+
+@{b}Some hints for people who do not use IRC often@{ub}
+
+IRC is the online chat system of the internet. Try out the command irc on 
+your site. If this does not work, contact your system administrator and try 
+to convince him to install an irc server :))).
+
+As you entered irc, you specify your nick name (the name under which you 
+will be known), with /nick Nick-Name. An alternative is starting irc with 
+irc Nick-Name. To enter a channel (a channel is a place for people 
+discussing a specific theme to meet), you type /join channelname. 
+Each channelname starts with a #.
+
+To send someone a private message (that other can't read) you type /msg 
+Nick-Name "...", where Nick-Name is the Nick-Name of the user, to whom you 
+will send the message. To send a message to all users in this channel, 
+simply type what you want to say. Usually you should write it in the 
+following way : Name of the user for whom this message is
+primarily : Text.
+
+/who * lists all users currently on this channel.
+
+/list * counts the users on this channel.
+
+/time returns the difference between your timezone and GMT.
+For me for example it says +1, so if it is 17:00 GMT, it is
+18:00 for me...
+
+With /quit you quit irc.
+
+That are only the basics for irc, but with that knowledge you can be with 
+us at the conference :))). Irc also has a help-system installed, 
+by the way.
+@endnode
+
+@node Support "Amiga Texturemapped Games FAQ V 1.51"
+
+@{b}What can YOU do to support this FAQ ?@{ub}
+
+1. Support Amiga
+2. Write texturemapping demos/games on Amiga :)))
+3. Buy Amiga texturemapping games, if they come to a release
+4. If you know of any texturemapping game/demo not mentioned in this FAQ
+   (dungeon-related, no texturemapped cubes and spheres),
+   or if you have information relevant for me, mail to
+   - haeuser@minnie.informatik.uni-stuttgart.de
+                         OR
+   - call Germany 07021/861920 or 862428 or 862429 or telnet 194.55.101.51
+     between 18.30 GMT and 19.30 GMT (Birdland BBS,
+     i am Magic SN on this BBS ...)
+                         OR
+   - Phone Germany 07021/51787 and ask for Steffen
+                         OR
+   - go in irc and look for MagicSN (that's me :))) )
+                         OR
+   - write a letter to Steffen P. Haeuser, Limburgstr.127,
+     73265 Dettingen/Teck,Germany
+                         OR
+   - Do whatever you want ... :)
+
+5. Do the same, if you want to send me critics or beta-releases of demos
+   to test them :)))))))))))))))) (at least i tried it... maybe someone 
+   would be in FACT that nice :))) )
+   My internet-account is able to handle BIG UUEncoded mail... :))))))))
+6. Spread this FAQ on all nets and BBS's.
+7. If you are a coder, and you have a lack of time to code, or you have
+   a serious problem in coding texture mapping, maybe you find some
+   interesting EMail-Adresses all over this FAQ ...
+8. Send me texturemapping algorithms you see no need anymore in
+   keeping them private (for this new chapter V)
+
+That's it... as soon, as i hear news about some of the mentioned demos 
+(or of some new ones ...) i will do a later version of this FAQ. It will be 
+found in comp.sys.amiga.games at least... maybe soon there will be a later 
+version of Warp_S or POOM or TextDemo or DentAWolf or... or ...
+
+ciao,
+
+     Steffen Haeuser
+     OR MagicSN (in irc)
+     OR haeuser@tick.informatik.uni-stuttgart.de (E-Mail, talk ...)
+
+@endnode
+
+@node Released "Amiga Texturemapped Games FAQ V 1.51"
+@toc Main
+
+@{b}Already Released Games : @{ub}
+
+For sure :
+
+ @{" TrickOrTreat        " link trickortreat}
+ @{" Commercial Fears    " link comfears}
+ @{" Fears               " link fears}
+ @{" Ambermoon           " link ambermoon}
+ @{" Za Zelazna Brama    " link brama}
+ @{" Legend of Valour    " link legend}
+ @{" Liberation          " link liberation}
+ @{" Jurassic Parc       " link jurassic}
+ @{" Behind the Iron Gate" link behind}
+ @{" Gloom               " link gloom}
+ @{" Whales Voyage II    " link Whale}
+ @{" Alien Breed 3D      " link AB3D}
+ @{" Cytadela            " link Cytadela}
+
+Maybe :
+
+ @{" Virtual Karting     " link Virtual}
+ @{" Breathless          " link albas}
+Soon :
+
+ @{" Nemac IV            " link warp}
+ @{" GLOOM Deluxe        " link gdeluxe}
+ @{" XTR                 " link XTR}
+@endnode

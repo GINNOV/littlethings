@@ -1,0 +1,129 @@
+           _ ______
+   _ _____________/   ________        _____________   ________    ________ _
+    __ -- __  /-- \__/- _____ _____ _/- _________  \_/--   __ \  /--___ _
+     //  ____//    /_  /   \ _ ___//_  /   \/_  |   \   |   \- \/  /
+     \\   /  \\   /\\      /       \\      /\\      /   |   /\\   /
+      \  /    \  /  \  ___/         \  ___/  \  ___/\  _|__/  \  /
+       \/      \/    \/              \/       \/     \/        \/
+
+                     B Y   F R A N T I C   I N   1 9 9 5
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Copyright © 1995 by Frantic
+PicConv can be freely distributed and used, providing that the
+following rules are respected:
+No change is made to the program nor to the accompaning documentation.
+The package is always distributed in its complete form consisting of
+"PicConv", "PicConv.info", "PicConv.doc" and "PicConv.doc.info".
+Every form of distribution is allowed and encouraged, but no fee can
+be charged for this program except for, possibly, the cost of
+magnetic media.
+The author may not be held liable for any damages caused by
+use of this program.
+By copying, distributing and/or using the program you indicate your
+acceptance of the above rules.
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Why PicConv? Because I needed a utility that would strip IFF Pictures
+into Raw data files. I had Kefrens IFF-Converter but this was not
+compatible with my new Amiga so I decided to write this with an added
+function for A1200.
+It is fairly easy to use. Load an IFF-ILBM picture and save it in the
+desired format.
+Format descriptions:
+
+IFF ILBM: Unpacked IFF-ILBM picture with only 4 chunks: Header, Colours
+          Screenmode and Body data
+
+RAW DATA: (A)CBM, Raw picture in contiguous format
+          ie. Plane under plane etc...
+
+          (I)LBM, Raw picture in interleaved format
+          ie. Plane beside plane etc...
+
+RAW MASK: (A)CBM, Raw picture mask, all bitplanes merged to 1 bitplane for use
+          with the blitter dealing with contiguous picture data.
+
+          (I)LBM, Raw picture mask, all bitplanes merged in interleaved format
+          for use with the blitter.
+
+COLOUR12: (R)aw, data file consisting of colour values in 12 bit mode
+          ie. 2 bytes = 1 colour value
+
+          (S)ource, text file in copperlist format of colours in 12 bit mode.
+          nb. if amount of colours is less than or equal to 32 colours,
+              initialising BPLCON3 ($0106) will not be added
+
+
+COLOUR24: (R)aw, data file consisting of colour values in 24 bit mode
+          ie. 3 bytes = 1 colour value
+
+          (S)ource, text file in copperlist format of colours in 24 bit mode.
+          This copperlist will only function on AGA machines
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+You cannot change the size of the picture once loaded.
+You must save the picture as a brush to the correct size and then use PicConv
+
+Beware of loading pictures without colourmap, it will use the colours of
+the picture previously loaded. This could be useful if you want to load
+the colourmap saved from a paint program onto a picture? works vice versa.
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+I put in a prefs window. With this you can decide what the source (cols)
+will look like. It will only change the data statement so for reformatting
+you must do it manually. The special character for a TAB is "^".
+You can also change the file extension for saving. It will replace what is
+after the first "." in the file name or if there is none it just jams it
+at the end. Click the mode text to get the next mode.
+When saving the preferences select the mode you wish to come up as standard
+when starting PicConv. eg. If you want IFF ILBM to be selected when you
+first start PicConv then save prefs with this selected.
+The Prefs file is in ENVARC: but be careful editting it because there is
+no error checking.
+1st line is mode to be selected first
+2nd line is data statement
+3rd line onward is extensions
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+The info window will tell you the dimensions and body size of the
+picture loaded.
+The dimensions are : X, Y, Colours.
+The body size is: Width, Height, Bitplanes
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+PicConv has been tested on an Amiga 1200-3.0 and A600-2.?
+For comments, bug reports, suggestions write to:
+Frantic
+27 Boundary Road
+Tikipunga
+Whangarei
+New Zealand
+
+You must have an Amiga with library versions higher than V33 (Amiga1.2+)
+PicConv also uses reqtools.library V38+
+
+Special thanks to these people:
+Nico François - For his ReqTools library.
+                ReqTools is Copyright (c) Nico François.
+Rune Gram-Madsen and T.F.A - For ASM-One
+Nirvana (R.I.P.)  -
+Smashing Pumpkins -
+Portishead        -
+Urge Overkill     - For keeping me happy while coding!
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+                                H I S T O R Y
+
+Version 1.0 - I made another program a while back called IFFConv (unreleased)
+              I lost the source and I wanted to update it.
+              I also remembered that it was the ugliest code I have ever
+              written so I didnt try to disassemble it. I wrote, from
+              scratch, PicConv 1.0

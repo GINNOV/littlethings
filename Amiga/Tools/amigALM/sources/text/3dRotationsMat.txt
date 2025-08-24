@@ -1,0 +1,37 @@
+(c = cos, s = sin, A/B/G are Alpha,Beta and Gamma.)
+
+        |     cA*cB               -cB*sA          sB   |
+        | cG*sA-sB*cA*sG      cA*cG+sG*sA*sB     cB*sG |
+        |-sG*sA-sB*cA*cG     -cA*sG+sA*sB*cG     cG*cB |
+
+I hope I typed everything without errors :) Ok, how can we make some
+coordinates using this matrice. Again, the trick is all in multiplying.
+To get the new (x,y,x) we need the original points and multiply these with
+the matrice. I'll work with a simplyfied matrice. (e.g. H = cA*cB etc...)
+
+                        x   y   z   ( <= original coordinates)
+                      -------------
+        New X =     |   H   I   J   |
+        New Y =     |   K   L   M   |
+        New Z =     |   N   O   P   |
+
+So...
+
+        New X = x * H + y * I + z * J
+        New Y = x * K + y * L + z * M
+        New Z = x * N + y * O + z * P
+
+So, every frame looks like this :      - pre calculate new matrice with
+                                         given angles.
+                                       - Calculate points with stored
+                                         matrice.
+[ ]
+The resulting points are relative to (0,0). So they can be negative to.
+Just use an add to get it in the middle of the screen.
+
+NOTE: Always use muls,divs,asl,asr etc. Data can be both positive and
+      negative. Also, set the original coordinates as big as possible,
+      and after rotating divide them again. This will improve the
+      quality of the movement.
+
+(Michael Vissers)

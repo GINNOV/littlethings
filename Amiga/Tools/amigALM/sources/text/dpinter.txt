@@ -1,0 +1,178 @@
+===========================================================================
+ BBS: BitStream BBS
+Date: 09-09-94 (16:28)             Number: 32086
+From: ASHA DEVELDER                Refer#: NONE
+  To: ALL                           Recvd: NO  
+Subj: Pleasance Interview 1 of       Conf: (65) Amiga USA
+---------------------------------------------------------------------------
+
+        Here's the latest off of Compuserve (note tagline....I didn't edit
+this one!!):
+
+Here is an article that will appear in the next issue of the ICPUG Journal
+in England, to be published in about two weeks.  The JOURNAL is one of the
+best technical journals for Commodore products still being published.
+
+
+COMMODORE - THE FUTURE
+
+INTERVIEW WITH DAVID PLEASANCE
+
+John and Janet Bickerstaff
+
+Tuesday 6th September 1994. We arranged to meet David Pleasance, Joint
+Managing-Director of Commodore, at the European Computer Trade Show in
+London. This is what he had to tell us.
+
+Management Buy-Out
+We are, in fact, about two weeks behind what our schedule was. We had
+planned to announce the successful management buy-out of the assets of
+Commodore International and Commodore Electronics at the ECTS. The reason
+why we are two weeks late is that two weeks ago Colin Proudfoot and I were
+in New York with Coopers & Lybrand (who are acting for us), one of our
+investment people, the Liquidator and the Liquidator's lawyers, for a
+meeting which took approximately five hours, which you can take as a
+positive sign that the Liquidator is taking us very seriously. The purpose
+of that meeting was two fold. One was to
+establish finally what can and cannot be delivered in terms of what is
+available for sale. The second reason for the meeting was to determine
+exactly how our bid was to be structured to make it easier for the lawyers.
+To say that the situation with Commodore and all the subsidiary companies
+is complex is a major understatement. All the companies have
+cross-shareholdings and trading arrangements.
+
+The net result is that we were told (and it came as a major surprise to us)
+that the Liquidator could not, as previously promised, deliver to us all of
+the component parts inventory which is currently in the Phillipines, and
+that formed a very major part of our business plan to enable us to bring
+products to market for Christmas.
+
+That meant that we had to come back to the UK, get in touch with all the
+component suppliers from around the world, find out whether they would
+supply us, find out how much it would cost to get our product put to the
+front of the queue, how much for air freight, work out how many machines we
+can built and the profit on them. In other words we had to draw up a
+completely new business plan in order to satisfy our investors, and that we
+have done in just two weeks, but we are two weeks behind on what we had
+originally planned.
+
+Coopers & Lybrand have now drafted an unconditional draft agreement, which
+is what the lawyers asked for, and that effectively says, this is our
+offer, this is what we want and, subject to you delivering this to us, we
+will pay you. That will be delivered to the Liquidator today. We have put
+on the bid a validity period of ten working days to come back with an
+answer.
+
+However, life was never meant to be simple, the US courts have yet to
+decide whether they wish to intervene. They have the option of letting the
+Bahamas do it, doing it in conjunction with the Bahamas, or taking it
+themselves, which is very unlikely. We should know within ten working days
+from today whether we have got this or not. We are very confident about it
+because we know that the other players are doing, but nothing is certain in
+life.
+
+(Part Two to follow)
+
+Asha.DeVelder.... Internet: asha.develder@209-216-5.genesplicer.org
+
+ * ....<- Grains Of Salt.  Take As Needed With Above Message.
+---
+ * Origin: Don't bite my finger; Look where I'm pointing! (1:209/216.5)
+===========================================================================
+ BBS: BitStream BBS
+Date: 09-09-94 (16:29)             Number: 32087
+From: ASHA DEVELDER                Refer#: NONE
+  To: ALL                           Recvd: NO  
+Subj: Pleasance Interview 2 of       Conf: (65) Amiga USA
+---------------------------------------------------------------------------
+
+
+
+        Here's part 2:
+
+Research and Development
+The seventeen Commodore engineers currently residing in Norristown, US, are
+extremely happy to work with us, and we have budgeted to immediately take
+them back up to sixty/sixty-five people. The way that we will run the R & D
+Centre is that there will be a team of about fifteen people, who will be
+looking after current technology. Their role will be to support existing
+products and to manufacture derivatives, and new products from our present
+architecture. The remainder will be working on new technology, and that is
+exclusively RISC. We have canned that AAA project completely, and the
+reason is that although the chips are virtually finished, there is no
+operating system, and this would take eighteen months to bring to the
+market. In addition, we will be bringing Chris Ludwig over to the UK
+permanently, and he will head up a team of about twenty people whose sole
+job in life will be to support developers. This will be a major step
+forward to strengthen our relationship with the developers. Within six
+months we will have development systems for the RISC product and those
+systems will go selectively to the development community. I intend to loan
+them the machines until they have developed products and, when they start
+to sell these products, I expect them to pay me for the machines. For the
+first time we will have developers able to work on new software before the
+hardware hits the market.
+
+Current Technology
+We intend to establish sub-license agreements with companies who make third
+party products and who have ancillary products who are not in competition
+with us. We have established a good relationship with NewTek and Scala, and
+we intend to allow them to use our hardware in whatever manner they see fit
+to sell more systems. We will be prepared to work very closely with anybody
+who wants to develop third party peripherals that will help us to sell
+Amigas, and that again is a complete change of attitude from Commodore in
+the past.
+
+Marketing
+We expect to have products coming to market around the middle to end of
+November and, because of the component part situation, we will have less
+CD32s and A1200s that we wanted to meet demand, but we will major more on
+A4000s. This gives us the opportunity in the UK to support the independent
+dealers and we will feed them the bulk of the products and likewise in
+European countries.
+
+New Products - Amiga card for the PC
+There will be no new products this side of Christmas for obvious reasons.
+As soon after Christmas as we can, we will have the CD drive for the A1200
+and the expansion box for the CD32, and then within a few months we will
+have new products using existing technology. One of those products is
+almost certainly going to be an Amiga on a PC card. This will probably be a
+sub-license deal with another manufacturer. This could be a very
+substantial business because everybody who has a PC wants to turn it into a
+multimedia machine and an Amiga on a card could be a very cost-effective
+solution.
+
+The Way Forward
+We will be having a forum in the UK, and one in the US, very quickly after
+we have got the company and that forum will basically be to talk with
+everybody saying, look we have got a blank piece of paper, we can go in any
+direction you like, tell us what you want so that we can all swim in the
+same direction. This forum will be for anyone interested in the future of
+the Amiga.
+
+Change of Name
+The company name will almost certainly be Amiga International and we will
+not be using the name Commodore anywhere. The new company will be based at
+Maidenhead. The products will be manufactured in the UK, possibly by ICL,
+who can provide warranty and support.
+
+Shows
+We are doing the Motor Show. There is part of the Motor Show called Future
+World and that is at the NEC at Birmingham from the 18th to the 30th
+October. What they have got is the Motor Show, the Ideal Home Exhibition,
+and Future World on at the same time. One ticket gets you into all three
+shows. Future World contains a ride which was manufactured for BMW for last
+year's Motor Show in Frankfurt. This ride
+takes you through a series of shop windows with live people working in them
+(a bit like the Epcot Centre). It carries two thousand people an hour and
+we have a stand right where everybody gets off this ride. 800,000 to a
+million visitors are expected at this show.
+
+***************************************************************************
+
+        There you go guys....not much, but it's something!
+
+Asha.DeVelder.... Internet: asha.develder@209-216-5.genesplicer.org
+
+ * The universe is simple - it's the explanation that's complex.
+---
+ * Origin: Don't bite my finger; Look where I'm pointing! (1:209/216.5)

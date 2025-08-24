@@ -1,83 +1,149 @@
-# Install uv if you don't have it yet
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# Amiga Assembly Fine-Tuning Project
 
-# Create and activate a new project environment
-uv venv amiga-finetune
-source amiga-finetune/bin/activate
+This project provides a complete pipeline for creating a specialized Large Language Model (LLM) fine-tuned for generating Amiga 68k assembly code. The process involves collecting data from GitHub repositories, local files, and PDFs, and then using the Hugging Face ecosystem (`transformers`, `peft`, `trl`) to fine-tune a Gemma 3 model.
 
-# Install all the necessary libraries
-uv pip install torch torchvision torchaudio
-uv pip install transformers datasets accelerate peft trl bitsandbytes sentencepiece
+---
 
-# Test Environment Setup
-`uv run check_gpu.py`
+💡 **Tip:** If you’re reading this on GitHub or a rendered Markdown page, scroll down to the **Final README.md Source Code** block at the bottom of this document. Use the **📋 Copy button** in the top-right corner of that block to copy the entire README source text cleanly (without broken formatting).
 
+---
 
-# Build Dataset
-You can build the dataset using as much code as you can find. The sources I used in the first commit are here hardcoded.
-`uv run src/amiga_lm/prepare_dataset.py`
+## Project Structure
 
+-   `pyproject.toml`: Defines all project dependencies and metadata.
+-   `src/amiga_lm/`: Contains the main Python scripts.
+    -   `prepare_dataset.py`: Collects and processes data.
+    -   `train_model.py`: Fine-tunes the model.
+    -   `run_inference.py`: Generates code with the fine-tuned model.
+    -   `merge_model.py`: Merges the LoRA adapter with the base model.
+-   `repos.csv`: A list of GitHub repositories to scrape for code.
+-   `prompt1.txt`: The prompt template used for the dataset.
+-   `fine_params.txt`: Parameters for the train/test split.
+-   `code_keywords.txt`: Keywords used for extracting code from PDFs.
+-   `sources/`: A folder for your local assembly source files.
+-   `pdf_docs/`: A folder for your PDF documents.
+-   `model_answers/`: The default output folder for generated code.
 
-### \#\# Next Step: Train the Model 🚀
+## 1. Setup & Installation
 
-*Make sure to login into Huggingface first!*
-huggingface login
-You're all set to begin the fine-tuning process. This is the most computationally intensive part, where the model will learn from the Amiga assembly data you've just collected.
+**Prerequisites:** Python 3.10+ and `uv`.
 
-**1. Run the Training Script**
+1.  **Install `uv` (if you don't have it):**
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
 
-Execute the `train_model.py` script from your terminal:
+2.  **Create and activate the virtual environment:**
+    ```bash
+    uv venv
+    source .venv/bin/activate
+    ```
+
+3.  **Install the project and all dependencies:**
+    This command reads the `pyproject.toml` file and installs everything needed.
+    ```bash
+    uv pip install -e .
+    ```
+
+4.  **Log in to Hugging Face:**
+    You will need a Hugging Face account and an access token to download the Gemma 3 model. Get a token from `Settings -> Access Tokens` on the HF website.
+    ```bash
+    huggingface-cli login
+    ```
+
+## 2. Configuration
+
+Before preparing the data, you must create and configure the following files in the project's root directory:
+
+-   **`repos.csv`**: Lists the GitHub repos to scrape.
+    ```csv
+    repo,skip
+    https://github.com/user/repo1,0
+    https://github.com/user/repo2,1
+    ```
+-   **`prompt1.txt`**: The template for generating prompts. It must include `{task_name}`.
+    ```text
+    Generate a functional Amiga assembly subroutine for the task '{task_name}'.
+    ```
+-   **`fine_params.txt`**: The train/test split parameters.
+    ```text
+    test_size: 0.1
+    seed: 42
+    ```
+-   **`code_keywords.txt`**: The list of keywords for PDF parsing.
+    ```text
+    move
+    lea
+    jsr
+    ; Add one keyword per line
+    ```
+-   Place your local `.s` or `.asm` files inside the `sources/` folder.
+-   Place your PDF documents inside the `pdf_docs/` folder.
+
+## 3. Data Preparation
+
+This script collects data from all configured sources and creates a Hugging Face dataset.
 
 ```bash
-uv run src/amiga_lm/train_model.py
+uv run python src/amiga_lm/prepare_dataset.py
 ```
 
-**2. Monitor the Progress (if you want)**
+## 4. Fine-Tuning the Model
 
-While the model is training, you can open a **new, separate terminal window** and launch TensorBoard to watch the training loss decrease in real-time. This helps you see if the model is learning effectively.
-
-In the new terminal, navigate to your project folder and run:
+This script fine-tunes the Gemma 3 model using the dataset created in the previous step.
 
 ```bash
-tensorboard --logdir amiga_codegemma_finetuned
+uv run python src/amiga_lm/train_model.py
 ```
 
-This will give you a local web address to open in your browser.
+To monitor the process, open a new terminal and run:
 
+```bash
+tensorboard --logdir ./amiga_gemma3-270m_finetuned
+```
 
-### Test it
+## 5. Inference (Testing the Model)
 
-### Convert from LoRA Adapter to Combined model
-No, you can't use Jan, LM Studio, or Ollama to chat with the model directly in its current state. I know you were going to ask that!
+Generate new Amiga assembly code using your fine-tuned model.
 
-These platforms are designed to run full, standalone models, but your fine-tuned model is a LoRA adapter. This means it's a small set of extra weights that sit on top of the original base model (gemma-3-270m-it). It's not a complete model on its own.
+```bash
+uv run python src/amiga_lm/run_inference.py
+```
 
-The Solution: Merging and Converting the Model
-To use your model with these tools, you need to first merge the LoRA adapter into the base model to create a single, combined model file. Once merged, you can convert it to a format like .gguf that these platforms understand.
+The generated `.s` files will be saved in the `model_answers/` directory.
 
-*Step 1*: Merge the LoRA Adapter
-`merge_model.py` script will load your fine-tuned adapter, apply its weights to the base model, and save the result as a new, single model directory.
+## 6. (Optional) Conversion for Ollama/LM Studio
 
-*Step 2*: Convert to a Compatible Format (.gguf)
-Once you have the merged model in the amiga_gemma3-270m_merged directory, you need to convert it to a .gguf file using a tool like llama.cpp.
+Your fine-tuned model is a LoRA adapter. To use it with tools like Ollama or LM Studio, you must merge it and convert it to the GGUF format.
 
-### Clone or Download llama.cpp:
+**Step 6a: Merge the Adapter**  
+This creates a full, standalone model from your fine-tuned adapter.
 
-git clone https://github.com/ggerganov/llama.cpp.git
+```bash
+uv run python src/amiga_lm/merge_model.py
+```
 
-`cd llama.cpp
-mkdir build
-cd build
-cmake ..
-cmake --build .`
+The merged model will be saved in the `./amiga_gemma3-270m_merged` directory.
 
-After the build is complete, the convert.py script and the necessary executables will be located in the build/bin/ directory. You can then proceed with the model conversion.
+**Step 6b: Convert to GGUF format**  
+This requires the `llama.cpp` tool.
 
-Convert the Model:
+1.  **Clone and build `llama.cpp` (in a separate directory):**
+    The Python conversion script requires binaries that are created during this build process.
 
-Use the convert.py script from llama.cpp to convert your PyTorch model to a .gguf file.
+    ```bash
+    git clone https://github.com/ggerganov/llama.cpp.git
+    cd llama.cpp
+    mkdir build && cd build
+    cmake ..
+    cmake --build .
+    ```
 
-python convert.py --outtype f16 /path/to/amiga_gemma3-270m_merged
+2.  **Run the conversion script:**
+    (Run this from the root of the `llama.cpp` directory)
 
-The converted .gguf file can then be loaded into Ollama or LM Studio for chatting.
+    ```bash
+    python convert-hf-to-gguf.py /path/to/your/amiga_gemma3-270m_merged --outtype f16
+    ```
 
+The final `.gguf` file can now be loaded into your preferred local LLM tool, such as LM Studio or Jan.

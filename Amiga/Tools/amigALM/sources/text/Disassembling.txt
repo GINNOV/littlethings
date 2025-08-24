@@ -1,0 +1,137 @@
+
+Frantic's method of disassembling intros...
+
+INGREDIENTS
+~~~~~~~~~~~
+1 Intro
+1 Hisoft's DSM
+1 AsmOne
+
+METHOD
+~~~~~~
+Run the intro and pick out some vital bits like the text. Remember bits
+of it cause this will be handy soon...
+Load Asmone and "Read Object" the intro.
+This will give you an address of the intro and then you
+type "n ADDRESS"
+Scan through it and if you see any text that you recognise then the intro
+is not crunched so you simply disassemble it using HiSoft's DSM eg.
+DSM -e DH1:intro.exe
+But if you dont recognise any text then it will be a bit harder cause the
+thing is crunched...
+Using asmone:
+d ADDRESS
+
+Look for a JMP command with an absolute address after it eg.
+JMP $30000
+If there is nothing like this and you start disassembing crap after
+a while then the thing is crunched using an relocatable cruncher 8^)
+Load PowerPacker or some magical decruncher and decrunch it, then
+disassemble it.
+OK, if the fucker is absolute crunched then you've got a mission!
+I usually give up unless there is an effect I really want to look at.
+If you've found the JMP $ADDRESS then remember it and look for more
+commands that use this address and change them to a high address or
+else it'll clash with ASMONE 8^(
+I usually stick a $1 in front of it   eg. $30000  changes to $130000
+Remember the address for the JMP command cause its gonna decrunch
+to this address...
+Clear the area (about maybe $10000 size) with $95 (uncommon number)
+
+g IntroAddress
+Breakpoint at the JMP command address
+It'll decrunch it hopefully without running the intro.
+
+h decrunch address (JMP address)
+look till you've found the magical $95 numbers and Write Binary
+from the decrunch address to the start of the $95 area
+
+This decrunching method can be eliminated by using the magical DLD program
+by Georg Hörmann (FREEWARE)
+
+You've now got the raw intro.
+Now bring up the editor for ASMONE
+type:
+	incbin	"DH1:Intro.raw"
+
+a   for assemble
+wo  for write object
+then disassemble it.
+
+OK. Thats cool and you've now got the source code, HA!
+Thats bullshit cause no coder is motivated enough to make the entire
+intro source code totally PC relative!
+
+I'm now gonna use $30000 as an example to make things quicker.
+
+Search for  ;     - comments
+sometimes the absolute addresses are stuck after a comment and the data
+format for the command is used. take out the data and replace it with the
+commented version.
+
+eg.	dc.b	$21,$fc,$00,$03,$06,$86,$00,$80
+	;	move.l   #$00030686,($0080).w
+
+becomes:
+	move.l   #$00030686,($0080).w
+
+Search for "*"
+eg.	add.w	*+$02+$62(pc,d0.w),d1
+
+becomes:
+	add.w	$02+$62(pc,d0.w),d1
+This is only a short-term solution but means the command is relative
+to the PC, you will later have to replace the $02+$62 with a label
+
+
+The first label should be "seg0"
+from the very top do a search-replace:
+Search for "$0003"
+Replace with "seg0+$"
+
+DO !NOT! do a global search cause it'll fuck the source big time!
+Only replace if it IS actually an absolute address.
+if it something like:    move.w  #$0003,d0
+then do NOT replace it (well, actually it doesnt matter cause ASMONE
+wont assemble it if you do... haha!)
+
+After you find no more like this then assemble it.
+and write object.
+Disassemble it again!
+Load it into asmone...
+
+Look through the source for data in the middle of code.
+It sorta stands out quite a bit, a big group of dc.b's then it suddenly
+turns into code...
+
+Welp. If you find any like this then you've gotta do the search-replace
+again... and then write object, disassemble and load it back in to
+check. repeat until none are left!
+This SUCKS, I KNOW!! but I have no other method of doing it.
+Well, you can actually do a "ID" in asmone to make source out of memory
+but it makes the data look like code as well and thats a pain to sort out
+so the above method is best for me.
+
+then you've got a disassembled intro.
+
+Of course if the intro was made to be absolute then sometimes they stick
+the address of the picture directly to the copperlist You have to 
+stick an ORG at the top of the source and do something like this to
+the copperlist. 
+
+	dc.w	$00e0,(Picture)>>16,$00e2,(Picture)&$ffff
+	dc.w	$00e4,(Picture)>>16,$00e6,(Picture)&$ffff
+
+This is an easy way of splitting the address of the picture intro
+two words.
+
+The ORG at the top may look like this
+	JMP	Address			;jumps to
+	ORG	Address			;originates to
+	LOAD	Address			;loads intro to
+
+I dont have any other tricks really. I hope this works for you and
+remember ripping is lame. This method is only provided so people can
+learn from others and not to rip their routines!
+
+-FrAnTiC/UNITY^94

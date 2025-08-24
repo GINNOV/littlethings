@@ -1,0 +1,6 @@
+Colours under the label "ColChrt"
+Picture Data:  32Cols * 85 * 320, RawBlit
+Text Data:  25 Lines may be used, any lines over this will not be used.
+            It is necessary to use ALL 25 lines.
+
+Written by Robster/Gemanix - 16 July 1993

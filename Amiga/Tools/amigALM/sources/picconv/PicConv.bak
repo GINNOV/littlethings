@@ -1,0 +1,2363 @@
+	SECTION	"Frantic - PicConv",CODE
+
+	include	"DH1:PicConv/Macros.i"
+;	include	"DH1:PicConv/PicConv.i"
+
+OpenLib	move.l	4.w,a6
+	moveq	#0,d0
+	lea	IntName(pc),a1
+	jsr	OpenLibrary(a6)
+	move.l	d0,IntBase
+	beq.w	Quit
+	moveq	#0,d0
+	lea	GfxName(pc),a1
+	jsr	OpenLibrary(a6)
+	move.l	d0,GfxBase
+	beq.w	ClseInt
+	moveq	#0,d0
+	lea	DosName(pc),a1
+	jsr	OpenLibrary(a6)
+	move.l	d0,DosBase
+	beq.w	ClseGfx
+	moveq	#38,d0
+	lea	ReqName(pc),a1
+	jsr	OpenLibrary(a6)
+	move.l	d0,ReqBase
+	beq.w	ClseDos
+
+	bsr.w	LoadPrf
+	bsr.w	WnSetup
+
+OpenWin	move.l	IntBase(pc),a6
+	lea	WinDef1(pc),a0
+	move.l	60(a6),a1
+	moveq	#0,d0
+	moveq	#0,d1
+	move.w	12(a1),d0
+	move.w	14(a1),d1
+	sub.w	4(a0),d0
+	sub.w	6(a0),d1
+	lsr.w	#1,d0
+	lsr.w	#1,d1
+	move.w	d0,(a0)
+	move.w	d1,2(a0)
+	jsr	OpenWindow(a6)
+	move.l	d0,WinHD1
+	beq.b	ClseReq
+	move.l	d0,LWindow
+	move.l	d0,SWindow
+
+	move.l	d0,a0
+	lea	WnTitle(pc),a1
+	lea	ScTitle(pc),a2
+	jsr	SetWindowTitles(a6)
+
+	bsr.w	DrawBdr
+	bsr.w	PrntTxt
+	bsr.w	WB2Frnt
+	bra.w	WaitEvt
+
+End	bsr.b	PrgeReq
+	bsr.b	FreeCol
+	bsr.b	FreeRaw
+	bsr.w	WB2Back
+
+ClseWin	bsr.w	ClseWn2
+	bsr.w	ClseWn3
+	move.l	IntBase(pc),a6
+	move.l	WinHD1(pc),a0
+	jsr	CloseWindow(a6)
+
+ClseReq	move.l	4.w,a6
+	move.l	ReqBase(pc),a1
+	jsr	CloseLibrary(a6)
+ClseDos	move.l	DosBase(pc),a1
+	jsr	CloseLibrary(a6)
+ClseGfx	move.l	GfxBase(pc),a1
+	jsr	CloseLibrary(a6)
+ClseInt	move.l	IntBase(pc),a1
+	jsr	CloseLibrary(a6)
+Quit	rts
+
+;--------------------------------------;
+
+PrgeReq	tst.l	FileReq
+	beq.s	.1
+	move.l	ReqBase(pc),a6
+	move.l	FileReq(pc),a1
+	jsr	FreeRequest(a6)
+.1	rts
+
+;--------------------------------------;
+
+FreeCol	movem.l	d0-a6,-(a7)
+	move.l	4.w,a6
+	move.l	ColPntr(pc),a1
+	move.l	ColSize(pc),d0
+	beq.b	.1
+	jsr	FreeMem(a6)
+	clr.l	ColSize
+.1	movem.l	(a7)+,d0-a6
+	rts
+
+;-------------------;
+
+FreeRaw	movem.l	d0-a6,-(a7)
+	move.l	4.w,a6
+	move.l	RawPntr(pc),a1
+	move.l	RawSize(pc),d0
+	beq.b	.1
+	jsr	FreeMem(a6)
+	clr.l	RawSize
+.1	movem.l	(a7)+,d0-a6
+	rts
+
+;--------------------------------------;
+
+WB2Frnt	move.l	IntBase(pc),a6
+	move.l	WinHD1(pc),a0
+	jsr	WBToFront(a6)
+	rts
+
+WB2Back	move.l	IntBase(pc),a6
+	move.l	WinHD1(pc),a0
+	jsr	WBToBack(a6)
+	rts
+
+;--------------------------------------;
+
+DrawBdr	move.l	IntBase(pc),a6
+	move.l	WinHD1(pc),a0
+	move.l	50(a0),a0
+	lea	SBorder(pc),a1
+	moveq	#0,d0
+	moveq	#0,d1
+	jsr	DrawBorder(a6)
+	rts
+
+;--------------------------------------;
+
+PrntTxt	move.l	IntBase(pc),a6
+	move.l	WinHD1(pc),a0
+	move.l	50(a0),a0
+	lea	ScnText(pc),a1
+	moveq	#0,d0
+	moveq	#0,d1
+	jsr	PrintIText(a6)
+	rts
+
+;--------------------------------------;
+
+WnSetup	lea	GdIILBM(pc),a0
+	lea	GIButnU(pc),a1
+	moveq	#9-1,d0
+.1	move.l	a1,18(a0)
+	lea	44(a0),a0
+	dbf	d0,.1
+
+	lea	GdIILBM(pc),a0
+	lea	GIButnD(pc),a1
+	moveq	#44,d0
+	mulu	SveType(pc),d0
+	move.l	a1,18(a0,d0)
+
+	lea	GdExtsn(pc),a0
+	lea	CnvList(pc),a2
+	moveq	#0,d0
+	move.w	SveType(pc),d0
+	mulu	#11,d0
+	lea	(a2,d0),a2
+	move.l	26(a0),a1
+	move.l	a2,12(a1)
+	moveq	#0,d0
+	move.w	SveType(pc),d0
+	mulu	#10,d0
+	lea	PrExtsn(pc),a1
+	lea	(a1,d0),a1
+	move.l	a1,44(a0)
+	rts
+
+;--------------------------------------;
+
+PrntMsg	move.l	IntBase(pc),a6
+	move.l	a5,a2
+	lea	WnTitle(pc),a1
+	move.l	WinHD1(pc),a0
+	move.l	104(a0),a5
+	jsr	SetWindowTitles(a6)
+	move.l	WinHD1(pc),a0
+	move.l	a5,104(a0)
+	rts
+
+;--------------------------------------;
+
+LoadPrf	move.l	DosBase(pc),a6
+	lea	PrfName(pc),a0
+	move.l	a0,d1
+	moveq	#-2,d2
+	jsr	Lock(a6)
+	move.l	d0,d7
+	beq.w	.9
+
+	move.l	d7,d1
+	move.l	#FleInfo,d2
+	jsr	Examine(a6)
+
+	move.l	d7,d1
+	jsr	UnLock(a6)
+
+	lea	FleInfo,a0
+	move.l	124(a0),d0
+	move.l	d0,PrfSize
+	beq.w	.9
+
+	move.l	4.w,a6
+	move.l	PrfSize(pc),d0
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,PrfPntr
+	beq.b	.9
+
+	move.l	DosBase(pc),a6
+	lea	PrfName(pc),a0
+	move.l	a0,d1
+	move.l	#1005,d2
+	jsr	Open(a6)
+	move.l	d0,d7
+	beq.b	.8
+
+	move.l	d7,d1
+	move.l	PrfPntr(pc),d2
+	move.l	PrfSize(pc),d3
+	jsr	Read(a6)
+
+	move.l	d7,d1
+	jsr	Close(a6)
+
+	move.l	PrfPntr(pc),a0
+	moveq	#0,d0
+	move.b	(a0)+,d0
+	sub.b	#"0",d0
+	move.w	d0,SveType
+	addq.l	#1,a0
+
+	lea	PrDatSt(pc),a1
+	bsr.b	MveStrg
+	clr.b	(a1)
+
+	lea	PrExtsn(pc),a1
+	move.l	a1,a2
+	moveq	#9-1,d0
+.1	move.l	a2,a1
+	bsr.b	MveStrg
+	clr.b	(a1)
+	lea	10(a2),a2
+	dbf	d0,.1
+
+.8	move.l	4.w,a6
+	move.l	PrfPntr(pc),a1
+	move.l	PrfSize(pc),d0
+	jsr	FreeMem(a6)
+.9	rts
+
+;--------------------------------------;
+
+MveStrg	cmp.b	#10,(a0)
+	beq.b	.1
+	move.b	(a0)+,(a1)+
+	bra.b	MveStrg
+.1	addq.l	#1,a0
+	rts
+
+;--------------------------------------;
+
+WaitEvt	move.l	4.w,a6
+	move.l	WinHD1(pc),a0
+	move.l	86(a0),a0
+	move.l	a0,-(a7)
+	jsr	WaitPort(a6)
+	move.l	(a7)+,a0
+	jsr	GetMsg(a6)
+	move.l	d0,a1
+	move.l	20(a1),d6
+	move.l	44(a1),d0
+	cmp.l	WinHD1(pc),d0
+	beq.b	ChckID1
+	cmp.l	WinHD2(pc),d0
+	beq.b	ChckID2
+	cmp.l	WinHD3(pc),d0
+	beq.b	ChckID3
+	jsr	ReplyMsg(a6)
+	bra.b	WaitEvt
+
+;-------------------;
+
+ChckID1	cmp.l	#$200,d6
+	beq.w	End
+	cmp.l	#$40,d6
+	beq.b	FindGad
+	cmp.l	#$20,d6
+	beq.b	FindGad
+	jsr	ReplyMsg(a6)
+	bra.b	WaitEvt
+
+FindGad	move.l	28(a1),a0
+	move.w	38(a0),d7
+	jsr	ReplyMsg(a6)
+	cmp.w	#"LD",d7
+	beq.w	Load
+	cmp.w	#"SV",d7
+	beq.w	Save
+	cmp.w	#"IN",d7
+	beq.w	Info
+	cmp.w	#"PR",d7
+	beq.w	Prefs
+	tst.w	d7
+	bmi.w	WaitEvt
+	cmp.w	#8,d7
+	ble.b	PicType
+	bra.w	WaitEvt
+
+;-------------------;
+
+ChckID2	cmp.l	#$200,d6
+	bne.w	WaitEvt
+	bsr.w	ClseWn2
+	bra.w	WaitEvt
+
+;-------------------;
+
+ChckID3	cmp.l	#$200,d6
+	bne.b	.1
+	bsr.w	ClseWn3
+	bra.w	WaitEvt
+.1	cmp.l	#$40,d6
+	bne.w	WaitEvt
+
+.2	move.l	28(a1),a0
+	move.w	38(a0),d7
+	jsr	ReplyMsg(a6)
+	cmp.w	#"TG",d7
+	beq.w	EToggle
+	cmp.w	#"PS",d7
+	beq.w	PrfSave
+	bra.w	WaitEvt
+
+;--------------------------------------;
+
+PicType	move.w	d7,SveType
+	bsr.w	WnSetup
+
+	move.l	IntBase(pc),a6
+	lea	GdIILBM(pc),a0
+	move.l	WinHD1(pc),a1
+	sub.l	a2,a2
+	jsr	RefreshGadgets(a6)
+
+	tst.l	WinHD3
+	beq.b	.1
+	move.l	GfxBase(pc),a6
+	move.l	WinHD3(pc),a1
+	move.l	50(a1),a1
+	moveq	#22,d0
+	moveq	#37,d1
+	jsr	Move(a6)
+	move.l	WinHD3(pc),a1
+	move.l	50(a1),a1
+	moveq	#1,d0
+	jsr	SetAPen(a6)
+	move.l	WinHD3(pc),a1
+	move.l	50(a1),a1
+	lea	GdExtsn(pc),a0
+	move.l	26(a0),a0
+	move.l	12(a0),a0
+	moveq	#10,d0
+	jsr	Text(a6)
+
+	move.l	IntBase(pc),a6
+	lea	GdExtsn(pc),a0
+	move.l	WinHD3(pc),a1
+	sub.l	a2,a2
+	jsr	RefreshGadgets(a6)
+
+.1	bra.w	WaitEvt
+
+;--------------------------------------;
+
+Info	tst.l	WinHD2
+	bne.b	.9
+	bsr.b	OpenWn2
+	bsr.w	PrntDim
+
+.9	bra.w	WaitEvt
+
+;--------------------------------------;
+
+OpenWn2	move.l	IntBase(pc),a6
+	lea	WinDef2(pc),a0
+	jsr	OpenWindow(a6)
+	move.l	d0,WinHD2
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	move.l	d0,a0
+	move.l	WinHD1(pc),a1
+	move.l	86(a0),WinHD2+4
+	move.l	86(a1),86(a0)
+
+	move.l	WinHD2(pc),a0
+	lea	InTitle(pc),a1
+	lea	ScTitle(pc),a2
+	jsr	SetWindowTitles(a6)
+
+	move.l	WinHD2(pc),a0
+	move.l	50(a0),a0
+	lea	IBorder(pc),a1
+	moveq	#0,d0
+	moveq	#0,d1
+	jsr	DrawBorder(a6)
+
+	move.l	WinHD2(pc),a0
+	move.l	50(a0),a0
+	lea	InImage(pc),a1
+	moveq	#0,d0
+	moveq	#0,d1
+	jsr	DrawImage(a6)
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;-------------------;
+
+ClseWn2	tst.l	WinHD2
+	beq.b	.1
+	move.l	IntBase(pc),a6
+	move.l	WinHD2(pc),a0
+	move.l	WinHD2+4(pc),86(a0)
+	jsr	CloseWindow(a6)
+	clr.l	WinHD2
+.1	rts
+
+;--------------------------------------;
+
+PrntDim	tst.l	WinHD2
+	beq.w	.4
+
+	moveq	#1,d6
+	moveq	#12,d7
+	moveq	#10,d0
+	moveq	#22,d1
+	lea	TxDimsn(pc),a5
+	bsr.w	TxWrite
+
+	lea	Dummy(pc),a0
+	moveq	#16-1,d0
+.1	move.b	#" ",(a0)+
+	dbf	d0,.1
+
+	lea	Dummy(pc),a0
+	moveq	#0,d0
+	move.w	IFFWdth(pc),d0
+	bsr.w	Dec2Asc
+	move.b	#" ",(a0)+
+	move.b	#"*",(a0)+
+	move.b	#" ",(a0)+
+	moveq	#0,d0
+	move.w	RawHght(pc),d0
+	bsr.w	Dec2Asc
+	move.b	#" ",(a0)+
+	move.b	#"*",(a0)+
+	move.b	#" ",(a0)+
+	move.l	ColSize(pc),d0
+	divu	#3,d0
+	bsr.w	Dec2Asc
+
+	moveq	#1,d6
+	moveq	#16,d7
+	moveq	#106,d0
+	moveq	#22,d1
+	lea	Dummy(pc),a5
+	bsr.w	TxWrite
+
+	moveq	#1,d6
+	moveq	#12,d7
+	moveq	#10,d0
+	moveq	#30,d1
+	lea	TxPSize(pc),a5
+	bsr.w	TxWrite
+
+	lea	Dummy(pc),a0
+	moveq	#16-1,d0
+.2	move.b	#" ",(a0)+
+	dbf	d0,.2
+
+	lea	Dummy(pc),a0
+	move.b	#"W",(a0)+
+	move.b	#":",(a0)+
+	moveq	#0,d0
+	move.w	RawWdth(pc),d0
+	bsr.w	Dec2Asc
+	move.b	#" ",(a0)+
+	move.b	#"H",(a0)+
+	move.b	#":",(a0)+
+	moveq	#0,d0
+	move.w	RawHght(pc),d0
+	bsr.w	Dec2Asc
+	move.b	#" ",(a0)+
+	move.b	#"P",(a0)+
+	move.b	#":",(a0)+
+	moveq	#0,d0
+	move.w	RawBpls(pc),d0
+	bsr.b	Dec2Asc
+
+	moveq	#1,d6
+	moveq	#16,d7
+	moveq	#106,d0
+	moveq	#30,d1
+	lea	Dummy(pc),a5
+	bsr.b	TxWrite
+
+	lea	Dummy(pc),a0
+	moveq	#16-1,d0
+.3	move.b	#" ",(a0)+
+	dbf	d0,.3
+
+	lea	Dummy(pc),a0
+	move.l	RawSize(pc),d0
+	bsr.b	Dec2Asc
+	moveq	#1,d6
+	move.l	d1,d7
+	moveq	#106,d0
+	moveq	#38,d1
+	lea	Dummy(pc),a5
+	bsr.b	TxWrite
+
+	move.l	GfxBase(pc),a6
+	move.l	WinHD2(pc),a1
+	move.l	50(a1),a1
+	lea	TxBytes(pc),a0
+	moveq	#10,d0
+	jsr	Text(a6)
+.4	rts
+
+;-------------------;
+
+TxWrite	move.l	GfxBase(pc),a6
+	move.l	WinHD2(pc),a1
+	move.l	50(a1),a1
+	jsr	Move(a6)
+	move.l	WinHD2(pc),a1
+	move.l	50(a1),a1
+	move.l	d6,d0
+	jsr	SetAPen(a6)
+	move.l	WinHD2(pc),a1
+	move.l	50(a1),a1
+	move.l	a5,a0
+	move.l	d7,d0
+	jsr	Text(a6)
+	rts
+
+;-------------------;
+
+Dec2Asc	tst.l	d0
+	bne.b	.1
+	moveq	#1,d1
+	move.b	#"0",(a0)+
+	rts
+
+.1	moveq	#0,d1
+	moveq	#0,d2
+	divu	#10000,d0
+	bsr.b	.2
+	divu	#1000,d0
+	bsr.b	.2
+	divu	#100,d0
+	bsr.b	.2
+	divu	#10,d0
+	bsr.w	.2
+
+.2	tst.b	d2
+	bne.b	.3
+	tst.w	d0
+	beq.b	.4
+	moveq	#-1,d2
+.3	add.w	#"0",d0
+	move.b	d0,(a0)+
+	addq.w	#1,d1
+.4	clr.w	d0
+	swap	d0
+	rts
+
+;--------------------------------------;
+
+Prefs	tst.l	WinHD3
+	bne.b	.9
+	bsr.b	OpenWn3
+.9	bra.w	WaitEvt
+
+;--------------------------------------;
+
+OpenWn3	move.l	IntBase(pc),a6
+	lea	WinDef3(pc),a0
+	jsr	OpenWindow(a6)
+	move.l	d0,WinHD3
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	move.l	d0,a0
+	move.l	WinHD1(pc),a1
+	move.l	86(a0),WinHD3+4
+	move.l	86(a1),86(a0)
+
+	move.l	WinHD3(pc),a0
+	lea	PrTitle(pc),a1
+	lea	ScTitle(pc),a2
+	jsr	SetWindowTitles(a6)
+
+	move.l	WinHD3(pc),a0
+	move.l	50(a0),a0
+	lea	PBorder(pc),a1
+	moveq	#0,d0
+	moveq	#0,d1
+	jsr	DrawBorder(a6)
+
+	move.l	WinHD3(pc),a0
+	move.l	50(a0),a0
+	lea	PrImage(pc),a1
+	moveq	#0,d0
+	moveq	#0,d1
+	jsr	DrawImage(a6)
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;-------------------;
+
+ClseWn3	tst.l	WinHD3
+	beq.b	.1
+	move.l	IntBase(pc),a6
+	move.l	WinHD3(pc),a0
+	move.l	WinHD3+4(pc),86(a0)
+	jsr	CloseWindow(a6)
+	clr.l	WinHD3
+.1	rts
+
+;--------------------------------------;
+
+EToggle	addq.w	#1,SveType
+	cmp.w	#9,SveType
+	bne.b	.1
+	clr.w	SveType
+.1	bsr.w	WnSetup
+
+	move.l	IntBase(pc),a6
+	lea	GdIILBM(pc),a0
+	move.l	WinHD1(pc),a1
+	sub.l	a2,a2
+	jsr	RefreshGadgets(a6)
+
+	move.l	GfxBase(pc),a6
+	move.l	WinHD3(pc),a1
+	move.l	50(a1),a1
+	moveq	#22,d0
+	moveq	#37,d1
+	jsr	Move(a6)
+	move.l	WinHD3(pc),a1
+	move.l	50(a1),a1
+	moveq	#1,d0
+	jsr	SetAPen(a6)
+	move.l	WinHD3(pc),a1
+	move.l	50(a1),a1
+	lea	GdExtsn(pc),a0
+	move.l	26(a0),a0
+	move.l	12(a0),a0
+	moveq	#10,d0
+	jsr	Text(a6)
+
+	move.l	IntBase(pc),a6
+	lea	GdExtsn(pc),a0
+	move.l	WinHD3(pc),a1
+	sub.l	a2,a2
+	jsr	RefreshGadgets(a6)
+
+	bra.w	WaitEvt
+
+;--------------------------------------;
+
+PrfSave	moveq	#2,d0
+	lea	PrDatSt(pc),a0
+.1	tst.b	(a0)+
+	beq.b	.2
+	addq.w	#1,d0
+	bra.b	.1
+.2	addq.w	#1,d0
+
+	lea	PrExtsn(pc),a0
+	move.l	a0,a1
+	moveq	#9-1,d1
+.3	tst.b	(a0)+
+	beq.b	.4
+	addq.w	#1,d0
+	bra.b	.3
+.4	addq.w	#1,d0
+	lea	10(a1),a1
+	move.l	a1,a0
+	dbf	d1,.3
+
+	move.l	d0,PrfSize
+
+	move.l	4.w,a6
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,PrfPntr
+	bne.b	.5
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.w	WaitEvt
+
+.5	move.l	d0,a0
+	move.w	SveType(pc),d0
+	add.w	#"0",d0
+	move.b	d0,(a0)+
+	move.b	#10,(a0)+
+	lea	PrDatSt(pc),a1
+.6	tst.b	(a1)
+	beq.b	.7
+	move.b	(a1)+,(a0)+
+	bra.b	.6
+.7	move.b	#10,(a0)+
+
+	lea	PrExtsn(pc),a1
+	move.l	a1,a2
+	moveq	#9-1,d1
+.8	tst.b	(a1)
+	beq.b	.9
+	move.b	(a1)+,(a0)+
+	bra.b	.8
+.9	move.b	#10,(a0)+
+	lea	10(a2),a2
+	move.l	a2,a1
+	dbf	d1,.8
+
+DoSave	move.l	DosBase(pc),a6
+	lea	PrfName(pc),a0
+	move.l	a0,d1
+	move.l	#1006,d2
+	jsr	Open(a6)
+	move.l	d0,d7
+	bne.b	.1
+	lea	MsNOpen(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.2
+
+.1	move.l	d7,d1
+	move.l	PrfPntr(pc),d2
+	move.l	PrfSize(pc),d3
+	jsr	Write(a6)
+
+	move.l	d7,d1
+	jsr	Close(a6)
+
+	lea	MsPrSve(pc),a5
+	bsr.w	PrntMsg
+
+.2	move.l	4.w,a6
+	move.l	PrfPntr(pc),a1
+	move.l	PrfSize(pc),d0
+	jsr	FreeMem(a6)
+	bra.w	WaitEvt
+
+;--------------------------------------;
+
+Load	lea	TagLoad(pc),a3
+	lea	LoadReq(pc),a4
+	lea	FileReq(pc),a5
+	bsr.w	Request
+	bne.w	WaitEvt
+	bsr.b	FndSize
+	bne.w	WaitEvt
+	bsr.w	ReadFle
+	bne.w	WaitEvt
+	bsr.w	ChkILBM
+	bne.w	WaitEvt
+	bsr.w	ChkCMAP
+	bsr.w	ChkBODY
+	bsr.b	FreeIFF
+	bsr.w	PrntDim
+	bra.w	WaitEvt
+
+;--------------------------------------;
+
+FreeIFF	move.l	4.w,a6
+	move.l	IFFPntr(pc),a1
+	move.l	IFFSize(pc),d0
+	jsr	FreeMem(a6)
+	rts
+
+;--------------------------------------;
+
+FndSize	move.l	DosBase(pc),a6
+	lea	FleName(pc),a0
+	move.l	a0,d1
+	moveq	#-2,d2
+	jsr	Lock(a6)
+	tst.l	d0
+	bne.b	.1
+	lea	MsNExst(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.4
+
+.1	move.l	d0,d7
+	move.l	d7,d1
+	move.l	#FleInfo,d2
+	jsr	Examine(a6)
+
+	move.l	d7,d1
+	jsr	UnLock(a6)
+
+	lea	FleInfo,a0
+	move.l	124(a0),d0
+	move.l	d0,IFFSize
+	bne.s	.2
+	lea	MsNSize(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.4
+
+.2	moveq	#0,d0
+.3	tst.l	d0
+	rts
+.4	moveq	#-1,d0
+	bra.b	.3
+
+;--------------------------------------;
+
+ReadFle	move.l	4.w,a6
+	move.l	IFFSize(pc),d0
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,IFFPntr
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.4
+
+.1	move.l	DosBase(pc),a6
+	lea	FleName(pc),a0
+	move.l	a0,d1
+	move.l	#1005,d2
+	jsr	Open(a6)
+	move.l	d0,d7
+	bne.b	.2
+	lea	MsNOpen(pc),a5
+	bsr.w	PrntMsg
+	bsr.b	.5
+	bra.b	.4
+
+.2	move.l	d7,d1
+	move.l	IFFPntr(pc),d2
+	move.l	IFFSize(pc),d3
+	jsr	Read(a6)
+
+	move.l	d7,d1
+	jsr	Close(a6)
+
+	moveq	#0,d0
+.3	tst.l	d0
+	rts
+.4	moveq	#-1,d0
+	bra.b	.3
+
+.5	move.l	4.w,a6
+	move.l	IFFPntr(pc),a1
+	move.l	IFFSize(pc),d0
+	jsr	FreeMem(a6)
+	rts
+
+;--------------------------------------;
+
+ChkILBM	move.l	IFFPntr(pc),a0
+	move.l	IDFORM(pc),d0
+	cmp.l	(a0),d0
+	beq.b	.1
+	lea	MsNILBM(pc),a5
+	bsr.w	PrntMsg
+	bsr.b	.6
+	bra.b	.5
+
+.1	move.l	IDILBM(pc),d0
+	cmp.l	8(a0),d0
+	beq.b	.2
+	lea	MsNILBM(pc),a5
+	bsr.w	PrntMsg
+	bsr.b	.6
+	bra.b	.5
+
+.2	move.l	IDBMHD(pc),d0
+	cmp.l	12(a0),d0
+	beq.b	.3
+	lea	MsNILBM(pc),a5
+	bsr.w	PrntMsg
+	bsr.b	.6
+	bra.b	.5
+
+.3	moveq	#0,d0
+.4	tst.l	d0
+	rts
+.5	moveq	#-1,d0
+	bra.b	.4
+
+.6	move.l	4.w,a6
+	move.l	IFFPntr(pc),a1
+	move.l	IFFSize(pc),d0
+	jsr	FreeMem(a6)
+	rts
+
+;--------------------------------------;
+
+ChkCMAP	move.l	IDCMAP(pc),d0
+	bsr.w	FndChnk
+	bne.b	.3
+
+	bsr.w	FreeCol
+	move.l	4(a0),ColSize
+	lea	8(a0),a5
+
+	move.l	4.w,a6
+	move.l	ColSize(pc),d0
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,ColPntr
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	clr.l	ColSize
+	bra.b	.3
+
+.1	move.l	a5,a0
+	move.l	d0,a1
+	move.l	ColSize(pc),d0
+	subq.w	#1,d0
+.2	move.b	(a0)+,(a1)+
+	dbf	d0,.2
+
+	lea	MsLdCol(pc),a5
+	bsr.w	PrntMsg
+.3	rts
+
+;--------------------------------------;
+
+ChkBODY	move.l	IDBODY(pc),d0
+	bsr.w	FndChnk
+	bne.w	.6
+	lea	8(a0),a5
+
+	bsr.w	FreeRaw
+
+	move.l	IDBMHD(pc),d0
+	bsr.w	FndChnk
+	bne.w	.6
+	move.b	18(a0),d7
+
+	moveq	#0,d0
+	move.w	8(a0),d0
+	move.w	d0,IFFWdth
+	move.w	d0,d1
+	lsr.w	#4,d0
+	add.w	d0,d0
+	and.w	#%1111,d1
+	beq.b	.1
+	addq.w	#2,d0
+.1	move.w	d0,RawWdth
+	move.w	10(a0),d1
+	move.w	d1,RawHght
+	mulu	d1,d0
+
+	move.l	d0,d2
+	moveq	#0,d1
+	move.b	16(a0),d1
+	move.w	d1,RawBpls
+	subq.b	#2,d1
+	bmi.b	.3
+.2	add.l	d2,d0
+	dbf	d1,.2
+.3	move.l	d0,RawSize
+
+	move.w	24(a0),ScnWdth
+	move.w	26(a0),ScnHght
+
+	move.l	4.w,a6
+	move.l	RawSize(pc),d0
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,RawPntr
+	bne.b	.4
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	clr.l	RawSize
+	clr.w	IFFWdth
+	clr.w	RawWdth
+	clr.w	RawHght
+	bra.b	.6
+
+.4	move.l	RawSize(pc),d0
+	move.b	d7,d1
+	move.l	a5,a0
+	move.l	RawPntr(pc),a1
+	bsr.w	DeCode
+
+	move.l	#$4000,ScnMode
+	move.l	IDCAMG(pc),d0
+	bsr.b	FndChnk
+	bne.b	.5
+	move.l	8(a0),ScnMode
+	bra.w	.5
+
+.5	lea	MsLdBdy(pc),a5
+	bsr.w	PrntMsg
+.6	rts
+
+;--------------------------------------;
+
+FndChnk	move.l	IFFPntr(pc),a0
+	move.l	4(a0),d1
+	add.l	a0,d1
+	addq.l	#8,d1
+	lea	12(a0),a0
+.1	cmp.l	(a0),d0
+	beq.b	.2
+	add.l	4(a0),a0
+	addq.l	#8,a0
+	cmp.l	a0,d1
+	bne.b	.1
+	moveq	#-1,d0
+	bra.b	.3
+.2	moveq	#0,d0
+.3	tst.l	d0
+	rts
+
+;--------------------------------------;
+
+Save	bsr.w	InitSve
+	bne.w	WaitEvt
+	lea	TagSave(pc),a3
+	lea	SaveReq(pc),a4
+	lea	FileReq(pc),a5
+	bsr.w	Request
+	bne.w	WaitEvt
+	bsr.b	ChkExst
+	bne.w	WaitEvt
+	bsr.w	MakeSve
+	bne.w	WaitEvt
+	bsr.b	WrteFle
+	bsr.w	FreeSve
+
+	lea	MsgList(pc),a5
+	move.w	SveType(pc),d0
+	lsl.w	#2,d0
+	move.l	(a5,d0),a5
+	bsr.w	PrntMsg
+	bra.w	WaitEvt
+
+;--------------------------------------;
+
+ChkExst	move.l	DosBase(pc),a6
+	lea	FleName(pc),a0
+	move.l	a0,d1
+	moveq	#-2,d2
+	jsr	Lock(a6)
+	move.l	d0,d7
+	bne.b	.3
+	move.l	d7,d1
+	jsr	UnLock(a6)
+
+.1	moveq	#0,d0
+.2	tst.l	d0
+	rts
+
+.3	move.l	d7,d1
+	jsr	UnLock(a6)
+
+	move.l	ReqBase(pc),a6
+	lea	OverTxt(pc),a1
+	lea	OverGdT(pc),a2
+	sub.l	a3,a3
+	sub.l	a4,a4
+	lea	TagExst(pc),a0
+	jsr	EZRequestA(a6)
+	tst.l	d0
+	beq.b	.5
+
+	move.l	DosBase(pc),a6
+	lea	FleName(pc),a0
+	move.l	a0,d1
+	jsr	DeleteFile(a6)
+	bne.b	.1
+	lea	MsNDlte(pc),a5
+	bsr.w	PrntMsg
+
+.5	moveq	#-1,d0
+	bra.b	.2
+
+;--------------------------------------;
+
+WrteFle	move.l	DosBase(pc),a6
+	lea	FleName(pc),a0
+	move.l	a0,d1
+	move.l	#1006,d2
+	jsr	Open(a6)
+	move.l	d0,d7
+	bne.b	.1
+	lea	MsNOpen(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.2
+
+.1	move.l	d7,d1
+	move.l	SvePntr(pc),d2
+	move.l	SveSize(pc),d3
+	jsr	Write(a6)
+
+	move.l	d7,d1
+	jsr	Close(a6)
+
+.2	rts
+
+;--------------------------------------;
+
+InitSve	moveq	#0,d0
+	move.w	SveType(pc),d0
+	lsl.w	#3,d0
+	lea	SveList(pc),a0
+	move.l	(a0,d0),a0
+	jsr	(a0)
+
+	moveq	#0,d0
+	move.w	SveType(pc),d0
+	mulu	#10,d0
+	lea	PrExtsn(pc),a0
+	lea	(a0,d0),a0
+	tst.b	(a0)
+	beq.b	.4
+
+	lea	FleBufr(pc),a1
+.1	cmp.b	#0,(a1)
+	beq.b	.2
+	cmp.b	#".",(a1)
+	beq.b	.2
+	addq.l	#1,a1
+	bra.b	.1
+
+.2	tst.b	(a0)
+	beq.b	.3
+	move.b	(a0)+,(a1)+
+	bra.b	.2
+.3	clr.b	(a1)
+.4	rts
+
+;-------------------;
+
+MakeSve	moveq	#0,d0
+	move.w	SveType(pc),d0
+	lsl.w	#3,d0
+	addq.l	#4,d0
+	lea	SveList(pc),a0
+	move.l	(a0,d0),a0
+	jmp	(a0)
+
+;--------------------------------------;
+
+FreeSve	move.l	4.w,a6
+	move.l	SvePntr(pc),a1
+	move.l	SveSize(pc),d0
+	jsr	FreeMem(a6)
+	rts
+
+;--------------------------------------;
+;--------------------------------------;
+
+Request	move.l	ReqBase(pc),a6
+	tst.l	(a5)
+	bne.b	.1
+	moveq	#0,d0
+	sub.l	a0,a0
+	jsr	AllocRequestA(a6)
+	move.l	d0,(a5)
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.4
+
+.1	move.l	(a5),a1
+	move.l	a3,a0
+	lea	FleBufr(pc),a2
+	move.l	a4,a3
+	jsr	FileRequestA(a6)
+	tst.l	d0
+	bne.b	.2
+	lea	MsNoFle(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.4
+
+.2	move.l	(a5),a0
+	move.l	16(a0),a0
+	lea	FleName(pc),a1
+	lea	FleBufr(pc),a2
+	bsr.b	JoinFle
+
+	moveq	#0,d0
+.3	tst.l	d0
+	rts
+.4	moveq	#-1,d0
+	bra.b	.3
+
+;-------------------;
+
+JoinFle	tst.b	(a0)
+	beq.b	.2
+.1	move.b	(a0)+,(a1)+
+	tst.b	(a0)
+	bne.b	.1
+	cmp.b	#":",-1(a1)
+	beq.b	.2
+	move.b	#"/",(a1)+
+.2	move.l	a2,a0
+	tst.b	(a0)
+	beq.b	.4
+.3	move.b	(a0)+,(a1)+
+	tst.b	(a0)
+	bne.b	.3
+.4	clr.b	(a1)
+	rts
+
+;--------------------------------------;
+
+DeCode	lea	(a1,d0.l),a2
+	tst.b	d1
+	bne.b	.2
+.1	move.b	(a0)+,(a1)+
+	subq.l	#1,d0
+	bne.b	.1
+	bra.b	.6
+
+.2	cmp.l	a2,a1
+	bge.b	.6
+	moveq	#0,d1
+	move.b	(a0)+,d1
+	bmi.b	.4
+.3	move.b	(a0)+,(a1)+
+	subq.l	#1,d1
+	bpl.b	.3
+	bra.b	.2
+
+.4	cmp.b	#$80,d1
+	beq.b	.2
+	neg.b	d1
+	moveq	#0,d0
+	move.b	(a0)+,d0
+.5	move.b	d0,(a1)+
+	subq.l	#1,d1
+	bpl.b	.5
+	bra.b	.2
+.6	rts
+
+;--------------------------------------;
+;--------------------------------------;
+
+InitIFFILBM
+	tst.l	RawSize
+	bne.b	.1
+	lea	MsNBody(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	tst.l	ColSize
+	bne.b	.2
+	lea	MsNCols(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.2	move.l	#68,d0
+	add.l	ColSize(pc),d0
+	add.l	RawSize(pc),d0
+	move.l	d0,SveSize
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;-------------------;
+
+IFFILBM	move.l	4.w,a6
+	move.l	SveSize(pc),d0
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,SvePntr
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.w	.9
+
+.1	move.l	SvePntr(pc),a1
+
+	move.l	IDFORM(pc),(a1)+
+	move.l	SveSize(pc),d0
+	subq.l	#8,d0
+	move.l	d0,(a1)+
+
+	move.l	IDILBM(pc),(a1)+
+
+	move.l	IDBMHD(pc),(a1)+
+	move.l	#20,(a1)+
+	move.w	IFFWdth(pc),(a1)+
+	move.w	RawHght(pc),(a1)+
+	move.l	#0,(a1)+
+	move.w	RawBpls(pc),d0
+	move.b	d0,(a1)+
+	move.b	#0,(a1)+
+	move.w	#0,(a1)+
+	move.w	#0,(a1)+
+	move.b	#10,(a1)+
+	move.b	#11,(a1)+
+	move.w	ScnWdth(pc),(a1)+
+	move.w	ScnHght(pc),(a1)+
+
+	move.l	IDCMAP(pc),(a1)+
+	move.l	ColSize(pc),d0
+	move.l	d0,(a1)+
+	move.l	ColPntr(pc),a0
+	subq.l	#1,d0
+.2	move.b	(a0)+,(a1)+
+	dbf	d0,.2
+
+	move.l	IDCAMG(pc),(a1)+
+	move.l	#4,(a1)+
+	move.l	ScnMode(pc),(a1)+
+
+	move.l	IDBODY(pc),(a1)+
+	move.l	RawSize(pc),d0
+	move.l	d0,(a1)+
+	move.l	RawPntr(pc),a0
+.3	move.b	(a0)+,(a1)+
+	subq.l	#1,d0
+	bne.b	.3
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;--------------------------------------;
+
+InitRawACBM
+	move.l	RawSize(pc),d0
+	move.l	d0,SveSize
+	bne.b	.1
+	lea	MsNBody(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;-------------------;
+
+RawACBM	move.l	4.w,a6
+	move.l	SveSize(pc),d0
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,SvePntr
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	move.l	SvePntr(pc),a1
+	moveq	#0,d3
+	moveq	#0,d4
+	move.w	RawWdth(pc),d4
+	move.w	RawBpls(pc),d7
+	subq.w	#1,d7
+	mulu	d7,d4
+.2	move.l	RawPntr(pc),a0
+	lea	(a0,d3),a0
+	move.w	RawHght(pc),d6
+	subq.w	#1,d6
+.3	move.w	RawWdth(pc),d5
+	subq.w	#1,d5
+.4	move.b	(a0)+,(a1)+
+	dbf	d5,.4
+	lea	(a0,d4),a0
+	dbf	d6,.3
+	add.w	RawWdth(pc),d3
+	dbf	d7,.2
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;--------------------------------------;
+
+InitRawILBM
+	move.l	RawSize(pc),d0
+	move.l	d0,SveSize
+	bne.b	.1
+	lea	MsNBody(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;-------------------;
+
+RawILBM	move.l	4.w,a6
+	move.l	SveSize(pc),d0
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,SvePntr
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	move.l	RawPntr(pc),a0
+	move.l	SvePntr(pc),a1
+	move.l	RawSize(pc),d0
+	lsr.l	#1,d0
+.2	move.w	(a0)+,(a1)+
+	subq.l	#1,d0
+	bne.b	.2
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;--------------------------------------;
+
+InitRawMskA
+	tst.l	RawSize
+	bne.b	.1
+	lea	MsNBody(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	moveq	#0,d0
+	move.w	RawWdth(pc),d0
+	mulu	RawHght(pc),d0
+	move.l	d0,SveSize
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;-------------------;
+
+RawMskA	move.l	4.w,a6
+	move.l	SveSize(pc),d0
+	move.l	#$10000,d1
+	jsr	AllocMem(a6)
+	move.l	d0,SvePntr
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	move.l	RawPntr(pc),a0
+	move.l	SvePntr(pc),a1
+
+	move.w	RawHght(pc),d7
+	subq.w	#1,d7
+.2	move.l	a1,a2
+	move.w	RawBpls(pc),d6
+	subq.w	#1,d6
+.3	move.l	a2,a1
+	move.w	RawWdth(pc),d5
+	subq.w	#1,d5
+.4	move.b	(a0)+,d0
+	or.b	d0,(a1)+
+	dbf	d5,.4
+	dbf	d6,.3
+	dbf	d7,.2
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;--------------------------------------;
+
+InitRawMskI
+	move.l	RawSize(pc),d0
+	move.l	d0,SveSize
+	bne.b	.1
+	lea	MsNBody(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;-------------------;
+
+RawMskI	move.l	4.w,a6
+	move.l	SveSize(pc),d0
+	move.l	#$10000,d1
+	jsr	AllocMem(a6)
+	move.l	d0,SvePntr
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	move.l	RawPntr(pc),a0
+	move.l	SvePntr(pc),a1
+
+	move.w	RawHght(pc),d7
+	subq.w	#1,d7
+.2	move.l	a1,a3
+	move.w	RawBpls(pc),d6
+	subq.w	#1,d6
+.3	move.l	a0,a2
+	move.l	a3,a1
+	move.w	RawBpls(pc),d5
+	subq.w	#1,d5
+.4	move.l	a2,a0
+	move.w	RawWdth(pc),d4
+	subq.w	#1,d4
+.5	move.b	(a0)+,d0
+	or.b	d0,(a1)+
+	dbf	d4,.5
+	dbf	d5,.4
+	dbf	d6,.3
+	dbf	d7,.2
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;--------------------------------------;
+
+InitRCols12
+	move.l	ColSize(pc),d0
+	bne.b	.1
+	lea	MsNCols(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	divu	#3,d0
+	lsl.w	#1,d0
+	move.l	d0,SveSize
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;-------------------;
+
+RCols12	move.l	4.w,a6
+	move.l	SveSize(pc),d0
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,SvePntr
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	move.l	ColPntr(pc),a0
+	move.l	SvePntr(pc),a1
+	move.l	SveSize(pc),d0
+	lsr.w	#1,d0
+	subq.w	#1,d0
+.2	moveq	#0,d1
+	move.b	(a0)+,d1
+	lsr.w	#4,d1
+	move.w	d1,d2
+	move.b	(a0)+,d1
+	and.b	#$f0,d1
+	or.b	d1,d2
+	move.b	(a0)+,d1
+	and.w	#$f0,d1
+	lsl.w	#4,d1
+	or.w	d1,d2
+	move.w	d2,(a1)+
+	dbf	d0,.2
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;--------------------------------------;
+
+InitSCols12
+	tst.l	ColSize
+	bne.b	.0
+	lea	MsNCols(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.0	bsr.w	DcDatSt
+	move.l	d1,d6
+	move.l	ColSize(pc),d7
+	divu	#3,d7
+	moveq	#0,d0
+
+	cmp.w	#32,d7
+	ble.b	.11
+.1	add.l	d6,d0
+	add.l	#12,d0			;$0106,$0000 + enter
+
+.11	moveq	#8-1,d5
+.2	add.l	d6,d0
+	moveq	#4-1,d4			;across
+.3	add.l	#11,d0			;$0180,$0000
+	subq.l	#1,d7
+	beq.b	.4
+	addq.l	#1,d0			;3 commas and an enter
+	dbf	d4,.3
+	dbf	d5,.2
+	addq.l	#1,d0
+	bra.b	.1
+
+.4	addq.l	#1,d0
+	move.l	d0,SveSize
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;-------------------;
+
+SCols12	move.l	4.w,a6
+	move.l	SveSize(pc),d0
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,SvePntr
+	bne.b	.7
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.w	.10
+
+.7	move.l	ColPntr(pc),a0
+	move.l	SvePntr(pc),a1
+	move.l	a0,a3
+	add.l	ColSize(pc),a3
+
+	moveq	#0,d7
+	moveq	#0,d6
+
+	cmp.l	#3*32,ColSize
+	ble.b	.11
+.1	bsr.w	MvDatSt
+	move.b	#"$",(a1)+
+	move.w	#$0106,d0
+	bsr.w	MvNmWrd
+	move.b	#",",(a1)+
+	move.b	#"$",(a1)+
+	move.w	d6,d0
+	lsl.w	#8,d0
+	and.w	#$e000,d0
+	bsr.w	MvNmWrd
+	move.b	#10,(a1)+
+
+.11	move.w	#$0180,d3
+	moveq	#8-1,d5
+.2	bsr.w	MvDatSt
+
+	moveq	#4-1,d4
+	bra.b	.4
+.3	move.b	#",",(a1)+
+.4	move.b	#"$",(a1)+
+	move.w	d3,d0
+	bsr.w	MvNmWrd
+	move.b	#",",(a1)+
+	move.b	#"$",(a1)+
+
+	moveq	#0,d1
+	move.b	(a0,d7),d1
+	lsl.w	#4,d1
+	and.w	#$f00,d1
+	move.w	d1,d2
+	move.b	1(a0,d7),d1
+	and.w	#$0f0,d1
+	or.w	d1,d2
+	move.b	2(a0,d7),d1
+	lsr.w	#4,d1
+	and.w	#$00f,d1
+	or.w	d1,d2
+	move.w	d2,d0
+	bsr.w	MvNmWrd
+
+	addq.w	#2,d3
+	addq.w	#1,d6
+	addq.w	#3,d7
+
+	move.l	a0,d0
+	add.l	d7,d0
+	cmp.l	d0,a3
+	bne.b	.5
+	move.b	#10,(a1)+
+	bra.b	.6
+
+.5	dbf	d4,.3
+	move.b	#10,(a1)+
+
+	dbf	d5,.2
+	move.b	#10,(a1)+
+	bra.w	.1
+
+.6	moveq	#0,d0
+.9	tst.l	d0
+	rts
+.10	moveq	#-1,d0
+	bra.b	.9
+
+;--------------------------------------;
+
+InitRCols24
+	move.l	ColSize(pc),d0
+	move.l	d0,SveSize
+	bne.b	.1
+	lea	MsNCols(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;-------------------;
+
+RCols24	move.l	4.w,a6
+	move.l	SveSize(pc),d0
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,SvePntr
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.1	move.l	ColPntr(pc),a0
+	move.l	SvePntr(pc),a1
+	move.l	ColSize(pc),d0
+	subq.l	#1,d0
+.2	move.b	(a0)+,(a1)+
+	dbf	d0,.2
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;--------------------------------------;
+
+InitSCols24
+	tst.l	ColSize
+	bne.b	.0
+	lea	MsNCols(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.9
+
+.0	bsr.w	DcDatSt
+	move.l	d1,d6
+	move.l	ColSize(pc),d7
+	divu	#3,d7
+	moveq	#0,d0
+
+.1	add.l	d6,d0
+	add.l	#12,d0			;$0106,$0000 + enter
+
+	moveq	#8-1,d5
+.2	add.l	d6,d0
+	moveq	#4-1,d4			;across
+.3	add.l	#11,d0			;$0180,$0000
+	subq.l	#1,d7
+	beq.b	.4
+	addq.l	#1,d0			;3 commas and an enter
+	dbf	d4,.3
+	dbf	d5,.2
+	addq.l	#1,d0
+	bra.b	.1
+
+.4	addq.l	#2,d0
+	lsl.w	d0
+	subq.l	#1,d0
+	move.l	d0,SveSize
+
+	moveq	#0,d0
+.8	tst.l	d0
+	rts
+.9	moveq	#-1,d0
+	bra.b	.8
+
+;-------------------;
+
+SCols24	move.l	4.w,a6
+	move.l	SveSize(pc),d0
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,SvePntr
+	bne.b	.12
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.w	.14
+
+.12	move.l	ColPntr(pc),a0
+	move.l	SvePntr(pc),a1
+	move.l	a0,a3
+	add.l	ColSize(pc),a3
+
+	moveq	#0,d7
+	moveq	#0,d6
+
+.1	move.l	d7,-(a7)
+	bsr.w	MvDatSt
+	move.b	#"$",(a1)+
+	move.w	#$0106,d0
+	bsr.w	MvNmWrd
+	move.b	#",",(a1)+
+	move.b	#"$",(a1)+
+	move.w	d6,d0
+	lsl.w	#8,d0
+	and.w	#$e000,d0
+	bsr.w	MvNmWrd
+	move.b	#10,(a1)+
+
+	move.w	#$0180,d3
+	moveq	#8-1,d5
+.2	bsr.w	MvDatSt
+
+	moveq	#4-1,d4
+	bra.b	.4
+.3	move.b	#",",(a1)+
+.4	move.b	#"$",(a1)+
+	move.w	d3,d0
+	bsr.w	MvNmWrd
+	move.b	#",",(a1)+
+	move.b	#"$",(a1)+
+
+	moveq	#0,d1
+	move.b	(a0,d7),d1
+	lsl.w	#4,d1
+	and.w	#$f00,d1
+	move.w	d1,d2
+	move.b	1(a0,d7),d1
+	and.w	#$0f0,d1
+	or.w	d1,d2
+	move.b	2(a0,d7),d1
+	lsr.w	#4,d1
+	and.w	#$00f,d1
+	or.w	d1,d2
+	move.w	d2,d0
+	bsr.w	MvNmWrd
+
+	addq.w	#2,d3
+	addq.w	#3,d7
+
+	move.l	a0,d0
+	add.l	d7,d0
+	cmp.l	d0,a3
+	bne.b	.5
+	move.b	#10,(a1)+
+	move.b	#10,(a1)+
+	bra.b	.6
+
+.5	dbf	d4,.3
+	move.b	#10,(a1)+
+
+	dbf	d5,.2
+	move.b	#10,(a1)+
+
+.6	move.l	(a7)+,d7
+
+	bsr.w	MvDatSt
+	move.b	#"$",(a1)+
+	move.w	#$0106,d0
+	bsr.w	MvNmWrd
+	move.b	#",",(a1)+
+	move.b	#"$",(a1)+
+	move.w	d6,d0
+	lsl.w	#8,d0
+	and.w	#$e000,d0
+	or.w	#$0200,d0
+	bsr.w	MvNmWrd
+	move.b	#10,(a1)+
+
+	move.w	#$0180,d3
+	moveq	#8-1,d5
+.7	bsr.w	MvDatSt
+
+	moveq	#4-1,d4
+	bra.b	.9
+.8	move.b	#",",(a1)+
+.9	move.b	#"$",(a1)+
+	move.w	d3,d0
+	bsr.w	MvNmWrd
+	move.b	#",",(a1)+
+	move.b	#"$",(a1)+
+
+	moveq	#0,d1
+	move.b	(a0,d7),d1
+	lsl.w	#8,d1
+	and.w	#$f00,d1
+	move.w	d1,d2
+	move.b	1(a0,d7),d1
+	lsl.w	#4,d1
+	and.w	#$0f0,d1
+	or.w	d1,d2
+	move.b	2(a0,d7),d1
+	and.w	#$00f,d1
+	or.w	d1,d2
+	move.w	d2,d0
+	bsr.b	MvNmWrd
+
+	addq.w	#2,d3
+	addq.w	#1,d6
+	addq.w	#3,d7
+
+	move.l	a0,d0
+	add.l	d7,d0
+	cmp.l	d0,a3
+	bne.b	.10
+	move.b	#10,(a1)+
+	bra.b	.11
+
+.10	dbf	d4,.8
+	move.b	#10,(a1)+
+
+	dbf	d5,.7
+	move.b	#10,(a1)+
+	bra.w	.1
+
+.11	moveq	#0,d0
+.13	tst.l	d0
+	rts
+.14	moveq	#-1,d0
+	bra.b	.13
+
+;--------------------------------------;
+
+DcDatSt	lea	PrDatSt(pc),a0
+	lea	Dummy(pc),a1
+	moveq	#0,d1
+.1	move.b	(a0)+,d0
+	cmp.b	#"^",d0
+	bne.b	.2
+	move.b	#9,d0
+.2	addq.w	#1,d1
+	move.b	d0,(a1)+
+	bne.b	.1
+	subq.w	#1,d1
+	rts
+
+;--------------------------------------;
+
+MvDatSt	move.l	a0,-(a7)
+	lea	Dummy(pc),a0
+.1	tst.b	(a0)
+	beq.b	.2
+	move.b	(a0)+,(a1)+
+	bra.b	.1
+.2	move.l	(a7)+,a0
+	rts
+
+;--------------------------------------;
+
+MvNmWrd	movem.l	d1-d2,-(a7)
+	moveq	#4-1,d2
+.1	rol.w	#4,d0
+	move.w	d0,d1
+	and.w	#$f,d1
+	add.w	#"0",d1
+	cmp.w	#$3a,d1
+	blt.b	.2
+	add.w	#$27,d1
+.2	move.b	d1,(a1)+
+	dbf	d2,.1
+	movem.l	(a7)+,d1-d2
+	rts
+
+;--------------------------------------;
+
+WnTitle	dc.b	"PicConv 1.0",0
+InTitle	dc.b	"PicConv 1.0 - Information",0
+PrTitle	dc.b	"PicConv 1.0 - Preferences",0
+ScTitle	dc.b	"PicConv 1.0  -  Copyright © 1995 by Frantic, Freeware",0
+	dc.b	"$VER: PicConv V1.0 (July 1995)",0
+	even
+
+;--------------------------------------;
+
+IntBase	dc.l	0
+GfxBase	dc.l	0
+DosBase	dc.l	0
+ReqBase	dc.l	0
+WinHD1	dc.l	0
+WinHD2	dc.l	0,0
+WinHD3	dc.l	0,0
+FileReq	dc.l	0
+PrfPntr	dc.l	0
+PrfSize	dc.l	0
+IFFPntr	dc.l	0
+IFFSize	dc.l	0
+RawPntr	dc.l	0
+RawSize	dc.l	0
+ColPntr	dc.l	0
+ColSize	dc.l	0
+SvePntr	dc.l	0
+SveSize	dc.l	0
+RawWdth	dc.w	0
+RawHght	dc.w	0
+RawBpls	dc.w	0
+
+IFFWdth	dc.w	0
+ScnWdth	dc.w	0
+ScnHght	dc.w	0
+ScnMode	dc.l	0
+
+Dummy	dcb.b	32,0
+
+;-------------------;
+
+SveType	dc.w	2
+SveList	dc.l	InitIFFILBM,IFFILBM
+	dc.l	InitRawACBM,RawACBM
+	dc.l	InitRawILBM,RawILBM
+	dc.l	InitRawMskA,RawMskA
+	dc.l	InitRawMskI,RawMskI
+	dc.l	InitRCols12,RCols12
+	dc.l	InitSCols12,SCols12
+	dc.l	InitRCols24,RCols24
+	dc.l	InitSCols24,SCols24
+
+MsgList	dc.l	MsIILBM
+	dc.l	MsRACBM
+	dc.l	MsRILBM
+	dc.l	MsRMskA
+	dc.l	MsRMskI
+	dc.l	MsRCl12
+	dc.l	MsSCl12
+	dc.l	MsRCl24
+	dc.l	MsSCl24
+
+;--------------------------------------;
+
+WinDef1	dc.w	0,0			;X & Y
+	dc.w	150,118			;Width & Height
+	dc.b	0,1			;Colours
+	dc.l	$260			;IDCMP
+	dc.l	$100e			;Flags
+	dc.l	Gadgets1		;Gadgets
+	dc.l	0			;CheckMark
+	dc.l	WnTitle			;Title
+	dc.l	0			;Screen
+	dc.l	0			;BitMap
+	dc.w	150,118			;X & Y Min
+	dc.w	150,118			;X & Y Max
+	dc.w	1			;Type
+
+;-------------------;
+
+WinDef2	dc.w	0,0			;X & Y
+	dc.w	320,48			;Width & Height
+	dc.b	0,1			;Colours
+	dc.l	$200			;IDCMP
+	dc.l	$100e			;Flags
+	dc.l	0			;Gadgets
+	dc.l	0			;CheckMark
+	dc.l	InTitle			;Title
+	dc.l	0			;Screen
+	dc.l	0			;BitMap
+	dc.w	320,48			;X & Y Min
+	dc.w	320,48			;X & Y Max
+	dc.w	1			;Type
+
+;-------------------;
+
+WinDef3	dc.w	0,0			;X & Y
+	dc.w	320,48			;Width & Height
+	dc.b	0,1			;Colours
+	dc.l	$240			;IDCMP
+	dc.l	$100e			;Flags
+	dc.l	Gadgets3		;Gadgets
+	dc.l	0			;CheckMark
+	dc.l	PrTitle			;Title
+	dc.l	0			;Screen
+	dc.l	0			;BitMap
+	dc.w	320,48			;X & Y Min
+	dc.w	320,48			;X & Y Max
+	dc.w	1			;Type
+
+;--------------------------------------;
+
+Gadgets1
+GdLoad	GadText	GdSave,8,13,134,13,GBrder1,GBrder2,GTLoad,"LD"
+GTLoad	IText	0,51,3,1,0,0,0,TxLoad
+GdSave	GadText	GdInfo,8,26,134,13,GBrder1,GBrder2,GTSave,"SV"
+GTSave	IText	0,51,3,1,0,0,0,TxSave
+GdInfo	GadText	GdPref,8,39,134,13,GBrder1,GBrder2,GTInfo,"IN"
+GTInfo	IText	0,51,3,1,0,0,0,TxInfo
+GdPref	GadText	GdIILBM,8,52,134,13,GBrder1,GBrder2,GTPref,"PR"
+GTPref	IText	0,47,3,1,0,0,0,TxPref
+
+GdIILBM	GadImge	GdRACBM,94,67,17,9,GIButnU,0,GTIILBM,0
+GdRACBM	GadImge	GdRILBM,94,76,17,9,GIButnU,0,GTRData,1
+GdRILBM	GadImge	GdRMskA,121,76,17,9,GIButnD,0,0,2
+GdRMskA	GadImge	GdRMskI,94,85,17,9,GIButnU,0,GTRMask,3
+GdRMskI	GadImge	GdRCl12,121,85,17,9,GIButnU,0,0,4
+GdRCl12	GadImge	GdSCl12,94,94,17,9,GIButnU,0,GTCol12,5
+GdSCl12	GadImge	GdRCl24,121,94,17,9,GIButnU,0,0,6
+GdRCl24	GadImge	GdSCl24,94,103,17,9,GIButnU,0,GTCol24,7
+GdSCl24	GadImge	0,121,103,17,9,GIButnU,0,0,8
+
+GTIILBM	IText	0,-80,1,1,0,0,0,TxIILBM
+GTRData	IText	0,-80,1,1,0,0,0,TxRData
+GTRMask	IText	0,-80,1,1,0,0,0,TxRMask
+GTCol12	IText	0,-80,1,1,0,0,0,TxCol12
+GTCol24	IText	0,-80,1,1,0,0,0,TxCol24
+
+;-------------------;
+
+Gadgets3
+GdDatSt	GadStrg	GdExtsn,114,16,10,50,DBorder,GTDatSt,PrDatSt,"DS"
+GTDatSt	IText	0,-(9*8)-16,0,1,0,0,0,TxDatSt
+GdExtsn	GadStrg	GdETgle,114,29,10,10,DBorder,GTExtsn,PrExtsn,"EX"
+GTExtsn	IText	0,-(10*8)-12,0,1,0,0,0,TxIILBM
+GdETgle	GadText	GdPrefS,12,29,100,12,0,0,0,"TG"
+GdPrefS	GadText	0,206,31,106,13,GBrder3,GBrder4,GTPrefS,"PS"
+GTPrefS	IText	0,37,3,1,0,0,0,TxSave
+
+;--------------------------------------;
+
+GBrder1	Border	0,0,0,134,13,2,1
+GBrder2	Border	0,0,0,134,13,1,2
+GBrder3	Border	0,0,0,106,13,2,1
+GBrder4	Border	0,0,0,106,13,1,2
+
+DBorder	Border	.1,-4,-1,4+(10*8)+4,10,1,2
+.1	Border	0,-(9*8)-16-14,-2,14+(9*8)+16+(10*8)+6,12,2,1
+
+GIButnU	IImage	0,0,0,17,9,3,0,ButnUp
+GIButnD	IImage	0,0,0,17,9,3,0,ButnDwn
+
+SBorder	Border	.1,4,11,142,105,2,1
+.1	Border	0,8,65,134,49,2,1
+ScnText	IText	.1,85,77,1,0,0,0,ScTxtTA
+.1	IText	.2,112,77,1,0,0,0,ScTxtTI
+.2	IText	.3,85,86,1,0,0,0,ScTxtTA
+.3	IText	.4,112,86,1,0,0,0,ScTxtTI
+.4	IText	.5,85,95,1,0,0,0,ScTxtTR
+.5	IText	.6,112,95,1,0,0,0,ScTxtTS
+.6	IText	.7,85,104,1,0,0,0,ScTxtTR
+.7	IText	0,112,104,1,0,0,0,ScTxtTS
+
+IBorder	Border	0,4,11,312,35,2,1
+InImage	IImage	0,245,13,67,16,3,0,PicConv
+
+PBorder	Border	.1,4,11,312,35,2,1
+.1	Border	0,8,13,196,31,2,1
+PrImage	IImage	0,245,13,67,16,3,0,PicConv
+
+;--------------------------------------;
+
+TxLoad	dc.b	"LOAD",0
+TxSave	dc.b	"SAVE",0
+TxPref	dc.b	"PREFS",0
+TxInfo	dc.b	"INFO",0
+TxIILBM	dc.b	"IFF ILBM",0
+TxRData	dc.b	"RAW DATA",0
+TxRMask	dc.b	"RAW MASK",0
+TxCol12	dc.b	"COLOUR12",0
+TxCol24	dc.b	"COLOUR24",0
+
+TxDatSt	dc.b	"DATA TYPE",0
+CnvList	dc.b	" IFF ILBM ",0
+	dc.b	"RAW DATA A",0
+	dc.b	"RAW DATA I",0
+	dc.b	"RAW MASK A",0
+	dc.b	"RAW MASK I",0
+	dc.b	"COLOUR12 R",0
+	dc.b	"COLOUR12 S",0
+	dc.b	"COLOUR24 R",0
+	dc.b	"COLOUR24 S",0
+
+TxDimsn	dc.b	"Dimensions: "
+TxPSize	dc.b	"Body Size : "
+TxBytes	dc.b	" Bytes    "
+
+PrDatSt	dc.b	"^dc.w^"
+	dcb.b	44,0
+PrExtsn	dc.b	".iff",0,0,0,0,0,0
+	dc.b	".raw",0,0,0,0,0,0
+	dc.b	".raw",0,0,0,0,0,0
+	dc.b	".msk",0,0,0,0,0,0
+	dc.b	".msk",0,0,0,0,0,0
+	dc.b	".raw",0,0,0,0,0,0
+	dc.b	".col",0,0,0,0,0,0
+	dc.b	".raw",0,0,0,0,0,0
+	dc.b	".col",0,0,0,0,0,0
+
+ScTxtTA	dc.b	"A",0
+ScTxtTI	dc.b	"I",0
+ScTxtTR	dc.b	"R",0
+ScTxtTS	dc.b	"S",0
+
+;--------------------------------------;
+
+MsNoMem	dc.b	"Not enough memory",0
+MsNoFle	dc.b	"No file selected",0
+MsNExst	dc.b	"File does not exist",0
+MsNSize	dc.b	"File is empty",0
+MsNOpen	dc.b	"Couldnt open file",0
+MsNDlte	dc.b	"File cannot be replaced",0
+MsNILBM	dc.b	"Not an IFF-ILBM picture",0
+MsLdCol	dc.b	"Colours loaded",0
+MsLdBdy	dc.b	"Picture loaded",0
+MsNBody	dc.b	"No picture to save",0
+MsNCols	dc.b	"No colours to save",0
+MsPrSve	dc.b	"Preferences saved",0
+
+MsIILBM	dc.b	"IFF ILBM Picture saved",0
+MsRACBM	dc.b	"Raw ACBM Picture saved",0
+MsRILBM	dc.b	"Raw ILBM Picture saved",0
+MsRMskA	dc.b	"Raw 1Plane Mask saved",0
+MsRMskI	dc.b	"Raw Interleaved Mask saved",0
+MsRCl12	dc.b	"Raw 12 bit colourmap saved",0
+MsSCl12	dc.b	"12 bit colour copperlist source saved",0
+MsRCl24	dc.b	"Raw 24 bit colourmap saved",0
+MsSCl24	dc.b	"24 bit colour copperlist source saved",0
+	even
+
+;--------------------------------------;
+
+IDFORM	dc.l	"FORM"
+IDILBM	dc.l	"ILBM"
+IDBMHD	dc.l	"BMHD"
+IDCMAP	dc.l	"CMAP"
+IDCAMG	dc.l	"CAMG"
+IDBODY	dc.l	"BODY"
+
+;--------------------------------------;
+
+IntName	dc.b	"intuition.library",0
+GfxName	dc.b	"graphics.library",0,0
+DosName	dc.b	"dos.library",0
+ReqName	dc.b	"reqtools.library",0,0
+
+;--------------------------------------;
+
+TagLoad	dc.l	Underscore,"_"
+	dc.l	OkText,LoadTxt
+TagExst	dc.l	Window
+LWindow	dc.l	0
+	dc.l	0,0
+
+TagSave	dc.l	Flags,ReqSave
+	dc.l	Underscore,"_"
+	dc.l	OkText,SaveTxt
+	dc.l	Window
+SWindow	dc.l	0
+	dc.l	0,0
+
+;-------------------;
+
+LoadReq	dc.b	"File To Load",0
+LoadTxt	dc.b	"_Load",0
+SaveReq	dc.b	"File To Save",0
+SaveTxt	dc.b	"_Save",0
+
+OverTxt	dc.b	"File already exists",10
+	dc.b	"Overwrite?",0
+OverGdT	dc.b	"Overwrite|Cancel",0
+	even
+
+;--------------------------------------;
+
+PrfName	dc.b	"ENVARC:IFFConv.prefs",0,0
+FleBufr	dcb.b	108,0
+FleName	dcb.b	256,0
+
+;--------------------------------------;
+
+	SECTION	"Data",DATA_C
+FleInfo	dcb.b	260,0
+ButnUp	dc.l	%00000000000000100000000000000000
+	dc.l	%00000000000000110000000000000000
+	dc.l	%00000000000000011000000000000000
+	dc.l	%00000000000000011000000000000000
+	dc.l	%00000000000000011000000000000000
+	dc.l	%00000000000000011000000000000000
+	dc.l	%00000000000000011000000000000000
+	dc.l	%00000000000000110000000000000000
+	dc.l	%00011111111111100000000000000000
+	dc.l	%00111111111111000000000000000000
+	dc.l	%01100000000000000000000000000000
+	dc.l	%11000000000000000000000000000000
+	dc.l	%11000000000000000000000000000000
+	dc.l	%11000000000000000000000000000000
+	dc.l	%11000000000000000000000000000000
+	dc.l	%11000000000000000000000000000000
+	dc.l	%01100000000000000000000000000000
+	dc.l	%00100000000000000000000000000000
+
+ButnDwn	dc.l	%00111111111111000000000000000000
+	dc.l	%01100000000000000000000000000000
+	dc.l	%11000111111100000000000000000000
+	dc.l	%11001111111110000000000000000000
+	dc.l	%11001111111110000000000000000000
+	dc.l	%11001111111110000000000000000000
+	dc.l	%11000111111100000000000000000000
+	dc.l	%01100000000000000000000000000000
+	dc.l	%00100000000000000000000000000000
+	dc.l	%00000000000000100000000000000000
+	dc.l	%00000000000000110000000000000000
+	dc.l	%00000111111100011000000000000000
+	dc.l	%00001111111110011000000000000000
+	dc.l	%00001111111110011000000000000000
+	dc.l	%00001111111110011000000000000000
+	dc.l	%00000111111100011000000000000000
+	dc.l	%00000000000000110000000000000000
+	dc.l	%00011111111111100000000000000000
+PicConv	incbin	"DH1:PicConv/PicConv.raw"
+
+	END

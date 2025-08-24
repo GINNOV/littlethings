@@ -1,0 +1,80 @@
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+____________   ________________  __________   __________ ___  _____________
+\_____ \__  \_/  _____  |   /  \/  ____  _ \_/  _____   |   |/  _______   /
+ |   |  \|   \_____  \  |  /       \_/   _  \____  \|   |   |   _|___ |  /
+ |   |   \    /   \   \    \   \/   / _  |   \  \   \   _   |       /    \
+ |       /   /\       / |   \  /\    /   |   /      /   |   |      /  |   \
+ |____  /\  /  \  ___/__|    \/  \  /\  _|__/\  ___/|___|   |___  /___|    \
+      \/  \/    \/      |_____\   \/  \/      \/        |___|   \/    |_____\
+
+                         U S E R   I N T E R F A C E
+
+                     B Y   F R A N T I C   I N   1 9 9 6
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Copyright © 1994 by Frantic
+DiskMasher can be freely distributed and used, providing that the
+following rules are respected:
+No change is made to the program nor to the accompaning documentation.
+The package is always distributed in its complete form consisting of
+"DMS", "DMS.info", "DMS.doc" and "DMS.doc.info".
+Every form of distribution is allowed and encouraged, but no fee can
+be charged for this program except for, possibly, the cost of
+magnetic media.
+The author may not be held liable for any damages caused by
+use of this program.
+By copying, distributing and/or using the program you indicate your
+acceptance of the above rules.
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Using DMS Win for a while I got quite sick of the ugliness and how
+awkward it was to use. I decided to write my own with added functions.
+It will be easier to describe the main functions once the others have
+been looked over.
+
+FILENAME
+~~~~~~~~
+This can be toggled to PACKNAME for the REPACK option.
+The filename is used for both reading and writing. If you wish read a disk
+to file then the file to write as should be written in here.
+For writing to a disk from a file the source file is here.
+
+PACKNAME
+~~~~~~~~
+For the REPACK option only. The repacked DMS file will be written to
+the file selected in here.
+
+TEXTFILE
+~~~~~~~~
+This can be toggled to FILE.DIZ
+A BBS advert or Banner can be included in your DMS package, the name
+of this advert is inserted here.
+The text is packed as track -1 with the compression method chosen.
+
+FILE.DIZ
+~~~~~~~~
+Many BBS's support the use of FILE_ID.DIZ texts nowadays. 
+It works in the same way as TEXTFILE only it is packed as track 80
+
+PASSWORD
+~~~~~~~~
+DMS will encrypt the input from the disk using the password supplied.
+It is any alphanumeric word you desire, eg. Fred, ABC1234, ONLY-FOR-ME, etc.
+
+TRACKS
+~~~~~~
+This is a new option that I have not seen in any other DMS
+It selects groups of tracks that you want to be packed.
+Usage: #-#  to selected be
+
+
+READ
+~~~~
+1) Filename, path and filename must be given as the result package.
+2) Textfile, path and filename may be given as a banner advertisment
+3) Password, The package will be encrypted with it.
+4) Tracks, must be given
+A packing method is needed

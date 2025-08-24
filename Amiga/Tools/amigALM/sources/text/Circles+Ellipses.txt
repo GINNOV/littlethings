@@ -1,0 +1,114 @@
+CIRCLES + ELLIPSES
+
+Straight lines can be drawn easily. You give your routine a couple
+ofpoints and say ' Hey code, draw me a line between those two points please'.
+Ok so you may have to check to see if the start and end points are on the
+screen or that they are not the same etc but basically its a piece of cake.
+However when we move onto curved lines computers have real problems. When
+modelling curved lines then the easiest way to do it (if a little
+processor time consuming) is to draw your curved line or circle or ellipse
+with lots of little lines or points. For some real bitchy complicated
+shapes you need to do this with a mere list of points, though for many
+types of curved object it is possible to equate them using a neat little
+equation. Circles and ellipses are one class where this is possible.
+
+Circles and Ellipses
+
+The coordinates (X,Y) of all the points on a circle centred about
+(Xcentre,Ycentre) and whose radius is given R are given by the simple
+formuale:
+
+ X = Xcentre+R*COS(A)
+ Y = Ycentre+R*SIN(A)
+
+where the angle A goes from 0 to 360 degrees (or from 0 to 2 * PI radians).
+ For these expressions to represent the sort of circle we might draw on a
+piece of paper, A should vary infinitesimally from angle to angle
+but, for mot computer purposes it is sufficient for the angle to change in
+quite lare steps , say in steps of 5 degrees. Althouh this produces a
+polygon and not a circle at reasonably small radii the figure appears to be a
+true circle. Obviously if we take the radii down to an even smaller amount
+we can increase how much we increment the angle each loop.
+ Programs using the simple formulae given work quite quickly even though
+they have to equatea new sine a cosine at every step. We can improve on this
+performance though by using a mathematical trick made possible by
+the formulae for the sine and cosine of sum of angles.
+ For the two angles A and DA, these are:
+
+COS(A+DA)=COS(A)*COS(DA)-SIN(A)*SIN(DA)
+SIN(A+DA)=SIN(A)*COS(DA)+COS(A)*SIN(DA)
+
+By using these formulae, we can remove the necessity for the continued
+recalculation of the sine and cosine functions. To do this we devise a
+recursive relationship where the values of X and Y at one point are
+used to calculate the values at the ajoining point. The equations to
+achieve this are :
+
+X(I)=XCENTRE+R*COS(A)
+Y(I)=YCENTRE+R*SIN(A)
+X(I+1)=XCENTRE+R*COS(A+DA)
+Y(I+1)+YCENTRE+R*SIN(A+DA)
+
+After a little bit of jiggery pokery with the manipulation of the second
+pair of equations and the use of the sum of the angles formulae we get :
+
+X(I+1)=XCENTRE+(X(I)-XCENTRE)*COS(DA)-(Y(I)-YCENTRE)*SIN(DA)
+Y(I+1)=YCENTRE+(X(I)-XCENTRE)*SIN(DA)-(Y(I)-YCENTRE)*COS(DA)
+
+These equations describe each point using only the angle DA. Starting the
+circle at A=0 and I=1, we then get
+
+X(1)=XCENTRE+R
+Y(1)=YCENTRE
+
+Then by setting the angle DA to a constant value, we can calculate the
+sine and cosine functions of DA just once and use the same results
+throughout.
+
+
+Elipses
+
+Well as you now know the equation for the circles is simple
+
+  X = XCENTRE + R * COS(A)
+  Y = YCENTRE + R * SIN(A)
+
+of course A is the angle you range from 0 to 360. The bigger you step it
+the more like a polygon you circle will look like. R is the radius. Now
+a circle has only one value for the radius obviously but an elipse if you
+think about if has 2. Imagine one in your mind and think, yeah the distance
+from the middle of the elipse to the top edge will be different to the
+distance between the middle point and say the right hand side. So you have
+to deal with 2 radii (i think radii is the right word).
+now this aint as complicated as you would think. i am working on one in
+68000 but this is the basics to the routine I have done in HISOFT BASIC to
+create an array of points needed to plot an elipse.
+
+You need to supply the routine with the following values :
+
+ NUM - the number of points you want... the more the better
+ XCENTRE - Middle on the X axis
+ YCENTRE - Middle on the Y axis (nah!)
+ RDS1 - The first radius say 50
+ RDS2 - The second radius say 80
+ N - the point in the array where you are
+ OUTARRAY - not hard to figure out ..
+ its the array . set to the same size
+         as N*2 obviously.
+here goes with the code...
+
+N = Num +1
+DIM OUTARRAY(N,2)
+DA = 360/NUM
+OUTARRAY(1,1) = XCENTRE+RDS1
+OUTARRAY(1,2) = YCENTRE
+F = PI/180
+ For J = 2 to NUM
+   C = COS(DA*F)
+   S = SIN(DA*F)
+   OUTARRAY(J,1) = XCENTRE + RDS1 * C
+   OUTARRAY(J,2) = YCENTRE + RDS2 * S
+ Next J
+OUTARRAY(N,1) = OUTARRAY(1,1)
+OUTARRAY(J,2) = OUTARRAY(1,2)
+

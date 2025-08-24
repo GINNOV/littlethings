@@ -1,0 +1,14 @@
+### INSTRUCTION ###
+Generate a highly efficient, relocatable Amiga assembly subroutine to perform the following task.
+
+### TASK ###
+{task_name}
+
+### SPECIFICATION ###
+- **Inputs**: Assume input parameters are passed in registers D0-D2 and A0-A1 as needed.
+- **Outputs**: The primary result must be returned in register D0. Pointers are returned in A0.
+- **Register Preservation**: All registers from D3-D7 and A2-A6 MUST be preserved.
+- **Scratch Registers**: Registers D0, D1, D2, A0, and A1 can be freely used (clobbered) without being preserved.
+- **AmigaOS Calls**: Use exec.library functions where appropriate for system tasks (e.g., memory allocation, library opening). Base library pointers (e.g., _LVOExecBase) should be loaded from address 4.
+- **Format**: The code must be a standard subroutine ending with an RTS instruction. It should not be a complete, runnable program unless the task explicitly requires it.
+- **Comments**: Add comments to explain key operations, especially hardware register access and non-obvious logic.
