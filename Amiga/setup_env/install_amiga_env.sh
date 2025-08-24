@@ -21,7 +21,13 @@ TARGET_URL="https://aminet.net/dev/c/vbcc_target_m68k-amiga.lha"
 NDK_URL="https://fsck.technology/software/Commodore/Amiga/Amiga%20Applications/AmigaOS%203.9%20Native%20Development%20Kit/NDK39.lha"
 
 # Colors
-C_RESET=$'\033[0m'; C_RED=$'\033[0;31m'; C_GRN=$'\033[0;32m'; C_YEL=$'\033[0;33m'; C_BLU=$'\033[0;34m'; C_BOLD=$'\033[1m'
+C_RESET=$'\033[0m'
+C_RED=$'\033[0;31m'
+C_GRN=$'\033[0;32m'
+C_YEL=$'\033[0;33m'
+C_BLU=$'\033[0;34m'
+C_BLUE=$'\033[0;34m'   # alias for header
+C_BOLD=$'\033[1m'
 
 print_header(){ echo -e "\n${C_BLUE}${C_BOLD}--- $1 ---${C_RESET}"; }
 
@@ -36,7 +42,7 @@ if ! xcode-select -p &>/dev/null; then
   exit 1
 fi
 
-# Prefer lhasa (provides the `lha` command)
+# Prefer lhasa (provides `lha`)
 if ! command -v lha &>/dev/null; then
   echo -e "${C_YEL}Installing lhasa (provides 'lha') via Homebrew...${C_RESET}"
   if ! command -v brew &>/dev/null; then
@@ -103,16 +109,58 @@ if [ ! -x "$INSTALL_DIR/bin/vlink" ]; then
   fi
 fi
 
-# vbcc
+# vbcc (scripted dtgen answers; ensure objects/m68k exists)
 if [ ! -x "$INSTALL_DIR/bin/vc" ] || [ ! -x "$INSTALL_DIR/bin/vbccm68k" ]; then
   echo "Building vbcc..."
-  tar -xzf vbcc.tar.gz || true
+  tar -xzf vbcc.tar.gz || true   # tar warnings about hardlinks are OK
   [ -d vbcc ] || { echo -e "${C_RED}FATAL: 'vbcc' dir missing after extract.${C_RESET}"; exit 1; }
   pushd vbcc >/dev/null
   [ -f Makefile ] || { echo -e "${C_RED}FATAL: vbcc Makefile not found.${C_RESET}"; exit 1; }
 
-  # Non-interactive build: accept defaults
-  yes | make TARGET=m68k
+  mkdir -p objects/m68k
+
+  # Build tools needed for dtgen first
+  make -j"$(sysctl -n hw.ncpu)" TARGET=m68k bin/dtgen bin/vc bin/vprof
+
+  # Run dtgen with COMPLETE answers for macOS (little-endian)
+  ./bin/dtgen machines/m68k/machine.dt objects/m68k/dt.h objects/m68k/dt.c <<'DTANSWERS'
+
+y
+signed char
+y
+unsigned char
+n
+y
+signed short
+n
+y
+unsigned short
+n
+y
+signed int
+n
+y
+unsigned int
+n
+y
+long long
+n
+y
+unsigned long long
+n
+y
+float
+n
+y
+double
+
+DTANSWERS
+
+  # Sanity check
+  [ -s objects/m68k/dt.h ] && [ -s objects/m68k/dt.c ] || { echo -e "${C_RED}FATAL: dtgen did not produce dt.h/dt.c${C_RESET}"; exit 1; }
+
+  # Finish the actual build now that dt files exist
+  make -j"$(sysctl -n hw.ncpu)" TARGET=m68k
 
   sudo install -m 0755 bin/vc "$INSTALL_DIR/bin/vc"
   [ -f bin/vbccm68k ] && sudo install -m 0755 bin/vbccm68k "$INSTALL_DIR/bin/vbccm68k" || true
@@ -122,10 +170,9 @@ else
   echo -e "${C_YEL}vbcc already present, skipping build.${C_RESET}"
 fi
 
-# --- 5) Install target + NDK (correct LHA extraction) ---
+# --- 5) Install target + NDK ---
 print_header "Step 5: Installing Amiga Target and NDK"
 
-# vbcc target (extract inside a working dir, then copy config/ and targets/)
 mkdir -p target_extracted
 ( cd target_extracted && lha x ../target.lha ) | sed -e 's/^/  /' || true
 
@@ -139,13 +186,12 @@ sudo rsync -a "${TARGET_TOP}/config/"  "$INSTALL_DIR/config/"
 sudo rsync -a "${TARGET_TOP}/targets/" "$INSTALL_DIR/targets/"
 echo -e "${C_GRN}vbcc m68k-amigaos target files installed.${C_RESET}"
 
-# NDK 3.9 (same trick; archive has nested layout)
 mkdir -p ndk_extracted
 ( cd ndk_extracted && lha x ../ndk.lha ) | sed -e 's/^/  /' || true
 sudo rsync -a ndk_extracted/ "$NDK_INSTALL_DIR/"
 echo -e "${C_GRN}NDK 3.9 installed.${C_RESET}"
 
-# Try to discover the best include_h folder for alias wiring
+# Pick an Include/include_h
 NDK_INC_DIR="$(find "$NDK_INSTALL_DIR" -type d -path '*/Include/include_h' | head -n1 || true)"
 [ -n "$NDK_INC_DIR" ] || NDK_INC_DIR="$NDK_INSTALL_DIR/NDK_3.9/Include/include_h"
 
@@ -164,36 +210,35 @@ done
 
 BLOCK_BEGIN="# --- AMIGA DEV ENVIRONMENT ---"
 BLOCK_END="# --------------------------------"
-BLOCK_CONTENT=$(cat <<EOF
+BLOCK_CONTENT=$(cat <<'EOF'
 
-$BLOCK_BEGIN
-export VBCC="$INSTALL_DIR"
-export PATH="\$VBCC/bin:\$PATH"
+# --- AMIGA DEV ENVIRONMENT ---
+export VBCC="/opt/vbcc"
+export PATH="$VBCC/bin:$PATH"
 # Best-guess NDK include path detected at install time:
-export AMIGA_NDK_INCLUDE="$NDK_INC_DIR"
+export AMIGA_NDK_INCLUDE="__NDK_INC_DIR__"
 # vbcc wrapper for AmigaOS m68k:
-alias amigavc="$INSTALL_DIR/bin/vc +aos68k -I\$AMIGA_NDK_INCLUDE"
+alias amigavc="/opt/vbcc/bin/vc +aos68k -I$AMIGA_NDK_INCLUDE"
 # vasm (Devpac dialect) shortcut:
-alias vasmdp="$INSTALL_DIR/bin/vasmm68k_mot -devpac"
-$BLOCK_END
+alias vasmdp="/opt/vbcc/bin/vasmm68k_mot -devpac"
+# --------------------------------
 EOF
 )
 
-# Use sed to remove the old block, then append the new one.
+BLOCK_CONTENT="${BLOCK_CONTENT/__NDK_INC_DIR__/${NDK_INC_DIR}}"
 sed -i.bak "/^${BLOCK_BEGIN}/,/^${BLOCK_END}/d" "$SHELL_RC"
 printf "%s\n" "$BLOCK_CONTENT" >> "$SHELL_RC"
 echo -e "Updating shell configuration file: ${C_BOLD}$SHELL_RC${C_RESET}\n${C_GRN}Shell block updated successfully.${C_RESET}"
 
-# --- 8) Finalization + non-hanging version dump ---
+# --- 8) Finalization ---
 print_header "Step 8: Finalizing"
 
 echo -e "\n${C_GRN}${C_BOLD}🎉 Installation complete.${C_RESET}"
 echo -e "${C_BOLD}Run: exec \$SHELL -l${C_RESET}  (reloads your shell config)"
 
 echo -e "\n${C_BOLD}Installed Versions:${C_RESET}"
-
 printf "vasm:  "
-("$INSTALL_DIR/bin/vasmm68k_mot" -quiet 2>/dev/null || true)
+("$INSTALL_DIR/bin/vasmm68k_mot" -h 2>&1 || true) | head -n 1
 printf "vlink: "
 ("$INSTALL_DIR/bin/vlink" -h 2>&1 || true) | head -n 1
 printf "vbcc:  "
