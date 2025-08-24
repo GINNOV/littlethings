@@ -13,7 +13,7 @@ PROJECT_ROOT="$SCRIPT_DIR/.."
 # All paths are now relative to the project root
 SOURCE_DIR="$PROJECT_ROOT/model_answers"
 BUILD_DIR="$PROJECT_ROOT/model_answers/build"
-ASSEMBLER="vasm68k_mot"
+ASSEMBLER="vasmm68k_mot"
 
 # --- Pre-flight Check ---
 if ! command -v $ASSEMBLER &> /dev/null
