@@ -62,6 +62,12 @@ Requires-Dist: amiga_lm[apple-silicon,dev,evaluation,jupyter,nvidia]; extra == "
 
 This project provides a complete pipeline for creating a specialized Large Language Model (LLM) fine-tuned for generating Amiga 68k assembly code. The process involves collecting data from GitHub repositories, local files, and PDFs, and then using the Hugging Face ecosystem (`transformers`, `peft`, `trl`) to fine-tune a Gemma 3 model.
 
+---
+
+💡 **Tip:** If you’re reading this on GitHub or a rendered Markdown page, scroll down to the **Final README.md Source Code** block at the bottom of this document. Use the **📋 Copy button** in the top-right corner of that block to copy the entire README source text cleanly (without broken formatting).
+
+---
+
 ## Project Structure
 
 -   `pyproject.toml`: Defines all project dependencies and metadata.
@@ -84,7 +90,7 @@ This project provides a complete pipeline for creating a specialized Large Langu
 
 1.  **Install `uv` (if you don't have it):**
     ```bash
-    curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh
+    curl -LsSf https://astral.sh/uv/install.sh | sh
     ```
 
 2.  **Create and activate the virtual environment:**
@@ -112,8 +118,8 @@ Before preparing the data, you must create and configure the following files in 
 -   **`repos.csv`**: Lists the GitHub repos to scrape.
     ```csv
     repo,skip
-    [https://github.com/user/repo1,0](https://github.com/user/repo1,0)
-    [https://github.com/user/repo2,1](https://github.com/user/repo2,1)
+    https://github.com/user/repo1,0
+    https://github.com/user/repo2,1
     ```
 -   **`prompt1.txt`**: The template for generating prompts. It must include `{task_name}`.
     ```text
@@ -136,13 +142,13 @@ Before preparing the data, you must create and configure the following files in 
 
 ## 3. Data Preparation
 
-This script will collect data from all configured sources and create a Hugging Face dataset.
+This script collects data from all configured sources and creates a Hugging Face dataset.
 
 ```bash
 uv run python src/amiga_lm/prepare_dataset.py
-````
+```
 
-## 4\. Fine-Tuning the Model
+## 4. Fine-Tuning the Model
 
 This script fine-tunes the Gemma 3 model using the dataset created in the previous step.
 
@@ -156,38 +162,37 @@ To monitor the process, open a new terminal and run:
 tensorboard --logdir ./amiga_gemma3-270m_finetuned
 ```
 
-## 5\. Inference (Testing the Model)
+## 5. Inference (Testing the Model)
 
 Generate new Amiga assembly code using your fine-tuned model.
 
 ```bash
-uv run python src/amiga_lm/run_inference.py
+uv run python src/amiga_lm/run_eval.py
 ```
 
 The generated `.s` files will be saved in the `model_answers/` directory.
 
-## 6\. Conversion for Ollama/LM Studio
+## 6. (Optional) Conversion for Ollama/LM Studio
 
 Your fine-tuned model is a LoRA adapter. To use it with tools like Ollama or LM Studio, you must merge it and convert it to the GGUF format.
 
-**Step 6a: Merge the Adapter**
+**Step 6a: Merge the Adapter**  
 This creates a full, standalone model from your fine-tuned adapter.
 
-``` bash
+```bash
 uv run python src/amiga_lm/merge_model.py
 ```
 
 The merged model will be saved in the `./amiga_gemma3-270m_merged` directory.
 
-**Step 6b: Convert to GGUF format**
+**Step 6b: Convert to GGUF format**  
 This requires the `llama.cpp` tool.
 
 1.  **Clone and build `llama.cpp` (in a separate directory):**
+    The Python conversion script requires binaries that are created during this build process.
 
-This is needed because the python script (convert...) leverages some binaries that are only generated after it has been built.
-
-    ``` bash
-    git clone [https://github.com/ggerganov/llama.cpp.git](https://github.com/ggerganov/llama.cpp.git)
+    ```bash
+    git clone https://github.com/ggerganov/llama.cpp.git
     cd llama.cpp
     mkdir build && cd build
     cmake ..
@@ -201,4 +206,11 @@ This is needed because the python script (convert...) leverages some binaries th
     python convert-hf-to-gguf.py /path/to/your/amiga_gemma3-270m_merged --outtype f16
     ```
 
-The final `.gguf` file can now be loaded into your preferred local LLM tool. (LMStudio, Jan and so on)
+The final `.gguf` file can now be loaded into your preferred local LLM tool, such as LM Studio or Jan.
+
+# Extras
+The `utils` folder has useful shortcuts for repetitive task
+1. `cleanup.sh` removes all folders created and starts from a clean slate
+2. `check_gpu.py` does exactly what it says, particularly good for Apple silicon machines
+3. `build_full_model.sh` builds the model, trains it and then runs the evals
+4. `build_evals.sh` builds all code present in `model_answers/*.s` and place it inside the build folder
