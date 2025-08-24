@@ -11,7 +11,7 @@
 # --- Global Settings ---
 set -e # Exit immediately if a command exits with a non-zero status
 
-# CORRECTED: Determine Project Root from the script's location in a subdirectory
+# Determine Project Root from the script's location in a subdirectory
 SCRIPT_DIR=$(dirname "$0")
 PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd -P)
 
@@ -20,9 +20,10 @@ PREPARE_SCRIPT="$PROJECT_ROOT/src/amiga_lm/prepare_dataset.py"
 TRAIN_SCRIPT="$PROJECT_ROOT/src/amiga_lm/train_model.py"
 MERGE_SCRIPT="$PROJECT_ROOT/src/amiga_lm/merge_model.py"
 
-# Define paths to directories relative to the project root
+# Define paths to directories
 MERGED_MODEL_DIR="$PROJECT_ROOT/amiga_gemma3-270m_merged"
-LLAMA_CPP_DIR="$PROJECT_ROOT/../llama.cpp" # Assumes llama.cpp is in the parent directory
+# Path to my llama.cpp is now relative to the script's location
+LLAMA_CPP_DIR="$SCRIPT_DIR/../../../../llama.cpp"
 
 # --- Step 1: Data Preparation ---
 echo "--- STEP 1: Preparing the dataset ---"
