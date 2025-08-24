@@ -147,3 +147,10 @@ This requires the `llama.cpp` tool.
     ```
 
 The final `.gguf` file can now be loaded into your preferred local LLM tool, such as LM Studio or Jan.
+
+# Extras
+The `utils` folder has useful shortcuts for repetitive task
+1. `cleanup.sh` removes all folders created and starts from a clean slate
+2. `check_gpu.py` does exactly what it says, particularly good for Apple silicon machines
+3. `build_full_model.sh` builds the model, trains it and then runs the evals
+4. `build_evals.sh` builds all code present in `model_answers/*.s` and place it inside the build folder

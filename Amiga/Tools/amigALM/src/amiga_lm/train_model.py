@@ -11,7 +11,7 @@ from colorama import Fore, Style, init
 init(autoreset=True)
 
 # Set up logging to show INFO level messages with timestamps
-logging.basicConfig(level=logging.INFO, format='%(asctime)ss - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # --- Configuration ---
@@ -28,17 +28,13 @@ os.makedirs(output_dir, exist_ok=True)
 # --- Device Setup ---
 def get_device():
     """
-    Determines and returns the best available device for training (MPS, CUDA, or CPU).
+    Determines and returns the best available device for training (MPS or CPU).
     """
     if torch.backends.mps.is_available():
-        logger.info(f"Using Apple Silicon MPS")
+        logger.info(f"{Fore.GREEN}✅ Using Apple Silicon MPS{Style.RESET_ALL}")
         return torch.device("mps")
-    elif torch.cuda.is_available():
-        logger.info(f"Using CUDA GPU: {torch.cuda.get_device_name()}")
-        return torch.device("cuda")
-    else:
-        logger.info(f"Using CPU")
-        return torch.device("cpu")
+    logger.info(f"{Fore.YELLOW}Using CPU{Style.RESET_ALL}")
+    return torch.device("cpu")
 
 device = get_device()
 
@@ -56,7 +52,7 @@ try:
         tokenizer.pad_token = tokenizer.eos_token
         logger.info("Added padding token")
 
-    # Load the base model, specifying float32 for MPS compatibility and eager attention
+    # Load the base model, specifying float32 and eager attention for MPS compatibility
     model = AutoModelForCausalLM.from_pretrained(
         base_model_id,
         torch_dtype=torch.float32,
@@ -88,7 +84,7 @@ train_dataset = dataset["train"].map(preprocess_dataset, batched=True, remove_co
 test_dataset = dataset["test"].map(preprocess_dataset, batched=True, remove_columns=['prompt', 'completion'])
 
 # --- LoRA Configuration ---
-# These are the parameters for the LoRA adapter, which will be trained on top of the base model
+# These are the parameters for the LoRA adapter
 lora_config = LoraConfig(
     r=16,
     lora_alpha=32,
@@ -125,7 +121,8 @@ trainer = SFTTrainer(
     peft_config=lora_config,
     train_dataset=train_dataset,
     eval_dataset=test_dataset,
-    dataset_text_field="text",
+    # The 'dataset_text_field' argument is not used in this version of TRL.
+    # The trainer will automatically use the 'text' column from the preprocessed dataset.
 )
 logger.info(f"{Fore.GREEN}Trainer initialized successfully!{Style.RESET_ALL}")
 
