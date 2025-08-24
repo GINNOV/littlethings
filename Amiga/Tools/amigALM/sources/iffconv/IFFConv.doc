@@ -1,0 +1,53 @@
+   _ ______
+     _____/  ___________________ _    _____________   ________    ________ _
+      /-- \_/-- ____ -- ___________ _/- _________  \_/--   __ \  /--___ _
+     //    //  ___\//  ___\  _ ___//_  /   \/_  |   \   |   \- \/  /
+     \\   /\\   /  \\   /          \\      /\\      /   |   /\\   /
+      \  /  \  /    \  /            \  ___/  \  ___/\  _|__/  \  /
+       \/    \/      \/              \/       \/     \/        \/
+
+                     B Y   F R A N T I C   I N   1 9 9 4
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Copyright © 1994 by Frantic
+IFFConv can be freely distributed and used, providing that the
+following rules are respected:
+No change is made to the program nor to the accompaning documentation.
+The package is always distributed in its complete form consisting of
+"IFFConv", "IFFConv.info", "IFFConv.doc" and "IFFConv.doc.info".
+Every form of distribution is allowed and encouraged, but no fee can
+be charged for this program except for, possibly, the cost of
+magnetic media.
+The author may not be held liable for any damages caused by
+use of this program.
+By copying, distributing and/or using the program you indicate your
+acceptance of the above rules.
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Using this program is probably as easy as boiling water...
+Save a brush through your favourite paint program and make sure its
+the size you want because IFFConv saves it the same size!
+Bring up IFFConv and load the brush.
+Choose the format you want to save it as and click save.
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+I could stop here and you would still know how to use it but since its my
+program I will blab on about the functions.
+
+IFF ILBM: Rebuilds the IFF Picture, takes out the unneeded hunks.
+          eg. DDPS, GRAB, ANNO (Although this hunk may be placed as
+          an option.
+RAW ILBM: Raw data interleaved
+          BPL1 Line1, BPL2 Line1, BPL1 Line2, BPL2 Line2, etc...
+RAW ACBM: Raw data contiguous
+          BPL1 Line1, BPL1 Line2, BPL1 Line3, BPL1 Line4, etc...
+RAW MASK: Raw data interleaved where all bitplanes are merged
+          and all bitplanes are the same.
+SPRITE 4: Sprite data for 4 colours.
+SPRITE16: Sprite data for 16 colours.
+COLOURS:  Colours for brush.
+
+PREFS:    

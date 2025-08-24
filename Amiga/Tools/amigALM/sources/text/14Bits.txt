@@ -1,0 +1,23 @@
+You can play 14 or 16 bit samples at 14 bit quality with no CPU
+load, but you only get two channels. All you do, is take your 16
+bit sample, and save out the MSB 8 bits of each word as a byte in
+one sample file, and the next 6 LSB bits as another sample, ignoring
+the two LSB bits. You have to push those 6 bits down, so they
+occupy bits 0-5.
+
+Then you play the MSB sample at volume $40, in one DMA channel, and
+in the other LSB sample at volume $01, in the other channel on the same
+side. (IE use CH 0 and 3, or 1 and 2).
+You have to start both DMA channels at EXACTLY the same time, and play them
+at exactly the same period.
+That way, the voltage level caued by bit 5 in the LSB sample causes half the
+output as bit 0 in the MSB sample. You can use this trick in any tracker
+even now, but you need a 16 bit sample to start with, you have to convert it
+(easy) and you use two channels per sound.
+
+To get back to four channels you have to use CPU mixing of the 16 bit
+samples by shifting each sample pair down one bit, to 13 bits, then adding
+them, then splitting them into MSB and LSB samples and playing them. But
+this is CPU intensive. The only real catch is having to resample realtime to
+play different "rates" on the same pair.
+

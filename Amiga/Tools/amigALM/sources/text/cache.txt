@@ -1,0 +1,111 @@
+
+In article <1993Mar9.050011.11430@odin.diku.dk>,
+        suzy@diku.dk (Rune F. Skardhamar) writes:
+
+ > Anybody out there who knows how to disable the data- and instr cache's
+ > in the 68020+ from assembler? [...]
+
+Here's the nice way:
+
+;----------------------------------- exec.library -------------------------
+exec.library/CacheControl                            exec.library/CacheControl
+
+   NAME
+        CacheControl - Instruction & data cache control (V37)
+
+   SYNOPSIS
+        oldBits = CacheControl(cacheBits,cacheMask)
+        D0                     D0        D1
+
+        ULONG CacheControl(ULONG,ULONG);
+
+   FUNCTION
+        This function provides global control of any instruction or data
+        caches that may be connected to the system.  All settings are
+        global -- per task control is not provided.
+
+        The action taken by this function will depend on the type of
+        CPU installed.  This function may be patched to support external
+        caches, or different cache architectures.  In all cases the function
+        will attempt to best emulate the provided settings.  Use of this
+        function may save state specific to the caches involved.
+
+        The list of supported settings is provided in the exec/execbase.i
+        include file.  The bits currently defined map directly to the Motorola
+        68030 CPU CACR register.  Alternate cache solutions may patch into
+        the Exec cache functions.  Where possible, bits will be interpreted to
+        have the same meaning on the installed cache.
+
+   INPUTS
+        cacheBits - new values for the bits specified in cacheMask.
+
+        cacheMask - a mask with ones for all bits to be changed.
+
+   RESULT
+        oldBits   - the complete prior values for all settings.
+
+   NOTE
+        As a side effect, this function clears all caches.
+
+   SEE ALSO
+        exec/execbase.i, CacheClearU(), CacheClearE()
+
+;--------------------------------- exec/execbase.i ------------------------
+**
+**      $Filename: exec/execbase.i $
+**      $Release: 2.04 Includes, V37.4 $
+**      $Revision: 36.16 $
+**      $Date: 91/10/10 $
+**
+**      Definition of the exec.library base structure.
+**
+**      (C) Copyright 1985-1991 Commodore-Amiga, Inc.
+**          All Rights Reserved
+**
+
+[stuff deleted]
+
+******* Selected bit definitions for Cache manipulation calls **************
+
+        BITDEF  CACR,EnableI,0          ;Enable instruction cache
+        BITDEF  CACR,FreezeI,1          ;Freeze instruction cache
+        BITDEF  CACR,ClearI,3           ;Clear instruction cache
+        BITDEF  CACR,IBE,4              ;Instruction burst enable
+        BITDEF  CACR,EnableD,8          ;68030 Enable data cache
+        BITDEF  CACR,FreezeD,9          ;68030 Freeze data cache
+        BITDEF  CACR,ClearD,11          ;68030 Clear data cache
+        BITDEF  CACR,DBE,12             ;68030 Data burst enable
+        BITDEF  CACR,WriteAllocate,13   ;68030 Write-Allocate mode (must
+                                ;always be set)
+        BITDEF  CACR,CopyBack,31        ;Master enable for copyback caches
+
+[stuff deleted]
+
+;------------------------------------ cut here ----------------------------
+
+and here is the not so nice way:
+
+                [...]
+                lea     (_CacheOff,PC),a5
+                move.l  ($4).w,a6
+                jsr     (_LVOSupervisor,a6)
+                [...]
+_CacheOff:
+                movec   #1<<13,CACR
+                rte
+
+
+        bye, Peter
+
+--
+  Peter Simons - Germany, Usenet: simons@peti.GUN.de, Phone: 0228 / 746061
+
+                                      Supporting >Pretty Good Privacy v2.x<
+begin 777 PGPv2.1-Public-Key
+MF0!- BN$"XL   $" ,K.C1"/&23&5_C_MH8:41%!G8\47TD--#&EPDQ<KR'2X
+MNJW+HO\8JREFI+:D9..NJW$& &SBD(YQL[R_R8=ZIF$ !1&T(5!E=&5R(%-IX
+9;6]N<R \<VEM;VYS0'!E=&DN1U5.+F1E/KR_X
+ X
+end
+
+

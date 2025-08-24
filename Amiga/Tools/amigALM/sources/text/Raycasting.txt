@@ -1,0 +1,141 @@
+Basics of RayCasting
+
+[REFERENCES: Tricks of the Game Programming Gurus by LaMothe, Ratcliff,
+Seminatore, and Tyler. It's blatantly geared towards PeeCee programming
+("The Mysteries of the VGA Card", etc) but there's plenty of generic code
+that applies to all computers.]
+
+RayCasting (RC) is a fast and elegant way to create a psuedo 3D world. If
+you've ever played Wolfenstein 3D, you've seen it in action. To achieve
+the high speed of RC, some concessions are made: walls and doors are all
+the same height/width, there are no curved or diagonal walls, there is no
+floor or ceiling. Yet, even with these drawbacks, RC is a powerful tool.
+
+The world of an RC game, if viewed from a bird's perspective, would be
+a very structured 2D grid. Through the use of basic trigonometry, the
+2D world is reconstructed, at run time, as a 3D illusion. For instance:
+
+        ---------------------------------------------
+        |   |   |   |   |   |   |   |   |   |   |   |
+        ---------------------------------------------
+        |   | W | W | W | W | W | W | W |   |   |   |  W = wall
+        ----------------\----------/-----------------  D = door
+        |   | W |   |   |\  |   | / | W |   |   |   |  P = player
+        ------------------\------/-------------------
+        |   | W |   |   |  \|   /   | D |   |   |   |
+        --------------------\--/---------------------
+        |   | W |   |   |   | P |   | W | W | W |   |
+        ---------------------------------------------
+        |   |   |   |   |   |   |   | W |   |   |   |
+        --------------------------------------------
+
+Imagine this is part our game world as seen from above and 'P' is the
+player. He is facing 'North' (90 degrees) and looking at a wall. The two
+angled lines represent his Field of Vision (FOV) - in the real world, this
+is about 90 degrees, but for the game-world 60 degrees works fine. Also,
+assume the whole game-world is 64x64 cells, with each cell being 64x64
+'virtual units' - making the entire game world 4096x4096 units.
+
+To create the 3D illusion, we must cast some rays. What this entails is
+casting out a series of 'rays' or 2-D vectors - each originating at the
+players position (xp, yp) until they hit something - a wall, door, etc.
+How many rays? The number of rays equals the number of vertical columns
+on the video display - assume we are using a 320x200 display, so we must
+cast out 320 rays. The rays must encompass the player's FOV - from player
+view angle (p_ang) minus 30 degrees to p_ang + 30 degrees - which yields
+a FOV of 60 degrees. So let's cast the first ray at p_ang - 30.
+
+Now comes the trig. You may remember the 'point-slope' equation of a line:
+
+             y2 - y1
+        M =  -------
+             x2 - x1
+
+where M=slope of line and (x1,y1) and (x2,y2) are two points on that line.
+We know M - the slope will be tangent(ray_ang) - where ray_ang is the
+angle of the ray (60 degrees for our first ray). We also know x1 and
+y1 - they are xp and yp (the player's position). The only things left
+are x2 and y2 (let's call them xi and yi - for "intercept").
+
+We need to cast each ray twice: one cast checks for horizontal intercepts
+and the other one checks for vertical intercepts. For example - our first
+ray gets cast at 60 degrees. If you look at the map you see it first
+intersects with a horizontal line then a vertical line, etc. Things
+become greatly simplified if we only check for either the vertical
+intercepts or the horizontal: look at the first intersection - the
+x-coord is unknown but the y-coord is easily determined: (yp / 64) * 64
+(since each cell is 64 units). Now, look past the next intercept (which
+is a vertical one) and look at the next intercept. Again, the x-coord is
+unknown but the y-coord is the last y-coord minus 64. The same holds true
+if you look at the vertical intercepts - the x-coord is divisible by
+64 but the y-coord is unknown. This is why we cast each ray twice.
+
+Okay. Let's cast the first ray - looking for horizontal intercepts. We
+can get the y-coord (yi in our point-slope equation): (yp / 64) * 64.
+The only unknown left is xi. Using the point-slope, we solve for xi:
+ 
+        xi = [(1 / tan(ray_ang)) * (yi - yp)] + xp
+        yi = [tan(ray_ang) * (xi - xp)] + y         <- For vertical ray
+
+This yeilds the coords of the first intercept. Now we need to check the
+cell above this coord to see if there's a wall. If there is we stop
+casting - if not, we need to continue. In our map that cell is empty,
+so we continue casting. The next y-coord is easy: yi - 64. However,
+the x-coord is again a problem. Fortunately, trig comes the the rescue:
+
+        xi = xi + [(1 / tan(ray_ang)) * 64]
+        yi = yi + [tan(ray_ang) * 64]               <- For vertical ray
+
+So, we continue casting until we find a cell with something in it. Then,
+do the same thing for the vertical ray.
+
+Now, we've cast the ray twice. Next, we need to determine the relative
+distances of each intercept to the player, and we'll use the closest
+one:
+        y_distance = (xi - xp) / cos(ray_ang)
+        x_distance = (yi - yp) / sin(ray_ang)
+
+You may have been expecting to use the Pytagorean thm. here, but this
+method is much simpler. Remember your trig!
+
+               /|
+              / |
+           r /  |          sin(a) = y/r  <==> r = y/sin(a)
+            /   | y        cos(a) = x/r  <==> r = x/cos(a)
+           /    |
+          /a    |
+         --------
+             x
+
+Okay. Now that we have the distances, we choose the shorter of the two
+since the one further away will be blocked out by the closer one. Now,
+we need to calculate the scale - this will be the 'height' of the wall
+sliver. Remember, we not trying to build a whole wall here, just the
+part that will be represented on the particular video column. Imagine
+cutting a thin slit in a piece of cardboard and looking through that.
+Then, pan it right to left real fast, over and over. That's pretty
+much how we're building our world.
+
+Scale is very hard to calculate: scale = 1 / dist. Whew, that was
+difficult! Actually, there's more to it. To make our world seem 'real'
+we also need to multiply by some mysterious constant - K. Also, since
+we've been mixing rectangular and polar coordinates in our calculations
+we are going to end up with a sine wave modulated on top of everything.
+This is easily fixed by multiplying by the inverse cosine. Thus:
+
+        scale = K * (1 / cos(ray_num)) * (1 / dist)
+
+Note that we did not use ray_ang here, but rather we used ray_num 
+(ray_num will range from 319 to 0). This is because the sine wave
+modulation is going to adversely affect the video display.
+
+The last thing we need is which column of the wall have we hit? This
+will be used by the texture mapping algorithm - i.e. which column of
+pixels of the texture gets mapped onto the wall? The answer:
+
+        column = yi % 64
+
+That's it! Now, we need to repeat this for all rays, and we're done!
+
+John Corigliano
+jcorig@strauss.udel.edu

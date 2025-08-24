@@ -1,0 +1,23 @@
+
++-----------------+
+| PSYCHAD INTRO 3 |
++-----------------+
+
+To change the colours edit the top of the file "Psychad3.s"
+To change the text edit the file "Psychad3.txt"
+ProTracker Module name can be changed at the bottom of "Psychad.s"
+The Font can also be changed by editing "Font.i"
+
+The text format is as follows:
+Each page must begin with a blank line, this is the Character to align the
+next line.
+Each page has 24 lines and 38 columns any more and weird things happen due
+to the way I have coded this intro.
+The character that signals a new page is: ~
+For an example of the page format edit the file "Psychad3.txt"
+
+Intro by Frantic/PSD in February 1995.
+27 Boundary Road
+Tikipunga
+Whangarei
+New Zealand

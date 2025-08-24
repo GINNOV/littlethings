@@ -1,0 +1,43 @@
+       ______________________=________    ______________________________
+      /  ________  __  _  __   __ ___/___/_ ________  __  _  _  __   __/
+      \___  \/  |  \/  |  \/   \/    \\__//    \/  |  \/  |  \  \/  /
+      /      \      \  |   \   /      \  /      \      \  |   \    /
+      \______/______/__|___/\_/\______/  \______/______/__|___/\  /
+                                                                \/
+                     B Y   F R A N T I C   I N   1 9 9 4
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Copyright © 1994 by Frantic
+SonicConv can be freely distributed and used, providing that the
+following rules are respected:
+No change is made to the program nor to the accompaning documentation.
+The package is always distributed in its complete form consisting of
+"SonicConv", "SonicConv.info", "SonicConv.doc" and "SonicConv.doc.info".
+Every form of distribution is allowed and encouraged, but no fee can
+be charged for this program except for, possibly, the cost of
+magnetic media.
+The author may not be held liable for any damages caused by
+use of this program.
+By copying, distributing and/or using the program you indicate your
+acceptance of the above rules.
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Why do we need another module uncruncher? Cause the other ones are lame!!!
+Im not saying mine is best, but it works, and it has features in it that
+the others dont.
+The main feature that makes it stick out is the in-file search. It will
+look through the file for a module to depack. So, all you have to do to
+rip a module now is uncrunch the intro and shove it in SonicConv.
+The program will then spit out a ProTracker module.
+
+Supported module types are:
+ProTracker
+NoisePacker 3.0
+Laxity Packer
+Grapevine's Long Dark Teatime Of The Soul
+ProRunner (LightPack & HeavyPack)
+SoundTracker 15Instr
+ProPacker 2.1
+HanniPacker

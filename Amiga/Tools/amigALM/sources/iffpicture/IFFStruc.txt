@@ -1,0 +1,56 @@
+From:    Aaron Koolen                             Rec'd 
+To:      Robert Van                               Msg #167, 02-Dec-92 11:10pm
+Subject: IFF Structure
+
+ RV> Could someone please type me or send me a copy of the
+ RV> structure to a IFF picture.
+ RV> I want to use it in one of my projects (coding)
+ RV> Thanx
+hi, here's some info from the Amiga system programmer guide.
+ 
+Iff overview;
+"FORM"          Start of an IFF form (4 bytes contain the word "FORM")
+                You could use a cmp.l #"FORM",address to chek for it's ex
+                istence I would think.
+Form length     Length of the form in bytes (long word), this is usuall      
+the file length-8
+Type            Long weord holding type. Eg "ILBM","WORD","SMUS","8SVX"
+Chunk Name      Name of this chunk. Eg "NAME","AUTH","BODY"
+                BODY is used for the picture body, CMAP for hte colour       
+map, and BMHD for the Bitmap Header.
+Chunk length    Long word for chunk length.
+Chunk data      The data, padded to an even byte if necessary.
+ 
+The picture is compressed as follows.....
+If a byte is positive then just copy it into the bitmap Eg
+(assuming a0 holds the address of the body)
+
+    move.b  (a0)+,d0
+    bpl     NotCompressed
+If it's compressed do this.........
+Get next byte...
+    move.b  (a0)+,d1
+Negate the negitive byte we got at first to get the number of compresed bytes
+    neg.b   d0
+Loop and copy in d1 to the bitmap (assume bitmap pointer is in a1)
+    move.b  d1,(a1)+
+    dbf     d0,LoopIt
+    bra     DoneByte
+NotCOmpressed
+    move.b  d0,(a1)+
+DoneByte
+Lop around and do another byte.
+ 
+This example assumes the bitmaps are in interleaved format, as the BODY if
+the IFF is in interleave.  IF the bitmaps are in sequential format, you will
+have to grab each line of the bitmapseparately and copy it in to the
+appropriate bitplane.
+ 
+Hope this helps, if you have any probs (which you probably will as my example
+is pretty messy) just give me a yell
+
+Cheers!
+
+--- Maximus 2.01wb
+ * Origin: The letter box BBS. Auckland, New Zealand. (3:772/245)
+

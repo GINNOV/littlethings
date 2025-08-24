@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "amiga_lm"
 version = "0.1.0"
-description = "Amiga-focused Large Language Model fine-tuning project"
+description = "Fine tuned Amiga assembler LLM based on Gemma 3"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
 license = "MIT"
 authors = [
-    { name = "Your Name", email = "your.email@example.com" },
+    { name = ";mE", email = "support@theblifemovement.com" },
 ]
 keywords = ["machine-learning", "nlp", "fine-tuning", "transformers", "amiga"]
 classifiers = [
@@ -24,16 +24,15 @@ classifiers = [
 ]
 
 # Core dependencies for training on any platform, including Apple Silicon
-# Updated versions for Gemma 3 support
 dependencies = [
     "torch>=2.1.0",
     "transformers>=4.46.0",  # Updated for Gemma 3 support
-    "datasets>=2.19.0",     # Changed from ~ to >= for flexibility
-    "accelerate>=0.32.0",   # Updated version
-    "peft>=0.12.0",         # Updated version
-    "trl>=0.10.0",          # Updated version
-    "sentencepiece>=0.2.0", # Changed from ~ to >=
-    "protobuf>=3.20.0",     # Added for tokenizer compatibility
+    "datasets>=2.19.0",     
+    "accelerate>=0.32.0",   
+    "peft>=0.12.0",         
+    "trl>=0.10.0",          
+    "sentencepiece>=0.2.0", 
+    "protobuf>=3.20.0",
     "numpy>=1.24.0",
     "pandas>=2.0.0",
     "scikit-learn>=1.3.0",
@@ -43,6 +42,7 @@ dependencies = [
     "wandb>=0.15.0",        # For experiment tracking
     "tensorboard>=2.14.0",  # Added for logging
     "pymupdf>=1.24.0",      # Changed from ~ to >=
+    "colorama>=0.4.6",
 ]
 
 [project.optional-dependencies]

@@ -1,0 +1,1339 @@
+;---- Exec Equates
+
+AllocMem	= -198
+FreeMem		= -210
+GetMsg		= -372
+ReplyMsg	= -378
+WaitPort	= -384
+CloseLibrary	= -414
+OpenLibrary	= -552
+
+;---- Dos Equates
+
+Open		= -30
+Close		= -36
+Read		= -42
+Write		= -48
+Seek		= -66
+DeleteFile	= -72
+Lock		= -84
+UnLock		= -90
+Examine		= -102
+
+;---- Intuition Equates
+
+CloseWindow	= -72
+DrawBorder	= -108
+DrawImage	= -114
+ModifyIDCMP	= -150
+OpenWindow	= -204
+PrintIText	= -216
+RefreshGadgets	= -222
+WBToBack	= -336
+WBToFront	= -342
+
+;---- Graphics Equates
+
+Text		= -60
+Move		= -240
+RectFill	= -306
+SetAPen		= -342
+
+;---- TrackDisk Equates
+
+FindTask	= -294
+AddPort		= -354
+RemPort		= -360
+OpenDevice	= -444
+CloseDevice	= -450
+DoIO		= -456
+
+;---- ReqTools Equates
+
+AllocRequestA	= -30
+FreeRequest	= -36
+FileRequestA	= -54
+Window		= 1+(1<<31)
+
+;---- DMS Compatiblity
+
+Version		= 113
+VersionNeeded	= 111
+
+;--------------------------------------;
+
+;	 00 Identifier
+;	 04 DMS Type
+;	 08 General Info
+;	 12 Low Track
+;	 14 High Track
+;	 16 Packed Size
+;	 20 Unpacked Size
+;	 24 OS Version
+;	 26 OS Revision
+;	 28 Processor
+;	 30 CoProcessor
+;	 32 Machine Type
+;	 34 Unused
+;	 36 CPU Speed
+;	 38 Creation Time
+;	 42 Creator Version
+;	 44 Version needed
+;	 46 Disk Type
+;	 48 Compression Mode
+;	 50 InfoHeader CRC
+;	 END
+
+;--------------------------------------;
+
+GadText	MACRO
+	dc.l	\1			;Next
+	dc.w	\2,\3			;X & Y
+	dc.w	\4,\5			;Width & Height
+	dc.w	2			;Flags
+	dc.w	1			;Activation Flags
+	dc.w	1			;Type
+	dc.l	\6			;Select1
+	dc.l	\7			;Select2
+	dc.l	\8			;Text
+	dc.l	0			;Exclude
+	dc.l	0			;SpecialInfo
+	dc.w	\9			;Gadget ID
+	dc.l	0			;User Data
+	ENDM
+
+;--------------------------------------;
+
+GadNull	MACRO
+	dc.l	\1			;Next
+	dc.w	\2,\3			;X & Y
+	dc.w	\4,\5			;Width & Height
+	dc.w	3			;Flags
+	dc.w	1			;Activation Flags
+	dc.w	1			;Type
+	dc.l	0			;Select1
+	dc.l	0			;Select2
+	dc.l	0			;Text
+	dc.l	0			;Exclude
+	dc.l	0			;SpecialInfo
+	dc.w	\6			;Gadget ID
+	dc.l	0			;User Data
+	ENDM
+
+;--------------------------------------;
+
+Border	MACRO				;NEXT,X,Y,W,H,L,S
+	dc.w	\2,\3			;X & Y
+	dc.b	\6,0			;Colours
+	dc.b	0			;Mode
+	dc.b	5			;Pairs
+	dc.l	Coords1\@		;Coords
+	dc.l	Border2\@		;Next
+
+Border2\@
+	dc.w	\2,\3			;X & Y
+	dc.b	\7,0			;Colours
+	dc.b	0			;Mode
+	dc.b	5			;Pairs
+	dc.l	Coords2\@		;Coords
+	dc.l	\1			;Next
+
+Coords1\@
+	dc.w	1,1
+	dc.w	1,\5-2
+	dc.w	0,\5-1
+	dc.w	0,0
+	dc.w	\4-2,0
+
+Coords2\@
+	dc.w	\4-2,\5-2
+	dc.w	\4-2,1
+	dc.w	\4-1,0
+	dc.w	\4-1,\5-1
+	dc.w	1,\5-1
+	ENDM
+
+;--------------------------------------;
+
+IText	MACRO
+	dc.b	\4,\5			;Colours
+	dc.b	\6			;Mode
+	even
+	dc.w	\2,\3			;X & Y
+	dc.l	\7			;Font
+	dc.l	\8			;Text
+	dc.l	\1			;Next
+	ENDM
+
+;--------------------------------------;
+
+IImage	MACRO
+	dc.w	\2,\3			;X & Y
+	dc.w	\4,\5			;Width & Height
+	dc.w	\7			;Bitplanes
+	dc.l	\8			;Data
+	dc.b	\6,0			;Colours
+	dc.l	\1			;Next
+	ENDM
+
+;--------------------------------------;
+
+GadStrg	MACRO
+	dc.l	\1			;Next
+	dc.w	\2,\3			;X & Y
+	dc.w	\4*8,8			;Width & Height
+	dc.w	0			;Flags
+	dc.w	1			;Activation Flags
+	dc.w	4			;Type
+	dc.l	\5			;Select1
+	dc.l	0			;Select2
+	dc.l	\6			;Text
+	dc.l	0			;Exclude
+	dc.l	StInf\@			;Special Info
+	dc.w	\9			;Gadget ID
+	dc.l	0			;User Data
+
+StInf\@	dc.l	\7			;Text Buffer
+	dc.l	0			;Undo buffer
+	dc.w	0			;Cursor Pos
+	dc.w	\8			;Max Chars
+	dc.w	0			;Output Text From Char
+	dc.w	0			;Char Position In Undo
+	dc.w	0			;No. Chars In Text Buffer
+	dc.w	0			;No. Chars Visible in Box
+	dc.w	0			;Horz Box Offset
+	dc.w	0			;Vert Box offset
+	dc.l	0			;RastPort
+	dc.l	0			;Longword Value
+	dc.l	0			;Keyboard
+	ENDM
+
+;--------------------------------------;
+
+	bsr.w	OpenLib
+	bsr	OpenDev
+	bsr.w	OpenWin
+	bsr.w	DrawBdr
+	bsr.w	DrawImg
+	bsr.w	WB2Frnt
+	bra.w	WaitEvt
+
+End	bsr	PurgeRq
+	bsr.w	WB2Back
+	bsr.w	ClseWin
+	bsr	ClseDev
+	bsr.w	ClseLib
+	rts
+
+;--------------------------------------;
+
+PurgeRq	tst.l	FFl1Req
+	beq.s	.1
+	move.l	FFl1Req(pc),a1
+	move.l	ReqBase(pc),a6
+	jsr	FreeRequest(a6)
+.1	tst.l	FFl2Req
+	beq.s	.2
+	move.l	FFl2Req(pc),a1
+	move.l	ReqBase(pc),a6
+	jsr	FreeRequest(a6)
+.2	tst.l	TFleReq
+	beq.s	.3
+	move.l	TFleReq(pc),a1
+	move.l	ReqBase(pc),a6
+	jsr	FreeRequest(a6)
+.3	tst.l	FlDzReq
+	beq.s	.4
+	move.l	FlDzReq(pc),a1
+	move.l	ReqBase(pc),a6
+	jsr	FreeRequest(a6)
+.4	rts
+
+;--------------------------------------;
+
+OpenLib	move.l	4.w,a6
+	moveq	#0,d0
+	lea	IntBase(pc),a1
+	jsr	OpenLibrary(a6)
+	move.l	d0,IntBase
+	moveq	#0,d0
+	lea	DosBase(pc),a1
+	jsr	OpenLibrary(a6)
+	move.l	d0,DosBase
+	moveq	#0,d0
+	lea	GfxBase(pc),a1
+	jsr	OpenLibrary(a6)
+	move.l	d0,GfxBase
+	moveq	#0,d0
+	lea	ReqBase(pc),a1
+	jsr	OpenLibrary(a6)
+	move.l	d0,ReqBase
+	rts
+
+ClseLib	move.l	4.w,a6
+	move.l	ReqBase(pc),a1
+	jsr	CloseLibrary(a6)
+	move.l	GfxBase(pc),a1
+	jsr	CloseLibrary(a6)
+	move.l	DosBase(pc),a1
+	jsr	CloseLibrary(a6)
+	move.l	IntBase(pc),a1
+	jsr	CloseLibrary(a6)
+	rts
+
+;--------------------------------------;
+
+OpenDev	move.l	4.w,a6
+	sub.l	a1,a1
+	jsr	FindTask(a6)
+	lea	RplyPrt(pc),a1
+	move.l	d0,16(a1)
+	jsr	AddPort(a6)
+	lea	DiskIO(pc),a1
+	move.l	#RplyPrt,14(a1)
+	moveq	#0,d0
+	move.b	DriveNo(pc),d0
+	moveq	#0,d1
+	move.l	DevsPnt(pc),a0
+	jsr	OpenDevice(a6)
+	rts
+
+ClseDev	move.l	4.w,a6
+	lea	RplyPrt(pc),a1
+	jsr	RemPort(a6)
+	lea	DiskIO(pc),a1
+	jsr	CloseDevice(a6)
+	rts
+
+;--------------------------------------;
+
+OpenWin	move.l	IntBase(pc),a6
+	lea	WinDef1(pc),a0
+	jsr	OpenWindow(a6)
+	move.l	d0,WinHD1
+	move.l	d0,FWindow
+	rts
+
+ClseWin	move.l	IntBase(pc),a6
+	move.l	WinHD1(pc),a0
+	jsr	CloseWindow(a6)
+	rts
+
+;--------------------------------------;
+
+WB2Frnt	move.l	IntBase(pc),a6
+	move.l	WinHD1(pc),a0
+	jsr	WBToFront(a6)
+	rts
+
+WB2Back	move.l	IntBase(pc),a6
+	move.l	WinHD1(pc),a0
+	jsr	WBToBack(a6)
+	rts
+
+;--------------------------------------;
+
+DrawBdr	move.l	IntBase(pc),a6
+	move.l	WinHD1(pc),a0
+	move.l	50(a0),a0
+	lea	SBrder1(pc),a1
+	moveq	#0,d0
+	moveq	#0,d1
+	jsr	DrawBorder(a6)
+	rts
+
+;--------------------------------------;
+
+DrawImg	move.l	IntBase(pc),a6
+	move.l	WinHD1(pc),a0
+	move.l	50(a0),a0
+	lea	DskImg1(pc),a1
+	moveq	#0,d0
+	moveq	#0,d1
+	jsr	DrawImage(a6)
+	rts
+
+;--------------------------------------;
+
+PrntMsg	move.l	GfxBase(pc),a6
+	move.l	WinHD1(pc),a4
+	move.l	50(a4),a1
+	moveq	#0,d0
+	jsr	SetAPen(a6)
+	move.l	50(a4),a1
+	move.l	#8,d0
+	move.l	#115,d1
+	move.l	#499,d2
+	move.l	#125,d3
+	jsr	RectFill(a6)
+	move.l	50(a4),a1
+	moveq	#16,d0
+	moveq	#123,d1
+	jsr	Move(a6)
+	move.l	50(a4),a1
+	moveq	#1,d0
+	jsr	SetAPen(a6)
+	move.l	50(a4),a1
+	move.l	a5,a0
+	moveq	#0,d0
+	move.b	(a0)+,d0
+	jsr	Text(a6)
+	rts
+
+;--------------------------------------;
+
+WaitEvt	move.l	4.w,a6
+	move.l	WinHD1(pc),a0
+	move.l	86(a0),a0
+	move.l	a0,-(a7)
+	jsr	WaitPort(a6)
+	move.l	(a7)+,a0
+	jsr	GetMsg(a6)
+	move.l	d0,a1
+	move.l	20(a1),d6
+	cmp.l	#$200,d6
+	beq.w	End
+	cmp.l	#$40,d6
+	beq.b	FindGad
+	cmp.l	#$20,d6
+	beq.b	FindGad
+	jsr	ReplyMsg(a6)
+	bra.b	WaitEvt
+
+;--------------------------------------;
+
+FindGad	move.l	28(a1),a0
+	move.w	38(a0),d7
+	jsr	ReplyMsg(a6)
+	cmp.w	#"RD",d7
+	beq	ReadDMS
+	cmp.w	#"D1",d7
+	beq	FleRqD1
+	cmp.w	#"D2",d7
+	beq	FleRqD2
+	cmp.w	#"D3",d7
+	beq	FleRqD3
+	cmp.w	#"D4",d7
+	beq	FleRqD4
+	cmp.w	#"CM",d7
+	beq.w	BtnCMde
+	cmp.w	#"N1",d7
+	beq	SwapGd1
+	cmp.w	#"N2",d7
+	beq	SwapGd2
+	bra.w	WaitEvt
+
+;--------------------------------------;
+
+BtnCMde	lea	CrnchMd(pc),a0
+	lea	CrModes(pc),a1
+	lea	GTCMode(pc),a2
+	addq.w	#1,CrnchPt
+	moveq	#0,d0
+.1	move.w	CrnchPt(pc),d0
+	lsl.w	#1,d0
+	move.w	(a0,d0),d0
+	lsl.w	#3,d0
+	bpl	.2
+	clr.w	CrnchPt
+	bra	.1
+.2	lea	(a1,d0),a5
+	move.l	a5,12(a2)
+	move.l	a5,a4
+	moveq	#0,d7
+	bra	.4
+.3	addq.b	#1,d7
+.4	tst.b	(a4)+
+	bne	.3
+
+	move.l	GfxBase(pc),a6
+	move.l	WinHD1(pc),a4
+	move.l	50(a4),a4
+	move.l	a4,a1
+	move.l	#245,d0
+	moveq	#96,d1
+	jsr	Move(a6)
+	move.l	a4,a1
+	moveq	#1,d0
+	jsr	SetAPen(a6)
+	move.l	a4,a1
+	move.l	a5,a0
+	move.l	d7,d0
+	jsr	Text(a6)
+	bra	BtnCycl
+BtnDrve
+BtnCycl	bra	WaitEvt
+
+;--------------------------------------;
+
+SwapGd1	move.l	GfxBase(pc),a6
+	move.l	WinHD1(pc),a4
+	move.l	50(a4),a1
+	moveq	#16,d0
+	moveq	#37,d1
+	jsr	Move(a6)
+	move.l	50(a4),a1
+	moveq	#1,d0
+	jsr	SetAPen(a6)
+	lea	GdFlDsk(pc),a0
+	cmp.l	#GdFile1,(a0)
+	beq	.1
+	move.l	#GdFile1,(a0)
+	move.w	#"D1",38(a0)
+	move.l	50(a4),a1
+	lea	Fl1Text(pc),a0
+	moveq	#8,d0
+	jsr	Text(a6)
+	bra	SwapUpd
+.1	move.l	#GdFile2,(a0)
+	move.w	#"D2",38(a0)
+	move.l	50(a4),a1
+	lea	Fl2Text(pc),a0
+	moveq	#8,d0
+	jsr	Text(a6)
+	bra	SwapUpd
+
+;-------------------;
+
+SwapGd2	move.l	GfxBase(pc),a6
+	move.l	WinHD1(pc),a4
+	move.l	50(a4),a1
+	moveq	#16,d0
+	moveq	#52,d1
+	jsr	Move(a6)
+	move.l	50(a4),a1
+	moveq	#1,d0
+	jsr	SetAPen(a6)
+	lea	GdTxDsk(pc),a0
+	cmp.l	#GdTxtFl,(a0)
+	beq	.1
+	move.l	#GdTxtFl,(a0)
+	move.w	#"D3",38(a0)
+	move.l	50(a4),a1
+	lea	TxtText(pc),a0
+	moveq	#8,d0
+	jsr	Text(a6)
+	bra	SwapUpd
+.1	move.l	#GdFleDz,(a0)
+	move.w	#"D4",38(a0)
+	move.l	50(a4),a1
+	lea	FDzText(pc),a0
+	moveq	#8,d0
+	jsr	Text(a6)
+	bra	SwapUpd
+
+;-------------------;
+
+SwapUpd	move.l	IntBase(pc),a6
+	lea	GdFlDsk(pc),a0
+	move.l	WinHD1(pc),a1
+	sub.l	a2,a2
+	jsr	RefreshGadgets(a6)
+	bra.w	WaitEvt
+
+;--------------------------------------;
+
+FleRqD1	lea	FFl1Req(pc),a5
+	lea	FFl1Nme(pc),a4
+	bsr	FRquest
+	bne	WaitEvt
+	move.l	FFl1Req(pc),a0
+	lea	Fl1Bufr(pc),a1
+	lea	FFl1Nme(pc),a2
+	bsr	JoinFle
+
+	move.l	IntBase(pc),a6
+	lea	GdFile1(pc),a0
+	move.l	WinHD1(pc),a1
+	sub.l	a2,a2
+	jsr	RefreshGadgets(a6)
+	bra.w	WaitEvt
+
+;--------------------------------------;
+
+FleRqD2	lea	FFl2Req(pc),a5
+	lea	FFl2Nme(pc),a4
+	bsr	FRquest
+	bne	WaitEvt
+	move.l	FFl2Req(pc),a0
+	lea	Fl2Bufr(pc),a1
+	lea	FFl2Nme(pc),a2
+	bsr	JoinFle
+
+	move.l	IntBase(pc),a6
+	lea	GdFile2(pc),a0
+	move.l	WinHD1(pc),a1
+	sub.l	a2,a2
+	jsr	RefreshGadgets(a6)
+	bra.w	WaitEvt
+
+;--------------------------------------;
+
+FleRqD3	lea	TFleReq(pc),a5
+	lea	TFlName(pc),a4
+	bsr	FRquest
+	bne	WaitEvt
+	move.l	TFleReq(pc),a0
+	lea	TxtBufr(pc),a1
+	lea	TFlName(pc),a2
+	bsr	JoinFle
+
+	move.l	IntBase(pc),a6
+	lea	GdTxtFl(pc),a0
+	move.l	WinHD1(pc),a1
+	sub.l	a2,a2
+	jsr	RefreshGadgets(a6)
+	bra.w	WaitEvt
+
+;--------------------------------------;
+
+FleRqD4	lea	FlDzReq(pc),a5
+	lea	FDzName(pc),a4
+	bsr	FRquest
+	bne	WaitEvt
+	move.l	FlDzReq(pc),a0
+	lea	FDzBufr(pc),a1
+	lea	FDzName(pc),a2
+	bsr	JoinFle
+
+	move.l	IntBase(pc),a6
+	lea	GdFleDz(pc),a0
+	move.l	WinHD1(pc),a1
+	sub.l	a2,a2
+	jsr	RefreshGadgets(a6)
+	bra.w	WaitEvt
+
+;--------------------------------------;
+;--------------------------------------;
+
+ReadDMS	move.l	DosBase(pc),a6
+	move.l	#Fl1Bufr,d1
+	move.l	#1005,d2
+	jsr	Open(a6)
+	move.l	d0,FleHndl
+	beq	.8
+
+	move.l	d0,d1
+	move.l	#JunkBuf,d2
+	moveq	#52,d3
+	jsr	Read(a6)
+	lea	JunkBuf(pc),a0
+	cmp.l	#"DMS!",(a0)
+	bne	.3
+	bra	.4
+
+.3	move.l	FleHndl(pc),d1
+	jsr	Close(a6)
+
+	moveq	#-1,d0
+	lea	TxtReq1(pc),a5
+	bsr	Request
+	tst.w	d0
+	beq	WaitEvt
+	move.l	DosBase(pc),a6
+	move.l	#Fl1Bufr,d1
+	jsr	DeleteFile(a6)
+	bra	.8
+
+.4	move.l	FleHndl(pc),d1
+	jsr	Close(a6)
+
+	moveq	#0,d0
+	lea	TxtReq2(pc),a5
+	bsr	Request
+	tst.w	d0
+	beq	WaitEvt
+	cmp.w	#2,d0
+	beq	.8
+	move.l	DosBase(pc),a6
+	move.l	#Fl1Bufr,d1
+	jsr	DeleteFile(a6)
+
+.8	bra	WaitEvt
+	move.l	Fl1Bufr(pc),d1
+	move.l	#1006,d2
+	jsr	Open(a6)
+	move.l	d0,FleHndl
+
+	bsr	InsText
+
+	bsr	SetUpHd
+
+	move.l	d0,d1
+	move.l	#DMSInfo,d2
+	move.l	#52,d3
+	jsr	Write(a6)
+
+;	lea	DMSInfo(pc),a0
+;	move.l	8(a0),d0
+;	btst	#3,d0
+;	beq	.1
+;
+;	move.l	FleBufr(pc),d1
+;	move.l	#1005,d2
+;	jsr	Open(a6)
+;	move.l	d0,FleHndl
+;
+;
+;
+;.1
+;
+;
+;	move.l	d7,d1
+;	move.l	AllcMem(pc),d2
+;	move.l	PckLgth(pc),d3
+;	add.l	#12,d3
+;	jsr	Write(a6)
+;
+;	cmp.b	#"E",DataExe
+;	bne	NotExe2
+;	move.l	d7,d1
+;	move.l	#HeadEnd,d2
+;	moveq	#4,d3
+;	jsr	Write(a6)
+;
+;NotExe2	move.l	d7,d1
+;	jsr	Close(a6)
+;
+;	move.l	4.w,a6
+;	move.l	FleLgth(pc),d0
+;	add.l	#128,d0
+;	move.l	AllcMem(pc),a1
+;	jsr	FreeMem(a6)
+;	moveq	#0,d0
+;	rts
+;	
+
+;--------------------------------------;
+
+InsText	move.l	FleHndl(pc),d1
+	moveq	#0,d2
+	moveq	#1,d3
+	jsr	Seek(a6)
+;
+;	move.l	d0,d1
+;	move.l	#InfoBlk,d2
+;	jsr	Examine(a6)
+;	move.l	d7,d1
+;	jsr	UnLock(a6)
+;	lea	InfoBlk,a0
+;
+;	move.l	4.w,a6
+;	move.l	124(a0),d0
+;	add.l	#20,d0
+;	move.l	d0,d7
+;	move.l	#$10000,d1
+;	jsr	AllocMem(a6)
+;	move.l	d0,a5
+;	bne.b	.2
+;	moveq	#-1,d0
+;	rts
+;
+;.2	move.l	DosBase(pc),a6
+;	move.l	TxtBufr(pc),d1
+;	move.l	#1005,d2
+;	jsr	Open(a6)
+;	move.l	d0,d1
+;	bne.b	FleOpnd
+;
+;	move.l	4.w,a6
+;	move.l	FleLgth(pc),d0
+;	add.l	#128,d0
+;	move.l	AllcMem(pc),a1
+;	jsr	FreeMem(a6)
+;	moveq	#-1,d0
+;	rts
+;
+;FleOpnd	move.l	d0,d7
+;	move.l	AllcMem(pc),d2
+;	add.l	#128,d2
+;	move.l	FleLgth(pc),d3
+;	jsr	Read(a6)
+;	move.l	d7,d1
+;	move.l	d0,d7
+;	jsr	Close(a6)
+;	tst.l	d7
+;	bpl.b	ReadOK
+;
+;	move.l	4.w,a6
+;	move.l	FleLgth(pc),d0
+;	add.l	#128,d0
+;	move.l	AllcMem(pc),a1
+;	jsr	FreeMem(a6)
+;	moveq	#-1,d0
+;	rts
+
+;--------------------------------------;
+
+SetUpHd	move.l	4.w,a6
+	moveq	#52,d0
+	moveq	#0,d1
+	jsr	AllocMem(a6)
+	move.l	d0,a5
+	move.l	d0,DMSInfo
+
+	move.l	#"DMS!",(a5)+
+	move.l	#" PRO",(a5)+
+	moveq	#1,d0
+	tst.b	EncBufr
+	beq	.1
+	bset	#1,d0
+.1	tst.b	TxtBufr
+	beq	.2
+	bset	#3,d0
+.2;	tst.b	FILEID.DIZ
+;	beq	.3
+;	things
+.3	move.l	d0,(a5)+
+
+	move.l	DosBase(pc),a6
+	move.l	#JunkBuf,d1
+	jsr	-192(a6)
+	movem.l	JunkBuf(pc),d0-d2
+	moveq	#24,d7
+	bsr	LongMul
+	moveq	#60,d7
+	bsr	LongMul
+	moveq	#60,d7
+	bsr	LongMul
+	mulu	#60,d1
+	divu	#50,d2
+	ext.l	d2
+	add.l	d1,d0
+	add.l	d2,d0
+	add.l	#$0f0c9360,d0
+	move.l	d0,(a5)+
+
+;	lea	GdLoTrk(pc),a0
+;	lea	GdHiTrk(pc),a1
+;	moveq	#0,d0
+;	moveq	#0,d1
+;	move.w	66(a0),d0
+;	move.w	66(a1),d1
+;	mulu	#80,d0
+;	mulu	#80,d1
+;	swap	d0
+;	swap	d1
+	move.w	d0,(a5)+
+	move.w	d1,(a5)+
+
+	move.l	#0,(a5)+
+	move.l	#0,(a5)+
+
+	move.l	4.w,a6
+	move.w	20(a6),d0
+	cmp.w	#39,d0
+	blt	.4
+	or.w	#$8000,d0
+.4	addq.w	#1,d0
+	neg.w	d0
+	move.w	d0,(a5)+
+	move.w	34(a6),d0
+	addq.w	#1,d0
+	neg.w	d0
+	move.w	d0,(a5)+
+
+	move.w	296(a6),d0
+	moveq	#5,d1
+	btst	#3,d0
+	bne.s	.5
+	moveq	#4,d1
+	btst	#2,d0
+	bne.s	.5
+	moveq	#3,d1
+	btst	#1,d0
+	bne.s	.5
+	moveq	#2,d1
+	btst	#0,d0
+	bne.s	.5
+	moveq	#1,d1
+.5	move.w	d1,(a5)+
+	moveq	#2,d1
+	btst	#5,d0
+	bne.s	.6
+	moveq	#1,d1
+	btst	#4,d0
+	bne.s	.6
+	moveq	#0,d1
+.6	move.w	d1,(a5)+
+
+	move.w	#1,(a5)+
+
+	move.w	#0,(a5)+
+
+	move.w	568(a6),d0
+	mulu	#100,d0
+	move.w	d0,(a5)+
+
+	move.l	Timer(pc),(a5)+
+
+	move.w	#Version,(a5)+
+	move.w	#VersionNeeded,(a5)+
+
+;	move.w	#DisketteType,(a5)+
+
+	move.w	CrnchPt(pc),d0
+	lea	CrnchMd(pc),a0
+	move.w	(a0,d0),(a5)+
+
+	moveq	#50,d0
+	lea	DMSInfo(pc),a0
+	bsr	CalcCRC
+	move.w	d0,(a5)+
+	rts
+
+;--------------------------------------;
+
+FndTrks	lea	Tracks(pc),a0
+	moveq	#0,d0
+	moveq	#80-1,d1
+.1	move.b	d0,(a0)+
+	dbf	d1,.1
+
+	lea	Tracks(pc),a0
+	lea	TrkBufr(pc),a1
+	bsr	Asc2Val
+	bne	.3
+.2	bset	#0,(a0,d0)
+	move.l	d0,d1
+
+	cmp.b	#"-",(a1)
+	beq	.4
+	cmp.b	#"/",(a1)
+	beq	.6
+.3	rts
+
+.4	addq.l	#1,a1
+	bsr	Asc2Val
+	bne	.3
+	cmp.l	d0,d1
+	beq	.2
+	blt	.5
+	exg.l	d0,d1
+.5	addq.l	#1,d1
+	bset	#0,(a0,d1)
+	cmp.w	d0,d1
+	bne	.5
+	bra	.2
+
+.6	addq.l	#1,a1
+	bsr	Asc2Val
+	bne	.3
+	bra	.2
+
+;--------------------------------------;
+
+Asc2Val	moveq	#0,d0
+	moveq	#0,d2
+.1	move.b	(a1),d2
+	beq	.4
+	sub.b	#"0",d2
+	bmi	.2
+	cmp.b	#9,d2
+	bgt	.2
+	mulu	#10,d0
+	add.w	d2,d0
+	addq.l	#1,a1
+	bra	.1
+.2	cmp.b	#79,d0
+	bgt	.4
+	moveq	#0,d2
+.3	tst.l	d2
+	rts
+.4	moveq	#-1,d2
+	bra	.3
+
+;--------------------------------------;
+
+FRquest	move.l	ReqBase(pc),a6
+	tst.l	(a5)
+	bne.b	.1
+	moveq	#0,d0
+	sub.l	a0,a0
+	jsr	AllocRequestA(a6)
+	move.l	d0,(a5)
+	bne.b	.1
+	lea	MsNoMem(pc),a5
+	bsr.w	PrntMsg
+	bra.b	.4
+
+.1	move.l	(a5),a1
+	lea	TagList(pc),a0
+	move.l	a4,a2
+	lea	FReqTxt(pc),a3
+	jsr	FileRequestA(a6)
+	tst.l	d0
+	bne.b	.2
+	bra	.4
+.2	moveq	#0,d0
+.3	tst.l	d0
+	rts
+.4	moveq	#-1,d0
+	bra.b	.3
+
+;--------------------------------------;
+
+JoinFle	move.l	16(a0),a0
+	tst.b	(a0)
+	beq.b	.2
+.1	move.b	(a0)+,(a1)+
+	tst.b	(a0)
+	bne.b	.1
+	cmp.b	#":",-1(a1)
+	beq.b	.2
+	move.b	#"/",(a1)+
+.2	move.l	a2,a0
+	tst.b	(a0)
+	beq.b	.4
+.3	move.b	(a0)+,(a1)+
+	tst.b	(a0)
+	bne.b	.3
+.4	move.b	#0,(a1)
+	rts
+
+;--------------------------------------;
+
+LongMul	move.l	d0,d6
+	subq.w	#2,d7
+.1	add.l	d6,d0
+	dbf	d7,.1
+.2	rts
+
+;--------------------------------------;
+
+CalcCRC	lea	CRCTble(pc),a1
+	subq.w	#1,d0
+	moveq	#0,d1
+.1	moveq	#0,d2
+	move.b	(a0)+,d2
+	eor.b	d1,d2
+	add.w	d2,d2
+	lsr.w	#8,d1
+	move.w	(a1,d2),d2
+	eor.w	d2,d1
+	dbf	d0,.1
+	move.w	d1,d0
+	rts
+
+;--------------------------------------;
+
+Request	move.l	#GdSlct3,GdSlct1
+	tst.l	d0
+	bne	.1
+	move.l	#GdSlct2,GdSlct1
+
+.1	move.l	WinHD1(pc),a1
+	lea	WinDef2(pc),a0
+	move.w	4(a1),d0
+	move.w	6(a1),d1
+	add.w	#123,d0
+	add.w	#39,d1
+	move.w	d0,(a0)
+	move.w	d1,2(a0)
+	move.l	IntBase(pc),a6
+	jsr	OpenWindow(a6)
+	move.l	d0,WinHD2
+	move.l	d0,a0
+	move.l	WinHD1(pc),a1
+	move.l	86(a0),WinHD2+4
+	move.l	86(a1),86(a0)
+
+	move.l	50(a0),a0
+	lea	RBrder1(pc),a1
+	moveq	#0,d0
+	moveq	#0,d1
+	jsr	DrawBorder(a6)
+
+	move.l	WinHD2(pc),a0
+	move.l	50(a0),a0
+	lea	ReqText(pc),a1
+	move.l	#131,d0
+	moveq	#0,d1
+	moveq	#0,d2
+	move.b	(a5)+,d2
+	lsl.w	#2,d2
+	sub.w	d2,d0
+	move.l	a5,12(a1)
+	jsr	PrintIText(a6)
+
+.2	move.l	4.w,a6
+	move.l	WinHD2(pc),a0
+	move.l	86(a0),a0
+	move.l	a0,-(a7)
+	jsr	WaitPort(a6)
+	move.l	(a7)+,a0
+	jsr	GetMsg(a6)
+	move.l	d0,a1
+	move.l	20(a1),d6
+	cmp.l	#$40,d6
+	beq.b	.3
+	jsr	ReplyMsg(a6)
+	bra.b	.2
+
+.3	move.l	28(a1),a0
+	move.w	38(a0),d7
+	jsr	ReplyMsg(a6)
+	moveq	#1,d0
+	cmp.w	#"S1",d7
+	beq	.4
+	moveq	#2,d0
+	cmp.w	#"S2",d7
+	beq	.4
+	moveq	#0,d0
+	cmp.w	#"S3",d7
+	beq	.4
+	bra	.2
+
+.4	move.l	d0,d7
+	lea	WinHD2(pc),a0
+	move.l	4(a0),d0
+	move.l	(a0),a0
+	move.l	d0,86(a0)
+	move.l	IntBase(pc),a6
+	move.l	WinHD2(pc),a0
+	jsr	CloseWindow(a6)
+	move.l	d7,d0
+	rts
+
+;--------------------------------------;
+
+WinDef1	dc.w	0,11			;X & Y
+	dc.w	508,130			;Width & Height
+	dc.b	0,1			;Colours
+	dc.l	$260			;IDCMP
+	dc.l	$1100e			;Flags
+	dc.l	GdRead			;Gadgets
+	dc.l	0			;CheckMark
+	dc.l	WnTitle			;Title
+	dc.l	0			;Screen
+	dc.l	0			;BitMap
+	dc.w	508,130			;X & Y Min
+	dc.w	508,130			;X & Y Max
+	dc.w	1			;Type
+
+;--------------------------------------;
+
+WinDef2	dc.w	0,0			;X & Y
+	dc.w	262,50			;Width & Height
+	dc.b	0,1			;Colours
+	dc.l	$40			;IDCMP
+	dc.l	$11002			;Flags
+	dc.l	GdSlct1			;Gadgets
+	dc.l	0			;CheckMark
+	dc.l	0			;Title
+	dc.l	0			;Screen
+	dc.l	0			;BitMap
+	dc.w	508,115			;X & Y Min
+	dc.w	508,115			;X & Y Max
+	dc.w	1			;Type
+
+;--------------------------------------;
+
+GdRead	GadText	GdWrite,8,13,82,13,GBrder1,GBrder2,GTRead,"RD"
+GTRead	IText	0,25,3,1,0,0,0,TxRead
+GdWrite	GadText	GdView,90,13,82,13,GBrder1,GBrder2,GTWrite,"WT"
+GTWrite	IText	0,21,3,1,0,0,0,TxWrite
+GdView	GadText	GdTest,172,13,82,13,GBrder1,GBrder2,GTView,"VW"
+GTView	IText	0,25,3,1,0,0,0,TxView
+GdTest	GadText	GdText,254,13,82,13,GBrder1,GBrder2,GTTest,"TS"
+GTTest	IText	0,25,3,1,0,0,0,TxTest
+GdText	GadText	GdRPack,336,13,82,13,GBrder1,GBrder2,GTText,"TX"
+GTText	IText	0,25,3,1,0,0,0,TxText
+GdRPack	GadText	GdFlDsk,418,13,82,13,GBrder1,GBrder2,GTRPack,"RP"
+GTRPack	IText	0,17,3,1,0,0,0,TxRPack
+
+GdFlDsk	GadText	GdFile1,474,28,28,14,DBrder1,DBrder2,0,"D1"
+GdFile1	GadStrg	GdTxDsk,96,31,46,GBrder3,GTFile1,Fl1Bufr,256,"F1"
+GTFile1	IText	0,-80,0,1,0,0,0,Fl1Text
+GdFile2	GadStrg	GdTxDsk,96,31,46,GBrder3,GTFile2,Fl2Bufr,256,"F2"
+GTFile2	IText	0,-80,0,1,0,0,0,Fl2Text
+
+GdTxDsk	GadText	GdTxtFl,474,43,28,14,DBrder1,DBrder2,0,"D3"
+GdTxtFl	GadStrg	GdNull1,96,46,46,GBrder3,GTTxtFl,TxtBufr,256,"T1"
+GTTxtFl	IText	0,-80,0,1,0,0,0,TxtText
+GdFleDz	GadStrg	GdNull1,96,46,46,GBrder3,GTFleDz,FDzBufr,256,"T2"
+GTFleDz	IText	0,-80,0,1,0,0,0,FDzText
+
+GdNull1	GadNull	GdNull2,6,28,468,14,"N1"
+GdNull2	GadNull	GdEncry,6,43,468,14,"N2"
+
+GdEncry	GadStrg	GdTrcks,96,61,49,GBrder5,GTEncry,EncBufr,128,"EN"
+GTEncry	IText	0,-80,0,1,0,0,0,EncText
+GdTrcks	GadStrg	GdCMode,316,76,22,GBrder7,GTTrcks,TrkBufr,128,"TR"
+GTTrcks	IText	0,-72,0,1,0,0,0,TrkText
+
+GdCMode	GadText	GdDrive,228,87,82,13,GBrder1,GBrder2,GTCMode,"CM"
+GTCMode	IText	0,17,3,1,0,0,0,TxCMode
+GdDrive	GadText	0,228,100,82,13,GBrder1,GBrder2,GTDrive,"DV"
+GTDrive	IText	0,25,3,1,0,0,0,TxDrive
+
+;--------------------------------------;
+
+GdSlct1	GadText	GdSlct2,8,33,82,13,GBrder1,GBrder2,GTSlct1,"S1"
+GTSlct1	IText	0,5,3,1,0,0,0,TxSlct1
+GdSlct2	GadText	GdSlct3,90,33,82,13,GBrder1,GBrder2,GTSlct2,"S2"
+GTSlct2	IText	0,18,3,1,0,0,0,TxSlct2
+GdSlct3	GadText	0,172,33,82,13,GBrder1,GBrder2,GTSlct3,"S3"
+GTSlct3	IText	0,18,3,1,0,0,0,TxSlct3
+
+;--------------------------------------;
+
+GBrder1	Border	0,0,0,82,13,2,1
+GBrder2	Border	0,0,0,82,13,1,2
+GBrder3	Border	GBrder4,-8,-2,(46*8)+16,12,1,2
+GBrder4	Border	0,-90,-3,(46*8)+100,14,2,1
+GBrder5	Border	GBrder6,-8,-2,(49*8)+20,12,1,2
+GBrder6	Border	0,-90,-3,(49*8)+104,14,2,1
+GBrder7	Border	GBrder8,-8,-2,(22*8)+16,12,1,2
+GBrder8	Border	0,-88,-3,(22*8)+98,14,2,1
+
+DBrder1	Border	0,0,0,28,14,2,1
+DBrder2	Border	0,0,0,28,14,1,2
+SBrder1	Border	SBrder2,6,73,220,40,2,1
+SBrder2	Border	SBrder3,6,12,496,15,1,2
+SBrder3	Border	0,6,114,496,13,2,1
+
+RBrder1	Border	0,4,11,254,37,2,1
+ReqText	IText	0,0,14,1,0,0,0,0
+
+DskImg1	IImage	DskImg2,479,30,18,10,3,2,ImgeDat
+DskImg2	IImage	LogoImg,479,45,18,10,3,2,ImgeDat
+LogoImg	IImage	0,14,79,203,29,3,2,LogoDat
+
+;--------------------------------------;
+
+MsNoMem	dc.b	13,"OUT OF MEMORY"
+
+WnTitle	dc.b	"DMSwin TURBO 1.13 - BøøSTeD VeRsIoN by FRaNTiC/PsD",0
+FReqTxt	dc.b	"Please Select A File",0
+TxRead	dc.b	"READ",0
+TxWrite	dc.b	"WRITE",0
+TxView	dc.b	"VIEW",0
+TxTest	dc.b	"TEST",0
+TxText	dc.b	"TEXT",0
+TxRPack	dc.b	"REPACK",0
+Fl1Text	dc.b	"FILENAME",0
+Fl2Text	dc.b	"PACKNAME",0
+TxtText	dc.b	"TEXTFILE",0
+FDzText	dc.b	"FILE.DIZ",0
+EncText	dc.b	"PASSWORD",0
+TrkText	dc.b	"TRACKS",0
+CrModes	dc.b	"NOCOMP",0,0
+	dc.b	"SIMPLE",0,0
+	dc.b	"QUICK",0,0,0
+	dc.b	"MEDIUM",0,0
+	dc.b	"DEEP",0,0,0,0
+	dc.b	"HEAVY1",0,0
+TxCMode	dc.b	"HEAVY2",0,0
+	dc.b	"HEAVY3",0,0
+	dc.b	"HEAVY4",0,0
+	dc.b	"HEAVY5",0,0
+TxDrive	dc.b	"DF0:",0
+
+;--------------------------------------;
+
+TxSlct1	dc.b	"OVERWRITE",0
+TxSlct2	dc.b	"APPEND",0
+TxSlct3	dc.b	"CANCEL",0
+TxtReq1	dc.b	19,"FILE ALREADY EXISTS",0
+TxtReq2	dc.b	21,"FILE IS A DMS PACKAGE",0
+
+;--------------------------------------;
+
+Fl1Bufr	dc.b	"DH1:DMS/Package.DMS"
+	dcb.b	230,0
+Fl2Bufr	dc.b	"DH1:DMS/Repack.DMS"
+	dcb.b	231,0
+TxtBufr	dc.b	"DH1:DMS/TextFile.TXT"
+	dcb.b	229,0
+FDzBufr	dc.b	"DH1:DMS/FileID.DIZ"
+	dcb.b	229,0
+EncBufr	dcb.b	128,0
+TrkBufr	dc.b	"0-10/15/20-79"
+	dcb.b	124,0
+	even
+
+PrfNme1	dc.b	"Env:DMS.prefs"
+PrfNme2	dc.b	"EnvArc:DMS.prefs"
+	even
+IntBase	dc.b	"intuition.library",0
+DosBase	dc.b	"dos.library",0
+GfxBase	dc.b	"graphics.library",0,0
+ReqBase	dc.b	"reqtools.library",0,0
+TrDName	dc.b	"trackdisk.device",0,0
+WinHD1	dc.l	0
+WinHD2	dc.l	0,0
+FFl1Req	dc.l	0
+FFl2Req	dc.l	0
+TFleReq	dc.l	0
+FlDzReq	dc.l	0
+FleHndl	dc.l	0
+Timer	dc.l	0
+CrnchPt	dc.w	3
+CrnchMd	dc.w	0,1,5,6,-1
+Tracks	dcb.b	80,0
+DevsPnt	dc.l	TrDName
+DriveNo	dc.b	0,0
+RplyPrt	dcb.l	8,0
+DiskIO	dcb.l	20,0
+JunkBuf	dcb.b	52,0
+DMSInfo	dc.l	0
+OrigDat	dc.l	0		;1 TRACK = 2*11*512 = 11264 bytes
+PckdDat	dc.l	0
+UPckLng	dc.l	0
+PackLng	dc.l	0
+
+;--------------------------------------;
+
+CRCTble	dc.l	$0000c0c1,$c1810140,$c30103c0,$0280c241
+	dc.l	$c60106c0,$0780c741,$0500c5c1,$c4810440
+	dc.l	$cc010cc0,$0d80cd41,$0f00cfc1,$ce810e40
+	dc.l	$0a00cac1,$cb810b40,$c90109c0,$0880c841
+	dc.l	$d80118c0,$1980d941,$1b00dbc1,$da811a40
+	dc.l	$1e00dec1,$df811f40,$dd011dc0,$1c80dc41
+	dc.l	$1400d4c1,$d5811540,$d70117c0,$1680d641
+	dc.l	$d20112c0,$1380d341,$1100d1c1,$d0811040
+	dc.l	$f00130c0,$3180f141,$3300f3c1,$f2813240
+	dc.l	$3600f6c1,$f7813740,$f50135c0,$3480f441
+	dc.l	$3c00fcc1,$fd813d40,$ff013fc0,$3e80fe41
+	dc.l	$fa013ac0,$3b80fb41,$3900f9c1,$f8813840
+	dc.l	$2800e8c1,$e9812940,$eb012bc0,$2a80ea41
+	dc.l	$ee012ec0,$2f80ef41,$2d00edc1,$ec812c40
+	dc.l	$e40124c0,$2580e541,$2700e7c1,$e6812640
+	dc.l	$2200e2c1,$e3812340,$e10121c0,$2080e041
+	dc.l	$a00160c0,$6180a141,$6300a3c1,$a2816240
+	dc.l	$6600a6c1,$a7816740,$a50165c0,$6480a441
+	dc.l	$6c00acc1,$ad816d40,$af016fc0,$6e80ae41
+	dc.l	$aa016ac0,$6b80ab41,$6900a9c1,$a8816840
+	dc.l	$7800b8c1,$b9817940,$bb017bc0,$7a80ba41
+	dc.l	$be017ec0,$7f80bf41,$7d00bdc1,$bc817c40
+	dc.l	$b40174c0,$7580b541,$7700b7c1,$b6817640
+	dc.l	$7200b2c1,$b3817340,$b10171c0,$7080b041
+	dc.l	$500090c1,$91815140,$930153c0,$52809241
+	dc.l	$960156c0,$57809741,$550095c1,$94815440
+	dc.l	$9c015cc0,$5d809d41,$5f009fc1,$9e815e40
+	dc.l	$5a009ac1,$9b815b40,$990159c0,$58809841
+	dc.l	$880148c0,$49808941,$4b008bc1,$8a814a40
+	dc.l	$4e008ec1,$8f814f40,$8d014dc0,$4c808c41
+	dc.l	$440084c1,$85814540,$870147c0,$46808641
+	dc.l	$820142c0,$43808341,$410081c1,$80814040
+
+;--------------------------------------;
+
+TagList	dc.l	Window
+FWindow	dc.l	0
+	dc.l	0,0
+
+FFl1Nme	dcb.b	108,0
+FFl2Nme	dcb.b	108,0
+TFlName	dcb.b	108,0
+FDzName	dcb.b	108,0
+
+;--------------------------------------;
+
+	SECTION	"Chip Data",DATA_C
+
+InfoBlk	dcb.b	260,0
+ImgeDat	inciff	"DH1:DMS/DiskImage.iff"
+LogoDat	inciff	"DH1:DMS/DMS.iff"
+
