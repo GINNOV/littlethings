@@ -41,7 +41,8 @@ def _get_params_from_file(filename):
     if os.path.exists(filename):
         with open(filename, 'r', encoding='utf-8') as f:
             for line in f:
-                if ':' in line:
+                # ADDED: Check for comments and colons before splitting
+                if ':' in line and not line.strip().startswith('#'):
                     key, value = line.split(':', 1)
                     params[key.strip()] = value.strip()
         if 'test_size' not in params or 'seed' not in params:

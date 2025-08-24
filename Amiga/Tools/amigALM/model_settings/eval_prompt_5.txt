@@ -1,0 +1,14 @@
+### INSTRUCTION ###
+Generate a highly efficient, relocatable Amiga assembly subroutine to perform the following task.
+
+### TASK ###
+open_dos_library
+
+### SPECIFICATION ###
+- **Inputs**: None.
+- **Outputs**: A6 should contain the library base pointer if successful, or NULL (0) if failed.
+- **Register Preservation**: All registers from D3-D7 and A2-A5 MUST be preserved.
+- **Scratch Registers**: D0, D1, D2, A0, A1, A6 can be freely used.
+- **AmigaOS Calls**: Must use the OpenLibrary function from exec.library.
+- **Format**: Standard subroutine ending with an RTS instruction.
+- **Comments**: Comment the library name string and the JSR to _LVOOpenLibrary.

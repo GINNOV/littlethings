@@ -3,7 +3,7 @@ pyproject.toml
 src/amiga_lm/__init__.py
 src/amiga_lm/merge_model.py
 src/amiga_lm/prepare_dataset.py
-src/amiga_lm/run_inference.py
+src/amiga_lm/run_eval.py
 src/amiga_lm/train_model.py
 src/amiga_lm.egg-info/PKG-INFO
 src/amiga_lm.egg-info/SOURCES.txt

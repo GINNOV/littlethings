@@ -14,7 +14,7 @@ This project provides a complete pipeline for creating a specialized Large Langu
 -   `src/amiga_lm/`: Contains the main Python scripts.
     -   `prepare_dataset.py`: Collects and processes data.
     -   `train_model.py`: Fine-tunes the model.
-    -   `run_inference.py`: Generates code with the fine-tuned model.
+    -   `run_eval.py`: Generates code with the fine-tuned model.
     -   `merge_model.py`: Merges the LoRA adapter with the base model.
 -   `repos.csv`: A list of GitHub repositories to scrape for code.
 -   `prompt1.txt`: The prompt template used for the dataset.
@@ -107,7 +107,7 @@ tensorboard --logdir ./amiga_gemma3-270m_finetuned
 Generate new Amiga assembly code using your fine-tuned model.
 
 ```bash
-uv run python src/amiga_lm/run_inference.py
+uv run python src/amiga_lm/run_eval.py
 ```
 
 The generated `.s` files will be saved in the `model_answers/` directory.

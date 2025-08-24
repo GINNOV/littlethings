@@ -41,8 +41,9 @@ try:
 
     model = AutoModelForCausalLM.from_pretrained(
         base_model_id,
-        torch_dtype=torch.float32,  # Use float32 for MPS compatibility
+        torch_dtype=torch.float32,
         trust_remote_code=True,
+        attn_implementation='eager' # <-- ADDED: Recommended for Gemma 3 on MPS
     )
     model.to(device)
     logger.info("Model and tokenizer loaded successfully")
@@ -89,8 +90,8 @@ training_args = TrainingArguments(
     report_to="tensorboard",
     logging_dir=f"{output_dir}/logs",
     remove_unused_columns=False,
-    fp16=False,  # Disable fp16 for MPS
-    bf16=False,  # Keep bf16 disabled
+    fp16=False,
+    bf16=False,
     gradient_checkpointing=True,
 )
 
@@ -101,6 +102,7 @@ trainer = SFTTrainer(
     peft_config=lora_config,
     train_dataset=train_dataset,
     eval_dataset=test_dataset,
+    dataset_text_field="text", # You need to specify the text field now
 )
 logger.info("Trainer initialized successfully")
 
