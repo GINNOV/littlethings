@@ -7,7 +7,7 @@ import math
 import hashlib
 from jinja2 import Environment, BaseLoader, select_autoescape
 from datasets import load_from_disk
-from transformers import TrainingArguments  # noqa: F401 (kept for torch fallback shape-compat)
+from transformers import TrainingArguments  # noqa: F401 (kept for torch fallback)
 from peft import PeftConfig
 from trl import SFTConfig  # noqa: F401 (kept for env consistency)
 
@@ -47,8 +47,7 @@ def get_attr(obj, name, default="N/A"):
         return default
 
 def load_training_args(final_checkpoint_dir, training_args_bin_path):
-    """(1) Prefer JSON over .bin; fallback to torch.load for older runs."""
-    # Common HF save path for args
+    """Prefer JSON over .bin; fallback to torch.load for older runs."""
     args_json_path = os.path.join(final_checkpoint_dir, "training_args.json")
     if os.path.exists(args_json_path):
         logger.info(f"Loading training args from JSON: {args_json_path}")
@@ -56,14 +55,12 @@ def load_training_args(final_checkpoint_dir, training_args_bin_path):
             return json.load(f), "json"
     logger.info("training_args.json not found; falling back to training_args.bin")
     ta = torch.load(training_args_bin_path, weights_only=False)
-    # Convert TrainingArguments to a dict-like for rendering where possible
     if hasattr(ta, "to_dict"):
         return ta.to_dict(), "bin"
     return ta, "bin"
 
 def curate_args(args_obj):
     """Return a curated subset of arguments for the card."""
-    # Works whether args_obj is dict-like or TrainingArguments
     def get(k, default="N/A"):
         try:
             if isinstance(args_obj, dict):
@@ -87,16 +84,37 @@ def curate_args(args_obj):
         "save_steps": get("save_steps"),
     }
 
+def truncate(s, n=200):
+    if s is None:
+        return ""
+    s = str(s)
+    return s if len(s) <= n else s[:n] + "…"
+
+def sample_dataset_rows(dataset, k=5):
+    """Return up to k samples with prompt/completion fields if present."""
+    out = []
+    try:
+        train = dataset["train"]
+        for i in range(min(k, len(train))):
+            row = train[i]
+            prompt = truncate(row.get("prompt", ""))
+            completion = truncate(row.get("completion", ""))
+            if prompt or completion:
+                out.append({"prompt": prompt, "completion": completion})
+            if len(out) >= k:
+                break
+    except Exception:
+        pass
+    return out
+
 def generate_model_card(main_output_dir):
     """
     Generates a professional model card in a single HTML file.
-    Implements:
-      1) JSON-first args load with torch fallback
-      2) Jinja Environment with auto-escape
-      6) NaN/missing-value handling for logs
-      8) Export buttons (chart PNG & metrics JSON)
-      9) SHA256 integrity for key artifacts
-      12) Safer LoRA config attribute access
+    Adds:
+      - eval_loss line
+      - dataset preview
+      - SMA smoothing toggle & window slider
+      - integrity hashes, curated args, robust charting & exports
     """
     final_checkpoint_dir = os.path.join(main_output_dir, "final_checkpoint")
     logger.info(f"Generating model card for checkpoint: {final_checkpoint_dir}")
@@ -115,10 +133,10 @@ def generate_model_card(main_output_dir):
         dataset = load_from_disk(DATASET_DIR)
         dataset_size = len(dataset["train"])
 
-        # (1) Load training args with JSON-first approach
+        # Load training args with JSON-first approach
         training_args, args_source = load_training_args(final_checkpoint_dir, training_args_bin_path)
 
-        # (12) Safer LoRA config load & attribute access
+        # LoRA config
         lora_config = PeftConfig.from_pretrained(final_checkpoint_dir)
 
         with open(trainer_state_path, 'r', encoding="utf-8") as f:
@@ -128,13 +146,14 @@ def generate_model_card(main_output_dir):
         logger.error(f"❌ Error loading training artifacts for model card: {e}")
         raise SystemExit(1)
 
-    # Build loss series with (6) defensive checks
+    # Build loss series (defensive checks)
     log_history = trainer_state.get('log_history', [])
     final_train_loss = 'N/A'
-    epochs, losses = [], []
+
+    train_points = []  # [{x: epoch, y: loss, step}]
+    eval_points = []   # [{x: epoch, y: eval_loss, step}]
 
     if log_history:
-        # Determine final train loss (train_loss preferred; else loss)
         for entry in reversed(log_history):
             if 'train_loss' in entry and entry['train_loss'] is not None:
                 try:
@@ -150,25 +169,34 @@ def generate_model_card(main_output_dir):
                 break
 
         for entry in log_history:
+            ep = entry.get('epoch', None)
+            step = entry.get('step', None)
+
+            # training
             val = entry.get('loss', entry.get('train_loss'))
-            ep = entry.get('epoch', 0)
             try:
-                if val is None:
-                    continue
-                fval = float(val)
-                if not math.isfinite(fval):
-                    continue
-                epochs.append(round(float(ep or 0), 2))
-                losses.append(round(fval, 4))
+                if val is not None:
+                    fval = float(val)
+                    if math.isfinite(fval) and ep is not None:
+                        train_points.append({"x": float(ep), "y": round(fval, 4), "step": step})
             except Exception:
-                # Skip bad points silently
-                continue
+                pass
 
-    # Serialize series for safe injection (avoid relying on |tojson)
-    epoch_history_json = json.dumps(epochs, ensure_ascii=False)
-    loss_history_json = json.dumps(losses, ensure_ascii=False)
+            # eval
+            eval_val = entry.get('eval_loss', None)
+            try:
+                if eval_val is not None:
+                    fe = float(eval_val)
+                    if math.isfinite(fe) and ep is not None:
+                        eval_points.append({"x": float(ep), "y": round(fe, 4), "step": step})
+            except Exception:
+                pass
 
-    # (9) Integrity: compute SHA256 for key artifacts if present
+    # Serialize for injection
+    train_points_json = json.dumps(train_points, ensure_ascii=False)
+    eval_points_json  = json.dumps(eval_points, ensure_ascii=False)
+
+    # Integrity hashes
     adapter_model_path = os.path.join(final_checkpoint_dir, "adapter_model.safetensors")
     adapter_config_path = os.path.join(final_checkpoint_dir, "adapter_config.json")
     training_args_json_path = os.path.join(final_checkpoint_dir, "training_args.json")
@@ -181,10 +209,10 @@ def generate_model_card(main_output_dir):
     curated = curate_args(training_args)
     curated_json = json.dumps(curated, indent=2, ensure_ascii=False)
 
-    # Try to show base model id from lora_config, fallback if absent
     base_model_id = get_attr(lora_config, "base_model_name_or_path", "N/A")
+    preview_rows = sample_dataset_rows(dataset, k=5)
 
-    # HTML template (2) real Jinja environment with auto-escape
+    # Template with SMA controls
     html_template = r"""
 <!DOCTYPE html>
 <html lang="en">
@@ -213,14 +241,18 @@ def generate_model_card(main_output_dir):
         .collapsible:after { content: '+'; font-size: 20px; color: white; float: right; }
         .active:after { content: "−"; }
         .content { padding: 0 18px; max-height: 0; overflow: hidden; transition: max-height 0.25s ease-out; background-color: rgba(0,0,0,0.02); border: 1px solid var(--border); border-top: none; border-radius: 0 0 5px 5px; }
-        /* Ensure the chart has an explicit height for consistent rendering */
-        #chartWrap { position: relative; width: 100%; height: 360px; margin-top: 16px; }
+        #chartWrap { position: relative; width: 100%; height: 380px; margin-top: 16px; }
         #lossChart { display:block; width:100%; height:100%; }
-        .actions { display:flex; gap:10px; margin-top: 12px; }
+        .actions { display:flex; gap:10px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
         .btn { background: var(--accent); color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .muted { color:#c0392b; margin-top:10px; font-weight:600; display:none; }
-        code.kv { display:inline-block; min-width: 220px; }
+        .kv { display:inline-block; min-width: 220px; }
+        .card { border:1px solid var(--border); border-radius:10px; padding:12px; margin:10px 0; background: rgba(0,0,0,0.02); }
+        .mono { font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+        .sma-controls { display:flex; gap:12px; flex-wrap: wrap; align-items:center; }
+        .sma-controls label { display:flex; align-items:center; gap:6px; }
+        .range { display:flex; align-items:center; gap:8px; }
     </style>
 </head>
 <body>
@@ -238,9 +270,20 @@ def generate_model_card(main_output_dir):
     </table>
 
     <h2>Training Performance</h2>
-    <p>This chart visualizes the training loss over epochs.</p>
+    <p>Training and evaluation loss over epochs (linear X-axis).</p>
+
+    <div class="sma-controls">
+        <label><input type="checkbox" id="smoothTrain"> Smooth Train</label>
+        <label><input type="checkbox" id="smoothEval"> Smooth Eval</label>
+        <div class="range">
+            <label for="smaWindow">Window</label>
+            <input type="range" id="smaWindow" min="1" max="15" step="1" value="5">
+            <span id="smaVal" class="mono">5</span>
+        </div>
+    </div>
+
     <div id="chartWrap"><canvas id="lossChart"></canvas></div>
-    <div id="chartWarning" class="muted">No loss points found to plot or Chart.js unavailable.</div>
+    <div id="chartWarning" class="muted">No points found to plot or Chart.js unavailable.</div>
     <div class="actions">
         <button id="btnPng" class="btn">Download Chart PNG</button>
         <button id="btnJson" class="btn">Download Metrics JSON</button>
@@ -282,6 +325,24 @@ def generate_model_card(main_output_dir):
         <p>A detailed log of the model's performance at each logging step during the fine-tuning process.</p>
         <pre><code>{{ log_history_pretty }}</code></pre>
     </div>
+
+    <button type="button" class="collapsible">Data Preview (train)</button>
+    <div class="content">
+        {% if preview_rows and preview_rows|length > 0 %}
+            {% for row in preview_rows %}
+            <div class="card">
+                <div><strong>Prompt</strong></div>
+                <div class="mono">{{ row.prompt }}</div>
+                <div style="height:8px"></div>
+                <div><strong>Completion</strong></div>
+                <div class="mono">{{ row.completion }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="muted" style="display:block">No previewable samples found.</p>
+        {% endif %}
+        <p style="margin-top:8px">Preview is truncated to 200 characters per field.</p>
+    </div>
 </div>
 
 <script>
@@ -296,9 +357,9 @@ def generate_model_card(main_output_dir):
         });
     });
 
-    // Series data (pre-serialized in Python)
-    const labels = {{ epoch_history_json | safe }};
-    const losses = {{ loss_history_json | safe }};
+    // Raw series data: arrays of {x, y, step}
+    const rawTrain = {{ train_points_json | safe }};
+    const rawEval  = {{ eval_points_json  | safe }};
 
     const warn = (msg) => {
         const el = document.getElementById('chartWarning');
@@ -307,46 +368,124 @@ def generate_model_card(main_output_dir):
         console.warn(msg || 'Chart warning');
     };
 
-    // Render chart if possible
-    let chart = null;
-    try {
-        if (!Array.isArray(labels) || !Array.isArray(losses) || labels.length === 0 || losses.length === 0) {
-            warn('No loss points found to plot.');
-        } else if (typeof Chart === 'undefined') {
-            warn('Chart.js unavailable.');
-        } else {
-            const ctx = document.getElementById('lossChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Training Loss',
-                        data: losses,
-                        borderColor: '#3498db',
-                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                        fill: true,
-                        tension: 0.1,
-                        pointRadius: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { title: { display: true, text: 'Epoch' } },
-                        y: { title: { display: true, text: 'Loss' } }
-                    }
-                }
-            });
+    // SMA helper (simple moving average on y, preserving x)
+    function sma(points, windowSize){
+        if (!Array.isArray(points) || points.length === 0) return [];
+        const w = Math.max(1, Math.floor(windowSize || 1));
+        // Sort by x to ensure order
+        const sorted = points.slice().sort((a,b)=> (a.x||0) - (b.x||0));
+        const acc = [];
+        let sum = 0;
+        let q = [];
+        for (let i=0;i<sorted.length;i++){
+            const y = Number(sorted[i].y);
+            if (!Number.isFinite(y)) continue;
+            q.push(y);
+            sum += y;
+            if (q.length > w) sum -= q.shift();
+            const avg = sum / q.length;
+            acc.push({ x: sorted[i].x, y: Math.round(avg*10000)/10000, step: sorted[i].step });
         }
-    } catch (e) {
-        console.error(e);
-        warn('Failed to render chart: ' + (e?.message || e));
+        return acc;
     }
 
-    // (8) Export buttons
+    // Chart state
+    let chart = null;
+    let useSmoothTrain = false;
+    let useSmoothEval  = false;
+    let windowSize = 5;
+
+    function getDisplayedSeries(){
+        const train = useSmoothTrain ? sma(rawTrain, windowSize) : rawTrain;
+        const evalS = useSmoothEval  ? sma(rawEval,  windowSize) : rawEval;
+        return { train, evalS };
+    }
+
+    function renderChart(){
+        const haveTrain = Array.isArray(rawTrain) && rawTrain.length > 0;
+        const haveEval  = Array.isArray(rawEval)  && rawEval.length  > 0;
+
+        if ((!haveTrain && !haveEval) || typeof Chart === 'undefined') {
+            warn(!haveTrain && !haveEval ? 'No points found to plot.' : 'Chart.js unavailable.');
+            return;
+        }
+        const { train, evalS } = getDisplayedSeries();
+        const ctx = document.getElementById('lossChart').getContext('2d');
+
+        const datasets = [];
+        if (haveTrain && train.length){
+            datasets.push({
+                label: 'Train Loss' + (useSmoothTrain ? ` (SMA ${windowSize})` : ''),
+                data: train,
+                parsing: false,
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                fill: true,
+                tension: 0.1,
+                pointRadius: 2
+            });
+        }
+        if (haveEval && evalS.length){
+            datasets.push({
+                label: 'Eval Loss' + (useSmoothEval ? ` (SMA ${windowSize})` : ''),
+                data: evalS,
+                parsing: false,
+                borderColor: '#e67e22',
+                backgroundColor: 'rgba(230, 126, 34, 0.08)',
+                fill: false,
+                tension: 0.1,
+                pointRadius: 2,
+                borderDash: [4,3]
+            });
+        }
+
+        if (chart) { chart.destroy(); }
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: { datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const p = ctx.raw || {};
+                                const y = typeof ctx.parsed?.y === 'number' ? ctx.parsed.y : p.y;
+                                const ep = typeof ctx.parsed?.x === 'number' ? ctx.parsed.x : p.x;
+                                const step = p.step != null ? `, step ${p.step}` : '';
+                                return `${ctx.dataset.label}: ${y} (epoch ${ep}${step})`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { type: 'linear', title: { display: true, text: 'Epoch' } },
+                    y: { title: { display: true, text: 'Loss' } }
+                }
+            }
+        });
+    }
+
+    // Initial render
+    try { renderChart(); } catch(e){ console.error(e); warn('Failed to render chart: ' + (e?.message || e)); }
+
+    // Controls
+    const chkTrain = document.getElementById('smoothTrain');
+    const chkEval  = document.getElementById('smoothEval');
+    const rngWin   = document.getElementById('smaWindow');
+    const lblWin   = document.getElementById('smaVal');
+
+    chkTrain.addEventListener('change', ()=>{ useSmoothTrain = chkTrain.checked; renderChart(); });
+    chkEval .addEventListener('change', ()=>{ useSmoothEval  = chkEval.checked;  renderChart(); });
+    rngWin  .addEventListener('input',  ()=>{
+        windowSize = Math.max(1, parseInt(rngWin.value || '5', 10));
+        lblWin.textContent = String(windowSize);
+        renderChart();
+    });
+
+    // Export buttons reflect *displayed* data
     const btnPng = document.getElementById('btnPng');
     const btnJson = document.getElementById('btnJson');
 
@@ -361,7 +500,8 @@ def generate_model_card(main_output_dir):
     });
 
     btnJson.addEventListener('click', () => {
-        const payload = { labels: labels || [], losses: losses || [] };
+        const { train, evalS } = getDisplayedSeries();
+        const payload = { train: train || [], eval: evalS || [], smoothing: { train: useSmoothTrain, eval: useSmoothEval, window: windowSize } };
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -378,12 +518,9 @@ def generate_model_card(main_output_dir):
 </html>
     """
 
-    # Real Jinja environment with auto-escape (2)
     env = Environment(loader=BaseLoader(), autoescape=select_autoescape(['html', 'xml']))
     template = env.from_string(html_template)
 
-    # num_train_epochs (works for dict or TrainingArguments)
-    num_train_epochs = None
     try:
         if isinstance(training_args, dict):
             num_train_epochs = training_args.get("num_train_epochs", "N/A")
@@ -392,7 +529,6 @@ def generate_model_card(main_output_dir):
     except Exception:
         num_train_epochs = "N/A"
 
-    # Render
     rendered_html = template.render(
         base_model_id=base_model_id,
         dataset_size=dataset_size,
@@ -400,26 +536,28 @@ def generate_model_card(main_output_dir):
         final_train_loss=final_train_loss,
         args_source=("json" if isinstance(training_args, dict) else "bin"),
 
-        # Curated & raw args
         curated_args_json=curated_json,
         training_args_str=json.dumps(training_args, indent=2, ensure_ascii=False) if isinstance(training_args, dict) else str(training_args),
 
-        # LoRA fields (12)
         lora_r=get_attr(lora_config, "r"),
         lora_alpha=get_attr(lora_config, "lora_alpha"),
         lora_dropout=get_attr(lora_config, "lora_dropout"),
         lora_task_type=get_attr(lora_config, "task_type"),
         lora_target_modules=get_attr(lora_config, "target_modules"),
 
-        # Log & series
-        log_history_pretty=json.dumps(log_history, indent=2, ensure_ascii=False),
-        epoch_history_json=epoch_history_json,
-        loss_history_json=loss_history_json,
+        log_history_pretty=json.dumps(trainer_state.get('log_history', []), indent=2, ensure_ascii=False),
 
-        # Integrity (9)
+        # Series
+        train_points_json=train_points_json,
+        eval_points_json=eval_points_json,
+
+        # Integrity
         hash_adapter_model=hash_adapter_model,
         hash_adapter_config=hash_adapter_config,
-        hash_training_args=hash_training_args
+        hash_training_args=hash_training_args,
+
+        # Data preview
+        preview_rows=preview_rows
     )
 
     os.makedirs(final_checkpoint_dir, exist_ok=True)
