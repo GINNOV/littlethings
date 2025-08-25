@@ -41,8 +41,10 @@ dependencies = [
     "tqdm>=4.65.0",
     "wandb>=0.15.0",        # For experiment tracking
     "tensorboard>=2.14.0",  # Added for logging
-    "pymupdf>=1.24.0",      # Changed from ~ to >=
+    "pymupdf>=1.24.0",      
     "colorama>=0.4.6",
+    "mistral_common>=1.0.0",
+    "jinja2>=3.1.0",
 ]
 
 [project.optional-dependencies]
@@ -85,9 +87,9 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ginnov/amiga-lm"
-Repository = "https://github.com/ginnov/amiga-lm.git"
-Issues = "https://github.com/ginnov/amiga-lm/issues"
+Homepage = "https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/amigALM"
+Repository = "https://github.com/GINNOV/littlethings.git"
+Issues = "https://github.com/GINNOV/littlethings/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -4,9 +4,9 @@ Version: 0.1.0
 Summary: Fine tuned Amiga assembler LLM based on Gemma 3
 Author-email: ";mE" <support@theblifemovement.com>
 License-Expression: MIT
-Project-URL: Homepage, https://github.com/ginnov/amiga-lm
-Project-URL: Repository, https://github.com/ginnov/amiga-lm.git
-Project-URL: Issues, https://github.com/ginnov/amiga-lm/issues
+Project-URL: Homepage, https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/amigALM
+Project-URL: Repository, https://github.com/GINNOV/littlethings.git
+Project-URL: Issues, https://github.com/GINNOV/littlethings/issues
 Keywords: machine-learning,nlp,fine-tuning,transformers,amiga
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: Developers
@@ -35,6 +35,8 @@ Requires-Dist: wandb>=0.15.0
 Requires-Dist: tensorboard>=2.14.0
 Requires-Dist: pymupdf>=1.24.0
 Requires-Dist: colorama>=0.4.6
+Requires-Dist: mistral_common>=1.0.0
+Requires-Dist: jinja2>=3.1.0
 Provides-Extra: nvidia
 Requires-Dist: bitsandbytes>=0.43.0; extra == "nvidia"
 Provides-Extra: dev
