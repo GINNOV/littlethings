@@ -4,12 +4,12 @@
 # 1. Prepares the dataset.
 # 2. Fine-tunes the Gemma 3 model.
 # 3. Merges the LoRA adapter.
-# 4. Generates the model card (if needed) and converts the model to GGUF format.
+# 4. Generates the model card and converts the model to GGUF format.
 #
 # USAGE: ./utils/build_full_model.sh [OPTION]
 
 # --- Global Settings ---
-set -e # Exit immediately if a command exits with a non-zero status
+set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$0")
 PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd -P)
@@ -49,12 +49,12 @@ run_step3=false
 run_step4=false
 
 case "$1" in
-    --all) run_step1=true; run_step2=true; run_step3=true; run_step4=true ;;
+    --all)   run_step1=true; run_step2=true; run_step3=true; run_step4=true ;;
     --step1) run_step1=true ;;
     --step2) run_step2=true ;;
     --step3) run_step3=true ;;
     --step4) run_step4=true ;;
-    --help) usage ;;
+    --help)  usage ;;
     *) echo "Error: Invalid argument."; usage ;;
 esac
 
@@ -94,22 +94,22 @@ if [ "$run_step4" = true ]; then
     MODEL_CARD_PATH="$FINE_TUNED_DIR/final_checkpoint/model_card.html"
     CONVERT_SCRIPT="$LLAMA_CPP_DIR/convert_hf_to_gguf.py"
 
-    if [ ! -f "$MODEL_CARD_PATH" ]; then
-        echo "Model card not found. Generating..."
-        if uv run python "$GENERATE_CARD_SCRIPT"; then
-            echo "✅ Model card generated successfully."
-        else
-            echo "❌ Model card generation failed."; exit 1
-        fi
+    # Always regenerate the model card to avoid stale content
+    echo "🧹 Removing any existing model card to prevent stale output…"
+    rm -f "$MODEL_CARD_PATH"
+
+    echo "📝 Generating fresh model card…"
+    if uv run python "$GENERATE_CARD_SCRIPT"; then
+        echo "✅ Model card generated at: $MODEL_CARD_PATH"
     else
-        echo "✅ Model card already exists."
+        echo "❌ Model card generation failed."; exit 1
     fi
 
     if [ ! -f "$CONVERT_SCRIPT" ]; then
         echo "❌ Error: Llama.cpp conversion script not found at '$CONVERT_SCRIPT'."; exit 1
     fi
 
-    echo "Running conversion: uv run python $CONVERT_SCRIPT --outtype f16 $MERGED_MODEL_DIR"
+    echo "🔄 Running conversion: uv run python $CONVERT_SCRIPT --outtype f16 $MERGED_MODEL_DIR"
     if uv run python "$CONVERT_SCRIPT" --outtype f16 "$MERGED_MODEL_DIR"; then
         echo "✅ GGUF conversion completed successfully."
         if [ -f "$MERGED_MODEL_DIR/ggml-model-f16.gguf" ]; then
@@ -117,8 +117,9 @@ if [ "$run_step4" = true ]; then
             echo "✅ Renamed GGUF file to: amiga-asm-model-f16.gguf"
         fi
         echo "---"
-        echo "1️⃣ Final GGUF model is located at: $MERGED_MODEL_DIR/amiga-asm-model-f16.gguf"
-        echo "2️⃣ Model card: $MODEL_CARD_PATH"
+        echo "1️⃣ Final GGUF model: $MERGED_MODEL_DIR/amiga-asm-model-f16.gguf"
+        echo "2️⃣ Model card:       $MODEL_CARD_PATH"
+        echo "   (Tip: Hard-reload the browser if you had it open: ⌘⇧R / Ctrl+Shift+R)"
     else
         echo "❌ GGUF conversion failed."; exit 1
     fi
