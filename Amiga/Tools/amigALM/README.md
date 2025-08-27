@@ -145,8 +145,18 @@ This requires the `llama.cpp` tool.
     ```bash
     python convert-hf-to-gguf.py /path/to/your/amiga_gemma3-270m_merged --outtype f16
     ```
-
 The final `.gguf` file can now be loaded into your preferred local LLM tool, such as LM Studio or Jan. When the model is converted, a model card is also generated inside the `amiga_gemma3-270m_finetuned` folder.
+
+## 7. Load in Ollama
+**Step 7a:**
+
+	Make it discoverable for Ollama
+`ollama create amiga-asm-model -f ./Modelfile`
+
+**Step 7b:**
+
+You can now chat with your specialized model by name:
+`ollama run amiga-asm-model`
 
 # Extras
 The `utils` folder has useful shortcuts for repetitive tasks.
