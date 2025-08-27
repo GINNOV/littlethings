@@ -77,11 +77,11 @@ This project provides a complete pipeline for creating a specialized Large Langu
     -   `prepare_dataset.py`: Collects and processes data.
     -   `train_model.py`: Fine-tunes the model.
     -   `run_eval.py`: Generates code with the fine-tuned model.
-    -   `merge_model.py`: Merges the LoRA adapter with the base model.
--   `repos.csv`: A list of GitHub repositories to scrape for code.
--   `prompt1.txt`: The prompt template used for the dataset.
--   `fine_params.txt`: Parameters for the train/test split.
--   `code_keywords.txt`: Keywords used for extracting code from PDFs.
+    -   `merge_model.py`: Merges the LoRA adapter with the base model (Gemini).
+-   `model_settings/repos.csv`: A list of GitHub repositories to scrape for code.
+-   `model_settings/prompt1.txt`: The prompt template used for the dataset.
+-   `model_settings/fine_params.txt`: Parameters for the train/test split.
+-   `model_settings/code_keywords.txt`: Keywords used for extracting code from PDFs.
 -   `sources/`: A folder for your local assembly source files.
 -   `pdf_docs/`: A folder for your PDF documents.
 -   `model_answers/`: The default output folder for generated code.
@@ -174,7 +174,7 @@ uv run python src/amiga_lm/run_eval.py
 
 The generated `.s` files will be saved in the `model_answers/` directory.
 
-## 6. (Optional) Conversion for Ollama/LM Studio
+## 6.Conversion for Ollama/LM Studio
 
 Your fine-tuned model is a LoRA adapter. To use it with tools like Ollama or LM Studio, you must merge it and convert it to the GGUF format.
 
@@ -208,10 +208,11 @@ This requires the `llama.cpp` tool.
     python convert-hf-to-gguf.py /path/to/your/amiga_gemma3-270m_merged --outtype f16
     ```
 
-The final `.gguf` file can now be loaded into your preferred local LLM tool, such as LM Studio or Jan.
+The final `.gguf` file can now be loaded into your preferred local LLM tool, such as LM Studio or Jan. When the model is converted, a model card is also generated inside the `amiga_gemma3-270m_finetuned` folder.
 
 # Extras
-The `utils` folder has useful shortcuts for repetitive task
+The `utils` folder has useful shortcuts for repetitive tasks.
+
 1. `cleanup.sh` removes all folders created and starts from a clean slate
 2. `check_gpu.py` does exactly what it says, particularly good for Apple silicon machines
 3. `build_full_model.sh` builds the model, trains it and then runs the evals

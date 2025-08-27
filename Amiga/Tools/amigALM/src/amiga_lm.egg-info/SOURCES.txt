@@ -1,6 +1,7 @@
 README.md
 pyproject.toml
 src/amiga_lm/__init__.py
+src/amiga_lm/evaluate_harness.py
 src/amiga_lm/generate_model_card.py
 src/amiga_lm/merge_model.py
 src/amiga_lm/prepare_dataset.py
