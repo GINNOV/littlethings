@@ -1,0 +1,12 @@
+# Defines how to run the fine-tuned Amiga assembly model with Ollama
+FROM ./amiga-asm-model-f16.gguf
+
+# Set the prompt template to match the training data
+TEMPLATE """{{ .Prompt }}"""
+
+# Set a system prompt to guide the model's behavior
+SYSTEM """You are an expert Amiga assembly programmer. Your task is to generate functional 68k assembly code based on the user's request."""
+
+# Set default generation parameters
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9

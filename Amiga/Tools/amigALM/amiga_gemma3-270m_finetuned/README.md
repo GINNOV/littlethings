@@ -4,8 +4,8 @@ library_name: transformers
 model_name: amiga_gemma3-270m_finetuned
 tags:
 - generated_from_trainer
-- trl
 - sft
+- trl
 licence: license
 ---
 
