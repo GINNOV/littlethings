@@ -5,7 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "joe-controller"
 version = "0.1.0"
+description = "A direct controller for the Huenit robotic arm."
+requires-python = ">=3.9"
 dependencies = [
     "pynput",
-    "pyserial", # Added for direct hardware communication
+    "pyserial",
 ]
