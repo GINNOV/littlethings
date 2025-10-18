@@ -10,16 +10,19 @@ class UIManager:
     def __init__(self, stdscr):
         self.stdscr = stdscr
         self.height, self.width = self.stdscr.getmaxyx()
+        self.status_text = "INITIALIZING"
+        self.status_type = "info"
+        self.suction_on = False
         self.setup_windows()
         self.setup_colors()
         self.draw_static_layout()
 
     def setup_windows(self):
         """Create curses windows for different UI sections."""
-        self.status_win = curses.newwin(3, self.width // 2, 1, 1)
-        self.position_win = curses.newwin(3, self.width // 2, 1, self.width // 2)
-        self.log_win = curses.newwin(3, self.width, 5, 1)
-        self.controls_win = curses.newwin(6, self.width, 9, 1)
+        self.status_win = curses.newwin(4, self.width // 2, 1, 1)
+        self.position_win = curses.newwin(4, self.width // 2, 1, self.width // 2)
+        self.log_win = curses.newwin(4, self.width, 6, 1)
+        self.controls_win = curses.newwin(6, self.width, 11, 1)
 
     def setup_colors(self):
         """Initialize color pairs for the UI."""
@@ -57,21 +60,13 @@ class UIManager:
             self.controls_win.addstr(i, 2, text, curses.color_pair(4))
 
         self.refresh_all()
+        self._render_status()
 
     def update_status(self, text, status_type="info"):
         """Update the status window."""
-        self.status_win.clear()
-        self.status_win.box()
-        self.status_win.addstr(0, 2, " STATUS ", curses.A_BOLD)
-
-        color = curses.color_pair(1)  # Default green
-        if status_type == "warn":
-            color = curses.color_pair(2)
-        elif status_type == "error":
-            color = curses.color_pair(3)
-
-        self.status_win.addstr(1, 2, text, color)
-        self.status_win.refresh()
+        self.status_text = self._sanitize(text)
+        self.status_type = status_type
+        self._render_status()
 
     def update_position(self, pos_dict):
         """Update the position window."""
@@ -91,12 +86,12 @@ class UIManager:
         self.log_win.box()
         self.log_win.addstr(0, 2, " LOG ", curses.A_BOLD)
 
-        sent_str = f"SENT: {sent}"
-        self.log_win.addstr(1, 2, sent_str[: self.width - 4])
+        sent_str = f"SENT: {self._sanitize(sent)}"
+        self._safe_addstr(self.log_win, 1, 2, sent_str)
 
         if received:
-            rcv_str = f"RECV: {received}"
-            self.log_win.addstr(2, 2, rcv_str[: self.width - 4])
+            rcv_str = f"RECV: {self._sanitize(received)}"
+            self._safe_addstr(self.log_win, 2, 2, rcv_str)
         self.log_win.refresh()
 
     def refresh_all(self):
@@ -112,3 +107,52 @@ class UIManager:
         curses.curs_set(1)
         self.stdscr.nodelay(False)
         curses.endwin()
+
+    def _sanitize(self, text):
+        """Remove control characters and collapse newlines for safer rendering."""
+        cleaned = text.replace("\n", " | ").replace("\r", "")
+        return "".join(ch if 32 <= ord(ch) < 127 else " " for ch in cleaned)
+
+    def _safe_addstr(self, window, y, x, text, color=None):
+        """Write text to a window, truncating to the available width."""
+        _, win_width = window.getmaxyx()
+        max_len = max(0, win_width - (x + 1))
+        truncated = text[:max_len]
+        try:
+            if color is None:
+                window.addstr(y, x, truncated)
+            else:
+                window.addstr(y, x, truncated, color)
+        except curses.error:
+            # Best effort fallback; ensure the window still updates.
+            pass
+
+    def update_suction_state(self, enabled):
+        """Persist the suction state and refresh the status window."""
+        self.suction_on = bool(enabled)
+        self._render_status()
+
+    def _render_status(self):
+        """Redraw the status window with connection and suction info."""
+        self.status_win.clear()
+        self.status_win.box()
+        self.status_win.addstr(0, 2, " STATUS ", curses.A_BOLD)
+
+        color = curses.color_pair(1)  # Default green
+        if self.status_type == "warn":
+            color = curses.color_pair(2)
+        elif self.status_type == "error":
+            color = curses.color_pair(3)
+
+        suction_color = curses.color_pair(1 if self.suction_on else 2)
+        suction_label = "ON" if self.suction_on else "OFF"
+
+        self._safe_addstr(self.status_win, 1, 2, self.status_text, color)
+        self._safe_addstr(
+            self.status_win,
+            2,
+            2,
+            f"SUCTION: {suction_label}",
+            suction_color,
+        )
+        self.status_win.refresh()
