@@ -19,7 +19,7 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 9.	✅ Rename files and folders
 10.	✅ Sorting (different kinds)
 11.	✅ Preferences
-12.	✅ Create blank image for FSO/FFS
+12.	✅ Create blank images for FSO/FFS
 13. ✅ Add files to image
 14. ✅ Set file permissions and attributes
 15. ✅ Get Info of permissions and attributes
@@ -28,14 +28,15 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 18. ✅ Export files to macOS
 19. ✅ Generate disk content report (dir and pemissions)
 20. ✅ Generate HexDump of a disk
+21.	✅ IFF Image viewer
+22.	✅ IFF image converter	
 
 ## Work in Progress / Thinking about
 the items below move up as they get done.
 
 19.	👷🏻 Add files via Drag and Drop (lo pri)
 21.	👷🏻 Auto convert audio when adding them to an image
-22.	👷🏻 IFF Image viewer
-23.	👷🏻 IFF image converter	
+
 
 
 ## Users requests
