@@ -53,3 +53,5 @@ Amiga/Tools/amigALM/pdf_docs/*.pdf
 
 amiga-asm-model-f16.gguf
 robotics/huenit/joe_controller/__pycache__
+robotics/huenit/__pycache__
+yolov8n.pt
