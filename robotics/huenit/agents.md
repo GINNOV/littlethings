@@ -20,6 +20,8 @@ ui_manager.py: A dedicated module for managing the curses-based terminal user in
 
 Main Executable: run_advanced_controller.py is the primary entry point for the application. It integrates the controller and UI modules to provide a real-time, interactive dashboard.
 
+Vision Demo: vedo1.py couples Ultralytics YOLO object detection with direct arm motion and optional suction to track and pick detected objects. Requires OpenCV, numpy, and ultralytics (managed via uv).
+
 Environment: The project is managed using uv with all dependencies defined in pyproject.toml.
 
 3. Project Log & Key Decisions
@@ -59,3 +61,19 @@ Initially attempted to use pynput for keyboard input, which caused the applicati
 Resolution: Removed the pynput dependency and reverted to curses-based keyboard input, which is more reliable for this application.
 
 Status: This is the current, active version of the controller.
+
+Module: VEDO1 Vision-Guided Demo
+
+Decision: Prototype camera-driven pick-and-place by fusing YOLO detections with direct motion control.
+
+Method:
+
+Created vedo1.py using Ultralytics YOLO, OpenCV, and numpy to select detections, map them into workspace coordinates, and reuse the direct suction sequence.
+
+Added dependency declarations (opencv-python, numpy, ultralytics) and restricted package discovery to avoid bundling external reference code. Pulled the default yolov8n checkpoint into models/.
+
+Debugging:
+
+macOS denied camera access on first run. Improved error messaging and instructed to whitelist the terminal under System Settings > Privacy & Security > Camera.
+
+Status: Runs end-to-end once camera permissions are granted; currently homing succeeds but camera still awaits user approval to stream frames.

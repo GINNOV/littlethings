@@ -10,4 +10,11 @@ requires-python = ">=3.9"
 dependencies = [
     "pynput",
     "pyserial",
+    "numpy",
+    "opencv-python",
+    "ultralytics",
 ]
+
+[tool.setuptools.packages.find]
+include = ["joe_controller"]
+exclude = ["external", "external.*"]

@@ -5,3 +5,6 @@ Summary: A direct controller for the Huenit robotic arm.
 Requires-Python: >=3.9
 Requires-Dist: pynput
 Requires-Dist: pyserial
+Requires-Dist: numpy
+Requires-Dist: opencv-python
+Requires-Dist: ultralytics
