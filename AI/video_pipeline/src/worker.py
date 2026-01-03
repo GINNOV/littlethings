@@ -13,21 +13,33 @@ from rich.console import Console
 from sentence_transformers import SentenceTransformer
 from sqlmodel import Session, select
 
-from config import DEFAULT_MODEL, OLLAMA_URL
+from config import DEFAULT_MODEL, OLLAMA_URL, FRAME_INTERVAL, MAX_FRAMES_PER_SCENE
 from database import engine
 from models import ProcessingStatus, Scene, Video
 from utils.video import detect_scenes, extract_frame
+from utils.sampling import compute_scene_timestamps
 
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 console = Console()
 
 
-def generate_description(image_paths, model):
-    """Sends images to Ollama for description."""
-    # Note: Ollama expects base64 or path depending on version.
-    # For LLaVA/Qwen-VL in Ollama, we usually send the image path or base64.
-    # This example assumes the efficient "llava" style API body for Ollama.
+from dataclasses import dataclass
 
+@dataclass
+class ProcessingConfig:
+    prompt_template: str = (
+        "Describe this surveillance scene in high detail. Focus on identifying every person "
+        "and vehicle. For each person, describe their gender (if possible), clothing colors "
+        "(top and bottom), and any accessories (hats, bags, masks). For vehicles, specify type "
+        "and color. Describe specific actions like walking, carrying items, or interacting "
+        "with objects. Be precise about colors (e.g., 'pink shirt', 'navy blue jacket')."
+    )
+    frame_count: int = 5
+    frame_interval: float = FRAME_INTERVAL
+    max_frames_per_scene: int = MAX_FRAMES_PER_SCENE
+
+def generate_description(image_paths, model, prompt_template):
+    """Sends images to Ollama for description."""
     import base64
 
     # Ensure input is a list
@@ -47,7 +59,7 @@ def generate_description(image_paths, model):
 
     payload = {
         "model": model,
-        "prompt": "Describe this surveillance scene in detail. These are frames from the same continuous scene. Mention people, clothing colors, vehicles, and specific actions observed.",
+        "prompt": prompt_template,
         "images": images_payload,
         "stream": False,
     }
@@ -89,7 +101,11 @@ def generate_summary(descriptions, model):
         return None
 
 
-def process_video(video_id: int, model_name: str):
+def process_video(video_id: int, model_name: str, config: ProcessingConfig):
+    # Ensure temp directory exists
+    temp_dir = "temp_analysis"
+    os.makedirs(temp_dir, exist_ok=True)
+
     with Session(engine) as session:
         video = session.get(Video, video_id)
         if not video:
@@ -130,28 +146,35 @@ def process_video(video_id: int, model_name: str):
         scenes = session.exec(select(Scene).where(Scene.video_id == video.id)).all()
 
         for scene in scenes:
-            # Extract 3 frames: start, middle, end
-            # We add a small buffer to start/end to avoid black frames or transition artifacts
+            # Dynamic frame sampling based on scene duration
             duration = scene.end_time - scene.start_time
-            buffer = min(0.5, duration * 0.1) # Max 0.5s buffer
+            buffer = min(0.3, duration * 0.05)
             
-            timestamps = [
-                scene.start_time + buffer,
-                (scene.start_time + scene.end_time) / 2,
-                scene.end_time - buffer
-            ]
-            # Deduplicate timestamps if scene is very short
+            # Density: 1 frame every 10 seconds, but min 5 and max 15
+            target_count = int(duration / 10)
+            count = max(5, min(15, target_count))
+            
+            # Generate evenly spaced timestamps
+            timestamps = []
+            if count == 1:
+                timestamps = [scene.start_time + (duration / 2)]
+            else:
+                step = (duration - 2 * buffer) / (count - 1)
+                for i in range(count):
+                    timestamps.append(scene.start_time + buffer + (i * step))
+            
+            # Deduplicate and sort timestamps
             timestamps = sorted(list(set(timestamps)))
 
             frame_paths = []
             for i, ts in enumerate(timestamps):
-                temp_img = f"temp_frame_{scene.id}_{i}.jpg"
+                temp_img = os.path.join(temp_dir, f"frame_{scene.id}_{i}.jpg")
                 if extract_frame(video.path, ts, temp_img):
                     frame_paths.append(temp_img)
 
             if frame_paths:
                 # Generate Description from multiple frames
-                desc = generate_description(frame_paths, model_name)
+                desc = generate_description(frame_paths, model_name, config.prompt_template)
 
                 if desc:
                     scene.description = desc
@@ -196,6 +219,12 @@ class VideoProcessor:
         self.running = False
         self.thread = None
         self.completed_queue = []
+        self.config = ProcessingConfig() # Default Config
+
+    def update_config(self, prompt, frame_count):
+        self.config.prompt_template = prompt
+        self.config.frame_count = int(frame_count)
+        console.print(f"[bold blue]Config Updated:[/bold blue] Frames={frame_count}")
 
     def start(self):
         if not self.running:
@@ -237,7 +266,8 @@ class VideoProcessor:
                         session.commit()
                         
                         # Process the video (blocking call)
-                        process_video(vid_id, self.model_name)
+                        # PASS THE CURRENT CONFIG HERE
+                        process_video(vid_id, self.model_name, self.config)
                         
                         # Check if it completed successfully to notify UI
                         with Session(engine) as check_session:
