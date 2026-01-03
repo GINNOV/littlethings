@@ -14,6 +14,7 @@ class ProcessingStatus(str, enum.Enum):
 
 class Video(SQLModel, table=True):
     __tablename__ = "videos"
+    __table_args__ = {"extend_existing": True}
 
     id: Optional[int] = Field(default=None, primary_key=True)
     path: str = Field(index=True, unique=True)
@@ -36,6 +37,7 @@ class Video(SQLModel, table=True):
 
 class Scene(SQLModel, table=True):
     __tablename__ = "scenes"
+    __table_args__ = {"extend_existing": True}
 
     id: Optional[int] = Field(default=None, primary_key=True)
     video_id: int = Field(foreign_key="videos.id")

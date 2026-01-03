@@ -42,39 +42,68 @@ def wipe_database():
     except Exception as e:
         return f"❌ Error wiping database: {e}"
 
-def search_scenes(query_text, limit=10):
-    """Performs semantic search using pgvector."""
-    if not query_text:
-        return []
+def format_timestamp(seconds: float) -> str:
+    minutes = int(seconds // 60)
+    secs = seconds % 60
+    return f"{minutes:02d}:{secs:05.2f}"
 
-    query_vector = embedder.encode(query_text).tolist()
 
+def search_scenes(query_text, limit=20):
+    """Performs semantic search using pgvector. If query is empty, returns latest scenes."""
+    
     with Session(engine) as session:
-        statement = (
-            select(Scene, Video)
-            .join(Video)
-            .where(Scene.status == ProcessingStatus.COMPLETED)
-            .order_by(Scene.embedding.cosine_distance(query_vector))
-            .limit(limit)
-        )
-        results = session.exec(statement).all()
+        if not query_text:
+            # Return latest scenes if no query (Feed Mode)
+            statement = (
+                select(Scene, Video)
+                .join(Video)
+                .where(Scene.status == ProcessingStatus.COMPLETED)
+                .order_by(Scene.id.desc())
+                .limit(limit)
+            )
+            results = session.exec(statement).all()
+        else:
+            # Semantic search with Threshold
+            query_vector = embedder.encode(query_text).tolist()
+            
+            # Note: cosine_distance returns 0.0 for exact match, 1.0 for opposite.
+            # We want small distances.
+            # For MiniLM, < 0.6 is usually relevant. < 0.4 is strong.
+            threshold = 0.55 
+            
+            statement = (
+                select(Scene, Video, Scene.embedding.cosine_distance(query_vector).label("distance"))
+                .join(Video)
+                .where(Scene.status == ProcessingStatus.COMPLETED)
+                .where(Scene.embedding.cosine_distance(query_vector) < threshold)
+                .order_by(Scene.embedding.cosine_distance(query_vector))
+                .limit(limit)
+            )
+            
+            # Execute with distance
+            results_with_dist = session.exec(statement).all()
+            
+            # Unpack format to match expected output
+            results = [(r[0], r[1]) for r in results_with_dist]
 
         output_data = []
         for scene, video in results:
             output_data.append(
                 [
                     scene.id,
-                    f"{video.filename} (Scene {scene.scene_index})",
-                    f"{scene.start_time:.2f} - {scene.end_time:.2f}",
+                    os.path.splitext(video.filename)[0],
+                    scene.scene_index,
+                    f"{format_timestamp(scene.start_time)} - {format_timestamp(scene.end_time)}",
                     scene.description,
                 ]
             )
+            
         return output_data
 
 def get_video_clip(scene_id):
     """Fetches video details for playback."""
     if not scene_id:
-        return None, "", "", ""
+        return None, "", "", "", None
     
     try:
         scene_id = int(scene_id)
@@ -84,17 +113,40 @@ def get_video_clip(scene_id):
     with Session(engine) as session:
         scene = session.get(Scene, scene_id)
         if not scene:
-            return None, "Error", "Scene not found", ""
+            return None, "Error", "Scene not found", "", None
 
         video = session.get(Video, scene.video_id)
         summary_text = f"### Video Summary\n{video.summary}" if video.summary else "_No summary available_"
 
         return (
-            video.path,
+            gr.update(value=video.path, playback_position=scene.start_time),
             scene.description,
-            f"Start: {scene.start_time}s | End: {scene.end_time}s",
-            summary_text
+            f"Start: {format_timestamp(scene.start_time)} | End: {format_timestamp(scene.end_time)}",
+            summary_text,
+            scene.start_time,
         )
+
+def get_video_at_scene_start(scene_id):
+    """Seeks the video player to the scene start time."""
+    if not scene_id:
+        return None
+
+    try:
+        scene_id = int(scene_id)
+    except:
+        return None
+
+    with Session(engine) as session:
+        scene = session.get(Scene, scene_id)
+        if not scene:
+            return None
+        video = session.get(Video, scene.video_id)
+        if not video:
+            return None
+        return gr.update(value=video.path, playback_position=scene.start_time)
+
+def clear_video_player():
+    return gr.update(value=None)
 
 def update_description(scene_id, new_text):
     try:
@@ -258,9 +310,33 @@ def check_system_health():
 
     return health_status
 
+def update_settings(prompt, frames):
+    processor.update_config(prompt, frames)
+    return f"✅ Settings Updated! Frames: {frames}"
+
+import subprocess
+
+def get_git_hash():
+    try:
+        return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode("utf-8").strip()
+    except Exception:
+        return "dev"
+
 # --- UI Layout ---
 
 with gr.Blocks(title="Sentinel: Video Intelligence") as app:
+    gr.HTML(
+        """
+        <style>
+          .gr-dataframe table tr:nth-child(even) {
+            background-color: #f4f2ed;
+          }
+          .gr-dataframe table tr:nth-child(odd) {
+            background-color: #ffffff;
+          }
+        </style>
+        """
+    )
     # Polling Timer for notifications (every 2 seconds)
     gr.Timer(2, active=True).tick(check_notifications)
 
@@ -271,22 +347,29 @@ with gr.Blocks(title="Sentinel: Video Intelligence") as app:
         # TAB 1: SEARCH
         with gr.Tab("🔍 Search & Review"):
             with gr.Row():
-                with gr.Column(scale=1):
+                with gr.Column():
                     search_box = gr.Textbox(label="Semantic Search", placeholder="e.g., 'white van parking'")
                     search_btn = gr.Button("Search", variant="primary")
                     results_table = gr.Dataframe(
-                        headers=["ID", "Video", "Timestamp", "Description"],
-                        datatype=["number", "str", "str", "str"],
+                        headers=["ID", "Video", "Scene", "Timestamp", "Description"],
+                        datatype=["number", "str", "number", "str", "str"],
                         interactive=False,
                         wrap=True
                     )
-                with gr.Column(scale=1):
-                    video_player = gr.Video(label="Playback")
+
+            with gr.Row():
+                with gr.Column():
+                    video_player = gr.Video(label="Playback", elem_id="scene-player")
+
+            with gr.Row():
+                with gr.Column():
                     scene_info = gr.Markdown("Select a scene...")
                     video_summary = gr.Markdown(visible=True)
+                    sync_btn = gr.Button("⏱️ Sync to Scene Start")
                     with gr.Group():
                         desc_editor = gr.TextArea(label="Edit Description")
                         scene_id_hidden = gr.Number(visible=False)
+                        scene_start_hidden = gr.Number(visible=False)
                         save_btn = gr.Button("Save Correction")
                         status_msg = gr.Label(label="Status")
             
@@ -298,31 +381,62 @@ with gr.Blocks(title="Sentinel: Video Intelligence") as app:
                 scene_id = data.iloc[row_index, 0]
                 return (*get_video_clip(scene_id), scene_id)
 
-            results_table.select(on_search_select, results_table, [video_player, desc_editor, scene_info, video_summary, scene_id_hidden])
+            results_table.select(
+                on_search_select,
+                results_table,
+                [video_player, desc_editor, scene_info, video_summary, scene_start_hidden, scene_id_hidden],
+            )
             save_btn.click(update_description, [scene_id_hidden, desc_editor], status_msg)
+            sync_btn.click(clear_video_player, outputs=video_player).then(
+                get_video_at_scene_start, scene_id_hidden, video_player
+            ).then(
+                None,
+                inputs=scene_start_hidden,
+                outputs=None,
+                _js="""
+                (start_time) => {
+                  const video = document.querySelector('#scene-player video');
+                  if (!video || start_time == null) return;
+                  video.currentTime = start_time;
+                  video.play();
+                }
+                """,
+            )
 
         # TAB 2: LIBRARY
         with gr.Tab("📂 Library Status"):
             with gr.Row():
-                refresh_btn = gr.Button("🔄 Refresh List")
-                delete_btn = gr.Button("🗑️ Delete Selected", variant="stop")
-                reset_btn = gr.Button("Rw Reset Selected", variant="secondary")
-                wipe_btn = gr.Button("⚠️ Wipe Database", variant="stop")
-            
-            library_table = gr.Dataframe(
-                headers=["ID", "Filename", "Status", "Duration", "Path"],
-                datatype=["number", "str", "str", "str", "str"],
-                value=get_library_data, # Load initial data
-                interactive=False
-            )
+                with gr.Column(scale=2):
+                    with gr.Row():
+                        refresh_btn = gr.Button("🔄 Refresh List")
+                        delete_btn = gr.Button("🗑️ Delete Selected", variant="stop")
+                        reset_btn = gr.Button("Rw Reset Selected", variant="secondary")
+                        wipe_btn = gr.Button("⚠️ Wipe Database", variant="stop")
+                    
+                    library_table = gr.Dataframe(
+                        headers=["ID", "Filename", "Status", "Duration", "Path"],
+                        datatype=["number", "str", "str", "str", "str"],
+                        value=get_library_data, # Load initial data
+                        interactive=False
+                    )
+                
+                with gr.Column(scale=1):
+                    gr.Markdown("### Preview Video")
+                    lib_player = gr.Video(label="Full Video Playback")
+                    lib_details = gr.Markdown("Select a video to preview...")
+
             library_msg = gr.Textbox(label="System Message", interactive=False)
             selected_video_id = gr.Number(visible=False)
 
-            def on_lib_select(evt: gr.SelectData, data):
+            def on_library_select(evt: gr.SelectData, data):
                 row_index = evt.index[0]
-                return data.iloc[row_index, 0] # Return ID
+                video_id = data.iloc[row_index, 0]
+                video_path = data.iloc[row_index, 4] # Path is at index 4
+                
+                details = f"**Filename:** {data.iloc[row_index, 1]}\n**Status:** {data.iloc[row_index, 2]}\n**Duration:** {data.iloc[row_index, 3]}"
+                return video_id, video_path, details
 
-            library_table.select(on_lib_select, library_table, selected_video_id)
+            library_table.select(on_library_select, library_table, [selected_video_id, lib_player, lib_details])
             
             refresh_btn.click(get_library_data, outputs=library_table)
             delete_btn.click(delete_video, selected_video_id, library_msg).success(get_library_data, outputs=library_table)
@@ -351,6 +465,28 @@ with gr.Blocks(title="Sentinel: Video Intelligence") as app:
                     worker_toggle = gr.Checkbox(label="Enable AI Worker", value=False)
                     worker_status = gr.Label(value="🔴 Worker is STOPPED")
                     
+                    gr.Markdown("---")
+                    with gr.Accordion("⚙️ Advanced Detection Settings", open=False):
+                        prompt_input = gr.TextArea(
+                            label="AI Prompt Template", 
+                            value=(
+                                "Describe this surveillance scene. CRITICAL: Identify every person. "
+                                "For each person, describe their gender, clothing colors (top and bottom), "
+                                "and any accessories (bags, hats). Look specifically for a woman in a "
+                                "pink or red shirt. Describe actions like walking or carrying items. "
+                                "If you see a vehicle, mention its type and color."
+                            ),
+                            lines=4
+                        )
+                        frames_slider = gr.Slider(
+                            minimum=1, maximum=10, value=processor.config.frame_count, step=1, 
+                            label="Frames per Scene (More = Slower but more accurate)"
+                        )
+                        update_settings_btn = gr.Button("Update Settings")
+                        settings_msg = gr.Label(label="Settings Status")
+
+                    update_settings_btn.click(update_settings, [prompt_input, frames_slider], settings_msg)
+
                     gr.Markdown("---")
                     gr.Markdown("### 3. Maintenance")
                     reset_all_btn = gr.Button("⚠️ Reset ALL Videos", variant="stop")
@@ -405,10 +541,11 @@ with gr.Blocks(title="Sentinel: Video Intelligence") as app:
             """)
 
     # Footer
+    version = get_git_hash()
     gr.Markdown(
-        """
+        f"""
         <div style="text-align: center; margin-top: 20px; color: #666;">
-            <p>Sentinel Video Intelligence | Version: <b>v1.0.0</b> | Updated: 2026-01-03</p>
+            <p>Sentinel Video Intelligence | Version: <b>{version}</b> | Updated: 2026-01-03</p>
         </div>
         """
     )

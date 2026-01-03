@@ -59,3 +59,5 @@ yolov8n.pt
 AI/video_pipeline/src/__pycache__/
 
 AI/video_pipeline/videoclips/
+
+AI/video_pipeline/debug_frames/

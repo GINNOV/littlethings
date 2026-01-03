@@ -36,15 +36,15 @@ def detect_scenes(video_path: str, threshold=27.0):
     return results
 
 def extract_frame(video_path: str, timestamp: float, output_path: str):
-    """Extracts a single frame at the specific timestamp and resizes it if too large."""
+    """Extracts a single frame at the specific timestamp and resizes it to 768px for AI compatibility."""
     cap = cv2.VideoCapture(video_path)
     # Set position
     cap.set(cv2.CAP_PROP_POS_MSEC, timestamp * 1000)
     success, image = cap.read()
     if success:
-        # Resize if too large (max 1024px) to save VRAM/Context
+        # Resize to 768px for AI compatibility and to prevent 500 errors
         height, width = image.shape[:2]
-        max_dim = 1024
+        max_dim = 768
         if width > max_dim or height > max_dim:
             scale = max_dim / max(width, height)
             new_width = int(width * scale)

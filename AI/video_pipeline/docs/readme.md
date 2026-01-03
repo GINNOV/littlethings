@@ -135,3 +135,18 @@ Settings are managed in `src/config.py` or via Environment Variables:
 | `DATABASE_URL` | `postgresql://user:password@localhost...` | DB Connection string |
 | `OLLAMA_URL` | `http://localhost:11434/api/generate` | AI Server URL |
 | `FRAME_INTERVAL` | `1.0` | Seconds between analysis frames |
+| `MAX_FRAMES_PER_SCENE` | `24` | Cap on frames sampled per scene |
+
+## 🧪 Tests
+
+Run unit tests:
+
+```bash
+pytest -q
+```
+
+Run database integration tests (uses a temporary schema):
+
+```bash
+TEST_DATABASE_URL=postgresql://user:password@localhost:5432/video_test pytest -q
+```
