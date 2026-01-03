@@ -13,15 +13,34 @@ from sentence_transformers import SentenceTransformer
 from sqlmodel import Session, select, col
 
 from config import BASE_DIR, OLLAMA_URL
-from database import engine
+from database import engine, init_db
 from models import ProcessingStatus, Scene, Video
 from ingest import add_video_to_db
 from worker import VideoProcessor
+from sqlmodel import SQLModel
 
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Global Background Worker
 processor = VideoProcessor()
+
+def wipe_database():
+    """Drops all tables and recreates them."""
+    try:
+        # Stop worker if running to prevent errors during drop
+        was_running = processor.running
+        if was_running:
+            processor.stop()
+            
+        SQLModel.metadata.drop_all(engine)
+        init_db()
+        
+        if was_running:
+            processor.start()
+            
+        return "✅ Database completely wiped and reset."
+    except Exception as e:
+        return f"❌ Error wiping database: {e}"
 
 def search_scenes(query_text, limit=10):
     """Performs semantic search using pgvector."""
@@ -288,6 +307,7 @@ with gr.Blocks(title="Sentinel: Video Intelligence") as app:
                 refresh_btn = gr.Button("🔄 Refresh List")
                 delete_btn = gr.Button("🗑️ Delete Selected", variant="stop")
                 reset_btn = gr.Button("Rw Reset Selected", variant="secondary")
+                wipe_btn = gr.Button("⚠️ Wipe Database", variant="stop")
             
             library_table = gr.Dataframe(
                 headers=["ID", "Filename", "Status", "Duration", "Path"],
@@ -307,6 +327,7 @@ with gr.Blocks(title="Sentinel: Video Intelligence") as app:
             refresh_btn.click(get_library_data, outputs=library_table)
             delete_btn.click(delete_video, selected_video_id, library_msg).success(get_library_data, outputs=library_table)
             reset_btn.click(reset_video, selected_video_id, library_msg).success(get_library_data, outputs=library_table)
+            wipe_btn.click(wipe_database, outputs=library_msg).success(get_library_data, outputs=library_table)
 
             # Auto-refresh every 5 seconds
             gr.Timer(5, active=True).tick(get_library_data, outputs=library_table)
