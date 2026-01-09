@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dental Chart Selector</title>
+        <style>
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background-color: #f0f2f5;
+                padding: 20px;
+                color: #333;
+            }
+
+            h1 {
+                margin-bottom: 20px;
+                color: #2c3e50;
+            }
+
+            /* Simplified Controls Styling */
+            .controls-container {
+                background: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                margin-bottom: 25px;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            label {
+                font-weight: 600;
+                color: #555;
+            }
+
+            /* Styling for the display box that replaced the dropdown */
+            .tooth-display {
+                font-size: 1.2em;
+                font-weight: bold;
+                color: #2c3e50;
+                padding: 5px 15px;
+                background: #e8f4fc;
+                border: 1px solid #b3d7ff;
+                border-radius: 6px;
+                min-width: 60px;
+                text-align: center;
+            }
+
+            /* Chart Area Styling */
+            .chart-wrapper {
+                position: relative;
+                max-width: 650px;
+                width: 100%;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+                overflow: hidden;
+                border: 1px solid #eee;
+                cursor: pointer; /* Indicates clickable */
+            }
+
+            .chart-image {
+                width: 100%;
+                height: auto;
+                display: block;
+                user-select: none;
+            }
+
+            /* SVG Overlay */
+            .overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+            }
+
+            #selection-circle {
+                transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                opacity: 0;
+                fill: none;
+                stroke: #e74c3c; /* Standard Red */
+                stroke-width: 0.5;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Dental Chart Selector</h1>
+
+        <div class="controls-container">
+            <label>Selected Tooth (FDI):</label>
+            <span id="tooth-display" class="tooth-display">None</span>
+        </div>
+
+        <div class="chart-wrapper">
+            <!-- IMAGE SOURCE: Using the updated .png file -->
+            <img
+                src="image_81fb2f.png"
+                alt="Dental Chart"
+                class="chart-image"
+                onerror="
+                    this.onerror = null;
+                    this.src =
+                        'https://placehold.co/600x400?text=Image+Not+Found';
+                "
+            />
+
+            <svg
+                class="overlay"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+            >
+                <!-- Fixed radius of 3.5% -->
+                <circle id="selection-circle" cx="0" cy="0" r="3.5" />
+            </svg>
+        </div>
+
+        <script>
+            // --- Configuration ---
+            const elements = {
+                display: document.getElementById("tooth-display"),
+                circle: document.getElementById("selection-circle"),
+                wrapper: document.querySelector(".chart-wrapper"),
+            };
+
+            let currentSelection = null;
+
+            // Standard FDI Tooth Coordinates (Percentages relative to image size)
+            // Using the Calibrated Coordinates
+            const toothMap = {
+                11: { x: 46.4, y: 10.7 },
+                12: { x: 41.8, y: 11.4 },
+                13: { x: 38.6, y: 13.5 },
+                14: { x: 35, y: 16 },
+                15: { x: 31.8, y: 20.3 },
+                16: { x: 30, y: 25.9 },
+                17: { x: 28.3, y: 32.1 },
+                18: { x: 27.8, y: 38.7 },
+                21: { x: 51.6, y: 11.1 },
+                22: { x: 56.4, y: 12 },
+                23: { x: 59.7, y: 13.5 },
+                24: { x: 61.7, y: 16.3 },
+                25: { x: 65.1, y: 20.1 },
+                26: { x: 66.5, y: 25.5 },
+                27: { x: 68.5, y: 32.2 },
+                28: { x: 68.9, y: 38.5 },
+                31: { x: 50.5, y: 88.7 },
+                32: { x: 54.1, y: 88.8 },
+                33: { x: 58.1, y: 87 },
+                34: { x: 62, y: 84.5 },
+                35: { x: 64.5, y: 80.1 },
+                36: { x: 67.1, y: 74.1 },
+                37: { x: 68.2, y: 67.5 },
+                38: { x: 69.1, y: 61.8 },
+                41: { x: 46.4, y: 88.8 },
+                42: { x: 42.1, y: 88.5 },
+                43: { x: 39, y: 86.2 },
+                44: { x: 35.2, y: 84.5 },
+                45: { x: 30.6, y: 75.5 },
+                46: { x: 30.1, y: 73.8 },
+                47: { x: 28, y: 68.4 },
+                48: { x: 27.5, y: 61.8 },
+            };
+
+            // --- Initialization ---
+            function init() {
+                // Add Event Listeners
+                elements.wrapper.addEventListener("click", handleChartClick);
+            }
+
+            // --- Logic ---
+
+            function handleChartClick(e) {
+                const rect = elements.wrapper.getBoundingClientRect();
+                // Calculate click position as percentage
+                const clickX = ((e.clientX - rect.left) / rect.width) * 100;
+                const clickY = ((e.clientY - rect.top) / rect.height) * 100;
+
+                let closestTooth = null;
+                let minDistance = Infinity;
+                // Threshold for clicking (radius of sensitivity)
+                const threshold = 6;
+
+                for (const [toothNum, pos] of Object.entries(toothMap)) {
+                    // Calculate Euclidean distance
+                    const dist = Math.sqrt(
+                        Math.pow(clickX - pos.x, 2) +
+                            Math.pow(clickY - pos.y, 2),
+                    );
+
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        closestTooth = toothNum;
+                    }
+                }
+
+                // If the closest tooth is within the clickable threshold, select it
+                if (closestTooth && minDistance <= threshold) {
+                    currentSelection = closestTooth;
+                    updateView();
+                }
+            }
+
+            function updateView() {
+                if (currentSelection && toothMap[currentSelection]) {
+                    const pos = toothMap[currentSelection];
+
+                    // Update Text Display
+                    elements.display.textContent = currentSelection;
+
+                    // Update Circle Position
+                    elements.circle.setAttribute("cx", pos.x);
+                    elements.circle.setAttribute("cy", pos.y);
+                    elements.circle.style.opacity = "1";
+                } else {
+                    elements.display.textContent = "None";
+                    elements.circle.style.opacity = "0";
+                }
+            }
+
+            // Start
+            init();
+        </script>
+    </body>
+</html>
