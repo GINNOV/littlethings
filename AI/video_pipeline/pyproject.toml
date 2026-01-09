@@ -1,0 +1,22 @@
+[project]
+name = "video-pipeline"
+version = "0.1.0"
+description = "Scalable surveillance video analysis pipeline"
+requires-python = ">=3.10"
+dependencies = [
+    "sqlmodel",
+    "psycopg2-binary",
+    "pgvector",        # For semantic search
+    "gradio",          # The Dashboard
+    "ollama",          # AI Client
+    "scenedetect[opencv]", # Efficient scene splitting
+    "opencv-python-headless",
+    "python-dotenv",
+    "rich",            # Pretty terminal output
+    "tenacity",        # Robust retries
+    "sentence-transformers", # Text-to-Vector
+    "pillow"
+]
+
+[tool.uv]
+dev-dependencies = ["pytest"]
