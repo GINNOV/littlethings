@@ -39,6 +39,7 @@ export interface FlumeUsageQuery {
   until_datetime: string;
   unit_of_measure: 'GALLONS' | 'LITERS';
   group_multiplier?: number;
+  types?: string[];
 }
 
 export interface FlumeUsageResponse {

@@ -1,50 +1,130 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Shell } from '@/components/Shell';
+import { useFlume } from '@/components/FlumeContext';
+import { calculateInsights, InsightResult } from '@/lib/analytics';
+import axios from 'axios';
+import { subDays, startOfDay, endOfDay, format, parseISO } from 'date-fns';
 
 export default function InsightsPage() {
+  const { token, user, selectedDevice } = useFlume();
+  const [insights, setInsights] = useState<InsightResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchInsights = useCallback(async () => {
+    if (!token || !user || !selectedDevice) return;
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const since = startOfDay(subDays(new Date(), 30)).toISOString();
+      const until = endOfDay(new Date()).toISOString();
+      
+      const response = await axios.get('/api/flume/usage', {
+        headers: {
+          Authorization: `Bearer ${token?.access_token}`,
+        },
+        params: {
+          userId: user?.id,
+          deviceId: selectedDevice?.id,
+          since,
+          until,
+          bucket: 'DAY',
+          unit: 'GALLONS',
+        },
+      });
+      
+      if (response.data.error) {
+        throw new Error(response.data.error);
+      }
+      
+      const buckets = response.data.data;
+      const results = calculateInsights(buckets);
+      setInsights(results);
+    } catch (err: unknown) {
+      console.error('Failed to fetch insights:', err);
+      setError('Could not calculate insights. Check your data connection.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [token, user, selectedDevice]);
+
+  useEffect(() => {
+    fetchInsights();
+  }, [fetchInsights]);
+
   return (
     <Shell>
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Insights & Alerts</h2>
-        <p className="text-zinc-500">Anomaly detection and usage notifications</p>
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Usage Insights (ML Beta)</h2>
+        <p className="text-zinc-500">Automated pattern detection and forecasting</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-4">Recent Alerts</h3>
-          <div className="flex flex-col items-center justify-center py-12 text-zinc-400">
-            <svg className="w-12 h-12 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            <p>No active alerts detected</p>
+      {isLoading ? (
+        <div className="py-20 text-center text-blue-600 animate-pulse font-medium">
+          Analyzing your water patterns...
+        </div>
+      ) : error ? (
+        <div className="p-6 bg-red-50 text-red-600 rounded-xl border border-red-100 mb-8">
+          {error}
+        </div>
+      ) : insights ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-4">Statistical Anomalies</h3>
+            {insights.anomalies.length > 0 ? (
+              <div className="space-y-3">
+                {insights.anomalies.map((a, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 rounded-lg">
+                    <div>
+                      <p className="text-sm font-bold text-amber-900 dark:text-amber-200">{format(parseISO(a.datetime), 'EEEE, MMM do')}</p>
+                      <p className="text-xs text-amber-700 dark:text-amber-400">Usage was {(a.value / insights.average).toFixed(1)}x higher than normal</p>
+                    </div>
+                    <span className="text-lg font-bold text-amber-600">{a.value.toFixed(0)} gal</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center text-zinc-400 border border-dashed border-zinc-100 rounded-lg">
+                No statistical anomalies detected in the last 30 days.
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-4">Trend Analysis</h3>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-500">30-Day Velocity</span>
+                <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
+                  insights.trend === 'up' ? 'bg-red-100 text-red-700' : 
+                  insights.trend === 'down' ? 'bg-green-100 text-green-700' : 'bg-zinc-100 text-zinc-600'
+                }`}>
+                  {insights.trend}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-500">Daily Average</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-50">{insights.average.toFixed(1)} gal</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-500">30-Day Projected Total</span>
+                <span className="font-bold text-blue-600">{insights.forecastedTotal.toFixed(0)} gal</span>
+              </div>
+              <div className="flex items-center justify-between border-t border-zinc-100 pt-4 mt-4">
+                <span className="text-zinc-500">Peak Usage ({format(parseISO(insights.peakDate), 'MMM d')})</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-50">{insights.peak.toFixed(0)} gal</span>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-4">Usage Anomalies</h3>
-          <p className="text-sm text-zinc-500 mb-6">We analyze your historical data to find unusual patterns.</p>
-          
-          <div className="space-y-4">
-            <div className="p-4 bg-zinc-50 rounded-lg dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">Leak Detection</span>
-                <span className="px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full dark:bg-green-900/30 dark:text-green-400">Normal</span>
-              </div>
-              <p className="text-xs text-zinc-500 mt-1">No continuous flow detected in the last 24 hours.</p>
-            </div>
-
-            <div className="p-4 bg-zinc-50 rounded-lg dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 opacity-50">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">Unusual Daily Total</span>
-                <span className="px-2 py-0.5 text-xs font-semibold bg-zinc-200 text-zinc-600 rounded-full dark:bg-zinc-700 dark:text-zinc-400">Processing</span>
-              </div>
-              <p className="text-xs text-zinc-500 mt-1">Analyzing baseline for comparison.</p>
-            </div>
-          </div>
+      ) : (
+        <div className="py-20 text-center text-zinc-400">
+          Select a device to see insights.
         </div>
-      </div>
+      )}
     </Shell>
   );
 }
