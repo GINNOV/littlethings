@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
 import { flumeClient } from '@/lib/flume';
+import { getStoredConfig } from '@/lib/config';
 
 export async function POST(request: Request) {
   try {
+    const config = await getStoredConfig();
+    const credentials = config ? {
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
+      username: config.username,
+      password: config.password,
+    } : undefined;
+
     let refreshToken = null;
     try {
       const body = await request.json();
@@ -13,9 +22,9 @@ export async function POST(request: Request) {
 
     let tokenData;
     if (refreshToken) {
-      tokenData = await flumeClient.refreshAccessToken(refreshToken);
+      tokenData = await flumeClient.refreshAccessToken(refreshToken, credentials);
     } else {
-      tokenData = await flumeClient.getAccessToken();
+      tokenData = await flumeClient.getAccessToken(credentials);
     }
 
     console.log('[Auth Route] Token received from Flume. Access Token length:', tokenData.access_token?.length);

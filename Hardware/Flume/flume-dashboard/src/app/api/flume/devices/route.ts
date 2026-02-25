@@ -1,39 +1,35 @@
 import { NextResponse } from 'next/server';
+import { getStoredConfig } from '@/lib/config';
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('Authorization');
-  console.log('[Devices Route] Received Auth Header length:', authHeader?.length);
   const accessToken = authHeader?.replace('Bearer ', '');
 
   if (!accessToken) {
-    console.error('[Devices Route] Missing access token');
     return NextResponse.json({ error: 'Missing access token' }, { status: 401 });
   }
 
   try {
-    console.log('[Devices Route] Attempting to fetch user info...');
+    const config = await getStoredConfig();
     const userRes = await fetch('https://api.flumewater.com/me', {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
 
     const userDataRaw = await userRes.json();
-    console.log('[Devices Route] User data received:', JSON.stringify(userDataRaw).slice(0, 100) + '...');
 
     if (!userRes.ok) {
       return NextResponse.json({ 
         error: 'Flume API User Error', 
         details: userDataRaw,
         status: userRes.status 
-      }, { status: 200 }); // Return 200 so we can see the body in the client
+      }, { status: 200 });
     }
 
-    console.log('[Devices Route] Attempting to fetch devices...');
     const devicesRes = await fetch('https://api.flumewater.com/me/devices', {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
 
     const devicesDataRaw = await devicesRes.json();
-    console.log('[Devices Route] Devices data received:', JSON.stringify(devicesDataRaw).slice(0, 100) + '...');
 
     if (!devicesRes.ok) {
       return NextResponse.json({ 
@@ -43,7 +39,14 @@ export async function GET(request: Request) {
       }, { status: 200 });
     }
 
-    const user = userDataRaw.data?.[0] || userDataRaw.data || userDataRaw;
+    const apiUser = userDataRaw.data?.[0] || userDataRaw.data || userDataRaw;
+    
+    // Flume API often uses 'username' for the email, or it might be missing entirely from the /me response.
+    // We'll prioritize 'email', then 'username', then fallback to our stored config or env vars.
+    const user = {
+      ...apiUser,
+      email: apiUser.email || apiUser.username || config?.username || process.env.FLUME_USERNAME || ''
+    };
     
     // Attempt to find devices in multiple possible locations
     let rawDevices = [];
@@ -51,13 +54,8 @@ export async function GET(request: Request) {
       rawDevices = devicesDataRaw.data;
     } else if (Array.isArray(devicesDataRaw)) {
       rawDevices = devicesDataRaw;
-    } else if (user && Array.isArray(user.devices)) {
-      rawDevices = user.devices;
-    }
-
-    console.log('[Devices Route] Raw Device Keys:', rawDevices[0] ? Object.keys(rawDevices[0]) : 'No devices');
-    if (rawDevices[0]) {
-      console.log('[Devices Route] First Raw Device:', JSON.stringify(rawDevices[0]));
+    } else if (apiUser && Array.isArray(apiUser.devices)) {
+      rawDevices = apiUser.devices;
     }
 
     // Map to a consistent format
@@ -68,20 +66,12 @@ export async function GET(request: Request) {
       location_id: d.location_id
     }));
 
-    if (devices[0]) {
-      console.log('[Devices Route] First Mapped Device:', JSON.stringify(devices[0]));
-    }
-
-    console.log('[Devices Route] Extracted User:', JSON.stringify(user).slice(0, 100));
-    console.log('[Devices Route] Final Devices Count:', devices.length);
-
     return NextResponse.json({ user, devices });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[Devices Route] Fatal Catch:', message);
     return NextResponse.json(
       { error: 'Server Exception', details: message },
-      { status: 200 } // Still return 200 to see the message
+      { status: 200 }
     );
   }
 }

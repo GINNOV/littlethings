@@ -6,7 +6,15 @@ import { useFlume } from '@/components/FlumeContext';
 import { UsageChart } from '@/components/UsageChart';
 import { BreakdownChart } from '@/components/BreakdownChart';
 import axios from 'axios';
-import { subDays, startOfDay, endOfDay } from 'date-fns';
+import { subDays, startOfDay, endOfDay, format } from 'date-fns';
+import { 
+  Droplets, 
+  Calendar, 
+  Activity, 
+  RefreshCw,
+  TrendingUp,
+  PieChart as PieChartIcon
+} from 'lucide-react';
 
 interface BreakdownItem {
   name: string;
@@ -64,11 +72,8 @@ export default function Home() {
     
     setIsBreakdownLoading(true);
     try {
-      // Flume appliance disaggregation is only guaranteed through the end of the previous day.
       const until = endOfDay(subDays(new Date(), 1)).toISOString();
       const since = startOfDay(subDays(new Date(), 30)).toISOString();
-      
-      // Flume docs: appliance types are uppercase constants.
       const applianceTypes = ['ALL', 'OUTDOOR', 'IRRIGATION', 'INDOOR', 'SHOWER', 'TOILET', 'CLOTHES_WASHER', 'DISH_WASHER', 'FAUCET', 'LEAK'];
       
       let response = await axios.get('/api/flume/usage', {
@@ -86,9 +91,7 @@ export default function Home() {
         },
       });
 
-      // Fallback: If categorized query fails, try a standard query and look for types in the response
       if (response.data.error || !response.data.data || response.data.data.length === 0) {
-        console.warn('Categorized breakdown failed, trying fallback standard query');
         response = await axios.get('/api/flume/usage', {
           headers: {
             Authorization: `Bearer ${token?.access_token}`,
@@ -105,7 +108,6 @@ export default function Home() {
       }
 
       if (response.data.error) {
-        console.error('All breakdown attempts failed');
         setBreakdownData([]);
         return;
       }
@@ -126,7 +128,6 @@ export default function Home() {
         
         rawBuckets.forEach((bucket: Record<string, unknown>) => {
           let hasCategorizedData = false;
-          // Check for keys in the bucket object directly
           const allPotentialKeys = [...applianceTypes, 'indoor', 'outdoor', 'water'];
           allPotentialKeys.forEach(key => {
             if (bucket[key] !== undefined) {
@@ -136,23 +137,12 @@ export default function Home() {
             }
           });
 
-          // Check if there is a 'types' object inside the bucket
           if (bucket.types && typeof bucket.types === 'object') {
-            if (Array.isArray(bucket.types)) {
-              bucket.types.forEach((item: unknown) => {
-                if (item && typeof item === 'object' && 'type' in item && 'value' in item) {
-                  hasCategorizedData = true;
-                  const typeKey = normalizeTypeKey(String((item as { type: unknown }).type));
-                  totals[typeKey] = (totals[typeKey] || 0) + Number((item as { value: unknown }).value);
-                }
-              });
-            } else {
-              Object.entries(bucket.types as Record<string, unknown>).forEach(([typeKey, rawValue]) => {
-                hasCategorizedData = true;
-                const normalizedKey = normalizeTypeKey(typeKey);
-                totals[normalizedKey] = (totals[normalizedKey] || 0) + Number(rawValue);
-              });
-            }
+            Object.entries(bucket.types as Record<string, unknown>).forEach(([typeKey, rawValue]) => {
+              hasCategorizedData = true;
+              const normalizedKey = normalizeTypeKey(typeKey);
+              totals[normalizedKey] = (totals[normalizedKey] || 0) + Number(rawValue);
+            });
           }
 
           if (!hasCategorizedData && typeof bucket.value === 'number') {
@@ -161,31 +151,22 @@ export default function Home() {
         });
 
         const colors: {[key: string]: string} = {
-          'outdoor': '#3d8ea1',
-          'indoor': '#83d1e2',
-          'shower': '#b0effb',
-          'toilet': '#a0b9a6',
-          'clothes_washer': '#742d1e',
-          'dishwasher': '#d88c6e',
+          'outdoor': '#3b82f6',
+          'indoor': '#60a5fa',
+          'shower': '#93c5fd',
+          'toilet': '#bfdbfe',
+          'clothes_washer': '#1d4ed8',
+          'dishwasher': '#2563eb',
           'faucet': '#94a3b8',
-          'irrigation': '#3d8ea1',
-          'uncategorized': '#64748b',
+          'irrigation': '#1e40af',
+          'uncategorized': '#cbd5e1',
         };
-
-        const hasCategorizedValues = Object.entries(totals).some(
-          ([key, value]) => key !== 'uncategorized' && value > 0
-        );
-
-        if (!hasCategorizedValues) {
-          setBreakdownData([]);
-          return;
-        }
 
         const finalBreakdown = Object.keys(totals)
           .map(key => ({
             name: key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' '),
             value: totals[key],
-            color: colors[key] || colors[key.toLowerCase()] || '#cbd5e1'
+            color: colors[key] || '#cbd5e1'
           }))
           .filter(item => item.value > 0 && item.name !== 'Uncategorized')
           .sort((a, b) => b.value - a.value);
@@ -213,61 +194,120 @@ export default function Home() {
 
   return (
     <Shell>
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Dashboard</h2>
-        <p className="text-zinc-500">Overview of your water usage</p>
+      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight">Water Dashboard</h2>
+          <p className="text-zinc-500 font-medium">Insights for {selectedDevice?.name || 'your home'}</p>
+        </div>
+        <div className="flex items-center gap-2 text-sm font-semibold text-zinc-400 bg-white dark:bg-zinc-900 px-4 py-2 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+          <Calendar className="w-4 h-4" />
+          {format(new Date(), 'MMMM d, yyyy')}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
-          <h3 className="text-sm font-medium text-zinc-500 mb-1">Today&apos;s Usage</h3>
-          <p className="text-3xl font-bold text-blue-600">{todayUsage.toFixed(1)} <span className="text-sm font-normal text-zinc-400">gal</span></p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="relative overflow-hidden bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800 group hover:border-blue-500/30 transition-all duration-300">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Droplets className="w-16 h-16 text-blue-600" />
+          </div>
+          <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest mb-2">Today&apos;s Usage</h3>
+          <div className="flex items-baseline gap-2">
+            <p className="text-4xl font-black text-blue-600 tracking-tighter">{todayUsage.toFixed(1)}</p>
+            <span className="text-lg font-bold text-zinc-400 tracking-tight">gallons</span>
+          </div>
+          <div className="mt-4 flex items-center gap-2 text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/20 w-fit px-2.5 py-1 rounded-full">
+            <TrendingUp className="w-3 h-3" />
+            Live tracking
+          </div>
         </div>
-        <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
-          <h3 className="text-sm font-medium text-zinc-500 mb-1">Last 14 Days</h3>
-          <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">{totalPeriodUsage.toFixed(0)} <span className="text-sm font-normal text-zinc-400">gal</span></p>
+
+        <div className="relative overflow-hidden bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800 group hover:border-blue-500/30 transition-all duration-300">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Activity className="w-16 h-16 text-zinc-600 dark:text-zinc-100" />
+          </div>
+          <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest mb-2">Last 14 Days</h3>
+          <div className="flex items-baseline gap-2">
+            <p className="text-4xl font-black text-zinc-900 dark:text-zinc-100 tracking-tighter">{totalPeriodUsage.toFixed(0)}</p>
+            <span className="text-lg font-bold text-zinc-400 tracking-tight">gallons</span>
+          </div>
+          <p className="mt-4 text-xs font-bold text-zinc-500">Avg: {(totalPeriodUsage / 14).toFixed(1)} gal/day</p>
         </div>
-        <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
-          <h3 className="text-sm font-medium text-zinc-500 mb-1">Status</h3>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Monitoring</p>
+
+        <div className="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800 group hover:border-blue-500/30 transition-all duration-300 flex flex-col justify-between">
+          <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest mb-2">System Status</h3>
+          <div className="flex items-center gap-4 bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+            <div className="relative">
+              <div className="w-4 h-4 rounded-full bg-green-500 animate-ping absolute inset-0 opacity-40"></div>
+              <div className="w-4 h-4 rounded-full bg-green-500 relative z-10"></div>
+            </div>
+            <div>
+              <p className="text-lg font-black text-zinc-900 dark:text-zinc-50 leading-tight">Connected</p>
+              <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Flume Bridge Active</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Usage History (Last 14 Days)</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="lg:col-span-2 bg-white p-8 rounded-[2rem] border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">Consumption Trends</h3>
+            </div>
             <button 
               onClick={fetchDailyUsage}
-              className="text-sm text-blue-600 font-medium hover:underline"
+              disabled={isLoading}
+              className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-all active:rotate-180 duration-500 group"
             >
-              Refresh
+              <RefreshCw className={`w-5 h-5 text-zinc-400 group-hover:text-blue-600 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
           
-          {isLoading ? (
-            <div className="h-80 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-          ) : error ? (
-            <div className="h-80 flex items-center justify-center text-red-500">{error}</div>
-          ) : (
-            <UsageChart data={dailyUsage} unit="gal" />
-          )}
+          <div className="h-80">
+            {isLoading ? (
+              <div className="h-full flex flex-col items-center justify-center gap-3">
+                <div className="w-12 h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                  <div className="w-1/2 h-full bg-blue-600 rounded-full animate-loader"></div>
+                </div>
+                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Loading trends...</p>
+              </div>
+            ) : error ? (
+              <div className="h-full flex items-center justify-center text-red-500 font-bold italic">{error}</div>
+            ) : (
+              <UsageChart data={dailyUsage} unit="gal" granularity="DAY" />
+            )}
+          </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-4">Usage Breakdown</h3>
-          {isBreakdownLoading ? (
-            <div className="h-80 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="bg-white p-8 rounded-[2rem] border border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800 flex flex-col">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
+              <PieChartIcon className="w-5 h-5 text-purple-600" />
             </div>
-          ) : (
-            <BreakdownChart data={breakdownData} unit="gal" />
-          )}
+            <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">Appliance Mix</h3>
+          </div>
+          
+          <div className="flex-1 min-h-[320px]">
+            {isBreakdownLoading ? (
+              <div className="h-full flex items-center justify-center">
+                <div className="animate-pulse flex flex-col items-center gap-4">
+                  <div className="w-32 h-32 rounded-full border-8 border-zinc-100 dark:border-zinc-800 border-t-purple-500 animate-spin"></div>
+                  <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Analyzing usage...</p>
+                </div>
+              </div>
+            ) : (
+              <BreakdownChart data={breakdownData} unit="gal" />
+            )}
+          </div>
+          
+          <div className="mt-6 p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+            <p className="text-xs text-zinc-500 font-medium leading-relaxed">
+              Based on the last 30 days of appliance disaggregation from your Flume Smart Water Monitor.
+            </p>
+          </div>
         </div>
       </div>
     </Shell>

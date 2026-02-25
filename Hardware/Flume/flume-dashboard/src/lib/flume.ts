@@ -69,17 +69,22 @@ export class FlumeClient {
     }
   }
 
-  async getAccessToken(): Promise<FlumeTokenResponse> {
-    if (!this.username || !this.password) {
-      throw new Error('Username or password missing');
+  async getAccessToken(overrides?: { clientId: string, clientSecret: string, username: string, password?: string }): Promise<FlumeTokenResponse> {
+    const clientId = overrides?.clientId || this.clientId;
+    const clientSecret = overrides?.clientSecret || this.clientSecret;
+    const username = overrides?.username || this.username;
+    const password = overrides?.password || this.password;
+
+    if (!clientId || !clientSecret || !username || !password) {
+      throw new Error('Required Flume credentials missing (Client ID, Secret, Username, or Password)');
     }
 
     const response = await axios.post(`${FLUME_BASE_URL}/oauth/token`, {
       grant_type: 'password',
-      username: this.username,
-      password: this.password,
-      client_id: this.clientId,
-      client_secret: this.clientSecret,
+      username,
+      password,
+      client_id: clientId,
+      client_secret: clientSecret,
     });
 
     console.log('[FlumeClient] /oauth/token Raw Response:', JSON.stringify(response.data, null, 2));
@@ -92,12 +97,15 @@ export class FlumeClient {
     return response.data;
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<FlumeTokenResponse> {
+  async refreshAccessToken(refreshToken: string, overrides?: { clientId: string, clientSecret: string }): Promise<FlumeTokenResponse> {
+    const clientId = overrides?.clientId || this.clientId;
+    const clientSecret = overrides?.clientSecret || this.clientSecret;
+
     const response = await axios.post<FlumeTokenResponse>(`${FLUME_BASE_URL}/oauth/token`, {
       grant_type: 'refresh_token',
       refresh_token: refreshToken,
-      client_id: this.clientId,
-      client_secret: this.clientSecret,
+      client_id: clientId,
+      client_secret: clientSecret,
     });
 
     return response.data;

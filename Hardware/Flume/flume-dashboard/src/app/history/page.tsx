@@ -5,7 +5,7 @@ import { Shell } from '@/components/Shell';
 import { useFlume } from '@/components/FlumeContext';
 import { UsageChart } from '@/components/UsageChart';
 import axios from 'axios';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, startOfDay, endOfDay, differenceInDays } from 'date-fns';
 
 export default function HistoryPage() {
   const { token, user, selectedDevice } = useFlume();
@@ -24,8 +24,19 @@ export default function HistoryPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const since = startOfDay(new Date(startDate)).toISOString();
-      const until = endOfDay(new Date(endDate)).toISOString();
+      const sDate = new Date(startDate);
+      const eDate = new Date(endDate);
+
+      if (sDate > eDate) {
+        throw new Error('Start date must be before end date');
+      }
+
+      if (differenceInDays(eDate, sDate) > 365) {
+        throw new Error('Date range cannot exceed one year (365 days)');
+      }
+
+      const since = startOfDay(sDate).toISOString();
+      const until = endOfDay(eDate).toISOString();
       
       const response = await axios.get('/api/flume/usage', {
         headers: {
@@ -49,7 +60,8 @@ export default function HistoryPage() {
       setUsageData(buckets);
     } catch (err: unknown) {
       console.error('Failed to fetch usage:', err);
-      setError('Could not load usage data. Check your date range and API limits.');
+      const errorMessage = err instanceof Error ? err.message : 'Could not load usage data';
+      setError(errorMessage.includes('detailed') ? 'Flume API Error: Only one year of data can be queried at a time.' : errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -124,7 +136,9 @@ export default function HistoryPage() {
         ) : error ? (
           <div className="h-80 flex items-center justify-center text-red-500">{error}</div>
         ) : (
-          <UsageChart data={usageData} unit="gal" />
+          <div className="h-80">
+            <UsageChart data={usageData} unit="gal" granularity={granularity} />
+          </div>
         )}
       </div>
     </Shell>
