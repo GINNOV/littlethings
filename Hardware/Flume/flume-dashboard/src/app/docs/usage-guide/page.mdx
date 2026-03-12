@@ -1,0 +1,84 @@
+# Flume Personal Water Dashboard - User Guide
+
+Welcome to your personal Flume water usage dashboard. This application provides enhanced visualization and historical analysis of your water consumption data.
+
+## Table of Contents
+- [Prerequisites](#prerequisites)
+- [Retrieving Your Flume API Secrets](#retrieving-your-flume-api-secrets)
+- [Configuration](#configuration)
+- [Using the Dashboard](#using-the-dashboard)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## Prerequisites <a id="prerequisites" />
+- A Flume Water Sensor installed and configured.
+- A Flume account (the same one you use for the mobile app).
+- Node.js installed (if running locally).
+
+---
+
+## Retrieving Your Flume API Secrets <a id="retrieving-your-flume-api-secrets" />
+To connect this dashboard to your Flume data, you need four pieces of information: your Flume **Username**, **Password**, **Client ID**, and **Client Secret**.
+
+### Steps to get Client ID and Client Secret:
+1. **Log in to the Flume Portal**: Go to [portal.flumewater.com](https://portal.flumewater.com) and log in with your standard Flume account.
+2. **Access Settings**: Click the **Settings** (gear icon) in the left-hand navigation menu.
+3. **API Access**: Scroll to the bottom of the Settings page to find the **API Access** section.
+4. **Generate Credentials**: Click the **"Generate API Client"** button.
+5. **Copy the Keys**: Your **Client ID** and **Client Secret** will be displayed. Copy these immediately and store them securely.
+
+> **Security Note**: Treat your Client ID and Client Secret like a password. Do not share them or commit them to public repositories.
+
+---
+
+## Configuration <a id="configuration" />
+Once you have your secrets, you need to provide them to the application.
+
+### Local Development
+Create a file named `.env.local` in the root of the project and add the following:
+
+```env
+FLUME_CLIENT_ID=your_client_id_here
+FLUME_CLIENT_SECRET=your_client_secret_here
+FLUME_USERNAME=your_flume_email@example.com
+FLUME_PASSWORD=your_flume_password_here
+```
+
+### Production (Vercel)
+If you are deploying to Vercel, add these same keys as **Environment Variables** in your project settings on the Vercel Dashboard.
+
+---
+
+## Using the Dashboard <a id="using-the-dashboard" />
+
+### Home Dashboard
+The home page provides a real-time (or near real-time) snapshot of your water usage.
+- **Current Flow**: See if water is currently running (GPM).
+- **Daily Usage**: A bar chart showing usage over the last 14 days.
+- **Hourly Breakdown**: A line chart showing usage over the last 24-48 hours.
+
+### Historical Explorer
+Navigate to `/history` to dive deep into your data.
+- **Date Range**: Select custom start and end dates.
+- **Granularity**: View data by minute, hour, day, or month.
+- **Comparison**: Compare usage across different periods.
+
+### Insights & Alerts
+The `/insights` page helps you understand your consumption patterns.
+- **Alerts**: View recent leak detections or high-usage notifications.
+- **Anomalies**: Automatically identifies days where usage was significantly higher than average.
+- **Stats**: View your average daily use and peak consumption times.
+
+### Settings
+Manage your dashboard preferences in `/settings`.
+- **Units**: Toggle between Gallons and Liters.
+- **Budgets**: View your current budget vs. actual usage.
+- **Devices**: If you have multiple Flume devices, you can switch between them here.
+
+---
+
+## Troubleshooting <a id="troubleshooting" />
+- **No Data Appearing**: Ensure your `.env.local` variables are correct and that your Flume device is online.
+- **Rate Limits**: The Flume API has a limit of 120 requests per hour. If charts stop loading, you may have hit this limit. Wait a few minutes and try again.
+- **Authentication Error**: Double-check your username and password. If you recently changed your password in the Flume app, you must update it in your environment variables.
