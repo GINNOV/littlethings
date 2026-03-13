@@ -16,3 +16,4 @@ amiga_workspace/corpus/raw/**/.git/
 amiga_workspace/corpus/not_for_training/raw/**/.git/
 amiga_workspace/corpus/raw/
 amiga_workspace/corpus/not_for_training/raw/
+roms/
