@@ -1,0 +1,80 @@
+Basics of Copper Chunky
+~~~~~~~~~~~~~~~~~~~~~~~
+Explanation of copper-chunky mode.
+
+A "copper-chunky" mode is nothing else than a i.e. 7-bpl pattern in the
+bitplanes + a real big copperlist. First you have to generate the
+pattern in the bitplanes, which goes like this:
+Color0,Color1,Color2,Color3,Color4,Color5...
+Ofcourse you cannot display all 256 colors per line, just because
+the copper is too slow for doing this, so we are restricted to
+something about 128 colors per line to get a good look. A good way
+to display a full-screen view would be to use a 2.5x2.5 resolution,
+which exactly means something like that:
+
+Color0,Color0,Color1,Color1,Color1,Color2,Color2,Color3,Color3,Color3..
+
+You just perform alternating pixel widths of 2 and 3 and this way
+you get to 128 colors throughout the full line (320 pixels width)
+What you do to actually SET the colors you want on the screen
+is to generate a big copperlist, with instructions like that:
+
+[...]
+dc.w $10C,$8000         ;display upper 128 colors
+dc.w $106,$0020         ;change lower 128 colors
+dc.w $180,Pix0,$182,Pix1,$184,Pix2,$186,Pix3...
+dc.w $106,$2020
+dc.w $180,Pix32,$182,Pix33,$184,Pix34,$186,Pix35...
+[...]
+dc.w $xx01,$FFFE        ;wait for next (2.5) row
+dc.w $10C,$0000         ;display lower 128 colors
+dc.w $106,$8020         ;change upper 128 colors
+dc.w $180,Pix0,$182,Pix1,$184,Pix2,$186,Pix3...
+dc.w $106,$A020
+dc.w $180,Pix32,$182,Pix33,$184,Pix34,$186,Pix35...
+[...]
+
+Where Pixn is the color for the (2.5) pixel at position n.
+This way you can set 128 pixels in one (2.5) row. This can be
+seen as a 12-Bit RGB-Chunky-Pixel-Mode, as you can set all colors
+available under ECS freely on the screen.
+To prevent the pixels on the next row from looking strange because
+of changing the copperlist AFTER the pixel has been displayed by the
+video hardware, we have to use a trick (sometimes called
+"Copper-Doublebuffering").
+
+Now something about the $DFF10C register:
+
+BPLTCON4 - Bit Plane Control Register (display masks)
+
++------+------------+----------------------------------------------------+
+| BIT# | BPLCON4    | DESCRIPTION                                        |
++------+------------+----------------------------------------------------+
+| 15   | BPLAM7=3D0 | This 8 bit field is XOR`ed with the 8 bit plane    |
+|      |            | color address, thereby altering the color address  |
+|      |            | sent to the color table (x=3D1-8)                  |
+| 14   | BPLAM6=3D0 |                                                    |
+| 13   | BPLAM5=3D0 |                                                    |
+| 12   | BPLAM4=3D0 |                                                    |
+| 11   | BPLAM3=3D0 |                                                    |
+| 10   | BPLAM2=3D0 |                                                    |
+| 09   | BPLAM1=3D0 |                                                    |
+| 08   | BPLAM0=3D0 |                                                    |
+| 07   | ESPRM7=3D0 | 4 Bit field provides the 4 high order colortable-  |
+|      |            | address bits for even sprites: SPR0,SPR2,SPR4,SPR6.|
+|      |            | Default value is 0001 binary. (x=3D7-4)            |
+| 06   | ESPRM6=3D0 |                                                    |
+| 05   | ESPRM5=3D0 |                                                    |
+| 04   | ESPRM4=3D1 |                                                    |
+| 03   | OSPRM7=3D0 | 4 Bit field provides the 4 high order colortable   |
+|      |            | adress bits for odd sprites: SPR1,SPR3,SPR5,SPR7.  |
+|      |            | Default value is 0001 binary. (x=3D7-4)            |
+| 02   | OSPRM6=3D0 |                                                    |
+| 01   | OSPRM5=3D0 |                                                    |
+| 00   | OSPRM4=3D1 |                                                    |
++------+------------+----------------------------------------------------+
+
+If you change bits 08-15, you can define an "offset" to the color table
+in the copperlist. So you change $10C to $8000 and then you change to 
+the upper 128 colors in the copper-palette. The trick is to display the 
+previous changed colors while changing the other colors.

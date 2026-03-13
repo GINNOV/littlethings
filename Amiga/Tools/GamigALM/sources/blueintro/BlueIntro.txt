@@ -1,0 +1,60 @@
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+<                                      <
+<          >GEMANIX PRESENTS>          <
+<                                      <
+<               BEAST  6               <
+<                                      <
+<                                      <
+<           CODING BY ROBSTER          <
+<     TEXT IN FILE:  BLUEINTRO.TXT     <
+<       TO CHANGE SCREEN CHANGING      <
+<       SPEEDS READ THE NEXT PAGE      <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<       -------------------------      <
+<                                      <
+<                                      <
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+<                                      <
+<      TO CHANGE THE SCREEN DELAY      <
+<         LOAD THE SOURCE CODE         <
+<       AND AT THE TOP CHANGE THE      <
+<        DELAY NUMBER TO HOWEVER       <
+<        MANY SECONDS YOU WANT!!       <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<       -------------------------      <
+<                                      <
+<                                      <
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+<                                      <
+<      CUT AND PASTE HOWEVER MANY      <
+<            PAGES YOU WANT            <
+<        REMEMBER THAT EACH PAGE       <
+<       MUST BE 40 LETTERS ACROSS      <
+<           AND 20 LINES DOWN          <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<                                      <
+<         ROBSTER/GEMANIX  1993        <
+<       -------------------------      <
+<                                      <
+<                                      <
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

@@ -61,3 +61,6 @@ AI/video_pipeline/src/__pycache__/
 AI/video_pipeline/videoclips/
 
 AI/video_pipeline/debug_frames/
+Amiga/Tools/GamigALM/amiga_gemma3-270m_merged
+Amiga/Tools/GamigALM/amiga_gemma3-270m_finetuned
+Amiga/Tools/GamigALM/amiga_asm_dataset

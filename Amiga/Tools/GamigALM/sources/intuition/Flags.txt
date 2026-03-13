@@ -1,0 +1,176 @@
+********************
+
+INTUITION:	IDCMP FLAGS
+		~~~~~~~~~~~
+	$000001	SIZEVERIFY	
+	$000002	NEWSIZE		Window size is changed
+	$000004	REFRESHWINDOW	
+	$000008	MOUSEBUTTONS	Mouse button is hit
+	$000010	MOUSEMOVE	Mouse is moved
+	$000020	GADGETDOWN	A special gadget is pressed
+	$000040	GADGETUP	A special gadget is released
+	$000080	REQSET		
+	$000100	MENUPICK	A menu item is chosen
+	$000200	CLOSEWINDOW	The Close window box is pressed
+	$000400	RAWKEY		A key has been pressed
+	$000800	REQVERIFY	
+	$001000	REQCLEAR	
+	$002000	MENUVERIFY	
+	$004000	NEWPREFS	Preferences have been modified
+	$008000	DISKINSERTED	A disk has been inserted
+	$010000	DISKREMOVED	A disk has been removed
+	$020000	WBENCHMESSAGE	
+	$040000	ACTIVEWINDOW	A window activated
+	$080000	INACTIVEWINDOW	A window deactivated
+	$100000	DELTAMOVE	Report relative mouse movement
+	$200000	VANILLAKEY	
+	$400000	INTUITICKS	
+
+********************
+
+INTUITION:	MESSAGE PORT
+		~~~~~~~~~~~~
+Offset
+
+20	Class			IDCMP Flag
+24	Code			Menu number and Key pressed
+26	Qualifier		What qualifier was pressed during
+				key press, eg. SHIFT, ALT, CTRL
+28	IAddress		Address of Gadget
+32	MouseX			Mouse Position X
+34	MouseY			Mouse Position Y
+36	Seconds			The time values are copies of the current
+40	Microseconds		system clock time.
+44	IDCMPWindow		Address of the window of the IDCMP
+
+********************
+
+SCREEN:			REPRESENTATION MODES
+			~~~~~~~~~~~~~~~~~~~~
+	$0002	GenLock_Video
+	$0004	Interlace	Puts the screen in Interlace
+				mode. The resolution and thus
+				the maximum screen size are doubled
+	$0040	PFBA
+	$0080	Extra_HalfBrite
+	$0100	GenLock_Audio
+	$0400	DBLPF		Divides the screen into a border
+				character area.
+	$0800	HoldNModify	Turns on Hold-and-Modify mode.
+	$2000	VP_HIDE
+	$4000	Sprites		Allows sprites to be used
+	$8000	Mode_640	Turns on the highest resolution
+				graphics for the screen (640*400)
+********************
+
+SCREEN:			TYPES
+			~~~~~
+	$0001	Workbench	Ta Da!  The Workbench
+	$000f	Custom Screen	for that special look
+	$0010	Show Title	this gets set by a call to ShowTitle()
+	$0020	Beeping		set when Screen is beeping
+	$0040	Custom Bitmap	if you are supplying your own BitMap
+	$0080	Screen Behind	if you want your screen to open behind
+				already open screens
+	$0100	Screen Quiet	if you do not want Intuition to render
+				into your screen (gadgets, title)
+	$ffff	StdScreenHeight	supply in NewScreen.Height
+
+********************
+
+WINDOWS:	ACTIVATION FLAGS
+		~~~~~~~~~~~~~~~~
+	Add to get prefered value
+	    \/
+
+	$00000001	WINDOWSIZING	Window size is changable
+	$00000002	WINDOWDRAG	Window is moveable
+	$00000004	WINDOWDEPTH	Window covering is possible
+	$00000008	WINDOWCLOSE	Window close symbol
+	$00000010	SIZEBRIGHT	
+	$00000020	SIZEBBOTTOM	
+	$00000040	SIMPLE_REFRESH	
+	$00000080	SUPER_BITMAP	Save the windows contents
+	$00000100	BACKDROP	Move window into its screen
+	$00000200	REPORTMOUSE	Report mouse coords
+	$00000400	GIMMEZEROZERO	
+	$00000800	BORDERLESS	Window without border
+	$00001000	ACTIVATE	Window active
+	$00002000	WINDOWACTIVE	
+	$00004000	INREQUEST	
+	$00008000	MENUSTATE	
+	$00010000	RMBTRAP		Right mouse button:no menu
+	$00020000	NOCAREREFRESH	No refresh message
+	$01000000	WINDOWREFRESH	
+	$02000000	WBENCHWINDOW	
+	$04000000	WINDOWTICKED	
+
+********************
+
+MENUS:		MODE FLAGS
+		~~~~~~~~~~
+	CHECKIT		001	;Checking menu items
+	ITEMTEXT	002	;Drawing or text
+	COMMSEQ		004	;For key selection
+	MENUTOGGLE	008	;Use with CheckIt
+	ITEMENABLED	010	;Menu already selected
+	HIGHCOMP	040	;Inverts when mouse moves over
+	HIGHBOX		080	;Framed when mouse move over
+	CHECKED		100	;Checked or not
+
+********************
+
+GADGETS:	GADGET FLAGS
+		~~~~~~~~~~~~
+	GADGHCOMP	$000
+	GADGHBOX	$001
+	GADGHIMAGE	$002
+	GADGHNONE	$003
+	GADGIMAGE	$004
+	RELBOTTOM	$008
+	RELRIGHT	$010
+	RELWIDTH	$020
+	RELHEIGHT	$040
+	SELECTED	$080
+	DISABLED	$100
+
+
+********************
+
+GADGET:		ACTIVATION FLAGS
+		~~~~~~~~~~~~~~~~
+	RELVERIFY	0001	;Verify pointer released over gadget
+	IMMEDIATE	0002
+	ENDGADGET	0004
+	FOLLOWMOUSE	0008	;Use with IMMEDIATE
+	RIGHTBORDER	0010
+	LEFTBORDER	0020
+	TOPBORDER	0040
+	BOTTOMBORDER	0080
+	TOGGLESELECT	0100
+	STRINGCENTER	0200
+	STRINGRIGHT	0400
+	LONGINT		0800
+	ALTKEYMAP	1000
+
+********************
+
+GADGETS:	GADGET TYPES
+		~~~~~~~~~~~~
+	BOOLGADGET		EQU $0001
+	PROPGADGET		EQU $0003
+	STRGADGET		EQU $0004
+	CUSTOMGADGET		EQU $0005
+	GTYPEMASK		EQU $0004
+
+********************
+
+GADGETS:	PROPORTIONAL FLAGS
+		~~~~~~~~~~~~~~~~~~
+	AUTOKNOB	001
+	FREEHORIZ	002
+	FREEVERT	004
+	PROPBORDERLESS	008
+	KNOBHIT		100
+	PROPNEWLOOK	010
+

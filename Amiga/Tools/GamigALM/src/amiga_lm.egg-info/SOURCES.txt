@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+src/amiga_lm/__init__.py
+src/amiga_lm/evaluate_harness.py
+src/amiga_lm/generate_model_card.py
+src/amiga_lm/merge_model.py
+src/amiga_lm/prepare_dataset.py
+src/amiga_lm/run_eval.py
+src/amiga_lm/train_model.py
+src/amiga_lm.egg-info/PKG-INFO
+src/amiga_lm.egg-info/SOURCES.txt
+src/amiga_lm.egg-info/dependency_links.txt
+src/amiga_lm.egg-info/requires.txt
+src/amiga_lm.egg-info/top_level.txt

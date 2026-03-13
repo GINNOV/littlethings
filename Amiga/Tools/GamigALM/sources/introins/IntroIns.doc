@@ -1,0 +1,262 @@
+[1m        [32m ____ _______ _______ _______ _______    ____ _______ _______ [31m
+[1m        [32m|[33m·-[31m  |[33m·-     [31m|[33m·-     [31m|[33m·- [31m_   |[33m·- [31m_   [31m|  [32m|[33m·-  [31m|[33m·-     [31m|[33m·-    .[31m|
+[1m        [32m|[33m|   [31m|[33m|  [31m_   |_     _|[33m|  [31m_  _|[33m|  [31m|[33m.  [31m|  [32m|[33m|   [31m|[33m|  [31m_   |[33m|  [31m·---|
+[1m        [32m|[33m|   [31m|[33m|  [31m|[33m.  [31m| [32m|[33m.  [31m| [32m|[33m|  [31m|[33m.  [31m|[33m|  [31m|[33m|  [31m|  [32m|[33m|   [31m|[33m|  [31m|[33m.  [31m|[33m|      [31m|
+[1m        [32m|   [33m|[31m|  [33m|[31m|[33m| |[31m| [32m|[33m| |[31m| [32m|  [33m|[31m|[33m| |[31m|      [33m|[31m|  [32m|   [33m|[31m|  [33m|[31m|[33m| |[31m|---·  [33m|[31m|
+[1m        [32m|  [33m_|[31m| [33m_|[31m| [33m_|[31m| [32m| [33m_|[31m| [32m| [33m_|[31m| [33m_|[31m|     [33m_|[31m|  [32m|  [33m_|[31m| [33m_|[31m| [33m_|[31m|     [33m_|[31m|
+[1m        [32m`[31m----^---^---' [32m`[31m---' [32m`[31m---^---^-------'  [32m`[31m----^---^---^-------'[0m
+[0m                       V  E  R  S  I  O  N      1  .  1
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Copyright © 1994 by Frantic
+IntroIns can be freely distributed and used, providing that the
+following rules are respected:
+No change is made to the program nor to the accompaning documentation.
+The package is always distributed in its complete form consisting of
+"IntroIns", "IntroIns.info", "IntroIns.doc" and "IntroIns.doc.info".
+Every form of distribution is allowed and encouraged, but no fee can
+be charged for this program except for, possibly, the cost of
+magnetic media.
+The author may not be held liable for any damages caused by
+use of this program.
+By copying, distributing and/or using the program you indicate your
+acceptance of the above rules.
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+IntroIns basically means Intro Installer. This program will write an
+intro to the blocks of a disk to be loaded through the bootblock.
+I put this program together because I was sick of teaching people how to
+write an intro to a NonDOS disk manually. IntroIns will do it for you!
+IntroIns loads the bootblock then moves all the data along by 64 bytes
+Too bad if there is data at the end, it gets moved out! (there usually isnt)
+If there is important data then the intro shouldnt be installed.
+You can check the bootblock with the View Bootblock command in the menu.
+If it is part of a text message (quite popular these days) then the message
+will only be moved down one line so it wont get screwed too much.
+Then it squeezes in at the front a blockloader. If you dont like this
+method then please write to me and say, I am thinking of giving an option
+to save the original boot to another place on disk to be loaded and run
+while booting. This method will however remove text messages altogether...
+Here is the source to my block loader.
+
+BlckLdr	movem.l	d0-a6,-(a7)
+	move.w	#2,$1c(a1)
+	move.l	#0,$24(a1)
+	move.l	#0,$28(a1)
+	move.l	#0,$2c(a1)
+	jsr	-456(a6)
+	move.w	#9,$1c(a1)
+	clr.l	$24(a1)
+	jsr	-456(a6)
+	jsr	0
+	nop
+	movem.l	(a7)+,d0-a6
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Here is some instructions for IntroIns:
+
+Start Block
+~~~~~~~~~~~
+  The intro will be written to disk starting from this block.
+
+Block Area Size
+~~~~~~~~~~~~~~~
+  The amount of space available for IntroIns to write to.
+  IntroIns will not install if the intro wont fit into this area.
+
+Load Address
+~~~~~~~~~~~~
+  The bootblock will load the intro to this address.
+
+Jump Address
+~~~~~~~~~~~~
+  Once loaded the bootblock will jump to this address.
+
+Insert
+~~~~~~
+  After choosing your start and length you can press Insert to
+  load your intro to the disk. Insert will check to see if it fits,
+  install it to disk then insert a loader to the bootblock of your disk.
+
+Search
+~~~~~~
+  This gives the status of each block on the disk, it will search
+  for blank or DOS coded blocks. Clicking this again will stop the reading.
+
+Drive Select
+~~~~~~~~~~~~
+  To change to the drive you wish to use.
+  This should work with all setups, ie. DF2: but no DF1:
+
+Block Status Window
+~~~~~~~~~~~~~~~~~~~
+  After using search a lot of dots appear, clicking on a
+  group of blank blocks will move this area to the sector boxes.
+
+MENU:
+BOOTBLOCK:
+VIEW
+~~~~
+Brings a window to view the bootblock of a disk.
+
+LOAD
+~~~~
+Loads a saved bootblock file to a disk.
+
+SAVE
+~~~~
+Saves a bootblock as a file.
+
+CHECKSUM
+~~~~~~~~
+Recalculates the checksum of a disks bootblock.
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+If you are new to intro installing here is some instructions.
+Most intros will have absolute addressing in it, absolute addressing
+means the program uses direct memory accessing. This is really
+not much of a problem as DOS will remember these absolute addresses and
+alter them so that when the intro is loaded it changes them before
+running, this way DOS can have an intro run from any address.
+This happens with every object file. If you use powerpacker you can
+see if the intro has any absolute addresses, you'll find a reloc-table!
+DOS gets around the ABS addressing problem by using offsets, in the intro
+in place of the actual address it has offsets and when its time to run
+it gets the address of the intro and adds that to all the offsets.
+If you wanted to have the intro run from a particular address
+and you run an object file from there with these offsets then you
+will get a guru as it'll try to use addresses close to location 0
+You'll have to put the intro through a REL2ABS converter so that the whole
+intro is based at, for example, $40000 (the offsets get added to
+that address!)  I use ACU's MegaDemoMaker for the job.
+Other programs such as StoneCracker or Relokit also have this feature.
+Other methods are easier such as assembling the intro to a specific
+address (eg. ORG $70000) and save it as binary instead of an object.
+I use different tricks now to avoid absolute addresses in my source code.
+Once put through the REL2ABS converter you'll have a data file.
+You can either use this directly or crunch it.
+Crunching is no problem. You'll have to use an absolute address cruncher
+such as TetraCrunch or ByteKiller.
+It'll give you stuff like:
+Load address, enter the REL2ABS one.
+Jump address, use the same address.
+Now once saved your ready for IntroIns.
+
+Load up IntroIns and find some empty sectors.
+Shove the a load address in, if it IS crunched then use an address clear
+of the REL2ABS one, if it ISNT then use the REL2ABS one!
+A Jump address, the one just used.
+Push "Insert" with a write enabled disk in your specified drive
+Choose the file saved by the cruncher and IntroIns will install it
+to those blocks. If it doesnt fit then IntroIns will tell you!
+Whoa, what a mission, it gets easier after the first time!
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+I found a use for my own program!!! Ive found that a lot of old demos
+use low memory with absolute addressing crunchers so it clashes with
+the system. It would take forever to change the source for it to work
+without disturbing the system so I grab a formatted disk and install
+the demo. Now it will load the demo without the system in the way
+so no more gurus. Even new demos tend to use low memory, I dont know why
+they even crunch demos with ABS crunchers when they have to be
+run from the system. Probably because they give the best crunch rates...
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+In previous versions of IntroIns I refered to BLOCKS being SECTORS, this
+technically is alright because there ARE 1760 sectors on a disk but to
+the average user this would be a little confusing.
+The whole disk is made up of 80 tracks
+Most Copiers can go further but the Trackdisk.device CANT!
+These track are split into groups of 11 sectors
+Each track has 2 sides.
+So, 80 x 11 x 2 = 1760 blocks!
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Dont try to be a hero and do all this to an original copy.
+Make a backup of it first! I'm not responsible for any damage may happen
+to your disks while using this program!
+IntroIns has been tested on an Amiga 1200-3.0 only
+For comments, bug reports, suggestions write to:
+Frantic
+27 Boundary Road
+Tikipunga
+Whangarei
+New Zealand
+
+You must have an Amiga with library versions higher than V33 (Amiga1.2+)
+IntroIns also uses reqtools.library V38+
+
+Special thanks to these people:
+Captain Caveman - For the cool graphics, heaps of support and suggestions
+-SaNdMaN! - For wanting to know about installing Non-DOS disks!
+[-WRAiTH-] - For also wanting to know about installing Non-DOS disks!
+Hydsie - For support and bugtesting.
+Nico François - For his ReqTools library.
+                ReqTools is Copyright (c) Nico François.
+Shayde - I think he made a utility similar, it made me realise such a
+         utility was possible!
+Rune Gram-Madsen and T.F.A - For ASM-One
+Nirvana (R.I.P.)  -
+Smashing Pumpkins -
+Urge Overkill     - For keeping me happy while coding!
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Version 0.99  --  16 October 1993 (not released)
+  Installs a sectorloader to the bootblock only.
+Version 1.00  --  23 October 1993 (not released)
+  Installs Intro to sectors as well, but very slow.
+Version 1.01  --  10 January 1994 (not released)
+  A lot of speeding up
+  Mouse driven sector status window.
+  Faster intro installer.
+  Recoded Bootblock changer.
+Version 1.02  --  13 January 1994
+  After looking at the program I saw many other improvements I could make.
+  The sectorloader is now padded to 64($40) bytes so that boot messages do
+  not get too damaged.
+  Option to view the bootblock of your disk.
+  Checks for write protection and disk presence.
+Version 1.03  --  14 January 1994
+  Cleaned up some of the startup routines, now checks for library versions.
+  Drive selection available.
+  Fixed some sort of bug in the write protection check, now it will
+  attempt write but check if it was write protected afterward.
+Version 1.04  --  29 January 1994
+  Fixed bug in IntroIns, if an intro is written to sector 1 then it
+  will install it then try to alter the bootblock which now contains part
+  of the intro. Block status window will not accept selections in
+  the bootblock, although the Block boxes will accept any values (including
+  used blocks!)
+  Fixed bug in error checking for libraries, if a library isnt found and
+  you're using workbench it wont crash anymore! (I hate little bugs!)
+  Last version missed checking for windows opening, not anymore!
+  Now uses ReqTools library V38, I think it looks much nicer.
+  Added a block info option. I saw this in an old program called SmartDisk
+  and decided to add it to my program.
+  Cleaned up the window a bit, now its more intuition friendly??!?! hehe
+  Changed docs about blocks rather than sectors.
+  Altered source to handle functions easier in the future.
+  New IntroIns logo! - Who reads this history stuff anyway!??!
+  Option added to view a particular block. More window tidying needed!
+  Added function to check for blocks formated with DOS coding. This may
+  slow down the checking a little but I have found no difference.
+  Now WB1.3+ users are able to click on the whole string gadget to
+  activate it, also you can press return to edit the next string.
+Version 1.1  --  10 June 1994
+  Totally re-wrote the source: Works faster, cleaner source, added menus,
+  removed ViewBlk, Lots of error checking.
+  Added a requester so now one drive users can play with IntroIns.
+  Added bootblock options: View, Load, Save, Checksum.
+  New logo: Thanks Captain Caveman
+  Fixed bug that would've crashed if it couldnt find memory for intro.
+Version 1.2  --  25 November 1994
+  Did some error checking and making sure every condition was checked.
+  Enhanced code.

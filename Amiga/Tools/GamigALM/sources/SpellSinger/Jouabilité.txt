@@ -1,0 +1,93 @@
+
+
+
+
+Cycle d'un monstre
+------------------
+
+
+Comportement_loop
+	attaquer le héro (utiliser arme(s))
+	si a la bonne distance et delay=paramettre[position]
+
+
+	choix d'une nouvelle destination
+	si delay=paramettre[position]
+
+	        devant le héro si personne
+	        deriere le héro si personne
+                          devant le héro a distance si personne
+	        envoyer a position hazard autour du héro
+
+
+	si destination non ateinte
+
+		sauter
+		si y=yhéro & dest. croise héro & dist héro ok
+
+		marcher un pas vers la destination
+
+
+	ne rien faire si destination ateinte
+
+		animation d'atente si monstre de non proximité
+
+
+                  JUMP Comportement_loop
+
+
+
+
+Parametres de comportement
+--------------------------
+
+
+WalkAnim
+JumpAnim
+DieAnim
+HitAnim
+NopAnim
+AttackAnim
+
+AttackDist	Distance du héro pour le touché
+
+
+
+
+
+Paramettres de difficulté/variation
+-----------------------------------
+
+
+AttackDelay1	Delay avant d'attaquer si bonne distance, si devant héro
+AttackDelay2	Delay avant d'attaquer si bonne distance, si deriere héro
+AttackDelay3	Delay avant d'attaquer si bonne distance, si devant a distance
+AttackWait1	Temp d'attente quand l'enemi montre qu'il va attaquer et l'attack
+AttackWait2	Temp d'attente quand l'enemi montre qu'il va attaquer et l'attack
+SearchDelay1	Delay entre les recherches de nouvelle destination, si dev. h.
+SearchDelay2	Delay entre les recherches de nouvelle destination, si der. h.
+SearchDelay3	Delay entre les recherches de nouvelle destination, si d. dist h.
+SearchDelay3	Delay entre les recherches de nouvelle destination, si non prox.
+Pos3Dist	Distance de placement si devant a distance
+JumpDelay1	Delay avant un saut
+JumpDelay2	Delay Apres un saut
+HitDelay	Delay de reprise de comportement apres etre touché
+HitDist	Distance de reculle si touché
+HitPoint	Point de déga a infligé pour etre touché (reculé)
+LivePoint	Point de vie
+AttackPoint	Point de dégas sur héro
+EscapeRate1	Taut d'esquive au sort court
+EscapeRate2	Taut d'esquive au sort Long
+WalkSpeed	Vitesse de déplacement
+FolowInYFlag	Suit le héro meme sur les pladeformes
+Palette           Numéro de la palette a attribué (représente la difficulté)
+AttackMethode	Methode d'attack
+EscapeMethode1	methode d'esquive au sort court
+EscapeMethode2	methode d'esquive au sort long
+AfterAttack	que faire apres une attack
+
+
+
+
+
+

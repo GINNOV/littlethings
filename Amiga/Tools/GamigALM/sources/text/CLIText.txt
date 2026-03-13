@@ -1,0 +1,4 @@
+I wouldn't mind a util that loads a text file, clears border
+(optional) expands the window to full size (optional) and waits for a mouse
+click (optional too!) like the util Lightning Text (WB1.3 ONLY util... I'll
+attach it if you haven't ever seen it!)...

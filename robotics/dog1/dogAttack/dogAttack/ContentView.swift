@@ -13,12 +13,14 @@ import Combine
 class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     @Published var status = "Disconnected"
     @Published var logs: [LogEntry] = []
+    @Published var isAutoDiscovering = false
     
     private var centralManager: CBCentralManager!
     private var peripheral: CBPeripheral?
     private var writeCharacteristic: CBCharacteristic?
     private var writeType: CBCharacteristicWriteType = .withResponse
     private var scanTimeoutWorkItem: DispatchWorkItem?
+    private var autoDiscoverTask: Task<Void, Never>?
     
     let targetDeviceName = "Rapidpower-dog-fire"
     let serviceUUID = CBUUID(string: "FA879AF4-D601-420C-B2B4-07FFB528DDE3")
@@ -58,7 +60,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             centralManager.cancelPeripheralConnection(peripheral)
         }
     }
-    
+
+    func reconnect() {
+        addLog("Reconnecting...")
+        stopScanning()
+        if let peripheral = peripheral {
+            centralManager.cancelPeripheralConnection(peripheral)
+        }
+        peripheral = nil
+        writeCharacteristic = nil
+        startScanning()
+    }
+
     func sendHex(_ hexString: String) {
         guard let characteristic = writeCharacteristic else {
             addLog("Not connected to characteristic", type: .error)
@@ -69,6 +82,70 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         
         peripheral?.writeValue(data, for: characteristic, type: writeType)
         addLog("Sent: \(hexString)", type: .success)
+    }
+
+    func startAutoDiscover(range: ClosedRange<UInt8> = 0x00...0x0F, delaySeconds: TimeInterval = 0.5) {
+        let sequence = range.map { String(format: "%02X", $0) }
+        startAutoDiscoverSequence(sequence, label: "1-byte", delaySeconds: delaySeconds)
+    }
+
+    func startAutoDiscoverTwoByte(
+        prefixes: [UInt8] = [0x00, 0x01, 0x0A, 0xFF],
+        secondByteRange: ClosedRange<UInt8> = 0x00...0xFF,
+        delaySeconds: TimeInterval = 0.5
+    ) {
+        var sequence: [String] = []
+        sequence.reserveCapacity(prefixes.count * (secondByteRange.count))
+        for prefix in prefixes {
+            for value in secondByteRange {
+                sequence.append(String(format: "%02X %02X", prefix, value))
+            }
+        }
+        startAutoDiscoverSequence(sequence, label: "2-byte", delaySeconds: delaySeconds)
+    }
+
+    private func startAutoDiscoverSequence(_ sequence: [String], label: String, delaySeconds: TimeInterval) {
+        guard peripheral?.state == .connected else {
+            addLog("Not connected to device", type: .error)
+            return
+        }
+        if isAutoDiscovering {
+            addLog("Auto discover already running", type: .info)
+            return
+        }
+        autoDiscoverTask?.cancel()
+        autoDiscoverTask = Task { [weak self] in
+            guard let self = self else { return }
+            await MainActor.run {
+                self.isAutoDiscovering = true
+                self.addLog("Auto discover started (\(label), \(sequence.count) commands)")
+            }
+            let ready = await self.waitForWriteCharacteristic(timeoutSeconds: 5)
+            if !ready {
+                await MainActor.run {
+                    self.isAutoDiscovering = false
+                    self.addLog("Characteristic not ready yet (timeout)", type: .error)
+                }
+                return
+            }
+            for hex in sequence {
+                if Task.isCancelled { break }
+                self.sendHex(hex)
+                try? await Task.sleep(nanoseconds: UInt64(delaySeconds * 1_000_000_000))
+            }
+            await MainActor.run {
+                self.isAutoDiscovering = false
+                self.addLog("Auto discover finished")
+            }
+        }
+    }
+
+    func stopAutoDiscover() {
+        guard isAutoDiscovering else { return }
+        autoDiscoverTask?.cancel()
+        autoDiscoverTask = nil
+        isAutoDiscovering = false
+        addLog("Auto discover stopped", type: .info)
     }
     
     // MARK: - CBCentralManagerDelegate
@@ -111,6 +188,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         status = "Disconnected"
         self.peripheral = nil
         self.writeCharacteristic = nil
+        stopAutoDiscover()
         startScanning()
     }
     
@@ -188,6 +266,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         }
         return data
     }
+
+    private func waitForWriteCharacteristic(timeoutSeconds: TimeInterval) async -> Bool {
+        let deadline = Date().addingTimeInterval(timeoutSeconds)
+        while Date() < deadline {
+            if writeCharacteristic != nil { return true }
+            try? await Task.sleep(nanoseconds: 200_000_000)
+        }
+        return false
+    }
 }
 
 // MARK: - Models
@@ -245,6 +332,9 @@ struct ContentView: View {
                     .fill(bleManager.status == "Connected" ? Color.green : Color.red)
                     .frame(width: 12, height: 12)
                 Text(bleManager.status)
+                Button("Reconnect") {
+                    bleManager.reconnect()
+                }
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
@@ -296,6 +386,23 @@ struct ContentView: View {
                         .disabled(bleManager.status != "Connected")
                     }
                 }
+
+                HStack {
+                    Button("Auto Discover (1-byte)") {
+                        bleManager.startAutoDiscover()
+                    }
+                    .disabled(bleManager.status != "Connected" || bleManager.isAutoDiscovering)
+
+                    Button("Auto Discover (2-byte)") {
+                        bleManager.startAutoDiscoverTwoByte()
+                    }
+                    .disabled(bleManager.status != "Connected" || bleManager.isAutoDiscovering)
+
+                    Button("Stop") {
+                        bleManager.stopAutoDiscover()
+                    }
+                    .disabled(!bleManager.isAutoDiscovering)
+                }
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
@@ -323,7 +430,7 @@ struct ContentView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .onChange(of: bleManager.logs.count) { _ in
+                    .onChange(of: bleManager.logs.count) {
                         if let last = bleManager.logs.last {
                             proxy.scrollTo(last.id, anchor: .bottom)
                         }

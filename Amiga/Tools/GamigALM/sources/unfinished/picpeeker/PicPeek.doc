@@ -1,0 +1,32 @@
+              _ ______
+     _ ______________/   _______.__________   ____________________/\__
+      ________ -\/-- \__/- ______________ -\_/--_______  _____   /  -/ 
+       /   _____//    /_  /   \   /   _____/_  _/  -/_  _/  -/-   __/  
+       \\   /   \\   /\\      /   \\   /   \\      /\\      //     \
+        \  /     \  /  \  ___/     \  /     \  ___/  \  ___/____|   \
+         \/       \/    \/          \/       \/       \/        |____\
+
+                     B Y   F R A N T I C   I N   1 9 9 4
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+Copyright © 1994 by Frantic
+Picture Peeker can be freely distributed and used, providing that the
+following rules are respected:
+No change is made to the program nor to the accompaning documentation.
+The package is always distributed in its complete form consisting of
+"PicPeek", "PicPeek.info", "PicPeek.doc" and "PicPeek.doc.info".
+Every form of distribution is allowed and encouraged, but no fee can
+be charged for this program except for, possibly, the cost of
+magnetic media.
+The author may not be held liable for any damages caused by
+use of this program.
+By copying, distributing and/or using the program you indicate your
+acceptance of the above rules.
+
+          *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+I made this program cause 3rdDay had limitations. It couldnt view all of
+the chip mem and it had inaccurate addresses while in certain modes.
+I really needed a graphics viewer for the type of programming I do.
+I load graphics to very high addresses in chip mem.

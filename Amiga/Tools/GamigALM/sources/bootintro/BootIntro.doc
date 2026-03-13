@@ -1,0 +1,40 @@
+------------------------------------------------------------------------------
+
+  ######   #####   #####  #######       ###  #####  #######  ######   #####
+  ####  # ####  # ####  #     ####      ### ####  #     #### ####  # ####  #
+  ######  ####  # ####  #     #### #### ### ####  #     #### ######  ####  #
+  ####  # ####  # ####  #     #### #### ### ####  #     #### ####  # ####  #
+  ######   #####   #####      ####      ### ####  #     #### ####  #  #####
+
+                   D    E    S    I    G    N    E    R
+
+------------------------------------------------------------------------------
+
+This boot designer is fairly easy to use. Here is what the options mean.
+
+Quit:  Bye Bye
+Load:  If you have already created a bootblock with this program it
+       can load the text from it so you can maybe alter it and save it
+       to another disk.
+Save:  Saves the Boot-Intro to a disks bootblock.
+Info:  Information on the Boot-Intro Designer
+Show:  This runs the bootblock you have created. It uses the text current in
+       the box.
+
+Easy huh ?!?!?!
+
+More Info
+~~~~~~~~~
+This program was based on the boot-intro program by Roger Fischlin
+It's written in 100% machine code using AsmOne 1.08.
+The Boot-Intro Designer should only be spread with it's doc file
+
+I am always looking for people to swap source code with.
+Sooooo, here's how to contact me...
+
+Robster,
+P.O. Box 428,
+Whangarei,
+New Zealand.
+
+------------------------------------------------------------------------------

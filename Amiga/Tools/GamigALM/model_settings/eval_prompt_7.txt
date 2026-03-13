@@ -1,0 +1,14 @@
+### INSTRUCTION ###
+Generate a highly efficient, relocatable Amiga assembly subroutine to perform the following task.
+
+### TASK ###
+wait_for_vertical_blank
+
+### SPECIFICATION ###
+- **Inputs**: None.
+- **Outputs**: None.
+- **Register Preservation**: All registers from D3-D7 and A2-A6 MUST be preserved.
+- **Scratch Registers**: D0, D1, D2, A0, and A1 can be freely used.
+- **AmigaOS Calls**: None. Direct hardware polling is required.
+- **Format**: Standard subroutine ending with an RTS instruction.
+- **Comments**: Comment on the polling of the VPOSR register.
