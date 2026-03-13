@@ -1,0 +1,33 @@
+{
+  "name": "copper_bars_asm_mutation",
+  "label": "Copper Bars Assembly Mutation Benchmark",
+  "description": "Build the inline-assembly mutation workspace into a bootblock-loaded ADF and score the captured bars against the golden crop.",
+  "source_root": "amiga_workspace/benchmarks/copper_bars/asm_mutation",
+  "include_root": "amiga_workspace/benchmarks/copper_bars/source",
+  "main_source": "amiga_workspace/benchmarks/copper_bars/asm_mutation/current.s",
+  "mutation_target": {
+    "type": "inline_asm_block",
+    "path": "amiga_workspace/benchmarks/copper_bars/asm_mutation/current.s",
+    "start_marker": "; BEGIN MUTATION COPPER LIST",
+    "end_marker": "; END MUTATION COPPER LIST"
+  },
+  "bootblock_template": "amiga_workspace/benchmarks/copper_bars/bootblock.s.in",
+  "work_dir": "build/amiga/copper_bars_asm_source",
+  "disk_image": "build/amiga/source_copper_bars_asm.adf",
+  "reference_image": "amiga_workspace/benchmarks/copper_bars/golden/crop.png",
+  "capture_image": "build/amiga/benchmark_capture.png",
+  "capture_crop_image": "build/amiga/benchmark_capture_crop.png",
+  "capture_diff_image": "build/amiga/benchmark_capture_diff.png",
+  "base_address": "0x70000",
+  "disk_size_bytes": 901120,
+  "minimum_similarity": 0.999,
+  "seconds": 8,
+  "renderer": "software",
+  "display": "standard",
+  "warp": true,
+  "port1": "mouse",
+  "port2": "none",
+  "accept_bootblock": true,
+  "accept_bootblock_delay_ms": 4000,
+  "accept_bootblock_hold_ms": 300
+}

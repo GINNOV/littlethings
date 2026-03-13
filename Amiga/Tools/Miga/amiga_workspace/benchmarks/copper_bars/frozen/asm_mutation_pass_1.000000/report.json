@@ -1,0 +1,119 @@
+{
+  "report_mode": "benchmark",
+  "stage_labels": {
+    "assemble": "Assemble",
+    "emulator": "Emulator",
+    "verify": "Benchmark"
+  },
+  "score": 1.0,
+  "assembled": true,
+  "packaged": true,
+  "emulator_ok": true,
+  "verify_ok": true,
+  "crash_detected": false,
+  "checks_passed": 4,
+  "checks_total": 4,
+  "checks_ratio": 1.0,
+  "artifact": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/copper_bars_asm_source/main.bin",
+  "disk_image": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/source_copper_bars_asm.adf",
+  "kick_rom": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/roms/Kickstart v1.3 r34.005 (1987-12)(Commodore)(A500-A1000-A2000-CDTV).rom",
+  "kick_rom_name": "Kickstart v1.3 r34.005 (1987-12)(Commodore)(A500-A1000-A2000-CDTV).rom",
+  "kick_rom_dir": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/roms",
+  "vamiga_report": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/vamigaweb_report.json",
+  "assemble": {
+    "command": "mkdir -p /Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/copper_bars_asm_source && vasmm68k_mot -Fbin -quiet -esc -I/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/benchmarks/copper_bars/source/include -o /Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/copper_bars_asm_source/main.bin /Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/benchmarks/copper_bars/asm_mutation/current.s && vasmm68k_mot -Fbin -quiet -esc -o /Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/copper_bars_asm_source/bootblock.bin /Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/copper_bars_asm_source/bootblock.s",
+    "returncode": 0,
+    "timed_out": false,
+    "seconds": 0.012691259384155273,
+    "stdout": "",
+    "stderr": "\nwarning 41 in line 17 of \"/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/benchmarks/copper_bars/asm_mutation/current.s\": label name conflicts with directive\n>entry:\n",
+    "executed": true
+  },
+  "package": {
+    "command": "bootblock:pad-adf",
+    "returncode": 0,
+    "timed_out": false,
+    "seconds": 0.0005161762237548828,
+    "stdout": "disk_image=/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/source_copper_bars_asm.adf\nbootblock=/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/copper_bars_asm_source/bootblock.bin\n",
+    "stderr": "",
+    "executed": true
+  },
+  "emulate": {
+    "command": "VAMIGA_DISK_IMAGE=/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/source_copper_bars_asm.adf VAMIGA_KICK_ROM='/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/roms/Kickstart v1.3 r34.005 (1987-12)(Commodore)(A500-A1000-A2000-CDTV).rom' VAMIGA_SECONDS=8 VAMIGA_REPORT_PATH=/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/vamigaweb_report.json VAMIGA_SCREENSHOT_PATH=/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/benchmark_capture.png VAMIGA_RENDERER=software VAMIGA_DISPLAY=standard VAMIGA_PORT1=mouse VAMIGA_PORT2=none VAMIGA_WARP=1 VAMIGA_ACCEPT_BOOTBLOCK=1 VAMIGA_BOOTBLOCK_ACCEPT_DELAY_MS=4000 VAMIGA_BOOTBLOCK_ACCEPT_HOLD_MS=300 node amiga_workspace/run_vamigaweb.js",
+    "returncode": 0,
+    "timed_out": false,
+    "seconds": 16.41297197341919,
+    "stdout": "VAMIGA_READY yes\nVAMIGA_RENDERER software\nVAMIGA_PORT1 mouse\nVAMIGA_PORT2 none\nVAMIGA_DF0 1\nVAMIGA_CPU_CYCLES 322287378\nVAMIGA_SERIAL_LEN 0\nVAMIGA_SCREENSHOT /Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/benchmark_capture.png\nVAMIGA_REPORT /Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/vamigaweb_report.json\n",
+    "stderr": "",
+    "executed": true
+  },
+  "verify": {
+    "command": "benchmark:image-compare",
+    "returncode": 0,
+    "timed_out": false,
+    "seconds": 0.03630495071411133,
+    "stdout": "",
+    "stderr": "",
+    "executed": true
+  },
+  "checks": [
+    {
+      "name": "source_exists",
+      "kind": "benchmark",
+      "passed": true,
+      "detail": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/benchmarks/copper_bars/asm_mutation/current.s"
+    },
+    {
+      "name": "bootblock_disk_built",
+      "kind": "benchmark",
+      "passed": true,
+      "detail": "bootblock=True disk=True"
+    },
+    {
+      "name": "benchmark_capture_exists",
+      "kind": "benchmark",
+      "passed": true,
+      "detail": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/benchmark_capture.png"
+    },
+    {
+      "name": "benchmark_similarity_threshold",
+      "kind": "benchmark",
+      "passed": true,
+      "detail": "similarity=1.000000 minimum=0.999000 mae=0.000000"
+    }
+  ],
+  "benchmark": {
+    "name": "copper_bars_asm_mutation",
+    "label": "Copper Bars Assembly Mutation Benchmark",
+    "config": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/benchmarks/copper_bars/asm_mutation_benchmark.json",
+    "source_root": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/benchmarks/copper_bars/asm_mutation",
+    "include_root": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/benchmarks/copper_bars/source",
+    "main_source": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/benchmarks/copper_bars/asm_mutation/current.s",
+    "bootblock_template": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/benchmarks/copper_bars/bootblock.s.in",
+    "main_binary": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/copper_bars_asm_source/main.bin",
+    "bootblock_binary": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/copper_bars_asm_source/bootblock.bin",
+    "reference_image": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/benchmarks/copper_bars/golden/crop.png",
+    "capture_image": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/benchmark_capture.png",
+    "capture_crop_image": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/benchmark_capture_crop.png",
+    "capture_diff_image": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/build/amiga/benchmark_capture_diff.png",
+    "crop": {
+      "left": 0,
+      "top": 42,
+      "right": 1166,
+      "bottom": 770
+    },
+    "base_address": 458752,
+    "disk_size_bytes": 901120,
+    "minimum_similarity": 0.999,
+    "similarity": 1.0,
+    "mae": 0.0,
+    "size_match": true
+  },
+  "seconds": {
+    "assemble": 0.012691259384155273,
+    "package": 0.0005161762237548828,
+    "emulate": 16.41297197341919,
+    "verify": 0.03630495071411133,
+    "total": 16.46248435974121
+  }
+}

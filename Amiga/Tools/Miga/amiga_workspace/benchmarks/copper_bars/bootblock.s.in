@@ -1,0 +1,26 @@
+bootblock:
+    dc.b    "DOS",0
+    dc.l    0
+    dc.l    880
+
+bootEntry:
+    lea     __BASE_ADDRESS__,a5
+
+    move.l  #mainEnd-mainStart,36(a1)
+    move.l  a5,40(a1)
+    move.l  #mainStart-bootblock,44(a1)
+    jsr     -456(a6)
+
+    move.l  #0,36(a1)
+    move.w  #9,28(a1)
+    jsr     -456(a6)
+
+    jmp     (a5)
+
+    cnop    0,1024
+
+mainStart:
+    incbin  "__MAIN_BIN__"
+    cnop    0,512
+mainEnd:
+    end

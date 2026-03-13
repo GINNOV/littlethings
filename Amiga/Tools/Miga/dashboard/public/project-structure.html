@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Miga Project Structure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f3efe6;
+        --ink: #172730;
+        --muted: #5b707b;
+        --card: #fffdf8;
+        --line: #d8d1c1;
+        --accent: #16697a;
+        --accent-2: #c96b43;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: 'Bricolage Grotesque', 'Trebuchet MS', sans-serif;
+        background: radial-gradient(circle at 10% 12%, #fff6dd, var(--bg) 34%),
+          radial-gradient(circle at 88% 16%, #dff5ff, transparent 32%),
+          var(--bg);
+      }
+
+      .page {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 22px 18px 42px;
+      }
+
+      .docs-layout {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .toc {
+        position: sticky;
+        top: 18px;
+      }
+
+      .toc-card {
+        background: rgba(255, 253, 248, 0.86);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 10px 24px rgba(22, 42, 56, 0.08);
+        backdrop-filter: blur(8px);
+      }
+
+      .toc-label {
+        margin: 0 0 10px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .topic-link {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 12px;
+        color: var(--ink);
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+      }
+
+      .topic-link + .topic-link {
+        margin-top: 8px;
+      }
+
+      .topic-link:hover {
+        background: rgba(22, 105, 122, 0.08);
+        border-color: rgba(22, 105, 122, 0.16);
+        transform: translateX(2px);
+      }
+
+      .topic-link.active {
+        background: linear-gradient(135deg, rgba(22, 105, 122, 0.16), rgba(201, 107, 67, 0.1));
+        border-color: rgba(22, 105, 122, 0.22);
+      }
+
+      .topic-name {
+        display: block;
+        font-weight: 700;
+      }
+
+      .topic-note {
+        display: block;
+        margin-top: 3px;
+        font-size: 0.84rem;
+        color: var(--muted);
+      }
+
+      .content {
+        min-width: 0;
+      }
+
+      .top p,
+      .card p,
+      .card li {
+        overflow-wrap: anywhere;
+      }
+
+      .top {
+        background: linear-gradient(135deg, #15384a, #25596d);
+        color: #f5f9fc;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        padding: 20px;
+      }
+
+      .top h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.4rem, 3vw, 2.2rem);
+      }
+
+      .top p {
+        margin: 0;
+        color: #d8ebf7;
+        max-width: 75ch;
+      }
+
+      .top a {
+        color: #d9fff3;
+      }
+
+      .return-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.1rem;
+        height: 2.1rem;
+        margin-left: 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(217, 255, 243, 0.4);
+        background: rgba(255, 255, 255, 0.08);
+        vertical-align: middle;
+        text-decoration: none;
+      }
+
+      .return-link:hover {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      .return-link svg {
+        width: 1rem;
+        height: 1rem;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+      }
+
+      .grid {
+        margin-top: 14px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+      }
+
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 1.06rem;
+      }
+
+      .mono {
+        font-family: 'IBM Plex Mono', Menlo, monospace;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      pre {
+        margin: 8px 0 0;
+        padding: 10px;
+        border: 1px solid #c9d6d0;
+        border-radius: 10px;
+        background: #f6faf7;
+        overflow: auto;
+        max-width: 100%;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      ul,
+      ol {
+        margin: 8px 0 0;
+        padding-left: 20px;
+      }
+
+      li {
+        margin: 4px 0;
+      }
+
+      .tip {
+        color: var(--muted);
+      }
+
+      .callout {
+        border-left: 4px solid var(--accent-2);
+      }
+
+      .footer {
+        margin-top: 14px;
+        text-align: right;
+        color: #516874;
+        font-size: 0.82rem;
+      }
+
+      @media (max-width: 920px) {
+        .docs-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .toc {
+          position: static;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="/docs-theme.css" />
+  </head>
+  <body>
+    <main class="page">
+      <div class="docs-layout">
+        <aside class="toc" aria-label="Documentation topics">
+          <nav class="toc-card">
+            <p class="toc-label">Topics</p>
+            <a class="topic-link" href="/how-to.html">
+              <span class="topic-name">Dashboard</span>
+              <span class="topic-note">Run monitor usage and controls</span>
+            </a>
+            <a class="topic-link" href="/how-to/settings">
+              <span class="topic-name">Settings</span>
+              <span class="topic-note">What each saved setting does</span>
+            </a>
+            <a class="topic-link active" href="/how-to/project-structure" aria-current="page">
+              <span class="topic-name">Project</span>
+              <span class="topic-note">Repository layout and edit targets</span>
+            </a>
+            <a class="topic-link" href="/how-to/agentic">
+              <span class="topic-name">Agentic</span>
+              <span class="topic-note">Using program files with CLI agents</span>
+            </a>
+            <a class="topic-link" href="/how-to/credits">
+              <span class="topic-name">Credits</span>
+              <span class="topic-note">External code, fonts, and art</span>
+            </a>
+          </nav>
+        </aside>
+
+        <div class="content">
+          <section class="top">
+            <h1>Miga Project Structure</h1>
+            <p>
+              This page maps the repository at a high level so it is easier to tell
+              which files are source, which files are runtime outputs, and where each
+              dashboard feature connects back into the project. Return to the
+              <a href="/how-to.html">dashboard guide</a> or the live dashboard
+              <a class="return-link" href="/" aria-label="Return to the live dashboard">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 7L4 12L9 17" />
+                  <path d="M4 12H14C17.314 12 20 14.686 20 18" />
+                </svg>
+              </a>.
+            </p>
+          </section>
+
+          <section class="grid">
+            <article class="card">
+          <h2>1. Top-Level Layout</h2>
+          <p>
+            The repository still contains the older MLX training scaffold, but
+            the active browser dashboard and Amiga workflow live alongside it at
+            the root.
+          </p>
+          <pre class="mono">.
+|- README.md
+|- explainer.md
+|- program.amiga.md
+|- amiga_eval.py
+|- amiga_eval_benchmark.py
+|- amiga_eval_benchmark_source.py
+|- amiga_eval.toml
+|- results_amiga.tsv
+|- dashboard/
+|- amiga_workspace/
+|- roms/
+|- train.py
+\- prepare.py</pre>
+          <p class="tip">
+            If you are working on the Amiga run loop or dashboard, start with
+            <span class="mono">dashboard/</span>, <span class="mono">amiga_workspace/</span>,
+            and the top-level <span class="mono">amiga_eval*.py</span> scripts.
+          </p>
+            </article>
+
+            <article class="card">
+          <h2>2. Dashboard Files</h2>
+          <ul>
+            <li><strong><span class="mono">dashboard/server.js</span></strong>: Express server, API routes, queue management, run execution, and archive serving.</li>
+            <li><strong><span class="mono">dashboard/public/index.html</span></strong>: the monitor UI shell.</li>
+            <li><strong><span class="mono">dashboard/public/app.js</span></strong>: browser-side polling, rendering, charts, and form behavior.</li>
+            <li><strong><span class="mono">dashboard/public/settings.html</span></strong>: project-level saved defaults for dashboard and terminal tools.</li>
+            <li><strong><span class="mono">dashboard/public/settings-guide.html</span></strong>: documentation for what each setting means and when to use it.</li>
+            <li><strong><span class="mono">dashboard/public/how-to.html</span></strong>: the operator walkthrough for using the dashboard.</li>
+            <li><strong><span class="mono">dashboard/public/project-structure.html</span></strong>: this repository-map page.</li>
+            <li><strong><span class="mono">dashboard/public/agentic.html</span></strong>: practical agent-run examples for the repo protocols.</li>
+            <li><strong><span class="mono">dashboard/public/credits.html</span></strong>: project credits, dependency pointers, and asset provenance notes.</li>
+            <li><strong><span class="mono">dashboard/VERSION</span></strong>: footer version shown by the UI and guide pages.</li>
+          </ul>
+        </article>
+
+            <article class="card">
+          <h2>3. Workspace Tree</h2>
+          <p>
+            The <span class="mono">amiga_workspace/</span> tree holds editable source,
+            benchmark fixtures, corpus material, and packaging helpers.
+          </p>
+          <pre class="mono">amiga_workspace/
+|- main.s
+|- startup-sequence
+|- presets/
+|- adf/
+|- benchmarks/copper_bars/
+\- corpus/</pre>
+          <ul>
+            <li><strong><span class="mono">amiga_workspace/main.s</span></strong>: the default editable source seed for normal validation runs.</li>
+            <li><strong><span class="mono">amiga_workspace/benchmarks/copper_bars/</span></strong>: fixed benchmark assets, golden image, source-built mutation target, and disk files.</li>
+            <li><strong><span class="mono">amiga_workspace/corpus/</span></strong>: candidate source pool plus manifests and helper scripts for selection.</li>
+            <li><strong><span class="mono">amiga_workspace/adf/</span></strong>: template disk area for packaging runs.</li>
+            <li><strong><span class="mono">amiga_workspace/presets/</span></strong>: known success or failure source presets for controlled tests.</li>
+          </ul>
+            </article>
+
+            <article class="card">
+          <h2>4. Evaluators And Run Modes</h2>
+          <ul>
+            <li><strong><span class="mono">amiga_eval.py</span></strong>: normal assemble, emulate, and verify evaluator.</li>
+            <li><strong><span class="mono">amiga_eval_benchmark.py</span></strong>: fixed known-good Copper reference benchmark.</li>
+            <li><strong><span class="mono">amiga_eval_benchmark_source.py</span></strong>: source-built Copper mutation benchmark.</li>
+            <li><strong><span class="mono">amiga_eval.toml</span></strong>: command and scoring configuration shared by the Amiga evaluators.</li>
+            <li><strong><span class="mono">program.amiga.md</span></strong>: agent protocol for the keep-or-revert loop.</li>
+          </ul>
+            </article>
+
+            <article class="card">
+          <h2>5. Runtime Outputs</h2>
+          <p>
+            Runtime artifacts are intentionally kept outside the source folders so
+            they are easy to inspect and easy to discard.
+          </p>
+          <ul>
+            <li><strong><span class="mono">build/amiga/</span></strong>: latest generated reports, logs, screenshots, captures, and selection metadata.</li>
+            <li><strong><span class="mono">build/amiga/runs/</span></strong>: archived per-run folders exposed in the dashboard as recent runs.</li>
+            <li><strong><span class="mono">results_amiga.tsv</span></strong>: append-only score history shown in the History table and trend chart.</li>
+          </ul>
+          <p class="tip">
+            If the dashboard displays the latest report or a recent archived run,
+            it is reading from these generated locations.
+          </p>
+          <p class="tip">
+            The workspace folder was renamed to <span class="mono">amiga_workspace/</span>,
+            but the generated-output directory intentionally remains
+            <span class="mono">build/amiga/</span>.
+          </p>
+            </article>
+
+            <article class="card">
+          <h2>6. ROMs And External Inputs</h2>
+          <ul>
+            <li><strong><span class="mono">roms/</span></strong>: Kickstart ROM files the dashboard enumerates for the ROM picker.</li>
+            <li><strong><span class="mono">README.md</span></strong>: run commands and a high-level explanation of the mixed MLX plus Amiga layout.</li>
+            <li><strong><span class="mono">explainer.md</span></strong>: plain-language terminal walkthrough for the Amiga flow outside the browser UI.</li>
+          </ul>
+            </article>
+
+            <article class="card">
+          <h2>7. Common Edit Targets</h2>
+          <ol>
+            <li>If you want to change dashboard layout or copy, edit <span class="mono">dashboard/public/index.html</span>.</li>
+            <li>If you want to change dashboard behavior, API polling, or charts, edit <span class="mono">dashboard/public/app.js</span>.</li>
+            <li>If you want to change queueing, archive handling, or server routes, edit <span class="mono">dashboard/server.js</span>.</li>
+            <li>If you want to change the default validation source, edit <span class="mono">amiga_workspace/main.s</span>.</li>
+            <li>If you want to change benchmark fixtures or the Copper mutation task, work under <span class="mono">amiga_workspace/benchmarks/copper_bars/</span>.</li>
+            <li>If you want to change source selection or corpus filtering, work under <span class="mono">amiga_workspace/corpus/</span> and its scripts.</li>
+          </ol>
+            </article>
+
+            <article class="card callout">
+          <h2>8. Mental Model</h2>
+          <p>
+            The dashboard is only the operator surface. The actual run pipeline is:
+            queue a job in the browser, execute it in
+            <span class="mono">dashboard/server.js</span>, call one of the
+            top-level evaluator scripts, read and write generated files under
+            <span class="mono">build/amiga/</span>, then render the latest state
+            and history back into the browser.
+          </p>
+            </article>
+          </section>
+
+          <footer class="footer mono">Dashboard version: <span id="dashboardVersion">--</span></footer>
+        </div>
+      </div>
+    </main>
+    <script>
+      (async () => {
+        const node = document.getElementById('dashboardVersion');
+        if (!node) return;
+        try {
+          const res = await fetch('/api/version');
+          if (!res.ok) throw new Error(String(res.status));
+          const data = await res.json();
+          node.textContent = data.dashboardVersion || '0.0.0-dev';
+        } catch {
+          node.textContent = '0.0.0-dev';
+        }
+      })();
+    </script>
+  </body>
+</html>

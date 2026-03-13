@@ -1,0 +1,13 @@
+{
+  "manifest": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/corpus/manifest.tsv",
+  "output": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/corpus/manifest_runnable.tsv",
+  "report_json": "/Users/megov/code/GitHub/littlethings/Amiga/Tools/Miga/amiga_workspace/corpus/manifest_runnable_report.json",
+  "total_rows": 12,
+  "runnable_rows": 0,
+  "skipped_rows": 12,
+  "vamos": "/Users/megov/.venv/bin/vamos",
+  "verify_timeout": 10.0,
+  "reasons": {
+    "verify_nonzero_exit": 12
+  }
+}

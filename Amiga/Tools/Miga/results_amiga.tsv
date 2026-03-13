@@ -1,0 +1,4 @@
+commit	score	status	description
+ba6ebf6	1.000000	keep	keep run 2026-03-12T02-17-02-923Z-1 mode=copper_reference source=amiga_workspace/benchmarks/copper_bars/disk/copper_bars.adf rom=Kickstart v1.3 r34.005 (1987-12)(Commodore)(A500-A1000-A2000-CDTV).rom
+ba6ebf6	1.000000	discard	discard run 2026-03-12T02-19-34-183Z-1 mode=copper_mutation source=amiga_workspace/benchmarks/copper_bars/source/copper.s rom=Kickstart v1.3 r34.005 (1987-12)(Commodore)(A500-A1000-A2000-CDTV).rom
+ba6ebf6	0.734430	keep	keep run 2026-03-12T02-30-55-379Z-1 mode=copper_mutation source=amiga_workspace/benchmarks/copper_bars/mutation/current.s rom=Kickstart v1.3 r34.005 (1987-12)(Commodore)(A500-A1000-A2000-CDTV).rom

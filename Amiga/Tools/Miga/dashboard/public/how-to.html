@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Miga Dashboard Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f1efe8;
+        --ink: #1a2b35;
+        --muted: #5e7482;
+        --card: #fffdf7;
+        --line: #d8d2c3;
+        --accent: #11826f;
+        --accent-2: #e07a5f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: 'Bricolage Grotesque', 'Trebuchet MS', sans-serif;
+        background: radial-gradient(circle at 8% 8%, #fff3d8, var(--bg) 35%),
+          radial-gradient(circle at 84% 20%, #dbf4ff, transparent 33%),
+          var(--bg);
+      }
+
+      .page {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 22px 18px 42px;
+      }
+
+      .docs-layout {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .toc {
+        position: sticky;
+        top: 18px;
+      }
+
+      .toc-card {
+        background: rgba(255, 253, 247, 0.86);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 10px 24px rgba(20, 42, 53, 0.08);
+        backdrop-filter: blur(8px);
+      }
+
+      .toc-label {
+        margin: 0 0 10px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .topic-link {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 12px;
+        color: var(--ink);
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+      }
+
+      .topic-link + .topic-link {
+        margin-top: 8px;
+      }
+
+      .topic-link:hover {
+        background: rgba(17, 130, 111, 0.08);
+        border-color: rgba(17, 130, 111, 0.16);
+        transform: translateX(2px);
+      }
+
+      .topic-link.active {
+        background: linear-gradient(135deg, rgba(17, 130, 111, 0.16), rgba(36, 81, 103, 0.12));
+        border-color: rgba(17, 130, 111, 0.24);
+      }
+
+      .topic-name {
+        display: block;
+        font-weight: 700;
+      }
+
+      .topic-note {
+        display: block;
+        margin-top: 3px;
+        font-size: 0.84rem;
+        color: var(--muted);
+      }
+
+      .content {
+        min-width: 0;
+      }
+
+      .top p,
+      .card p,
+      .card li {
+        overflow-wrap: anywhere;
+      }
+
+      .top {
+        background: linear-gradient(135deg, #133548, #245167);
+        color: #f5f9fc;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        padding: 20px;
+      }
+
+      .top h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.4rem, 3vw, 2.2rem);
+      }
+
+      .top p {
+        margin: 0;
+        color: #d8ebf7;
+        max-width: 74ch;
+      }
+
+      .top a {
+        color: #d2f5ed;
+      }
+
+      .return-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.1rem;
+        height: 2.1rem;
+        margin-left: 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(210, 245, 237, 0.4);
+        background: rgba(255, 255, 255, 0.08);
+        vertical-align: middle;
+        text-decoration: none;
+      }
+
+      .return-link:hover {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      .return-link svg {
+        width: 1rem;
+        height: 1rem;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+      }
+
+      .grid {
+        margin-top: 14px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+      }
+
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 1.06rem;
+      }
+
+      ol,
+      ul {
+        margin: 8px 0 0;
+        padding-left: 20px;
+      }
+
+      li {
+        margin: 4px 0;
+      }
+
+      .mono {
+        font-family: 'IBM Plex Mono', Menlo, monospace;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      pre {
+        margin: 8px 0 0;
+        padding: 10px;
+        border: 1px solid #c9d6d0;
+        border-radius: 10px;
+        background: #f6faf7;
+        overflow: auto;
+        max-width: 100%;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .badge {
+        display: inline-block;
+        margin-right: 8px;
+        margin-top: 4px;
+        border-radius: 999px;
+        border: 1px solid #c8d8d0;
+        padding: 3px 8px;
+        font-size: 0.77rem;
+        color: #36505a;
+      }
+
+      .warn {
+        border-left: 4px solid var(--accent-2);
+      }
+
+      .tip {
+        color: var(--muted);
+      }
+
+      .footer {
+        margin-top: 14px;
+        text-align: right;
+        color: #516874;
+        font-size: 0.82rem;
+      }
+
+      @media (max-width: 920px) {
+        .docs-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .toc {
+          position: static;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="/docs-theme.css" />
+  </head>
+  <body>
+    <main class="page">
+      <div class="docs-layout">
+        <aside class="toc" aria-label="Documentation topics">
+          <nav class="toc-card">
+            <p class="toc-label">Topics</p>
+            <a class="topic-link active" href="/how-to.html" aria-current="page">
+              <span class="topic-name">Dashboard</span>
+              <span class="topic-note">Run monitor usage and controls</span>
+            </a>
+            <a class="topic-link" href="/how-to/settings">
+              <span class="topic-name">Settings</span>
+              <span class="topic-note">What each saved setting does</span>
+            </a>
+            <a class="topic-link" href="/how-to/project-structure">
+              <span class="topic-name">Project</span>
+              <span class="topic-note">Repository layout and edit targets</span>
+            </a>
+            <a class="topic-link" href="/how-to/agentic">
+              <span class="topic-name">Agentic</span>
+              <span class="topic-note">Using program files with CLI agents</span>
+            </a>
+            <a class="topic-link" href="/how-to/credits">
+              <span class="topic-name">Credits</span>
+              <span class="topic-note">External code, fonts, and art</span>
+            </a>
+          </nav>
+        </aside>
+
+        <div class="content">
+          <section class="top">
+            <h1>Miga Dashboard Guide</h1>
+            <p>
+              This page explains how to run and read the monitor UI without AI-specific terms. Return to the live dashboard:
+              <a class="return-link" href="/" aria-label="Return to the live dashboard">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 7L4 12L9 17" />
+                  <path d="M4 12H14C17.314 12 20 14.686 20 18" />
+                </svg>
+              </a>
+              Project-wide saved defaults are explained in the <a href="/how-to/settings">Settings guide</a>. Use the
+              live editor at <a href="/settings.html">Settings</a> when you actually want to change those saved values.
+            </p>
+          </section>
+
+          <section class="grid">
+            <article class="card">
+          <h2>1. Start The Dashboard</h2>
+          <ol>
+            <li>Open Terminal in the project root.</li>
+            <li>Run:</li>
+          </ol>
+          <pre class="mono">npm run monitor:start</pre>
+          <ol start="3">
+            <li>Open <span class="mono">http://localhost:4173</span>.</li>
+          </ol>
+          <p class="tip">Default access is local-only (<span class="mono">127.0.0.1</span>).</p>
+            </article>
+
+            <article class="card">
+          <h2>2. Optional Token Protection</h2>
+          <p>
+            Use token protection when you want the dashboard to stay viewable, but you do not want other people or
+            browser tabs to be able to queue runs or clear the queue without permission.
+          </p>
+          <p>This matters most if you expose the monitor beyond your own local session.</p>
+          <p>Launch with a token:</p>
+          <pre class="mono">MONITOR_API_TOKEN='change-me' npm run monitor:start</pre>
+          <p>Then open:</p>
+          <pre class="mono">http://localhost:4173/?token=change-me</pre>
+          <p class="tip">The token is only required for run-control actions such as queueing and clearing jobs.</p>
+            </article>
+
+            <article class="card">
+          <h2>3. Status Strip</h2>
+          <p>
+            The pills at the top give the fastest summary of what the monitor is doing right now.
+          </p>
+          <ul>
+            <li><strong>State:</strong> whether the runner is currently idle or executing a batch.</li>
+            <li><strong>Iteration:</strong> the current position inside the active batch, such as <span class="mono">4/100</span>.</li>
+            <li><strong>Pending:</strong> how many iterations are still left to run, including the rest of the current batch.</li>
+            <li><strong>Time:</strong> the browser's current local time, useful when checking whether the page is still refreshing.</li>
+          </ul>
+            </article>
+
+            <article class="card">
+          <h2>4. Kick Off Runs</h2>
+          <p>
+            This is the control panel for starting a batch. Use it when you want to test new sources, compare ROMs, or
+            switch between validation and benchmark workflows.
+          </p>
+          <ul>
+            <li><strong>Iterations:</strong> how many runs to execute in this batch.</li>
+            <li><strong>Seed:</strong> changes deterministic source selection when random picking is enabled.</li>
+            <li><strong>Source Filter:</strong> narrows auto-selection to manifest rows whose paths contain the text you type.</li>
+            <li><strong>Manifest Index:</strong> pins one exact manifest row instead of letting auto-select choose randomly. This is useful for repeatable runs, debugging one exact source, and comparing the same source across ROMs or run methods. Use <span class="mono">0</span> to disable it.</li>
+            <li><strong>Kick ROM:</strong> selects which ROM file to use for this batch.</li>
+            <li><strong>Run Method:</strong> choose between <strong>Corpus validation</strong>, <strong>Copper reference benchmark</strong>, and <strong>Copper mutation benchmark</strong>.</li>
+            <li><strong>Auto-select source before each run:</strong> pick a source automatically before every iteration. Turn this off only when you want to keep the current <span class="mono">amiga_workspace/main.s</span> unchanged.</li>
+            <li><strong>Allow include files (.i/.inc):</strong> let selection include include/header-style files, not just normal <span class="mono">.s</span> or <span class="mono">.asm</span> sources.</li>
+            <li><strong>Allow non-entrypoint files:</strong> let selection use files that do not look like standalone programs with a clear start label.</li>
+            <li><strong>Queue Run Batch:</strong> adds the batch to the runner.</li>
+            <li><strong>Clear Waiting Queue:</strong> removes waiting batches only. It does not stop the iteration that is already running.</li>
+          </ul>
+            </article>
+
+            <article class="card">
+          <h2>5. Run Methods</h2>
+          <p>
+            The run method decides what the runner executes and what kind of result the score is supposed to represent.
+            Pick the mode that matches the question you are trying to answer.
+          </p>
+          <ul>
+            <li><strong>Corpus validation</strong>: what it does: auto-selects a source from the strict runnable corpus and runs the normal assemble, emulate, and verify flow.</li>
+            <li><strong>Corpus validation</strong>: what it aims to validate: whether curated corpus files are still runnable and verify-clean under the standard evaluator.</li>
+            <li><strong>Corpus validation</strong>: when to use it: when checking corpus quality, testing ROM compatibility on known runnable sources, or refreshing confidence in the normal source-selection path.</li>
+            <li><strong>Copper reference benchmark</strong>: what it does: boots the fixed known-good Copper bars disk and scores the captured screen against the saved golden image.</li>
+            <li><strong>Copper reference benchmark</strong>: what it aims to validate: whether the benchmark harness itself is stable, including ROM loading, vAmigaWeb rendering, screenshot capture, cropping, and image scoring.</li>
+            <li><strong>Copper reference benchmark</strong>: when to use it: when you need a control run, when debugging the benchmark infrastructure, or when checking whether a ROM or emulator change broke the benchmark path.</li>
+            <li><strong>Copper mutation benchmark</strong>: what it does: assembles the mutable Copper workspace source, wraps it into a bootblock-loaded ADF, boots that generated disk, and scores the rendered result against the same golden image.</li>
+            <li><strong>Copper mutation benchmark</strong>: what it aims to validate: whether source-level changes move the mutable workspace closer to the target visual result. This is the mode that directly supports the future mutation loop.</li>
+            <li><strong>Copper mutation benchmark</strong>: when to use it: when iterating on the Copper workspace, when comparing candidate changes against the golden output, and when running the real optimization path for this project.</li>
+          </ul>
+            </article>
+
+            <article class="card">
+          <h2>6. Latest Report Snapshot</h2>
+          <p>
+            This card summarizes the most recent evaluator result. It is the quickest place to see whether the last run
+            assembled, booted, and passed verification.
+          </p>
+          <ul>
+            <li><strong>Score:</strong> the current normalized result from the evaluator.</li>
+            <li><strong>Assemble:</strong> whether the source built into an executable.</li>
+            <li><strong>Emulator:</strong> whether the emulator stage completed without a detected crash.</li>
+            <li><strong>Verify:</strong> whether the deterministic verification stage passed. In benchmark modes this label changes to <strong>Benchmark</strong>.</li>
+            <li><strong>Iterations Done:</strong> current batch progress while running, or final batch position after completion.</li>
+            <li><strong>Selected Source / Kick ROM:</strong> the exact inputs used for the latest run.</li>
+            <li><strong>Latest outcome:</strong> explains the difference between evaluator success and keep/discard status. For example, a benchmark can pass perfectly and still be marked <span class="mono">discard</span> when it only ties the current best score.</li>
+          </ul>
+            </article>
+
+            <article class="card">
+          <h2>7. Live Run Log</h2>
+          <p>
+            This is the live terminal-style feed for the active iteration. Use it when a run looks stalled, fails
+            unexpectedly, or you want to see which stage is running now.
+          </p>
+          <ul>
+            <li><strong>Job / iteration header:</strong> identifies the active batch and position.</li>
+            <li><strong>Phase:</strong> shows whether the runner is selecting, evaluating, or finishing.</li>
+            <li><strong>Run tag:</strong> the unique ID for the archived run folder.</li>
+            <li><strong>Log lines:</strong> streamed output from selection and evaluation commands.</li>
+          </ul>
+            </article>
+
+            <article class="card">
+          <h2>8. Recent Archived Runs</h2>
+          <p>
+            This list is a quick audit trail of recent completed runs. Use it to compare sources, ROMs, and statuses
+            without opening the filesystem directly.
+          </p>
+          <ul>
+            <li><strong>Status:</strong> whether the run was marked <span class="mono">keep</span>, <span class="mono">discard</span>, or <span class="mono">crash</span>.</li>
+            <li><strong>Score:</strong> the stored score for that archived run.</li>
+            <li><strong>Source / ROM:</strong> the exact source and ROM used in that run.</li>
+          </ul>
+            </article>
+
+            <article class="card">
+          <h2>9. Score Trend</h2>
+          <p>
+            The chart shows how scores evolve over time. It is useful for spotting flatlines, regressions, and sudden
+            improvements.
+          </p>
+          <ul>
+            <li>Each point is one recorded run.</li>
+            <li>Point color follows run status: <span class="mono">keep</span>, <span class="mono">discard</span>, or <span class="mono">crash</span>.</li>
+            <li>The summary above the chart shows run count, latest score, and best score in the current filtered view.</li>
+            <li>Terminal mutation-loop batches feed this chart too, so local LM Studio or heuristic runs appear alongside browser-queued runs.</li>
+            <li>If the chart is flat, the underlying runs are likely repeating the same source or mode and producing the same score.</li>
+          </ul>
+            </article>
+
+            <article class="card">
+          <h2>10. History</h2>
+          <p>
+            This table combines dashboard-triggered runs with terminal mutation-loop runs. It is the best place to
+            inspect a longer sequence of runs and filter down to a smaller slice.
+          </p>
+          <ul>
+            <li><strong>Status Filter:</strong> show only <span class="mono">keep</span>, <span class="mono">discard</span>, or <span class="mono">crash</span> rows.</li>
+            <li><strong>Today only:</strong> restrict the table to runs recorded today.</li>
+            <li><strong>Run Method:</strong> shows which workflow produced the row, such as corpus validation, the fixed Copper reference benchmark, or the Copper mutation benchmark.</li>
+            <li><strong>Result:</strong> shows whether the evaluator itself passed, independent of keep/discard. This makes it clear when a benchmark passed but was discarded only because it did not improve the current best score.</li>
+            <li><strong>Description:</strong> includes the run tag, selected source, mode, and ROM for each row.</li>
+            <li><strong>Screenshot:</strong> opens the archived image for that run when the evaluator saved one.</li>
+          </ul>
+            </article>
+
+            <article class="card">
+          <h2>11. Typical Workflow</h2>
+          <ol>
+            <li>Set <strong>Iterations</strong> (start with `1`).</li>
+            <li>Choose a <strong>Kick ROM</strong> from the dropdown (or keep Auto).</li>
+            <li>Choose a <strong>Run Method</strong>. <strong>Corpus validation</strong> is for strict runnable-corpus checks. <strong>Copper reference benchmark</strong> is the fixed known-good control disk. <strong>Copper mutation benchmark</strong> is the real optimization target and assembles the mutable Copper workspace source into a bootblock ADF before scoring it.</li>
+            <li>Set <strong>Manifest Index</strong> to a positive number only if you want one exact manifest row. Leave it at `0` for normal selection behavior.</li>
+            <li>Leave <strong>Auto-select source</strong> on unless testing a fixed <span class="mono">amiga_workspace/main.s</span>.</li>
+            <li>Enable <strong>Allow include files</strong> only when you intentionally want headers/include fragments in the candidate pool.</li>
+            <li>Enable <strong>Allow non-entrypoint files</strong> only when you want to test fragments that may not behave like standalone programs.</li>
+            <li>When auto-select is on, the server uses <span class="mono">manifest_runnable.tsv</span> (strict verify-ready sources).</li>
+            <li>Click <strong>Queue Run Batch</strong>.</li>
+            <li>Watch <strong>Live Run Log</strong> and <strong>Score Trend</strong>.</li>
+            <li>If needed, click <strong>Clear Waiting Queue</strong> (does not stop an already running job).</li>
+          </ol>
+            </article>
+
+            <article class="card warn">
+          <h2>12. Troubleshooting</h2>
+          <ul>
+            <li>If the page says refresh failed, confirm the server is still running in Terminal.</li>
+            <li>If run control is unauthorized, open the UI with the correct <span class="mono">?token=...</span>.</li>
+            <li>If many runs show `crash`, inspect `build/amiga/report.json` and logs in `build/amiga/`.</li>
+          </ul>
+            </article>
+          </section>
+
+          <footer class="footer mono">Dashboard version: <span id="dashboardVersion">--</span></footer>
+        </div>
+      </div>
+    </main>
+    <script>
+      (async () => {
+        const node = document.getElementById('dashboardVersion');
+        if (!node) return;
+        try {
+          const res = await fetch('/api/version');
+          if (!res.ok) throw new Error(String(res.status));
+          const data = await res.json();
+          node.textContent = data.dashboardVersion || '0.0.0-dev';
+        } catch {
+          node.textContent = '0.0.0-dev';
+        }
+      })();
+    </script>
+  </body>
+</html>

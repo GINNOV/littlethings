@@ -1,0 +1,8 @@
+{
+  "total_rows": 542,
+  "usable_rows": 12,
+  "quarantined_rows": 530,
+  "moved_files": 530,
+  "dry_run": false,
+  "report_tsv": "amiga_workspace/corpus/not_for_training/reports/quarantine_report.tsv"
+}

@@ -1,0 +1,185 @@
+{
+  "activeProfile": "default",
+  "profiles": {
+    "default": {
+      "dashboard": {
+        "defaults": {
+          "iterations": 1,
+          "seed": 0,
+          "runMode": "copper_mutation",
+          "sourceFilter": "",
+          "manifestIndex": 0,
+          "kickRom": "",
+          "autoSelect": true,
+          "allowIncludes": false,
+          "allowNonentry": false
+        }
+      },
+      "benchmark": {
+        "kickRomName": "",
+        "kickRomDir": ""
+      },
+      "mutationLoop": {
+        "iterations": 10,
+        "seed": 0,
+        "benchmarkConfig": "amiga_workspace/benchmarks/copper_bars/source_benchmark.json",
+        "evalScript": "amiga_eval_benchmark_source.py",
+        "loopDir": "build/amiga/mutation_loop",
+        "resultsFile": "",
+        "mutator": "heuristic",
+        "mutation": "any",
+        "candidateBudget": 12,
+        "plateauRepeatLimit": 4,
+        "imageHashCacheFile": ""
+      },
+      "llm": {
+        "openai": {
+          "model": "gpt-5-mini",
+          "apiKeyEnv": "OPENAI_API_KEY",
+          "baseUrl": "https://api.openai.com/v1/responses",
+          "reasoningEffort": "minimal"
+        },
+        "lmstudio": {
+          "baseUrl": "http://127.0.0.1:1234",
+          "model": "",
+          "apiTokenEnv": "LMSTUDIO_API_TOKEN"
+        }
+      }
+    },
+    "benchmark": {
+      "dashboard": {
+        "defaults": {
+          "iterations": 1,
+          "seed": 0,
+          "runMode": "copper_reference",
+          "sourceFilter": "",
+          "manifestIndex": 0,
+          "kickRom": "",
+          "autoSelect": true,
+          "allowIncludes": false,
+          "allowNonentry": false
+        }
+      },
+      "benchmark": {
+        "kickRomName": "",
+        "kickRomDir": ""
+      },
+      "mutationLoop": {
+        "iterations": 10,
+        "seed": 0,
+        "benchmarkConfig": "amiga_workspace/benchmarks/copper_bars/source_benchmark.json",
+        "evalScript": "amiga_eval_benchmark_source.py",
+        "loopDir": "build/amiga/mutation_loop",
+        "resultsFile": "",
+        "mutator": "heuristic",
+        "mutation": "any",
+        "candidateBudget": 12,
+        "plateauRepeatLimit": 4,
+        "imageHashCacheFile": ""
+      },
+      "llm": {
+        "openai": {
+          "model": "gpt-5-mini",
+          "apiKeyEnv": "OPENAI_API_KEY",
+          "baseUrl": "https://api.openai.com/v1/responses",
+          "reasoningEffort": "minimal"
+        },
+        "lmstudio": {
+          "baseUrl": "http://127.0.0.1:1234",
+          "model": "",
+          "apiTokenEnv": "LMSTUDIO_API_TOKEN"
+        }
+      }
+    },
+    "lmstudio": {
+      "dashboard": {
+        "defaults": {
+          "iterations": 1,
+          "seed": 0,
+          "runMode": "copper_mutation",
+          "sourceFilter": "",
+          "manifestIndex": 0,
+          "kickRom": "",
+          "autoSelect": true,
+          "allowIncludes": false,
+          "allowNonentry": false
+        }
+      },
+      "benchmark": {
+        "kickRomName": "",
+        "kickRomDir": ""
+      },
+      "mutationLoop": {
+        "iterations": 10,
+        "seed": 0,
+        "benchmarkConfig": "amiga_workspace/benchmarks/copper_bars/source_benchmark.json",
+        "evalScript": "amiga_eval_benchmark_source.py",
+        "loopDir": "build/amiga/mutation_loop",
+        "resultsFile": "",
+        "mutator": "lmstudio",
+        "mutation": "any",
+        "candidateBudget": 12,
+        "plateauRepeatLimit": 4,
+        "imageHashCacheFile": ""
+      },
+      "llm": {
+        "openai": {
+          "model": "gpt-5-mini",
+          "apiKeyEnv": "OPENAI_API_KEY",
+          "baseUrl": "https://api.openai.com/v1/responses",
+          "reasoningEffort": "minimal"
+        },
+        "lmstudio": {
+          "baseUrl": "http://127.0.0.1:1234",
+          "model": "",
+          "apiTokenEnv": "LMSTUDIO_API_TOKEN"
+        }
+      }
+    },
+    "corpus-validation": {
+      "dashboard": {
+        "defaults": {
+          "iterations": 1,
+          "seed": 0,
+          "runMode": "corpus_validation",
+          "sourceFilter": "",
+          "manifestIndex": 0,
+          "kickRom": "",
+          "autoSelect": true,
+          "allowIncludes": false,
+          "allowNonentry": false
+        }
+      },
+      "benchmark": {
+        "kickRomName": "",
+        "kickRomDir": ""
+      },
+      "mutationLoop": {
+        "iterations": 10,
+        "seed": 0,
+        "benchmarkConfig": "amiga_workspace/benchmarks/copper_bars/source_benchmark.json",
+        "evalScript": "amiga_eval_benchmark_source.py",
+        "loopDir": "build/amiga/mutation_loop",
+        "resultsFile": "",
+        "mutator": "heuristic",
+        "mutation": "any",
+        "candidateBudget": 12,
+        "plateauRepeatLimit": 4,
+        "imageHashCacheFile": ""
+      },
+      "llm": {
+        "openai": {
+          "model": "gpt-5-mini",
+          "apiKeyEnv": "OPENAI_API_KEY",
+          "baseUrl": "https://api.openai.com/v1/responses",
+          "reasoningEffort": "minimal"
+        },
+        "lmstudio": {
+          "baseUrl": "http://127.0.0.1:1234",
+          "model": "",
+          "apiTokenEnv": "LMSTUDIO_API_TOKEN"
+        }
+      }
+    }
+  }
+}
