@@ -1,0 +1,31 @@
+# AP and precision/recall per class
+0.00% = Computer_mouse AP 
+ Precision: []
+ Recall :[]
+
+100.00% = Human_face AP 
+ Precision: ['1.00', '1.00', '1.00']
+ Recall :['0.33', '0.67', '1.00']
+
+0.00% = Mobile_phone AP 
+ Precision: ['0.00']
+ Recall :['0.00']
+
+50.00% = Pen AP 
+ Precision: ['1.00']
+ Recall :['0.50']
+
+
+# mAP of all classes
+mAP = 37.50%
+
+# Number of ground-truth objects per class
+Computer_mouse: 2
+Human_face: 3
+Mobile_phone: 2
+Pen: 2
+
+# Number of detected objects per class
+Human_face: 3 (tp:3, fp:0)
+Mobile_phone: 1 (tp:0, fp:1)
+Pen: 1 (tp:1, fp:0)

@@ -1,0 +1,4 @@
+Human_face
+Mobile_phone
+Pen
+Computer_mouse
