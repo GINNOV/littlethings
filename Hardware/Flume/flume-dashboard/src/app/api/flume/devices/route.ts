@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getStoredConfig } from '@/lib/config';
 
+interface FlumeDevicePayload {
+  id?: string | number;
+  device_id?: string | number;
+  name?: string;
+  device_name?: string;
+  type?: string;
+  location_id?: string | number;
+}
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get('Authorization');
   const accessToken = authHeader?.replace('Bearer ', '');
@@ -49,7 +58,7 @@ export async function GET(request: Request) {
     };
     
     // Attempt to find devices in multiple possible locations
-    let rawDevices = [];
+    let rawDevices: FlumeDevicePayload[] = [];
     if (Array.isArray(devicesDataRaw.data)) {
       rawDevices = devicesDataRaw.data;
     } else if (Array.isArray(devicesDataRaw)) {
@@ -59,7 +68,7 @@ export async function GET(request: Request) {
     }
 
     // Map to a consistent format
-    const devices = rawDevices.map((d: any) => ({
+    const devices = rawDevices.map((d) => ({
       id: d.id || d.device_id,
       name: d.name || d.device_name || `Device ${String(d.id || d.device_id || '').slice(-4)}`,
       type: d.type,

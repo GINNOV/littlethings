@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import axios from 'axios';
 import { useRouter, usePathname } from 'next/navigation';
 import { checkAuthConfig, logout as logoutAction } from '@/app/settings/actions';
@@ -35,6 +35,17 @@ interface FlumeContextType {
   setSelectedDevice: (device: FlumeDevice) => void;
 }
 
+interface FlumeApiError {
+  response?: {
+    data?: {
+      error?: string;
+      details?: {
+        error_description?: string;
+      } | string;
+    };
+  };
+}
+
 const FlumeContext = createContext<FlumeContextType | undefined>(undefined);
 
 export function FlumeProvider({ children }: { children: ReactNode }) {
@@ -47,7 +58,7 @@ export function FlumeProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await logoutAction();
     setToken(null);
     setUser(null);
@@ -55,9 +66,9 @@ export function FlumeProvider({ children }: { children: ReactNode }) {
     setSelectedDevice(null);
     localStorage.removeItem('flume_refresh_token');
     router.push('/login');
-  };
+  }, [router]);
 
-  const login = async () => {
+  const login = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -100,11 +111,12 @@ export function FlumeProvider({ children }: { children: ReactNode }) {
         setSelectedDevice(devicesResponse.data.devices[0]);
       }
     } catch (err: unknown) {
-      const axiosError = err as { response?: { data?: { error?: string, details?: any } } };
+      const axiosError = err as FlumeApiError;
       console.error('Login failed:', axiosError);
       
-      const errorMsg = axiosError.response?.data?.details?.error_description || 
-                      axiosError.response?.data?.error || 
+      const details = axiosError.response?.data?.details;
+      const errorMsg = (typeof details === 'object' ? details.error_description : details) ||
+                      axiosError.response?.data?.error ||
                       (err instanceof Error ? err.message : 'Failed to authenticate with Flume');
       
       setError(errorMsg);
@@ -115,11 +127,11 @@ export function FlumeProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [pathname, router]);
 
   useEffect(() => {
     login();
-  }, [pathname]);
+  }, [login]);
 
   return (
     <FlumeContext.Provider

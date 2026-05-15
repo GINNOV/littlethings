@@ -4,7 +4,7 @@ import React from 'react';
 import { Shell } from '@/components/Shell';
 import { useFlume } from '@/components/FlumeContext';
 import { UserAvatar } from '@/components/UserAvatar';
-import { Mail, User as UserIcon, Shield, CreditCard, ExternalLink } from 'lucide-react';
+import { Mail, User as UserIcon, Shield, ExternalLink } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useFlume();

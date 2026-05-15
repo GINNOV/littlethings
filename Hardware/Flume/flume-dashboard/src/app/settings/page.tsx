@@ -1,24 +1,26 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Shell } from '@/components/Shell';
 import { useFlume } from '@/components/FlumeContext';
 import { getEnvStatus, updateFlumeConfig, resetFlumeConfig } from './actions';
 
+type EnvStatus = Awaited<ReturnType<typeof getEnvStatus>>;
+
 export default function SettingsPage() {
   const { user, selectedDevice, token, login } = useFlume();
-  const [envStatus, setEnvStatus] = useState<any>({});
+  const [envStatus, setEnvStatus] = useState<Partial<EnvStatus>>({});
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  useEffect(() => {
-    refreshStatus();
+  const refreshStatus = useCallback(() => {
+    getEnvStatus().then(setEnvStatus);
   }, []);
 
-  const refreshStatus = () => {
-    getEnvStatus().then(setEnvStatus);
-  };
+  useEffect(() => {
+    refreshStatus();
+  }, [refreshStatus]);
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

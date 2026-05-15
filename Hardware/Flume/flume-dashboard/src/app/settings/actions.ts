@@ -1,9 +1,16 @@
 'use server';
 
 import 'server-only';
-import { getStoredConfig, saveConfig, clearConfig, FlumeConfig } from '@/lib/config';
+import { getStoredConfig, saveConfig, clearConfig } from '@/lib/config';
 import { flumeClient } from '@/lib/flume';
 import { revalidatePath } from 'next/cache';
+
+interface FlumeValidationError {
+  response?: {
+    data?: unknown;
+  };
+  message?: string;
+}
 
 export async function getEnvStatus() {
   const customConfig = await getStoredConfig();
@@ -53,8 +60,9 @@ export async function updateFlumeConfig(formData: FormData) {
     
     revalidatePath('/settings');
     return { success: true };
-  } catch (error: any) {
-    console.error('Validation failed:', error.response?.data || error.message);
+  } catch (error: unknown) {
+    const validationError = error as FlumeValidationError;
+    console.error('Validation failed:', validationError.response?.data || validationError.message);
     return { error: 'Invalid credentials or Flume API error' };
   }
 }

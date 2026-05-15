@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     try {
       const body = await request.json();
       refreshToken = body?.refreshToken;
-    } catch (e) {
+    } catch {
       // Body is empty or not JSON, proceed with normal login
     }
 
