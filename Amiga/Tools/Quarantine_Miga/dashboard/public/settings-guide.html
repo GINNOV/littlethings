@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Miga Settings Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f4efe8;
+        --ink: #172730;
+        --muted: #60737d;
+        --card: #fffdf8;
+        --line: #d7d0c2;
+        --accent: #1a6a74;
+        --accent-2: #cc6f47;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: 'Bricolage Grotesque', 'Trebuchet MS', sans-serif;
+        background: radial-gradient(circle at 10% 12%, #fff5dc, var(--bg) 35%),
+          radial-gradient(circle at 88% 16%, #dff6ff, transparent 32%),
+          var(--bg);
+      }
+
+      .page {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 22px 18px 42px;
+      }
+
+      .docs-layout {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .toc {
+        position: sticky;
+        top: 18px;
+      }
+
+      .toc-card {
+        background: rgba(255, 253, 248, 0.86);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 10px 24px rgba(22, 42, 56, 0.08);
+        backdrop-filter: blur(8px);
+      }
+
+      .toc-label {
+        margin: 0 0 10px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .topic-link {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 12px;
+        color: var(--ink);
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+      }
+
+      .topic-link + .topic-link {
+        margin-top: 8px;
+      }
+
+      .topic-link:hover {
+        background: rgba(26, 106, 116, 0.08);
+        border-color: rgba(26, 106, 116, 0.16);
+        transform: translateX(2px);
+      }
+
+      .topic-link.active {
+        background: linear-gradient(135deg, rgba(26, 106, 116, 0.16), rgba(204, 111, 71, 0.1));
+        border-color: rgba(26, 106, 116, 0.22);
+      }
+
+      .topic-name {
+        display: block;
+        font-weight: 700;
+      }
+
+      .topic-note {
+        display: block;
+        margin-top: 3px;
+        font-size: 0.84rem;
+        color: var(--muted);
+      }
+
+      .content {
+        min-width: 0;
+      }
+
+      .top p,
+      .card p,
+      .card li {
+        overflow-wrap: anywhere;
+      }
+
+      .top {
+        background: linear-gradient(135deg, #163b49, #275969);
+        color: #f5f9fc;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        padding: 20px;
+      }
+
+      .top h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.4rem, 3vw, 2.2rem);
+      }
+
+      .top p {
+        margin: 0;
+        color: #d8ebf7;
+        max-width: 80ch;
+      }
+
+      .top a {
+        color: #d9fff3;
+      }
+
+      .return-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.1rem;
+        height: 2.1rem;
+        margin-left: 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(217, 255, 243, 0.4);
+        background: rgba(255, 255, 255, 0.08);
+        vertical-align: middle;
+        text-decoration: none;
+      }
+
+      .return-link:hover {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      .return-link svg {
+        width: 1rem;
+        height: 1rem;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+      }
+
+      .grid {
+        margin-top: 14px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+      }
+
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 1.06rem;
+      }
+
+      .mono {
+        font-family: 'IBM Plex Mono', Menlo, monospace;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .tip {
+        color: var(--muted);
+      }
+
+      .footer {
+        margin-top: 14px;
+        text-align: right;
+        color: #516874;
+        font-size: 0.82rem;
+      }
+
+      ul {
+        margin: 8px 0 0;
+        padding-left: 20px;
+      }
+
+      li {
+        margin: 4px 0;
+      }
+
+      @media (max-width: 920px) {
+        .docs-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .toc {
+          position: static;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="/docs-theme.css" />
+  </head>
+  <body>
+    <main class="page">
+      <div class="docs-layout">
+        <aside class="toc" aria-label="Documentation topics">
+          <nav class="toc-card">
+            <p class="toc-label">Topics</p>
+            <a class="topic-link" href="/how-to/overview">
+              <span class="topic-name">Overview</span>
+              <span class="topic-note">How the system generates working code</span>
+            </a>
+            <a class="topic-link" href="/how-to/">
+              <span class="topic-name">Dashboard</span>
+              <span class="topic-note">Run monitor usage and controls</span>
+            </a>
+            <a class="topic-link active" href="/how-to/settings" aria-current="page">
+              <span class="topic-name">Settings</span>
+              <span class="topic-note">What each saved setting does</span>
+            </a>
+            <a class="topic-link" href="/how-to/project-structure">
+              <span class="topic-name">Project</span>
+              <span class="topic-note">Repository layout and edit targets</span>
+            </a>
+            <a class="topic-link" href="/how-to/corpus">
+              <span class="topic-name">Corpus</span>
+              <span class="topic-note">What the source pool is made of</span>
+            </a>
+            <a class="topic-link" href="/how-to/agentic">
+              <span class="topic-name">Agentic</span>
+              <span class="topic-note">Using program files with CLI agents</span>
+            </a>
+            <a class="topic-link" href="/how-to/credits">
+              <span class="topic-name">Credits</span>
+              <span class="topic-note">External code, fonts, and art</span>
+            </a>
+          </nav>
+        </aside>
+
+        <div class="content">
+          <section class="top">
+            <h1>Miga Settings Guide</h1>
+            <p>
+              This page explains what each saved setting changes, why it exists, and when you would actually use it.
+              If you want to edit the saved values instead of reading about them, open the live
+              <a href="/settings.html">Settings editor</a>. Return to the live dashboard
+              <a class="return-link" href="/" aria-label="Return to the live dashboard">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 7L4 12L9 17" />
+                  <path d="M4 12H14C17.314 12 20 14.686 20 18" />
+                </svg>
+              </a>
+            </p>
+          </section>
+
+          <section class="grid">
+            <article class="card">
+              <h2>1. Profiles</h2>
+              <ul>
+                <li><strong>Active Profile:</strong> chooses which saved bundle of settings the dashboard and terminal tools use by default. Use this when you switch between repeatable workflows such as benchmark runs, corpus validation, or an LM Studio-backed mutation setup.</li>
+                <li><strong>Create Profile From Current:</strong> saves the values currently shown in the editor into a new named profile. Use this when you have a working combination you want to reuse later without retyping every field.</li>
+                <li><strong>Delete Active Profile:</strong> removes a non-default profile. Use this when an old experiment preset is no longer useful and you do not want it cluttering the selector.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h2>2. Dashboard Defaults</h2>
+              <ul>
+                <li><strong>Iterations:</strong> pre-fills how many runs a queued batch should execute. Keep this at <span class="mono">1</span> while debugging; raise it when you want unattended repeated runs.</li>
+                <li><strong>Seed:</strong> pre-fills the source-selection seed. Use a fixed seed when you want the selection path to be reproducible.</li>
+                <li><strong>Run Method:</strong> chooses the default workflow the monitor opens with. Use <span class="mono">corpus_validation</span> for runnable-source checks, <span class="mono">copper_reference</span> for the fixed control disk, <span class="mono">copper_bars_suite</span> for the broader inline-assembly Copper benchmark, and <span class="mono">playfield_marker</span> when you want the setup-sensitive playfield check.</li>
+                <li><strong>Kick ROM:</strong> preselects the ROM file used when queueing runs. Set this when you are repeatedly comparing against one exact ROM instead of switching manually each time.</li>
+                <li><strong>Source Filter:</strong> narrows auto-selection to manifest rows containing the typed text. Use this when you want a profile dedicated to one corpus family or subfolder.</li>
+                <li><strong>Manifest Index:</strong> pins one exact manifest row when non-zero. Use this for repeatable investigations of one source file.</li>
+                <li><strong>Auto-select Source:</strong> decides whether the monitor picks a source before every run. Turn it off only when you want to keep the current workspace source fixed between iterations.</li>
+                <li><strong>Allow Include Files:</strong> lets the selector pull in include/header-like files. Use this only when you intentionally want fragments in the candidate pool.</li>
+                <li><strong>Allow Non-entrypoint Files:</strong> allows files that do not look like standalone programs. Use this only for broader corpus mining or debugging unusual cases.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h2>3. Benchmark Defaults</h2>
+              <ul>
+                <li><strong>Kick ROM Name:</strong> default ROM name for the source benchmark evaluator when terminal tools do not override it. Use this when you want CLI benchmark runs to follow one ROM choice by default.</li>
+                <li><strong>ROM Directory:</strong> where benchmark tools look for ROM files. Change this only if your ROMs live somewhere other than the repo's normal <span class="mono">roms/</span> location.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h2>4. Mutation Loop Defaults</h2>
+              <ul>
+                <li><strong>Iterations:</strong> how many mutation attempts the loop should run. Use small numbers while testing a mutator; use larger numbers for unattended exploration.</li>
+                <li><strong>Seed:</strong> reproducibility control for mutation candidate generation. Use a fixed seed if you want to compare two loop runs more directly.</li>
+                <li><strong>Mutator:</strong> chooses how candidates are selected, such as <span class="mono">heuristic</span>, <span class="mono">openai</span>, or <span class="mono">lmstudio</span>. Pick this based on whether you want local heuristics, hosted OpenAI calls, or a local LM Studio server.</li>
+                <li><strong>Mutation Strategy:</strong> constrains which edit type the loop may propose. Use this when debugging one operator, such as only shifting Copper pairs or only removing them.</li>
+                <li><strong>Candidate Budget:</strong> limits how many candidates are generated before the chooser picks one. Raise it when you want broader search; lower it when you want faster and simpler runs.</li>
+                <li><strong>Benchmark Config:</strong> points to the JSON config for the source-built benchmark. Change this only when you are moving to a different benchmark task or config file.</li>
+                <li><strong>Eval Script:</strong> selects the evaluator entry point used by the mutation loop. Keep the default unless you are deliberately swapping in another evaluator.</li>
+                <li><strong>Loop Directory:</strong> output folder for mutation-loop logs, results, and archived runs. Use a custom path when you want to separate one campaign from another; otherwise keep the repo default.</li>
+                <li><strong>Results File:</strong> optional explicit TSV path instead of the default file inside the loop directory. Use this when you want multiple loops to write into separate named result logs.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h2>5. OpenAI Defaults</h2>
+              <ul>
+                <li><strong>Model:</strong> default model name for the OpenAI-backed mutator. Change this when you are comparing response quality, cost, or reasoning behavior.</li>
+                <li><strong>Reasoning Effort:</strong> default effort level for supported reasoning models. Raise it when the model needs more deliberate candidate choice; lower it when speed matters more.</li>
+                <li><strong>API Key Environment Variable:</strong> the env var name the loop should read for the OpenAI API key. Change this only if your shell uses a nonstandard variable name.</li>
+                <li><strong>Base URL:</strong> the endpoint used for OpenAI-compatible requests. Keep the default unless you are targeting a compatible gateway or proxy.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h2>6. LM Studio Defaults</h2>
+              <ul>
+                <li><strong>Base URL:</strong> where the loop should reach the LM Studio server. Change it when LM Studio is on a different host or port.</li>
+                <li><strong>Model:</strong> optional LM Studio model identifier. Use this when the server exposes multiple local models and you want one pinned in the saved profile.</li>
+                <li><strong>Token Environment Variable:</strong> optional env var name for an auth token if your local gateway requires one. Most local setups can leave this alone.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h2>7. Terminal Preview</h2>
+              <p>
+                The preview shows the command implied by the currently edited mutation-loop settings. Its purpose is
+                auditability: you can see the exact flags the saved defaults would feed into
+                <span class="mono">amiga_copper_mutation_loop.py</span> before running anything.
+              </p>
+              <p class="tip">
+                Use the preview when you want to sanity-check a profile quickly, especially after changing mutator,
+                benchmark config, or loop directory values.
+              </p>
+            </article>
+
+            <article class="card">
+              <h2>8. Practical Scenarios</h2>
+
+              <p><strong>Scenario: Copper work</strong></p>
+              <ul>
+                <li><strong>Objective:</strong> iterate on the inline-assembly Copper benchmark path without falling back to the older pair-file workflow.</li>
+                <li><strong>Explanation:</strong> the main benchmark path in the repo is now the assembly workspace plus the broader Copper suite. You want the dashboard aimed at that suite, and the mutation loop aimed at the inline-assembly benchmark config it mutates directly.</li>
+                <li><strong>Recommended settings:</strong> set <span class="mono">Run Method</span> to <span class="mono">copper_bars_suite</span>, keep <span class="mono">Auto-select Source</span> off when you are intentionally editing the fixed mutation workspace, keep <span class="mono">Benchmark Config</span> pointed at <span class="mono">amiga_workspace/benchmarks/copper_bars/asm_mutation_benchmark.json</span>, keep <span class="mono">Eval Script</span> on <span class="mono">amiga_eval_benchmark_source.py</span>, and use a dedicated <span class="mono">Loop Directory</span> if you want one Copper campaign separated from another.</li>
+              </ul>
+
+              <p><strong>Scenario: Fixed-source corpus investigation</strong></p>
+              <ul>
+                <li><strong>Objective:</strong> repeatedly test one exact runnable source from the corpus without random source churn.</li>
+                <li><strong>Explanation:</strong> this is where the dashboard defaults matter a lot. You want the monitor to open in corpus validation mode but already pinned to one source-selection path instead of picking a new candidate every time.</li>
+                <li><strong>Recommended settings:</strong> set <span class="mono">Run Method</span> to <span class="mono">corpus_validation</span>, turn <span class="mono">Auto-select Source</span> off if you are keeping a copied source in the workspace, or keep it on with a nonzero <span class="mono">Manifest Index</span> when you want one exact manifest row. Use <span class="mono">Source Filter</span> only if you want the profile narrowed to one corpus family, and set a fixed <span class="mono">Kick ROM</span> when ROM differences are part of the investigation.</li>
+              </ul>
+
+              <p><strong>Scenario: LM Studio mutation profile</strong></p>
+              <ul>
+                <li><strong>Objective:</strong> run the mutation loop against a local LM Studio server instead of the heuristic chooser or hosted OpenAI.</li>
+                <li><strong>Explanation:</strong> this is a profile-driven setup. The saved settings define which mutator backend is used, where the local server lives, and which optional local model ID should be pinned.</li>
+                <li><strong>Recommended settings:</strong> set <span class="mono">Mutator</span> to <span class="mono">lmstudio</span>, set <span class="mono">LM Studio Base URL</span> to the host and port your local server exposes, optionally fill <span class="mono">LM Studio Model</span> if you want one model pinned, and keep the usual inline-assembly Copper defaults for <span class="mono">Run Method</span>, <span class="mono">Benchmark Config</span>, and <span class="mono">Eval Script</span>. Save this as its own profile so you can switch between local and hosted mutators without rewriting fields.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h2>9. Creating New Benchmark Families</h2>
+              <p>
+                Settings profiles help once a benchmark already exists. They are not the right way to create a new benchmark family from scratch.
+              </p>
+              <p>Use the scaffold tool in Terminal instead:</p>
+              <pre class="mono">python3 tools/new_amiga_benchmark.py "My New Benchmark"</pre>
+              <p>Use this when you need a new family with the standard repo layout:</p>
+              <ul>
+                <li><strong>reference/control/mutation workspaces</strong></li>
+                <li><strong>frame configs and suite configs</strong></li>
+                <li><strong>placeholder goldens and a benchmark README</strong></li>
+              </ul>
+              <p class="tip">
+                The generated files are a starting point. You still need to replace placeholder code, capture real goldens, and tune crop and threshold values.
+              </p>
+            </article>
+          </section>
+
+          <footer class="footer mono">Dashboard version: <span id="dashboardVersion">--</span></footer>
+        </div>
+      </div>
+    </main>
+    <script>
+      (async () => {
+        const node = document.getElementById('dashboardVersion');
+        if (!node) return;
+        try {
+          const res = await fetch('/api/version');
+          if (!res.ok) return;
+          const data = await res.json();
+          node.textContent = data.dashboardVersion || '--';
+        } catch (_err) {}
+      })();
+    </script>
+  </body>
+</html>

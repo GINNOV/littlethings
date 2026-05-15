@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Miga Corpus Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f4efe8;
+        --ink: #172730;
+        --muted: #60737d;
+        --card: #fffdf8;
+        --line: #d7d0c2;
+        --accent: #1a6a74;
+        --accent-2: #cc6f47;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: 'Bricolage Grotesque', 'Trebuchet MS', sans-serif;
+        background: radial-gradient(circle at 10% 12%, #fff5dc, var(--bg) 35%),
+          radial-gradient(circle at 88% 16%, #dff6ff, transparent 32%),
+          var(--bg);
+      }
+
+      .page {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 22px 18px 42px;
+      }
+
+      .docs-layout {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .toc {
+        position: sticky;
+        top: 18px;
+      }
+
+      .toc-card {
+        background: rgba(255, 253, 248, 0.86);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 10px 24px rgba(22, 42, 56, 0.08);
+        backdrop-filter: blur(8px);
+      }
+
+      .toc-label {
+        margin: 0 0 10px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .topic-link {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 12px;
+        color: var(--ink);
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+      }
+
+      .topic-link + .topic-link {
+        margin-top: 8px;
+      }
+
+      .topic-link:hover {
+        background: rgba(26, 106, 116, 0.08);
+        border-color: rgba(26, 106, 116, 0.16);
+        transform: translateX(2px);
+      }
+
+      .topic-link.active {
+        background: linear-gradient(135deg, rgba(26, 106, 116, 0.16), rgba(204, 111, 71, 0.1));
+        border-color: rgba(26, 106, 116, 0.22);
+      }
+
+      .topic-name {
+        display: block;
+        font-weight: 700;
+      }
+
+      .topic-note {
+        display: block;
+        margin-top: 3px;
+        font-size: 0.84rem;
+        color: var(--muted);
+      }
+
+      .content {
+        min-width: 0;
+      }
+
+      .top p,
+      .card p,
+      .card li {
+        overflow-wrap: anywhere;
+      }
+
+      .top {
+        background: linear-gradient(135deg, #163b49, #275969);
+        color: #f5f9fc;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        padding: 20px;
+      }
+
+      .top h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.4rem, 3vw, 2.2rem);
+      }
+
+      .top p {
+        margin: 0;
+        color: #d8ebf7;
+        max-width: 80ch;
+      }
+
+      .top a {
+        color: #d9fff3;
+      }
+
+      .return-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.1rem;
+        height: 2.1rem;
+        margin-left: 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(217, 255, 243, 0.4);
+        background: rgba(255, 255, 255, 0.08);
+        vertical-align: middle;
+        text-decoration: none;
+      }
+
+      .return-link:hover {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      .return-link svg {
+        width: 1rem;
+        height: 1rem;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+      }
+
+      .grid {
+        margin-top: 14px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+      }
+
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 1.06rem;
+      }
+
+      .mono {
+        font-family: 'IBM Plex Mono', Menlo, monospace;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .tip {
+        color: var(--muted);
+      }
+
+      .footer {
+        margin-top: 14px;
+        text-align: right;
+        color: #516874;
+        font-size: 0.82rem;
+      }
+
+      ul {
+        margin: 8px 0 0;
+        padding-left: 20px;
+      }
+
+      li {
+        margin: 4px 0;
+      }
+
+      @media (max-width: 920px) {
+        .docs-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .toc {
+          position: static;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="/docs-theme.css" />
+  </head>
+  <body>
+    <main class="page">
+      <div class="docs-layout">
+        <aside class="toc" aria-label="Documentation topics">
+          <nav class="toc-card">
+            <p class="toc-label">Topics</p>
+            <a class="topic-link" href="/how-to/overview">
+              <span class="topic-name">Overview</span>
+              <span class="topic-note">How the system generates working code</span>
+            </a>
+            <a class="topic-link" href="/how-to/">
+              <span class="topic-name">Dashboard</span>
+              <span class="topic-note">Run monitor usage and controls</span>
+            </a>
+            <a class="topic-link" href="/how-to/settings">
+              <span class="topic-name">Settings</span>
+              <span class="topic-note">What each saved setting does</span>
+            </a>
+            <a class="topic-link" href="/how-to/project-structure">
+              <span class="topic-name">Project</span>
+              <span class="topic-note">Repository layout and edit targets</span>
+            </a>
+            <a class="topic-link active" href="/how-to/corpus" aria-current="page">
+              <span class="topic-name">Corpus</span>
+              <span class="topic-note">What the source pool is made of</span>
+            </a>
+            <a class="topic-link" href="/how-to/agentic">
+              <span class="topic-name">Agentic</span>
+              <span class="topic-note">Using program files with CLI agents</span>
+            </a>
+            <a class="topic-link" href="/how-to/credits">
+              <span class="topic-name">Credits</span>
+              <span class="topic-note">External code, fonts, and art</span>
+            </a>
+          </nav>
+        </aside>
+
+        <div class="content">
+          <section class="top">
+            <h1>Miga Corpus Guide</h1>
+            <p>
+              This page explains what lives inside <span class="mono">amiga_workspace/corpus/</span>, how entries move
+              from raw source trees into the runnable pool, and what the dashboard is actually selecting from during
+              corpus validation runs.
+              <a class="return-link" href="/" aria-label="Return to the live dashboard">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 7L4 12L9 17" />
+                  <path d="M4 12H14C17.314 12 20 14.686 20 18" />
+                </svg>
+              </a>
+            </p>
+          </section>
+
+          <section class="grid">
+            <article class="card">
+              <h2>1. What The Corpus Is</h2>
+              <p>
+                The corpus is the project&apos;s candidate source pool for normal validation runs. It is not one hand-made
+                program. It is a staged collection of Amiga assembly-like material gathered from upstream trees, filtered
+                into likely source files, then indexed into manifests that the selector and dashboard can use.
+              </p>
+              <ul>
+                <li><strong>Raw source trees</strong>: original imported material, preserved as source input.</li>
+                <li><strong>Curated files</strong>: filtered assembly-like files copied out of the raw trees.</li>
+                <li><strong>Manifest rows</strong>: index records describing curated candidates.</li>
+                <li><strong>Runnable manifest rows</strong>: the strict subset that assemble and exit cleanly in verification.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h2>2. Corpus Layout</h2>
+              <pre class="mono">amiga_workspace/corpus/
+|- raw/
+|- curated/
+|- manifest.tsv
+|- manifest_runnable.tsv
+|- manifest_runnable_report.json
+\- scripts/</pre>
+              <ul>
+                <li><strong><span class="mono">raw/</span></strong>: original source trees, including nested repositories or upstream folder structures.</li>
+                <li><strong><span class="mono">curated/</span></strong>: extracted assembly-like files that passed the indexing filter.</li>
+                <li><strong><span class="mono">manifest.tsv</span></strong>: the broad candidate index built from curated files.</li>
+                <li><strong><span class="mono">manifest_runnable.tsv</span></strong>: the strict run-ready pool used by default when available.</li>
+                <li><strong><span class="mono">scripts/</span></strong>: corpus maintenance and selection helpers.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h2>3. How Entries Move Through The Pipeline</h2>
+              <ol>
+                <li>Source trees are stored in <span class="mono">amiga_workspace/corpus/raw/</span>.</li>
+                <li>The indexer copies likely assembly-like files into <span class="mono">curated/</span>.</li>
+                <li>The project writes <span class="mono">manifest.tsv</span> as the general candidate index.</li>
+                <li>The runnable-manifest builder tests those candidates by assembly and verification.</li>
+                <li>Passing rows are written to <span class="mono">manifest_runnable.tsv</span>.</li>
+              </ol>
+              <p class="tip">
+                That means the full corpus is wider than the runnable pool. The dashboard usually selects from the strict
+                runnable subset, not from every imported file.
+              </p>
+            </article>
+
+            <article class="card">
+              <h2>4. What The Dashboard Actually Uses</h2>
+              <p>
+                During <strong>Corpus validation</strong>, the selector uses
+                <span class="mono">manifest_runnable.tsv</span> by default if that file exists and has real rows. If the
+                runnable manifest is missing or empty, selection falls back to <span class="mono">manifest.tsv</span>.
+              </p>
+              <ul>
+                <li><strong>Source Filter</strong> narrows matching paths inside the chosen manifest.</li>
+                <li><strong>Manifest Index</strong> pins one exact manifest row.</li>
+                <li><strong>Seed</strong> changes deterministic selection when picking from multiple candidates.</li>
+                <li><strong>Allow include files</strong> and <strong>Allow non-entrypoint files</strong> widen what kinds of entries can be selected.</li>
+              </ul>
+              <p>
+                The selected entry is copied into <span class="mono">amiga_workspace/main.s</span>, and the selection
+                metadata is written to <span class="mono">build/amiga/selected_source.json</span>.
+              </p>
+            </article>
+
+            <article class="card">
+              <h2>5. Runnable Means Strict</h2>
+              <p>
+                The runnable manifest is not just a filename list. It is the subset of candidates that survive the
+                project&apos;s strict validation gate.
+              </p>
+              <ol>
+                <li><span class="mono">vasmm68k_mot</span> assemble step must succeed.</li>
+                <li><span class="mono">vamos</span> verification step must exit with code <span class="mono">0</span>.</li>
+              </ol>
+              <p>
+                If <span class="mono">manifest_runnable.tsv</span> contains only the header row, the current corpus has no
+                strict verify-clean candidates yet.
+              </p>
+            </article>
+
+            <article class="card">
+              <h2>6. Maintenance Commands</h2>
+              <p>These are the main commands used to maintain or inspect the corpus pipeline.</p>
+              <pre class="mono">python3 amiga_workspace/corpus/scripts/index_raw_sources.py --refresh
+python3 amiga_workspace/corpus/scripts/build_runnable_manifest.py
+python3 amiga_workspace/corpus/scripts/select_source.py --contains "bootblock"
+python3 amiga_workspace/corpus/scripts/select_source.py --index 42
+amiga_workspace/corpus/scripts/pick_for_run.sh --seed 1</pre>
+              <ul>
+                <li><strong>Index raw sources</strong>: rebuilds the curated pool and broad manifest from raw inputs.</li>
+                <li><strong>Build runnable manifest</strong>: refreshes the strict verify-clean pool.</li>
+                <li><strong>Select source</strong>: copies one entry into the active workspace file.</li>
+                <li><strong>Pick for run</strong>: helper that builds the manifest if needed, then selects one entry.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h2>7. What The Corpus Is Not</h2>
+              <ul>
+                <li>It is not the Copper benchmark workspace. That lives under <span class="mono">amiga_workspace/benchmarks/</span>.</li>
+                <li>It is not the mutation loop history. That lives in <span class="mono">build/amiga/mutation_loop/</span>.</li>
+                <li>It is not the default single editable seed alone. That file is <span class="mono">amiga_workspace/main.s</span>.</li>
+              </ul>
+              <p class="tip">
+                In short: the corpus is the source pool for validation selection, while the benchmark and mutation paths
+                are separate fixed workflows.
+              </p>
+            </article>
+          </section>
+
+          <footer class="footer mono">Dashboard version: 0.5.3</footer>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

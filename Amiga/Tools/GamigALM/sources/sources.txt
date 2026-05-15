@@ -1,2 +1,0 @@
-place here all source code that you have to train the model.
-the more the better.

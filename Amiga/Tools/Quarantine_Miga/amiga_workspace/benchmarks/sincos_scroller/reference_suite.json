@@ -1,0 +1,22 @@
+{
+  "name": "sincos_scroller_reference_suite",
+  "label": "Sin/Cos Scroller Runway Suite",
+  "description": "Three-frame suite for the phase-0 sin/cos scroller runway benchmark.",
+  "eval_script": "amiga_eval_benchmark_source.py",
+  "work_dir": "build/amiga/sincos_scroller_suite",
+  "minimum_average_score": 0.999,
+  "components": [
+    {
+      "label": "frame_02",
+      "benchmark_config": "amiga_workspace/benchmarks/sincos_scroller/reference_frame_02.json"
+    },
+    {
+      "label": "frame_04",
+      "benchmark_config": "amiga_workspace/benchmarks/sincos_scroller/reference_frame_04.json"
+    },
+    {
+      "label": "frame_06",
+      "benchmark_config": "amiga_workspace/benchmarks/sincos_scroller/reference_frame_06.json"
+    }
+  ]
+}

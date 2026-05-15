@@ -1,9 +1,0 @@
-# Dataset Split Parameters
-test_size: 0.1
-seed: 42
-
-# Inference Generation Parameters
-max_new_tokens: 256
-do_sample: True
-temperature: 0.7
-top_p: 0.9

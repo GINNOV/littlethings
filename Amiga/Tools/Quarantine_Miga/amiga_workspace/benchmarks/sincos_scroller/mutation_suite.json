@@ -1,0 +1,22 @@
+{
+  "name": "sincos_scroller_mutation_suite",
+  "label": "Sin/Cos Scroller Mutation Suite",
+  "description": "Three-frame suite for the degradable sin/cos scroller mutation workspace.",
+  "eval_script": "amiga_eval_benchmark_source.py",
+  "work_dir": "build/amiga/sincos_scroller_mutation_suite",
+  "minimum_average_score": 0.999,
+  "components": [
+    {
+      "label": "frame_02",
+      "benchmark_config": "amiga_workspace/benchmarks/sincos_scroller/mutation_frame_02.json"
+    },
+    {
+      "label": "frame_04",
+      "benchmark_config": "amiga_workspace/benchmarks/sincos_scroller/mutation_frame_04.json"
+    },
+    {
+      "label": "frame_06",
+      "benchmark_config": "amiga_workspace/benchmarks/sincos_scroller/mutation_frame_06.json"
+    }
+  ]
+}

@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Miga Overview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f4efe8;
+        --ink: #172730;
+        --muted: #60737d;
+        --card: #fffdf8;
+        --line: #d7d0c2;
+        --accent: #1a6a74;
+        --accent-2: #cc6f47;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: 'Bricolage Grotesque', 'Trebuchet MS', sans-serif;
+        background: radial-gradient(circle at 10% 12%, #fff5dc, var(--bg) 35%),
+          radial-gradient(circle at 88% 16%, #dff6ff, transparent 32%),
+          var(--bg);
+      }
+
+      .page {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 22px 18px 42px;
+      }
+
+      .docs-layout {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .toc {
+        position: sticky;
+        top: 18px;
+      }
+
+      .toc-card {
+        background: rgba(255, 253, 248, 0.86);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 10px 24px rgba(22, 42, 56, 0.08);
+        backdrop-filter: blur(8px);
+      }
+
+      .toc-label {
+        margin: 0 0 10px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .topic-link {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 12px;
+        color: var(--ink);
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+      }
+
+      .topic-link + .topic-link {
+        margin-top: 8px;
+      }
+
+      .topic-link:hover {
+        background: rgba(26, 106, 116, 0.08);
+        border-color: rgba(26, 106, 116, 0.16);
+        transform: translateX(2px);
+      }
+
+      .topic-link.active {
+        background: linear-gradient(135deg, rgba(26, 106, 116, 0.16), rgba(204, 111, 71, 0.1));
+        border-color: rgba(26, 106, 116, 0.22);
+      }
+
+      .topic-name {
+        display: block;
+        font-weight: 700;
+      }
+
+      .topic-note {
+        display: block;
+        margin-top: 3px;
+        font-size: 0.84rem;
+        color: var(--muted);
+      }
+
+      .content {
+        min-width: 0;
+      }
+
+      .top p,
+      .card p,
+      .card li {
+        overflow-wrap: anywhere;
+      }
+
+      .top {
+        background: linear-gradient(135deg, #163b49, #275969);
+        color: #f5f9fc;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        padding: 20px;
+      }
+
+      .top h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.4rem, 3vw, 2.2rem);
+      }
+
+      .top p {
+        margin: 0;
+        color: #d8ebf7;
+        max-width: 80ch;
+      }
+
+      .top a {
+        color: #d9fff3;
+      }
+
+      .return-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.1rem;
+        height: 2.1rem;
+        margin-left: 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(217, 255, 243, 0.4);
+        background: rgba(255, 255, 255, 0.08);
+        vertical-align: middle;
+        text-decoration: none;
+      }
+
+      .return-link:hover {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      .return-link svg {
+        width: 1rem;
+        height: 1rem;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+      }
+
+      .grid {
+        margin-top: 14px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+      }
+
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 1.06rem;
+      }
+
+      .mono {
+        font-family: 'IBM Plex Mono', Menlo, monospace;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .tip {
+        color: var(--muted);
+      }
+
+      .footer {
+        margin-top: 14px;
+        text-align: right;
+        color: #516874;
+        font-size: 0.82rem;
+      }
+
+      ul,
+      ol {
+        margin: 8px 0 0;
+        padding-left: 20px;
+      }
+
+      li {
+        margin: 4px 0;
+      }
+
+      @media (max-width: 920px) {
+        .docs-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .toc {
+          position: static;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="/docs-theme.css" />
+  </head>
+  <body>
+    <main class="page">
+      <div class="docs-layout">
+        <aside class="toc" aria-label="Documentation topics">
+          <nav class="toc-card">
+            <p class="toc-label">Topics</p>
+            <a class="topic-link active" href="/how-to/overview" aria-current="page">
+              <span class="topic-name">Overview</span>
+              <span class="topic-note">How the system generates working code</span>
+            </a>
+            <a class="topic-link" href="/how-to/">
+              <span class="topic-name">Dashboard</span>
+              <span class="topic-note">Run monitor usage and controls</span>
+            </a>
+            <a class="topic-link" href="/how-to/settings">
+              <span class="topic-name">Settings</span>
+              <span class="topic-note">What each saved setting does</span>
+            </a>
+            <a class="topic-link" href="/how-to/project-structure">
+              <span class="topic-name">Project</span>
+              <span class="topic-note">Repository layout and edit targets</span>
+            </a>
+            <a class="topic-link" href="/how-to/corpus">
+              <span class="topic-name">Corpus</span>
+              <span class="topic-note">What the source pool is made of</span>
+            </a>
+            <a class="topic-link" href="/how-to/agentic">
+              <span class="topic-name">Agentic</span>
+              <span class="topic-note">Using program files with CLI agents</span>
+            </a>
+            <a class="topic-link" href="/how-to/credits">
+              <span class="topic-name">Credits</span>
+              <span class="topic-note">External code, fonts, and art</span>
+            </a>
+          </nav>
+        </aside>
+
+        <div class="content">
+          <section class="top">
+            <h1>Miga Overview</h1>
+            <p>
+              This page explains the core idea behind the project: it does not try to emit perfect Amiga code in one
+              pass. It uses a verified feedback loop to iteratively build and improve working assembly.
+            </p>
+            <a class="hero-action" href="/">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 7L4 12L9 17" />
+                <path d="M4 12H20" />
+              </svg>
+              <span>Return Home</span>
+            </a>
+          </section>
+
+          <section class="grid">
+            <article class="card">
+              <h2>1. Core Idea</h2>
+              <p>
+                The project is designed to generate working Amiga code through an autonomous, metric-driven evolutionary
+                process. It does not "hallucinate" a finished program from scratch in one pass. Instead, it provides the
+                infrastructure for an agent or mutation loop to make small changes, evaluate them, and keep only the
+                changes that improve the measured result.
+              </p>
+            </article>
+
+            <article class="card">
+              <h2>2. How It Generates Code</h2>
+              <ol>
+                <li>
+                  <strong>Iterative optimization (<span class="mono">program.amiga.md</span>):</strong> an agent or script
+                  starts from an initial seed such as <span class="mono">amiga_workspace/main.s</span>, modifies the code,
+                  assembles it with <span class="mono">vasm</span>, runs it in <span class="mono">vAmigaWeb</span>, and
+                  keeps the change only if the score improves.
+                </li>
+                <li>
+                  <strong>Autonomous mutation loop (<span class="mono">amiga_copper_mutation_loop.py</span>):</strong> the
+                  loop can work in heuristic mode with hardcoded Copper-list repair rules, or in LLM mode where OpenAI or
+                  LM Studio chooses among valid mutation candidates.
+                </li>
+                <li>
+                  <strong>Corpus-driven development:</strong> the project ships with a curated
+                  <span class="mono">amiga_workspace/corpus/</span> pool. Scripts like
+                  <span class="mono">build_runnable_manifest.py</span> reduce that pool to sources that are already known to
+                  assemble and run cleanly, giving the system safer starting points.
+                </li>
+              </ol>
+            </article>
+
+            <article class="card">
+              <h2>3. Mutation Modes</h2>
+              <ul>
+                <li>
+                  <strong>Heuristic mode:</strong> uses built-in structural rules to densify degraded Copper lists toward a
+                  known-good reference. It can fill gaps, shift pairs, and remove redundant instructions.
+                </li>
+                <li>
+                  <strong>LLM mode:</strong> sends a pool of valid mutation candidates to an LLM and asks it to choose the
+                  most promising next step based on structure and recent outcomes.
+                </li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h2>4. Performance Verification</h2>
+              <p>The "working" part is enforced by a multi-stage validation pipeline.</p>
+              <ul>
+                <li><strong>Assembly:</strong> <span class="mono">vasm</span> confirms the 68000 assembly is syntactically valid.</li>
+                <li><strong>CPU verification:</strong> <span class="mono">vamos</span> provides deterministic instruction-level validation where applicable.</li>
+                <li><strong>Visual validation:</strong> benchmark evaluators compare emulator screenshots against golden reference images to confirm the intended visual result.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h2>5. What The Project Provides</h2>
+              <p>
+                In practice, the repo provides the machinery for an AI or scripted loop to write, test, score, and
+                preserve Amiga code improvements. That is what allows the system to move from a simple baseline toward
+                more complex and higher-performing assembly through many small verified iterations.
+              </p>
+            </article>
+          </section>
+
+          <footer class="footer mono">Dashboard version: 0.5.4</footer>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

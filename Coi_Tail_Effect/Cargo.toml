@@ -1,0 +1,9 @@
+[package]
+name = "frond"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+nannou = "0.19"
+nannou_egui = "0.19"
+rodio = "0.20"

@@ -1,1 +1,0 @@
-Generate functional Amiga assembly code for the task '{task_name}'.

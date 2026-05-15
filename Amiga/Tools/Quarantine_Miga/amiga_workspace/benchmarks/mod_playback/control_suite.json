@@ -1,0 +1,11 @@
+{
+  "name": "mod_playback_control_suite",
+  "label": "MOD Playback Control Suite",
+  "minimum_average_score": 0.999,
+  "work_dir": "build/amiga/mod_playback_control_suite",
+  "components": [
+    "amiga_workspace/benchmarks/mod_playback/control_frame_02.json",
+    "amiga_workspace/benchmarks/mod_playback/control_frame_04.json",
+    "amiga_workspace/benchmarks/mod_playback/control_frame_06.json"
+  ]
+}

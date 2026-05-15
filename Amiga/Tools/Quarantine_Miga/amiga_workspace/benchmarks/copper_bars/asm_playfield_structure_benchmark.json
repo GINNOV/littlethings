@@ -1,0 +1,39 @@
+{
+  "name": "copper_bars_playfield_structure",
+  "label": "Copper Bars Playfield Structure Stepback Benchmark",
+  "description": "Negative control for the playfield-marker benchmark with intentionally wrong setup constants.",
+  "source_root": "amiga_workspace/benchmarks/copper_bars/asm_playfield_structure",
+  "include_root": "amiga_workspace/benchmarks/copper_bars/source",
+  "main_source": "amiga_workspace/benchmarks/copper_bars/asm_playfield_structure/current.s",
+  "mutation_target": {
+    "type": "inline_asm_block",
+    "path": "amiga_workspace/benchmarks/copper_bars/asm_playfield_structure/current.s",
+    "start_marker": "; BEGIN MUTATION COPPER LIST",
+    "end_marker": "; END MUTATION COPPER LIST"
+  },
+  "bootblock_template": "amiga_workspace/benchmarks/copper_bars/bootblock.s.in",
+  "base_address": "0x70000",
+  "disk_size_bytes": 901120,
+  "minimum_similarity": 0.999,
+  "seconds": 8,
+  "renderer": "software",
+  "display": "standard",
+  "warp": true,
+  "port1": "mouse",
+  "port2": "none",
+  "accept_bootblock": true,
+  "accept_bootblock_delay_ms": 4000,
+  "accept_bootblock_hold_ms": 300,
+  "work_dir": "build/amiga/copper_bars_playfield_structure",
+  "disk_image": "build/amiga/source_copper_bars_playfield_structure.adf",
+  "reference_image": "amiga_workspace/benchmarks/copper_bars/golden/playfield_marker.png",
+  "capture_image": "build/amiga/benchmark_playfield_structure_capture.png",
+  "capture_crop_image": "build/amiga/benchmark_playfield_structure_crop.png",
+  "capture_diff_image": "build/amiga/benchmark_playfield_structure_diff.png",
+  "crop": {
+    "left": 0,
+    "top": 42,
+    "right": 120,
+    "bottom": 160
+  }
+}
