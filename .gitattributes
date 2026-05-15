@@ -1,2 +1,0 @@
-Amiga/Tools/GamigALM/pdf_docs/** filter=lfs diff=lfs merge=lfs -text
-Amiga/Tools/amigALM/amiga_gemma3-270m_merged/** filter=lfs diff=lfs merge=lfs -text
