@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "dgSpecHash": "S+niC6zsdmA=",
+  "success": true,
+  "projectFilePath": "C:\\SourceCode\\Amiga\\Batman---Amiga\\WinApps\\AssetsViewer\\App1\\App1.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.web.webview2\\1.0.2651.64\\microsoft.web.webview2.1.0.2651.64.nupkg.sha512",
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.windows.sdk.buildtools\\10.0.22621.756\\microsoft.windows.sdk.buildtools.10.0.22621.756.nupkg.sha512",
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.windowsappsdk\\1.6.240923002\\microsoft.windowsappsdk.1.6.240923002.nupkg.sha512",
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x86\\8.0.10\\microsoft.netcore.app.runtime.win-x86.8.0.10.nupkg.sha512",
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.windows.sdk.net.ref\\10.0.19041.44\\microsoft.windows.sdk.net.ref.10.0.19041.44.nupkg.sha512",
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x86\\8.0.10\\microsoft.aspnetcore.app.runtime.win-x86.8.0.10.nupkg.sha512",
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.netcore.app.runtime.win-arm64\\8.0.10\\microsoft.netcore.app.runtime.win-arm64.8.0.10.nupkg.sha512",
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\8.0.10\\microsoft.aspnetcore.app.runtime.win-x64.8.0.10.nupkg.sha512",
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-arm64\\8.0.10\\microsoft.windowsdesktop.app.runtime.win-arm64.8.0.10.nupkg.sha512",
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\8.0.10\\microsoft.windowsdesktop.app.runtime.win-x64.8.0.10.nupkg.sha512",
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-arm64\\8.0.10\\microsoft.aspnetcore.app.runtime.win-arm64.8.0.10.nupkg.sha512",
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\8.0.10\\microsoft.netcore.app.runtime.win-x64.8.0.10.nupkg.sha512",
+    "C:\\Users\\markg\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x86\\8.0.10\\microsoft.windowsdesktop.app.runtime.win-x86.8.0.10.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,9 @@
+FROM 
+MFcmd.obj,
+MFfmt.obj,
+MFamy.obj,
+MFio.obj
+;MFend.obj
+TO MacFloppy.device
+SMALLCODE
+LIBRARY dh0:lib/amiga.lib

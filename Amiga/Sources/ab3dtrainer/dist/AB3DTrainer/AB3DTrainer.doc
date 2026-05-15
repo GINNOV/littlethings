@@ -1,0 +1,350 @@
+Short:    Patch program for Alien Breed 3D
+Author:   jgirvin@bfs.unibol.com (John Girvin)
+Uploader: jgirvin@bfs.unibol.com (John Girvin)
+Type:     game/patch
+Replaces: game/patch/AB3DTrainer.lha
+Requires: KS2.04, Alien Breed 3D
+
+TITLE
+
+    AB3DTrainer
+
+
+VERSION
+
+    3.01
+
+    Latest version always available from my homepage:
+    http://www.girvnet.demon.co.uk/
+
+
+AUTHOR
+
+    John Girvin
+
+    E-Mail: girv@girvnet.demon.co.uk
+
+    WWW:    http://www.girvnet.demon.co.uk/
+
+
+DESCRIPTION
+
+    This is version 3.01 of a cheat program for "Alien Breed 3D" by
+    Team 17. It supports:
+      - Floppy AB3D as distributed by Team 17
+      - Patched AB3D with 8-channel stero sound added, available from
+        the Team 17 ftp site ftp2.team17.com and Aminet.
+      - AB3D CD32 version
+
+    Also compatible with HackAB3D.
+
+    Provides:
+    - infinite energy
+    - infinite ammunition for all weapons (once collected).
+    - joypad/joystick compatibility patch
+
+    Does not modify your game executable on disk.
+
+    From v2.00, does not require you to decrunch your Alien Breed 3D
+    executable.
+
+
+ARCHIVE CONTENTS
+
+    AB3DTrainer.info
+    AB3DTrainer/Install_AB3DTrainer
+    AB3DTrainer/Install_AB3DTrainer.info
+    AB3DTrainer/AB3DTBoot
+    AB3DTrainer/AB3DTrainer.doc
+    AB3DTrainer/AB3DTrainer.doc.info
+    AB3DTrainer/AB3DTrainer
+    AB3DTrainer/AB3DTrainer_icon
+
+
+INSTALLING THE TRAINER
+
+    ***********************************
+    *** Read the NOTES section NOW! ***
+    ***********************************
+
+    Workbench or CLI use.
+
+    Installation is best handled by using the "Installer" program
+    from Commodore, which should have been provided with your
+    original system disks. It is also available from Aminet as:
+
+    util/misc/Installer-43_3.lha
+    (NB: the version number might have changed!)
+
+    After installation is complete, you may delete the directory
+    produced by extracting this archive ("AB3DTrainer").
+
+
+    FROM WORKBENCH:
+    ---------------
+    Have you read the notes section yet?
+
+    Extract all files in the archive to your system.
+    They will be extracted to a drawer called "AB3DTrainer"
+
+    Open the newly created "AB3DTrainer" drawer and double click on
+    the "Install_AB3DTrainer" icon found there.
+
+    Follow the instructions given to you by the Installer program:
+    - all trainer and trainer-GUI related choices are *default* values
+      only and may be changed after installation by editing the
+      icon tooltypes of the "AB3DTrainer" program or using the
+      trainer GUI.
+
+    - when asked to select a directory to install AB3DTrainer in you
+      should select the directory that you have AB3D installed in.
+
+
+    FROM CLI/SHELL:
+    ---------------
+    Have you read the notes section yet?
+
+    Extract all files in the archive to your system.
+    They will be extracted to a directory called "AB3DTrainer"
+
+    CD to the "AB3DTrainer" directory created when you extracted
+    the acrhive.
+
+    Type "Installer Install_AB3DTrainer" and press RETURN.
+
+    Follow the instructions given to you by the Installer program:
+    - when asked to select a "User Level" you *must* choose "Expert".
+
+    - all trainer and trainer-GUI related choices you make will only
+      apply if you start the AB3DTrainer program from Workbench. If
+      you start the trainer program from CLI (or from a script) then
+      these options will be ignored.
+
+    - all trainer and trainer-GUI related choices are *default* values
+      only and may be changed after installation by editing the
+      icon tooltypes of the "AB3DTrainer" program or using the
+      trainer GUI.
+
+    - when asked to select a directory to install AB3DTrainer in you
+      should select the directory that you have AB3D installed in.
+
+
+CONFIGURING THE TRAINER
+
+    Have you read the notes section yet?
+
+    The AB3DTrainer program icon has a number of tooltypes which may be
+    modified at any time to change the way in which it operates. Note that
+    if you start the trainer from CLI then options saved in the program's
+    tooltypes are ignored.
+
+
+    "NOGUI"
+    -------
+    Specify this tooltype to disable the trainer GUI. If the GUI is
+    disabled then the game will run with the default options specified
+    in the other tooltypes.
+
+    If the NOGUI tooltype is not present then the trainer GUI will appear.
+
+
+    "INF_ENERGY"
+    "INF_AMMO"
+    ------------
+    Specify any combination of these tooltypes to set the default state of
+    the corresponding trainer. For example, if you specify the "INF_ENERGY"
+    then the infinite energy trainer will default to being active.
+
+    If any of the above tooltypes are not present, then the corresponding
+    trainer will default to being inactive.
+
+
+    "HACKAB3D"
+    ----------
+    Specify this tooltype to enable automatic support of the HackAB3D
+    patch. If this tooltype is specified and the HackAB3D executable
+    can be found at run time, then HackAB3D will be started.
+
+
+    "CONTROL=[JOYSTICK|JOYPAD]"
+    ---------------------------
+    There is a problem with using joysticks and CD32 style joypads with
+    Alien Breed 3D on certain Amiga models. If you cannot use a joystick
+    or joypad to control Alien Breed 3D on your Amiga, specify this tooltype
+    and set its value appropriately for the controller you intend to use.
+
+    If you do not have trouble using a joystick or joypad, you should not
+    specify this tooltype.
+
+    If you specify the wrong value for this tooltype, eg: CONTROL=JOYSTICK
+    for using a joypad, you may find that your controller will not work!
+
+
+USING THE TRAINER
+
+    Have you read the notes section yet? You really should...
+
+    FROM WORKBENCH
+    ==============
+
+    From Workbench, open the drawer containing your AB3D game. There will
+    be a new icon there entitled "AB3DTrainer". Double-click on this icon
+    to start the trainer program.
+
+
+    IF YOU OPTED TO USE THE TRAINER MENU
+    ------------------------------------
+    Read this if you did not specify "NOGUI" in the icon tooltypes.
+
+    The trainer window will open allowing you to select the trainers you wish
+    to use while playing the game. Initially all trainers are set to the default
+    values specified in the program tooltypes.
+
+    To activate a trainer, e.g.: Infinite ammo, you must click on the
+    appropriate gadget. A checkmark (tick) will appear in the box beside
+    any activated trainer; if the box is empty then the trainer is inactive.
+
+    When you have selected the trainers you want, click the "Play" gadget in the
+    lower left of the window. The game will now load and run if possible.
+
+    If you started AB3D by mistake, or have changed your mind and do
+    not want to play the game right now then click the "Cancel" gadget
+    in the lower right of the window..
+
+
+    IF YOU OPTED TO DISABLE THE TRAINER MENU
+    --------------------------------------
+    Read this if you did specify "NOGUI" in the icon tooltypes.
+
+    The game will load and run if possible. No trainer window will appear.
+    Active trainers will be determined from the default values as specified
+    by the other tooltypes of the AB3DTrainer program.
+
+
+    FROM CLI/SHELL
+    ==============
+
+    Change Directory to the directory you have Alien Breed 3D installed in.
+    To start the trainer, type "AB3DTrainer" followed by the options you
+    wish to activate. Note that if you start the trainer from CLI then
+    options saved in the program's tooltypes are ignored.
+
+    "NOGUI"
+    "INF_ENERGY"
+    "INF_AMMO"
+    "HACKAB3D"
+    "CONTROL=[JOYSTICK|JOYPAD]"
+    ---------------------------
+    These command line options correspond to the tooltypes described in
+    the previous section.
+
+    For example:
+
+    AB3DTrainer NOGUI INF_ENERGY HACKAB3D
+
+    would start Alien Breed 3D with the HackAB3D patch active and give
+    the player infinite energy. The joystick/joypad compatibility patch
+    would not be activated. No trainer GUI would appear.
+
+
+NOTES
+
+    The files "AB3DTrainer", "AB3DTBoot", "abd.pk" and (optionally) "abd"
+    must all reside in the same directory in order for the trainer to function.
+    Additionally, if you opt to use HackAB3D then the HackAB3D executable must
+    also be present in this directory.
+
+    The trainer automatically makes the assigns AB3D1: and AB3D2: required
+    for the game. There is no need to make them manually or with a startup
+    script.
+
+    If requested, the trainer automatically starts HackAB3D for you. You
+    should not start HackAB3D yourself (eg: in a script) if you intend to
+    use this trainer option.
+
+    If you set the Controller option to either "Force Joystick" or "Force
+    Joypad" you must still press the "J" key in the game to activate
+    joystick/joypad control.
+
+
+TESTING INFORMATION
+
+    Created on A1200/68030+68882-40Mhz/8Mb/KS39.106, but should run on
+    any Amiga with enough RAM that the original AB3D would run on.
+
+    Tested with both the original game as distributed by Team 17 and the
+    patched version available from their web site, combined with HackAB3D
+    version 1.00.
+
+    If you have a problem running AB3DTrainer then I WANT TO KNOW! Please,
+    feel free to get in touch.
+
+
+HISTORY
+
+    1.00  First version.
+          Released to Aminet in March 1997.
+
+    2.00  Rewrote to work with crunched executables.
+          Released to Aminet in March 1997.
+
+    3.00  Rewrote GUI in SAS/C to make it font sensitive.
+          Should work with CD32 version.
+
+    3.01  Added the controller compatibility patch.
+          Released to Aminet in October 1997.
+
+
+FUTURE
+
+    - I don't know! Any suggestions?
+
+
+HOST NAMES
+
+    Uploaded to wuarchive.wustl.edu (Aminet) probably in game/patch
+
+    Latest version always available from my homepage:
+    http://www.girvnet.demon.co.uk/
+
+    Be sure to check out my Alien Breed 3D support pages on my site!
+
+
+FILE NAMES
+
+    AB3DTrainer.lha
+    AB3DTrainer.readme
+
+
+PRICE
+
+    One email message - AB3DTrainer is emailware.
+    (if you use it then let me know :)
+
+    I'd also appreciate a postcard of your home town, especially if you
+    live outside of the UK! This isnt required, but it would be *nice* :)
+
+
+DISTRIBUTABILITY
+
+    (c) 1997 John Girvin. No modifications may be made to either the
+    program or its accompanying documentation without my consent.
+
+    Freely Distributable, provided all files are included unchanged
+    in any distribution and no more than minimal handling/media
+    costs are charged.
+
+
+ACKNOWLEDGEMENTS
+
+    "AB3D" is (c) 1995 Team 17.
+    Piracy is theft. If you like the game then buy it!
+
+    "HackAB3D" is written by Sven Tegethoff (Cheetah@ius.gun.de)
+    and is available from the Team 17 FTP site.
+
+    GUI developed from code supplied by Hans Guijt (h.guijt@inter.nl.net)
+    as used in his fMSX-Amiga project (Amiga MSX Emulator).
+
+--------------------------------------------------------------------------
+$VER: AB3DTrainer documentation version 3.01 (c) 1997 John Girvin

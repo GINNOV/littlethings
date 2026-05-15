@@ -1,0 +1,360 @@
+# Makefile to build the AmigaOS4 SDL tests
+
+CC     = ppc-amigaos-gcc
+CRT   ?= newlib
+CFLAGS = -mcrt=$(CRT) -gstabs -O3 -Wall -I../include -I../include/build_config -I../src -DHAVE_OPENGL
+LIBS   = -mcrt=$(CRT) -L.. -lSDL3_test -lSDL3 -athread=native
+
+SRC_FILES = $(wildcard *.c)
+DEPS = $(SRC_FILES:.c=.d)
+
+TARGETS = \
+	checkkeys \
+	childprocess \
+	helloworld \
+	loopwave \
+	sdl3benchmark \
+	testasyncio \
+	testatomic \
+	testaudio \
+	testaudiohotplug \
+	testaudioinfo \
+	testaudiorecording \
+	testaudiostreamdynamicresample \
+	testautomation \
+	testbounds \
+	testclipboard \
+	testcolorspace \
+	testcontroller \
+	testcustomcursor \
+	testdialog \
+	testdisplayinfo \
+	testdraw \
+	testdrawchessboard \
+	testdropfile \
+	testerror \
+	testfile \
+	testfilesystem \
+	testgeometry \
+	testgl \
+	testgles \
+	testgles2 \
+	testhaptic \
+	testhittesting \
+	testhotplug \
+	testiconv \
+	testime \
+	testintersections \
+	testkeys \
+	testloadso \
+	testlocale \
+	testlock \
+	testmessage \
+	testmouse \
+	testmultiaudio \
+	testnative \
+	testoffscreen \
+	testoverlay \
+	testpen \
+	testplatform \
+	testpower \
+	testprocess \
+	testqsort \
+	testrelative \
+	testrendercopyex \
+	testrendertarget \
+	testresample \
+	testrumble \
+	testrwlock \
+	testscale \
+	testsem \
+	testsensor \
+	testshader \
+	testshape \
+	testsprite \
+	testspriteminimal \
+	testspritesurface \
+	testsurround \
+	testthread \
+	testtime \
+	testtimer \
+	testurl \
+	testver \
+	testviewport \
+	testvulkan \
+	testwm \
+	testyuv \
+	torturethread \
+
+all: $(TARGETS)
+
+checkkeys: checkkeys.o
+	$(CC) -o $@ $^ $(LIBS)
+
+childprocess: childprocess.o
+	$(CC) -o $@ $^ $(LIBS)
+
+helloworld: helloworld.o
+	$(CC) -o $@ $^ $(LIBS)
+
+loopwave: loopwave.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+sdl3benchmark: sdl3benchmark.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testasyncio: testasyncio.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testatomic: testatomic.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testaudio: testaudio.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testaudiohotplug: testaudiohotplug.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testaudioinfo: testaudioinfo.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testaudiorecording: testaudiorecording.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testaudiostreamdynamicresample: testaudiostreamdynamicresample.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testautomation: testautomation.o \
+		      testautomation_audio.o \
+		      testautomation_blit.o \
+		      testautomation_clipboard.o \
+		      testautomation_events.o \
+		      testautomation_guid.o \
+		      testautomation_hints.o \
+		      testautomation_images.o \
+		      testautomation_intrinsics.o \
+		      testautomation_iostream.o \
+		      testautomation_joystick.o \
+		      testautomation_keyboard.o \
+		      testautomation_log.o \
+		      testautomation_main.o \
+		      testautomation_math.o \
+		      testautomation_mouse.o \
+		      testautomation_pixels.o \
+		      testautomation_platform.o \
+		      testautomation_properties.o \
+		      testautomation_rect.o \
+		      testautomation_render.o \
+		      testautomation_sdltest.o \
+		      testautomation_stdlib.o \
+		      testautomation_subsystems.o \
+		      testautomation_surface.o \
+		      testautomation_time.o \
+		      testautomation_timer.o \
+		      testautomation_video.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testbounds: testbounds.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testclipboard: testclipboard.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testcolorspace: testcolorspace.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testcontroller: testcontroller.o gamepadutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testcustomcursor: testcustomcursor.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testdialog: testdialog.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testdisplayinfo: testdisplayinfo.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testdraw: testdraw.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testdrawchessboard: testdrawchessboard.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testdropfile: testdropfile.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testerror: testerror.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testfile: testfile.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testfilesystem: testfilesystem.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testgeometry: testgeometry.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testgl: testgl.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testgles: testgles.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testgles2: testgles2.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testhaptic: testhaptic.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testhittesting: testhittesting.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testhotplug: testhotplug.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testiconv: testiconv.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testime: testime.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testintersections: testintersections.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testkeys: testkeys.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testloadso: testloadso.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testlocale: testlocale.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testlock: testlock.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testmessage: testmessage.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testmouse: testmouse.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testmultiaudio: testmultiaudio.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testnative: testnative.o testnativeamigaos4.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testoffscreen: testoffscreen.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testoverlay: testoverlay.o testyuv_cvt.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testpen: testpen.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testplatform: testplatform.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testpower: testpower.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testprocess: testprocess.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testqsort: testqsort.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testrelative: testrelative.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testrendercopyex: testrendercopyex.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testrendertarget: testrendertarget.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testresample: testresample.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testrumble: testrumble.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testrwlock: testrwlock.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testscale: testscale.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testsem: testsem.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testsensor: testsensor.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testshader: testshader.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testshape: testshape.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testsprite: testsprite.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testspriteminimal: testspriteminimal.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testspritesurface: testspritesurface.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testsurround: testsurround.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testthread: testthread.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testtime: testtime.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testtimer: testtimer.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testurl: testurl.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testver: testver.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testviewport: testviewport.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testvulkan: testvulkan.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testwm: testwm.o
+	$(CC) -o $@ $^ $(LIBS)
+
+testyuv: testyuv.o testyuv_cvt.o testutils.o
+	$(CC) -o $@ $^ $(LIBS)
+
+torturethread: torturethread.o
+	$(CC) -o $@ $^ $(LIBS)
+
+clean:
+	rm -f $(TARGETS) *.o $(DEPS)
+
+%.d : %.c
+	@echo Making dependencies for $<
+	@$(CC) -MM -MP -MT $(@:.d=.o) -o $@ $< $(CFLAGS)
+
+%.o : %.c
+	@echo Compiling $<
+	@$(CC) -o $@ -c $< $(CFLAGS)
+
+# Load .d files
+ifneq ($(MAKECMDGOALS),clean)
+-include $(DEPS)
+endif

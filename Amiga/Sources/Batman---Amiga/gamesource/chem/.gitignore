@@ -1,0 +1,5 @@
+.DS_Store
+**/bin
+.vscode/settings.json
+**/*.o
+**/uae/dh0/*

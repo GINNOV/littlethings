@@ -1,0 +1,19 @@
+# FS-UAE configuration saved by FS-UAE Launcher
+# Last saved: 2018-08-28 22:15:10
+
+[fs-uae]
+amiga_model = A1200
+chip_memory = 2048
+fast_memory = 8192
+base_dir = FS-UAE
+console_debugger = 1
+floppy_drive_speed = 800
+hard_drive_0 = harddrive
+serial_port = pty_sim
+kickstart_file = kick31.rom
+automatic-input-grab = 0
+floppy_drive_0_sounds = 0
+keep_aspect = 1
+stereo_separation = 30
+window_width = 1448
+window_height = 1080

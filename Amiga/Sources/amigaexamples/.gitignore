@@ -1,0 +1,27 @@
+*.uaem
+*~
+*BACKUP
+*.lst
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects
+*.so
+*.so.*
+
+# Executables
+*.exe
+*.out
+*.app
+*.hex
+

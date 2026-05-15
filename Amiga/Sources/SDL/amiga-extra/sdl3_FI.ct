@@ -1,0 +1,179 @@
+## version $VER: sdl3.catalog 1.0 (19.02.2024)
+## codeset 4
+## language finnish
+;
+MSG_APP_MAIN_MENU
+P‰‰valikko
+; Main
+;
+MSG_APP_MAIN_ICONIFY
+I|Ikoniksi
+; I|Iconify
+;
+MSG_APP_MAIN_ABOUT
+?|Lis‰tietoja...
+; ?|About...
+;
+MSG_APP_MAIN_LAUNCH_PREFERENCES
+P|Avaa asetukset...
+; P|Launch preferences...
+;
+MSG_APP_MAIN_QUIT
+Q|Lopeta
+; Q|Quit
+;
+MSG_APP_ABOUT_WINDOW
+Tietoja SDL3-kirjastosta
+; About SDL3 library
+;
+MSG_APP_OK
+_Ok
+; _Ok
+;
+MSG_APP_APPLICATION
+SDL3-sovellus
+; SDL3 application
+;
+MSG_APP_LIBRARY_VERSION
+SDL-kirjaston versio
+; SDL library version
+;
+MSG_PREFS_APPLICATION
+SDL3-asetukset
+; SDL3 preferences
+;
+MSG_PREFS_OK
+_Ok
+; _OK
+;
+MSG_PREFS_RENDERER_OPTIONS_GROUP
+2D-Piirtovalinnat
+; 2D renderer options
+;
+MSG_PREFS_DRIVER_GAD
+_Ajuri
+; _Driver
+;
+MSG_PREFS_DRIVER_DEFAULT
+oletus
+; default
+;
+MSG_PREFS_DRIVER_COMPOSITING
+compositing
+; compositing
+;
+MSG_PREFS_DRIVER_OPENGLES2
+opengles2
+; opengles2
+;
+MSG_PREFS_DRIVER_SOFTWARE
+ohjelmallinen
+; software
+;
+MSG_PREFS_VERTICAL_SYNC_GAD
+_Pystysynkronointi
+; _Vertical sync
+;
+MSG_PREFS_VERTICAL_SYNC_DEFAULT
+oletus
+; default
+;
+MSG_PREFS_VERTICAL_SYNC_ENABLED
+p‰‰ll‰
+; enabled
+;
+MSG_PREFS_VERTICAL_SYNC_DISABLED
+pois p‰‰lt‰
+; disabled
+;
+MSG_PREFS_VIDEO_OPTIONS_GROUP
+Videovalinnat
+; Video options
+;
+MSG_PREFS_SCREEN_SAVER_GAD
+Salli _ruuduns‰‰st‰j‰
+; _Allow screen saver
+;
+MSG_PREFS_SCREEN_SAVER_DEFAULT
+oletus
+; default
+;
+MSG_PREFS_SCREEN_SAVER_ENABLED
+p‰‰ll‰
+; enabled
+;
+MSG_PREFS_SCREEN_SAVER_DISABLED
+pois p‰‰lt‰
+; disabled
+;
+MSG_PREFS_SETTINGS_GROUP
+Asetukset
+; Settings
+;
+MSG_PREFS_SAVE_GAD
+_Tallenna
+; _Save
+;
+MSG_PREFS_RESET_GAD
+_Nollaa
+; _Reset
+;
+MSG_PREFS_CANCEL_GAD
+_Peru
+; _Cancel
+;
+MSG_PREFS_MAIN_MENU
+P‰‰valikko
+; Main
+;
+MSG_PREFS_MAIN_ICONIFY
+I|Ikoniksi
+; I|Iconify
+;
+MSG_PREFS_MAIN_ABOUT
+?|Lis‰tietoja...
+; ?|About...
+;
+MSG_PREFS_MAIN_QUIT
+Q|Lopeta
+; Q|Quit
+;
+MSG_PREFS_ABOUT_WINDOW
+Lis‰tietoja SDL3-asetuksista
+; About SDL3 preferences
+;
+MSG_PREFS_ABOUT_AUTHOR
+Tekij‰ Juha Niemim‰ki
+; Written by Juha Niemimaki
+;
+MSG_PREFS_ABOUT_TRANSLATOR
+Suomennos Juha Niemim‰ki
+; (using built-in strings)
+;
+MSG_PREFS_DRIVER_HELP
+Valitse ajuritoteutus:\n \
+\033bcompositing \033nei tue kaikkia sekoitustiloja\n \
+\033bopengles2 \033ntukee useimpia ominaisuuksia\n \
+\033bohjelmallinen \033ntukee useimpia ominaisuuksia mutta ei ole kiihdytetty
+; Select driver implementation:\n \033bcompositing \033ndoesn't support some blend modes\n \033bopengl \033n(MiniGL) doesn't support render targets and some blend modes\n \033bopengles2 \033nsupports most features\n \033bsoftware \033nsupports most features but is not accelerated
+;
+MSG_PREFS_VERTICAL_SYNC_HELP
+Synkronoi n‰ytˆn p‰ivitys monitorin virkistystaajuuteen
+; Synchronize display update to monitor refresh rate
+;
+MSG_PREFS_SCREEN_SAVER_HELP
+Salli ruuduns‰‰st‰j‰ (oletuksena pois p‰‰lt‰)
+; Allow screen saver (disabled by default)
+;
+MSG_PREFS_SAVE_HELP
+Tallenna asetukset paikkaan ENVARC: ja lopeta
+; Store settings to ENVARC: and exit
+;
+MSG_PREFS_RESET_HELP
+Nollaa k‰yttˆliittym‰ oletusarvoihin
+; Reset GUI to default values
+;
+MSG_PREFS_CANCEL_HELP
+Lopeta ohjelma
+; Exit program
+;

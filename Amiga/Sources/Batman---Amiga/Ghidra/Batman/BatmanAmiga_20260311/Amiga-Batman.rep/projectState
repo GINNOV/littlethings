@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PROJECT>
+    <PROJECT_TOOL_CONFIG NAME="FRONTEND">
+        <TOOL_CONFIG CONFIG_NAME="NO_LONGER_USED">
+            <ICON LOCATION="view_detailed.png" />
+            <TOOL TOOL_NAME="Ghidra: Amiga-Batman" INSTANCE_NAME="">
+                <OPTIONS />
+                <PACKAGE NAME="Ghidra Core" />
+                <PACKAGE NAME="Utility" />
+                <ROOT_NODE X_POS="847" Y_POS="0" WIDTH="865" HEIGHT="918" EX_STATE="0" FOCUSED_OWNER="FrontEnd Tool" FOCUSED_NAME="FrontEnd" FOCUSED_TITLE="Project Window">
+                    <COMPONENT_NODE TOP_INFO="0">
+                        <COMPONENT_INFO NAME="FrontEnd" OWNER="FrontEnd Tool" TITLE="Project Window" ACTIVE="true" GROUP="Default" INSTANCE_ID="3718762863675947587" />
+                    </COMPONENT_NODE>
+                </ROOT_NODE>
+                <PREFERENCES>
+                    <PREFERENCE_STATE NAME="docking.widgets.filechooser.DirectoryTableModel:Filename:Size:Modified:">
+                        <XML NAME="COLUMN_DATA">
+                            <Table_State>
+                                <COLUMN NAME="Filename" WIDTH="231" VISIBLE="true" />
+                                <COLUMN NAME="Size" WIDTH="232" VISIBLE="true" />
+                                <COLUMN NAME="Modified" WIDTH="231" VISIBLE="true" />
+                                <TABLE_SORT_STATE>
+                                    <COLUMN_SORT_STATE COLUMN_MODEL_INDEX="0" SORT_DIRECTION="ascending" SORT_ORDER="1" />
+                                </TABLE_SORT_STATE>
+                            </Table_State>
+                        </XML>
+                    </PREFERENCE_STATE>
+                    <PREFERENCE_STATE NAME="ghidra.app.plugin.core.analysis.AnalysisEnablementTableModel:Enabled:Analyzer:">
+                        <XML NAME="COLUMN_DATA">
+                            <Table_State>
+                                <COLUMN NAME="ghidra.app.plugin.core.analysis.AnalysisEnablementTableModel$AnalyzerEnabledColumn.Enabled" WIDTH="60" VISIBLE="true" />
+                                <COLUMN NAME="ghidra.app.plugin.core.analysis.AnalysisEnablementTableModel$AnalyzerNameColumn.Analyzer" WIDTH="271" VISIBLE="true" />
+                                <TABLE_SORT_STATE />
+                            </Table_State>
+                        </XML>
+                    </PREFERENCE_STATE>
+                    <PREFERENCE_STATE NAME="ghidra.plugins.importer.batch.BatchImportDialog$1:Selected:File Type:Loader:Language:Files:">
+                        <XML NAME="COLUMN_DATA">
+                            <Table_State>
+                                <COLUMN NAME="Selected" WIDTH="29" VISIBLE="true" />
+                                <COLUMN NAME="File Type" WIDTH="207" VISIBLE="true" />
+                                <COLUMN NAME="Loader" WIDTH="207" VISIBLE="true" />
+                                <COLUMN NAME="Language" WIDTH="208" VISIBLE="true" />
+                                <COLUMN NAME="Files" WIDTH="207" VISIBLE="true" />
+                                <TABLE_SORT_STATE>
+                                    <COLUMN_SORT_STATE COLUMN_MODEL_INDEX="0" SORT_DIRECTION="ascending" SORT_ORDER="1" />
+                                </TABLE_SORT_STATE>
+                            </Table_State>
+                        </XML>
+                    </PREFERENCE_STATE>
+                    <PREFERENCE_STATE NAME="docking.ErrLogDialog$ErrEntryTableModel:#:Message:Details:">
+                        <XML NAME="COLUMN_DATA">
+                            <Table_State>
+                                <COLUMN NAME="docking.ErrLogDialog$ErrEntryTableModel$IdColumn.#" WIDTH="259" VISIBLE="true" />
+                                <COLUMN NAME="docking.ErrLogDialog$ErrEntryTableModel$MessageColumn.Message" WIDTH="260" VISIBLE="true" />
+                                <COLUMN NAME="docking.ErrLogDialog$ErrEntryTableModel$DetailsColumn.Details" WIDTH="500" VISIBLE="false" />
+                                <COLUMN NAME="docking.ErrLogDialog$ErrEntryTableModel$TimestampColumn.Time" WIDTH="259" VISIBLE="true" />
+                                <TABLE_SORT_STATE>
+                                    <COLUMN_SORT_STATE COLUMN_MODEL_INDEX="0" SORT_DIRECTION="ascending" SORT_ORDER="1" />
+                                </TABLE_SORT_STATE>
+                            </Table_State>
+                        </XML>
+                    </PREFERENCE_STATE>
+                    <PREFERENCE_STATE NAME="ghidra.framework.main.datatable.ProjectDataTableModel:Type:Name:Path:Modified:Processor:Endian:Address Size:Compiler:Size:Format:">
+                        <XML NAME="COLUMN_DATA">
+                            <Table_State>
+                                <COLUMN NAME="ghidra.framework.main.datatable.ProjectDataTableModel$DomainFileTypeColumn.Type" WIDTH="28" VISIBLE="true" />
+                                <COLUMN NAME="ghidra.framework.main.datatable.ProjectDataTableModel$DomainFileNameColumn.Name" WIDTH="126" VISIBLE="true" />
+                                <COLUMN NAME="ghidra.framework.main.datatable.ProjectDataTableModel$DomainFilePathColumn.Path" WIDTH="126" VISIBLE="true" />
+                                <COLUMN NAME="ghidra.framework.main.datatable.ProjectDataTableModel$ModificationDateColumn.Modified" WIDTH="127" VISIBLE="true" />
+                                <COLUMN NAME="ghidra.util.table.projectdata.column.ProcessorProjectDataColumn.Processor" WIDTH="70" VISIBLE="true" />
+                                <COLUMN NAME="ghidra.util.table.projectdata.column.EndianProjectDataColumn.Endian" WIDTH="69" VISIBLE="true" />
+                                <COLUMN NAME="ghidra.util.table.projectdata.column.AddressSizeProjectDataColumn.Address Size" WIDTH="48" VISIBLE="true" />
+                                <COLUMN NAME="ghidra.util.table.projectdata.column.CompilerProjectDataColumn.Compiler" WIDTH="69" VISIBLE="true" />
+                                <COLUMN NAME="ghidra.util.table.projectdata.column.DomainFileSizeProjectDataColumn.Size" WIDTH="82" VISIBLE="true" />
+                                <COLUMN NAME="ghidra.util.table.projectdata.column.FormatProjectDataColumn.Format" WIDTH="81" VISIBLE="true" />
+                                <COLUMN NAME="ghidra.util.table.projectdata.column.CreationDateProjectDataColumn.Created" WIDTH="200" VISIBLE="false" />
+                                <COLUMN NAME="ghidra.util.table.projectdata.column.ExecutablePathProjectDataColumn.Executable Path" WIDTH="60" VISIBLE="false" />
+                                <COLUMN NAME="ghidra.util.table.projectdata.column.LanguageProjectDataColumn.Language ID" WIDTH="60" VISIBLE="false" />
+                                <COLUMN NAME="ghidra.util.table.projectdata.column.CreatedWithProjectDataColumn.Created With" WIDTH="100" VISIBLE="false" />
+                                <COLUMN NAME="ghidra.util.table.projectdata.column.Md5ProjectDataColumn.MD5" WIDTH="120" VISIBLE="false" />
+                                <TABLE_SORT_STATE>
+                                    <COLUMN_SORT_STATE COLUMN_MODEL_INDEX="0" SORT_DIRECTION="ascending" SORT_ORDER="1" />
+                                </TABLE_SORT_STATE>
+                            </Table_State>
+                        </XML>
+                    </PREFERENCE_STATE>
+                </PREFERENCES>
+            </TOOL>
+        </TOOL_CONFIG>
+    </PROJECT_TOOL_CONFIG>
+    <PROJECT_DATA_XML_NAME NAME="DISPLAY_DATA">
+        <SAVE_STATE>
+            <ARRAY NAME="EXPANDED_PATHS" TYPE="string">
+                <A VALUE="Amiga-Batman:" />
+            </ARRAY>
+            <STATE NAME="SHOW_TABLE" TYPE="boolean" VALUE="false" />
+        </SAVE_STATE>
+    </PROJECT_DATA_XML_NAME>
+    <TOOL_MANAGER ACTIVE_WORKSPACE="Workspace">
+        <WORKSPACE NAME="Workspace" ACTIVE="true" />
+    </TOOL_MANAGER>
+</PROJECT>
+

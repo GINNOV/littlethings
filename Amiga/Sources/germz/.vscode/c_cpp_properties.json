@@ -1,0 +1,46 @@
+{
+	"configurations": [
+		{
+			"name": "Amiga",
+			"includePath": [
+				"${workspaceFolder}/**"
+			],
+			"defines": [
+				"__GNUC__=8",
+				"_NO_INLINE"
+			],
+			"compilerPath": "${default}",
+			"cStandard": "c11",
+			"cppStandard": "c++17",
+			"intelliSenseMode": "gcc-x86"
+		},
+		{
+			"name": "Win32",
+			"includePath": [
+				"${workspaceFolder}/src",
+				"${workspaceFolder}/deps/ACE/include"
+			],
+			"defines": [
+				"_DEBUG",
+				"UNICODE",
+				"_UNICODE",
+				"AMIGA",
+				"ACE_DEBUG",
+				"ACE_DEBUG_UAE",
+				"__CODE_CHECKER__"
+			],
+			"cStandard": "c11",
+			"cppStandard": "c++17",
+			"intelliSenseMode": "gcc-x86",
+			"browse": {
+				"path": [
+					"${workspaceFolder}"
+				],
+				"databaseFilename": "${workspaceFolder}/.vscode/symbols.db",
+				"limitSymbolsToIncludedHeaders": true
+			},
+			"configurationProvider": "vector-of-bool.cmake-tools"
+		}
+	],
+	"version": 4
+}

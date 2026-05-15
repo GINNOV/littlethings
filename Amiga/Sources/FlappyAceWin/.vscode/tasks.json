@@ -1,0 +1,58 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "debug game",
+			"type": "shell",
+			"command": "cmake",
+			"group": "build",
+			"args": [
+				"..",
+				"-DACE_DEBUG=ON",
+				"-DGAME_DEBUG=ON",
+				"-DGAME_DEBUG_AI=OFF",
+				"-DACE_DEBUG_PTPLAYER=ON"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/build"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "debug game+ai",
+			"type": "shell",
+			"command": "cmake",
+			"group": "build",
+			"args": [
+				"..",
+				"-DACE_DEBUG=ON",
+				"-DGAME_DEBUG=ON",
+				"-DGAME_DEBUG_AI=ON",
+				"-DACE_DEBUG_PTPLAYER=ON"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/build"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "debug off",
+			"type": "shell",
+			"command": "cmake",
+			"group": "build",
+			"args": [
+				"..",
+				"-DACE_DEBUG=OFF",
+				"-DGAME_DEBUG=OFF",
+				"-DGAME_DEBUG_AI=OFF",
+				"-DACE_DEBUG_PTPLAYER=OFF"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/build"
+			},
+			"problemMatcher": []
+		}
+	]
+}

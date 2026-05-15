@@ -1,0 +1,34 @@
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+ 
+jobs:
+  build_ppc:
+    runs-on: ubuntu-latest
+    container:
+      image: amigadev/crosstools:ppc-amigaos
+    name: os4
+    steps:
+      - uses: actions/checkout@v2
+      - name: buildos4
+        id: buildos4
+        run: |
+          cd ./uuid_files
+          make -f Makefile
+      - uses: actions/upload-artifact@v1
+        with:
+          name: uuid.library
+          path: uuid_files/uuid.library
+#  build_68k:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: amigadev/crosstools:m68k-amigaos
+#    name: os3
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: buildos3
+#        id: buildos3
+#        run: make -f src/Makefile.os3
+

@@ -44,6 +44,9 @@ fastlane/test_output
 *.tmp
 *.env
 *.log
+__pycache__/
+*.py[cod]
+*.egg-info/
 
 # model training
 Amiga/Tools/amigALM/amiga_gemma3-270m_finetuned

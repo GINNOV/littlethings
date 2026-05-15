@@ -1,0 +1,60 @@
+;
+; This file is part of ABackup.
+; Copyright (C) 1999 Denis Gounelle
+;
+; ABackup is free software: you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation, either version 3 of the License, or
+; (at your option) any later version.
+;
+; ABackup is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with ABackup.  If not, see <http://www.gnu.org/licenses/>.
+;
+;  _______________________________________________________________________
+;
+;    ABackup 5.0
+;    sprintf.a
+;
+;    Copyright © 1992-1995
+;    by Denis Gounelle & Reza Elghazi,
+;    All Rights Reserved.
+;    _______________________________________________________________________
+;
+;    Version : 38.0
+;    Created : 11-Feb-94
+;    Modified: 11-Feb-94
+;    _______________________________________________________________________
+;
+;    NOTE(Reza): This version of sprintf uses exec.library/RawDoFmt()
+;
+;    Advantages: patched by locale.library which adds %U and %D formatting
+;                commands for localized number output
+;
+;    Drawbacks : has fewer formatting commands than SAS/C sprintf()
+;
+
+	CSECT	text
+
+	XDEF	_SPrintf
+
+_SPrintf:
+	MOVEM.L	a2/a3/a6,-(sp)		; save registers
+	MOVE.L	 4+12(sp),a3		; put stack arguments into registers
+	MOVE.L	 8+12(sp),a0
+	LEA	12+12(sp),a1
+	LEA	putchar(pc),a2		; and putchar routine
+	MOVE.L	4,a6			; load SysBase
+	JSR	-522(a6)		; RawDoFmt
+	MOVEM.L	(sp)+,a2/a3/a6		; restore registers
+	RTS
+
+putchar:
+	MOVE.B	d0,(a3)+
+	RTS
+
+	END

@@ -1,0 +1,11 @@
+	movem.l	a0-a1/d0-d1,-(sp)
+	move.l	20(sp),a0
+	move.l	24(sp),a1
+	move.l	28(sp),d1
+loop	move.b	(a0)+,d0
+	cmp.b	d1,d0
+	beq	ende
+	move.b	d0,(a1)+
+	bra	loop
+ende	movem.l	(sp)+,a0-a1/d0-d1
+	rts

@@ -1,0 +1,3478 @@
+@DATABASE AnalayDocV1.11
+@INDEX INDEXNODE
+@$VER Analay V1.11 Documentation
+
+@NODE main "Analay V1.11 Documentation"
+
+Analay V1.11 Documentation
+
+Chapter 1 : @{"Introduction" LINK intro}
+Chapter 2 : @{"Copyrights" LINK copyrights}
+Chapter 3 : @{"Warranty" LINK warranty}
+Chapter 4 : @{"Key-File" LINK demoversion}
+Chapter 5 : @{"How to order" LINK order}
+Chapter 6 : @{"Installation" LINK install}
+Chapter 7 : @{"General information" LINK general}
+Chapter 8 : @{"Math Mode" LINK math}
+Chapter 9 : @{"Layout Mode" LINK preview}
+Chapter 10: @{"File operations" LINK loadsave}
+Chapter 11: @{"About the program" LINK program}
+Chapter 12: @{"Known program bugs" LINK programbugs}
+Chapter 13: @{"Future prospects" LINK future}
+
+@ENDNODE
+
+@NODE intro "Chapter 1: Introduction"
+
+Analay is a new math graphing program with integrated page layout. It
+combines its math functions with a DTP program, enabling the user to lay out
+scientific pages very quickly and easily.
+
+For optimum speed, the two parts of the program run as separate tasks.
+This means that functions can be entered and examined in the Math Mode
+without being slowed down by the CPU-intensive @{"WYSIWYG" LINK wysiwyg} of the
+Layout Mode. All windows in the Math Mode with function graphs, tables,
+lists or legends are carried over into the Layout Mode automatically and can
+then be combined on a page with simple graphic elements and text blocks.
+Formulas can be integrated into text very easily. In addition, the page
+can be created in color and, with AmigaOS 3.0, printed in color as well.
+The program will make use of the highest resolution the printer driver
+provides.
+
+The possibilities for designing the functions are practically endless.
+Functions and families of curves can be connected and drawn in windows
+combined in any way. Thus you can design the function graphs and the system
+of axes in any way you like. In addition, texts, points, markers and
+hatchings can be added to the graphs.
+
+The program supports graphic cards and the AA chipset. In addition to the
+bitmap fonts of the operating system, the Layout Mode supports Intellifonts®,
+which make a very attractive printout!
+
+@ENDNODE
+
+
+@NODE copyrights "Chapter 2: Copyrights"
+
+I retain all rights to the program. The program and every key-file for the
+program fall under the following license:
+
+1.1 Permitted use:
+
+1. The program and key-file may be installed and used on multiple
+computers as long as they are only used by you. You may create multiple
+copies on hard disks and floppy disks, as long as the copies remain in your
+possession and the copies are not used by more than one person at the same
+time. The program without a key-file may be installed on as many computers
+and used by as many people as you like.
+
+
+1.2 Unauthorized use:
+
+The following are not allowed without the authorization of the author:
+
+1. Changing the program or key-file.
+
+2. Converting the program to another computer system.
+
+3. Giving copies of the program or key-file away. If you want to
+pass the program on to others, you must delete all copies in your own
+possession.
+
+4. Lending or renting the program or key-file, or borrowing it from others.
+
+The program was written with the Amiga-Oberon Compiler of the A+L AG.
+Therefore it also falls under the license of the Amiga-Oberon Compiler
+of the A+L AG:
+
+5. Neither the program nor data derived from its use may be used for
+military purposes, directly or indirectly.
+
+6. Neither the program nor data derived from its use may be used in any
+situation where failure or inaccuracy may create a hazard to life.
+
+
+Restrictions of the license for the program without key-file:
+
+Item 3 does not apply to the program without a key-file. The program may be
+freely distributed and spread without a key-file, as long as no commercial
+use is made of it. This also includes distribution via computer networks.
+Inclusion of the program without key-file in PD series or PD CDs is welcome.
+However I would appreciate being informed of any such use.
+
+The list of features disabled when the program is used without a key-file
+can be found in the chapter @{"Key-file" LINK demoversion}.
+
+
+Rights to the following files are retained by the A+L AG:
+
+garbagecollector.library
+GarbagePrefs
+GCStat
+garbagecollector.liesmich
+
+@ENDNODE
+
+
+@NODE warranty "Chapter 3: Warranty"
+
+The use of the program is at your own risk. The author does not guarantee
+the function of the program and is therefore not responsible for
+miscalculations of the program, system crashes, destroyed files, unloadable
+documents, etc.
+
+@ENDNODE
+
+
+@NODE demoversion "Chapter 4: Key-File"
+
+The program may be distributed without a key-file as described in the chapter
+@{"Copyrights" LINK copyrights}. If the program is started without a key-file, some
+functions are automatically disabled.
+
+1. Printing and saving are not possible.
+2. Loading a configuration is not possible.
+3. Without a key-file, the program presents a "nag screen" before opening.
+
+If you wish to order a key-file, refer to the chapter @{"How to order" LINK order}.
+This key-file must be present in the same directory as the main program
+or in a directory assigned as Analay:. If the program finds a valid key-file,
+all program functions are fully operable.
+
+@ENDNODE
+
+
+@NODE order "Chapter 5: How to order"
+
+The price of the latest version of the program with a key-file is 30.00 DM
+(postage included). To order, please send cash or check in that amount to:
+
+    Marc Necker
+    Sulzauerstr. 15
+    70563 Stuttgart
+    Germany
+
+E-Mail:
+
+    UUCP     : Marc@buster.tynet.sub.org
+    Fido-Net : 2:246/1115.15
+
+
+You can remit the money to my bank account at the Deutsche Bank
+(Konto-Nr.: 4921110, Blz.: 600 700 70) as well. Please write me a
+letter/e-mail in any case, or the order might get lost.
+
+Please send your mailing address, and your e-mail address if available.
+
+You will receive the program and key-file by mail. Please let me know which
+version of the program you are using. If I have not released a later version,
+you will only need the key-file sent to your e-mail-address. This saves
+both of us time and money, and you will probably get your key-file much
+earlier.
+
+Because I can only work with development and support of the program in
+my leisure time, there may be a short wait before you receive your copy.
+However I try to do the mailing within one or two weeks of receiving orders.
+
+Please let me know the details of your computer system when ordering.
+This will help me in planning future versions. I would especially appreciate
+the foloowing information:
+
+    Amiga model
+    Version of operating-system
+    Memory
+    Processor/Co-processor
+    Hard disk
+    Printer
+    Graphic card
+
+You also can use the enclosed order form to order the program. If you
+want to print out the order form, use the CD command to change the
+current directory to the directory in which the order form is found.
+Then type the following line in a CLI/Shell:
+
+    copy OrderForm.asc to prt:
+
+
+Ordering from foreign countries:
+
+Outside of Germany, the same price of 30.00 DM applies.  Please try to
+make payment in DM.  However, if you must use your local currency, please
+observe the following prices:
+
+    $20 US
+    15 £ Brit.
+    30 SFr.
+    220 Ös.
+    100 FFr.
+
+@ENDNODE
+
+
+@NODE install "Chapter 6: Installation"
+
+Installation of the program varies depending on your system.
+
+6.1 @{"Installation on a floppy disk" LINK onediskinstall}
+6.2 @{"Installation on a hard disk" LINK harddiskinstall}
+
+@ENDNODE
+
+@NODE onediskinstall "Chapter 6.1: Installation on a floppy disk"
+
+This procedure requires that you have the Analay archive on a floppy disk.
+Insert the disk in drive df0. To unpack the archive you need the archiver Lha
+and two blank floppies.
+Enter the following lines in a CLI/Shell:
+
+    lha e df0:Analay ram: Install2Disk
+    execute ram:Install2Disk
+
+Everything else is done by the installation script. It will request
+insertion of the disks at the appropriate times, format them, and write
+the program and other files on them.
+
+@ENDNODE
+
+@NODE harddiskinstall "Chapter 6.2: Installation on a hard disk"
+
+Just unpack the archive to any directory on your hard disk! The program
+needs the garbagecollector.library. It is to be found in the libs directory
+of the Analay drawer and can be loaded from there. You also can copy this
+library to the libs: drawer of your System: partition. To do this, go to a
+CLI/Shell and use the CD command to change the current directory to the
+Analay directory. Then enter the following line:
+
+    copy libs/garbagecollector.library to libs:
+
+@ENDNODE
+
+
+@NODE general "Chapter 7: General information"
+
+This chapter contains general information on the program.
+
+7.1 @{"Starting the program" LINK startprogram}
+7.2 @{"System requirements" LINK system}
+7.3 @{"Asynchronous program design" LINK multitasking}
+7.4 @{"The garbage collector" LINK garbagecollector}
+7.5 @{"Entering numerical values" LINK numberenter}
+7.6 @{"Online help" LINK onlinehelp}
+7.7 @{"Language independence" LINK languageindependence}
+
+@ENDNODE
+
+@NODE startprogram "Chapter 7.1: Starting the program"
+
+From the Workbench, the program can be started by double-clcking its icon.
+It may also be started from the CLI, but if so, the stack might have to be
+reset.  To do this, use the command:
+
+    stack 20000
+
+@ENDNODE
+
+@NODE system "Chapter 7.2: System requirements"
+
+Minimum system configuration
+
+    1.5 MByte RAM
+    AmigaOS 2.0
+
+
+Recommended system configuration:
+
+    2 MByte RAM or more
+    Hard disk
+    AmigaOS 2.0 or later
+
+
+Some functions require AmigaOS 3.0 or higher.  The following restrictions
+apply when using AmigaOS versions earlier than 3.0:
+
+    Only gray scales are available in the Layout Mode.
+    Only black-and-white or grayscale printout is available.
+    The color wheel is not available in the Layout Mode.
+    The asl ScreenMode requester is available beginning with AmigaOS 2.1.
+    The program is language-independent beginning with AmigaOS 2.1.
+
+@ENDNODE
+
+@NODE multitasking "Chapter 7.3: Asynchronous program design"
+
+The program has an ansynchronous design. This means that the Math Mode
+and the Layout Mode run as separate tasks at the same time. Moreover
+the @{"Axis limits requester" LINK changeaxesrangereq} of the Math Mode
+is also started asynchronously. Therefore you can work in the Layout Mode
+while @{"analyzing" LINK completediscuss} a function in the Math Mode. All changes
+performed in the Math Mode are carried over to the Layout Mode automatically.
+
+A window can be drawn by only one part of the program at a time.
+If the Math Mode and the Layout Mode attempt to draw the same window at
+the same time, one part of the program has to wait until the other part
+has finished. Similarly, a family of curves can be drawn by only one part
+of the program at the same time, even if the family is displayed in
+different windows.
+
+The priority of each program part can be adjusted in the @{"Priorities requester" LINK changepriorities}.
+
+@ENDNODE
+
+@NODE garbagecollector "Chapter 7.4: The Garbage Collector"
+
+The program was written using the Amiga Oberon-Compiler of the A+L AG.
+It uses the Garbage Collector of this Oberon system.
+
+The Garbage Collector takes care of memory management. It is responsible
+for deciding when memory blocks may be freed again. It runs as a separate task
+parallel to the main program and constantly checks the memory blocks which
+were allocated with it to determine whether they may be freed again. To prevent
+it from blocking the whole system it runs at a very low priority by default.
+
+Using the Garbage Collector's preferences program @{B}GarbagePrefs@{UB} you
+can change the parameters of the Garbage Collector. To let the prefs program
+recommend parameters which fit your system, choose the item
+@{B}Werte vorschlagen@{UB} in the @{B}Editieren@{UB} menu. To save these settings
+select the gadget @{B}Speichern@{UB}.
+
+Complete documentation for the Garbage Collector is to be found in the
+enclosed file, garbagecollector.liesmich.
+
+@ENDNODE
+
+@NODE numberenter "Chapter 7.5: Entering numerical values"
+
+When entering values, you are not restricted to simple numerals. You also
+can use constant names, the built-in functions, and even arithmetical
+expressions. These functions should be entered like normal functions
+as described in the chapter @{"Functionformat" LINK funcformat}. For instance, instead of
+6.28, you can write 2*pi.
+
+@ENDNODE
+
+@NODE onlinehelp "Chapter 7.6: Online help"
+
+The program contains an online help function which can be called up from
+nearly any requester. To do so, press the Help gadget to the right
+of the OK gadget or press the HELP key. For reasons of space, not
+every requester contains a Help gadget. In these cases you must use the
+HELP key to access the online help. Please note that all string gadgets
+must be deactivated for the HELP key to be operable.
+
+@ENDNODE
+
+@NODE languageindependence "Chapter 7.7: Language independence"
+
+Since AmigaOS 2.1, the program supports the locale.library and therefore
+uses, if possible, the language selected in the Workbench Preferences.
+The following languages are currently supported:
+
+    German
+    English
+
+Under AmigaOS 2.0, the program only supports the English language.
+
+@ENDNODE
+
+
+@NODE math "Chapter 8: Math Mode"
+
+In the Math Mode, functions may be entered, processed and changed.
+
+8.1 @{"Input of functions and variables" LINK enter}
+  8.1.1 @{"The function format" LINK funcformat}
+  8.1.2 @{"The variable format" LINK varformat}
+  8.1.3 @{"Changing the domain of a function" LINK defrange}
+  8.1.4 @{"Connecting functions" LINK connectfuncs}
+  8.1.5 @{"Processing functions symbolically" LINK funcsymb}
+
+8.2 @{"Plotting functions" LINK plotfuncs}
+  8.2.1 @{"Changing the axis limits" LINK changeaxesrange}
+  8.2.2 @{"Changing the axis labels" LINK changeaxes}
+  8.2.3 @{"Changing the grid" LINK changegrid}
+  8.2.4 @{"Changing the graph design" LINK changefuncs}
+  8.2.5 @{"General settings of function windows" LINK funcwindsettings}
+
+8.3 @{"Quick-input" LINK quickenter}
+
+8.4 @{"Input of constants" LINK changeconstants}
+  8.4.1 @{"The constant input requester" LINK enterconstant}
+
+8.5 @{"Analysis of curves" LINK curvediscuss}
+  8.5.1 @{"Zeros" LINK nullstellen}
+  8.5.2 @{"Extreme points" LINK extremepoints}
+  8.5.3 @{"Points of inflection" LINK wendepunkte}
+  8.5.4 @{"Definition gaps" LINK definitionslucken}
+  8.5.5 @{"Points of intersection" LINK schnittpunkte}
+  8.5.6 @{"The Analysis data requester" LINK discusslistreq}
+  8.5.7 @{"Complete analysis" LINK completediscuss}
+  8.5.8 @{"Complete analysis settings" LINK completesettings}
+  8.5.9 @{"Calculation of areas" LINK calcarea}
+
+8.6 @{"Objects in function windows" LINK objects}
+  8.6.1 @{"Input of object coordinates" LINK objectcoords}
+  8.6.2 @{"Moving objects by mouse" LINK objectmousemove}
+  8.6.3 @{"Text input on objects" LINK objecttexts}
+  8.6.4 @{"Texts" LINK texts}
+  8.6.5 @{"Points" LINK points}
+  8.6.6 @{"Markers" LINK marks}
+  8.6.7 @{"Hatchings" LINK areas}
+
+8.7 @{"Legends, tables, lists" LINK special}
+  8.7.1 @{"Legends" LINK legends}
+  8.7.2 @{"Tables" LINK tables}
+  8.7.3 @{"Lists" LINK lists}
+
+8.8 @{"Changing the screen resolution" LINK changeresolution}
+
+8.9 @{"Changing the screen colors" LINK changecolors}
+
+8.10 @{"Changing the task priorities" LINK changepriorities}
+
+8.11 @{"Options in the Math Mode" LINK mathoptions}
+  8.11.1 @{"Use Workbench Screen" LINK usewbscreen}
+  8.11.2 @{"Quick-select" LINK quickselect}
+  8.11.3 @{"Auto active window" LINK autoactive}
+  8.11.4 @{"Clone Workbench" LINK copywb}
+
+@ENDNODE
+
+
+@NODE enter "Chapter 8.1: Input of functions and variables"
+
+To enter new functions or variables, or to change old ones, choose
+@{B}Input@{UB} in the @{B}Functions@{UB} menu. The requester which opens will
+display two lists. The left list shows all functions entered up to this
+point, and the right one shows all variables. The functions and variables
+are entered in one of two special formats, the @{"Function format" LINK funcformat} or the
+@{"Variable format" LINK varformat} respectively.  Selecting an existing item
+in the list causes it to be displayed in the string gadget below, where it
+can be edited. Hitting Return or selecting another item completes the editing
+process, replacing the old item with the edited version.
+
+@{B}New function:@{UB} This gadget allows you to enter a new function to the
+function list using the string gadget below the list view.
+
+@{B}Delete function:@{UB} The current function is removed from the list.
+No confirmation of this action is requested!
+
+@{B}Copy function:@{UB} Pressing this gadget copies the function currently
+selected into memory. It is then pasted onto (i.e. replaces) the next
+function to be selected. Pressing the gadget a second time before selecting
+the second function aborts the operation.
+
+@{B}Append function:@{UB} This gadget works exactly like @{B}Copy function@{UB}
+except that the selected function is appended to the second one instead of
+replacing it.
+
+@{B}Differentiate function:@{UB} After selecting this gadget the current function
+is differentiated with respect to x and the result appended to the list as
+a new function. If you want to differentiate a function with respect to a
+variable other than x, you will need to use the @{"Process functions requester" LINK funcsymb}.
+
+@{B}New variable@{UB} This button creates a place in the list for a new
+variable and places the cursor in the string gadget, where the variable can
+be entered. Hitting Return adds it to the list of variables, although it
+remains selected as the current one and can still be changed in the string
+gadget.
+
+@{B}Delete variable:@{UB} The current variable is deleted without confirmation.
+
+@{B}Copy variable:@{UB} This gadget corresponds to the gadget @{B}Copy function@{UB}.
+
+@ENDNODE
+
+@NODE funcformat "Chapter 8.1.1: The function format"
+
+The format used to express mathematical functions is the same as in
+most high-level programming languages. The four fundamental operations of
+arithmetic are represented by +,-,* and /, a power by "^". Brackets are
+indicated by "()". The normal "." is used as the decimal point in rational
+numbers. Exponents can be appended with an "E" to figures. The multiplication
+operator "*" must always be used.   (I.e. 2*x, NOT 2x.)
+
+In all operations, the usual order of calculation is observed.
+
+Functions are not case-sensitive.
+
+The program understands a multitude of mathematical operations, as
+listed below:
+
+    Input        Function
+
+    sin(x)       Calculates the sine of the argument x
+    cos(x)       Calculates the cosine
+    tan(x)       Calculates the tangent
+    cot(x)       Calculates the cotangent
+    asin(x)      Calculates the arc sine
+    acos(x)      Calculates the arc cosine
+    atan(x)      Calculates the arc tangent
+    acot(x)      Calculates the arc cotangent
+    sinh(x)      Calculates the hyperbolic sine
+    cosh(x)      Calculates the hyperbolic cosine
+    tanh(x)      Calculates the hyperbolic tangent
+    coth(x)      Calculates the hyperbolic cotangent
+    sqrt(x)      Calculates the square root
+    root(n)(x)   Calculates the nth root
+    ln(x)        Calculates the natural logarithm
+    log(n)(x)    Calculates the logarithm base n
+    exp(x)       Raises e to the power of x; (e^x)
+    abs(x)       Calculates the absolute value
+
+All parameters of functions must be enclosed in brackets. Exceptions are
+the functions with two parameters, e.g. root or log. Their first
+parameters may be given without brackets as long as they are composed of a
+single term. For example:
+
+    root3(8)      but  root(2+1)(8)
+    logsin(1)(8)  but  log(sin(1)+1)(8)
+
+
+The program understands the following constants:
+
+    Input    Value          Units                Name
+
+    pi       3.141592654                PI
+    e        2.718281828                Base of natural logarithms
+    h        6.62618E-34     J*s        Planck's constant
+    c        2.99792458E8    m/s        Speed of light in vacuum
+    el       1.6022E-19       C         Elementary charge
+    me       9.1095E-31       kg        Electron rest mass
+    mn       1.6749E-27       kg        Neutron rest mass
+    mp       1.6726E-27       kg        Proton rest mass
+    u        1.6605519E-27    kg        Atomic mass unit
+    v0       22.414        dm^3/mol     Molar volume, ideal gas
+    n        6.02252E23      1/mol      Avogadro's constant
+    f        6.670E-11    m^3/(kg*s^2)  Gravitational constant
+    r0       8.3143        J/(mol*K)    Molar gas constant
+    p0       1013.25         mbar       Atmospheric pressure
+    k        1.38062E-23     J/K        Boltzmann's  Konstante
+    e0       8.85419E-12     F/m        Permittivity of vacuum
+    m0       1.25664E-6     T*m/A       Permeability of vacuum
+
+Symbols for constants are entered and treated exactly like numbers.
+Your own constants or variables can also be used, provided that the name is
+not a reserved word like sin, cos, tan or x. If a variable or constant
+symbol is used without first having been declared as a @{"variable" LINK varformat}
+or as a @{"constant" LINK changeconstants}, its value is set to 0. This is not a problem if
+you only want to calculate a derivative.
+
+Examples of proper function format:
+
+    sin(pi/2)/(sqrt(2^3)+1)
+    1e-3*sin(pi+2e6)
+
+@ENDNODE
+
+@NODE varformat "Chapter 8.1.2: The variable format"
+
+Variables may be used to create a family of related curves. Variables
+are used in functions exactly like constants, but their values are
+incremented between two limits by an amount which you specify.
+When such a function is drawn, one graph for each combination of variable
+values is drawn into the window. Any number of variables may be used in a
+function.
+
+Variables are entered in the following format:
+
+    <Name>=a..b,c
+
+<Name> is the name of the variable as it will be used when writing functions.
+a is the lower limit, b the upper limit. c is the increment between
+successive values as the variable is stepped from a up to b.
+If c is not provided, the increment is set to 1.
+
+Examples:
+
+    a=1..10
+    b=-1..5,2
+    variable=2..0,-1
+    ab=-10..10,5
+
+The variable format can also be used to assign constant values. Simply make
+the upper limit equal to the lower limit. If no upper limit is provided, this
+is done automatically:
+
+    a=1..1
+    a=1
+
+@ENDNODE
+
+@NODE defrange "Chapter 8.1.3: Changing the domain of a function"
+
+The domain of a function is calculated automatically.
+If you want to place additional restrictions on the domain,
+choose the item @{B}Domain@{UB} in the @{B}Functions@{UB} menu. In the
+requester, all currently entered functions are listed on the right side. On
+the left side, all elements of the user-defined domain of the current
+function are shown. This user-defined domain must not be confused with
+the actual domain of a function. This item allows you to narrow the
+domain further for the purpose of constructing the desired graph.
+
+
+@{B}New domain:@{UB} Selecting this gadget adds a new item to the list of
+ranges within the user-defined domain.
+
+@{B}Delete domain:@{UB} This gadget deletes the current element.
+
+@{B}Copy domain:@{UB} This operation corresponds to the copy operation of the
+@{"Function input requester" LINK enter}.
+
+
+The items of the list must fit one of the following patterns:
+
+    x<a    x>a     x<=a    x>=a     x=a
+    a<x    a>x     a<=x    a>=x
+    
+    x#a
+    
+    a<x<b  a<x<=b  a<=x<b  a<=x<=b
+    a>x>b  a>x>=b  a>=x>b  a>=x>=b
+
+You must insert values for a and b. If no ranges are entered the
+function is regarded as being defined at all x. As soon as ranges are
+entered, the function is considered by Analay to be defined at a value x
+only if this value is included in at least one of the entered ranges.
+The function is not defined at a value which is excluded by x#a, even if
+this value is included in other ranges. Examples:
+
+0<=x<=2*pi  Plots the function in the interval [0;2*pi]. If it is a
+            sine function this would be exactly one period.
+
+Example with functions:
+
+Entered function:            Entered user-defined domain:
+
+x*ln(x^2/a)                  x#0
+0                            x=0
+
+Both function can then be @{"connected" LINK connectfuncs}. Since the user-defined domains
+of connected functions must not overlap you have to restrict them manually
+as shown in this example.
+
+
+@ENDNODE
+
+@NODE connectfuncs "Chapter 8.1.4: Connecting functions"
+
+To connect functions, choose the item @{B}Connect functions@{UB} in the
+@{B}Functions@{UB} menu. A requester will open which shows, on the right,
+a list of all functions entered so far.  On the left side, all connected
+functions are listed. In the middle, all functions making up the selected
+connection on the left are listed. In the string gadget below the left
+listview, you can change the name of the current connection.
+
+
+@{B}New connection:@{UB} Appends a new connection to the list.
+
+@{B}Delete connection:@{UB} Deletes the current connection.
+
+@{B}Copy connection:@{UB} This operation works like the copy function of the
+@{"Function input requester" LINK enter}.
+
+@{B}Take function:@{UB} This gadget adds the selected "available function"
+to the list of connected functions.
+
+@{B}Delete function:@{UB} This gadget removes a function from a connection.
+
+The domains of functions making up a connection may not overlap. This will
+probably necessitate changing the @{"user-defined domain" LINK defrange}.
+
+Connected functions are processed and treated in other ways exactly like
+ordinary functions.
+
+@ENDNODE
+
+@NODE funcsymb "Chapter 8.1.5: Processing functions symbolically"
+
+To process functions @{"symbolically" LINK symbolically} choose the item @{B}Process@{UB} in the
+@{B}Functions@{UB} menu. A requester will open which has gadgets for all
+operations. Select the function you wish to process, and then click on
+the appropriate gadget.
+
+@{B}Differentiate function:@{UB} After selecting this gadget you'll be asked by the
+@{"String input requester" LINK getstring} for the variable with respect to which the function
+will be differentiated. The derivative will be inserted in the list as a new
+function, just after the original one.
+
+@{B}Tangent at point P:@{UB} After you have entered the coordinates of a point
+using the @{"Point input requester" LINK enterpoint}, the formula for the tangent at this point
+is created and inserted in the list after the original function.
+The y-value of the point is calculated automatically. Tangents may not be
+calculated in undefined ranges.
+
+@{B}Normal at point P:@{UB} This function corresponds to the operation
+@{B}Tangent at point P@{UB}.  The formula for the normal is entered in the list.
+
+@{B}Reflect function:@{UB} With this operation, you can reflect the current
+function horizontally, vertically, or through a point. When this gadget is
+selected, the @{"Reflect requester" LINK mirrorfunc} opens and you can select
+how you want the function to be reflected. The new function is inserted after
+the original one in the functions listview.
+
+@ENDNODE
+
+@NODE symbolically "Difference between symbolical and numerical"
+
+The analysis and the processing of functions is divided up into two
+methods: symbolical and numerical methods.
+
+When analysing a function with a numerical method the program only works
+with a table of the function values to find e.g. the zeros of this
+function. When doing this symbolically the program does not use the table
+of the function but the function term itself. That means the symbolical
+processing of functions is much more precise than the numerical. For example
+the numerical analysis of the function sin(x) would give for the zeros
+0, 3.14, 6.28, ... . Instead, the symbloical analysis would give
+0, pi, 2*pi, ... . When analysing the function sin(tan(x)) a numerical
+method could never find all zeros of this function, because there is an
+infinite number of zeros. A good symbolical math program could say
+exactly this, that there is an infinite number of zeros.
+
+Though Analay is not yet capable to analysis functions symbolically it can
+process functions symbolically. Therefore you can, e.g., differentiate
+functions symbolically what means that the function term of the
+derivative is created, whereas a numerical differentiation only could
+plot the graph of the derivative, but could not create the function term.
+
+@ENDNODE
+
+@NODE getstring "The String input requester"
+
+In this requester you can enter a string.
+
+@ENDNODE
+
+@NODE enterpoint "The Point input requester"
+
+This requester lets you enter the coordinates of a point on the system of axes.
+
+@{B}x-coord:@{UB} Here you can enter the x-coordinate of the point.
+
+@{B}y-coord:@{UB} Here you can enter the y-coordinate of the point. If this
+gadget says @{I}auto@{UI} and is not selectable, the y-coordinate is calculated
+automatically from the x-coordinate given.
+
+@ENDNODE
+
+@NODE mirrorfunc "The Reflect requester"
+
+This requester lets you determine how the function is reflected.
+
+@{B}through line x=:@{UB} If this item is selected, the function is reflected at a
+line parallel to the y-axis. The distance from the y-axis can be specified
+in the string gadget after the text.
+
+@{B}through line y=:@{UB} If this item is selected, the function is reflected at a
+line parallel to the x-axis. The distance to the x-axis can be specified
+in the string gadget after the text.
+
+@{B}through point:@{UB} If this point is selected, the function is reflected through a
+point. The coordinates of the point are entered in the string-gadgets
+below the text.
+
+@ENDNODE
+
+@NODE plotfuncs "Chapter 8.2: Plotting functions"
+
+In Math Mode a window is opened for each separate display. The number of windows
+is not limited. To create new function windows, choose the item @{B}Create@{UB}
+in the @{B}Windows@{UB} menu. A requester will open showing on its left side a
+list of all windows opened at the moment. You can change the name of the
+current window in the string gadget below the list. If you have more than one
+window, you should give each one its own name to keep from confusing them.
+
+The list in the middle contains all functions plotted in the current window.
+
+The list on the right side contains all currently entered functions and
+connections.
+
+
+@{B}New window:@{UB} A new window is created and appended to the list
+of windows. It is selected as the current window so that you can edit it
+immediately.
+
+@{B}Delete window:@{UB} The current window is deleted.
+
+@{B}Copy window:@{UB} This gadget enables you to make a copy of a window
+in order to continue working on a project while preserving the original.
+After selecting the window you wish to copy and clicking the gadget, either
+select an existing window name for replacement or click in a space previously
+created with the "New window" button. Only the functions of the
+first window get copied to the second one.  Other attributes, such as ranges
+colors and styles, are not copied.
+
+Selecting this gadget a second time aborts the operation.
+
+@{B}Append window:@{UB} This gadget works like @{B}Copy window@{UB} except
+that the functions of the first window are added to those of the
+second window.
+
+@{B}Take function:@{UB} The current function of the right list is entered
+in the list of functions of the current window.
+
+@{B}Delete function:@{UB} The current function in the list of functions of the
+current window gets deleted.
+
+@ENDNODE
+
+@NODE changeaxesrange "Chapter 8.2.1: Changing the axis limits"
+
+The ranges of the x- and y-axes of a graph may be changed by using either
+the keyboard or the mouse.
+
+@{"Changing axis limits in requester" LINK changeaxesrangereq}
+@{"Changing axis limits with the  mouse" LINK changeaxesrangemouse}
+
+@ENDNODE
+
+@NODE changeaxesrangereq "Changing axis limits in requester"
+
+To change the axis limits of a window, choose the item @{B}Axis range@{UB} in
+the @{B}Windows@{UB} menu. After you select the window on which you want to
+perform the changes, a requester displays x- and y-axes, with a string gadget
+indicating the current extent of each axis.  New values may be entered in
+these string gadgets.
+
+@{B}Undo changes:@{UB} Selecting this gadget restores the values to those in
+place when the requester was opened the last time. If you changed the
+axis ranges unintentionally @{"by mouse" LINK changeaxesrangemouse}, you can undo the change
+with this gadget.
+
+@ENDNODE
+
+@NODE changeaxesrangemouse "Changing axis ranges with the mouse"
+
+The axis limits can also be very easily changed with the mouse.
+
+If the desired range is completely visible within the window and the pointer
+is dragged from one point to another, the box that is visible while the
+left mouse button is depressed will show the margins of an area which will,
+when the button is released, be expanded to the boundaries of the window.
+
+If you wish to expand the graph to include areas not visible in the window,
+start dragging the mouse at a point within the window, but release it outside
+the window at a point which would correspond to the desired values if the
+window were larger.  The area within the box will then be shrunk into the
+existing window.
+
+Expanding the range outside the existing window in all directions is thus a
+two-stage process of dragging from, say, upper left (in the window) to lower
+right, then from the newly included point in the lower right to the desired
+point outside the window at the upper left.
+
+This function can be aborted by pressing the right mouse button.
+
+@ENDNODE
+
+@NODE changeaxes "Chapter 8.2.2: Changing the axis labels"
+
+To change the design of a window's system of coordinate axes, choose the
+item @{B}Axis design@{UB} in the @{B}Windows@{UB} menu. After selecting a window,
+you can perform the changes in the requester which opens.
+
+
+@{B}Axis system on:@{UB} When this box is checked, axes and scales are
+visible. Clicking the check box will toggle them off.
+
+@{I}Axis design@{UI} This area is used to determine labels, figures and
+markers along the axes.
+
+@{B}Values:@{UB} Specify the interval between the values appearing along
+the axes. The points referred to by these values are indicated by tick
+marks on the axes. The figures can be switched on and off by using the
+check box.
+
+@{B}Ticks 1:@{UB} Two lengths of tick marks may be used. Ticks 1 refers to
+the major or longer ticks. The interval between tick marks is entered in
+the text gadget. Ticks may be switched on or off with the check box.
+
+@{B}Ticks 2:@{UB} The interval between the smaller ticks is entered in the
+same way as above. The markings can be switched on or off using the
+check box.
+
+@{B}x-axis label:@{UB} The label on the x-axis may be changed by entering
+a string in the text gadget. However, you still must use "x" to indicate the
+independent variable when writing function terms! The status of the check
+box determines whether the label is displayed.
+
+@{B}y-axis label:@{UB} The y-axis label may be changed by entering a new
+string in the text gadget. The check box switches the name on or off.
+
+@{B}Font:@{UB} This gadget opens the font requester of the operating
+system, enabling the font of the axis labels and figures to be selected.
+
+
+@{I}Axis design:@{UI} In this area you can change the design of the system
+of axes.
+
+@{B}Color:@{UB} Enables selection of the color of the axes.
+
+@{B}Line pattern:@{UB} Enables selection of the line pattern of the axes.
+
+@{B}Line thickness:@{UB} Enables selection of the thickness of the axis lines.
+
+@{B}Arrow:@{UB} Enables selection of the arrow at the end of each axis.
+
+@ENDNODE
+
+@NODE changegrid "Chapter 8.2.3: Changing the grid"
+
+To change the grid which is drawn as the background of the window,
+choose the item @{B}Grid@{UB} in the @{B}Windows@{UB} menu. After selecting a window
+you can change the grid in the requester.
+Two independent grids can be displayed in one window.
+
+
+@{B}Grid active:@{UB} This check box switches the grid on or off.
+
+
+@{I}Settings:@{UI} These specifications determine the placement and intervals
+of the grids.
+
+@{B}Interval:@{UB} The text gadgets allow you to specify the interval between
+the grid lines.  x and y intervals are independent and specified separately.
+
+@{B}Start coordinates:@{UB} Here you can specify the origin of the grid. The
+lines of the grid are drawn in each direction starting at the origin.
+
+
+@{I}Grid design:@{UI} These specifications determine the design of the grid
+lines.
+
+@{B}Color:@{UB} Here you can select a color for the grid lines.
+
+@{B}Line pattern:@{UB} Here you can change the pattern of the grid lines.
+
+@{B}Line thickness:@{UB} Here you can change the thickness of the grid lines.
+
+@ENDNODE
+
+@NODE changefuncs "Chapter 8.2.4: Changing the graph design"
+
+To change the appearance of the function curves in a window, choose the item
+@{B}Graph design@{UB} in the @{UB}Windows@{UB} menu. After selecting a window you
+can independently alter the design of each of the functions displayed in this
+window.
+
+All functions plotted in the window are listed in the listview titled
+"Functions". If the currently selected function represents a family of
+curves, all possible combinations of its variables are listed in the
+list on the right. Each appearance of each curve in the family can also be
+changed independently. On the left side are gadgets for changing the design
+of the currently selected function.
+
+
+@{B}Color:@{UB} Enables selection of color of the current function's curve.
+
+@{B}Line pattern:@{UB} Enables selection of the line pattern of the current
+function's curve.
+
+@{B}Line thickness:@{UB} Enables selection of the thickness of the line used
+to draw the curve of the current function.
+
+@ENDNODE
+
+@NODE funcwindsettings "Chapter 8.2.5: General settings of function windows"
+
+To change the general settings of a function window, choose the item
+@{B}Settings@{UB} in the @{B}Windows@{UB} menu. After selecting a window,
+you can change the general settings of this window in the requester.
+The upper area contains some information about the window. Below this are
+the gadgets with which you can change the settings of the window.
+
+
+@{B}Transparent:@{UB} If this item is activated, other windows in the back
+will appear through it. This only has an effect on the Layout Mode.
+
+@{B}Border free:@{UB} If this item is activated, the drawing area reaches
+to the border of the window. Otherwise, the border of the window will also
+be used for drawing.
+
+@{B}Auto y-range:@{UB} If this item is activated, the range of the y-axis
+is automatically calculated in order to show the full extent of the curve
+in the specified domain. If the y-axis range is changed by mouse or
+by using the requester, this item is automatically deactivated.
+
+@{B}Auto axis labels:@{UB} If this item is activated, the labels of the axes
+are adapted to new window sizes automatically.  This prevents them from
+overlapping. As soon as the labels are changed by hand, this item is
+automatically deactivated.
+
+@{B}Auto grid:@{UB} If this item is activated, the background grid of the window
+is adapted automatically to the axis labels. If the grid is changed by hand,
+this item is automatically deactivated.
+
+@{B}Background color:@{UB} Here you can select the color of the background
+of a graph. In order for this function to work correctly in the Layout Mode,
+@{B}Transparent@{UB} must be deactivated in this requester.
+
+@{B}Calculation@{UB} This text gadget allows you to specify the
+number of points that are calculated for a graph. The more points, the more
+exact the function will be drawn, but also the longer the calculation will
+take. More points than the horizontal screen resolution do not improve the
+quality very much.
+
+@ENDNODE
+
+@NODE quickenter "Chapter 8.3: Quick-input"
+
+If you only want to create one window with a single function graph, the use
+of the @{"Input requester" LINK enter} and the @{"Plot requester" LINK plotfuncs} is a bit complicated. In
+this case you can choose the item @{B}Quick-input@{UB} in the @{B}Windows@{UB}-menu.
+A requester opens in which you can enter a function. Pressing RETURN or
+clicking on OK will close the requester and open a new window with a plot
+of the new function.
+
+@ENDNODE
+
+@NODE changeconstants "Chapter 8.4: Input of constants"
+
+Analay is able to understand frequently used numerical values if they have
+been entered into its tables of constants.
+
+Each entry in a constant table consists of a symbol, a value, and an optional
+comment.  The symbol is the alphanumeric string which, when used within a
+function, will be recognized by Analay, and for which Analay will substitute
+the corresponding value.  The comment is a convenient place to note the
+name of the constant, the units it designates, or the use to which you might
+put it.
+
+There are two such tables, referred to as @{B}internal constants@{UB} and
+@{B}temporary constants@{UB} respectively.  Both tables may be changed by the
+user.
+
+The table of internal constants initially contains those constants listed
+in the chapter @{"Function format" LINK funcformat}.  These, along with any
+that are added to this table, are saved with the configuration in the
+@{B}Settings@{UB} menu, and can therefore be brought into Analay each time the
+program is started, or imported with various configurations which have
+previously been saved.
+
+Temporary constants, on the other hand, are saved with individual files, and
+are not available in projects other than the one in which they were created.
+
+To enter new constants or change old ones, choose the item @{B}Change constants@{UB}
+in the @{B}Functions@{UB} menu. The requester which opens contains a list of all
+constants. You can change the symbol, the value and the comment of a selected
+constant in the string gadgets below the listview or enter a new one. Also
+the chapter @{"The Analysis data requester" LINK discusslistreq} for an alternative way
+of entering calculated values into the table of temporary constants.
+
+
+@{B}Internal constants, Temporary constants:@{UB} This gadget switches between
+internal and temporary constant tables in the listview.
+
+@{B}New constant:@{UB} This gadget allows a new constant symbol, value, and
+comment to be entered in the string gadget below the list. It is appended
+to the list and selected as the current constant.
+
+@{B}Delete constant:@{UB} Deletes the current constant.
+
+@{B}Copy constant:@{UB} This gadget copies the current constant. When
+a second constant (or a blank line created by "New constant") is selected,
+the copy is pasted.
+
+@ENDNODE
+
+@NODE enterconstant "Chapter 8.4.1: The constant input requester"
+
+In this requester you can change one single constant. Three gadgets are
+provided to enter the symbol, the value and the comment of the constant
+respectively. See @{"Input of constants" LINK changeconstants} for further information.
+
+@ENDNODE
+
+@NODE curvediscuss "Chapter 8.5: Analysis of curves"
+
+The operations for analyzing functions are to be found in the @{B}Analyze@{UB} menu.
+All analyses are performed with a numerical precision of six decimal places.
+The examinations of a @{"Complete analysis" LINK completediscuss} can be performed with
+a precision of up to 8 decimals.
+Analyses are restricted to the domain of the function shown in the
+selected window.
+
+@ENDNODE
+
+@NODE nullstellen "Chapter 8.5.1: Zeros"
+
+To determine the zeros of a function, choose the item @{B}Find zeros@{UB} in
+the @{B}Analyze@{UB} menu. After selecting a window, you are asked to select the
+function to be analyzed. After that a window is opened which shows the
+progress of the analysis.
+
+When the program has finished the search, all zeros in the domain examined
+are listed in the @{"Zeros requester" LINK discusslistreq}.
+The comments indicate the change in sign as the value of x increases.
+
+Every zero the program finds meets the following condition:
+
+    -0.00001<=f(x)<=0.00001
+
+@ENDNODE
+
+@NODE extremepoints "Chapter 8.5.2: Extreme points"
+
+To determine the extreme points of a function, choose the item
+@{B}Find extremes@{UB} in the @{B}Analyze@{UB} menu. After the selection of a window
+you are asked to select the function whose extreme points are to be found.
+
+After that a window opens in which you can follow the search by watching
+the bar. The search is performed separately for maximum and minimum points,
+so you will see the bar get built up twice.
+
+When the program has finished the search, all extreme points found are
+displayed in the @{"Extreme points requester" LINK discusslistreq}. Comments
+will note whether a point is a maximum or a minimum and if it is
+an absolute or a local one. If the program writes a question mark behind
+absolute, the program is unable to determine that this is an absolute extreme
+for the entire domain in which the function is defined, but it will represent
+the limit of the function's range in the domain which has been analyzed.
+
+@ENDNODE
+
+@NODE wendepunkte "Chapter 8.5.3: Points of inflection"
+
+To determine the points of inflection of a function, choose the item
+@{B}Find points of inflection@{UB} in the @{B}Analyze@{UB} menu. After the
+selection of a window, you are asked to choose the function whose
+points of inflection you wish to locate.
+
+A window opens in which you can follow the search by watching the bar.
+
+First, the second derivative of the function is calculated, and then a
+value-table of the derivative is created. Therefore you will see the bar
+get built up twice.
+
+As soon as all points of inflection are found, they are displayed in
+the @{"Points of inflection requester" LINK discusslistreq}. The comments note whether
+the function's curvature changes from right to left or vice versa.
+
+@ENDNODE
+
+@NODE definitionslucken "Chapter 8.5.4: Definition gaps"
+
+To determine the definition gaps of a function, choose the item
+@{B}Find gaps@{UB} in the @{B}Analyze@{UB} menu. After selecting a window,
+you are asked to choose the function whose definition gaps you want the
+program to determine.
+
+After that a window is opened in which you can follow the search by
+watching the bar.
+When the program has finished the search, the gaps are listed in the
+@{"Gaps requester" LINK discusslistreq}.
+
+@ENDNODE
+
+@NODE schnittpunkte "Chapter 8.5.5: Points of intersection"
+
+To determine the points of intersection of two functions, choose the item
+@{B}Find intersections@{UB} in the @{B}Analyze@{UB} menu. After selecting a window,
+you are asked to select from the window's function list the two functions
+whose intersections you want the program to calculate.
+
+After that, a window is opened in which you can follow the search by
+observing the bar.
+
+As soon as all points of intersection are found they are displayed
+in the @{"Intersections requester" LINK discussreq}.
+
+@ENDNODE
+
+@NODE discusslistreq "Chapter 8.5.6: The Analysis data requester"
+
+After a function is analyzed by Analay, the results are displayed in the
+Analysis data requester. In the upper area, the function or functions under
+consideration and their domain are displayed. Beneath that, the results of
+the analysis of the curve are listed. Every entry consists of an abscissa
+(x-coordinate), an ordinate (y-coordinate) and a comment.
+
+By double-clicking on an entry with the left mouse button, you can
+define the x-coordinate as a constant for the program. It will be appended
+as a temporary constant to the list of constants. Then you can change
+the constant in the @{"Constant input requester" LINK enterconstant}.
+See chapter @{"Input of constants" LINK changeconstants} for further information.
+
+@{B}as list, as points, as markers:@{UB} Here you can state how the results
+will be recorded when leaving the requester with OK. If you select list,
+a new @{"list" LINK lists} will be created containing the abscissa and
+the ordinate of each result in two columns. If points is selected, the results
+are indicated as @{"points" LINK points} on the graph of the function.
+If @{"markers" LINK marks} is selected, vertical lines are drawn on the
+graph at the abscissa.
+
+When selecting point or marker, a requester opens in which a default name
+for the first point or marker appears. The last digit or letter of the name
+is incremented with each successive point or marker as shown:
+
+    A1, A2, A3, A4, ...
+    A, B, C, D, ...
+
+@{B}default, custom:@{UB} Here you can choose whether the program will use the
+default list, point, and marker formats to record the results, or open a
+requester to allow you to customize their appearance.
+
+@ENDNODE
+
+@NODE completediscuss "Chapter 8.5.7: Complete analysis"
+
+To perform a complete analysis of a function choose the item
+@{B}Complete analysis@{UB} in the @{B}Analyze@{UB} menu. After selecting a window,
+choose out of the list of functions presented the function which you wish
+to have analyzed.
+A window with a listview and several gadgets at the bottom will open. The
+listview contains the results of the examination. By selecting @{B}Cancel@{UB} you
+can abort the examination.
+
+@{B}Print:@{UB} The results are printed using the printer driver and settings
+selected in Workbench Preferences.
+
+@{B}Textbox:@{UB} A text block containing a description of the curve will be
+created in the Layout Mode, where it may be further formatted prior to
+printing.
+
+
+The following attributes of the function can be calculated and described:
+
+    Derivatives
+    Symmetry
+    Zeros
+    Extreme points
+    Points of inflection
+
+You can determine which examinations the program actually performs with
+the @{"Complete analysis settings requester" LINK completesettings}.
+
+@ENDNODE
+
+@NODE completesettings "Chapter 8.5.8: Complete analysis settings"
+
+To change the settings for the complete analysis, choose the item
+@{B}Compl. analysis settings@{UB} in the @{B}Analyze@{UB} menu. The requester
+lets you choose which operations will be performed by toggling the check
+boxes.
+
+
+@{B}max. degree:@{UB} Allows you to specify the number of derivatives the program
+will calculate. If you want to calculate past the tenth derivative, you will
+have to do this in the @{"Input requester" LINK enter} or in the @{"Process requester" LINK funcsymb}.
+
+@{B}Decimal places:@{UB} Allows you to specify the precision of the calculations.
+
+@ENDNODE
+
+@NODE calcarea "Chapter 8.5.9: Calculation of areas"
+
+To obtain the area between two functions, choose the item @{B}Calculate area@{UB}
+in the @{B}Analyze@{UB} menu. In the requester which opens, you can enter
+two functions and two x-coordinates between which the surface will be
+calculated. The calculation uses the trapezium method.
+
+
+@{I}Area between functions:@{UI} In this area, you can specify the boundaries
+of the area.
+
+@{B}Functions:@{UB} Here you may type two different functions or select
+the A after the string gadgets, which  brings up the list of functions
+which have previously been entered. Selecting a function copies it into
+the corresponding string gadget. If you only want to calculate the area
+between a function and the x-axis, you may just enter 0 or nothing for the
+second function.
+
+@{B}from:@{UB} Enter the lower limit of x.
+
+@{B}to:@{UB} Enter the upper limit of x.
+
+@{B}absolute, oriented, rotation:@{UB} There are three options for
+calculations of area on a graph.  The items are defined as follows:
+
+absolute: The absolute area between the two functions is calculated. This
+          means the real contents of the area between both functions.
+
+oriented: The oriented area between the two functions is calculated. In
+          contrast to the absolute area the sign is considered. The contents
+          of the area is positive if function 1 lies above function 2.
+          Otherwise it is negative. For example a simple sine function
+          comprises with the x-axis an absolute area of which the contents
+          is>0. However the contents of the oriented area is=0 since the
+          same amount of area lies above and below the x-axis.
+
+Rotation: If rotation is selected not the contents of te area between the
+          functions is created but the volume of the figure which is
+          created by rotating the area around the x-axis.
+
+@{B}0.1 .. 0.0001:@{UB} This selection determines the precision of the calculation.
+The values correspond to the width of the trapeziums used in the
+calculations.
+
+Smaller values don't necessarily improve the result very much, and they
+can require much more time.
+
+
+@{B}Calculate:@{UB} This gadget starts the calculation. The result of the
+calculation is displayed in the field next to Result. By pressing
+the right mouse-button you can abort the calculation.
+
+
+@{I}Hatch surface:@{UI} This part of the requester gives you an opportunity to
+choose whether to highlight the area defined in the top part of the requester,
+and if so, in what way.
+
+@{B}Hatch surface:@{UB} The status of the check box determines whether the
+area is hatched. If this item is checked when you leave the requester with OK,
+another requester will pop up to allow you to select a window in which
+the area will be highlighted.
+
+@{B}Default hatching, Custom hatching:@{UB} If Custom hatching is chosen, a
+requester will open, giving you a chance to choose hatching color and
+pattern.
+
+@ENDNODE
+
+@NODE objects "Chapter 8.6: Objects in function windows"
+
+The following objects can be placed in a function window:
+
+    Text lines
+    Points
+    Markers
+    Hatchings
+
+Objects can be changed using the menu items @{B}Text, Point, Marker, Hatching@{UB}
+in the @{B}Windows@{UB} menu.
+
+These menu items are subdivided as follows:
+
+@{B}Create:@{UB} This item will open a requester allowing you to enter the
+parameters needed to define the particular object.  It will appear on the
+graph when the requester is closed.
+
+@{B}Change:@{UB} To change an already existing object, select this item.
+Afterwards select a window out of the given list. Then move the pointer over
+the object you want to change. As soon as the object is framed, press the
+left mouse button. This will open the specific requester in which you can
+change the object.
+
+Hatchings form an exception. They cannot be selected by clicking,
+but must be selected out of a list by their names.
+
+@{B}Delete:@{UB} You may delete an already existing object by selecting this item
+and afterwards the window containing the object. Then move the pointer
+over the object to frame it and press the left mouse button.
+
+The hatchings form an exception. They cannot be deleted by clicking, but
+must be selected out of a list by their names.
+
+@{B}Default:@{UB} This allows you to choose the corresponding default format
+for each object type. The settings of the default object are used when
+creating a new object.
+
+@ENDNODE
+
+@NODE objectcoords "Chapter 8.6.1: Input of object coordinates"
+
+The method of entering coordinates is identical for texts, points and markers.
+The coordinates are entered in the lower region of the requester.
+
+Hatchings have their own method of dimensioning.
+
+@{B}x:@{UB} Enter an x-coordinate here.
+
+@{B}y:@{UB} Enter a y-coordinate here.
+
+@{B}Snap to graph:@{UB} The status of this check box determines whether the
+y-coordinate of the object is to be adjusted to the y-coordinates of
+functions displayed in the window.
+
+@{B}Mouse:@{UB} After selecting this gadget, the window containing the object is
+brought to the foreground and you can place the object with the mouse. After
+pressing the left mouse button, the requester is brought to the foreground
+again. You can abort this operation by pressing the right mouse button.
+
+@{B}Axis coordinates, Screen coordinates:@{UB} Here you can determine
+whether the coordinates you enter will be interpreted as graph or screen
+coordinates.
+
+Axis coordinates are entered as normal coordinates in the system of
+coordinate axes. Changing the axis limits or the size of a window therefore
+affects the position of the object in the window.
+
+Screen coordinates are entered as pixel coordinates relative to the
+upper left edge of the window. Changing the axis limits or the size of
+the window does not affect the position of the object in the window.
+
+@ENDNODE
+
+@NODE objectmousemove "Chapter 8.6.2: Moving objects by mouse"
+
+Texts, points and markers can be moved by the mouse just by moving
+the pointer over an object, pressing the left button, and dragging the object
+to its new position.  Release the mouse button to drop the object.
+
+Pressing the right mouse button aborts the operation.
+
+@ENDNODE
+
+@NODE objecttexts "Chapter 8.6.3: Text input on objects"
+
+With texts, points and markers, you can enter text to be attached to
+the object.  Any text you type into the string gadget or select from the
+listview above it will be inserted. Within the text, you can
+use any of several commands, all of which are indicated by a $-sign. All
+commands supported at this time are for inserting the coordinates of the
+object into the text.
+
+
+$x : Inserts the x-coordinate of the object into the text.
+$y : Inserts the y-coordinate of the object into the text.
+$$ : Inserts a $-sign into the text.
+
+@ENDNODE
+
+@NODE texts "Chapter 8.6.4: Texts"
+
+In the upper area of the text requester, you can change the appearance
+of the text. In the lower region you can change the coorinates of the
+text, as described in the chapter @{"Input of object coordinates" LINK objectcoords}.
+
+@{B}Text:@{UB} Use the string gadget to enter the text that you want to
+place on the graph.
+
+@{B}Foreground color:@{UB} Select the color of the text.
+
+@{B}Background color:@{UB} Select the color for the background of the text.
+This is disregarded if the item @{B}Transparent@{UB} is checked.
+
+@{B}Font:@{UB} You may choose any font in your system for the text. This is
+done using the font requester of the asl library.
+
+@{B}Bold:@{UB} If this item is checked, the text is written bold.
+
+@{B}Italic:@{UB} If this item is checked, the text is written italic.
+
+@{B}Underlined:@{UB} If this item is checked, the text is underlined.
+
+@{B}Transparent:@{UB} If this item is checked, the text is written transparent.
+Otherwise, the background of the text is filled with the selected background
+color.
+
+@ENDNODE
+
+@NODE points "Chapter 8.6.5: Points"
+
+In the upper area of this requester, you can change the appearance of the
+point. In the lower region, the point's coordinates can be entered, as
+described in the chapter @{"Input of object coordinates" LINK objectcoords}.
+
+@{B}Name:@{UB} Here you can enter the name of the point. It will be written
+to the right of the point.
+
+@{B}Pattern:@{UB} Selecting a pattern out of the list will cause certain
+text, such as coordinates, to be appended to the name of the point. The
+current pattern can be edited in the string gadget below the listview. The
+pattern is entered as described in the chapter @{"Text input on objects" LINK objecttexts}.
+
+@{B}New pattern:@{UB} This gadget allows you to append a new pattern to the list.
+
+@{B}Delete pattern:@{UB} This gadget deletes the currently selected pattern.
+of the list.
+
+@{B}Foreground color:@{UB} Select the color for the point and its label.
+
+@{B}Background color:@{UB} Select the color for the background of the point's
+label. This is disregarded if the item @{B}Text transparent@{UB} is checked.
+
+@{B}Text transparent:@{UB} If this item is checked, the point's label is
+transparent. Otherwise the background is filled out with the selected
+background color.
+
+@{B}Point design:@{UB} Selecting this gadget brings up the @{"Point design requester" LINK pointdesreq},
+which permits selection of any of several point designs.
+
+@{B}Number format:@{UB} You may specify the format of numbers which are
+inserted into the text using the commands described in the chapter
+@{"Text input on objects" LINK objecttexts}. After selecting this gadget the
+@{"Number format requester" LINK numberformatreq} opens, and you may specify
+the number of decimal places and whether or not exponential format will be
+used.
+
+@{B}Font:@{UB} You may specify the font of the point's label. This is done
+through the Font requester of the asl library.
+
+@ENDNODE
+
+@NODE pointdesreq "The point design requester"
+
+In this requester you can change the appearance of the point itself.
+
+@{B}Point:@{UB} This area lets you select from the point types presented.
+
+@{B}Fill point:@{UB} This item only works if you have selected a rectangle or
+a circle as the point type. If it is checked, the point will be filled with the
+background color you have selected.
+
+@ENDNODE
+
+@NODE marks "Chapter 8.6.6: Markers"
+
+This requester corresponds to the @{"Point requester" LINK points}. Only the
+differences are described in the following passage.
+
+The marker's label is written beside the marker at the height of the
+y-coordinate.
+
+@{B}Marker design:@{UB} This button brings up the @{"Marker design requester" LINK markdesreq}, in
+which you can change the design of the marker.
+
+@ENDNODE
+
+@NODE markdesreq "The marker design requester"
+
+In this requester you can change the appearance of the marking.
+
+
+@{I}Marker design:@{UI} In this area you can change the appearance of the marker.
+
+@{B}Marker pattern:@{UB} You can select from several line patterns the one you
+desire for the marker.
+
+@{B}Marker width:@{UB} Here you can select the width of the marker.
+
+
+@{I}Marker label:@{UI} In this area you can change the appearance of the
+marker's label.
+
+@{B}Text orientation:@{UB} The orientation of the label is controlled here.
+The label can be written either in the ordinary way from left to right,
+from top to bottom, or rotated by 90 degrees either way.
+
+@{B}Text position:@{UB} Here you can select which side of the marker the label will
+be written on.
+
+@ENDNODE
+
+@NODE areas "Chapter 8.6.7: Hatchings"
+
+The hatching requester lets you change the appearance and the boundaries of a
+hatching. The boundaries can be changed in the upper section of the requester,
+and the design can be changed in the lower part. The nature of hatchings
+dictates that they be controlled in a completely different way from other
+objects.
+
+A hatching is restricted by several boundary elements. For example a hatching
+can be drawn between two function curves.  In a more complicated graph, you
+might wish to specify an area to the left of a pre-defined marker, above the
+x-axis, below a function curve, and less than a specified y value.
+
+
+@{I}Hatching bounds:@{UI} In this area, you can specify the elements which border
+the hatching.
+
+@{B}Boundary elements:@{UB} In this list, all boundary elements of the hatching
+are shown. In the string gadget below the listview, you can change the
+name of the currently selected element. You can change the type of the
+current element using the radio buttons below the list.
+
+@{B}New element:@{UB} This button makes space in the list to add a new
+boundary-element.
+
+@{B}Delete element:@{UB} This button deletes the current boundary element.
+
+@{B}x-axis:@{UB} This button causes the hatching to be drawn above or below
+the x-axis.
+
+@{B}y-axis:@{UB} This button causes the hatching to be drawn to the right or
+left of the y-axis.
+
+@{B}x-value:@{UB} This button causes the hatching to be drawn to the right or
+left of a certain x-value.
+
+@{B}y-value:@{UB} This button causes the hatching to be drawn above or below
+a certain y-value.
+
+@{B}Function:@{UB} This button causes the hatching to be drawn above or below
+a function curve.
+
+@{B}Point:@{UB} This button causes the hatching to be drawn in one of four
+quadrants relative to the point specified by the coordinates, either upper
+right, upper left, lower right, or lower left.
+
+@{B}Marker:@{UB} This button causes the hatching to be drawn to the right or
+left of a specified marker.
+
+@{B}Hatching name:@{UB} You may identify each hatching by name. Separate names
+for each may eliminate confusion when referring to them later.
+
+@{B}Current element:@{UB} Here you can change the position of the hatching relative
+to the current boundary element. The type of element is represented in the
+field (in a standardized form, not as you have defined the specific element)
+with the hatching position relative to that element indicated by the shaded
+area. By clicking in the field with the mouse, you can change the position of
+the hatching. You can do this with the cycle gadget below the field, as well.
+
+@{B}Function, Point, Marker:@{UB} A boundary element may be either one of
+the axes, a specified x- or y-value, or any of the other object types (except
+text, of course) which you define and place on the graph.  If you wish a
+certain boundary to be a function, point or marker, select that type with
+one of the buttons, and you will see that choice appear to the left of the
+long text gadget.  If you have pre-defined objects of that type, the list
+of such objects will appear in a separate window if you click the "A" button
+to the right of the gadget, and you may select the object from that list.
+Alternately, you may enter its name into the text gadget from the keyboard.
+
+@{B}x:@{UB} If you wish the hatching to appear only where x is more or less
+than a certain value, enter that value here.
+
+@{B}y:@{UB} If you wish the hatching to appear only where y is more or less
+than a certain value, enter that value here.
+
+
+@{I}Hatching design:@{UI} In this area you are given several choices about
+how the hatching will appear.
+
+@{B}Color:@{UB} You may select the color of the hatching lines.
+
+@{B}Pattern:@{UB} You may select a pattern for the hatching from several
+predefined patterns.
+
+@{B}Clear background:@{UB} If this item is checked, the hatching will appear
+opaque, obscuring everything behind it.
+
+@{B}Hatching to the back:@{UB} If this item is selected the hatching is
+drawn behind the axes, curves, and other objects on the graph.  Otherwise
+the hatching is drawn in the foreground and will obscure these objects.
+
+
+@ENDNODE
+
+@NODE special "Chapter 8.7: Legends, tables, lists"
+
+Legends, tables and lists can be created very easily. The menu items for
+these are found in the @{B}Special@{UB} menu. They are subdivided, like
+the menu items for @{"objects" LINK objects}, into the following subitems:
+
+@{B}Create:@{UB} This selection is for creating a new legend, table or list.
+
+@{B}Change:@{UB} This selection lets you change an already existing legend,
+table or list. You will be given a list of existing objects of the same type
+from which to select the one you want to modify.
+
+@{B}Delete:@{UB} This selection deletes the existing legend, table or
+list which you have selected from the listview.
+
+@{B}Default:@{UB} This allows you to change the default style of the legend,
+table, or list. The parameters you select are used whenever a new one is
+created.
+
+Every legend, table or list is displayed in its own window. The contents of
+the window are adapted to the size of the window automatically when changing
+its size.
+
+
+@ENDNODE
+
+@NODE legends "Chapter 8.7.1: Legends"
+
+The right side of the legend requester contains a preview of the legend.
+The controls for changing the legend are found on the left side.
+
+Every line of a legend consists of a symbol and a text following the symbol.
+The lines of a legend are either functions or families of curves. Families
+can be indented, so that with a family the general version is written first
+and the combinations of the variables indented in the following lines.
+
+
+@{I}Legend general:@{UI} This area contains controls for the general layout
+of the legend.
+
+@{B}Append line:@{UB} This button appends a new line to the legend.
+
+@{B}Insert line:@{UB} This button inserts a new line before the current line.
+
+@{B}Delete line:@{UB} This button deletes the current line.
+
+@{B}After window:@{UB} This button instructs the program to create a legend
+automatically from a function window. Each function displayed in
+the window will be symbolized in the legend by a line with the same color,
+pattern and thickness as used to graph that function.
+
+This gadget will open a requester permitting you to choose the function
+window first.
+
+Afterwards you may determine how the window's contents are to
+be inserted into the legend using the @{"opening requester" LINK takefuncwindow}.
+
+@{B}Functions uniform:@{UB} If this item is checked, all functions in the
+legend will be represented by the same type of symbol.
+
+@{B}Families uniform:@{UB} If this item is checked, all families in the
+legend will be represented by the same type of symbol.
+
+@{B}Indent families:@{UB} If this item is checked, lines for families
+are indented.
+
+@{B}Link to window:@{UB} If this item is checked, the legend is linked to
+the window from which it was automatically created, and it will be
+updated when changes are made in this window.
+
+
+@{I}Current line:@{UI} In this area, you can change attributes of the
+currently selected line.
+
+@{B}Color:@{UB} Select the color of the symbol on the current line.
+
+@{B}Line pattern:@{UB} Select the line pattern for the symbol.
+
+@{B}Symbol design:@{UB} Select a symbol for the line.
+
+@{B}Line thickness:@{UB} Select the thickness of the current line's symbol.
+
+@{B}Family:@{UB} Check this box if the current line represents a family
+of curves.
+
+@ENDNODE
+
+@NODE takefuncwindow "The requester to take over functions of a window"
+
+In this requester you can determine how the contents of a function window
+will be inserted into the legend. If the cycle gadget shows "Delete legend,"
+the legend preview will be cleared before the legend of the function
+window is written into it. If it reads "Append window," the legend for the
+selected window will be added to the existing legend in the preview. If it
+reads "Insert window," the legend of the window will be inserted before a
+line you have previously selected in the preview.
+
+The lower part of this requester lets you specify the symbols for functions
+and families. Every function of the window is included in the legend.
+If the window contains a family of curves, the general form of the function
+is inserted into the legend first, followed by the combinations of the
+variables.
+
+@ENDNODE
+
+@NODE tables "Chapter 8.7.2: Tables"
+
+The upper portion of the table requester displays a preview of the table,
+and the lower area contains gadgets for designing it.
+
+Every table consists of several rows, each containing the same number of
+columns.
+
+To process a row, select it by clicking on it.
+
+At the lower right, all columns of the currently selected row are listed.
+You can change the contents of the current column with the string gadget
+below the listview.
+
+
+@{I}Process table:@{UI} In this realm you can change the general arrangement of
+the table.
+
+@{B}Append row:@{UB} Selecting this will append a new row to the table.
+
+@{B}Insert row:@{UB} This gadget will insert a new row in the table above
+the current row.
+
+@{B}Delete row:@{UB} This gadget will delete the current row.
+
+@{B}Font:@{UB} You can use any font in your system for the table. This is
+done using the font requester of the asl library.
+
+@{B}Table design:@{UB} This button opens the @{"Table and list design requester" LINK tablelistdesreq},
+in which you may specify the way in which rows and columns are separated.
+
+@{B}Uniform col-width:@{UB} If this item is selected, all columns have the width
+of the widest column.
+
+@{B}Center text:@{UB} If this item is activated, the text is centered in the
+cells. Otherwise, text is left-justified.
+
+This item and @{B}Decimal tabulator@{UB} are mutually exclusive.
+
+@{B}Decimal tabulator:@{UB} If this item is activated, the text in each
+column is aligned on the decimal point.
+
+This item and @{B}Center text@{UB} are mutually exclusive.
+
+@{B}Separate column 1:@{UB} If this item is activated, the first column of
+every row is set off a small amount from the rest.
+
+@{B}Name:@{UB} You may specify a name for each table you create. This will
+eliminate confusion when referring to them in requesters.
+
+@{B}Append column:@{UB} This gadget appends a new column to every row.
+
+@{B}Insert column:@{UB} This gadget inserts a new column before the current one.
+
+@{B}Delete column:@{UB} Selecting this gadget deletes the currently selected row.
+Note that the column is deleted in every row!
+
+@{B}Value range:@{UB} You can insert a sequence of numbers into the current row.
+New columns are created which are empty in all other rows. After selecting
+this gadget the @{"Value range requester" LINK numberrangereq} opens, allowing you to
+specify the range of values.
+
+@{B}Calculate row:@{UB} The program will calculate a row of values
+using a function and x-values you specify.
+
+First, select the row into which the calculated values are to be entered.
+
+Next, select this gadget, and then click on the row which contains the
+x-values.
+
+You will then be prompted to select a function. The @{"Number format requester" LINK numberformatreq}
+will open, letting you specify the format of the values entered into the
+table.
+
+The row will then be filled out with the calculated y-values.
+
+@ENDNODE
+
+@NODE lists "Chapter 8.7.3: Lists"
+
+The right portion of the list requester contains a preview of the list.
+The area on the left is for setting up or changing the list.
+
+Every list consists of several columns, each of which may contain a different
+number of lines. The current column to be changed is selected by clicking on
+it. At the lower left, all lines of the current column appear in a listview
+entitled "Entries." You can alter the current line in the string gadget below
+the list.
+
+
+@{I}Process list:@{UI} This area contains controls with which you can change
+the general arrangement of the list.
+
+@{B}Append column:@{UB} This gadget appends a new column to the list.
+
+@{B}Insert column:@{UB} This gadget inserts a new column into the list before
+the current column.
+
+@{B}Delete column:@{UB} This gadget deletes the current column.
+
+@{B}List design:@{UB} This button opens the @{"Table and list design requester" LINK tablelistdesreq},
+in which you may specify the way in which lines and columns are separated.
+
+@{B}Font:@{UB} You can use any font in your system for the list. This is
+done using the font requester of the asl library.
+
+@{B}Column width uniform:@{UB} If this item is checked, all columns will be
+adjusted to the width of the widest column.
+
+@{B}Center text:@{UB} If this item is activated, the text is centered in the
+cells. Otherwise the text is left-justified.
+
+This item and @{B}Decimal tabulator@{UB} are mutually exclusive.
+
+@{B}Decimal tabulator:@{UB} If this item is activated, the text in each
+column is aligned on the decimal point.
+
+This item and @{B}Center text@{UB} are mutually exclusive.
+
+@{B}Separate headline:@{UB} If this item is activated, the first line of the
+list is separated from the rest.
+
+@{B}Nº of fields uniform:@{UB} If this item is activated, all columns will
+have the same number of lines. If you append, insert or delete a line in one
+column, all columns will be affected.
+
+@{B}Name:@{UB} You may specify a name for each list you create. This will
+eliminate confusion when referring to them in requesters.
+
+
+@{I}Current column:@{UI} In this area, you can modify the current column.
+
+@{B}Append line:@{UB} A new line is appended to the end of the current column.
+
+@{B}Insert line:@{UB} A new line is inserted before the current line.
+
+@{B}Delete line:@{UB} The current line is deleted.
+
+@{B}Value range:@{UB} You can insert a sequence of numbers before the
+current line into the column. New lines are created and inserted into the
+column. Selecting this gadget opens the @{"Value range requester" LINK numberrangereq},
+in which you can specify the range to be used.
+
+@{B}Calculate column:@{UB} The program will calculate a row of values
+using a function and x-values you specify.
+
+First, select the column into which the calculated values are to be entered.
+
+Next, select this gadget, and then click on the column which contains the
+x-values.
+
+You will then be prompted to select a function. The @{"Number format requester" LINK numberformatreq}
+will open, letting you specify the format of the values entered into the
+table.
+
+The column will then be filled out with the calculated y-values.
+
+@ENDNODE
+
+@NODE tablelistdesreq "The table and list design requester"
+
+In this requester you can change the appearance of tables and lists. The
+right section displays a preview of the table or list. You can change
+the design with the gadgets on the left.
+
+
+@{B}Horizontal separation:@{UB} Select the type of horizontal line used to separate
+the rows.
+
+@{B}Vertical separation:@{UB} Select the type of vertical line used to separate
+the columns.
+
+@{B}Color:@{UB} Select the color for the separation lines. Only the lines with
+a single color are affected, not the three-dimensional lines.
+
+@ENDNODE
+
+@NODE numberformatreq "The number format requester"
+
+In this requester you can determine the format for numbers which the program
+creates automatically.
+
+@{B}Exponent:@{UB} If this item is checked, numbers are written using an
+exponent.
+
+@{B}Decimal places:@{UB} This determines the numbers of digits after the
+decimal point.
+
+@ENDNODE
+
+@NODE numberrangereq "The value range requester"
+
+In this requester, you select the range for a sequence of numbers.
+
+
+@{B}Start:@{UB} Here you can enter the start value of the sequence.
+
+@{B}End:@{UB} Here you can enter the end value of the sequence.
+
+@{B}Interval:@{UB} Here you can enter the interval between values of the
+sequence.
+
+@{B}Exponent:@{UB} If this box is checked, an exponent is used when writing
+the numbers of the sequence.
+
+@{B}Decimal places:@{UB} This gadget determines the number of digits
+after the decimal point.
+
+@ENDNODE
+
+@NODE changeresolution "Chapter 8.8: Changing the screen resolution"
+
+To change the resolution of the screen of the Math Mode, choose the item
+@{B}Resolution@{UB} in the @{B}Settings@{UB} menu.
+
+@{"Changing the resolution under AmigaOS 2.1 or higher" LINK changeresasl}
+@{"Changing the resolution under AmigaOS 2.0" LINK changeres20}
+
+@ENDNODE
+
+@NODE changeresasl "Changing the resolution under AmigaOS 2.1 or higher"
+
+Starting with AmigaOS 2.1, the screen mode requester of the asl library is
+used.
+
+@ENDNODE
+
+@NODE changeres20 "Changing the resolution under AmigaOS 2.0"
+
+The points in this requester correspond to those of the screen mode requester
+of the asl library.
+
+@ENDNODE
+
+@NODE changecolors "Chapter 8.9: Changing the screen colors"
+
+To change the colors of the screen, choose the item @{B}Palette@{UB} in the
+@{B}Settings@{UB} menu. A requester will open with gadgets which allow you to
+change the colors of the palette.
+
+
+@{B}Color:@{UB} To change one of the colors in the palette, select it, and
+then adjust the components of the color with the sliding gadgets below.
+
+@{B}Red:@{UB} This gadget changes the red component the selected color.
+
+@{B}Green:@{UB} This gadget changes the green component of the selected color.
+
+@{B}Blue:@{UB} This gadget changes the blue component of the selected color.
+
+@{B}Reserved:@{UB} If the Math and Layout Modes run on the same screen
+they have to share the same palette. Because the Layout Mode is normally
+able to change any color of the screen except the first four, you can adjust
+here how many colors, beginning with the first one, you want it to leave
+unaltered.
+
+@ENDNODE
+
+@NODE changepriorities "Chapter 8.10: Changing the task priorities"
+
+The program is designed so that its modules run asynchronously, i.e. the
+Math Mode and the Layout Mode run as separate but parallel tasks. Moreover
+the @{"axis limits requester" LINK changeaxesrangereq} also runs as an independent
+task.
+
+To change the priorities of the tasks, choose the item @{B}Priorities@{UB}
+in the @{B}Settings@{UB} menu. A requester opens in which you can change the
+priorities of the tasks. You should not give too high a priority to
+any task, because it may then block your whole system. A priority
+that is too low may lead to the task not getting any CPU time at all.
+
+
+@{B}Math Mode:@{UB} This slider allows you to adjust the priority of the Math
+Mode.
+
+@{B}Layout Mode:@{UB} This slider allows you to adjust the priority of the
+Layout Mode.
+
+@{B}Math-Requesters:@{UB} This slider allows you to adjust the priority of
+the requesters in the Math Mode.
+
+@ENDNODE
+
+@NODE mathoptions "Chapter 8.11: Options in the Math Mode"
+
+Several adjustments can be done in the @{B}Settings@{UB} menu of the Math Mode.
+
+@ENDNODE
+
+@NODE usewbscreen "Chapter 8.11.1: Use Workbench screen"
+
+If the menu item @{B}Use Workbench screen@{UB} is checked, the program opens
+its windows on the Workbench screen instead of creating its own screen.
+
+@ENDNODE
+
+@NODE quickselect "Chapter 8.11.2: Quick-select"
+
+Normally, when you have to select a function, a window or other object out
+of a list, this is done in a requester, even if only one function or window
+is available for selection. If the item @{B}Quick-select@{UB} is checked, any
+time that only one such object is available, it will be selected
+automatically, without opening the requester.
+
+@ENDNODE
+
+@NODE autoactive "Chapter 8.11.3: Auto active window"
+
+If the menu item @{B}Auto active window@{UB} is checked, the program will,
+without asking the user, automatically select the active window whenever there
+are several windows from which to choose.
+
+@ENDNODE
+
+@NODE copywb "Chapter 8.11.4: Clone Workbench"
+
+If the menu item @{B}Clone Workbench@{UB} is checked, the screen mode and the
+colors of the Workbench screen are used on the Analay screen.
+
+@ENDNODE
+
+
+@NODE preview "Chapter 9: The Layout Mode"
+
+The Layout Mode provides all the tools you will need to precisely control
+the appearance of the final printed page.
+
+9.1 @{"Concept" LINK concept}
+9.2 @{"Changing the page dimensions" LINK pagedimensions}
+9.3 @{"Changing the magnification" LINK pagezoom}
+9.4 @{"Boxes" LINK boxes}
+9.5 @{"Box settings" LINK boxsettings}
+9.6 @{"Graphics" LINK graphics}
+  9.6.1 @{"Rectangles" LINK rectangles}
+  9.6.2 @{"Ellipses" LINK ellipses}
+  9.6.3 @{"Lines" LINK lines}
+9.7 @{"Textlines" LINK textlines}
+  9.7.1 @{"The textline requester" LINK textlinereq}
+9.8 @{"Textblocks" LINK textblocks}
+  9.8.1 @{"Input of text" LINK textenter}
+  9.8.2 @{"Marking ranges" LINK textrange}
+  9.8.3 @{"Changing the font" LINK textfont}
+  9.8.4 @{"Changing the text style" LINK textattrs}
+  9.8.5 @{"Changing the text color" LINK textcolor}
+  9.8.6 @{"Aligning text" LINK textdir}
+9.9 @{"Text processing" LINK textwork}
+  9.9.1 @{"Importing ASCII files" LINK importascii}
+9.10 @{"Formulas" LINK termedit}
+  9.10.1 @{"Format for the input of formulas" LINK termformat}
+  9.10.2 @{"Formulas in textlines" LINK termtextline}
+  9.10.3 @{"Formulas in textblocks" LINK termtextblock}
+9.11 @{"Taking over windows out of the Math Mode" LINK mathwindows}
+  9.11.1 @{"Color conversion" LINK colorconvert}
+  9.11.2 @{"Line thickness conversion" LINK widthconvert}
+  9.11.3 @{"Font conversion" LINK fontconvert}
+  9.11.4 @{"Axis system conversion" LINK axesconvert}
+  9.11.5 @{"Grid conversion" LINK gridconvert}
+9.12 @{"Changing the contents of boxes" LINK boxcontents}
+9.13 @{"Adapting the size of function boxes" LINK adaptboxsize}
+9.14 @{"Changing the document colors" LINK documentcolors}
+9.15 @{"Changing the screen grid" LINK changeraster}
+9.16 @{"Changing the fonts" LINK changefonts}
+9.17 @{"Changing the screen presentation" LINK changedisplay}
+9.18 @{"Printing the document" LINK printdocument}
+  9.18.1 @{"The print requester" LINK printersettings}
+9.19 @{"Options in the Layout Mode" LINK previewoptions}
+  9.19.1 @{"Show inactive" LINK showinactive}
+  9.19.2 @{"Toolbox" LINK toolbox}
+  9.19.3 @{"Custom screen" LINK ownscreen}
+  9.19.4 @{"Clone Workbench" LINK copywb}
+9.20 @{"Changing the screen resolution" LINK changeresprev}
+9.21 @{"Changing the palette" LINK changecolorsprev}
+
+@ENDNODE
+
+@NODE concept "Chapter 9.1: Concept"
+
+To enter the Layout Mode, choose the item @{B}Layout@{UB} in the @{B}Program@{UB} menu.
+Because the Layout Mode runs parallel to the Math Mode, you can work
+with the Layout Mode while the Math Mode is busy with calculating or vice
+versa.
+
+The Layout Mode is organized like most DTP programs. It is true @{"WYSIWYG" LINK wysiwyg},
+and is box-oriented--all objects are displayed in boxes which can be moved
+and stretched freely with the mouse.
+
+In version 1.11 of the program you can only process one page. This page
+is displayed in its own window. The window borders contain scroll bars
+and arrows, like the Workbench, with which you can change the visible part
+of the page. Rulers at the top and to the left show the position on the page,
+which is given in centimeters. The Layout Mode is controlled by menus or by
+the icon box, which is displayed in its own window. If the item
+@{B}Toolbox@{UB} in the @{B}Preferences@{UB} menu is activated, the toolbox is displayd.
+Otherwise it is not opened.
+
+All distances are measured in centimeters.
+
+@ENDNODE
+
+@NODE pagedimensions "Chapter 9.2: Changing the page dimensions"
+
+To change the dimensions of the page select the item @{B}Global page settings@{UB}
+in the @{B}Work@{UB} menu. A requester will open in which you can make your
+changes. New page dimensions can be entered by hand in the upper portion.
+The lower portion already contains some predefined settings.
+
+
+@{B}Width:@{UB} Enter the width of the page.
+
+@{B}Height:@{UB} Enter the height of the page.
+
+@{B}DinA3, DinA4, DinA5, Standard, Legal, custom:@{UB} Here you can select from
+predefined dimensions. If you have entered other dimensions the
+program activates "custom" automatically.
+
+@ENDNODE
+
+@NODE pagezoom "Chapter 9.3: Changing the magnification"
+
+The magnification of the screen display is shown in the third line of the
+toolbox.  If the width of the whole page on the screen is equal to the
+maximum width of the working area, the zoom is 100%.
+
+There are two different ways to change the magnification.
+
+1. @{"Changing the magnification in the requester" LINK zoominput}
+2. @{"Changing by mouse" LINK zoomframe}
+
+@ENDNODE
+
+@NODE zoominput "Changing the magnification in the requester"
+
+To change the magnification of the page, choose the item @{B}Zoom@{UB} in the
+@{B}Preferences@{UB} menu or click in the field with the zoom display in the
+toolbox.  A requester opens in which you can change the zoom to any value.
+
+
+@{B}Zoom in %:@{UB} Here you can change the magnification of the page display
+either by typing a value in the string gadget or using the mouse to adjust
+the slider.
+
+
+@ENDNODE
+
+@NODE zoomframe "Changing by mouse"
+
+After selecting the magnifying glass in the toolbox, you can outline an
+area on the page which you wish to zoom in on.  Move the pointer to one edge
+of the area and press the left button. Then drag the pointer to the
+opposite edge and release the button. This operation can be aborted
+by pressing the right button. The contents of the area which was framed will
+be expanded to fit the width of the window, and the height will be adjusted
+proportionally to preserve the current aspect ratio.
+
+Remember that this process changes only the screen display, not the page
+itself.
+
+@ENDNODE
+
+@NODE boxes "Chapter 9.4: Boxes"
+
+All objects in the Layout Mode except lines are displayed in boxes. To move
+and size a box, the box mode must be active by selecting the pointer in the
+toolbox.
+Only one box can be activated at a time, and only the active box can be
+changed. A closed border is drawn around the active box.
+If the item @{B}Show inactive@{UB} in the @{B}Preferences@{UB} menu is selected,
+a border with dotted lines is drawn around inactive boxes.
+
+A box can be moved like an icon on the Workbench. To do so, simply place the
+pointer anywhere within it, click, and drag. This operation can be aborted
+by pressing the right mouse-button.
+
+The corners and edges of an active box contain small handles with which it can
+be re-sized horizontally or vertically (with the edge handles) or both
+simultaneously (with the corner handles). This operation can also be aborted
+with the right mouse button.
+
+Double-clicking on the box opens the @{"Box settings requester" LINK boxsettings}, allowing
+you to change the position, size and settings of a box.
+
+Lines are displayed without boxes. The ends of a line can be moved simply by
+dragging them with the mouse. The whole line can be moved by picking it up
+anywhere along its length.
+
+To delete the active box, choose the item @{B}Delete box@{UB} in the @{B}Work@{UB}-menu
+or select the symbol with the crossed-out rectangle in the toolbox.
+
+To change the depth of boxes, select the symbol with the two overlapping
+text-boxes in the toolbox. The active box is brought in front of all others.
+If the active box is already the top box, it will be moved behind the others.
+
+@ENDNODE
+
+@NODE boxsettings "Chapter 9.5: Box settings"
+
+To change the settings of the active box, choose the item @{B}Change active box@{UB}
+in the @{B}Work@{UB} menu. You can change the settings of the box in the opening
+requester. All distances must be given in centimeters.
+
+
+@{I}Box coordinates:@{UI} Here you can enter the position and size of the box.
+
+@{B}Left:@{UB} Enter the position of the left edge of the box.
+
+@{B}Top:@{UB} Enter the position of the top edge of the box.
+
+@{B}Width:@{UB} Enter the width of the box.
+
+@{B}Height:@{UB} Enter the height of the box.
+
+
+@{I}Box parameters:@{UI} Here you can change the parameters of the box.
+
+@{B}Lock box:@{UB} If this item is activated the box cannot be changed or moved.
+This prevents you from changing it inadvertently.
+
+@{B}Display box fast:@{UB} If this item is activated the contents of the box
+are not drawn. Diagonal lines will appear instead, which greatly increases the
+refreshing of the display.
+
+@ENDNODE
+
+@NODE graphics "Chapter 9.6: Graphics"
+
+Graphics can be created by choosing the appropriate menu item in the
+@{B}Create@{UB} menu or by selecting the proper gadget in the toolbox.
+The following graphic elements can be created:
+
+@{"Rectangles" LINK rectangles}
+@{"Ellipses" LINK ellipses}
+@{"Lines" LINK lines}
+
+@ENDNODE
+
+@NODE rectangles "Chapter 9.6.1: Rectangles"
+
+To create a rectangle, choose the item @{B}Rectangle@{UB} in the @{B}Create@{UB} menu
+or the symbol with the filled rectangle in the toolbox. You then can
+create a box with a rectangle by holding the left mouse button while dragging
+the pointer from one corner to the diagonally opposite one.
+
+A rectangle initially consists of a border, but may be filled if desired.
+
+@ENDNODE
+
+@NODE ellipses "Chapter 9.6.2: Ellipses"
+
+To create an ellipse, choose the item @{B}Ellipse@{UB} in the @{B}Create@{UB} menu
+or the symbol with the filled ellipse in the toolbox. You then can
+generate a box with an ellipse by holding the left mouse button while dragging
+the pointer from one corner to the diagonally opposite one.
+
+An ellipse is initially drawn with a line, but may be filled if desired.
+
+@ENDNODE
+
+@NODE lines "Chapter 9.6.3: Lines"
+
+To create a line, choose the item @{B}Line@{UB} in the @{B}Create@{UB} menu or
+select the symbol with the line in the toolbox. You then can generate a
+line by dragging the pointer from one end to the other.
+A line is not displayed in a box. The ends of a line can be moved
+with the mouse. The whole line can be moved by picking it up somewhere other
+than the ends.
+As with a box, you get the @{"Box settings requester" LINK boxsettings} with a double-click on
+the line.
+
+@ENDNODE
+
+@NODE textlines "Chapter 9.7: Textlines"
+
+For the easy creation of textlines, choose the item @{B}Textline@{UB} in the
+@{B}Create@{UB} menu or select the gadget with the textline in the toolbox.
+The @{"textline requester" LINK textlinereq} will open, allowing you to
+enter text or change the existing text. After closing the requester with OK,
+you can position the textline on the screen with the mouse simply by
+moving it to the desired position and pressing the left button. Pressing the
+right button aborts the operation.
+
+A box containing a text line cannot be changed in size.
+To change an existing textline, activate the box with the textline and
+choose the item @{B}Change textline@{UB} in the @{B}Text@{UB} menu. This opens the
+@{"Textline requester" LINK textlinereq}, allowing you to make changes to the textline.
+
+@ENDNODE
+
+@NODE textlinereq "Chapter 9.7.1: The textline requester"
+
+The textline requester is for changing the design of the textline.
+On the left side the foreground color, the background color and the font
+of the textline are displayed.  Selecting the A after the corresponding field
+brings up a requester in which the colors and the font can be changed.
+
+
+@{B}Textinput:@{UB} Enter the text of the textline.
+
+@{B}Bold:@{UB} Check this item for bold text.
+
+@{B}Italic:@{UB} Check this item for italic text.
+
+@{B}Underlined:@{UB} If this item is checked the text is underlined.
+
+@{B}Transparent:@{UB} If this item is checked, the text appears directly on
+the underlying graphics.  If not checked, the text will appear in a rectangle
+of the background color selected.
+
+@ENDNODE
+
+@NODE textblocks "Chapter 9.8: Textblocks"
+
+Apart from simple @{"textlines" LINK textlines}, you can also create textblocks which
+contain longer texts. Textblocks are displayed in boxes. To create a
+textblock, choose the item @{B}Textbox@{UB} in the @{B}Create@{UB} menu or
+select the symbol with the textbox in the toolbox.  Then drag the pointer from
+one corner to the opposite one of the area you wish to enclose in the box.
+
+@ENDNODE
+
+@NODE textenter "Chapter 9.8.1: Input of text"
+
+To insert text in a textbox, select the gadget with the cursor symbol in the
+upper right of the toolbox. Then move the pointer to the desired position in the
+textblock and press the left button. You can move the cursor with the
+arrow keys or place it again with the mouse. Text can be typed in using
+the keyboard as usual. The line-breaking is done automatically. To start
+a new paragraph, press the RETURN key.
+
+@ENDNODE
+
+@NODE textrange "Chapter 9.8.2: Marking ranges"
+
+To change the text you first have to select a range in the textblock.
+Hereto move the mouse to the beginning of the range and press the left
+mouse-button. Then move the mouse to the end of the range and release
+the mouse-button again. The selected range gets displayed inverted.
+
+@ENDNODE
+
+@NODE textfont "Chapter 9.8.3: Changing the font"
+
+To change the font of a @{"text range" LINK textrange} choose the item @{B}Font@{UB} in the
+@{B}Text@{UB}-menu. The @{"Font requester" LINK fontreq} is opened in which you can change
+the font.
+
+@ENDNODE
+
+@NODE textattrs "Chapter 9.8.4: Changing the text style"
+
+The style of the characters of a @{"text range" LINK textrange} can be changed with the
+item @{B}Style@{UB} in the @{B}Text@{UB} menu. To do so, select the
+sub-item for the style you wish to apply to the selected text.
+
+The following styles are available:
+
+
+@{B}Bold:@{UB} Select this item for bold text.
+
+@{B}Italic:@{UB} Select this item for italic text.
+
+@{B}Underlined:@{UB} If this item is selected the text is underlined.
+
+
+@ENDNODE
+
+@NODE textcolor "Chapter 9.8.5: Changing the text color"
+
+To change the color of a @{"text range" LINK textrange}, choose the item
+@{B}Color@{B} in the @{B}Text@{UB} menu. You then can select the color out of a list.
+
+@ENDNODE
+
+@NODE textdir "Chapter 9.8.6: Aligning text"
+
+The alignment of selected text can be changed with the item @{B}Alignment@{UB} in
+the @{B}Text@{UB} menu by selecting the appropriate sub-item.
+The alignment is applied to the entire paragraph containing the selected text,
+but paragraphs may be justified separately.
+all paragraphs of a @{"text range" LINK textrange} completely.
+The following orientations are available:
+
+
+@{B}Left:@{UB} The text is left-aligned.
+
+@{B}Right:@{UB} The text is right-aligned.
+
+@{B}Middle:@{UB} The text is centered.
+
+@{B}Block:@{UB} The text is justified left and right.
+
+@ENDNODE
+
+@NODE textwork "Chapter 9.9: Text processing"
+
+Currently only one method to process textblocks is available.
+
+9.9.1 @{"Import of ASCII-files" LINK importascii}
+
+@ENDNODE
+
+@NODE importascii "Chapter 9.9.1: Importing ASCII files"
+
+To import an ASCII file, choose the item @{B}Import ASCII@{UB} in the @{B}Text@{UB} menu.
+You may then select an ASCII file you want to import from the file requester.
+The file is inserted as text at the current cursor position in the active
+text-block.
+
+@ENDNODE
+
+@NODE termedit "Chapter 9.10: Formulas"
+
+One major feature of the program is its ability to display formulas. This
+allows you to create complex formulas with powers, fractions, roots and
+indexes. All formulas must be entered using a special @{"formula format" LINK termformat}.
+
+@ENDNODE
+
+@NODE termformat "Chapter 9.10.1: Format for the input of formulas"
+
+Formulas are entered as strings using a special format, the same one used
+by the program LaTeX. This format uses special commands to design formulas.
+
+The characters "\\" are used to designate a format command. Essential
+parameters are given in curly brackets "{}". Optional parameters are given
+in square brackets "[]".
+At present the following commands are supported:
+
+@{B}^{a}:@{UB} This will write the letter a as a superscript or exponent.
+Note that this command is not preceded by "\\".
+e.g.: x^{2n}
+
+@{B}_{a}:@{UB} This will write the letter a as an subscript or index.
+Note that this command also is not preceded by "\\".
+e.g.: x_{0}
+
+@{B}\\frac{a}{b}:@{UB} Creates a fraction with a as numerator and b as
+denominator.
+e.g.: \\frac{1}{x}
+
+@{B}\\sqrt[n]{a}:@{UB} Creates an nth root. The a is written under the
+radical sign. n stands for the degree of the root and is optional.
+e.g.: \\sqrt{a^{2}+b^{2}}
+      \\sqrt[3]{27}
+
+Commands may also be nested to any level within parameters of other commands.
+
+Parameters consisting of single characters need not necessarily be
+written in brackets. However optional parameters always have to be written
+in square brackets.
+To link a power and an index to the same character, just append one
+command to the other, e.g.:
+
+    x_{0}^{2} or
+    x_0^2
+
+Examples for formulas:
+
+    \\frac{1+x^2}{\\sqrt{2+x}}
+    1+\\sqrt{\\frac{2x_0^2+3x_1+1}{\\sqrt{2}}}
+
+@ENDNODE
+
+@NODE termtextline "Chapter 9.10.2: Formulas in textlines"
+
+Formulas may be typed directly into the text in the @{"Textline requester" LINK textlinereq} if
+you first switch on the formula mode by typing a "$". It is switched off
+again with a second "$". A textline with a such formula could for example
+look like this:
+
+Determine the zeros of the function $f(x)=\\frac{1}{x}+1$.
+
+@ENDNODE
+
+@NODE termtextblock "Chapter 9.10.3: Formulas in textblocks"
+
+To use formulas in textblocks, choose the item @{B}Insert formula@{UB} in the
+@{B}Text@{UB} menu. You may then enter a formula in the @{"String input requester" LINK getstring}.
+In this case, the formula mode is already active. You can switch it on and
+off with a "$" as described in the chapter @{"Formulas in textlines" LINK termtextline}.
+The formula then gets inserted at the current cursor position. It is
+treated like a single character. To change the formula again, select it
+with the cursor and choose the item @{B}Change formula@{UB} in the @{B}Text@{UB} menu.
+You then can change the formula in the @{"String input requester" LINK getstring}. You can
+delete the formula like an ordinary character in the textblock.
+
+@ENDNODE
+
+@NODE mathwindows "Chapter 9.11: Taking over windows out of the Math Mode"
+
+Each new window in the Math Mode is automatically adopted by the Layout Mode
+as a separate box. Every change to the contents of a window in the Math Mode
+has an immediate effect on the Layout Mode. However, if a window in the
+Math Mode is closed, the corresponding box in the Layout Mode is not
+deleted.
+
+In the process of adopting the windows from the screen display of the Math
+Mode, the Layout Mode uses previously defined conversions, which you can
+change in the @{B}Conversion@{UB} menu.
+
+@ENDNODE
+
+@NODE colorconvert "Chapter 9.11.1: Color conversion"
+
+To change the way in which the colors are converted from Math Mode to
+Layout Mode, choose the item @{B}Color@{UB} in the @{B}Conversion@{UB} menu.
+A requester opens in which the original and converted colors can be selected.
+
+
+@{B}Math mode color:@{UB} Select a color of the Math Mode for conversion.
+
+@{B}Document color:@{UB} Here you can select the corresponding document color
+into which the color of the Math Mode will be converted.
+
+@ENDNODE
+
+@NODE widthconvert "Chapter 9.11.2: Line thickness conversion"
+
+To change the conversion of the thickness of lines, choose the item
+@{B}Line thickness@{UB} in the @{B}Conversion@{UB} menu. The
+Line thickness conversion requester opens, letting you change the
+conversion of the line thicknesses.
+
+
+@{B}Math mode thickness:@{UB} Select a line thickness of the Math Mode.
+
+@{B}Print thickness:@{UB} Here you can specify the line thickness in @{"pica points" LINK point}
+which the Layout Mode will use for all Math Mode lines of the weight selected.
+
+@ENDNODE
+
+@NODE fontconvert "Chapter 9.11.3: Font conversion"
+
+To change the conversion of the fonts choose the item @{B}Font@{UB} in the
+@{B}Conversion@{UB} menu. The font conversion requester opens, letting
+you change the conversion of the fonts. You can select a
+conversion font in the Layout Mode for every font of the Math Mode. This
+is done using conversion elements which are displayed in the left area of
+the requester. Every conversion element represents one font of the math Mode
+for which you can select a font of the Layout Mode. The right area contains
+all fonts available in the Layout Mode. They can be changed using the
+@{"Font requester" LINK changefonts}. In this list you can select the conversion font
+for the current conversion element. The element "rest" stands for all other
+fonts of the Math Mode which do not have their own conversion elements. In
+the string gadget below the Math Mode list, you enter the name of the font
+of the current conversion element. This name has to be the name of the font
+in the Math Mode, e.g. topaz.font.
+
+In the lower region, you may specify how all font sizes in the Math Mode
+will be converted by the Layout Mode. Enter a Math Mode size in pixels and the
+corresponding size in @{"Pica points" LINK point} for the Layout Mode. All other sizes
+will be scaled using the same ratio.
+
+
+@{B}New font:@{UB} A new conversion element is created and appended to the list
+of Math Mode-fonts.
+
+@{B}Delete Font:@{UB} Deletes the selected conversion element.
+
+@{B}Math Mode size:@{UB} Enter the size of a font in the Math Mode.
+
+@{B}Layout Mode size:@{UB} Here you can give the corresponding size in
+@{"Pica points" LINK point}. All other Math Mode fonts will be resized
+with the same ratio.
+
+@ENDNODE
+
+@NODE axesconvert "Chapter 9.11.4: Axis system conversion"
+
+To control the conversion of axes, choose the item @{B}Axis system@{UB} in the
+@{B}Conversion@{UB} menu. This will open the axis system conversion requester.
+
+
+@{B}Font:@{UB} The font used for the axis labels is displayed.
+Selecting the A after the field brings up the @{"Font requester" LINK fontreq}.
+
+@{B}Color:@{UB} The color of the axes and the axis labels is displayed.
+Selecting the A after the field lets you choose a new color.
+
+@{B}Line thickness:@{UB} Here you can specify the thickness of the axes in
+@{"Pica points" LINK point}.
+
+@{B}Default:@{UB} If this item behind a particular field is activated, the
+corresponding default conversion is used to draw the systems of axes.
+Note that all systems of axes will have for example the same font in the
+Layout Mode if you deactivate the item "Default" with the font conversion,
+even if they have different fonts in the Math Mode.
+
+@ENDNODE
+
+@NODE gridconvert "Chapter 9.11.5: Grid conversion"
+
+To change the conversion of grids, choose the item @{B}Grid@{UB} in the
+@{B}Conversion@{UB} menu. The grid conversion requester will open.
+
+
+@{B}Color:@{UB} The color of the grid is displayed here. By selecting
+the A after the field you can select a new color.
+
+@{B}Line thickness:@{UB} Here you can adjust the thickness of the grid lines
+in @{"Pica points" LINK point}.
+
+@{B}Default:@{UB} If this item after a particular item is activated, the
+corresponding default conversion is used to draw the grid. Note that all
+grids will for example have the same color in the Layout Mode if you
+deactivate this item with the color conversion, even if the grids have
+different colors in the Math Mode.
+
+@ENDNODE
+
+@NODE boxcontents "Chapter 9.12: Changing the contents of boxes"
+
+To change the contents of the active box choose the item
+@{B}Change box contents@{UB} in the @{B}Work@{UB} menu. The requester which
+opens will allow different settings according to the selected box.
+
+@{"Changing boxes containing graphics" LINK graphiccontents}
+@{"Changing the contents of math boxes" LINK mathboxcontents}
+
+@ENDNODE
+
+@NODE graphiccontents "Changing boxes containing graphics"
+
+If the active box contains graphics, the following settings can be changed:
+
+
+@{B}Outline color:@{UB} The outline color of the object is displayed.
+Selecting the A after the field lets you choose a new color.
+
+@{B}Fill color:@{UB} This section shows the color with which the object
+is filled. Selecting the A after the field lets you select a
+new color. This item is only applicable if the item @{B}Fill@{UB} is
+activated.
+
+This option is not displayed with lines.
+
+@{B}Line thickness:@{UB} Here you can adjust the thickness of the outline
+in @{"Pica points" LINK point}.
+
+@{B}Fill:@{UB} If this item is activated, the graphic object is filled
+with the selected color. Otherwise the object is transparent.
+
+This option is not displayed with lines.
+
+@ENDNODE
+
+@NODE mathboxcontents "Changing the contents of math boxes"
+
+If the active box contains a window of the Math Mode, the following settings
+can be done:
+
+
+@{B}Font:@{UB} In this field the font for all texts of the window apart from the
+axis labels is displayed. Selecting the A after the field lets you
+choose a new font from the @{"Font requester" LINK fontreq}.
+
+@{B}Text color:@{UB} This field displays the color to be applied to texts in the box.
+Selecting the A after the field lets you choose a new color. In addition to
+the normal texts in a @{"table" LINK tables}, the following objects are seen as
+texts:
+
+    @{"Texts" LINK texts}
+    @{"Points" LINK points}
+    @{"Markers" LINK marks}
+
+@{B}Graphic color:@{UB} In this field the color for all graphics in the box is
+displayed. Selecting the A behind the field lets you choose a new color.
+
+The following objects of a window are seen as graphics:
+
+    With function windows:
+
+        Hatchings
+
+    With lists and tables:
+
+        Separation lines
+
+@{B}Axis system:@{UB} By selecting this gadget, you can change the system of
+coordinate axes of the box. This is done using the
+@{"Axis system conversion requester" LINK axesconvert}.
+
+This item is only displayed with function windows.
+
+@{B}Grid:@{UB} By selecting this gadget you can change the grid in the box.
+It opens the @{"Grid conversion requester" LINK gridconvert}.
+
+This item is only displayed with function windows.
+
+@{B}Default:@{UB} If this item after a particular field is selected, the
+corresponding default conversion is used to display the box's contents. Note
+that if, for example, you switch off the default conversion for the fonts,
+all texts of the window in the Layout Mode are displayed with the same font
+selected in this requester. If you switch on the default conversion, you can
+specify the font for each text in the @{"Font conversion requester" LINK fontconvert}.
+
+@ENDNODE
+
+@NODE adaptboxsize "Chapter 9.13: Adapting the size of function boxes"
+
+To get a printout of systems of axes true to scale you can scale the box
+either by hand or let it be scaled by the program automatically. A graph may
+be scaled manually or automatically, according to specifications you enter.
+To let Analay do the scaling, choose the item @{B}Adapt box size@{UB} in the
+@{B}Work@{UB} menu. A requester opens in which you can specify the correspondence
+between x- and y-units of the graph and centimeters on the printed page.
+
+@ENDNODE
+
+@NODE documentcolors "Chapter 9.14: Changing the document colors"
+
+To change the colors of the document, choose the item @{B}Document colors@{UB} in
+the @{B}Preferences@{UB} menu. The document color requester opens, letting
+you adjust the colors of the document. The list on the right shows all the
+entered colors. You can change the currently selected color on the left
+side. With Amiga OS 3.0 and later, the left side contains a color wheel with
+a gradient slider with which you can change the current color. Beneath this,
+there are three RGB sliders which enable you to change the red, green, and
+blue components of the current color.
+
+
+@{B}New color:@{UB} A new color is appended to the list of colors.
+
+@{B}Delete color:@{UB} The current color is deleted from the list.
+
+@ENDNODE
+
+@NODE changeraster "Chapter 9.15: Changing the screen grid"
+
+A grid can be displayed on the working area. If desired, all positions
+and sizes of boxes on the screen snap to the grid, so that you can place
+them exactly. To change the grid choose the item @{B}Grid@{UB} in the
+@{B}Preferences@{UB} menu. The grid requester opens, letting you make changes
+in the grid.
+
+
+@{B}Display grid:@{UB} If this item is activated the grid is displayed.
+
+@{B}Snap:@{UB} If this item is activated all screen operations using the mouse
+will snap to the grid.
+
+@{B}x:@{UB} Enter the horizontal distance (cm.) between grid points.
+
+@{B}y:@{UB} Enter the vertical distance (cm.) between grid points.
+
+@ENDNODE
+
+@NODE changefonts "Chapter 9.16: Changing the fonts"
+
+The program can handle both bitmap and Compugraphic-Intellifont® fonts.
+To specify fonts and their paths, choose the item @{B}Fonts@{UB}
+in the @{B}Preferences@{UB} menu. A requester will open in which you can
+enter names of fonts and their paths. On the left side, all currently
+entered fonts are listed. To the right, all paths are listed. You can
+specify a path for every font. Note that you can only select one path for
+each font! You can change the current font and the current path in the
+string gadgets below the listviews.
+
+
+@{B}New font:@{UB} This gadget lets you add to the list of selectable
+fonts.
+
+@{B}Delete font:@{UB} The selected font will be removed from the list.
+
+@{B}Sort fonts:@{UB} The list of fonts will be sorted alphabetically.
+
+@{B}New path:@{UB} Lets you add a new path to the list.
+
+@{B}Delete path:@{UB} The current path will be deleted from the list.
+
+@ENDNODE
+
+@NODE changedisplay "Chapter 9.17: Changing the screen presentation"
+
+Because the bullet.library is not supported directly when using
+Intellifonts®, all Intellifonts® are currently loaded using the
+diskfont.library. However this library only offers the fonts in a
+@{"square resolution" LINK quadratres}. If the screen resolution is not square, additional
+scaling of the fonts must be done by the program, which requires time.
+
+Text display can be sped up very much if you are willing to accept a
+small distortion on the screen. To adjust the maximum distortion, choose the
+item @{B}Screen presentation@{UB} in the @{B}Preferences@{UB} menu. In the
+requester which opens, you can adjust the maximum permissible distortion
+as a percent. Please note that the whole page will be displayed distorted, so
+that you won't notice the distortion up to a certain degree!
+
+@ENDNODE
+
+@NODE quadratres "Square resolution"
+
+With a square resolution every pixel on the screen is square. However,
+with many resolutions the pixels are not squares, but rectangles.
+
+The program assumes a width/height ratio of 4:3 on the monitor.
+
+@ENDNODE
+
+@NODE printdocument "Chapter 9.18: Printing the document"
+
+To print the document, choose the item @{B}Print@{UB} in the @{B}Program@{UB} menu.
+The @{"Print requester" LINK printersettings} will open, allowing you to change the settings.
+Afterwards a window opens in which you can follow the progress of printing by
+watching the bar.
+
+Printing is done through the printer driver set in the Workbench preferences.
+
+Do not do any work in the Math Mode that would change windows as they are being
+printed. If you do, the changes will be taken over to the printout immediately,
+and may have unexpected results. However, you may close a window, since this
+does not affect the Layout Mode. You also may do analysis of functions in
+these windows. New windows may also be created at any time.
+(see also chapter @{"Known program-bugs" LINK programbugs})
+
+@ENDNODE
+
+@NODE printersettings "Chapter 9.18.1: The print requester"
+
+In this requester you can control several aspects of printout.
+
+
+@{B}Driver:@{UB} The current printer driver is displayed. It can be changed
+by using the Printer program in the Preferences drawer.
+
+@{B}Resolution:@{UB} Here you can change the printing resolution. To the left
+of the slider, the resolution is displayed in dpi. Higher resolutions
+will increase the time required for printing.
+
+@{B}Draft, High quality@{UB} Select the print quality you desire.
+
+@{B}Landscape, Portrait:@{UB} Here you can select whether the page is
+printed horizontally or vertically. If you print the page in
+landscape format be sure the long dimension appears as "width" in the
+@{"page format" LINK pagedimensions} requester.
+
+@{B}Black & White, Grayscale, Color:@{UB} Here you can select whether the
+document will be printed in black & white, in grayscale or in color. A
+black & white printout is fastest.
+
+Printing on ECS computers uses a maximum of 32 colors or 16 gray levels.
+Using a AA machine, up to 256 colors or 256 gray levels are possible.
+
+@{B}Grayscale rastering:@{UB} Here you can adjust the shading of gray levels.
+
+@{B}Number of graysteps:@{UB} Here you can adjust the number of graysteps used
+with a grayscale printout. The more gray steps you use, the longer the
+printing will take. Too many graysteps are not practical in many cases,
+because so many printers are unable to display them properly. The printout
+will just be slowed down unnecessarily.
+
+@{B}Color correction:@{UB} This gadget lets you turn the color correction for
+color printing on or off.
+
+@ENDNODE
+
+@NODE previewoptions "Chapter 9.19: Options in the Layout Mode"
+
+In the Layout Mode you can control several processes in the @{B}Preferences@{UB} menu.
+
+@ENDNODE
+
+@NODE showinactive "Chapter 9.19.1: Show inactive"
+
+If the item @{B}Show inactive@{UB} is checked, a border with dotted lines is
+drawn around every inactive box. See also the chapter @{"Boxes" LINK boxes}.
+
+@ENDNODE
+
+@NODE toolbox "Chapter 9.19.2: Toolbox"
+
+If the item @{B}Toolbox@{UB} is checked, the toolbox is displayed. See also the
+chapter @{"Concept" LINK concept}.
+
+@ENDNODE
+
+@NODE ownscreen "Chapter 9.19.3: Custom screen"
+
+If the item @{B}Custom screen@{UB} is activated, the Layout Mode uses a
+separate screen instead of the Math Mode's screen.
+
+@ENDNODE
+
+@NODE changeresprev "Chapter 9.20: Changing the screen resolution"
+
+To change the resolution of the Layout screen, choose the item @{B}Resolution@{UB}
+in the @{B}Preferences@{UB} menu. This only works if the Layout Mode is running
+on a @{"custom screen" LINK ownscreen}. The selection of the screen mode is done as described
+in the chapter @{"Changing the screen resolution" LINK changeresolution} in the Math Mode
+section.
+
+@ENDNODE
+
+@NODE changecolorsprev "Chapter 9.21: Changing the palette"
+
+To change the colors of the Layout screen, choose the item @{B}Palette@{UB}
+in the @{B}Preferences@{UB} menu. This only works if the Layout Mode is running
+on a @{"custom screen" LINK ownscreen}. The adjustment of the colors is done as described in
+the chapter @{"Changing the palette" LINK changecolors} in the Math Mode section.
+
+@ENDNODE
+
+@NODE fontreq "The font requester"
+
+This requester lets you choose a font. In the left section, all available
+fonts are listed. The right section contains all currently available sizes
+of the current font. To generate a new size, simply enter it in the string
+gadget below the list of sizes.
+
+@ENDNODE
+
+
+@NODE loadsave "Chapter 10: File operations"
+
+If an already existing file is to be overwritten by the program, the old
+file will first be saved with the appendix .bak in the same directory.
+If your machine then crashes while saving, you can find the old file
+with the appendix .bak in the same directory.
+
+The following chapters contain some information about the saved objects.
+
+9.1 @{"Preferences" LINK preferences}
+9.2 @{"Documents" LINK documents}
+
+@ENDNODE
+
+@NODE preferences "Chapter 10.1: Preferences"
+
+Many of your preferences for Analay can be saved so that they are in effect
+each time you start the program.
+
+Preferences are:
+
+    positions and sizes of requesters
+    screen resolutions
+    palettes
+    task priorities
+
+Specifically in the Math Mode:
+
+    internal constants
+    default styles for objects: texts, points, markers, hatchings, legends,
+        lists, tables
+    pattern list (of points and markers)
+
+Specifically in the Layout Mode:
+
+    Layout active/inactive
+    toolbox active/inactive
+    position and size of the Layout window
+    position of the toolbox
+    show inactive
+    custom screen
+    zoom
+    grid
+    document colors
+    fonts
+    maximum distortion
+    conversion settings
+    page dimensions
+    printer settings
+
+To save the preferences, choose the item @{B}Save@{UB} in the @{B}Settings@{UB} menu.
+The preferences will be saved in the directory Analay: under the name
+Analay.config. When the program is started, it searches for this file in the
+directory Analay: or in the current directory. If found, it is loaded
+automatically.
+
+To save the preferences under another name, choose the item @{B}Save as@{UB} in the
+@{B}Settings@{UB} menu. You then can enter a separate file name for each
+configuration you want to save.
+
+To load the preferences from a file, choose the item @{B}Load@{UB} in the
+@{B}Settings@{UB} menu. The requester lets you select the configuration you
+want to use at the time.
+
+@ENDNODE
+
+@NODE documents "Chapter 10.2: Documents"
+
+To save the current document, choose the item @{B}Save as@{UB} in the @{B}Program@{UB} menu.
+You then can select a file name in the requester or enter a new one.
+
+To load a saved document, choose the item @{B}Load@{UB} in the @{B}Program@{UB} menu.
+You then can select a file to be loaded from the list presented by the file
+requester.
+
+To save the current document under the name under which it was previously loaded
+or saved, choose the item @{B}Save@{UB} in the @{B}Program@{UB} menu.
+
+The following data are saved with each document:
+
+    All data created and entered.
+
+Specifically in the Math Mode:
+
+    constants
+    pattern lists (of points and markers)
+
+Specifically in the Layout Mode:
+
+    page dimensions
+    zoom
+    grid
+    document colors
+    fonts
+    conversion settings
+    maximum distortion
+    printer settings
+
+@ENDNODE
+
+@NODE program "Chapter 11: About the program"
+
+The program was written using the Amiga-Oberon compiler by Fridtjof Siebert.
+It uses the garbage collector of this Oberon system, which makes it
+much larger than programs not using the garbage collector. However
+it runs very fast and, using the garbage collector, very stably.
+
+Bug reports and suggestions for improvement are always welcome!
+Please send them to the address given in the chapter @{"How to order" LINK order}.
+
+
+Thanks go to (in alphabetical order):
+
+    Mr. Nagel
+    Thomas Necker
+    Mr. Plawner
+    Ralf Rothfuß
+
+
+Special thanks go to my beta-testers (in alphabetical order):
+
+    Jens Boenisch
+    Boris Folgmann
+    Michael Mutschler
+    Ulrich Sibiller
+
+
+Very special thanks go to (in alphabetical order):
+
+    Dr. Eberle       (who had to listen over and over again to how great
+                        this program is.)
+    Mrs. Groß        (who has an answer to every mathematical question)
+    Boris Jakubaschk (my major beta-tester and major information source)
+    David Thomson    (who revised the English program texts and co-edited
+                        the English documentation)
+
+
+
+Program history:
+
+Beginning 1991         : Start of the development of SuperCalc
+
+Middle 1991, V0.1      : First version, only for one tester. Not yet
+                         very great.
+
+Middle 1993, V0.5      : First good version, now completely re-programmed
+                         in Oberon.
+
+Spring 1994, V0.8      : Implemented Layout Mode
+
+Summer 1994, V0.9      : New test version
+
+October 1994, V0.95    : Beta version of the published V1.0
+                         New name: Analay
+
+November 2, 1994, V1.0 : First published version, unfortunately German only
+
+January 4, 1995, V1.1i : Beta version
+
+                         - Language-independent. Supported languages:
+                           Program texts: German, English
+                           Documentation: German, English
+
+                         - Zoom up to 500 % in the Layout Mode possible
+
+February 27, 1995, V1.1: Published version
+
+April 6, 1995, V1.11   : Minor update
+
+                         - Fixed a bug with power functions
+
+@ENDNODE
+
+
+@NODE programbugs "Chapter 12: Known program bugs"
+
+The following bugs are known, but do not disturb the function of the
+program substantially. They'll probably be removed in a future version.
+
+1.) Not all input is checked for correctness. The program should not
+    crash when entering an incorrect function term or number value, but it
+    may give incorrect results.
+
+2.) Analay MAY calculate incorrectly with numbers that are too small or too
+    large, i.e. outside the range 10E-8 to 10E+8. Large numbers might lead
+    to an overflow, small numbers might be below the accuracy of the program's
+    calculations. This should not affect normal functions.
+
+    If you want to use larger or smaller numbers, just try them, but check the
+    results.
+
+3.) While printing a page in the Layout Mode, you may not change any of the
+    windows in the Math Mode which are being printed. They may be closed and
+    you also may analyze the functions displayed in these windows.
+    Also, functions being printed at the moment may not be changed. If this
+    happens, it will affect output to the printer with unpredictable results.
+    New windows may be created at any time.
+    (see also chapter @{"Printing the document" LINK printdocument})
+
+4.) The program is not font sensitive! The use of fonts that are too large
+    may lead to an incorrect screen display. It works properly up to a
+    size of 12 pixels.
+
+5.) It often occurs that the Layout Mode stops drawing when building up a
+    page. When this happens, the Layout Mode is waiting for the Math Mode to
+    finish plotting a window. As soon as the Math Mode has finished plotting
+    the window, the Layout Mode continues.
+
+    If the Layout Mode pauses without an obvious reason and seems to hang
+    during the page layout, try resizing each window in the Math Mode so that
+    they get redrawn. The Layout Mode then should continue with the layout.
+    This also can happen during printing. Because this error only
+    occurs very rarely, it is very difficult to trace it. In fact, I may
+    have already fixed it!
+
+6.) The derivative of function terms containing the abs function is not
+    generated correctly at the moment. Therefore it is also not possible to
+    determine the points of inflection of an abs function.
+
+@ENDNODE
+
+
+@NODE future "Chapter 13: Future prospects"
+
+The following features and changes are planned for future versions:
+
+- font-sensitive user interface
+- completely asynchronous program design
+- polar coordinates
+- 3D graphs
+- further simplification of function terms
+- new concept for carrying windows over into the Layout Mode
+- multiple-page documents
+- direct support of the bullet.library
+- better editing functions in the Layout Mode
+
+@ENDNODE
+
+@NODE wysiwyg "WYSIWYG"
+
+WYSIWYG = What You See Is What You Get
+
+You can see your page on the screen as it will appear in the printout.
+
+@ENDNODE
+
+@NODE point "Pica point"
+
+1 point = 1/72 @{"Inch" LINK inch}
+
+@ENDNODE
+
+@NODE inch "Inch"
+
+1 inch = 2.54 cm
+
+@ENDNODE
+
+
+@NODE INDEXNODE "Index"
+
+
+A
+
+@{"About the program" LINK "program"}
+@{"Adapting the size of function boxes" LINK "adaptboxsize"}
+@{"Aligning text" LINK "textdir"}
+@{"Analysis of curves" LINK "curvediscuss"}
+@{"Asynchronous program design" LINK "multitasking"}
+@{"Auto active window" LINK "autoactive"}
+@{"Axis limits requester" LINK "changeaxesrangereq"}
+@{"Axis system conversion requester" LINK "axesconvert"}
+@{"Axis system conversion" LINK "axesconvert"}
+
+
+B
+
+@{"Box settings requester" LINK "boxsettings"}
+@{"Box settings" LINK "boxsettings"}
+@{"Boxes" LINK "boxes"}
+
+
+C
+
+@{"Calculation of areas" LINK "calcarea"}
+@{"Changing axis limits in requester" LINK "changeaxesrangereq"}
+@{"Changing axis limits with the  mouse" LINK "changeaxesrangemouse"}
+@{"Changing boxes containing graphics" LINK "graphiccontents"}
+@{"Changing magnification by mouse" LINK "zoomframe"}
+@{"Changing the axis labels" LINK "changeaxes"}
+@{"Changing the axis limits" LINK "changeaxesrange"}
+@{"Changing the contents of boxes" LINK "boxcontents"}
+@{"Changing the contents of math boxes" LINK "mathboxcontents"}
+@{"Changing the document colors" LINK "documentcolors"}
+@{"Changing the domain of a function" LINK "defrange"}
+@{"Changing the font of a text passage" LINK "textfont"}
+@{"Changing the fonts in the Layout Mode" LINK "changefonts"}
+@{"Changing the graph design" LINK "changefuncs"}
+@{"Changing the grid" LINK "changegrid"}
+@{"Changing the page's magnification in the requester" LINK "zoominput"}
+@{"Changing the page's magnification" LINK "pagezoom"}
+@{"Changing the page dimensions" LINK "pagedimensions"}
+@{"Changing the palette in the Math Mode" LINK "changecolors"}
+@{"Changing the palette in the Layout Mode" LINK "changecolorsprev"}
+@{"Changing the resolution under AmigaOS 2.0" LINK "changeres20"}
+@{"Changing the resolution under AmigaOS 2.1 or higher" LINK "changeresasl"}
+@{"Changing the screen grid" LINK "changeraster"}
+@{"Changing the screen presentation" LINK "changedisplay"}
+@{"Changing the screen resolution in the Math Mode" LINK "changeresolution"}
+@{"Changing the screen resolution in the Layout Mode" LINK "changeresprev"}
+@{"Changing the task priorities" LINK "changepriorities"}
+@{"Changing the text color" LINK "textcolor"}
+@{"Changing the text style" LINK "textattrs"}
+@{"Clone Workbench" LINK "copywb"}
+@{"Color conversion" LINK "colorconvert"}
+@{"Complete analysis settings requester" LINK "completesettings"}
+@{"Complete analysis settings" LINK "completesettings"}
+@{"Complete analysis" LINK "completediscuss"}
+@{"Concept of the Layout Mode" LINK "concept"}
+@{"Connecting functions" LINK "connectfuncs"}
+@{"Constant input requester" LINK "enterconstant"}
+@{"Constants" LINK "changeconstants"}
+@{"Copyrights" LINK "copyrights"}
+@{"Custom screen" LINK "ownscreen"}
+
+
+D
+
+@{"Definition gaps" LINK "definitionslucken"}
+@{"Documents" LINK "documents"}
+
+
+E
+
+@{"Ellipses" LINK "ellipses"}
+@{"Entering numerical values" LINK "numberenter"}
+@{"Extreme points requester" LINK "discusslistreq"}
+@{"Extreme points" LINK "extremepoints"}
+
+
+F
+
+@{"File operations" LINK "loadsave"}
+@{"Font conversion requester" LINK "fontconvert"}
+@{"Font conversion" LINK "fontconvert"}
+@{"Font requester of the Layout Mode" LINK "changefonts"}
+@{"Font requester of the Math Mode" LINK "fontreq"}
+@{"Format for the input of formulas" LINK "termformat"}
+@{"Formulas in textblocks" LINK "termtextblock"}
+@{"Formulas in textlines" LINK "termtextline"}
+@{"Formulas" LINK "termedit"}
+@{"Function format" LINK "funcformat"}
+@{"Function input requester" LINK "enter"}
+@{"Future prospects" LINK "future"}
+
+
+G
+
+@{"Gaps requester" LINK "discusslistreq"}
+@{"General information" LINK "general"}
+@{"General settings of function windows" LINK "funcwindsettings"}
+@{"Graphics" LINK "graphics"}
+@{"Grid conversion requester" LINK "gridconvert"}
+@{"Grid conversion" LINK "gridconvert"}
+
+
+H
+
+@{"Hatchings" LINK "areas"}
+@{"How to order" LINK "order"}
+
+
+I
+
+@{"Import of ASCII-files" LINK "importascii"}
+@{"Inch" LINK "inch"}
+@{"Input of constants" LINK "changeconstants"}
+@{"Input of functions and variables" LINK "enter"}
+@{"Input of object coordinates" LINK "objectcoords"}
+@{"Input of text" LINK "textenter"}
+@{"Input requester" LINK "enter"}
+@{"Installation on a floppy disk" LINK "onediskinstall"}
+@{"Installation on a hard disk" LINK "harddiskinstall"}
+@{"Installation" LINK "install"}
+@{"Intersections requester" LINK "discussreq"}
+@{"Introduction" LINK "intro"}
+
+
+K
+
+@{"Key-File" LINK "demoversion"}
+@{"Known program bugs" LINK "programbugs"}
+
+
+L
+
+@{"Language independence" LINK "languageindependence"}
+@{"Layout Mode" LINK "preview"}
+@{"Legends" LINK "legends"}
+@{"Legends, tables, lists" LINK "special"}
+@{"Line thickness conversion" LINK "widthconvert"}
+@{"Lines" LINK "lines"}
+@{"Lists" LINK "lists"}
+
+
+M
+
+@{"Marker design requester" LINK "markdesreq"}
+@{"Markers" LINK "marks"}
+@{"Marking ranges" LINK "textrange"}
+@{"Math Mode" LINK "math"}
+@{"Moving objects by mouse" LINK "objectmousemove"}
+
+
+N
+
+@{"Number format requester" LINK "numberformatreq"}
+
+
+O
+
+@{"Objects in function windows" LINK "objects"}
+@{"Online help" LINK "onlinehelp"}
+@{"Options in the Layout Mode" LINK "previewoptions"}
+@{"Options in the Math Mode" LINK "mathoptions"}
+
+
+P
+
+@{"Pica points" LINK "point"}
+@{"Plotting functions" LINK "plotfuncs"}
+@{"Point design requester" LINK "pointdesreq"}
+@{"Point input requester" LINK "enterpoint"}
+@{"Point requester" LINK "points"}
+@{"Points of inflection requester" LINK "discusslistreq"}
+@{"Points of inflection" LINK "wendepunkte"}
+@{"Points of intersection" LINK "schnittpunkte"}
+@{"Points" LINK "points"}
+@{"Preferences" LINK "preferences"}
+@{"Print requester" LINK "printersettings"}
+@{"Printing the document" LINK "printdocument"}
+@{"Priorities requester" LINK "changepriorities"}
+@{"Processing functions symbolically" LINK "funcsymb"}
+
+
+Q
+
+@{"Quick-input" LINK "quickenter"}
+@{"Quick-select" LINK "quickselect"}
+
+
+R
+
+@{"Rectangles" LINK "rectangles"}
+@{"Reflect requester" LINK "mirrorfunc"}
+
+
+S
+
+@{"Show inactive" LINK "showinactive"}
+@{"Square resolution" LINK "quadratres"}
+@{"Starting the program" LINK "startprogram"}
+@{"String input requester" LINK "getstring"}
+@{"Symbolically" LINK "symbolically"}
+@{"System requirements" LINK "system"}
+
+
+T
+
+@{"Table and list design requester" LINK "tablelistdesreq"}
+@{"Tables" LINK "tables"}
+@{"Taking over windows out of the Math Mode" LINK "mathwindows"}
+@{"Text input on objects" LINK "objecttexts"}
+@{"Text processing" LINK "textwork"}
+@{"Text range" LINK "textrange"}
+@{"Textblocks" LINK "textblocks"}
+@{"Textlines" LINK "textlines"}
+@{"Texts" LINK "texts"}
+@{"The Analysis data requester" LINK "discusslistreq"}
+@{"The constant input requester" LINK "enterconstant"}
+@{"The function format" LINK "funcformat"}
+@{"The garbage collector" LINK "garbagecollector"}
+@{"The print requester" LINK "printersettings"}
+@{"The textline requester" LINK "textlinereq"}
+@{"The variable format" LINK "varformat"}
+@{"Toolbox" LINK "toolbox"}
+
+
+U
+
+@{"Use Workbench Screen" LINK "usewbscreen"}
+@{"User-defined domain" LINK "defrange"}
+
+
+V
+
+@{"Value range requester" LINK "numberrangereq"}
+@{"Variable format" LINK "varformat"}
+@{"Variables" LINK "varformat"}
+
+
+W
+
+@{"Warranty" LINK "warranty"}
+@{"WYSIWYG" LINK "wysiwyg"}
+
+
+Z
+
+@{"Zeros requester" LINK "discusslistreq"}
+@{"Zeros" LINK "nullstellen"}
+
+
+This index was created using AGIndex by Camiel Rouweler.
+
+@endnode

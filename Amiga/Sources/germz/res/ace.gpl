@@ -1,0 +1,9 @@
+GIMP Palette
+Name: ACE
+Columns: 4
+#
+  0   0   0 Black
+255   0   0 A
+  0 255   0 C
+  0   0 255 E
+

@@ -1,0 +1,100 @@
+#
+# PdaLink -- Connect Palm with Amiga
+#
+# Copyright (C) 1998-2010 Richard "Shred" Körber
+#   http://pdalink.shredzone.org
+#
+# This library is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation, either
+# version 3 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+OBJP      = objects/
+
+#-- pdalink.library --
+EXE       = libs:pdalink.library
+OBJS      = $(OBJP)PL_Lib.o $(OBJP)PL_Init.o $(OBJP)PL_Socket.o $(OBJP)PL_Serial.o\
+            $(OBJP)PL_SLP.o $(OBJP)PL_PADP.o $(OBJP)PL_CMP.o $(OBJP)PL_DLP.o\
+            $(OBJP)PL_File.o $(OBJP)PL_ARexx.o $(OBJP)PL_NetSync.o $(OBJP)debug.o
+
+INCS      = pdalink_glob.h pdalink_private.h pdalink.h
+
+GENFILES  = $(EXE) $(OBJS)
+
+
+#-- debug options --
+#DBGOPTS   = DBG=FF NOSTRIPDBG
+#DBGOPTS   = PROFILE NOSTRIPDBG
+DBGOPTS   = STRIPDBG
+
+#-- compiler options --
+SOPTS     = CPU=68060 OPT
+#SOPTS     = CPU=68000 OPT
+#SOPTS     =
+
+#-- compiler commands --
+LIBS      = lib:amiga.lib lib:sc.lib
+COPTS     = NOLINK STRIPDBG NOSTACKCHECK PARM=R DATA=NEAR OBJECTNAME=$(OBJP) GST=INCLUDE:all.gst STRMER $(SOPTS)
+AOPTS     = INCPATH=Include: ERRORS=0 OPT=NRQLPS NOEXE TO $(OBJP)
+#LOPTS     = SC SD NOICONS $(DBGOPTS) LIB $(LIBS)
+LOPTS     = B SC SD
+
+
+# -- dependencies --
+all                     : $(GENFILES)
+
+# --- PdaLink Main Library ------------------------------------
+
+$(EXE)                  : $(OBJS)
+        phxlnk to $(EXE) $(LOPTS) from @<<
+$(OBJS)
+$(LIBS)
+<
+
+
+$(OBJP)PL_Lib.o                 : PL_Lib.s
+        phxass $(AOPTS) $*.s
+
+$(OBJP)PL_Init.o                : PL_Init.c $(INCS)
+        sc $(COPTS) $*.c
+
+$(OBJP)PL_Socket.o              : PL_Socket.c $(INCS)
+        sc $(COPTS) $*.c
+
+$(OBJP)PL_Serial.o              : PL_Serial.c $(INCS)
+        sc $(COPTS) $*.c
+
+$(OBJP)PL_SLP.o                 : PL_SLP.c $(INCS)
+        sc $(COPTS) $*.c
+
+$(OBJP)PL_PADP.o                : PL_PADP.c $(INCS)
+        sc $(COPTS) $*.c
+
+$(OBJP)PL_CMP.o                 : PL_CMP.c $(INCS)
+        sc $(COPTS) $*.c
+
+$(OBJP)PL_DLP.o                 : PL_DLP.c $(INCS)
+        sc $(COPTS) $*.c
+
+$(OBJP)PL_File.o                : PL_File.c $(INCS)
+        sc $(COPTS) $*.c
+
+$(OBJP)PL_ARexx.o               : PL_ARexx.c $(INCS)
+        sc $(COPTS) $*.c
+
+$(OBJP)PL_NetSync.o             : PL_NetSync.c $(INCS)
+        sc $(COPTS) $*.c
+
+$(OBJP)debug.o                  : debug.c $(INCS)
+        sc $(COPTS) $*.c
+
+#

@@ -1,0 +1,453 @@
+\input texinfo    @c -*-texinfo-*-
+@comment %**start of header
+@setfilename AmiFTP
+@settitle AmiFTP @value{edition} Documentation
+@setchapternewpage odd
+@c paragraphindent 2
+@comment %**end of header
+
+@comment AmiFTP.texi
+@comment Documentation for AmiFTP
+@comment Copyright (c) 1995 Magnus Lilja
+
+@set edition 0.699
+@set UPDATE-DATE 24 September 1995
+@set update-month September 1995
+
+@ifinfo
+Manual for AmiFTP version @value{edition}
+
+Copyright @copyright{} 1995 Magnus Lilja
+@end ifinfo
+
+@titlepage
+@title AmiFTP
+@subtitle A ftp utility for use with AmiTCP
+@subtitle Version {edition}
+
+@author by Magnus Lilja
+
+@page
+@vskip 0pt plus 1filll
+
+AmiFTP is Copyright @copyright{} 1995 Magnus Lilja. All Rights Reserved
+Portions of the code originated from Berkely.
+
+@end titlepage
+
+@node Top, Copyright, (dir), (dir)
+     @code{AmiFTP @value{edition} Documentation}
+
+Copyright © 1995 Magnus Lilja. All Rights Reserved.
+
+This manual was updated: @value{UPDATE-DATE}
+
+@menu
+* I  : Copyright.        Copyright and distribution stuff
+* II : Addresses.        Where to send comments, bug reports etc.
+
+* III: Requirements.     What do you need to use AmiFTP?
+* IV : Installation.     How to install AmiFTP
+* V  : Usage.            How to use it
+
+* A  : Acknowledgements. Thanks to...
+* B  : History.          Revision history
+@end menu
+
+@node Copyright, Addresses, Top, Top
+@code{Copyright and distribution stuff}
+@cindex Copyright
+@cindex Distribution
+
+AmiFTP is Copyright @copyright{} 1995 Magnus Lilja. All Rights Reserved.
+
+Distribution:
+
+At this time I do not want AmiFTP uploaded to Aminet since I don't think it's 
+ready for it. This version may not be included on any PD-CDROM, or in any 
+commercial package. Please respect that this is a "public beta" and 
+therefore don't upload it to lots of ftp-sites, newest version is always
+available from:
+@display
+ftp://eniac.campus.luth.se/pub/amiga/amiftp and
+http://www.lysator.liu.se/~lilja/AmiFTP.html
+@end display
+
+DISCLAIMER: THIS SOFTWARE IS PROVIDED AS IS. USE IT AT YOUR OWN RISK.
+
+@node Addresses, Requirements, Copyright, Top
+@code{Authors addresses}
+
+@table @asis
+@item @code{Normal mail:}
+
+@example
+  Magnus Lilja
+  Alsättersgatan 9C:17
+  S-581 51 LINKÖPING
+  SWEDEN
+@end example
+
+@item @code{E-Mail:}
+@example
+  lilja@@lysator.liu.se
+@end example
+@end table
+
+New versions of AmiFTP will be available via ftp from
+@example
+ eniac.campus.luth.se/pub/amiga/amiftp/
+@end example
+and via www from
+@example
+ http://www.lysator.liu.se/~lilja/AmiFTP.html
+@end example
+I will upload AmiFTP to Aminet when I think it's ready for it.
+
+@node Requirements, Installation, Addresses, Top
+@code{Requirements}
+
+In order to run AmiFTP you'll need AmigaOS 3.0 or higher, and AmiTCP 3.0 or higher.
+A special version for AS225/mlink is also available.
+
+@node Installation, Usage, Requirements, Top
+@code{Installation}
+
+Copy the binary and the icon to your favourite directory.
+
+@node Usage, Arguments, Installation, Top
+@code{Usage}
+
+AmiFTP can be started either from the CLI or from Workbench.
+@menu
+* Arguments::          Command line arguments and Tooltypes.
+* ARexx::              ARexx interface
+* Global preferences:: The Global preferences window
+@end menu
+
+@node Arguments,ARexx,Usage,Usage
+@code{Arguments}
+
+The following arguments are available as cli arguments and Workbench Tooltypes:
+
+FIXEDFONTNAME - This font is used in the main listview.
+
+FIXEDFONTSIZE - And the size for the above font.
+
+ICONIFIED - Start AmiFTP in iconified mode.
+
+PORTNAME  - The name of AmiFTP's ARexx port.
+
+PROPFONTNAME - This font is used in all gadgets except the main listview.
+
+PROPFONTSIZE - And the size for the above font.
+
+PUBSCREEN - Name of the public screen AmiFTP should open on.
+
+SETTINGS  - Tells AmiFTP which preference-file to use.
+
+@node ARexx,GETATTR,Arguments,Usage
+@code{ARexx}
+
+AmiFTP's ARexx-port default name is "AMIFTP".
+In case a commands fails a non-zero returncode is returned.@*
+The following ARexx commands are available:
+@menu
+* GETATTR::
+* SETATTR::
+* CONNECT::
+* DISCONNECT::
+* CD::
+* LCD::
+* SITE::
+* GET::
+* MGET::
+* PUT::
+* MPUT::
+* QUIT::
+@end menu
+
+@node GETATTR,SETATTR,ARexx,ARexx
+@code{GETATTR}
+
+Syntax: GETATTR STEM/A,HOTLIST/S
+
+Description:
+
+Fills the STEM-variable with current AmiFTP-status:
+@example
+stem.VERSION   = Version of AmiFTP
+stem.SCREEN    = Name of the public screen AmiFTP lives on
+stem.HOST      = Current host
+stem.PORT      = Current port
+stem.PROXYHOST = Name of proxyhost
+stem.PROXYPORT = Proxyport
+stem.USEPROXY  = Use proxy for this connection?
+stem.ANONYMOUS = Set to 1 if anonymous login is used, otherwise 0
+stem.USERNAME  = Loginname used
+stem.LOCALDIR  = Current localdirectory
+stem.REMOTEDIR = Current remotedirectory
+stem.CONNECTED = Set to 1 if AmiFTP is connected, otherwise 0. (AmiFTP will send a "NOOP"-command 
+in order to check this)
+
+If HOSTLIST is specified the following structure will also be set:
+stem.HOTLIST.COUNT       = Number of hotlist entries 
+stem.HOTLIST.n.NAME      = Host hotlist name
+stem.HOTLIST.n.ADDRESS   = Host address
+stem.HOTLIST.n.PORT      = Port number to use
+stem.HOTLIST.n.USERNAME  = Loginname
+stem.HOTLIST.n.ANONYMOUS = Set to 1 if anonymous login should be used
+stem.HOTLIST.n.REMOTEDIR = Default remote directory
+stem.HOTLIST.n.LOCALDIR  = Default local directory
+stem.HOTLIST.n.USEPROXY  = Set to 1 if proxy should be used
+
+@end example
+
+@node SETATTR,CONNECT,GETATTR,ARexx
+@code{SETATTR}
+
+Syntax: SETATTR HOST/K,PORT/K,USEPROXY/S,REMOTEDIR/K,LOCALDIR/K,USERNAME/K,PASSWORD/K
+
+Description:
+
+Sets the attribute to specified value.
+
+@node CONNECT,DISCONNECT,SETATTR,ARexx
+@code{CONNECT}
+
+Syntax: CONNECT NOSCAN/S
+
+Description:
+
+Connects AmiFTP to a server, you must have specified which server you want to connect to
+with either 'SETATTR HOST server' or 'SITE servername'. If you don't want AmiFTP to read
+the remote directory use the NOSCAN option.
+
+@node DISCONNECT,CD,CONNECT,ARexx
+@code{DISCONNECT}
+
+Syntax: DISCONNECT
+
+Description:
+
+Disconnect AmiFTP from the current server. It is safe to call DISCONNECT even if you're not
+connected to a server.
+
+@node CD,LCD,DISCONNECT,ARexx
+@code{CD}
+
+Syntax: CD NOSCAN/S,PARENT/S,DIR
+
+Description:
+
+Changes remote directory to DIR or PARENT. If you don't want AmiFTP to read the directory use the NOSCAN
+option.
+
+@node LCD,SITE,CD,ARexx
+@code{LCD}
+
+Syntax: LCD DIR
+
+Description:
+
+Changes local directory to DIR.
+
+@node SITE,GET,LCD,ARexx
+@code{SITE}
+
+Syntax: SITE SITE/A/F
+
+Description:
+
+Scans the sitelist and, if the SITE is present, makes AmiFTP ready to connect to the site. Use the CONNECT-command to connect.
+
+@node GET,MGET,SITE,ARexx
+@code{GET}
+
+Syntax: GET ASCII/S,BIN/S,FILE/A,LOCAL
+
+Description:
+
+Gets a file from server in ASCII or BINary mode (default is binary), with 
+the filename LOCAL if specified, otherwise the filename will be the same as FILE.
+
+@node MGET,PUT,GET,ARexx
+@code{MGET}
+
+Syntax: MGET ASCII/S,BIN/S,FILE/M
+
+Description:
+
+Gets multiple files in ASCII or BINary mode (default is binary) from the server.
+
+@node PUT,MPUT,MGET,ARexx
+@code{PUT}
+
+Syntax: PUT FILE,REMOTE
+
+Description:
+
+Uploads FILE to the server.
+
+@node MPUT,QUIT,PUT,ARexx
+@code{MPUT}
+
+Syntax: MPUT FILE/M
+
+Description:
+
+Uploads multiple files to the server.
+
+@node QUIT, Global preferences, MPUT,ARexx
+@code{QUIT}
+
+Syntax: QUIT
+
+Description:
+
+Quits AmiFTP, if you are connected to a server AmiFTP will disconnect you first.
+
+@node Global preferences,Acknowledgements ,QUIT,Usage
+@code{Preferences}
+
+@itemize
+@item
+Anonymous password:@*
+Enter your email-address here, this will be sent to the ftp-server
+when you log in as anonymous user.
+@item
+View command:@*
+Enter the command AmiFTP should use when viewing files, %F in the string will expand to the filename
+and %P will expand to the name of the public screen AmiFTP lives on. Note that at the moment you
+have to specify the complete path for the command if you run AmiFTP from Workbench since I haven't
+fixed the path yet.
+@item
+Proxy host:@*
+The name of the proxy-host to use for proxy-connections. Note that the proxy that AmiFTP needs is
+not generally available, it will not work with the Cern httpd-proxy function.
+@item
+Proxy port:@*
+Which port on the proxy-host to use.
+@item
+Use proxy as default?@*
+Should AmiFTP use the proxy for all connections? You can override this with the proxy-flag for each site.
+@item
+Show dotfiles?@*
+Determines whether files beginning with a dot (.) should be viewed.
+@item
+Ignore case?@*
+Well, guess twice!
+@end itemize
+
+@node Acknowledgements,History, Global preferences,Top
+@code{Acknowledgements}
+
+First of all, thanks to all who have tested the program and reported bugs/suggestions.
+
+Special thanks to:
+@example
+Andreas Johansson (andjo@@lysator.liu.se) for lots of alphatesting
+Per Peman (peman@@ludd.luth.se) for testing and for the ftp-site
+@*And the following translators:@*
+Volker Graf (vgraf@@hydra.informatik.uni-ulm.de) for the Danish and German translations
+Troels Walsted Hansen (troels@@stud.cs.uit.no) for the Norwegian translation
+Giacomo Magnini (G.Magnini@@agora.stm.it) for the Italian translation
+Arno van Wouwe (apwouwe@@cs.vu.nl) for the Dutch translation.
+
+and everyone else I've forgotten...
+@end example
+
+@node History, , Acknowledgements, Top
+@code{Version history}
+
+
+@itemize
+@section Changes from AmiFTP 0.691
+@item
+CPS wasn't cleared after each file uploaded.
+@item
+Hrm, this time AmiFTP-as225 should really work with mlink (tried it myself).
+@section Changes from AmiFTP 0.664
+@item
+Links were "View"-ed twice, now fixed.
+@item
+Workaround for the V39/gadtools.library bug so the Transfer Window looks good on V39 too.
+@item
+The 'Bytes transffered' and 'CPS' was updated one time to much.
+@item
+Minor things fixed (I forgot to remove some DEBUG-output before the previous release).
+@section Changes from AmiFTP 0.648
+@item
+When downloading multiple files AmiFTP forgot to unmark them.
+@item
+Abort gadget in 'Transfer window' was ghosted after the first file.
+@item
+SETATTR USERNAME/PASSWORD works from ARexx now.
+@section Changes from AmiFTP 0.535
+@item
+You can now switch transfermodes from the menu (Binary/ASCII), default is BINARY.
+@item
+The GUI now uses the screens (proportional) font for everything but the files-listview. Use the
+PROPFONTNAME/PROPFONTSIZE and FIXEDFONTNAME/FIXEDFONTSIZE Tooltypes/cli arguments to change fonts.
+@item
+Lots of small fixes...
+@section Changes from AmiFTP 0.533
+@item
+SETTINGS tooltype/cli arguments now works again, it was broken in 0.533.
+@section Changes from AmiFTP 0.348
+@item
+Resume transfer when downloading files added. When AmiFTP ask for Overwriting an existing file
+you can now select between Overwrite, Resume transfer, and Cancel.
+@item
+Settings-menu added, from where you reach load/save-settings and edit hotlist and the old
+preferences (now renamed to "Global").
+@item
+AmiFTP now looks for the prefs-file in the following directories (and in this order):
+Current directory, PROGDIR: (the directory where the AmiFTP binary resides), ENV:, 
+~user/ .
+
+Default when saving (that is, if AmiFTP couldn't find a prefs-file at startup) is PROGDIR:
+@item
+AmiFTP is now localized.
+@item
+Password-gadget added, AmiFTP will send this password when you're not logging in as
+anonymous.
+
+@section Changes from AmiFTP 0.345
+@item
+The gadgets in SiteList-window got messed up.
+
+@section Changes from AmiFTP 0.275
+@item
+AmiFTP now clones the path when started from Workbench.
+@item
+AmiFTP remembers the size and position of the window when iconifying it.
+@item
+Added directory-cache, AmiFTP will cache up to ten dirs. If you enter a directory
+via the Directory stringgadget in the main window the directory will be read from 
+the server, not from the cache.
+@item
+A special version of AmiFTP now works with mlink, though you can't abort filetransfers 
+with it. That version is available from http://www.lysator.liu.se/~lilja/AmiFTPmlink.lha
+@item
+You can now delete remote files with a new menu-function. A requester will pop up asking
+you if you're really want to delete the selected file(s). (I accidentally deleted some
+files when I was testing this function :).
+@item
+Select all/unselect all functions available via the menu.
+@item
+Links are now shown with (link) in the listview.
+@item
+Upload via ARexx added (PUT/MPUT).
+@item
+Minor layout-bugs fixed.
+
+@section Changes from AmiFTP 0.138
+@item
+ARexx port added, not all functions are implemented or finished yet.
+@item
+When View-ing files AmiFTP now downloads them to T: and when AmiFTP quits the files
+will be deleted.
+@end itemize
+
+@bye

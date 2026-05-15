@@ -1,0 +1,5 @@
+for i in arctan sine sqrroot tmult
+do
+	\megamax\mmcc $i.c
+	test $? -eq 0 || { echo "compiling $i.c failed"; break; }
+done

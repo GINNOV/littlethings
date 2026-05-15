@@ -1,0 +1,4 @@
+**/*.o
+**/gameloader
+.DS_Store
+**/bin

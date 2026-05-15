@@ -1,0 +1,561 @@
+; Catalog descriptor file for AmiFTP 
+; Copyright (C) 1995 by Magnus Lilja, All Rights Reserved.
+;
+; e-mail: lilja@lysator.liu.se
+;
+; Some notes for translators:
+;
+; In order to create a hotkey to activate a gadget insert
+; a _ in the string before the character that should be
+; the hotkey. ('Te_st' would result in 's' being the hotkey
+; for that particular gadget).
+;
+;
+; Note that menu shortcuts are defined differently:
+; A correct menu entry for 'Quit' with Amiga-Q as the
+; shortcut should look like this:
+; Q\000Quit
+;
+;
+#language english
+;
+#version 2
+;
+; SiteList window
+;
+SLW_SiteListWindow (/1/)
+AmiFTP Sitelist
+;
+SLW_SiteList (/1/)
+FTP Sites
+;
+SLW_Connect (/1/)
+_Connect
+;
+SLW_New (/1/)
+_New site
+;
+SLW_Edit (/1/)
+_Edit
+;
+SLW_Remove (/1/)
+_Remove
+;
+SLW_Cancel (/1/)
+C_ancel
+;
+SLW_OK (/1/)
+_OK
+;
+SLW_Up (/1/)
+Up
+;
+SLW_Down (/1/)
+Down
+;
+SLW_Top (/1/)
+Top
+;
+SLW_Bottom (/1/)
+Bottom
+;
+SLW_Newstring (/1/)
+(New)
+;
+SLW_Sort (/1/)
+_Sort
+;
+; SiteConfiguration Window
+;
+SCW_SiteConfigurationWindow (/1/)
+AmiFTP Site Configuration
+;
+SCW_Name (/1/)
+Na_me
+;
+SCW_Site (/1/)
+_Site
+;
+SCW_Port (/1/)
+_Port
+;
+SCW_RemDir (/1/)
+_Auto-cd to drawer
+;
+SCW_LocDir (/1/)
+_Download path
+;
+SCW_Anonymous (/1/)
+Anonymous lo_gin
+;
+SCW_LoginName (/1/)
+_Login name
+;
+SCW_Password (/1/)
+Pass_word
+;
+SCW_OK (/1/)
+_OK
+;
+SCW_Cancel (/1/)
+Ca_ncel
+;
+SCW_OS (/1/)
+Operating S_ystem
+;
+SCW_Proxy (/1/)
+Pro_xy
+;
+SCW_HotList (/1/)
+_HotList
+;
+; Transfer window
+;
+TW_WinTitle (/1/)
+AmiFTP - %ld file(s) left (%ld %s)
+;
+TW_RemoteFile (/1/)
+Remote file
+;
+TW_LocalFile (/1/)
+Local file
+;
+TW_Size (/1/)
+Size
+;
+TW_Cps (/1/)
+CPS
+;
+TW_DataTransferred (/1/)
+Data transferred
+;
+TW_Abort (/1/)
+Abort transfer
+;
+TW_FileExists (/1/)
+File '%s' already exists.\nOld filesize is: %ld bytes (new %ld bytes).\n
+;
+TW_Overwrite (/1/)
+Overwrite
+;
+TW_Resume (/1/)
+Resume transfer
+;
+TW_CancelTransfer (/1/)
+Cancel transfer
+;
+TW_DownloadDir (/1/)
+You are about to download a directory tree.\nAre you sure you want to do this?
+;
+TW_GetDir (/1/)
+Yes, download it!|Skip this entry
+;
+; Main preferences window
+;
+MPW_WinTitle (/1/)
+AmiFTP Global Preferences
+;
+MPW_Password (/1/)
+_Anonymous password
+;
+MPW_ViewCommand (/1/)
+_View command
+;
+MPW_ProxyHost (/1/)
+Proxy _host
+;
+MPW_ProxyPort (/1/)
+Proxy _port
+;
+MPW_ProxyDefault (/1/)
+Use pro_xy per default
+;
+MPW_DefDownloadDir (/1/)
+Default local drawer
+;
+MPW_IgnoreCase (/1/)
+_Ignore case
+;
+; Main window
+;
+MW_SiteName (/1/)
+_Site
+;
+MW_DirName (/1/)
+Drawer
+;
+MW_DownloadDir (/1/)
+L_ocal drawer
+;
+MW_Parent (/1/)
+_Parent
+;
+MW_Get (/1/)
+_Get
+;
+MW_Put (/1/)
+P_ut
+;
+MW_View (/1/)
+_View
+;
+MW_Connect (/1/)
+_Connect to...
+;
+MW_Disconnect (/1/)
+_Disconnect
+;
+MW_DeleteRequest (/1/)
+Are you sure you want to\ndelete these files?
+;
+MW_DeleteCancel (/1/)
+Delete|Cancel
+;
+MW_Reload (/1/)
+_Reload
+;
+; Connect window
+;
+CW_WinTitle (/1/)
+AmiFTP Connect window
+;
+CW_Abort (/1/)
+Abort
+;
+CW_Site (/1/)
+Site:
+;
+CW_Status (/1/)
+Status:
+;
+CW_Connecting (/1/)
+Connecting...
+;
+CW_ReadingDir (/1/)
+Reading drawer...
+;
+CW_SendingLogin (/1/)
+Sending login...
+;
+CW_SendingPassword (/1/)
+Sending password...
+;
+CW_ChangingDirectory (/1/)
+Changing drawer...
+;
+; Main menus
+;
+MENU_Project (/2/)
+Project
+;
+MENU_AddToSiteList (/1/)
+Add current to sitelist
+;
+MENU_Reconnect (/2/)
+Reconnect
+;
+MENU_Iconify (/2/)
+I\000Iconify
+;
+MENU_About (/2/)
+?\000About...
+;
+MENU_Quit (/2/)
+Q\000Quit
+;
+MENU_Files (/2/)
+Files
+;
+MENU_TagAll (/2/)
+A\000Tag all
+;
+MENU_UntagAll (/2/)
+U\000Untag all
+;
+MENU_TransferMode (/2/)
+Transfer mode
+;
+MENU_Binary (/2/)
+Binary
+;
+MENU_ASCII (/2/)
+ASCII
+;
+MENU_ClearCache (/2/)
+Clear dir-cache
+;
+MENU_Delete (/2/)
+D\000Delete
+;
+MENU_Move (/2/)
+M\000Move
+;
+MENU_Sort (/2/)
+Sort
+;
+MENU_SortbyName (/2/)
+by name
+;
+MENU_SortbyDate (/2/)
+by date
+;
+MENU_Settings (/2/)
+Settings
+;
+MENU_Global (/2/)
+1\000Global...
+;
+MENU_Hostlist (/2/)
+2\000Sitelist...
+;
+MENU_LogWindow (/1/)
+Log window
+;
+MENU_ToggleDotFiles (/1/)
+Show dot-files
+;
+MENU_LoadSettings (/2/)
+Load settings...
+;
+MENU_SaveSettings (/2/)
+Save settings
+;
+MENU_SaveSettingsAs (/2/)
+Save settings as...
+;
+MENU_HotList (/2/)
+Hotlist
+;
+; Other strings
+;
+Str_ErrorReadingDir (/1/)
+Error reading drawer!\n
+;
+Str_CannotDLDirs (/1/)
+Cannot download entire directories!\n
+;
+Str_SelectDLPath (/1/)
+Select download path
+;
+Str_SelectULFiles (/1/)
+Select file(s) to upload
+;
+Str_CDFailedTimedout (/1/)
+Remote CD failed:\nConnection timed out
+;
+Str_CDFailed (/1/)
+Remote CD failed.
+;
+Str_AmiFTPError (/1/)
+AmiFTP error
+;
+Str_OK (/1/)
+OK
+;
+Str_CANCEL (/1/)
+Cancel
+;
+Str_PasswordRequest (/1/)
+AmiFTP Password request
+;
+Str_PasswordEntry (/1/)
+Enter password for user:\n%s
+;
+Str_ServiceNotAvail (/1/)
+Service not available.
+;
+Str_ConnectFailed (/1/)
+Connect failed.
+;
+Str_ConnectLoginFailed (/1/)
+Connect failed, login unknown.
+;
+Str_Putfailed (/1/)
+Put of %s failed
+;
+Str_RemoteWriteFailed (/1/)
+Write failed (remote file system full?).
+;
+Str_GetFailed (/1/)
+Get %s failed.
+;
+Str_LocalfileError (/1/)
+Error opening %s.
+;
+Str_LocalWriteFailed (/1/)
+Write failed: %s
+;
+Str_NoSuchDir (/1/)
+%s: No such file or directory.
+;
+Str_DisconnectedTimeout (/1/)
+Disconnected (timeout).
+;
+Str_Outofmem (/1/)
+Out of memory
+;
+Str_SelectSettingsFile (/1/)
+Select settings file...
+;
+Str_NoRestart (/1/)
+Resume command failed.
+;
+Str_ConnectionTimedOut (/1/)
+Connection timed out
+;
+Str_AmiFTPRequest (/1/)
+AmiFTP Request
+;
+Str_AboutAmiFTP (/1/)
+About AmiFTP...
+;
+Str_UnknownHost (/1/)
+Unknown host
+;
+Str_ErrorBuildingDirList (/1/)
+Error building filelist.
+;
+Str_Translator (//)
+
+; This string will show up in the about window telling the user who made 
+; the translation. I suggest the string should look like this:
+; 'English translation by\nMagnus Lilja\n' (and perhaps your emailaddress
+; too). Ofcourse the above string should be in the same language as
+; the rest of the translation.
+SLW_NewGroup (//)
+New _group
+;
+SLW_AddBar (//)
+Add bar
+;
+MENU_ToggleADTFiles (//)
+Show entire RECENT
+;
+MENU_ResetADT (//)
+Reset Aminet-date
+;
+MW_ViewReadme (//)
+View readme
+;
+MPW_General (//)
+General
+;
+MPW_ADT (//)
+Aminet
+;
+MPW_Proxy (//)
+Proxy
+;
+MPW_BufferSize (//)
+Buffer size
+;
+MPW_DirCacheSize (//)
+Directory cache size
+;
+MPW_DeleteViewed (//)
+Delete viewed files
+;
+MPW_Beep (//)
+Beep after transfer
+;
+MPW_HideDirectories (//)
+Hide drawers
+;
+MPW_PreservePath (//)
+Preserve filepath
+;
+MPW_ShowMOTD (//)
+Show MOTD-file
+;
+MPW_GetReadme (//)
+Download readme
+;
+SCW_AminetMode (//)
+Aminet-mode
+;
+MPW_OK (//)
+_OK
+;
+MPW_Cancel (//)
+C_ancel
+;
+TW_TimeLeft (//)
+Time left
+;
+Str_NoNewAminetFiles (//)
+No new files since last Aminet visit
+;
+Str_WindowTitle (//)
+AmiFTP - %ld files selected (%ld %s) %ld %s free on disk
+; This might look a bit strange, but when the fields are filled the
+; string looks like:
+; AmiFTP - 10 files selected (4 MB) 15 MB free on disk
+MENU_Connect (//)
+C\000Connect...
+;
+MENU_Disconnect (//)
+Disconnect
+;
+MENU_Get (//)
+G\000Get
+;
+MENU_Put (//)
+U\000Put
+;
+MENU_View (//)
+V\000View
+;
+MENU_PatternSelect (//)
+Select by pattern...
+;
+MPW_Display (//)
+Display
+;
+Str_PatternRequest (//)
+AmiFTP request
+;
+Str_SelectPattern (//)
+Enter AmigaDOS pattern:
+;
+MENU_Parent (//)
+P\000Parent
+;
+MPW_PublicScreen (//)
+Public screen
+;
+MPW_SystemFonts (//)
+Use system fonts
+;
+MPW_InterfaceFont (//)
+Interface font
+;
+MPW_FilelistFont (//)
+Filelist font
+;
+MPW_ShowButtons (//)
+Show buttons
+;
+MPW_ShowToolbar (//)
+Show toolbar
+;
+MENU_ViewReadme (//)
+View readme
+;
+MPW_DefaultScreen (//)
+Open on default public screen
+;
+TW_OverwriteAll (//)
+Overwrite all
+;
+MENU_CreateDir (//)
+Create directory
+;
+Str_RemoteDir (//)
+Enter name of directory
+;
+MENU_RawCommand (//)
+Send FTP command
+;
+MENU_Rename (//)
+Rename
+;

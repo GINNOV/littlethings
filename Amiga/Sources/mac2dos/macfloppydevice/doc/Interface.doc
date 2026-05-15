@@ -1,0 +1,53 @@
+
+
+		Mac-2-Dos Interface
+
+		March 23, 1989
+
+Mac-2-Dos includes a hardware interface which attaches to the Amiga
+external floppy drive port or to the daisy-chain port on any
+external Amiga floppy.  The interface permits the Mac drive to
+function as DF1, DF2, or DF3.  The interface does not include a
+daisy-chain connector, which means that this interface must, of
+necessity, be the last device in the chain.  And, of course, the
+Amiga allows no more than three external drives, including the
+Mac-2-Dos interface.
+
+The interface consists of four ICs and seven pull-up resistors. 
+The design uses these five bits of CIAB to control the Mac drive:
+_SELn (1, 2, or 3, depending upon configuration), _MTRX, _SIDE,
+DIR, and _STEP.  The Mac drive uses seven control signals:
+_DriveEnable, CA0, CA1, CA2, SEL, LSTRB, and MotorSpeed.  In order
+to provide these signals, the _SELn lead is multiplexed to provide
+_DriveEnable, LSTRB, and MotorSpeed.
+
+The multiplexing is performed in this way.  FF1 latches ON when
+_SELn is first selected.  FF1 provides _DriveEnable to the Mac
+drive for the duration of the operation.  FF1 is reset only when
+_SELn, CA0, CA1, CA2, and SEL are all set to 1 (Normal default for
+Amiga in the quiescent state).  While FF1 is ON and FF2 is OFF, SELn
+is gated produce the LSTRB signal, the write-gate for the Mac
+control registers.  This permits reading from and writing to the Mac
+registers, as needed for status and head positioning, prior to
+starting an I/O operation.
+
+When FF2 is ON, SELn is gated to MotorSpeed.  By toggling SELn with
+the appropriate duty cycle, the speed of the Mac drive can be
+controlled as necessary to read/write the selected track.  FF2 is
+toggled on or off by setting CA0, CA1, CA2, and SEL while SELn is 0.
+Note FF2 can be turned off without deselecting the drive so that
+LSTRB can again be generated, if necessary.
+
+FF1 and FF2 are both reset by simultaneously setting SELn, CA0, CA1,
+CA2, and SEL.  This deselects the drive and returns the interface to
+the initial condition.
+
+Note that drive status information is passed from the drive on the
+_ReadData signal.  Since the driver program cannot effectively read
+this signal, it is gated to the _Rdy signal to the Amiga, which is
+available on bit 5 of CIAA.  The _ReadData signal is also gated,
+since some Mac drives pull _ReadData low even when not selected,
+causing the Amiga to be unable to read from any floppy drive.  
+
+
+

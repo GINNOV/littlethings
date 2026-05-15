@@ -1,0 +1,158 @@
+# to generate assembler listing with LTO, add to LDFLAGS: -Wa,-adhln=$@.listing,--listing-rhs-width=200
+# for better annotations add -dA -dP
+# to generate assembler source with LTO, add to LDFLAGS: -save-temps=cwd
+OS := $(shell uname)
+
+# https://stackoverflow.com/questions/4036191/sources-from-subdirectories-in-makefile/4038459
+# http://www.microhowto.info/howto/automatically_generate_makefile_dependencies.html
+
+PROGRAM_NAME = AmigaGPT
+DAEMON_NAME = AmigaGPTD
+EXECUTABLE_DIR = out
+EXECUTABLE_OUT = $(EXECUTABLE_DIR)/$(PROGRAM_NAME)_OS3
+DAEMON_OUT = $(EXECUTABLE_DIR)/$(DAEMON_NAME)_OS3
+CC = m68k-amigaos-gcc
+VASM = vasmm68k_mot
+
+LIBDIR = /opt/amiga/m68k-amigaos/lib
+SDKDIR = /opt/amiga/m68k-amigaos/sys-include
+NDKDIR = /opt/amiga/m68k-amigaos/ndk-include
+INCDIR = /opt/amiga/m68k-amigaos/include
+
+ifeq ($(OS),Darwin)
+	SED = sed -i "" 
+else
+	SED = sed -i
+endif
+
+subdirs := $(wildcard */) $(wildcard src/*/) $(wildcard src/*/*/)
+VPATH = $(subdirs)
+SOURCE_DIR = src
+BUILD_DIR = build/os3/obj
+BUNDLE_DIR = bundle
+CATALOG_DIR = catalogs
+CATALOG_DEFINITION = $(CATALOG_DIR)/$(PROGRAM_NAME).pot
+catalog_subdirs := $(wildcard $(CATALOG_DIR)/*/)
+catalog_translations := $(wildcard $(addsuffix *.po,$(catalog_subdirs)))
+cpp_sources := $(wildcard *.cpp) $(wildcard $(addsuffix *.cpp,$(subdirs)))
+cpp_objects := $(addprefix $(BUILD_DIR)/,$(patsubst %.cpp,%.o,$(notdir $(cpp_sources))))
+c_sources := $(wildcard *.c) $(wildcard $(addsuffix *.c,$(subdirs)))
+c_sources := $(filter-out $(SOURCE_DIR)/test/% $(SOURCE_DIR)/$(PROGRAM_NAME)_cat.c,$(c_sources))
+c_objects := $(addprefix $(BUILD_DIR)/,$(patsubst %.c,%.o,$(notdir $(c_sources))))
+daemon_c_sources := $(filter-out $(SOURCE_DIR)/MainWindow.c $(SOURCE_DIR)/AboutAmigaGPTWindow.c $(SOURCE_DIR)/APIKeyRequesterWindow.c $(SOURCE_DIR)/ChatSystemRequesterWindow.c $(SOURCE_DIR)/ProxySettingsRequesterWindow.c $(SOURCE_DIR)/VoiceInstructionsRequesterWindow.c $(SOURCE_DIR)/AmigaGPTTextEditor.c $(SOURCE_DIR)/menu.c,$(c_sources))
+daemon_c_objects := $(addprefix $(BUILD_DIR)/daemon_,$(patsubst %.c,%.o,$(notdir $(daemon_c_sources))))
+catalog_object := $(BUILD_DIR)/$(PROGRAM_NAME)_cat.o
+s_sources := $(wildcard *.s) $(wildcard $(addsuffix *.s,$(subdirs)))
+s_objects := $(addprefix $(BUILD_DIR)/,$(patsubst %.s,%.o,$(notdir $(s_sources))))
+vasm_sources := $(wildcard *.asm) $(wildcard $(addsuffix *.asm, $(subdirs)))
+vasm_objects := $(addprefix $(BUILD_DIR)/, $(patsubst %.asm,%.o,$(notdir $(vasm_sources))))
+objects := $(cpp_objects) $(c_objects) $(s_objects) $(vasm_objects)
+daemon_objects := $(cpp_objects) $(daemon_c_objects) $(s_objects) $(vasm_objects)
+
+AUTOGEN_FILE = $(SOURCE_DIR)/version.h
+AUTOGEN_NEXT = $(shell expr $$(awk '/#define BUILD_NUMBER/' $(AUTOGEN_FILE) | tr -cd "[0-9]") + 1)
+
+GIT_BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
+GIT_COMMIT = $(shell git rev-parse HEAD)
+GIT_TIMESTAMP = $(shell git log -1 --format=%cd --date=format:"%Y-%m-%d~%H:%M:%S")
+BUILD_DATE := $(shell date +%d.%m.%Y)
+
+CCFLAGS = -MP -MMD -m68020 -Wextra -Wno-unused-function -Wno-discarded-qualifiers -Wno-int-conversion -Wno-volatile-register-var -fomit-frame-pointer -fno-tree-loop-distribution -fno-exceptions -noixemul -fbaserel -lamiga -lm -lamisslstubs -lmui -D__AMIGAOS3__ -DGIT_BRANCH=\"$(GIT_BRANCH)\" -DGIT_COMMIT=\"$(GIT_COMMIT)\" -DGIT_TIMESTAMP=\"$(GIT_TIMESTAMP)\" -DBUILD_DATE=\"$(BUILD_DATE)\"
+ifeq ($(DEBUG),1)
+	CCFLAGS += -DDEBUG -g -Og
+else
+	CCFLAGS += -Ofast
+endif
+CPPFLAGS= $(CCFLAGS) -fno-rtti -fcoroutines -fno-use-cxa-atexit
+ASFLAGS = -Wa,-g,--register-prefix-optional,-I$(SDKDIR),-I$(NDKDIR),-I$(INCDIR),-D
+LDFLAGS =  -Wl,-Map=$(EXECUTABLE_OUT).map,-L$(LIBDIR),-lamiga,-lm,-lamisslstubs,-ljson-c,-lmui
+VASMFLAGS = -m68020 -Fhunk -opt-fconst -nowarn=62 -dwarf=3 -quiet -x -I. -D__AMIGAOS3__ -I$(INCDIR) -I$(SDKDIR) -I$(NDKDIR)
+
+.PHONY: all clean copy_bundle_files catalog catalog_definition daemon
+
+all: $(EXECUTABLE_OUT) copy_bundle_files
+
+daemon: $(DAEMON_OUT)
+
+clean:
+	$(info Cleaning...)
+	$(RM) -dr $(BUNDLE_DIR)/$(PROGRAM_NAME)/catalogs
+	$(RM) -dr $(BUILD_DIR)
+
+catalog_definition:
+	$(info Generating catalog definition)
+	@touch $(CATALOG_DEFINITION)
+	@xgettext -a -c -L C -j -o $(CATALOG_DEFINITION) $(SOURCE_DIR)/*.c
+
+catalog:
+	$(info Removing old catalog sources)
+	@$(RM) $(SOURCE_DIR)/$(PROGRAM_NAME)_cat.c $(SOURCE_DIR)/$(PROGRAM_NAME)_cat.h
+
+	$(info Generating catalog header)
+	@flexcat $(CATALOG_DEFINITION) $(SOURCE_DIR)/$(PROGRAM_NAME)_cat.h=C_h.sd || true
+
+	$(info Generating catalog source)
+	@flexcat $(CATALOG_DEFINITION) $(SOURCE_DIR)/$(PROGRAM_NAME)_cat.c=C_c.sd || true
+
+	$(info Updating catalog translations)
+	@for catalog_translation in $(catalog_translations); do \
+		msgmerge -U $$catalog_translation $(CATALOG_DEFINITION)|| true; \
+	done
+
+	$(info Compiling catalogs $(catalog_translations))
+	@for catalog_translation in $(catalog_translations); do \
+		flexcat POFILE $$catalog_translation CATALOG $$(dirname $$catalog_translation)/$(PROGRAM_NAME).catalog || true; \
+	done
+
+$(SOURCE_DIR)/$(PROGRAM_NAME)_cat.c $(SOURCE_DIR)/$(PROGRAM_NAME)_cat.h: catalog
+	@true
+
+$(BUILD_DIR):
+	@$(info Creating directory $@)
+	mkdir -p $@
+
+$(EXECUTABLE_DIR):
+	@$(info Creating directory $@)
+	mkdir -p $@
+	
+$(EXECUTABLE_OUT): $(EXECUTABLE_DIR) $(BUILD_DIR) $(objects) catalog $(catalog_object)
+	$(info Linking $(PROGRAM_NAME))
+	@$(RM) $@
+	$(CC) $(CCFLAGS) $(LDFLAGS) $(objects) $(catalog_object) -o $@ $(LDFLAGS)
+
+$(DAEMON_OUT): $(EXECUTABLE_DIR) $(BUILD_DIR) $(daemon_objects) catalog $(catalog_object)
+	$(info Linking $(DAEMON_NAME))
+	@$(RM) $@
+	$(CC) $(CCFLAGS) -DDAEMON $(daemon_objects) $(catalog_object) -o $@ $(LDFLAGS)
+
+-include $(objects:.o=.d)	
+
+$(cpp_objects): $(BUILD_DIR)/%.o : %.cpp | $(BUILD_DIR)/%.dir
+	$(info Compiling $<)
+	$(CC) $(CPPFLAGS) -c -o $@ $(CURDIR)/$<
+
+$(c_objects): $(BUILD_DIR)/%.o : %.c $(SOURCE_DIR)/$(PROGRAM_NAME)_cat.h | catalog
+	$(info Compiling $<)
+	@$(SED) 's|#define BUILD_NUMBER ".*"|#define BUILD_NUMBER "$(AUTOGEN_NEXT)"|' $(AUTOGEN_FILE)
+	$(CC) $(CCFLAGS) -c -o $@ $(CURDIR)/$<
+
+$(daemon_c_objects): $(BUILD_DIR)/daemon_%.o : $(SOURCE_DIR)/%.c $(SOURCE_DIR)/$(PROGRAM_NAME)_cat.h | catalog
+	$(info Compiling daemon $<)
+	@$(SED) 's|#define BUILD_NUMBER ".*"|#define BUILD_NUMBER "$(AUTOGEN_NEXT)"|' $(AUTOGEN_FILE)
+	$(CC) $(CCFLAGS) -DDAEMON -c -o $@ $<
+
+$(s_objects): $(BUILD_DIR)/%.o : %.s
+	$(info Assembling $<)
+	$(CC) $(CCFLAGS) $(ASFLAGS) -c -o $@ $(CURDIR)/$<
+
+$(vasm_objects): $(BUILD_DIR)/%.o : %.asm
+	$(info Assembling $<)
+	$(VASM) $(VASMFLAGS) -o $@ $(CURDIR)/$<
+
+$(catalog_object): $(SOURCE_DIR)/$(PROGRAM_NAME)_cat.c | catalog
+	$(info Compiling catalog $<)
+	$(CC) $(CCFLAGS) -c -o $@ $(CURDIR)/$<
+
+copy_bundle_files:
+	$(info Copying bundle files...)
+	@cp -R $(BUNDLE_DIR)/$(PROGRAM_NAME)/$(PROGRAM_NAME)/* $(EXECUTABLE_DIR)/

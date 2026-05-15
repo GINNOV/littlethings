@@ -1,0 +1,9 @@
+_arch/*
+_res/*
+*.lnk
+build/*
+*.log
+debug/*
+.vscode/*
+precalc/*
+*.code-workspace

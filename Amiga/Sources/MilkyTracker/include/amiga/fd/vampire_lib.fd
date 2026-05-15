@@ -1,0 +1,7 @@
+##base _VampireBase
+##bias 6
+##public
+V_AllocExpansionPort(unitNum,name)(D0,A1)
+V_FreeExpansionPort(unitNum)(D0)
+V_EnableAMMX(version)(D0)
+##end

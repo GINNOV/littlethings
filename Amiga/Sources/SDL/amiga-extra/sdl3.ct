@@ -1,0 +1,180 @@
+## version $VER: XX.catalog XX.XX (XX.XX.20XX)
+## codeset X
+## language X
+;
+MSG_APP_MAIN_MENU
+
+; Main
+;
+MSG_APP_MAIN_ICONIFY
+
+; I|Iconify
+;
+MSG_APP_MAIN_ABOUT
+
+; ?|About...
+;
+MSG_APP_MAIN_LAUNCH_PREFERENCES
+
+; P|Launch preferences...
+;
+MSG_APP_MAIN_QUIT
+
+; Q|Quit
+;
+MSG_APP_ABOUT_WINDOW
+
+; About SDL3 library
+;
+MSG_APP_OK
+
+; _Ok
+;
+MSG_APP_APPLICATION
+
+; SDL3 application
+;
+MSG_APP_LIBRARY_VERSION
+
+; SDL library version
+;
+MSG_PREFS_APPLICATION
+
+; SDL3 preferences
+;
+MSG_PREFS_OK
+
+; _OK
+;
+MSG_PREFS_RENDERER_OPTIONS_GROUP
+
+; 2D renderer options
+;
+MSG_PREFS_DRIVER_GAD
+
+; _Driver
+;
+MSG_PREFS_DRIVER_DEFAULT
+
+; default
+;
+MSG_PREFS_DRIVER_COMPOSITING
+
+; compositing
+;
+MSG_PREFS_DRIVER_OPENGLES2
+
+; opengles2
+;
+MSG_PREFS_DRIVER_SOFTWARE
+
+; software
+;
+MSG_PREFS_VERTICAL_SYNC_GAD
+
+; _Vertical sync
+;
+MSG_PREFS_VERTICAL_SYNC_DEFAULT
+
+; default
+;
+MSG_PREFS_VERTICAL_SYNC_ENABLED
+
+; enabled
+;
+MSG_PREFS_VERTICAL_SYNC_DISABLED
+
+; disabled
+;
+MSG_PREFS_VIDEO_OPTIONS_GROUP
+
+; Video options
+;
+MSG_PREFS_SCREEN_SAVER_GAD
+
+; _Allow screen saver
+;
+MSG_PREFS_SCREEN_SAVER_DEFAULT
+
+; default
+;
+MSG_PREFS_SCREEN_SAVER_ENABLED
+
+; enabled
+;
+MSG_PREFS_SCREEN_SAVER_DISABLED
+
+; disabled
+;
+MSG_PREFS_SETTINGS_GROUP
+
+; Settings
+;
+MSG_PREFS_SAVE_GAD
+
+; _Save
+;
+MSG_PREFS_RESET_GAD
+
+; _Reset
+;
+MSG_PREFS_CANCEL_GAD
+
+; _Cancel
+;
+MSG_PREFS_MAIN_MENU
+
+; Main
+;
+MSG_PREFS_MAIN_ICONIFY
+
+; I|Iconify
+;
+MSG_PREFS_MAIN_ABOUT
+
+; ?|About...
+;
+MSG_PREFS_MAIN_QUIT
+
+; Q|Quit
+;
+MSG_PREFS_ABOUT_WINDOW
+
+; About SDL3 preferences
+;
+MSG_PREFS_ABOUT_AUTHOR
+
+; Written by Juha Niemimaki
+;
+MSG_PREFS_ABOUT_TRANSLATOR
+
+; (using built-in strings)
+;
+MSG_PREFS_DRIVER_HELP
+
+; Select driver implementation:\n\
+;  \033bcompositing \033ndoesn't support some blend modes\n\
+;  \033bopengles2 \033nsupports most features\n\
+;  \033bsoftware \033nsupports most features but is not accelerated
+;
+MSG_PREFS_VERTICAL_SYNC_HELP
+
+; Synchronize display update to monitor refresh rate
+;
+
+MSG_PREFS_SCREEN_SAVER_HELP
+
+; Allow screen saver (disabled by default)
+;
+MSG_PREFS_SAVE_HELP
+
+; Store settings to ENVARC: and exit
+;
+MSG_PREFS_RESET_HELP
+
+; Reset GUI to default values
+;
+MSG_PREFS_CANCEL_HELP
+
+; Exit program
+;

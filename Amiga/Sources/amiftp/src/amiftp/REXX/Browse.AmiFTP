@@ -1,0 +1,593 @@
+/* Browse.DaFTP
+ * Browse AmiNet using DaFTP and AmigaGuide
+ * $VER: Browse.AmiFTP 0.21 (7.12.95)
+ * By Osma Ahvenlampi and Dan Murrell, Jr.
+ * Modified by Magnus Lilja for use with AmiFTP
+ */
+
+/***** VARIABLES *****/
+
+dir = 'T:BrowseAminet'				/* temporary directory */
+daftp = 'Inet:c/DaFTP NOANIMABORT'	/* command to start DaFTP with */
+amiftp = 'Work:AmiFTP/amiftp ICONIFIED' /* command to start AmiFTP with */
+amiftprx = 'work:AmiFTP/rexx/Browse.AmiFTP' /* Change this to the complete path
+                                                  to the Browse.AmiFTP-script */
+
+gzip = 'c:gzip'						/* command for gzip */
+usingamiftp = 1                /* Set to non-zero if you're using AmiFTP */
+
+/* Aminet ratings system */
+ratedir = 'RAM:'					/* directory to put the ratings guide in */
+ratemail = 'SMTPPost -t aminet-server@wuarchive.wustl.edu'	/* command for sending mail */
+
+/***** END OF VARIABLES *****/
+
+/* Initialisation */
+parse arg action ' ' opt1 ' ' opt2
+action = upper( action )
+
+portname = getclip('browse_port')
+if portname = "" then call InitBrowse
+
+dir = getclip('browse_dir')
+ratedir = getclip('browse_ratedir')
+
+address value portname
+options results
+
+select
+	when action = "ADDFILE" then call AddFile
+	when action = "CONNECT" then call ConnectAminet
+	when action = "LIST" then call ParseRecent dir'ADT_RECENT' 1
+	when action = "UPLOAD" then call UploadFile
+	when action = "FIND" then call FindFile
+	when action = "GETFILE" then call GetFile
+	when action = "GETMARKED" then call GetMarked
+	when action = "SHOWFILE" then call ShowFile
+	otherwise call ShowFrontPage
+end
+
+call EndRate
+call Cleanup
+exit 0
+
+/******* main modes ********/
+
+AddFile: procedure expose opt1
+	call InitDaFTP
+	usingamiftp=getclip('browse_usingamiftp')
+	if usingamiftp=0 then do
+		'SETATTR BATCH 1'
+		'REVEAL GETLIST 1'
+	end
+
+	'GET BIN /pub/aminet/'opt1
+	call RateAdd
+	exit 0
+	
+GetFile: procedure expose opt1
+	ldir = getclip('browse_ldir')
+	call ConnectDaFTP
+	usingamiftp=getclip('browse_usingamiftp')
+	if usingamiftp=0 then
+		'SETATTR BATCH 0 PROCESS 1'
+	'SETATTR LOCALDIR 'ldir
+	'GET BIN /pub/aminet/'opt1
+	if usingamiftp=0 then
+		'SETATTR PROCESS 0'
+	call RateAdd
+	exit 0
+	
+GetMarked: procedure
+	call ConnectDaFTP
+	usingamiftp=getclip('browse_usingamiftp')
+
+	if usingamiftp=0 then do
+		'SETATTR BATCH 1 PROCESS 0'
+		'MGET'
+	end
+	exit 0
+
+ShowFile: procedure expose opt1 opt2
+	call ConnectDaFTP
+	usingamiftp=getclip('browse_usingamiftp')
+	if usingamiftp=0 then
+		'SETATTR BATCH 0 PROCESS 0'
+	'GET BIN' opt1 'LOCAL' opt2
+	call shownode(getclip('browse_screen'),opt2,'Main',0,0)
+	exit 0
+	
+RateAdd: procedure expose opt1 
+	ratedir = getclip('browse_ratedir')
+	dir = getclip('browse_dir')
+	if ~exists(ratedir'Aminet-ratings.guide') then
+		if open(fnewfile,ratedir'Aminet-ratings.guide','w') then do
+			call writeln( fnewfile, '@database Aminet_Ratings' )
+			call writeln( fnewfile, '@node Main "Aminet download ratings"' )
+			call writeln( fnewfile, 'Choose a rating for each of the files, and then press @{"send" system "'getclip('browse_ratemail')' <'dir'ratings"} to send it')
+			call writeln( fnewfile, '' )
+			call close(fnewfile)
+		end
+	if open(fnewfile,ratedir'Aminet-ratings.guide','a') then do
+		call writech( fnewfile, left(opt1,30,' ') )
+		do i = 1 to 10
+			call writech( fnewfile, ' @{" 'i' " system "echo >>'dir'ratings RATE' opt1 i'"}')
+		end
+		call writeln(fnewfile,'')
+		call close(fnewfile)
+	end
+	return 
+
+ShowFrontPage: procedure expose dir
+	usingamiftp=getclip('browse_usingamiftp')
+	amiftprx=getclip('browse_amiftprx')
+	hotlist = dir'' || pragma('ID') || '.guide'
+	if open(fhotlist, hotlist, 'W') then do
+		call writeln(fhotlist, '@database AmiNetBrowser')
+		call writeln(fhotlist, '@node "Main" "AmiNet Browser for DaFTP"')
+		call writeln(fhotlist, '@{b}AmiNet Browser for DaFTP@{ub}')
+		call writeln(fhotlist, 'by Osma Ahvenlampi and Dan Murrell Jr.')
+		call writeln(fhotlist, '')
+		call writeln(fhotlist, '@{" About BrowseAminet " alink "BrowseAminet.guide/Main"}')
+		call writeln(fhotlist, '')
+		call writeln(fhotlist, '@{b}AmiNet Sites@{ub}')
+
+		if open( fsitelist, "ENVARC:BrowseAminet", 'R' ) then do
+			call readln( fsitelist )
+			call readln( fsitelist )
+			line = readln( fsitelist )
+			do while ~eof( fsitelist )
+				colon = lastpos(":", line) + 1
+				if usingamiftp~=0 then
+					call writeln(fhotlist, '@{"' line '" rx "'amiftprx' CONNECT' substr(line, colon)'"}')
+				else
+					call writeln(fhotlist, '@{"' line '" rx "Browse.DaFTP CONNECT' substr(line, colon)'"}')
+				line = readln( fsitelist )
+			end
+			call close( fsitelist )
+		end
+		else
+			exit 10
+
+		call writeln(fhotlist, '@endnode')
+		call close(fhotlist)
+		call shownode( getclip('browse_screen'), hotlist, 'Main', 0, 0 )
+		return
+	end
+	exit 10
+
+ConnectAminet: procedure expose opt1 dir gzip
+	usingamiftp=getclip('browse_usingamiftp')
+	sitename = getclip('browse_sitename')
+	if opt1 ~= "" & opt1 ~= "OPT1" then sitename = opt1
+	call setclip('browse_sitename',sitename)
+	call ConnectDaFTP
+	
+	if usingamiftp=0 then
+		'SETATTR BATCH 0'
+
+	if exists(gzip) then do
+		'GET BIN /pub/aminet/info/adt/ADT_RECENT_7.gz LOCAL' dir'ADT_RECENT.gz'
+
+		stack = pragma('S', 20000)
+		address command gzip '>NIL: -df' dir'ADT_RECENT.gz'
+		call pragma('S',stack)
+		if RC ~= 0 then do
+			'DISCONNECT'
+			call rtezrequest("Failed to uncompress RECENT file",,"BrowseAminet Error")
+			exit 10
+		end
+	end
+	else
+		'GET BIN /pub/aminet/info/adt/ADT_RECENT_7 LOCAL' dir'ADT_RECENT'
+
+	lastdate = getclip('browse_lastdate')
+	call ParseRecent dir'ADT_RECENT' 0
+	if result ~= "OK" then do
+		call rtezrequest(result,,"BrowseAminet Error")
+		'DISCONNECT'
+		exit 10
+	end
+
+	'DISCONNECT'
+
+	call WriteSiteList
+	
+	if portname = "BrowseAminet" then
+		'QUIT'
+
+	return
+	
+UploadFile: procedure expose dir
+	filename = rtfilerequest("","","Choose file to be uploaded")
+	call rtfreefilebuffer()
+	if filename = "" then
+		return
+	dot = lastpos(".", filename)
+	if (dot > 0) then
+		readme = left(filename, dot) || 'readme'
+	else
+		readme = filename'.readme'
+	if ~exists( filename ) | ~exists( readme ) then do
+		call rtezrequest("Need both file and .readme",,"BrowseAminet Error")
+		exit 10
+	end
+
+	call ConnectDaFTP
+
+	'CD /pub/aminet/new'
+	if RC ~= 0 then do
+		call rtezrequest("This site doesn't accept uploads",,"BrowseAminet Error")
+		exit 10
+	end
+
+	'MPUT' filename readme
+
+	return
+	
+FindFile: procedure expose dir
+	if ~showlist('H','TCP') then do
+		call rtezrequest("This function needs TCP: mounted!",,"BrowseAminet Error")
+		exit 10
+	end
+	
+	findsite = getclip('browse_findsite')
+	findstr = rtgetstring(,"Please enter search keyword","Find which file?")
+	if findstr="" then
+		return
+	if open( ffindfile, dir'FINDFILE', 'W' ) then do
+		if open( ffind, 'TCP:' || findsite || '/1848', 'W' ) then do
+			call writeln( ffind, 'max' maxfind '; ADTfind' findstr '; quit' || d2c(13) )
+			do until line = ""
+				line = readln( ffind )
+				call writeln( ffindfile, line )
+			end
+			call close( ffind )
+		end
+		else do
+			call rtezrequest("Failed to connect to find server",,"BrowseAminet Error")
+			exit 10
+		end
+
+		call close( ffindfile )
+		
+		call ConnectDaFTP
+	
+		lastdate = 0
+		call ParseRecent dir'FINDFILE' 1
+		if result ~= "OK" then do
+			call rtezrequest(result,,"BrowseAminet Error")
+			exit 10
+		end
+		return
+	end
+
+	call rtezrequest("Failure during find attempt",,"BrowseAminet Error")
+	exit 10
+
+EndRate: procedure expose ratedir 
+	if open(fnewfile,ratedir'Aminet-ratings.guide','a') then do
+		call writeln(fnewfile,'@endnode')
+		call close(fnewfile)
+		call shownode(getclip('browse_screen'),ratedir'Aminet-ratings.guide','Main',0,0)
+	end
+	return
+
+/******* utility procedures ********/
+
+/*  read ADT_RECENT and parse it to a .guide
+ */
+ParseRecent: procedure expose lastdate dir
+	parse arg recentfile ' ' list
+	usingamiftp=getclip('browse_usingamiftp')
+	amiftprx=getclip('browse_amiftprx')
+	newfile = dir'' || pragma('ID') || '.guide'
+
+	if ~open( frecent, recentfile, 'R' ) then
+		return "Can't open" recentfile
+	if ~open( fnewfile, newfile, 'W' ) then do
+		call close( frecent )
+		return "Can't create" newfile
+	end
+
+	line = readln( frecent )
+	if line ~= "#adt-v2" then do
+		call close( frecent )
+		call close( fnewfiles )
+		return "Wrong ADT_RECENT version"
+	end
+
+	call writeln( fnewfile, '@database Browse_RECENT' )
+	call writeln( fnewfile, '@node Main "Aminet - using site' getclip('browse_sitename')'"' )
+	if usingamiftp~=0 then do
+	  call writeln( fnewfile, '@{"  Show last week  " rx "'amiftprx' LIST"}   @{" Search for a file " rx "'amiftprx' FIND"}   @{" Top downloads chart " rx "'amiftprx' SHOWFILE /pub/aminet/CHARTS' dir'CHARTS"}')
+	  call writeln( fnewfile, '@{"  Upload file    " rx "'amiftprx' UPLOAD"}   @{"  BrowseAminet Help  " alink "BrowseAminet.guide/Usage"}')
+	end
+	else do
+	  call writeln( fnewfile, '@{"  Show last week  " rx "Browse.DaFTP LIST"}   @{" Search for a file " rx "Browse.DaFTP FIND"}   @{" Top downloads chart " rx "Browse.DaFTP SHOWFILE /pub/aminet/CHARTS' dir'CHARTS"}')
+	  call writeln( fnewfile, '@{" Get marked files " rx "Browse.DaFTP GETMARKED"}   @{"    Upload file    " rx "Browse.DaFTP UPLOAD"}   @{"  BrowseAminet Help  " alink "BrowseAminet.guide/Usage"}')
+	end
+	call writeln( fnewfile, '' )
+
+	do while abbrev( line, "#", 1 )
+		line = readln( frecent )
+		if ~list then do
+			if abbrev(line,"#amotd",6) then do
+				if lastdate < substr(line,8) then do
+					'GET BIN /pub/aminet/info/adt/aminet-motd LOCAL' dir'motd'
+					call shownode(getclip('browse_screen'),dir'motd','Main',0,0)
+				end
+			end
+			else if abbrev(line,"#sites",6) then do
+				if lastdate < substr(line,8) then
+					call ParseSiteList
+			end
+		end
+	end
+
+	if list then lastdate = 0
+
+	newdate = lastdate
+	newfiles = 0
+
+	do while line ~= "" & ~abbrev( line, '#' )
+		parse var line file.date '@' file.dir '@' file.name '@' file.size '@' a '@' b '@' file.longdesc '@' file.desc
+		if file.date > lastdate | list then do
+			if newdate <= file.date then
+				newdate = file.date
+			dot = lastpos(".", file.name)
+			if (dot > 0) then
+				file.readme = left(file.name, dot) || 'readme'
+			else
+				file.readme = file.name'.readme'
+			file.desc = translate(file.desc,'''','"')
+
+/*name*/	lin = '@{"' left(file.name, 16, ' ') '" rx "'amiftprx' GETFILE 'file.dir'/'file.name'"}'
+/*dir*/		lin = lin left(file.dir, 9, ' ')
+/*size*/	lin = lin '@{"'right(trunc(file.size/1024, 0), 4, ' ') || 'K" rxs "call 'amiftprx' ADDFILE '''file.dir'/'file.name'''"}'
+			if file.longdesc = 'L' then
+/*desc*/		lin = lin '@{"' file.desc '" rx "'amiftprx' SHOWFILE /pub/aminet/'file.dir'/'file.readme dir''file.readme'"}'
+			else
+				lin = lin ' 'file.desc
+
+			call writeln( fnewfile, lin )
+
+			newfiles = 1
+		end
+
+		line = readln( frecent )
+	end
+
+	if ~newfiles then 
+		if ~list then 
+			call writeln( fnewfile, '  No new files on' getclip('browse_sitename')'.' )
+		else
+			call writeln( fnewfile, '  No files ('getclip('browse_sitename')').' )
+
+	call writeln( fnewfile, '@endnode' )
+
+	call close( frecent )
+	call close( fnewfile )
+
+	lastdate = newdate
+	if ~list then call setclip('browse_lastdate',lastdate)
+
+	call shownode(getclip('browse_screen'),newfile,'Main',0,0) 
+
+	return "OK"
+
+/* Make sure DaFTP is running and connected to the correct site
+ */
+InitDaFTP: procedure
+	usingamiftp=getclip('browse_usingamiftp')
+	portname = getclip('browse_port')
+	say 'amiftp='usingamiftp
+	if ~show( 'P', portname ) then do
+		if usingamiftp=0 then do
+			daftp = getclip('browse_daftp')
+			address command 'Run >NIL:' daftp 'PUBSCREEN' getclip('browse_screen') 'PORTNAME' portname
+		end
+		else do
+			amiftp = getclip('browse_amiftp')
+			say 'DING' amiftp
+			address command 'Run >NIL:' amiftp 'PUBSCREEN' getclip('browse_screen') 'PORTNAME' portname
+		end
+		address command 'WaitForPort' portname
+		if RC ~= 0 then do
+			call rtezrequest("Could not start DaFTP",,"BrowseAminet Error")
+			exit 20
+		end
+		'DEACTIVATE'
+		if usingamiftp=0 then do
+			'SETATTR PROCESS 0 BEEP 0'
+			'REVEAL LOG 0 PUTLIST 0 HOTLIST 0'
+		end
+	end
+	return 
+
+ConnectDaFTP: procedure 
+	call InitDaFTP
+	sitename = getclip('browse_sitename')
+	usingamiftp = getclip('browse_usingamiftp')
+	'GETATTR STEM STAT'
+	if stat.connected & stat.host ~= sitename then
+		'DISCONNECT'
+	if stat.host ~= sitename then
+		'SETATTR HOST' sitename 'PORT 21 ANONYMOUS'
+	'SETATTR REMOTEDIR /pub/aminet'
+	if ~stat.connected then do
+		'CONNECT NOSCAN'
+		if RC ~= 0 then do
+			call rtezrequest("Connection to" sitename "failed",,"BrowseAminet Error")
+			exit 20
+		end
+	end
+	if usingamiftp=0 then
+		'SETATTR REMOTEDIR /pub/aminet'
+	return
+
+/* Cleanup after myself
+ */
+Cleanup: procedure
+	dir = getclip('browse_dir')
+	if dir ~= "" then address command 'Delete >NIL:' dir 'ALL FORCE QUIET'
+	call setclip('browse_port')
+	call setclip('browse_screen')
+	call setclip('browse_maxfind')
+	call setclip('browse_findsite')
+	call setclip('browse_lastdate')
+	call setclip('browse_daftp')
+	call setclip('browse_amiftp')
+	call setclip('browse_amiftprx')
+	call setclip('browse_usingamiftp')
+	call setclip('browse_dir')
+	call setclip('browse_ratedir')
+	call setclip('browse_ratemail')
+	call setclip('browse_sitename')
+	return
+
+/* Read ADT sites file and make a prefs file
+ */
+ParseSiteList: procedure expose lastdate dir 
+	'GET BIN /pub/aminet/info/adt/sites LOCAL' dir'sites'
+	if open( fsites, dir'sites', 'R' ) then do
+		if open( fsitelist, "ENVARC:BrowseAminet", 'W' ) then do
+			call writeln( fsitelist, lastdate )
+			call writeln( fsitelist, getclip('browse_findsite') getclip('browse_maxfind') getclip('browse_sitename') )
+			if readln( fsites ) ~= '#adtrc-v2' then
+				return
+			do until abbrev( pline, 'ftpsites', 7 )
+				pline = readln( fsites )
+			end
+			sites = 1
+			do forever
+				line = readln( fsites )
+				parse var line area ',' address ',' rest
+				call writeln( fsitelist, area':'address )
+				if right( rest, 1 ) ~= '\' then leave
+			end
+			call close( fsitelist )
+		end
+		call close( fsites )
+	end
+	return
+
+/* Update prefs file to current lastdate/findsite/gzip/maxfind/sitename
+ */
+WriteSiteList: procedure expose lastdate 
+	tempname = "ENVARC:BrowseAminet-" || pragma('ID')
+	if open( fprefs, tempname, 'W' ) then do
+		if open( fsitelist, "ENVARC:BrowseAminet", 'R' ) then do
+			call readln( fsitelist )
+			call writeln( fprefs, lastdate )
+			call readln( fsitelist )
+			call writeln( fprefs, getclip('browse_findsite') getclip('browse_maxfind') getclip('browse_sitename') )
+			do until line = ""
+				line = readln( fsitelist )
+				if line ~= "" then
+					call writeln( fprefs, line )
+			end
+			call close( fsitelist )
+		end
+		call close( fprefs )
+		call delete( "ENVARC:BrowseAminet" )
+		call rename( tempname, "ENVARC:BrowseAminet" )
+	end
+	return
+
+/* Create a simple prefs file for the first run
+ */
+CreatePrefsFile: procedure 
+	if ~exists( "ENVARC:BrowseAminet" ) then
+		if open( fsitelist, "ENVARC:BrowseAminet", 'W' ) then do
+			call writeln( fsitelist, '0' )
+			call writeln( fsitelist, '' )
+			call writeln( fsitelist, 'US:ftp.wustl.edu' )
+			call writeln( fsitelist, 'US:ftp.netnet.net' )
+			call writeln( fsitelist, 'SWEDEN:ftp.luth.se' )
+			call writeln( fsitelist, 'GERMANY:ftp.uni-paderborn.de' )
+			call writeln( fsitelist, 'UK:ftp.doc.ic.ac.uk' )
+			call close( fsitelist )
+		end
+	return
+
+/* Choose the nearest ADT find server
+ */
+ChooseFindSite: procedure 
+	location = rtezrequest("Please choose the country located nearest to you.","USA|Switzerland|Germany","BrowseAminet find client configuration")
+	if location = 1 then
+		findsite = "ftp.wustl.edu"
+	else if location = 2 then
+		findsite = "amiga.icu.net.ch"
+	else if location = 0 then
+		findsite = "haegar2.uni-paderborn.de"
+	call setclip('browse_findsite',findsite)
+	call WriteSiteList
+	return
+
+/* Add all required libraries and check browse.daftp is in a place it can be found
+ */
+InitBrowse:
+	if ~show(l, 'rexxsupport.library') then
+		if ~addlib('rexxsupport.library', 0, -30, 0) then
+			exit 50
+	if ~show(l, 'rexxreqtools.library') then
+		if ~addlib('rexxreqtools.library', 0, -30, 0) then
+		exit 50
+	if ~show(l, 'amigaguide.library') then
+		if ~addlib('amigaguide.library', 0, -30, 0) then
+			exit 50
+	if ~exists("dh1:tcp/amiftp/rexx/Browse.AmiFTP") then do
+		call rtezrequest("Please copy Browse.DaFTP to REXX: before using!",,"BrowseAminet Error")
+			exit 10
+	end
+	portname = address()
+	if portname = "REXX" then do
+		portname = "BrowseAminet"
+		pubscreen = "Workbench"
+	end
+	else 
+	if show( 'P', portname ) then do
+		address value portname
+		'GETATTR STEM STAT'
+		pubscreen = stat.screen
+	end
+	if open( fdate, "ENVARC:BrowseAminet", 'R' ) then do
+		lastdate = readln( fdate )
+		temp = readln( fdate )
+		parse var temp findsite' 'maxfind' 'sitename
+		call close( fdate )
+	end
+	else do
+		call CreatePrefsFile
+	end
+	if findsite = "" | findsite = "FINDSITE" then findsite = ChooseFindSite()
+	if maxfind = "" | maxfind = "MAXFIND" then maxfind = 30
+	if sitename = "" | sitename = "SITENAME" then sitename = "aminet.com"
+	if lastdate = "" | lastdate = "LASTDATE" then lastdate = 0
+	
+	e = right(dir,1)
+	if e ~= ':' & e ~= '/' then dir = dir'/'
+	e = right(ratedir,1)
+	if e ~= ':' & e ~= '/' then ratedir = ratedir'/'
+
+	call setclip('browse_port',portname)
+	call setclip('browse_screen',pubscreen)
+	call setclip('browse_maxfind',maxfind)
+	call setclip('browse_findsite',findsite)
+	call setclip('browse_lastdate',lastdate)
+	call setclip('browse_daftp',daftp)
+	call setclip('browse_amiftp',amiftp)
+	call setclip('browse_amiftprx',amiftprx)
+	call setclip('browse_usingamiftp',usingamiftp)
+	call setclip('browse_dir',dir)
+	call setclip('browse_ratedir',ratedir)
+	call setclip('browse_ratemail',ratemail)
+	call setclip('browse_sitename',sitename)
+	
+	if right(dir,1) = '/' then do
+		e = left(dir,length(dir)-1)
+		if ~exists(e) then makedir(e)
+	end
+	
+	return

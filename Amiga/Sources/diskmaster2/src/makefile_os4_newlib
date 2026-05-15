@@ -1,0 +1,95 @@
+# OS4 GCC PPC makefile for DiskMaster2 using newlib.libary V1.3 R.Riedel 2006-12-30
+
+# /GCC/bin for GeekGadgets
+#BIN = GG:bin
+
+# the compiler
+#CC = $(BIN)/ppc-amigaos-gcc
+CC = gcc
+
+# options
+#CFLAGS = -g -ggdb -D__USE_INLINE__ -msdata -mcrt=newlib -Os -Wextra -Wall -Wno-pointer-sign -Wstrict-prototypes -Wshadow -Werror-implicit-function-declaration
+CFLAGS = -g -ggdb -D__USE_INLINE__ -mcrt=newlib -Os -Wextra -Wall -Wno-pointer-sign -Wstrict-prototypes -Wshadow -Werror-implicit-function-declaration
+
+# compile command
+COMPILE = $(CC) $(CFLAGS) -c
+
+# linker command
+LD = $(CC)
+
+# linker flags
+LDFLAGS = -mcrt=newlib -g -ggdb -Wl,--cref,-M,-Map=dm2_ppc.map -Wl,-Ttext=0x00
+
+# linker libs
+LIBS = # additional libs, for example -ldebug if you use KPrintF()
+
+# name of binary
+PROGRAM = DiskMaster2.OS4_new
+
+# path to the object-files
+OBP = obj_os4_new
+
+# object files
+OBJS = $(OBP)/DMLocale.o $(OBP)/DMPalette.o $(OBP)/DMConfig.o $(OBP)/DMKey.o $(OBP)/DMPreferences.o $(OBP)/DMRequester.o $(OBP)/DMSort.o $(OBP)/DMDisk.o $(OBP)/DMCommands.o $(OBP)/DMParser.o $(OBP)/DMSupport.o $(OBP)/DMWinContent.o $(OBP)/DMWindows.o $(OBP)/DMScreen.o $(OBP)/DMRexx.o $(OBP)/DMMenus.o $(OBP)/DMPack.o $(OBP)/DM.o $(OBP)/DMRead.o
+
+$(PROGRAM) : $(OBJS)
+	$(LD) $(LDFLAGS) $(OBJS) $(LIBS) -o $@.debug
+	@stripreloc $@.debug $@.debug
+	ppc-amigaos-strip -R.comment -o $@ $@.debug
+
+$(OBP)/DMLocale.o : DMLocale.c DM.h DMLocale.h
+	$(COMPILE) DMLocale.c -o $(OBP)/DMLocale.o
+
+$(OBP)/DMPalette.o : DMPalette.c DM.h DMLocale.h
+	$(COMPILE) DMPalette.c -o $(OBP)/DMPalette.o
+
+$(OBP)/DMConfig.o : DMConfig.c DM.h DMLocale.h
+	$(COMPILE) DMConfig.c -o $(OBP)/DMConfig.o
+
+$(OBP)/DMKey.o : DMkey.c DM.h DMLocale.h
+	$(COMPILE) DMKey.c -o $(OBP)/DMkey.o
+
+$(OBP)/DMPreferences.o : DMPreferences.c DM.h DMLocale.h
+	$(COMPILE) DMPreferences.c -o $(OBP)/DMPreferences.o
+
+$(OBP)/DMRequester.o : DMRequester.c DM.h DMLocale.h
+	$(COMPILE) DMRequester.c -o $(OBP)/DMRequester.o
+
+$(OBP)/DMSort.o : DMSort.c DM.h DMLocale.h
+	$(COMPILE) DMSort.c -o $(OBP)/DMSort.o
+
+$(OBP)/DMDisk.o : DMDisk.c DM.h DMLocale.h
+	$(COMPILE) DMDisk.c -o $(OBP)/DMDisk.o
+
+$(OBP)/DMCommands.o : DMCommands.c DM.h DMLocale.h
+	$(COMPILE) DMCommands.c -o $(OBP)/DMCommands.o
+
+$(OBP)/DMParser.o : DMParser.c DM.h DMLocale.h
+	$(COMPILE) DMParser.c -o $(OBP)/DMParser.o
+
+$(OBP)/DMSupport.o : DMSupport.c DM.h DMLocale.h
+	$(COMPILE) DMSupport.c -o $(OBP)/DMSupport.o
+
+$(OBP)/DMWinContent.o : DMWinContent.c DM.h DMLocale.h
+	$(COMPILE) DMWinContent.c -o $(OBP)/DMWinContent.o
+
+$(OBP)/DMWindows.o : DMWindows.c DM.h DMLocale.h
+	$(COMPILE) DMWindows.c -o $(OBP)/DMWindows.o
+
+$(OBP)/DMScreen.o : DMScreen.c DM.h DMLocale.h
+	$(COMPILE) DMScreen.c -o $(OBP)/DMScreen.o
+
+$(OBP)/DMRexx.o : DMRexx.c DM.h DMLocale.h
+	$(COMPILE) DMRexx.c -o $(OBP)/DMRexx.o
+
+$(OBP)/DMMenus.o : DMMenus.c DM.h DMLocale.h
+	$(COMPILE) DMMenus.c -o $(OBP)/DMMenus.o
+
+$(OBP)/DMPack.o : DMPack.c DM.h DMLocale.h
+	$(COMPILE) DMPack.c -o $(OBP)/DMPack.o
+
+$(OBP)/DM.o : DM.c DM.h DMLocale.h
+	$(COMPILE) DM.c -o $(OBP)/DM.o
+
+$(OBP)/DMRead.o : DMRead.c DM.h DMLocale.h
+	$(COMPILE) DMRead.c -o $(OBP)/DMRead.o

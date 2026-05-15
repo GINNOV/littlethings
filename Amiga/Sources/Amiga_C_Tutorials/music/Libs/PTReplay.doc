@@ -1,0 +1,487 @@
+-----------------------------------------------------------------------
+
+PTReplay.library version 4.16 by Mattias Karlsson. © 1994 BetaSoft
+This version is FreeWare. You may use this library, and also copy it 
+further, provided that NO CHARGE is claimed. This message must always
+accompany any files in the PTReplay.library that is distributed.
+
+-----------------------------------------------------------------------
+
+This is ptreplay.library version 4. It is a standard Amiga shared library,
+capable of replaying ProTracker modules.
+The replay routines are 99% system-friendly¹, and use CIA timing, which
+gives a smoother replaying.
+
+Use this library as you would use any normal Amiga library. Included in
+this package is include files for Assembler and C. 
+
+I wrote this library because I was unable to find a _good_ and system-
+friendly replay routine for ProTracker. I based this loosely on the 
+example sources that accompany ProTracker, but these were pretty badly
+written, and sparsly commented, and the CIA routines did never work on
+my machine. A job worth doing well is worth doing yourself, I though
+and went to work. This is what emerged, a small library. Notice that it
+is not much larger than 6k, and still contains all needed to play good 
+music.
+
+NOTE: All library functions are safe to call with a NULL parameter.
+
+If you want to contact me for any reason, you can write to:
+
+  UUCP:  Mattias_Karlsson@augs.se  or  BetaSoft@augs.se
+  FIDO:  Mattias Karlsson@2:205/425.0
+
+SNAIL: BetaSoft
+       Mattias Karlsson
+       Slöjdgatan 6
+       S-930 61  Bastuträsk
+       SWEDEN
+
+Changes from 3.20 to 4.15
+-------------------------
+
+* New funktions to read SongPosition, SongPattern, PatternPos and PatternData
+
+* New funktion that lets you be signaled on Song Restart, new pattern and
+  new patternrow.
+
+* The ability to play an already loaded module.
+
+* New faderoutine that doesn't wait until the fading is done and then
+  automaticly stops the song.
+
+Changes from 3.12 to 3.20
+-------------------------
+
+* Removed that sometimes made a tempochange to cause a systemhang.
+
+* Removed the fact that changing the tempovalue also resets the speed to 6.
+  The speedvalue is now left unchanged.
+
+Changes from 2.0 to 3.12 (3.0 was only a betarelease)
+-----------------------------------------------------
+
+* Added the abillity to change volume on a module while it is playing.
+
+* Removed a bug in command 6 (VibratoPlusVolSlide) that made a downslide
+  always reset volume to 0.
+
+* Changed the way on how the volume is changed in fade and setvolume commands
+  to make in sound more natural.
+
+These are features I would like to add:
+--------------------------------------
+* Various small enhancements and speed increases.
+
+* spliting a module intro several blocks (Currently it loads into one block).
+
+* Temporary storing of modules in fastmem.
+
+---------------------------------------------------------------------------------
+¹ 99% because the library doesn't reserve the sound channels it uses. If
+  you want this feature in your program, you'll have to do it yourself,
+  using audio.device².
+
+² See 'Rom Kernel Reference Manual: Devices' for information on how to use
+  audio.device and reserve sound channels.
+
+*********************************************************************************
+
+NAME
+    PTLoadModule
+
+SYNOPSIS
+    module = PTLoadModule(name)
+       D0                 A0
+
+    struct module *PTLoadModule(STRPTR);
+
+FUNCTION
+    Attempts to load the module named.
+
+INPUTS
+    name - pointer to null-terminated string containing name of module.
+
+RESULT
+    module - pointer to module control structure or NULL if failed.
+
+SEE ALSO
+    PTSetupMod
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTUnloadModule
+
+SYNOPSIS
+    PTUnloadModule(module)
+                   A0
+
+    void PTUnloadModule(struct Module *);
+
+FUNCTION
+    Frees all memory used by the module.
+
+INPUTS
+    module - pointer to module control structure.
+
+BUGS
+    Does not check that module is stopped. If you call this function on
+    a module that is playing, you _will_ cause a System Failure. You
+    have been warned.
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTPlay
+
+SYNOPSIS
+    PTPlay(module)
+           A0
+
+    void PTPlay(struct Module *);
+
+FUNCTION
+    Start playing the module from the beginning. If this module already
+    was playing, it starts over from the beginning.
+
+INPUTS
+    module - pointer to module control structure.
+
+BUGS
+    It is not yet supported to call this function while another module
+    is playing.
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTStop
+     
+SYNOPSIS
+    PTStop(module)
+           A0
+
+    void PTStop(struct Module *);
+
+FUNCTION
+    Stop playing the indicated module. If it wasn't playing, nothing
+    happens.
+     
+INPUTS
+    module - pointer to module control structure.
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTPause
+     
+SYNOPSIS
+    PTPause(module)
+            A0
+
+    void PTPause(struct Module *);
+
+FUNCTION
+    Pause this module, remembering the position so that you can restart
+    it later. All sound is turned off.
+     
+INPUTS
+    module - pointer to module control structure.
+
+SEE ALSO
+    PTResume
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTResume
+     
+SYNOPSIS
+    PTResume(module)
+             A0
+
+    void PTResume(struct Module *);
+
+FUNCTION
+    Resume playing this module, after it was paused. If it was not paused
+    then nothing happens.
+
+INPUTS
+    module - pointer to module control structure.
+
+SEE ALSO
+    PTPause
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTFade (V2)
+
+SYNOPSIS
+    PTFade(module,speed)
+           A0     D0
+
+    void PTFade(struct Module *, UBYTE);
+
+FUNCTION
+    This function does smooth vol slidedown until volume reaches zero, then
+    the module is stoped and the function returns. The speed is given
+    in the number of "vblanks" (ie CIA timeouts because it uses CIA timing
+    instead of vblank timing) between each step.
+
+INPUTS
+    module - module that is to be stoped.
+    speed - fading speed.
+
+SEE ALSO
+    PTStartFade
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTSetVolume (V3)
+
+SYNOPSIS
+    PTSetVolume(module,volume)
+                A0     D0
+
+    void PTSetVolume(struct Module, UBYTE);
+
+FUNCTION
+    Change the volume of a module while it is playing.
+
+INPUTS
+    module - pointer to module.
+    speed  - new volume  0-64 ($00-$40)
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTSongPos (V4)
+
+SYNOPSIS
+    Pos=PTSongPos(module);
+    d0            A0
+
+    UBYTE PTSongPos(struct Module *)
+
+FUNCTION
+    This function returns the position the module is curently playing.
+
+INPUTS
+    module - pointer to a module that is playing.
+
+RESULTS
+    Pos - What position that is playing (0 - (Length-1) ) or 0 if not playing
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTSongLen (V4)
+
+SYNOPSIS
+    Len=PTSongLen(module)
+    d0            a0
+
+    UBYTE PTSongLen(struct Module *);
+
+FUNCTION
+    This funktion returns the length of the module is positions. This is the
+    same value as Length in ProTracker and means that it will play until
+    position Len-1.
+
+INPUTS
+    module - The module whos length you which to now.
+
+RESULTS
+    Len - Number of positions in module
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTSongPattern (V4)
+
+SYNOPSIS
+    PatNum=PTSongPattern(module, pos)
+    D0                   A0      D0
+
+    UBYTE PTSongPattern(struct Module *,UWORD);
+
+FUNCTION
+    Returns the pattern number at a given position.
+
+INPUTS
+    Module - The module you want to examine
+    Pos - The position (0-127) you want to examine.
+
+RESULTS
+    PatNum - A number (0-127) telling you which pattern is to be played.
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTPatternPos (V4)
+
+SYNOPSIS
+    Row=PTPatternPos(module)
+    D0               A0
+
+    UBYTE PTPatternPos(struct Module *);
+
+FUNCTION
+    Returns the row in the pattern that it is currently being played.
+
+INPUTS
+    module - A module that is currently being played.
+
+RESULTS
+    Row - The row (0-63 $00-$40) that is being played.
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTPatternData (V4)
+
+SYNOPSIS
+    RowData=PTPatternData(Module, PatternNum, RowNum)
+    D0                    A0      D0          D1
+
+    APTR PTPatternData(struct Module *, UBYTE, UBYTE);
+
+FUNCTION
+    This function returns a pointer to the given row in the a specified
+    pattern.
+
+INPUTS
+    Module - Pointer to the module you which to examine.
+    PatternNum - The pattern (0-127) you want to examine.
+    RowNum - And finaly the which row (0-63) to examine.
+
+RESULTS
+    RowData - An adresspointer to the given position
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTInstallBits (V4)
+
+SYNOPSIS
+    PTInstallBits(Module, Restart, Pos, Row, Fade);
+                  A0      D0       D1   D2   D3
+
+    void PTInstallBits(struct Module *, BYTE, BYTE, BYTE, BYTE);
+
+FUNCTION
+    This function is used to inform ptreplay which signals to send to this
+    task at the given positions. Currently it can only be set up to signal
+    one task/module (the one calling this function) this may however change
+    in future. A signalbit of -1 tells ptreplay not to signal you at that
+    specific location.
+
+EXAMPLE
+    /* This will set signalbit 4 when the module restarts from the beginning */
+    PTInstallBits(Module, 4, -1, -1, -1);
+
+    /* This will set signal 0 when startfade has stopped the module */
+    PTInstallBits(Module, -1, 1, -1, 0);
+
+INPUTS
+    Module - module to use the given signals
+    Restart - Bit to set when a module restarts from beginning or -1 for no
+        signal
+    Pos - Bit to set when moving to next position or -1 for no signal
+    Row - Bit to set when moving to next row in pattern or -1 for no signal
+    Fade - Bit to set when PTStartFade is done and have stoped module or -1
+        for no signal.
+
+SEE ALSO
+    PTStartFade
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTSetupMod (V4)
+
+    Module = PTSetupMod(LoadedMod);
+    D0                  A0
+
+    struct Module *PTSetupMod(APTR);
+
+FUNCTION
+    This function will allocate a module control structure and intilize it
+    using an already loaded module file, in order to use in with ptreplay.
+
+EXAMPLE
+    /* This routine will do the same thing as PTLoadMod */
+    BPTR File;
+    APTR Mod;
+    int Len;
+    struct Module *Module;
+
+    File=Open("mod.module",MODE_OLDFILE))
+    Seek(File, 0l, OFFSET_END);
+    Len=Seek(File, 0l, OFFSET_BEGINNING);
+
+    Mod=AllocMem(Len, MEMF_CHIP);
+    Read(File, Mod, Len);
+    Close(File);
+    Module=PTSetupMod(Mod);
+
+NOTE
+    1. The module MUST already be located in chip mem.
+    2. The module MUST be valid while the module is goint to be used.
+    Both may change in future.
+
+INPUTS
+    LoadedMod - An pointer to an already loaded module.
+
+RESULTS
+    Module - A module structure to be used 
+
+SEE ALSO
+    PTFreeMod
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTFreeMod (V4)
+
+SYNOPSIS
+    PTFreeMod(Module)
+              A0
+
+    void PTFreeMod(struct Module *);
+
+FUNCTION
+    This function will free all memory allocated by the PTSetupMod function.
+
+INPUTS
+    Module - a module returned by PTSetupMod().
+
+SEE ALSO
+    PTSetupMod
+
+-----------------------------------------------------------------------------
+
+NAME
+    PTStartFade (V4)
+
+SYNOPSIS
+    PTStartFade(Module, Speed)
+                A0      D0
+
+    void PTStartFade(struct Module *, UBYTE);
+
+FUNCTION
+    This function will also do a smooth volume slidedown in the same way
+    as PTFade does but it returns as soon as the fading has started instead
+    of when it is done. Currently the only way to notice when the module
+    is stoped is to setup a Fade bit using PTInstallBits and check for that
+    bit.
+
+INPUTS
+    Module - Module to be stoped.
+    Speed - fading speed.
+
+SEE ALSO
+    PTFade, PTInstallBits

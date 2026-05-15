@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+            {
+                    "type": "amiga",
+                    "request": "launch",
+                    "name": "Amiga 500",
+                    "config": "A500",
+                    "program": "${workspaceFolder}/build/falkon",
+                    "kickstart": "C:/GitHub/Kickstarty i Workbenche/kickstarts/kick205.rom",
+                    "internalConsoleOptions": "openOnSessionStart"
+            },
+            {
+                    "type": "amiga",
+                    "request": "launch",
+                    "name": "Amiga 1200",
+                    "config": "A1200",
+                    "program": "${workspaceFolder}/build/falkon",
+                    "kickstart": "C:/GitHub/Kickstarty i Workbenche/kickstarts/kick31.rom",
+                    "internalConsoleOptions": "openOnSessionStart"
+            }
+    ]
+}

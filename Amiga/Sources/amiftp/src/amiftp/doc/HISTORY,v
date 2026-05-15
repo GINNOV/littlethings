@@ -1,0 +1,711 @@
+head	1.803;
+access;
+symbols;
+locks
+	lilja:1.803; strict;
+comment	@# @;
+
+
+1.803
+date	96.11.30.21.18.21;	author lilja;	state Exp;
+branches;
+next	1.802;
+
+1.802
+date	96.11.30.13.18.52;	author lilja;	state Exp;
+branches;
+next	1.798;
+
+1.798
+date	96.11.06.19.34.33;	author lilja;	state Exp;
+branches;
+next	1.795;
+
+1.795
+date	96.09.28.13.36.58;	author lilja;	state Exp;
+branches;
+next	1.608;
+
+1.608
+date	96.07.01.20.15.58;	author lilja;	state Exp;
+branches;
+next	1.595;
+
+1.595
+date	96.06.18.23.21.09;	author lilja;	state Exp;
+branches;
+next	1.585;
+
+1.585
+date	96.06.13.00.07.34;	author lilja;	state Exp;
+branches;
+next	1.531;
+
+1.531
+date	96.05.28.00.20.33;	author lilja;	state Exp;
+branches;
+next	1.401;
+
+1.401
+date	96.03.28.13.57.27;	author lilja;	state Exp;
+branches;
+next	1.265;
+
+1.265
+date	96.03.08.18.05.17;	author lilja;	state Exp;
+branches;
+next	1.200;
+
+1.200
+date	96.02.20.00.21.29;	author lilja;	state Exp;
+branches;
+next	1.152;
+
+1.152
+date	96.02.12.23.28.21;	author lilja;	state Exp;
+branches;
+next	1.150;
+
+1.150
+date	96.02.11.16.41.14;	author lilja;	state Exp;
+branches;
+next	1.124;
+
+1.124
+date	96.02.10.15.50.24;	author lilja;	state Exp;
+branches;
+next	0.1332;
+
+0.1332
+date	95.12.17.13.23.20;	author lilja;	state Exp;
+branches;
+next	0.1300;
+
+0.1300
+date	95.12.08.23.57.47;	author lilja;	state Exp;
+branches;
+next	;
+
+
+desc
+@Version history.
+@
+
+
+1.803
+log
+@foo.
+@
+text
+@Version History for AmiFTP
+
+   First a note about the version numbering: AmiFTP will use following
+   scheme, majorversion.revision (just like the libraries on your system).
+   That means that 1.11 is newer that 1.1, and 1.201 is newer than 1.200
+   and 1.20 and so on...
+
+   Known bugs: ARexx-bugs. I will look at this soon.
+               stem.FILELIST.n.* doesn't work at the moment.
+
+   1.801 (released 1996-11-30)
+   ===========================
+
+   Fixed a bug with the filerequester in the global preferences window.
+   The bug only seemed to appear on some systems (not mine).
+
+   1.797 (released 1996-11-06)
+   ===========================
+
+   Recompiled with SAS/C 6.57.
+
+   Beginning with this version ClassAct will no longer be included in the
+   archive. ClassAct is used by so many programs now so you probably already 
+   have it. If not, go to ftp://ftp.warped.com/pub/amiga/classact/ .
+
+   Not all language catalogs have been updated.
+
+   Sometimes you had to press HELP two times in order to get the online
+   help. Fixed now.
+
+   Speedbar added, and preferences to turn on/off the speedbar and the normal
+   buttons.
+
+   ClassAct no longer included in the archive. Get the latest version from
+   ftp.warped.com/pub/amiga/classact/ .
+
+   All button-actions are duplicated as menu items.
+
+   Bug in the progressbar fixed.
+
+   AmiFTP starts even if no TCP/IP-stack is running.
+
+   You can now select files by entering a AmigaDOS-pattern (in the Files-menu).
+
+   You can use the cursor keys to scroll the filelist. (and use shift/alt to
+   scroll a page/go to top/bottom).
+
+   Various minor things fixed.
+
+   1.607 (released 1996-07-01)
+   ===========================
+
+   Due to a bug in the current penmap.image, AmiFTP won't work on AmigaOS 2.x,
+   but when penmap.image has been fixed it will.
+   
+   A NewIcon-style icon for AmiFTP has been included as well as a KMI-style
+   dock-icon. Thanks to Phil Vedovatti and Heikki Kantola.
+
+   Pressing cursor-up in the sitelistwindow when there was no items selected
+   caused an enforcer-hit (this was introduced in 1.594 after a re-write of
+   some functions).
+
+   For some reason (probably a ClassAct (mis)feature) it was impossible to close
+   the sitelist-window at some times. Things are done differently now to avoid
+   this.
+
+   1.594 (released 1996-06-18)
+   ===========================
+
+   The windowtitle of the main window now shows how many files you have  
+   selected and the amount of bytes they sum to. It also shows how much
+   diskspace you have left on the current download device.
+
+   The CLI arguments has changed a bit, if you want to connect to site
+   directly at startup you can now write either ftp://[user@@]host[:port][/path]
+   or [user]@@host[:port][/path]. You can also write this in the Current 
+   site-gadget in the main window. Note that if you type ftp.luth.se/pub/amiga
+   you will end up in pub/amiga, and if you type ftp.luth.se//pub/amiga you end
+   up in /pub/amiga (which can be different directories in some cases).
+   
+   Minor bugs fixed.
+
+   1.541 (released 1996-06-05)
+   ===========================
+
+   Fixed bug in the Aminet-mode, sometimes it would try to download each file
+   twice. Also the 'Get readme'-option was buggy.
+
+   The groupwindow was the same as the sitewindow, now fixed.
+
+   If AmiFTP was iconified during a transfer, it caused an enforcer hit, now
+   fixed.
+
+   The installer-script can now be localized (without having several installer-
+   icons), currently only English and Spanish are included since I haven't given
+   the translators any chance of doing the translation for this release :)
+   This works best with the new AT (v43) Installer.
+
+   1.530 (released 1996-05-27)
+   ===========================
+
+   Aminet-mode. You can now browse the RECENT-list and see which files are new
+   since you visited Aminet the last time. In order to do this all you have to
+   do is to define a new site, check the Aminet-gadget and enter '/pub/aminet/'
+   in the Remote directory-gadget. Currently you can't upload files in Aminet-
+   mode, but that will be fixed in the next version.
+
+   Greek catalog included, thanks to Pantelis Kopelias!
+
+   ARexx FTPCOMMAND now always sets the RC2-variable to the status-number the
+   ftp-server returned. Check the RFC-959 if you want to find out what the
+   numbers mean. The other ARexx-commands sets the RC2-variable when the server
+   replied with an error.
+
+   The menu-command Delete now also deletes directories (on most servers
+   only empty directories can be deleted).
+
+   Pressing abort when connecting to a site now closes the connectwindow.
+
+   Fixed a bug in the abort-routine in the Transferwindow.
+
+   Fixed a bug in the Sitelistwindow when moving the cursor-keys (could cause
+   some enforcer hits).
+
+   Reorganized the global settings window. Note that closing the window
+   with the closegadget is the same as pressing Cancel. Sorry about that
+   change, but this is they way it should work.
+
+   New layout in the Transferwindow.
+
+   The sorting-mode is now saved in the preferences-file if you save prefs
+   from the 'Settings/Save'-menu.
+
+   1.264 (released 1996-03-09 Aminet-release)
+   ==========================================
+
+   An mailing-list for announcing new versions of AmiFTP has been setup.
+   If you want to receive a mail when there's a new version available,
+   send a mail to lilja@@lysator.liu.se. Note that this is not a discussion-list,
+   it's a oneway list, from me to you, the users of AmiFTP.
+
+   Added a group-feature to the sitelist. It's now possible to have
+   submenus in the hotlist. Because of this the sort-function has been
+   removed, it might come back later.
+
+   Caught a possible memoryleak.
+
+   The menus seemed to forget the state they were in after I had put
+   the main window to sleep.
+
+   1.199 (released 1996-02-19)
+   ============================
+
+   Better error reporting if AmiFTP can't open a library.
+
+   New ARexx-command: "FTPCOMMAND COMMAND/F" send the supplied string
+   directly to the server without doing any checks. With this you can
+   do things like 'FTPCOMMAND RMD test" which will tell the server
+   to delete the directory called test.
+
+   Fixed a bug in GETATTR that would cause an enforcer hit if a 
+   proxy-server wasn't specified.
+
+   1.151 (almost released)
+   =======================
+
+   ARexx View-command tried to view the wrong file, now fixed.
+
+   find.amiftp, an aminet search script by Sami Itkonen added to the archive!
+
+   1.149 (released 1996-02-11)
+   ===========================
+
+   AmiFTP now supports both AmiTCP and AS225r2/I-Net 225 in one binary. It seems
+   like there's a bug in the AS225r2/I-Net 225 part which results in a broken
+   connection when you abort AmiFTP, I'm working on it...
+
+   New cli-option and Workbench tooltype added: AS225 This way you can force
+   AmiFTP to use AS225/I-Net 225. By default AmiFTP will first try to open 
+   bsdsocket.library and if that fails it tries to open socket.library.
+
+   It is now possible do iconify the mainwindow when transferring files. Click
+   on the iconify-gadget in the Transfer window. To uniconify you can either
+   click on the gadget again, or doubleclick on the icon.
+
+   New ARexx command added: 'VIEW ASCII/S,BIN/S,FILE/A' which will download
+   the file to T: and then spawn the viewer (Settings/Global/View command).
+   AmiFTP will try to delete the file when you quit AmiFTP.
+
+   New option to SETATTR: 'QUIET/K' Setting QUIET=TRUE makes AmiFTP work 
+   in a silent mode where no requester are popped up and the ConnectWindow
+   will close directly on failure instead of waiting for user input.
+   QUIET=FALSE resets AmiFTP to normal state.
+   You can get the current setting with GETATTR STEM=foo, and examine
+   foo.QUIET.
+
+   ARexx command 'SETATTR LOCALDIR=foo' didn't update the Download dir-gadget.
+
+   ARexx command 'GETATTR STEM=bar' now works correctly, stupid arexx that only
+   recognizes uppercase variables.
+
+   AmiFTP would produce huge amounts of enforcer hits if you tried to
+   open it on a public screen that doesn't exist, now fixed.
+
+   Moved the 'Show dot-files?' to the 'Settings'-menu.
+
+   Icelandic catalog added, thanks to Sigurbjörn B. Lárusson!
+
+   Spanish catalog added, thanks to José Roberto González Rocha!
+
+   1.14 (released 1996-01-24)
+   ==========================
+
+   An updated installer script is included.
+
+   Forgot to set the busy-pointer when deleting files.
+
+   Gadgets in the main window and the sitelist window no longer
+   flickers when you select items.
+
+   The fuelgauge now has 10 intervals instead of the rather odd 9
+   it had before.
+
+   Added cliargument/workbench tooltype 'FILEFONT' to specify the font used
+   in the main listview (this font is NOT used in the Sitelist-listview).
+   Syntax: 'AmiFTP FILEFONT foo.font/8' in order to use size 8 of foo.font.
+
+   1.0 (released 1995-12-17)
+   =========================
+
+   First Aminet release.
+@
+
+
+1.802
+log
+@Fixed something.
+@
+text
+@d11 6
+@
+
+
+1.798
+log
+@bar
+@
+text
+@d8 4
+a11 1
+   1.7xx (released 1996-11-05)
+d16 6
+d30 13
+@
+
+
+1.795
+log
+@foo
+@
+text
+@d8 2
+a9 2
+   1.7xx
+   =======
+d12 9
+@
+
+
+1.608
+log
+@bla
+@
+text
+@d8 5
+@
+
+
+1.595
+log
+@updated.
+@
+text
+@d8 17
+@
+
+
+1.585
+log
+@stuff.
+.,
+@
+text
+@d8 1
+a8 1
+   1.5xx
+d22 2
+@
+
+
+1.531
+log
+@Stuff.
+@
+text
+@d8 30
+@
+
+
+1.401
+log
+@Bug-fixes.
+@
+text
+@d8 1
+a8 1
+   1.264 (released 1996-03-09)
+d10 35
+@
+
+
+1.265
+log
+@Updated.
+@
+text
+@d8 7
+a14 2
+   1.2xx
+   =====
+@
+
+
+1.200
+log
+@Updated.
+@
+text
+@d8 13
+a20 1
+   1.1199 (released 1996-02-19)
+d100 1
+a100 216
+   Bug in sitelist-window fixed.
+
+   'AmiFTP sitename' (like 'AmiFTP ftp.luth,se') from the command-line now
+   works again.
+
+   AmiFTP now looks for AmiFTP.prefs in the following order:
+   Current directory
+   PROGDIR: (the directory where the AmiFTP-binary resides)
+   ENVARC:
+   ~user/
+
+   AmiFTP doesn't need amigaguide.library to work any more, but if you don't
+   have it you won't be able to get any online help.
+
+   All catalogs are now uptodate.
+
+   -- Beta versions below --
+
+   0.1299
+   ======
+
+   Reload-gadget added. Will re-read the current directory from the server.
+
+   Added alphabetically Sorting of the sitenames.
+
+   AmiFTP tries to figure out the correct filesize for links when transferring
+   them. That means the size shown in the filelist will not be the actual size
+   of the file that the link is pointin to, but it the size information in the
+   TransferWindow will be correct. 
+
+   The Danish and German catalogs have not been changed since the last version.
+   Check the WWW-page for updates.
+
+   0.1261b
+   =======
+
+   I accidentally included some old versions of the gadgets in the 0.1261 
+   archive, this release contains the correct versions.
+
+   0.1261
+   ======
+
+   AmiFTP should work on 68000/010 systems with the new gadgets/images supplied
+   in this archive.
+
+   0.1258
+   ======
+
+   I forgot to update the hotlist-menu when a new preferences file was loaded
+   or when the sitelist was edited, now fixed.
+
+   Also, current AmiFTP doesn't seem to work on 68000/010 systems. If you do
+   have a 000/010 and got AmiFTP to work please contact me.
+
+   0.1235
+   ======
+
+   Moved from gadtools-gui to a ClassAct-gui.
+   **NOTE** If you already have any ClassAct gadgets installed, you have
+   to make sure they are atleast as new as the ones in this archive.
+   ClassAct is (C) Phantom Development
+
+   There is not much new in the release compared to 0.864 in terms of
+   features.
+
+   This version will probably work with AmigaOS 2.x, I haven't been able
+   to verify this yet.
+
+
+   0.864
+   =====
+
+   Getting of entire directory trees added. So if you have problems
+   filling up your HD just do a cd to /pub on any aminet-site and
+   select the aminet-dir and press 'Get' :)
+
+   A primitive logwindow has been added, it's just a CON: window 
+   at the moment. You can open/close it via 'Settings/Log window'.
+
+   It's now possible to add the current site you're connected to
+   to the sitelist via the menu 'Project/Add current to sitelist'.
+
+   Added online-help, when you press HELP the correct section in
+   AmiFTP.guide will be displayed by AmigaGuide.
+
+   Added default download directory.
+
+   0.776
+   =====
+
+   The download-function didn't handle filenames longer than
+   32 characters correct.
+
+   The View-function now handles filenames with spaces in.
+
+   When you save the settings via the menu AmiFTP also save the
+   window size and position.
+
+   Added ARexx function DELETE, and added the switch FILELIST to 
+   GETATTR which returns the current filelist in the STEM-variable. 
+
+   FIXEDFONTNAME/SIZE argument was broken.
+
+   0.699
+   =====
+
+   CPS wasn't cleared after each file uploaded.
+
+   Hrm, this time AmiFTP-as225 should really work with mlink (tried
+   it myself).
+
+   0.691
+   =====
+
+   Links were "View"-ed twice, now fixed.
+
+   Workaround for the V39/gadtools.library bug so the Transfer Window
+   looks good on V39 too.
+
+   The 'Bytes transffered' and 'CPS' was updated one time to much.
+
+   Minor things fixed (I forgot to remove some DEBUG-output before
+   the previous release).
+
+   0.664
+   =====
+
+   When downloading multiple files AmiFTP forgot to unmark them.
+
+   Abort gadget in 'Transfer window' was ghosted after the first file.
+
+   SETATTR USERNAME/PASSWORD works from ARexx now.
+
+   0.648
+   =====
+
+   You can now switch transfermodes from the menu (Binary/ASCII),
+   default is BINARY.
+
+   The GUI now uses the screens (proportional) font for everything
+   but the files-listview. Use the PROPFONTNAME/PROPFONTSIZE and
+   FIXEDFONTNAME/FIXEDFONTSIZE Tooltypes/cli arguments to change fonts.
+
+   Lots of small fixes...
+
+   0.535
+   =====
+
+   SETTINGS tooltype/cli arguments now works again, it was broken in
+   0.533.
+
+   0.533
+   =====
+
+   Resume transfer when downloading files added. When AmiFTP ask for
+   Overwriting an existing file you can now select between Overwrite,
+   Resume transfer, and Cancel.
+
+   Settings-menu added, from where you reach load/save-settings and
+   edit hotlist and the old preferences (now renamed to "Global").
+
+   AmiFTP now looks for the prefs-file in the following directories
+   (and in this order): Current directory, PROGDIR: (the directory
+   where the AmiFTP binary resides), ENV:, ~user/ .
+
+   Default when saving (that is, if AmiFTP couldn't find a prefs-file
+   at startup) is PROGDIR:
+
+   AmiFTP is now localized.
+
+   Password-gadget added, AmiFTP will send this password when you're
+   not logging in as anonymous.
+
+   0.348
+   =====
+
+   The gadgets in SiteList-window got messed up.
+
+   0.345
+   =====
+
+   AmiFTP now clones the path when started from Workbench.
+
+   AmiFTP remembers the size and position of the window when iconifying
+   it.
+
+   Added directory-cache, AmiFTP will cache up to ten dirs. If you
+   enter a directory via the Directory stringgadget in the main
+   window the directory will be read from the server, not from the
+   cache.
+
+   A special version of AmiFTP now works with mlink, though you can't
+   abort filetransfers with it. That version is available from
+   http://www.lysator.liu.se/~lilja/AmiFTPmlink.lha
+
+   You can now delete remote files with a new menu-function. A
+   requester will pop up asking you if you're really want to delete
+   the selected file(s). (I accidentally deleted some files when I
+   was testing this function :).
+
+   Select all/unselect all functions available via the menu.
+
+   Links are now shown with (link) in the listview.
+
+   Upload via ARexx added (PUT/MPUT).
+
+   Minor layout-bugs fixed.
+
+   0.275
+   =====
+
+   ARexx port added, not all functions are implemented or finished
+   yet.
+
+   When View-ing files AmiFTP now downloads them to T: and when
+   AmiFTP quits the files will be deleted.
+@
+
+
+1.152
+log
+@baa
+@
+text
+@d8 15
+a22 2
+   1.151 (released 1996-02-12)
+   ===========================
+@
+
+
+1.150
+log
+@*** empty log message ***
+@
+text
+@d8 7
+@
+
+
+1.124
+log
+@Updated documentation, fixes some bugs.
+@
+text
+@d8 2
+a9 2
+   1.1xx
+   =====
+d18 4
+@
+
+
+0.1332
+log
+@Release 1.0
+@
+text
+@d3 58
+@
+
+
+0.1300
+log
+@*** empty log message ***
+@
+text
+@d3 21
+@

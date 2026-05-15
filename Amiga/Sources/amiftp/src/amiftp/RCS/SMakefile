@@ -1,0 +1,1297 @@
+head	1.798;
+access;
+symbols;
+locks
+	lilja:1.798; strict;
+comment	@# @;
+
+
+1.798
+date	96.11.06.19.32.54;	author lilja;	state Exp;
+branches;
+next	1.795;
+
+1.795
+date	96.09.28.13.32.58;	author lilja;	state Exp;
+branches;
+next	1.730;
+
+1.730
+date	96.08.02.21.57.32;	author lilja;	state Exp;
+branches;
+next	1.692;
+
+1.692
+date	96.07.20.00.28.38;	author lilja;	state Exp;
+branches;
+next	1.630;
+
+1.630
+date	96.07.07.20.10.48;	author lilja;	state Exp;
+branches;
+next	1.625;
+
+1.625
+date	96.07.04.17.50.58;	author lilja;	state Exp;
+branches;
+next	1.607;
+
+1.607
+date	96.06.30.12.33.45;	author lilja;	state Exp;
+branches;
+next	1.531;
+
+1.531
+date	96.05.28.00.17.52;	author lilja;	state Exp;
+branches;
+next	1.265;
+
+1.265
+date	96.03.08.18.01.38;	author lilja;	state Exp;
+branches;
+next	1.152;
+
+1.152
+date	96.02.12.23.26.47;	author lilja;	state Exp;
+branches;
+next	1.150;
+
+1.150
+date	96.02.11.16.38.55;	author lilja;	state Exp;
+branches;
+next	1.124;
+
+1.124
+date	96.02.10.15.46.32;	author lilja;	state Exp;
+branches;
+next	0.1343;
+
+0.1343
+date	96.01.20.17.34.39;	author lilja;	state Exp;
+branches;
+next	0.1332;
+
+0.1332
+date	95.12.17.13.21.38;	author lilja;	state Exp;
+branches;
+next	0.1312;
+
+0.1312
+date	95.12.14.16.15.31;	author lilja;	state Exp;
+branches;
+next	0.1302;
+
+0.1302
+date	95.12.09.20.15.21;	author lilja;	state Exp;
+branches;
+next	0.1300;
+
+0.1300
+date	95.12.08.20.24.52;	author lilja;	state Exp;
+branches;
+next	0.807;
+
+0.807
+date	95.10.13.12.51.19;	author lilja;	state Exp;
+branches;
+next	0.723;
+
+0.723
+date	95.09.29.16.48.36;	author lilja;	state Exp;
+branches;
+next	0.710;
+
+0.710
+date	95.09.24.18.20.34;	author lilja;	state Exp;
+branches;
+next	0.692;
+
+0.692
+date	95.09.23.15.20.29;	author lilja;	state Exp;
+branches;
+next	0.685;
+
+0.685
+date	95.09.22.20.13.06;	author lilja;	state Exp;
+branches;
+next	0.667;
+
+0.667
+date	95.09.18.10.34.24;	author lilja;	state Exp;
+branches;
+next	0.647;
+
+0.647
+date	95.09.16.21.18.38;	author lilja;	state Exp;
+branches;
+next	0.623;
+
+0.623
+date	95.09.16.10.54.30;	author lilja;	state Exp;
+branches;
+next	0.588;
+
+0.588
+date	95.09.12.16.24.08;	author lilja;	state Exp;
+branches;
+next	0.567;
+
+0.567
+date	95.09.11.17.15.13;	author lilja;	state Exp;
+branches;
+next	0.563;
+
+0.563
+date	95.09.10.20.59.20;	author lilja;	state Exp;
+branches;
+next	0.544;
+
+0.544
+date	95.09.08.14.11.28;	author lilja;	state Exp;
+branches;
+next	0.536;
+
+0.536
+date	95.09.05.17.59.01;	author lilja;	state Exp;
+branches;
+next	0.534;
+
+0.534
+date	95.09.03.18.34.27;	author lilja;	state Exp;
+branches;
+next	0.531;
+
+0.531
+date	95.09.01.17.25.42;	author lilja;	state Exp;
+branches;
+next	0.388;
+
+0.388
+date	95.07.16.13.14.48;	author lilja;	state Exp;
+branches;
+next	0.371;
+
+0.371
+date	95.06.30.19.18.41;	author lilja;	state Exp;
+branches;
+next	0.348;
+
+0.348
+date	95.06.22.18.56.45;	author lilja;	state Exp;
+branches;
+next	0.347;
+
+0.347
+date	95.06.16.09.38.24;	author lilja;	state Exp;
+branches;
+next	0.336;
+
+0.336
+date	95.06.15.11.53.20;	author lilja;	state Exp;
+branches;
+next	0.322;
+
+0.322
+date	95.06.12.23.14.26;	author lilja;	state Exp;
+branches;
+next	0.303;
+
+0.303
+date	95.06.08.15.30.02;	author lilja;	state Exp;
+branches;
+next	0.284;
+
+0.284
+date	95.06.06.21.42.35;	author lilja;	state Exp;
+branches;
+next	;
+
+
+desc
+@Makefile for the AmiFTP-project
+@
+
+
+1.798
+log
+@Fixed init of AmigaGuide.
+@
+text
+@# SMakefile for SAS/C
+# Copyright (c) 1995 Magnus Lilja.
+
+# Project files
+
+PROG=	AmiFTP
+CATALOGS= Catalogs/NewCatalog.ct Catalogs/Svenska/AmiFTP.catalog \
+	Catalogs/Italiano/AmiFTP.catalog Catalogs/Dansk/AmiFTP.catalog \
+	Catalogs/Deutsch/AmiFTP.catalog Catalogs/Norsk/AmiFTP.catalog \
+	Catalogs/Nederlands/AmiFTP.catalog Catalogs/Suomi/AmiFTP.catalog \
+	Catalogs/íslenska/AmiFTP.catalog
+
+LOCALES= Catalogs/Svenska.ct Catalogs/Italiano.ct Catalogs/Dansk.ct \
+	Catalogs/Deutsch.ct Catalogs/Norsk.ct Catalogs/Nederlands.ct \
+	Catalogs/Suomi.ct Catalogs/íslenska.ct
+
+DOCS= doc/AmiFTP.guide doc/HISTORY doc/README doc/AmiFTP.readme
+
+SRCS= 	misc.c data.c dofuncs.c change_dir.c readdir.c dirlist.c \
+	MainWindow.c AmiFTP.c TransferWindow.c SiteWindow.c config.c \
+	PrefsWindow.c ConnectWindow.c ftp.c rexx.c cache.c main.c locale.c \
+	AmiFTP_Cat.c AGuide.c ADT.c Menu.c SpeedBar.c
+#lex.c 
+OBJ =	obj/
+OBJS=  	$(OBJ)misc.o $(OBJ)data.o $(OBJ)dofuncs.o \
+ 	$(OBJ)change_dir.o $(OBJ)readdir.o $(OBJ)dirlist.o $(OBJ)MainWindow.o \
+	$(OBJ)AmiFTP.o $(OBJ)TransferWindow.o $(OBJ)SiteWindow.o $(OBJ)config.o \
+	$(OBJ)PrefsWindow.o $(OBJ)ConnectWindow.o $(OBJ)ftp.o $(OBJ)rexx.o \
+	$(OBJ)cache.o $(OBJ)main.o $(OBJ)locale.o $(OBJ)AmiFTP_Cat.o \
+	$(OBJ)AGuide.o $(OBJ)ADT.o $(OBJ)Menu.o $(OBJ)SpeedBar.o
+
+#$(OBJ)lex.o
+INCS= 	AmiFTP.h dirlist_struct.h gui.h AmiFTP_Cat.h
+MISC= 	SMakefile SCOPTIONS AmiFTP.cd
+LIBS=	dh1:classact/classactlib/classact.lib lib:asyncio.lib lib:wb2cli.o \
+	lib:reqtools.lib lib:sprintf.o
+GST=    $(OBJ)$(PROG).gst
+
+# Build options
+
+OPTFLAGS = 	OPTIMIZE OPTTIME
+CFLAGS=		DEBUG=LINE $(OPTFLAGS) #NOSTACKCHECK
+IDIRS= dh1:t
+
+# Compiler defaults
+
+SCOPTIONS=	STRINGMERGE PARAMETERS=REGISTERS SMALLCODE SMALLDATA \
+		NOVERSION NOICONS UNSIGNEDCHARS \
+		SAVEDS OBJNAME=$(OBJ)
+
+# Programs used
+
+RM=		Delete quiet
+CP=		Copy
+CAT=		Type
+TAGS=		ctags
+VER=		dh1:brev
+CI=		ci
+MAKE=		smake
+CATCOMP=	flexcat
+
+# current build version from the 'VERSION' file
+VERSION=	`$(CAT) VERSION`
+
+# Conversion rules
+.c.o:
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION $(OPTFLAGS) DEF SOCKIO
+
+.ct.catalog:
+	$(CATCOMP) AmiFTP.cd $< CATALOG $@@
+.cd.ct:
+	$(CATCOMP) $< $@@ NEWCTFILE $@@
+
+# make the binary with debug options
+all: AmiFTP
+
+obj/AmiFTP.gst: SCOPTIONS AmiFTP.h gui.h AmiFTP_Cat.h#(replace with $(INCS)
+	GST `Cd`/$@@ UNLOAD
+	-$(RM)  $@@ >NIL:
+	SC NOOBJNAME NOGST MAKEGST=$@@ gst.c DEF SOCKIO
+ 	
+# Build rules
+
+# obj/$(PROG).gst
+$(PROG):  $(OBJ)version.o $(OBJS)
+	$(CC) LINK $(OBJ)version.o $(OBJS) lib:_sas.o TO $@@_d BATCH $(LIBS) dh1:tcp/tcphook/tcp.lib
+	slink $@@_d TO $@@ STRIPDEBUG NODEBUG
+	$(VER) # bump revision for next link
+
+locale:
+	MakeCatalogs
+
+# localisation using FlexCat and .cd-file
+AmiFTP_Cat.c: AmiFTP.cd
+	$(CATCOMP) AmiFTP.cd AmiFTP_Cat.c=C_c_V21.sd
+AmiFTP_Cat.h: AmiFTP.cd
+	$(CATCOMP) AmiFTP.cd AmiFTP_Cat.h=C_h.sd
+
+Catalogs/Suomi/AmiFTP.catalog: Catalogs/Suomi.ct
+Catalogs/Suomi.ct: AmiFTP.cd
+
+Catalogs/Svenska/AmiFTP.catalog: Catalogs/Svenska.ct
+Catalogs/Svenska.ct: AmiFTP.cd
+
+#Catalogs/íslenska/AmiFTP.catalog: Catalogs/íslenska
+#Catalogs/íslenska.ct: AmiFTP.cd
+
+Catalogs/Italiano/AmiFTP.catalog: Catalogs/Italiano.ct
+Catalogs/Italiano.ct: AmiFTP.cd
+
+Catalogs/Dansk/AmiFTP.catalog: Catalogs/Dansk.ct
+Catalogs/Dansk.ct: AmiFTP.cd
+
+Catalogs/Deutsch/AmiFTP.catalog: Catalogs/Deutsch.ct
+Catalogs/Deutsch.ct: AmiFTP.cd
+
+Catalogs/Nederlands/AmiFTP.catalog: Catalogs/Nederlands.ct
+Catalogs/Nederlands.ct: AmiFTP.cd
+
+Catalogs/Norsk/AmiFTP.catalog: Catalogs/Norsk.ct
+Catalogs/Norsk.ct: AmiFTP.cd
+
+Catalogs/NewCatalog.ct: AmiFTP.cd
+	$(CATCOMP) AmiFTP.cd NEWCTFILE Catalogs/NewCatalog.ct 
+
+# create version.c if it doesn't exist. Defines three global variables:
+# VersionID is the AmigaDOS $VER: string.
+# Version is the version number.
+# CompileDate is the build date.
+# use these instead of hardcoded variables or preprocessor #defines
+# within your source code!
+#const char CompileDate[] = __AMIGADATE__;
+version.c: smakefile
+	$(CP) TO $@@ <FROM <
+const char VersionID[] = "$$VER: $(PROG) " VERSION " " __AMIGADATE__;
+const char Version[] = VERSION;
+char *linfotext = "AmiFTP - " VERSION " (" __DATE__ ")";
+char *infotext = "AmiFTP " VERSION " (" __DATE__ ")\nCopyright © 1996 Magnus Lilja. All rights reserved.\n<lilja@@lysator.liu.se>\n\nClassAct is © ClassAct Development Team\nAmiFTP is Shareware, please consider registering\n\nARexx-port: ";
+char *wintitle = "AmiFTP " VERSION " © 1996 Magnus Lilja <lilja@@lysator.liu.se>";
+<
+
+# recompile version.c if any of the other source files have changed.
+# first make sure VERSION exists, but don't bump it.
+obj/version.o:	version.c $(SRCS) $(INCS)
+#	$(VER) -n # make sure VERSION exists
+	$(CC) NODEBUG DEF=VERSION="$(VERSION)" OBJNAME=$(OBJ) version.c
+
+# store current source version in the RCS database.
+rev:
+	echo $(VERSION)
+	$(CI) -l$(VERSION) $(SRCS) $(INCS) $(MISC)
+	$(CI) -l$(VERSION) $(DOCS)
+	
+$(OBJ)ftp.o: ftp.c AmiFTP.h $(GST)
+$(OBJ)main.o: main.c AmiFTP.h $(GST)
+$(OBJ)dofuncs.o: dofuncs.c AmiFTP.h $(GST)
+$(OBJ)misc.o: misc.c AmiFTP.h $(GST)
+$(OBJ)data.o: data.c AmiFTP.h $(GST)
+$(OBJ)change_dir.o: change_dir.c AmiFTP.h $(GST)
+$(OBJ)readdir.o: readdir.c AmiFTP.h $(GST)
+$(OBJ)dirlist.o: dirlist.c AmiFTP.h $(GST)
+$(OBJ)lex.o: lex.c AmiFTP.h $(GST)
+$(OBJ)MainWindow.o: MainWindow.c AmiFTP.h gui.h $(GST)
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND $(OPTFLAGS)
+$(OBJ)AmiFTP.o: AmiFTP.c AmiFTP.h $(GST)
+$(OBJ)TransferWindow.o: TransferWindow.c AmiFTP.h gui.h  Trans.gui $(GST)
+$(OBJ)SiteWindow.o: SiteWindow.c $(GST)
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND $(OPTFLAGS)
+$(OBJ)config.o: config.c $(GST)
+$(OBJ)PrefsWindow.o: PrefsWindow.c $(GST)
+$(OBJ)ConnectWindow.o: ConnectWindow.c $(GST)
+$(OBJ)rexx.o: rexx.c AmiFTP.h $(GST)
+$(OBJ)cache.o: cache.c AmiFTP.h gui.h $(GST)
+$(OBJ)AmiFTP_Cat.o: AmiFTP_Cat.c
+$(OBJ)locale.o: locale.c AmiFTP.h $(GST)
+$(OBJ)AGuide.o: AGuide.c AmiFTP.h $(GST)
+$(OBJ)ADT.o: ADT.c AmiFTP.h $(GST)
+$(OBJ)Menu.o: Menu.c AmiFTP.h gui.h $(GST)
+$(OBJ)SpeedBar.o: SpeedBar.c AmiFTP.h gui.h penmapimages.c $(GST)
+@
+
+
+1.795
+log
+@Stuff.
+@
+text
+@d36 1
+a36 1
+	lib:reqtools.lib
+d41 1
+a41 1
+#OPTFLAGS = 	OPTIMIZE OPTTIME
+@
+
+
+1.730
+log
+@AmiFTP starts even if no TCP/IP-stack is running.
+No 'please insert inet:...' when starting.
+Still has to fix the ARexx stuff to cope with no stack running.
+@
+text
+@d137 2
+a138 1
+char *infotext = "AmiFTP " VERSION " (" __DATE__ ")\nCopyright © 1996 Magnus Lilja. All rights reserved.\n<lilja@@lysator.liu.se>\n\nClassAct is © Phantom Development\nAmiFTP is Shareware, please consider register\n\nARexx-port: ";
+@
+
+
+1.692
+log
+@Speedbar and buttons configurable.
+@
+text
+@d132 1
+a136 1
+const char CompileDate[] = __AMIGADATE__;
+@
+
+
+1.630
+log
+@Added items in the menu to duplicate the buttons.
+@
+text
+@d22 1
+a22 1
+	AmiFTP_Cat.c AGuide.c ADT.c Menu.c
+d30 1
+a30 1
+	$(OBJ)AGuide.o $(OBJ)ADT.o $(OBJ)Menu.o
+d36 1
+a36 1
+	 lib:reqtools.lib
+d178 1
+@
+
+
+1.625
+log
+@Cleaned up the code a bit.
+Rename ftpwin.h to AmiFTP.h and ftpwin.c to AmiFTP.c.
+Created Menu.c and moved all menu-functions there.
+@
+text
+@d36 1
+a36 1
+	 lib:sup.lib lib:reqtools.lib
+@
+
+
+1.607
+log
+@Cursor up in sitelistwindow works now.
+Fixed closing of sitelist-window when the edit-window was opened,
+this is probably a CA-bug.
+@
+text
+@d20 1
+a20 1
+	MainWindow.c ftpwin.c TransferWindow.c SiteWindow.c config.c \
+d22 1
+a22 1
+	AmiFTP_Cat.c AGuide.c ADT.c
+d27 1
+a27 1
+	$(OBJ)ftpwin.o $(OBJ)TransferWindow.o $(OBJ)SiteWindow.o $(OBJ)config.o \
+d30 1
+a30 1
+	$(OBJ)AGuide.o $(OBJ)ADT.o
+d33 1
+a33 1
+INCS= 	ftpwin.h dirlist_struct.h gui.h AmiFTP_Cat.h
+d77 1
+a77 1
+obj/AmiFTP.gst: SCOPTIONS ftpwin.h gui.h AmiFTP_Cat.h#(replace with $(INCS)
+d153 10
+a162 10
+$(OBJ)ftp.o: ftp.c ftpwin.h $(GST)
+$(OBJ)main.o: main.c ftpwin.h $(GST)
+$(OBJ)dofuncs.o: dofuncs.c ftpwin.h $(GST)
+$(OBJ)misc.o: misc.c ftpwin.h $(GST)
+$(OBJ)data.o: data.c ftpwin.h $(GST)
+$(OBJ)change_dir.o: change_dir.c ftpwin.h $(GST)
+$(OBJ)readdir.o: readdir.c ftpwin.h $(GST)
+$(OBJ)dirlist.o: dirlist.c ftpwin.h $(GST)
+$(OBJ)lex.o: lex.c ftpwin.h $(GST)
+$(OBJ)MainWindow.o: MainWindow.c ftpwin.h gui.h $(GST)
+d164 2
+a165 2
+$(OBJ)ftpwin.o: ftpwin.c ftpwin.h $(GST)
+$(OBJ)TransferWindow.o: TransferWindow.c ftpwin.h gui.h  Trans.gui $(GST)
+d171 2
+a172 2
+$(OBJ)rexx.o: rexx.c ftpwin.h $(GST)
+$(OBJ)cache.o: cache.c ftpwin.h gui.h $(GST)
+d174 4
+a177 3
+$(OBJ)locale.o: locale.c ftpwin.h $(GST)
+$(OBJ)AGuide.o: AGuide.c ftpwin.h $(GST)
+$(OBJ)ADT.o: ADT.c ftpwin.h $(GST)
+@
+
+
+1.531
+log
+@Lots of stuff
+@
+text
+@d137 2
+a138 2
+char *infotext = "AmiFTP " VERSION " (" __DATE__ ")\nCopyright © 1996 Magnus Lilja. All rights reserved.\n\nClassAct is © Phantom Development\nAmiFTP is Shareware, please consider register\n\nARexx-port: ";
+char *wintitle = "AmiFTP " VERSION " © 1996 Magnus Lilja";
+@
+
+
+1.265
+log
+@Groups added. Bugs fixed.
+@
+text
+@d35 1
+a35 1
+LIBS=	dh1:classact/classactlib/classact.lib dh1:classact/lib/classact.lib lib:asyncio.lib lib:wb2cli.o \
+d165 1
+a165 1
+$(OBJ)TransferWindow.o: TransferWindow.c ftpwin.h gui.h  $(GST)
+@
+
+
+1.152
+log
+@ARexx viewcommand tried to view the wrong file.
+@
+text
+@d7 9
+a15 6
+CATALOGS= Catalogs/NewCatalog.ct Catalogs/Svenska/AmiFTP.catalog Catalogs/Italiano/AmiFTP.catalog \
+        Catalogs/Dansk/AmiFTP.catalog Catalogs/Deutsch/AmiFTP.catalog Catalogs/Norsk/AmiFTP.catalog \
+	Catalogs/Nederlands/AmiFTP.catalog Catalogs/Suomi/AmiFTP.catalog Catalogs/íslenska/AmiFTP.catalog
+
+LOCALES= Catalogs/Svenska.ct Catalogs/Italiano.ct Catalogs/Dansk.ct Catalogs/Deutsch.ct Catalogs/Norsk.ct \
+	Catalogs/Nederlands.ct Catalogs/Suomi.ct Catalogs/íslenska.ct
+d20 3
+a22 2
+	MainWindow.c ftpwin.c TransferWindow.c SiteWindow.c config.c PrefsWindow.c ConnectWindow.c \
+	ftp.c rexx.c cache.c main.c locale.c AmiFTP_Cat.c AGuide.c
+d27 5
+a31 3
+	$(OBJ)ftpwin.o $(OBJ)TransferWindow.o $(OBJ)SiteWindow.o $(OBJ)config.o $(OBJ)PrefsWindow.o \
+	$(OBJ)ConnectWindow.o $(OBJ)ftp.o $(OBJ)rexx.o $(OBJ)cache.o $(OBJ)main.o $(OBJ)locale.o \
+	$(OBJ)AmiFTP_Cat.o $(OBJ)AGuide.o
+d176 1
+@
+
+
+1.150
+log
+@Iconify while transferring added.
+Nicer update of fuelgauge.
+@
+text
+@d29 1
+a29 1
+LIBS=	dh1:classact/lib/classact.lib lib:asyncio.lib lib:wb2cli.o \
+@
+
+
+1.124
+log
+@AmiTCP and AS225r2 support in the same binary.
+ARexx-command VIEW added.
+New option to SETATTR, QUIET.
+SETATTR LOCALDIR didn't update the download dir-gadget.
+GETATTR STEM=bar didn't work since bar is in lowercase.
+Enforcer hits when trying to open AmiFTP on a non-existing screen removed.
+Moved 'Show dot-files?' to the Settings-menu.
+Icelandic and Spanish catalogs added.
+@
+text
+@a37 1
+#MLINKDEFS= DEF AS225 DEF SOCKIO IDIR=dh1:sc/as225/include IDIR=sc:include IDIR=dh1:sc/include
+d61 1
+a61 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION $(OPTFLAGS) DEF SOCKIO $(MLINKDEFS)
+a69 1
+mlink: AmiFTPmlink
+d74 1
+a74 1
+	SC NOOBJNAME NOGST MAKEGST=$@@ gst.c DEF SOCKIO $(MLINKDEFS)
+d80 1
+a80 1
+	$(CC) LINK $(OBJ)version.o $(OBJS) lib:_sas.o TO $@@_d BATCH $(LIBS) dh1:tcp/tcphook/tcp.lib #lib:net.lib
+a83 5
+$(PROG)mlink: $(OBJ)version.o $(OBJS)
+	$(CC) LINK $(OBJ)version.o $(OBJS) lib:_sas.o TO $@@_d BATCH $(LIBS)
+	slink $@@_d to $@@ STRIPDEBUG NODEBUG
+#	$(VER)
+
+d157 1
+a157 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND $(OPTFLAGS) $(MLINKDEFS)
+d161 1
+a161 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND $(OPTFLAGS) $(MLINKDEFS)
+@
+
+
+0.1343
+log
+@Removed some redudant things from AllocListbrowserNode()
+Gadgets no longer flicker since I keep track of the state. Thought ClassAct did that, but no...
+Added one tick to the fuelgauge, now 11 ticks => 10 intervals.
+@
+text
+@a5 2
+MAJORREV= 1.0
+
+d9 1
+a9 1
+	Catalogs/Nederlands/AmiFTP.catalog Catalogs/Suomi/AmiFTP.catalog
+d12 1
+a12 1
+	Catalogs/Nederlands.ct Catalogs/Suomi.ct
+d35 1
+a35 1
+OPTFLAGS = 	OPTIMIZE OPTTIME
+d62 1
+a62 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION $(OPTFLAGS) $(MLINKDEFS)
+d76 1
+a76 1
+	SC NOOBJNAME NOGST MAKEGST=$@@ gst.c $(MLINKDEFS)
+d82 1
+a82 1
+	$(CC) LINK $(OBJ)version.o $(OBJS) lib:_sas.o TO $@@_d BATCH $(LIBS) lib:net.lib
+d91 2
+a92 1
+locale: $(CATALOGS)
+d106 3
+d135 1
+a135 1
+const char VersionID[] = "$$VER: $(PROG) " MAJORREV " " __AMIGADATE__;
+d138 2
+a139 2
+char *infotext = "AmiFTP " MAJORREV " (" __DATE__ ")\nCopyright © 1995 Magnus Lilja. All rights reserved.\n\nClassAct is © Phantom Development\nAmiFTP is Shareware, please consider register\n\nARexx-port: ";
+char *wintitle = "AmiFTP " MAJORREV " © 1995 Magnus Lilja";
+d146 1
+a146 1
+	$(CC) NODEBUG DEF=VERSION="$(VERSION)" DEF=MAJORREV="$(MAJORREV)" OBJNAME=$(OBJ) version.c
+d152 1
+a152 1
+	$(CI) -l$(VERSION) $(LOCALES) $(DOCS)
+@
+
+
+0.1332
+log
+@Release 1.0
+AmiFTP doesn't need amigaguide.library in order to start.
+@
+text
+@d37 2
+a38 1
+CFLAGS=		DEBUG=LINE #NOSTACKCHECK
+d40 1
+a40 1
+MLINKDEFS= DEF AS225 DEF SOCKIO IDIR=dh1:sc/as225/include IDIR=sc:include IDIR=dh1:sc/include
+d64 1
+a64 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION $(MLINKDEFS)
+d162 1
+a162 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND $(MLINKDEFS)
+d166 1
+a166 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND $(MLINKDEFS)
+@
+
+
+0.1312
+log
+@Fixed NewClicked so it sets the new node as selected+makevisible
+@
+text
+@d39 1
+a39 1
+#MLINKDEFS= DEF AS225 DEF SOCKIO IDIR=dh1:sc/as225/include IDIR=sc:include IDIR=dh1:sc/include
+d132 1
+a132 1
+const char VersionID[] = "$$VER: $(PROG) " VERSION " " __AMIGADATE__;
+d135 1
+a135 1
+char *infotext = "AmiFTP " MAJORREV " (" __DATE__ ")\nCopyright © 1995 Magnus Lilja. All rights reserved.\n\nClassAct is © Phantom Development\n\nARexx-port: ";
+@
+
+
+0.1302
+log
+@Connecting to a site from the commandline now works.
+@
+text
+@d6 2
+d90 1
+a90 1
+	$(VER)
+d135 2
+a136 2
+char *infotext = "AmiFTP " VERSION " (" __DATE__ ")\nCopyright © 1995 Magnus Lilja. All rights reserved.\n\nClassAct is © Phantom Development\n\nARexx-port: ";
+char *wintitle = "AmiFTP " VERSION " © 1995 Magnus Lilja";
+d143 1
+a143 1
+	$(CC) NODEBUG DEF=VERSION="$(VERSION)" OBJNAME=$(OBJ) version.c
+@
+
+
+0.1300
+log
+@Added Reload-gadget.
+Added Sort-gadget to sitelist-window.
+AmiFTP now show the correct size of links during transfer.
+@
+text
+@d7 9
+d17 1
+a17 1
+	gui.c ftpwin.c dl_gui.c site_gui.c config.c pref_gui.c connect_gui.c \
+d22 3
+a24 3
+ 	$(OBJ)change_dir.o $(OBJ)readdir.o $(OBJ)dirlist.o $(OBJ)gui.o \
+	$(OBJ)ftpwin.o $(OBJ)dl_gui.o $(OBJ)site_gui.o $(OBJ)config.o $(OBJ)pref_gui.o \
+	$(OBJ)connect_gui.o $(OBJ)ftp.o $(OBJ)rexx.o $(OBJ)cache.o $(OBJ)main.o $(OBJ)locale.o \
+d90 1
+a90 3
+locale: Catalogs/NewCatalog.ct Catalogs/Svenska/AmiFTP.catalog Catalogs/Italiano/AmiFTP.catalog \
+        Catalogs/Dansk/AmiFTP.catalog Catalogs/Deutsch/AmiFTP.catalog Catalogs/Norsk/AmiFTP.catalog \
+	Catalogs/Nederlands/AmiFTP.catalog Catalogs/Suomi/AmiFTP.catalog
+d145 1
+d147 1
+d158 1
+a158 1
+$(OBJ)gui.o: gui.c ftpwin.h gui.h $(GST)
+d161 2
+a162 2
+$(OBJ)dl_gui.o: dl_gui.c ftpwin.h gui.h  $(GST)
+$(OBJ)site_gui.o: site_gui.c $(GST)
+d165 2
+a166 2
+$(OBJ)pref_gui.o: pref_gui.c $(GST)
+$(OBJ)connect_gui.o: connect_gui.c $(GST)
+@
+
+
+0.807
+log
+@Added AmigaGuide on-line help.
+@
+text
+@d20 2
+a21 2
+LIBS=	lib:asyncio.lib lib:wb2cli.o \
+	lib:reqtools.lib lib:sup.lib
+d83 1
+a83 1
+	Catalogs/Nederlands/AmiFTP.catalog
+d91 3
+d126 1
+a126 1
+char *infotext = "AmiFTP " VERSION "\nCopyright © 1995 Magnus Lilja\n\nCompiled on " __DATE__ "\nARexx-port: %s\n%s\nHow to contact me:\n\nlilja@@lysator.liu.se\n\nMagnus Lilja\nAlsättersgatan 9C:17\nS-582 51 LINKÖPING\nSWEDEN";
+d159 1
+a159 1
+$(OBJ)cache.o: cache.c ftpwin.h $(GST)
+@
+
+
+0.723
+log
+@AmiFTP adds .i if the ARexx-port is present.
+@
+text
+@d9 1
+a9 1
+	ftp.c rexx.c cache.c main.c locale.c AmiFTP_Cat.c
+d16 1
+a16 1
+	$(OBJ)AmiFTP_Cat.o
+d159 1
+@
+
+
+0.710
+log
+@Transfer Window now looks good on both V39 and V40.
+@
+text
+@d60 1
+a60 1
+all: AmiFTP doc/AmiFTP.guide
+a111 3
+doc/AmiFTP.guide: doc/AmiFTP.texi
+	makeinfo --amiga-39 doc/AmiFTP.texi --output doc/AmiFTP.guide
+
+d123 1
+a123 1
+char *infotext = "AmiFTP " VERSION "\nCopyright © 1995 Magnus Lilja\n\nCompiled on " __DATE__ "\n%s\nHow to contact me:\n\nlilja@@lysator.liu.se\n\nMagnus Lilja\nAlsättersgatan 9C:17\nS-582 51 LINKÖPING\nSWEDEN";
+@
+
+
+0.692
+log
+@Release version.
+@
+text
+@d82 2
+a83 1
+        Catalogs/Dansk/AmiFTP.catalog Catalogs/Deutsch/AmiFTP.catalog Catalogs/Norsk/AmiFTP.catalog
+d102 3
+@
+
+
+0.685
+log
+@Links were viewed twice.
+Workaround for V39 GTNM_Number/Justification bug.
+@
+text
+@d21 1
+a21 1
+	lib:reqtools.lib lib:sup.lib lib:net.lib 
+d28 1
+a28 1
+DEFS= #DEF AS225=1
+d50 9
+d61 1
+d66 1
+a66 1
+	SC NOOBJNAME NOGST MAKEGST=$@@ gst.c #DEF AS225=1 DEF SOCKIO=1
+d72 1
+a72 1
+	$(CC) LINK $(OBJ)version.o $(OBJS) lib:_sas.o TO $@@_d BATCH $(LIBS)
+d76 5
+a90 1
+	$(CATCOMP) AmiFTP.cd Catalogs/Svenska.ct CATALOG Catalogs/Svenska/AmiFTP.catalog
+a91 1
+	$(CATCOMP) AmiFTP.cd Catalogs/Svenska.ct NEWCTFILE Catalogs/Svenska.ct
+a93 1
+	$(CATCOMP) AmiFTP.cd Catalogs/Italiano.ct CATALOG Catalogs/Italiano/AmiFTP.catalog
+a94 1
+	$(CATCOMP) AmiFTP.cd Catalogs/Italiano.ct NEWCTFILE Catalogs/Italiano.ct
+a96 1
+	$(CATCOMP) AmiFTP.cd Catalogs/Dansk.ct CATALOG Catalogs/Dansk/AmiFTP.catalog
+a97 1
+	$(CATCOMP) AmiFTP.cd Catalogs/Dansk.ct NEWCTFILE Catalogs/Dansk.ct
+a99 1
+	$(CATCOMP) AmiFTP.cd Catalogs/Deutsch.ct CATALOG Catalogs/Deutsch/AmiFTP.catalog
+a100 1
+	$(CATCOMP) AmiFTP.cd Catalogs/Deutsch.ct NEWCTFILE Catalogs/Deutsch.ct
+a102 1
+	$(CATCOMP) AmiFTP.cd Catalogs/Norsk.ct CATALOG Catalogs/Norsk/AmiFTP.catalog
+a103 1
+	$(CATCOMP) AmiFTP.cd Catalogs/Norsk.ct NEWCTFILE Catalogs/Norsk.ct
+d109 2
+a110 1
+	makeinfo --amiga doc/AmiFTP.texi --output doc/AmiFTP.guide
+d134 1
+a134 16
+	$(CI) -l$(VERSION) $(SRCS) $(INCS) $(MISC) AmiFTP.cd
+.c.o:
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION #DEF AS225 DEF SOCKIO
+
+#ALL: AmiFTP
+
+#obj/ftpwin.gst: SCOPTIONS ftpwin.h gui.h
+#	-gst unload Source:tcp/ftpwin/obj/ftpwin.gst
+#	-delete obj/ftpwin.gst
+#	sc MGST=obj/ftpwin.gst gst.c NOOBJNAME 
+##DEF SOCKIO=1
+#AmiFTP: obj/ftpwin.gst $(OBJS)
+#	source:brev
+#	SC version.c OBJNAME=$(OBJ) NOVERSION
+#	SC LINK $(OBJS) obj/version.o dh1:ndk/examples/asynchio/asyncio.o lib:wb2cli.o TO AmiFTP_d lib:debug.lib lib:net.lib VERBOSE
+#	slink AmiFTP_d TO AmiFTP NODEBUG
+a135 1
+#$(OBJ)version.o: version.c
+d146 1
+a146 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND #DEF AS225 DEF SOCKIO
+d150 1
+a150 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND #DEF AS225 DEF SOCKIO
+@
+
+
+0.667
+log
+@Datatransferred was updated one time too much.
+@
+text
+@d20 1
+a20 1
+LIBS=	dh1:ndk/examples/asynchio/asyncio.o lib:wb2cli.o \
+d111 1
+a111 1
+version.c:
+d116 1
+a116 1
+char *infotext = "AmiFTP " VERSION "\nCopyright © 1995 Magnus Lilja\n\nCompiled on " __DATE__ "\n\nHow to contact me:\n\nMagnus Lilja\nAlsättersgatan 9C:17\nS-582 51 LINKÖPING\nSWEDEN\n\nlilja@@lysator.liu.se\n";
+@
+
+
+0.647
+log
+@Release version, small things fixed.
+@
+text
+@d67 1
+a67 1
+        Catalogs/Dansk/AmiFTP.catalog Catalogs/Deutsch/AmiFTP.catalog
+d94 5
+@
+
+
+0.623
+log
+@Added menuitem TransferMode->Binary/ASCII
+@
+text
+@d19 1
+a19 1
+MISC= 	SMakefile SCOPTIONS
+@
+
+
+0.588
+log
+@The GUI now handles proportional fonts. Only the main listview is fixed font.
+@
+text
+@d67 1
+a67 1
+        Catalogs/Dansk/AmiFTP.catalog
+d74 1
+d79 1
+d84 1
+d89 6
+d97 1
+@
+
+
+0.567
+log
+@Fixed busy loop caused by badly timed SetMenuStrip() (In the NextSelect-loop)
+@
+text
+@d66 2
+a67 1
+locale: Catalogs/NewCatalog.ct Catalogs/Svenska/AmiFTP.catalog Catalogs/Italiano/AmiFTP.catalog
+d82 4
+@
+
+
+0.563
+log
+@AmiFTP now works with AS225r2 and hopefully with mlink.
+Fixes concerning the locale.
+@
+text
+@d21 1
+a21 1
+	lib:reqtools.lib lib:sup.lib #lib:net.lib 
+d56 1
+a56 1
+	SC NOOBJNAME NOGST MAKEGST=$@@ gst.c DEF AS225=1 DEF SOCKIO=1
+d110 1
+a110 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION DEF AS225 DEF SOCKIO
+d136 1
+a136 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND DEF AS225 DEF SOCKIO
+d140 1
+a140 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND DEF AS225 DEF SOCKIO
+@
+
+
+0.544
+log
+@Added gadstrlen() and macro GadgetTextLength() to compute correct strings with _ in labels.
+Checks if CTRL-C has been hit before opening window.
+@
+text
+@d21 1
+a21 1
+	lib:reqtools.lib lib:sup.lib lib:net.lib 
+d56 1
+a56 1
+	SC NOOBJNAME NOGST MAKEGST=$@@ gst.c #DEF AS225=1 DEF SOCKIO=1
+d110 1
+a110 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION #DEF AS225 DEF SOCKIO
+d136 1
+a136 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND #DEF AS225 DEF SOCKIO
+d140 1
+a140 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND #DEF AS225 DEF SOCKIO
+@
+
+
+0.536
+log
+@SETTIINGS-tooltype/cli argument now works again.
+@
+text
+@d66 1
+a66 1
+locale: Catalogs/NewCatalog.ct Catalogs/Svenska/AmiFTP.catalog
+d77 4
+@
+
+
+0.534
+log
+@Anonymous flag on per default
+@
+text
+@d34 1
+a34 1
+		SAVEDS GST=obj/$(PROG).gst OBJNAME=$(OBJ)
+d60 2
+a61 2
+# 
+$(PROG): obj/$(PROG).gst $(OBJ)version.o $(OBJS)
+@
+
+
+0.531
+log
+@Resume transfer added (when getting files).
+Get-dir-tree is broken.
+@
+text
+@d51 1
+a51 1
+all: AmiFTP
+d66 1
+a66 1
+locale: Catalogs/Svenska/AmiFTP.catalog
+d77 4
+a80 1
+
+@
+
+
+0.388
+log
+@send/recv-request re-written
+Layoutbug in connect-window fixed
+@
+text
+@d26 1
+a26 1
+CFLAGS=		DEBUG=LINE NOSTACKCHECK
+d129 1
+d133 1
+@
+
+
+0.371
+log
+@Localized source.
+@
+text
+@d8 1
+a8 1
+	lex.c gui.c ftpwin.c dl_gui.c site_gui.c config.c pref_gui.c connect_gui.c \
+d10 1
+a10 1
+
+d13 1
+a13 1
+ 	$(OBJ)change_dir.o $(OBJ)readdir.o $(OBJ)dirlist.o $(OBJ)lex.o $(OBJ)gui.o \
+d17 1
+d19 1
+a19 1
+MISC= 	SMakefile
+d54 1
+a54 1
+	GST `Cd`/$@@ UNLOAd
+d66 1
+d73 4
+@
+
+
+0.348
+log
+@Fixed the gadgets in site_gui (functions were messed up)
+Enumerated gadgetnumbers to prevent the above in the future.
+@
+text
+@d9 1
+a9 1
+	ftp.c rexx.c cache.c main.c
+d15 3
+a17 2
+	$(OBJ)connect_gui.o $(OBJ)ftp.o $(OBJ)rexx.o $(OBJ)cache.o $(OBJ)main.o
+INCS= 	ftpwin.h dirlist_struct.h gui.h
+d52 1
+a52 1
+obj/AmiFTP.gst: SCOPTIONS ftpwin.h gui.h #(replace with $(INCS)
+d65 7
+d95 1
+a95 1
+	$(CI) -l$(VERSION) $(SRCS) $(INCS) $(MISC)
+d131 2
+@
+
+
+0.347
+log
+@Yet another change to make it work with as225
+@
+text
+@d19 1
+a19 1
+	lib:reqtools.lib lib:sup.lib #lib:net.lib 
+d26 1
+a26 1
+DEFS= DEF AS225=1
+d54 1
+a54 1
+	SC NOOBJNAME NOGST MAKEGST=$@@ gst.c DEF AS225=1 DEF SOCKIO=1
+d89 1
+a89 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION DEF AS225 DEF SOCKIO
+@
+
+
+0.336
+log
+@Added AS225-support (via #ifdefs)
+Using GetSysTime() instead of time() in transferroutines
+@
+text
+@d19 1
+a19 1
+	lib:reqtools.lib lib:sup.lib lib:net.lib 
+d26 1
+a26 1
+DEFS=DEF AS225=1
+d54 1
+a54 1
+	SC NOOBJNAME NOGST MAKEGST=$@@ gst.c #DEF AS225=1 DEF SOCKIO=1
+d89 1
+a89 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION #DEF AS225 DEF SOCKIO
+@
+
+
+0.322
+log
+@Dir-cache added.
+Delete added.
+@
+text
+@d7 1
+a7 1
+SRCS= 	misc.c data.c main.c dofuncs.c change_dir.c readdir.c dirlist.c \
+d9 1
+a9 1
+	ftp.c rexx.c cache.c
+d12 1
+a12 1
+OBJS=  	$(OBJ)misc.o $(OBJ)data.o $(OBJ)main.o $(OBJ)dofuncs.o \
+d15 1
+a15 1
+	$(OBJ)connect_gui.o $(OBJ)ftp.o $(OBJ)rexx.o $(OBJ)cache.o
+d19 1
+a19 1
+	lib:reqtools.lib lib:sup.lib dh1:tcp/ncftp-1.5.6/src/amiga/s_socket.o lib:net.lib
+d25 2
+a26 2
+IDIRS=
+DEFS=
+d54 1
+a54 1
+	SC NOOBJNAME NOGST MAKEGST=$@@ gst.c
+d60 1
+a60 1
+	$(CC) LINK $(OBJ)version.o $(OBJS) TO $@@_d BATCH $(LIBS)
+d89 1
+a89 1
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION
+@
+
+
+0.303
+log
+@Repaired the smakefile to work again
+@
+text
+@d9 1
+a9 1
+	ftp.c rexx.c
+d15 1
+a15 1
+	$(OBJ)connect_gui.o $(OBJ)ftp.o $(OBJ)rexx.o
+d122 1
+@
+
+
+0.284
+log
+@First RCS version.
+@
+text
+@d9 1
+a9 1
+	ftp.c rexx.c lex.c
+d16 1
+a16 1
+INCS= 	ftpwin.h dirlist_struct.h
+d19 2
+a20 1
+	lib:reqtools.lib lib:sup.lib lib:net.lib
+d31 1
+a31 1
+		NOVERSION NOICONS NOGENPROTOTYPEDEFS STRINGSCONST UNSIGNEDCHARS \
+d49 1
+a49 2
+test:
+	$(MAKE) $(PROG)
+d51 5
+d59 3
+a61 2
+$(PROG):	SCOPTIONS obj/$(PROG).gst $(OBJ)version.o $(OBJS)
+	$(CC) $(OBJ)version.o $(OBJS) LINK TO $@@ BATCH $(LIBS) $(CFLAGS)
+a63 11
+# copy SCOPTIONS variable to file
+SCOPTIONS:	SMakefile
+	$(CP) TO $@@ <FROM <
+$(SCOPTIONS)
+<
+
+#create project GST file.
+obj/$(PROG).gst:	SCOPTIONS gst.c $(INCS)
+	GST `Cd`/$@@ UNLOAD
+	-@@$(RM) $@@ >NIL:
+	SC NOOBJNAME NOGST MAKEGST=$@@ gst.c
+d75 2
+d83 1
+a83 1
+	$(CC) NODEBUG DEF=VERSION="$(VERSION)" version.c
+d88 2
+d104 18
+a121 21
+
+#.c.o:
+#	sc $< OBJNAME=$(OBJ) DEF NOVERSION
+
+#$(OBJ)ftp.o: ftp.c ftpwin.h
+#$(OBJ)main.o: main.c ftpwin.h
+#$(OBJ)dofuncs.o: dofuncs.c ftpwin.h 
+#$(OBJ)misc.o: misc.c ftpwin.h 
+#$(OBJ)data.o: data.c ftpwin.h 
+#$(OBJ)change_dir.o: change_dir.c ftpwin.h
+#$(OBJ)readdir.o: readdir.c ftpwin.h
+#$(OBJ)dirlist.o: dirlist.c ftpwin.h
+#$(OBJ)lex.o: lex.c ftpwin.h 
+#$(OBJ)gui.o: gui.c ftpwin.h gui.h 
+#$(OBJ)ftpwin.o: ftpwin.c ftpwin.h 
+#$(OBJ)dl_gui.o: dl_gui.c ftpwin.h gui.h 
+#$(OBJ)site_gui.o: site_gui.c 
+#$(OBJ)config.o: config.c 
+#$(OBJ)pref_gui.o: pref_gui.c
+#$(OBJ)connect_gui.o: connect_gui.c
+#$(OBJ)rexx.o: rexx.c ftpwin.h
+@

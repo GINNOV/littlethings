@@ -1,0 +1,63 @@
+TABLE OF CONTENTS
+
+tower.library/DisposeExtObject
+tower.library/NewExtObjectA
+tower.library/DisposeExtObject                 tower.library/DisposeExtObject
+
+   NAME                                                                  (V1)
+	DisposeExtObject -- Dispose an object created with NewExtObject().
+
+   SYNOPSIS
+	DisposeExtObject(object)
+	                 A0
+
+	VOID DisposeExtObject(APTR);
+
+   FUNCTION
+	Disposes an object created with NewExtObject().  All associated
+	memory or other resources are released.  You can not use the object
+	after you called this function.
+
+   INPUTS
+	object - object handle returned from NewExtObject() (or NULL).
+
+   SEE ALSO
+	NewExtObject()
+
+tower.library/NewExtObjectA                       tower.library/NewExtObjectA
+
+   NAME                                                                  (V1)
+	NewExtObjectA -- Create an object from an external class.
+	NewExtObject -- tagcall variant of NewExtObjectA().
+
+   SYNOPSIS
+	object = NewExtObjectA(classid, attributes)
+	D0                     A0       A1
+
+	APTR NewExtObjectA(STRPTR, struct TagItem *);
+
+   FUNCTION
+	Creates an object from an external class.  External means that the
+	object creation may cause the class to be loaded from disk.  For
+	details about objects and classes see the intuition.library autodoc.
+
+   INPUTS
+	classid - the identification (name) of the class.  You should use
+	    the uppercase constants over actual strings.
+	attributes - a pointer to a list of tagitems with initial attributes
+	    for the object.  See the per-class documentation to learn which
+	    attributes can be specified.  A NULL pointer is equivalent to an
+	    empty taglist.
+
+   RESULTS
+	object - handle of the created object, or NULL for failure.  You
+	    eventually call DisposeExtObject() to release the handle.
+
+   NOTES
+	Until further notice, you can use this function only for classes of
+	the Tower system.  For other classes, use NewObject().
+
+   SEE ALSO
+	DisposeExtObject(), intuition.library/NewObject
+
+

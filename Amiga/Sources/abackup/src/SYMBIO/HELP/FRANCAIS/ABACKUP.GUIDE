@@ -1,0 +1,953 @@
+@database ????
+@master ????
+@width 80
+@width 76
+@node Main "Page de Garde"
+============================================================================
+                                ABackup 5.22
+
+                 Copyright (C) 1992-1999 par Denis GOUNELLE
+============================================================================
+
+Table des matières : 
+
+        @{" Introduction                                " Link "Introduction"}
+        @{" Informations légales                        " Link "InfoLegales"}
+        @{" Diffusion                                   " Link "Diffusion"}
+        @{" Modes de fonctionnements                    " Link "ModesDeFonct"}
+        @{" Arguments                                   " Link "Arguments"}
+        @{" Fenêtre d'application                       " Link "AppWindow"}
+        @{" Compatibilité avec les versions précédentes " Link "Compatibilite"}
+        @{" Utilisation de disques amovibles            " Link "DisquesAmov"}
+        @{" Remerciements                               " Link "Merci"}
+        @{" Auteurs                                     " Link "Auteurs"}
+        @{" Liste des modifications                     " Link "Historique"}
+        @{" Questions/Réponses                          " Link "FAQ"}
+
+@endnode
+@node Diffusion "Diffusion"
+
+Depuis  la  version  5.22,  ABackup  est  désormais  diffusé  en  tant   que
+"freeware". Sauf autorisation écrite, toute utilisation commerciale ou vente
+est strictement interdite. Vous pouvez copier et diffuser ce  programme  aux
+conditions suivantes : 
+
+    1. L'ensemble des fichiers doit être fourni 
+    2. Aucun fichier ne doit avoir été modifié 
+    3. Vous ne pouvez pas demander plus de 35FF pour cela 
+
+Malgré de nombreux tests, je ne peux garantir que ABackup ne contient aucune
+erreur. VOUS UTILISEZ CE PROGRAMME A VOS RISQUES ET PERILS. Je ne pourrai en
+aucun cas être tenus pour responsables de tout dommage, direct ou  indirect,
+résultant de l'utilisation de ABackup. 
+
+@endnode
+@node Introduction "Introduction"
+ABackup est un utilitaire  destiné  à  vous  permettre  de  sauvegarder  les
+données présentes sur votre disque dur. Il peut être utilisé sur tout  Amiga
+disposant du Kickstart V37 ou supérieur, et d'au moins 1 Mo de mémoire. 
+
+ABackup dispose de  toutes  les  fonctionnalités  que  vous  êtes  en  droit
+d'attendre d'un programme de ce type : 
+
+  - Sauvegarde et restauration totales ou sélectives (choix des fichiers par
+    nom,  par  date,  par  bits  de  protection,   mais   aussi   de   facon
+    individuelle). 
+
+  - Sauvegarde sur disquettes, sur une partition (par exemple une  cartouche
+    SyQuest) ou sous forme d'un fichier archive. Compression,  vérification,
+    positionnement du bit d'archive et cryptage optionnels. 
+
+  - Restauration possible dans un autre répertoire, avec ou sans reprise  de
+    l'arborescence originale, et choix du traitement des fichiers  existants
+    déjà. Restauration de la date et des répertoires vides optionels. 
+
+  - Sauvegarde de partitions non-AmigaDOS (PC, Mac, UNIX, etc...). 
+
+  - Possibilité d'obtenir un rapport pour toutes les opérations. 
+
+  - Interface Intuition complète, documentation au format AmigaGuide. 
+
+Mais afin que ABackup ne soit pas seulement un utilitaire de  sauvegarde  de
+plus, ce programme vous offre également de nombreuses possibilités  inédites
+: 
+
+  - Gestion des disques amovibles (SyQuest, Zip, Jaz, et autres) de la  même
+    façon que les disquettes. 
+
+  - Gestion transparente des disquettes Haute Densité. Utilisation  cyclique
+    de plusieurs lecteurs de disquettes (y compris en  combinant  disquettes
+    Double Densité et Haute  Densité).  Supporte  le  "diskspare.device"  de
+    facon transparente. 
+
+  - Ecritures asynchrones pour une vitesse de sauvegarde maximale. 
+
+  - Compression des données à l'aide de la "xpk.library"  ou  par  programme
+    externe. Exclusion automatique des fichiers déjà compressé. 
+
+  -  Automatisation  complête  des  opérations  :  permet  par  exemple   le
+    déclenchement d'une sauvegarde rien qu'en double-cliquant sur une icône 
+
+  - Nombreuses sécurités, afin d'éviter toute perte de données  à  la  suite
+    d'erreurs de manipulation. 
+
+  - Support du  "MultiUserFileSystem"  :  les  informations  concernant  les
+    droits d'accès et le propriétaire sont automatiquement sauvegardées.  En
+    cas de restauration vers une partition également gérée par ce système de
+    fichier, ces informations seront automatiquement restaurées. 
+
+
+@endnode
+@node InfoLegales "Informations légales"
+La bibliothèque "xpk.library" est (C) par U. Dominik  Mueller,  Bryan  Ford,
+Christian Schneider, et les autres auteurs de XPK. 
+
+Le gestionnaire  de  périphériques  "diskspare.device"  est  (C)  par  Klaus
+Deppisch. 
+
+Le système de fichiers "MultiUserFileSystem" est (C) par Geert Uytterhoeven.
+
+Les autres produits, marques et logiciels cités,  sont  déposées  par  leurs
+propriétaires respectifs. 
+
+@endnode
+@node Auteurs "Auteurs"
+ABackup a été conçu et écrit par : 
+
+    Denis GOUNELLE
+    27, rue Jules Guesde
+    45400 FLEURY-LES-AUBRAIS
+    FRANCE
+
+    EMail: denis.gounelle@wanadoo.fr
+
+    Site personnel: http://perso.wanadoo.fr/denis.gounelle
+
+La version 5.00 de ABackup a été écrite en collaboration avec Reza Elghazi. 
+
+@endnode
+@node ModesDeFonct "Modes de fonctionnements"
+En fonction des @{" Arguments " Link "Arguments"} indiqués lors de l'appel du  programme,  ABackup
+offre quatre modes de fonctionnement : 
+
+ 1. @{" Interactif avec interface Intuition " Link "StdIntuition"}
+
+    C'est le mode de fonctionnement par défaut : le programme  présente  une
+    interface Intuition, et vous dirigez les opérations avec la souris et/ou
+    avec le clavier. 
+
+ 2. @{" Automatique avec interface Intuition " Link "AutoIntuition"}
+
+    Ce mode  est  utile  lorsque  vous  effectuez  régulièrement  les  mêmes
+    opérations : il vous suffit alors de créer  une  fois  pour  toutes  une
+    icône  avec  les  paramètres  souhaités,  et  l'opération  pourra   être
+    déclenchée simplement en double-cliquant sur l'icône. 
+
+ 3. @{" Interactif avec interface Shell " Link "StdShell"}
+
+    Ce mode permet d'utiliser ABackup comme archiveur  de  fichiers,  de  la
+    même façon que des programmes comme "LhA" ou "Tar". 
+
+ 4. @{" Automatique avec interface Shell " Link "AutoShell"}
+
+    Ce mode est  particulièrement  utile  par  exemple  pour  effectuer  des
+    sauvegardes automatiques nocturnes vers une partition ou un dérouleur de
+    bande. 
+
+@endnode
+@node StdIntuition "Interactif avec interface Intuition"
+Une fois ABackup chargé et initialisé, la @{" Fenêtre principale " Link "MainWin"}  s'ouvre  sur
+l'écran indiqué dans les Préférences. 
+
+@endnode
+@node AutoIntuition "Automatique avec interface Intuition"
+Activé en double-cliquant sur une icône de type "Projet", dont  l'outil  par
+défaut ("Default Tool") est  ABackup,  et  dont  les  types  d'outil  ("Tool
+Types") contiennent  au  minimum  les  spécifications  MODE  et  FROM  (voir
+@{" Arguments " Link "Arguments"}). 
+
+Une fois ABackup chargé et initialisé, le programme enchaine automatiquement
+le chargement de l'arborescence ou du catalogue, la sélection des  fichiers.
+Puis la @{" Fenêtre moniteur " Link "MonitorWin"} apparait et l'opération indiquée commence. 
+
+@endnode
+@node StdShell "Interactif avec interface Shell"
+Activé depuis  la  ligne  de  commande,  lorsque  vous  appelez  ABackup  en
+précisant au minimum l'opération à effectuer (BACKUP, RESTORE ou VERIFY)  et
+la source à utiliser (FROM). Le programme n'utilise  alors  pas  d'interface
+Intuition (à part pour les requêtes), mais effectue les affichages  dans  la
+fenêtre Shell. 
+
+Une fois ABackup chargé et initialisé, le programme enchaine automatiquement
+le chargement de l'arborescence ou du catalogue, la sélection des  fichiers.
+Puis l'opération  indiqué  commence  et  des  messages,  semblables  à  ceux
+affichés habituellement  sur  la  @{" Fenêtre moniteur " Link "MonitorWin"},  apparaissent  sur  la
+fenêtre du Shell. 
+
+@endnode
+@node AutoShell "Automatique avec interface Shell"
+Activé  comme  le  mode  @{" Interactif avec interface Shell " Link "StdShell"},  mais  avec   un
+argument supplémentaire (QUIET). Dans  ce  cas,  ABackup  n'effectue  aucune
+requête ni aucun affichage  (sauf  les  messages  d'erreurs).  Il  est  bien
+évidemment recommandé d'activer la génération d'un rapport complet, dans les
+Préférences. 
+
+Une fois ABackup chargé et initialisé, le programme enchaine automatiquement
+le chargement  de  l'arborescence  ou  du  catalogue  et  la  sélection  des
+fichiers. Puis l'opération indiquée commence. 
+
+@endnode
+@node Arguments "Arguments"
+La liste  des  arguments  acceptés  est  indiquée  ci-dessous.  Pour  chaque
+argument, la première ligne indique la syntaxe depuis la ligne de  commande,
+la seconde celle à utiliser dans les types d'outil des icônes. 
+
+FROM/K source 
+FROM=source 
+    Indique le nom du répertoire ou du  volume  (sauvegarde),  de  l'archive
+    (restauration/vérification), source de l'opération. Pour sauvegarder  en
+    même temps plusieurs volumes, indiquez les noms des volumes séparés  par
+    une virgule (par exemple: "SYS:,Work:") 
+
+TO/K destination 
+TO=destination 
+    Indique le nom de l'archive (sauvegarde) ou  du  répertoire  destination
+    (restauration) de l'opération. 
+
+B=BACKUP/S 
+MODE=BACKUP 
+    Démarrage d'une opération de sauvegarde, en mode automatique. 
+
+R=RESTORE/S 
+MODE=RESTORE 
+    Démarrage d'une opération de restauration, en mode automatique. 
+
+V=VERIFY/S 
+MODE=VERIFY 
+    Démarrage d'une opération de vérification, en mode automatique. 
+
+SE=SELECT/K ALL|ARC|fichier 
+SELECT=ALL|ARC|fichier 
+    Indique  le   nom   du   fichier   de   sélection   à   utiliser   (voir
+    @{" Enregistrement des sélections " Link "EnrSelection"}). Par défaut, en mode "Automatique  avec
+    interface Shell", tous les fichiers sont sélectionnés. 
+    Le mot-clé "ALL" permet de sélectionner tous les  fichiers.  Le  mot-clé
+    "ARC" permet de sélectionner tous les fichiers ayant le bit  d'archivage
+    effacé. 
+
+RP=REPORT/K fichier 
+REPORT=fichier 
+    Indique le nom du fichier rapport. 
+
+IM=IMAGE/S 
+IMAGE 
+    Si présent, la  sauvegarde  se  fait  en  mode  "image"  (sauvegarde  de
+    partition non-DOS) plutôt qu'en mode fichiers/répertoires. 
+
+PRF=PREFS/K fichier 
+PREFS=fichier 
+    Indique le nom du fichier de configuration à utiliser. 
+
+CAT=CATALOG/K fichier 
+CATALOG=fichier 
+    Indique  le  nom  du  fichier  contenant  le  catalogue   de   l'archive
+    (restauration/vérification). 
+
+SFX=ECSUFFIX/K .suffix 
+ECSUFFIX=.suffix 
+    Indique le suffixe ajouté par le programme de compression  externe.  Par
+    exemple, si vous voulez utiliser LZX pour  la  compression,  vous  devez
+    appeler le programme en donnant la valeur ".lzx" pour cet argument. 
+
+QUIET/S 
+    Si présent, fonctionnement en mode @{" Automatique avec interface Shell " Link "AutoShell"}. 
+
+HELPPATH=répertoire 
+    Si présent, indique le répertoire contenant le fichier d'aide en  ligne.
+    La valeur par défaut est "HELP:langue",  où  langue  désigne  la  langue
+    choisie dans les paramètres du système. 
+
+PREFSPATH=répertoire 
+    Si présent, indique le répertoire contenant le programme de Préférences.
+    La valeur par défaut est "SYS:Prefs". 
+
+@endnode
+@node MainWin "Fenêtre principale"
+La fenêtre principale du programme permet de choisir le type  d'opération  à
+effectuer : 
+
+Sauvegarde de répertoires 
+    Sauvegarde d'un répertoire,  d'un  ou  plusieurs  volumes  logiques,  en
+    archivant tous les fichiers contenus  dans  ce  répertoire,  ce  ou  ces
+    volumes. 
+    Une fois que vous aurez indiqué le répertoire ou volume source,  ABackup
+    chargera  la  liste  des  fichiers  correspondant  puis   affichera   la
+    @{" Fenêtre de sélection " Link "SelectionWin"}, qui vous permettra de  choisir  les  fichiers  à
+    sauvegarder. Une option dans les Préférences  de  sauvegarde  permet  de
+    faire en sorte que tout  fichier  ou  répertoire,  dont  le  commentaire
+    commence par le mot "SKIPME",  soit  ignoré  lors  du  chargement.  Ceci
+    permet d'éviter de perdre du temps  à  charger  le  chargement  de  gros
+    répertoires que vous ne sauvegardez jamais. 
+
+Sauvegarde de partitions 
+    Sauvegarde d'un ou plusieurs  volumes  physiques,  en  archivant  chaque
+    cylindre de ce ou ces volumes. 
+    ABackup affichera aussitôt la @{" Fenêtre de sélection " Link "SelectionWin"}, qui vous permettra
+    de choisir les volumes à sauvegarder. 
+    ATTENTION  !  La  restauration  d'une  partition  non-AmigaDOS  ne  sera
+    possible  que  si  ses  caractéristiques  n'ont   pas   été   modifiées,
+    c'est-à-dire que sa taille et son  emplacement  (entre  autres)  doivent
+    être les mêmes que lors de la sauvegarde. De  plus,  ABackup  n'est  pas
+    capable de formater l'unité destination : si vous voulez  restaurez  sur
+    un nouveau disque, vous devrez d'abord le formater. 
+
+Restauration 
+    Récupération de données archivées. 
+    ABackup affichera aussitôt la  @{" Fenêtre de sélection de l'archive " Link "ArchiveWin"},  qui
+    vous permettra de choisir l'archive contenant les données à restaurer. 
+
+Vérification 
+    Vérification de l'intégrité de l'archive, avec  comparaison  optionnelle
+    des données archivées et des données  originales.  Dans  le  cas  où  la
+    comparaison avec les données originales est activée, ABackup  effectuera
+    de toutes façons la vérification d'intégrité, même si la comparaison est
+    impossible (fichier original non trouvé etc...) 
+    ABackup affichera aussitôt la  @{" Fenêtre de sélection de l'archive " Link "ArchiveWin"},  qui
+    vous permettra de choisir l'archive contenant les données à vérifier. 
+
+Reconstruction catalogue 
+    Cette fonction n'est  utile  que  si  vous  avez  endommagé  un  fichier
+    d'archive, ou perdu la dernière disquette d'un jeu de sauvegarde :  elle
+    permet de reconstruire le catalogue  nécessaire  à  toute  restauration.
+    Notez que cette fonction n'est pas prévue pour récupérer  tous  les  cas
+    d'erreurs, et qu'elle n'est pas forcément à la portée  des  utilisateurs
+    non-expérimentés. 
+    Si l'archive est un fichier, il vous faudra  vérifier  que  la  première
+    entête est sur  une  frontière  de  bloc,  c'est-à-dire  à  une  adresse
+    multiple de 512 (utilisez par exemple la  commande  "TYPE  archive  HEX"
+    pour cela, le premier et le troisième longs mots des entêtes contiennent
+    la valeur "#0000"). S'il s'agit d'une archive sur disquettes, vous devez
+    donner les disquettes dans l'ordre. Le traitement est possible  même  si
+    des disquettes manquent. 
+    ABackup  affichera  la  @{" Fenêtre de sélection de l'archive " Link "ArchiveWin"},  qui   vous
+    permettra de choisir l'archive pour laquelle  il  faut  reconstruire  le
+    catalogue. 
+
+Préférences 
+    Appel du programme de configuration. 
+
+Voir également @{" Fenêtre d'application " Link "AppWindow"}. 
+
+@endnode
+@node SelectionWin "Fenêtre de sélection"
+Cette fenêtre affiche la liste des fichiers ou partitions,  et  vous  permet
+d'indiquer lesquels sont à sauvegarder,  restaurer,  ou  vérifier.  Elle  se
+compose d'une  partie  supérieure,  regroupant  les  gadgets  permettant  la
+sélection, et d'une partie inférieure, dans laquelle est affichée  la  liste
+des fichiers ou partitions. Vous pouvez faire défiler la liste à  l'aide  de
+l'ascenseur situé tout à droite de la fenêtre. Vous pouvez imprimer la liste
+affichée à l'aide de l'article "Imprimer la liste" du menu "Projet". 
+
+Lors d'une sélection pour une sauvegarde, vous pouvez ajouter un  volume  ou
+un répertoire supplémentaire à la liste des volumes  actuels  :  pour  cela,
+utilisez soit l'article "Ajouter  Répertoire"  du  menu  "Projet",  soit  la
+@{" Fenêtre d'application " Link "AppWindow"}. 
+Vous pouvez également obtenir une estimation du nombre de disquettes  et  du
+temps nécessaire à la sauvegarde, à l'aide de l'article "Estimation" du menu
+"Projet". 
+
+Les zones intitulées "Fichiers:" et "Taille:"  indiquent  respectivement  le
+nombre de fichiers ou de partition sélectionnés, et la taille totale de  ces
+fichiers ou partitions. La zone intitulée "Répertoire:" indique  le  nom  du
+répertoire dans lequel se trouvent les fichiers affichés dans la liste. 
+
+Si vous cliquez sur le nom d'un répertoire, le contenu de ce répertoire sera
+affiché (sauf si le répertoire est vide). Les gadgets "Racine"  et  "Parent"
+permettent respectivement de remonter au répertoire racine de la  liste,  et
+au répertoire immédiatement supérieur. 
+
+Si vous cliquez sur le nom d'un fichier, d'une partition, ou d'un répertoire
+vide, vous inverserez  sa  sélection  :  s'il  était  sélectionné,  il  sera
+dé-sélectionné, et s'il n'était pas sélectionné, il le sera. Pour  faire  de
+même sur le contenu d'un répertoire non vide, appuyez sur  une  des  touches
+MAJUSCULE tout en cliquant sur le nom de ce répertoire. 
+Si vous déplacez la souris sans relâcher le  bouton  gauche,  vous  étendrez
+l'action de sélection ou de dé-sélection aux autres fichiers, partitions  ou
+répertoires. 
+
+Si vous double-cliquez sur le nom d'un fichier, ABackup  tentera  d'exécuter
+le programme de visualisation correspondant au type du fichier. Une boite de
+requête  vous  permettra  de  confirmer  la  demande  de  visualisation,  et
+éventuellement de modifier le nom du programme. Notez qu'une  option  permet
+de supprimer l'affichage de cette requête. 
+Si vous double-cliquez sur le nom  d'une  partition,  ABackup  affichera  un
+certain nombre d'informations au sujet de cette partition  (numéro  d'unité,
+nombre de blocs par pistes, etc...). 
+
+Les gadgets de sélection sont les suivants : 
+
+Filtre 
+    Indique si les actions ajouteront ("Inclure") ou enlèveront  ("Exclure")
+    des fichiers ou partitions de la sélection. 
+
+Récursif 
+    Indique si une action de sélection doit concerner également les fichiers
+    présents dans les sous-répertoires du répertoire affiché. 
+
+Tout 
+    Inclut ou exclut tous les fichiers ou partitions. 
+
+Inverser 
+    Inverse la sélection : tous les fichiers ou partitions sélectionnés sont
+    dé-sélectionnés, tous les fichiers ou partitions non  sélectionnés  sont
+    sélectionnés. 
+
+Par nom 
+    Inclut ou exclut les fichiers ou partitions qui correspondent à  un  nom
+    (par exemple "ram:toto") ou un motif (par  exemple  "#?.info").  ABackup
+    reconnait les mêmes motifs que l'AmigaDOS  (consultez  votre  manuel  de
+    l'AmigaDOS pour plus de détails). 
+    Une boite de requête vous permettra d'indiquer le nom ou le motif.  Deux
+    gadgets vous permettront de chercher  les  fichiers  ou  partitions  qui
+    correspondent ("Egal") ou ceux qui ne correspondent pas ("Différent") au
+    nom ou motif indiqué. 
+
+Par date 
+    Inclut ou exclut les fichiers d'après leur date et/ou heure de  dernière
+    modification. 
+    Une  boite  de  requête  vous  permettra  d'indiquer  la  date   (format
+    "JJ-MM-AA" ou "JJ-MMM-AA") et/ou l'heure  (format  "HH:MM:SS").  Il  est
+    possible de n'indiquer que la date (l'heure sera considérée comme  égale
+    à "00:00:00") ou que l'heure (la date sera considérée comme égale  à  la
+    date du jour). Deux gadgets vous permettront de  chercher  les  fichiers
+    modifiés avant ("Avant") ou après ("Après") la date indiquée. 
+
+Par bits 
+    Inclut ou exclut les fichiers d'après leurs bits de protections. 
+    Une boite de requête vous permettra d'indiquer, pour chacun des bits  de
+    protection, si vous voulez le tester positionné (caractère "+"  dans  le
+    gadget), non positionné (caractère "-") ou  ne  pas  le  tester  (gadget
+    vide). 
+
+Tout en bas de la fenêtre, trois gadgets permettent (de gauche à droite) : 
+
+- de lancer l'opération (Sauvegarde, Restauration, ou Vérification). ABackup
+  affiche alors la @{" Fenêtre moniteur " Link "MonitorWin"}. 
+- d'appeler le programme de programme de configuration 
+- de revenir à la @{" Fenêtre principale " Link "MainWin"}. 
+
+Enfin, le menu "Sélection" permet d'enregistrer une sélection, pour  pouvoir
+la ré-utiliser plus tard. Voir @{" Enregistrement des sélections " Link "EnrSelection"} pour plus  de
+détails. 
+
+@endnode
+@node MonitorWin "Fenêtre moniteur"
+Cette fenêtre permet de  suivre  la  progression  de  l'opération  en  cours
+(sauvegarde, restauration, etc...). Elle se compose d'une partie  supérieure
+regroupant onze gadgets  d'information,  et  d'une  partie  inférieure  dans
+laquelle défilent des messages. 
+
+Les gadgets d'information sont : 
+
+Sauvés/Restaurés/Vérifiés/Lus 
+    Nombre de fichiers ou partitions traités (à gauche), taille des  données
+    traitées (à droite). La jauge tout à droite sur la même ligne indique le
+    pourcentage de fichiers ou partitions traités,  par  rapport  au  nombre
+    total sélectionné. 
+
+Reste 
+    Nombre de fichiers ou partitions non encore traités (à  gauche),  taille
+    des données non encore traitées (à droite). La jauge tout à  droite  sur
+    la même ligne indique le  pourcentage  de  fichiers  ou  partitions  non
+    encore traités, par rapport au nombre total sélectionné. 
+
+Disque 
+    Numéro de la disquette courante (à  gauche).  Durée  de  l'opération  (à
+    droite). 
+
+Compression 
+    Taux de compression. 
+
+Destination/Source 
+    Nom du l'archive. La jauge tout à droite sur la même  ligne  indique  la
+    position courante dans le volume  cible  (en  écriture)  ou  source  (en
+    lecture). 
+
+Tout  en  bas  de  la  fenêtre,  le  gadget  "Pause"  permet   d'interrompre
+momentanément l'opération (cliquer une  seconde  fois  sur  ce  gadget  pour
+reprendre).  Le  gadget  "Abandon"   permet   d'interrompre   définitivement
+l'opération (avec confirmation). Le nom de l'éventuel  fichier  journal  est
+affiché entre ces deux gadgets. 
+
+Une fois l'opération terminée, ABackup  vous  demandera  si  vous  souhaitez
+retourner à la @{" Fenêtre principale " Link "MainWin"}. Si vous répondez par  la  négative,  le
+programme reviendra à la @{" Fenêtre de sélection " Link "SelectionWin"}. 
+
+@endnode
+@node LoadTreeWin "Fenêtre de chargement"
+Cette  fenêtre  apparait  pendant  que  ABackup  examine  le  contenu   d'un
+répertoire ou d'un volume, ou charge le catalogue d'une archive. Elle permet
+de suivre la progression  du  chargement,  et  éventuellement  d'interrompre
+l'opération en cliquant sur le gadget "Abandon" : ABackup retourne  alors  à
+la @{" Fenêtre principale " Link "MainWin"}. 
+
+Une fois le chargement terminé, ABackup affichera la @{" Fenêtre de sélection " Link "SelectionWin"},
+qui vous permettra de choisir les fichiers ou partitions à traiter. Dans  ce
+dernier cas, notez qu'une option des Préférences  permet d'éviter le passage
+par  la  fenêtre  de  sélection,   et   d'effectuer   systématiquement   une
+vérification complète de l'archive. 
+
+@endnode
+@node InfoWin "Fenêtre d'information"
+Cette fenêtre apparait juste avant que ABackup ne charge le catalogue  d'une
+archive. Elle affiche toutes les informations mémorisées par  le  programme,
+lors de la sauvegarde : 
+
+Source 
+    Nom du ou des répertoires ou volumes sources de la sauvegarde. 
+
+Fichiers 
+    Nombre de fichiers présents dans l'archive. 
+
+Octets 
+    Taille des données sauvegardées. 
+
+Date 
+    Date de la sauvegarde. 
+
+Heure 
+    Heure de la sauvegarde. 
+
+Compression 
+    Type de compression utilisée. 
+
+Commentaire 
+    Commentaire éventuel indiqué lors de la sauvegarde. 
+
+Pour poursuivre l'opération, cliquez sur le  gadget  "Continuer"  :  ABackup
+affiche alors la @{" Fenêtre de chargement " Link "LoadTreeWin"}.  Pour  annuler  et  revenir  à  la
+@{" Fenêtre principale " Link "MainWin"}, cliquez sur le gadget "Abandon". 
+
+@endnode
+@node ArchiveWin "Fenêtre de sélection de l'archive"
+Cette  fenêtre  est  semblable  à  celle  utilisée  par  le   programme   de
+Préférences. Elle se compose : 
+
+- d'un gadget cyclique permettant de sélectionner le type d'archive  (unité,
+  fichier, dérouleur de bande) 
+
+- de deux listes permettant de sélectionner les unités  à  utiliser,  si  le
+  type d'archive est positionné à "Unité". La liste de gauche indique toutes
+  les unités possibles, la liste de droite indique les unités à utiliser. Le
+  passage d'une unité d'une liste à l'autre se fait simplement  en  cliquant
+  sur le nom à transférer. 
+
+- d'un gadget de chaine, et  d'un  bouton  d'appel  de  requête,  permettant
+  d'indiquer le nom du fichier archive, si le type d'archive est  positionné
+  à "Fichier". 
+
+- d'un gadget permettant d'indiquer que le catalogue de l'archive doit  être
+  chargé depuis un fichier, et non depuis l'archive elle-même 
+
+Pour valider la requête, cliquez sur le  gadget  "Ok"  :  ABackup  affichera
+alors la @{" Fenêtre d'information " Link "InfoWin"}dans la  cas  d'une  restauration  ou  d'une
+vérification.  Dans  le  cas  d'une  reconstruction  de  catalogue,  ABackup
+affichera la @{" Fenêtre moniteur " Link "MonitorWin"}, et commencera à lire  l'archive.  Une  fois
+l'archive entièrement lue, ABackup créera un fichier catalogue,  qui  pourra
+être utilisé en activant l'option "Utiliser Fichier Catalogue". 
+
+@endnode
+@node EnrSelection "Enregistrement des sélections"
+ABackup permet de mémoriser une opération de sélection, afin de  pouvoir  la
+ré-utiliser par la suite. Ceci est pratique si vous  effectuez  souvent  les
+mêmes sélections (par exemple tous  les  fichiers  ayant  le  bit  d'archive
+effacé) mais aussi lors d'un  fonctionnement  en  mode  automatique  :  vous
+pouvez indiquer dans les @{" Arguments " Link "Arguments"} le nom d'un fichier de  sélection,  qui
+sera utilisé pour sélectionner les fichiers à traiter. 
+
+L'enregistrement porte sur les opérations de sélection en elles-même, et non
+sur la liste des fichiers sélectionnées (à moins que vous  ne  sélectionniez
+des fichiers ou répertoires en cliquant directement dans la liste). De cette
+façon, vous pourrez appliquer cette sélection à n'importe  quel  répertoire.
+De plus, si de nouveaux fichiers sont créés, ils seront automatiquement pris
+en compte. 
+
+L'enregistrement  d'une  sélection  se   fait   en   choisissant   l'article
+"Enregistrer" du menu "Sélection", sur la @{" Fenêtre de sélection " Link "SelectionWin"}.  Une  fois
+que vous aurez indiqué le nom  du  nouveau  fichier  de  sélection,  ABackup
+enregistrera toutes vos actions de sélection dans ce fichier. Pour  terminer
+l'enregistrement,  utilisez   les   articles   "Sauvegarder"   ou   "Annuler
+l'enregistrement" du menu "Sélection", suivant que vous vouliez conserver la
+sélection, ou annuler l'opération. 
+
+Pour utiliser ensuite  une  sélection  enregistrée,  il  suffit  de  choisir
+l'article "Ouvrir" du menu "Sélection". Une fois que vous aurez  indiqué  le
+nom du fichier de sélection, ABackup le chargera pour exécuter la  sélection
+qu'il contient. 
+
+Les sélection sont  enregistrées  sous  forme  de  fichier  texte,  dans  un
+répertoire indiqué dans les Préférences  du programme. Voici la  description
+du langage de sélection utilisé par ABackup. Ceci vous permettra de créer ou
+de modifier un fichier de sélection vous-même, à l'aide de votre éditeur  de
+texte habituel. 
+
+CD : 
+    Retour au répertoire racine
+
+CD / 
+    Retour au répertoire parent
+
+CD "rep" 
+    Descend dans le sous-répertoire indiqué
+
+INVERT 
+    Inverse la sélection
+
+RECURS {YES|NO} 
+    Positionne l'indicateur de récursivité
+
+INCLUDE ALL 
+EXCLUDE ALL 
+    Inclut ou exclut tous les fichiers
+
+INCLUDE "nom" 
+EXCLUDE "nom" 
+    Inclut ou exclut le fichier/répertoire indiqué
+
+INCLUDE NAME "nom ou motif" {MATCH|NOMATCH} 
+EXCLUDE NAME "nom ou motif" {MATCH|NOMATCH} 
+    Inclut ou exclut suivant le nom (ou motif)
+
+INCLUDE DATE "date et/ou heure" {UPTO|SINCE} 
+EXCLUDE DATE "date et/ou heure" {UPTO|SINCE} 
+    Inclut ou exclut suivant la date et/ou l'heure
+
+INCLUDE BITS masque valeur 
+EXCLUDE BITS masque valeur 
+    Inclut ou exclut suivant les bits de protection
+    (fichiers pour lesquels "bits ET masque = valeur")
+
+Voici un exemple de fichier de sélection :
+
+RECURS YES
+; retour à la racine
+CD :
+; annule toute sélection antérieure
+EXCLUDE ALL
+; inclut tous les fichiers n'ayant pas le bit d'archive
+INCLUDE BITS "0x10 0x00"
+; exclut tous les fichier ".o"
+EXCLUDE NAME "#?.o" MATCH
+
+Notez que les lignes  vides  et  les  lignes  commençant  par  un  ";"  sont
+ignorées. De plus, lorsque vous commencez l'enregistrement,  ABackup  stocke
+automatiquement l'état de l'indicateur de récursivité : si vous regardez les
+fichiers crées, ils commencent tous par une commande "RECURS". 
+
+Il vous est recommandé de commencer toutes vos sélections en retournant à la
+racine des répertoires, puis en excluant tous les fichiers de la sélection. 
+
+@endnode
+@node Compatibilite "Compatibilité avec les versions précédentes"
+ABackup a été entièrement ré-écrit pour cette version. Les  archives  créées
+par les versions  précédentes  du  programmes  sont  acceptés  de  la  façon
+suivante : 
+
+    v1.00-v2.01  reconstruction du catalogue obligatoire 
+
+    v2.10-v2.43  acceptées directement 
+
+    v3.00-v3.12  NON GEREES 
+
+    v4.00-v4.09  acceptées directement 
+
+Notez que les archives cryptées par  une  version  précédente  ne  sont  pas
+acceptées, quelque soit la version utilisée pour la sauvegarde. 
+
+@endnode
+@node AppWindow "Fenêtre d'application"
+Lorsque vous utilisez ABackup  sur  l'écran  de  l'Atelier,  la  fenêtre  du
+programme est automatiquement déclarée en fenêtre d'application ("AppWindow"
+en anglais). Si vous utilisez le programme sur un écran de type "Public"  ou
+"Custom", une icône d'application ("AppIcon" en anglais) est automatiquement
+ajoutée sur l'écran de l'Atelier. 
+
+Ceci vous permet de déposer des icônes suivantes : 
+
+Icône d'un fichier de Préférences 
+    Accepté sur la @{" Fenêtre principale " Link "MainWin"} et sur la @{" Fenêtre de sélection " Link "SelectionWin"}. Le
+    fichier  sera  pris  en  compte  immédiatement,  pour  le  réglage   des
+    paramètres. 
+
+Icône d'un fichier ou d'un volume archive 
+    Accepté uniquement sur la @{" Fenêtre principale " Link "MainWin"}. L'archive correspondante
+    sera immédiatement  examinée  en  vue  d'une  restauration  des  données
+    qu'elle contient. 
+
+Icône d'un répertoire, d'un ou plusieurs volumes AmigaDOS 
+    Accepté     sur     la     @{" Fenêtre principale " Link "MainWin"},     ou      sur      la
+    @{" Fenêtre de sélection " Link "SelectionWin"}lors d'une operation de sauvegarde. La  liste  des
+    fichiers présents dans  le(s)  répertoire(s)  ou  le(s)  volume(s)  sera
+    chargée en vue d'une sauvegarde. 
+
+Icône d'un fichier de sélection 
+    Accepté  uniquement  sur  la  @{" Fenêtre de sélection " Link "SelectionWin"}.  Le  fichier  sera
+    immédiatement exécuté, comme si vous l'aviez sélectionné avec  l'article
+    "Ouvre..." du menu "Sélection". 
+
+Un double-clic sur l'icône d'application permet de ramener  l'écran  utilisé
+par ABackup au premier plan. 
+
+@endnode
+@node DisquesAmov "Utilisation de disques amovibles"
+Pour faire vos sauvegardes,  ABackup  vous  permet  d'utiliser  des  disques
+amovibles, comme les systêmes SyQuest, Zip ou Jaz. Ceci veut dire qu'il  est
+possible de stocker les données sauvegardées sur plusieurs  disques,  de  la
+même façon que s'il s'agissait de disquettes. 
+
+Pour utiliser cette fonction, il vous suffit de  sélectionner  la  partition
+qui correspond à disque amovible en  tant  que  partition  cible,  dans  les
+options de sauvegarde (par exemple, pour utiliser la première  partition  de
+votre systême SyQuest, choisissez "SH0:" en tant que  partition  cible).  Le
+nom à indiquer est le nom "physique" de la partition,  c'est-à-dire  le  nom
+que vous avez donné à la partition sous HDToolsBox (et non  pas  le  nom  de
+l'icône du disque sur l'écran du Workbench). 
+
+Bien sûr, ABackup n'écrira que sur la partition que vous  avez  indiqué.  Si
+votre disque amovible contient trois partitions, par exemple, nommées  SH0:,
+SH1: et SH2:, et que vous utilisez SH1:  comme  partition  cible,  les  deux
+autres partitions ne seront pas modifiées par ABackup. Cependant,  pour  des
+raisons de sécurité, il est recommandé de dédier un disque complet pour  vos
+sauvegardes. 
+
+Avant d'utiliser un disque amovible  comme  unité  de  sauvegarde,  il  vous
+faudra effectuer un formattage de bas-niveau du disque, et le  partitionner.
+Lorsque vous utilisez plusieurs disques pour sauvegarder vos données, chaque
+disque *DOIT* avoir une partition avec le nom indiqué comme partition cible.
+Par exemple, si vous avez sélectionné SH0: comme partition  cible,  il  doit
+exister une partition nommée SH0: sur chacun des disques que  vous  prévoyez
+d'utiliser pour votre sauvegarde. Notez que la partition SH0: peut avoir une
+taille et/ou un emplacement différent sur chaque disque. 
+
+@endnode
+@node Merci "Remerciements"
+De nombreuses personnes  ont  contribué,  directement  ou  indirectement,  à
+l'aboutissement de ce projet : 
+
+    AmigaDream
+    AmigaNews
+    Andrew D. Appleby
+    Daniel J. Andrea II
+    Gaël Marziou,
+    Jean-Pierre Rivière
+    Jérome Chesnot (R.A.M.)
+    Michel Castel
+    Michel Schinz
+    Philippe Brand (SysOp de RAMSES)
+    Stéphane Anquetil
+
+    les traducteurs :
+
+    Alessandro Basso
+    Francesco Mancuso
+    Horst Schumann
+    Kersten Emmrich
+    Martin Steigerwald
+    Stefan Salewski
+
+    et Etienne Schneider pour les icônes.
+
+Sans oublier toutes les personnes ayant signalé des erreurs ou  suggéré  des
+améliorations,  ainsi  que  tous  les   utilisateurs   ayant   envoyé   leur
+contribution. 
+
+A titre personnel, Denis souhaite remercier tous ceux grâce à qui  le  monde
+de l'Amiga est (encore :-) vivant et  sympathique.  Salutations  amicales  à
+Jean-Philippe Rapp, sans qui ABackup n'aurait peut-être jamais existé, et  à
+Michel Schinz. 
+
+A titre personnel, Reza souhaite remercier  Michael  Berg  et  Jan  van  den
+Baard. 
+
+Au moment de terminer ce  programme,  nous  avons  une  pensée  pour  Pierre
+Carrette, un des auteurs de BrowserII, qui nous a quitté en mai 1995. 
+
+@endnode
+@node Historique "Liste des modifications"
+v5.00, 15-Aug-95, 107332 octets 
+
+v5.01, 30-Sep-95, 108388 octets 
+  - La reconstruction de catalogue était inutilisable pour une  archive  sur
+    disquettes (terminait sans créer le nouveau catalogue) 
+  - Quelques erreurs corrigées dans  la  gestion  des  archives  à  l'ancien
+    format (l'une d'entre elles faisait échouer les sauvegardes faites juste
+    après). 
+  - L'utilisation de plusieurs unités (par exemple DF0: et DF1:)  fonctionne
+    désormais (en v5.00, ABackup n'arrivait pas à ouvrir la  seconde  unité,
+    car son nom était écrasé) 
+  - Ajout de la directive "__stackext" sur toutes les fonctions  récursives,
+    pour éviter les plantages par manque de pile 
+  - Ajout de l'argument ECSUFFIX, qui permet d'indiquer  le  suffixe  ajouté
+    par le programme de compression externe (on peut donc désormais utiliser
+    LZX) 
+  - Ne change plus le commentaire, l'icône et  la  protection  des  fichiers
+    archives, lors d'une restauration ou d'une vérification 
+  - Le message conseillant de vérifier  la  sauvegarde,  lorsqu'un  cylindre
+    défectueux a été rencontré, apparait désormais uniquement à la fin de la
+    sauvegarde 
+  - Sur un écran personnalisé, la fenêtre ouverte  par  ABackup  était  trop
+    grande, et  la  barre  de  menu  de  l'écran  disparaissait  au  premier
+    WindowToFront() 
+  - Plus de problèmes si on  quitte  le  programme  alors  qu'il  reste  des
+    fenêtres sur l'écran personnalisé (laisse l'écran ouvert) 
+  - Lorsqu'on demande une reconstruction du catalogue, passe  désormais  par
+    la fenêtre de sélection de l'archive, et ne demande plus de  commentaire
+    pour le catalogue 
+  - Le gadget "Préférences", sur la fenêtre  Moniteur,  a  été  agrandi  (le
+    texte en allemand débordait) 
+  - Ne vérifie plus le nom du pilote SCSI dans le programme  de  Préférences
+    (posait un problème car, si le  numéro  de  port  n'était  pas  correct,
+    remettait l'ancien nom !) 
+
+v5.02, 28-Oct-95, 108180 octets 
+  - Ne réagissait pas au gadget "Abandon" pendant le tri  de  l'arborescence
+    (lors du chargement de la liste des fichiers à sauvegarder) 
+  - Quand on répondait "Non" à la confirmation d'écrasement de  la  première
+    disquette, écrivait quand même sur celle-ci (seulement  sur  le  premier
+    bloc) 
+  - Deux Enforcer hits  au  démarrage  supprimés  (ne  se  produisaient  que
+    lorsqu'il n'y avait pas de fichier catalogue) 
+  - Positionnait le bit d'archive sur tous les fichiers sélectionnés, et non
+    seulement sur ceux correctement sauvegardés 
+  - N'arrivait pas à trouver l'aide en ligne avec un  Kickstart  de  version
+    inférieure à la V40 (utilisait la variable  "language",  qui  n'est  pas
+    définie avant) 
+  - La jauge disque va bien jusqu'à 100% en lecture (avant elle s'arrêtait à
+    98%, bien qu'on lise effectivement 100%) 
+  - Accélération de la fonction de tri des fichiers (environ deux fois  plus
+    rapide sur les répertoires contenant plusieurs centaines de fichiers) 
+
+v5.10, 23-Dec-95, 111996 octets 
+  - Sécurité améliorée avec MUFS : il est maintenant impossible de restaurer
+    ou vérifier un fichier qu'on a pas le droit de lire 
+  - Reconstruction de catalogue entièrement revue. Pour les archives  créées
+    par une version 5.10 ou supérieure, le  catalogue  généré  sera  correct
+    jusqu'à 64  niveaux  de  sous-répertoire  et  256  sous-répertoires  par
+    niveau. Le catalogue  généré  sera  également  plus  correct  (mais  pas
+    parfait) pour les archives créées par une version précédente. 
+  - En moyenne deux fois plus rapide en lecture (restauration/vérification) 
+  - Algorithme de tri des fichiers changé (moins de 2 secondes pour trier un
+    répertoire de 3000 fichiers, au lieu de plus d'une heure) 
+  - La taille sélectionnée/traitée/à traiter est maintenant indiquée avec un
+    chiffre après la virgule (exemple: 2.6 Mo au lieu de 2 Mo) 
+  - Le tampon d'entrée/sortie pour le dérouleur  de  bande  peut  maintenant
+    être alloué en mémoire FAST 
+  - Plusieurs problèmes corrigés dans la gestion  des  archives  à  l'ancien
+    format 
+  - Le tronçonnage automatique des gros fichiers est maintenant correct même
+    si le répertoire temporaire est ailleurs qu'en RAM: 
+  - Les fenêtres étaient trop hautes  sur  un  écran  Personnalisé,  ce  qui
+    faisait disparaitre la barre de menus dans certains cas. 
+  - Ajout de la directive "__stackext",  qui  manquait  sur  deux  fonctions
+    récursives 
+
+v5.11, 03-Feb-96, 112152 octets 
+  - Ne plante plus si doit changer de lecteur de disquette  pour  écrire  le
+    catalogue 
+  - L'item "Imprimer la liste" envoyait le résultat le fichier "Ram:Toto" et
+    non vers l'imprimante 
+
+v5.12, 01-May-96, 112172 octets 
+  - Si la dernière disquette était peu utilisée,  le  bloc  d'entête  de  la
+    disquette n'était pas écrit au bon endroit  (écrasait  le  catalogue  au
+    lieu d'être mis sur le premier cylindre) 
+  - Recopiait le nom de la racine dans les blocs d'entêtes sans contrôler sa
+    longueur, et donc écrasait les zones suivantes si  faisait  plus  de  32
+    caractères 
+  - Le mot clé "ARC" après l'argument "SELECT" devait  obligatoirement  être
+    en majuscule pour être reconnu 
+  -  Problème  d'affichage  lors  de  la   restauration/vérification   d'une
+    partition : la taille indiquée pour le dernier cylindre était en fait la
+    taille totale de la partition 
+  - Quand on confirme l'écrasement d'un fichier archive existant, force  les
+    bits de protection DELETE et WRITE avant d'ouvrir le fichier 
+  - Sur la fenêtre de sélection, les liens sont signalés  par  "Link"  à  la
+    place de la taille (comme "Drawer" pour les répertoires) 
+
+v5.13, 09-Jul-96, 112436 octets 
+  - Correction de divers problèmes  quand  on  faisait  une  sauvegarde  non
+    cryptée en écrasant une archive contenant une sauvegarde cryptée 
+  - Le nombre d'objets vérifiés/à vérifier n'était pas  correctement  mis  à
+    jour 
+  - Restaure la date et le commentaire des répertoires non vides 
+
+v5.14, 18-Jan-97, 114780 octets 
+  - Compilé avec SAS/C 6.57 
+  - Sur la fenêtre de sélection, la sélection  par  nom,  date  et  bits  se
+    faisait à partir de la racine et non du répertoire courant 
+  - Correction d'une erreur de lecture sur les données  à  cheval  sur  deux
+    disquettes (ne se produisait que un cas précis) 
+  - Correction de plusieurs erreurs dans le mode "Automatique avec interface
+    Intuition" (ne chargeait pas la liste des fichiers si  appelé  avec  une
+    icône répertoire, ne chargeait pas le catalogue si appelé avec une icône
+    de fichier archive, etc...) 
+  - En mode "Automatique avec interface Intuition",  l'argument  SELECT  est
+    désormais  obligatoire  pour  démarrer  directement  l'opération,  sinon
+    ABackup s'arrête sur la fenêtre de sélection. 
+  - Ajout du mot clé "ALL" sur l'argument SELECT,  pour  permettre  de  tout
+    sélectionner. 
+  - La  vérification  sans  comparaison  est  désormais  possible  pour  une
+    sauvegarde en mode partition même quand les partitions sources  ne  sont
+    pas montées 
+
+v5.20, 06-Feb-98, 120608 octets 
+  - Permet  d'utiliser  plusieurs  disques  amovibles  (SyQuest,  Zip,  Jaz,
+    etc...) pour une sauvegarde. 
+  - Ajout de l'option "Ignorer SKIPME" dans les Préférences de sauvegarde. 
+  - Erreur corrigée : lors de l'enregistrement d'une sélection, générait "CD
+    :" à la place de "CD /", et inversement. 
+  - Erreur corrigée : l'argument CATALOG n'était pas reconnu dans les  "Tool
+    Types". 
+  - Erreur corrigée : les arguments REPORT  et  CATALOG  n'étaient  pris  en
+    compte que lors de l'utilisation depuis le Shell. 
+  - Erreur corrigée : si la police texte par défaut  était  trop  large,  ne
+    repassait pas toujours en "topaz 8". 
+
+v5.21, 15-Mar-98, 120628 bytes 
+  - Compilé avec le SAS/C 6.58 
+  -  Si  la  duplication  du  catalogue  de  l'archive  échoue,  propose  de
+    recommencer vers un autre fichier 
+
+v5.22, 21-Aug-99, 120118 octets 
+  - Se souvient désormais du nom du fichier journal choisi  par  requête  de
+    fichier, et l'utilise lors de la requête suivante 
+  -  Erreur  corrigée:  l'argument  CATALOG  n'était   pas   toujours   géré
+    correctement 
+  -  Erreur  corrigée:  l'argument  REPORT   n'était   pas   toujours   géré
+    correctement 
+  - Est désormais distribué en "freeware", plus  de  version  spéciale  pour
+    68060 
+
+@endnode
+@node FAQ "Questions/Réponses"
+
+Q:J'ai essayé d'utiliser LZX, comme programme de compression  externe,  mais
+  cela ne marche pas (tous les fichiers sont "Stockés", et il reste plein de
+  fichiers ".lzx" dans mon répertoire temporaire). 
+R:Si le programme de compression externe que vous utilisez ajoute un suffixe
+  au nom des fichiers (LZX ajoute ".lzx"), vous  devez  utiliser  l'argument
+  ECSUFFIX, pour indiquer ce suffixe à ABackup. 
+
+Q:A la fin d'une sauvegarde, j'ai un  message  "ATTENTION  !  Des  cylindres
+  défectueux ont été rencontrés !". J'espérais que ABackup gérait  ce  genre
+  de problèmes, ce qui m'aurait éviter d'avoir à recommencer ma sauvegarde. 
+R:Ce type d'erreur est parfaitemment géré par ABackup, qui marque simplement
+  le(s) cylindre(s) en cause comme inutilisable(s), et essaye  d'écrire  sur
+  le cylindre  suivant.  Ce  message  n'est  là  que  pour  vous  conseiller
+  d'effectuer une vérification, afin d'être certain que  la  sauvegarde  est
+  correcte (il peut en effet arriver qu'une erreur d'écriture  ne  soit  pas
+  détectée). 
+
+@endbase 
+
+@endnode

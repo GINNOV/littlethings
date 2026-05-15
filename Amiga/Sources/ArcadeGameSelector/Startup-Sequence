@@ -1,0 +1,6 @@
+C:SetPatch >NIL:
+Assign AGS: SYS:AGS
+
+AGS:AGS2
+
+; Startup-Sequence continues here if no game is selected.

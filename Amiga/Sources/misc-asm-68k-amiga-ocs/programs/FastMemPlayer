@@ -1,0 +1,113 @@
+	include	"/includes/hardware/offsets.i"
+	include	"/includes/exec/exec_lib.i"
+	include	"/includes/libraries/dos_lib.i"
+datlength	equ	65638
+	move.l	4.w,a6
+	lea	dosname,a1
+	moveq	#0,d0
+	jsr	OpenLibrary(a6)
+	move.l	d0,DosBase
+	move.l	#datlength,d0
+	move.l	#1,d1
+	jsr	AllocMem(a6)
+	move.l	d0,MemPointer
+	move.l	#DateiName,d1
+	move.l	#1005,d2
+	move.l	DosBase,a6
+	jsr	Open(a6)
+	move.l	d0,d7
+	move.l	d0,d1
+	move.l	MemPointer,d2
+	move.l	#datlength,d3
+	jsr	Read(a6)
+	move.l	d7,d1
+	jsr	Close(a6)
+	bsr	MainPrepare
+	bsr	SamplePlay
+	bsr	MainFree
+	move.l	MemPointer,a1
+	move.l	#datlength,d0
+	move.l	4.w,a6
+	jsr	FreeMem(a6)
+	move.l	DosBase,a1
+	jsr	CloseLibrary(a6)
+	rts
+MainPrepare	move.l	4.w,a6
+	lea	Interrupt0Str,a1
+	moveq	#7,d0
+	jsr	SetIntVector(a6)
+	move.l	d0,FormAud0Struct
+	move.l	#8000,d0
+	move.l	#3,d1
+	jsr	AllocMem(a6)
+	move.l	d0,ChipZwi
+	rts
+MainFree	move.l	4.w,a6
+	move.l	FormAud0Struct,a1
+	moveq	#7,d0
+	jsr	SetIntVector(a6)
+	move.l	ChipZwi,a1
+	move.l	#8000,d0
+	jsr	FreeMem(a6)
+	rts
+SamplePlay	lea	$DFF000,a5
+	move.w	#1,dmacon(a5)
+	clr.l	SampleOffset
+	move.b	#2,SampleFlag
+	move.w	#30,aud0len(a5)
+	move.w	#64,aud0vol(a5)
+	move.w	#270,aud0per(a5)
+	move.w	#$8080,intena(a5)
+	move.w	#$8201,dmacon(a5)
+Mouse	cmpi.b	#255,SampleFlag
+	bne	Mouse
+	rts
+Interrupt0	tst.b	12(a1)
+	beq	Int0Normal
+	sub.b	#1,12(a1)
+	bne	First0Round
+	move.w	#200,aud0len(a0)
+First0Round	rts
+Int0Normal	cmpi.l	#datlength,8(a1)
+	blt	NotFinished1
+	move.w	#1,dmacon(a0)
+	move.w	#$0080,intena(a0)
+	move.b	#255,12(a1)
+	rts
+NotFinished1	movem.l	d2/a2-a3,-(sp)
+	move.l	4(a1),a3
+	move.l	(a1),a2
+	adda.l	8(a1),a2
+	move.w	ChipZwi,aud0lch(a0)
+	move.w	ChipZwi+2,aud0lcl(a0)
+	REPT	100
+	move.l	(a2)+,(a3)+
+	ENDR
+	move.l	(a2)+,-400(a3)
+	add.l	#400,8(a1)
+	cmpi.l	#datlength,8(a1)
+	blt	NotFinished2
+	move.l	#datlength+400,d2
+	sub.l	8(a1),d2
+	lsr.l	d2
+	move.w	d2,aud0len(a0)
+NotFinished2	movem.l	(sp)+,d2/a2-a3
+	move.w	#$0080,intreq(a0)
+	rts
+DosBase	dc.l	0
+FormAud0Struct	dc.l	0
+
+MemPointer	dc.l	0
+ChipZwi	dc.l	0
+SampleOffset	dc.l	0
+SampleFlag	dc.b	0
+
+DateiName	dc.b	"/sfx/MindPower",0
+dosname	DOSNAME
+Interrupt0Str	ds.l	2
+	dc.b	2
+	dc.b	0
+	dc.l	0
+	dc.l	MemPointer
+	dc.l	Interrupt0
+

@@ -1,5 +1,0 @@
-pynput
-pyserial
-numpy
-opencv-python
-ultralytics

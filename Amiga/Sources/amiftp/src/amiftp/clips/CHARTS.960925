@@ -1,0 +1,65 @@
+| The most downloaded files from Aminet during the week until 22-Sep-96
+| Updated weekly. Most popular file on top.
+|
+|File              Dir        Size Age Description
+|----------------- ---        ---- --- -----------
+ProDev_jfifdt.lha  util/dtype  31K   0+JFIF-Datatype V43 replacement (jpg v6a)
+VirusZ_II134.lha   util/virus 181K   0+VirusZ v1.34 by Georg Hoermann
+SSpeed15.lha       util/moni  335K   0+SysSpeed V 1.5 - THE Speedtester ..get i
+DeliTracker227.lha mus/play   721K   0+Fixed players: IT, S3M and XM. new PTM p
+amicdfs237.lha     disk/cdrom 126K   0+AmiCDFS (AmiCDROM) v2.37
+AmigaVGB.lha       misc/emu   164K   0+Nintendo Gameboy emulator V0.7
+TaskBar6.lha       util/wb     69K   0+Win95 style taskbar v6 (Now with prefs e
+IconBar2.lha       util/wb     21K   0+A flexible, user-configurable icon toolb
+FastExec23.lzh     util/boot   11K   1+Moves exec.library to fast memory
+WebDesign13.lha    comm/www   206K   1+Web Design1.3 html authoring software
+mcx257.lha         util/cdity  75K   0+Multi Function Commodity
+Voodoo-1.269.lha   comm/mail  600K   0+GUI PGP/MIME E-Mail reader for OS 3.0
+VT289.lha          util/virus 819K   1 V2.89 of the famous viruskiller by H.Sch
+FalconsWB.jpg      pix/wb     187K   0+The best WB I've seen in months - MINE!!
+HTDS_030.lha       util/dtype  38K   0+HTDS 40.5 datatype binaries for 68030
+ALockUtils.lha     util/misc  240K   0+Security system for Amiga. V1.1
+trackdisk64.lha    dev/misc    15K   1+64-bit extensions for hard disks > 4 GB
+shtml.lha          util/shell  16K   0+.html to .txt converter.
+j_KingdomSkies.lha mods/melod 277K  20+Melodic mod by Jase           *****+
+WaterCooledAmi.lha hard/hack   15K   1+V1.1 of the Water Cooled Amiga
+
+| The highest rated programs during the week until 22-Sep-96
+| Updated weekly. Best program on top. Please rate all the programs you
+| download. To do so, send to aminet-server@wuarchive.wustl.edu :
+| RATE <path> <num>
+| where <path> is the file you want to judge and <num> is a mark from 0..10
+| with 10 being the best. You can rate several programs in one mail, but
+| don't rate your own programs. Example: RATE dev/gui/mui23usr.lha 8
+|
+|File              Dir        Size Age Description
+|----------------- ---        ---- --- -----------
+AmiFTP-1.607.lha   comm/tcp   271K  11+Easy to use GUI FTP client for OS 2.0+
+AmFTP153.lha       comm/tcp   196K  28+AmFTP - ftp/Archie/ADT/ADT-Find Client, 
+YAM13_2.lha        comm/mail  341K   2+MUI Internet mailer V1.3.2
+YAM13_2upd.lha     comm/mail   84K   2+MUI Internet mailer, Update from V1.3(.1
+KNews.lha          comm/news   11K   3+Usenet news downloader and uudecoder v0.
+1497.lha           game/2play 109K   3+Multiplayer Colonization-clone. V0.10.
+MarbleHD.lha       game/patch  25K   4+HD Installer & Patch for Marble Madness 
+Z2Install.lha      game/patch  24K   3+Zeewolf 2 Hard Drive Installer
+cannon2hd.lha      game/patch  14K   4+HD Installer for Cannon Fodder 2 V1.0
+dshd.lha           game/patch  18K   4+HD Installer for Desert Strike V1.1
+mkiihd.lha         game/patch  30K   4+HD Installer for Mortal Kombat II V1.02
+offroadpatch.lha   game/patch   8K   4+Super Offroad Racer Disk Patcher for 680
+pxhd.lha           game/patch  23K   4+HD Installer for Project-X Special Editi
+sfhd.lha           game/patch  16K   4+HD Installer for Shadow Fighter V1.01
+xenon2hd.lha       game/patch  30K   1+Xenon 2 HD-Installer V1.1 & Fix
+jokulator.lha      misc/misc   13K   5+DOSjokulator v6.2, it's a little funny d
+IntelOut.lha       mods/voice 1.3M   6+OctaMED dance mod, based on the famous m
+SPlayer_v1.2.lha   mus/play   148K   2+V1.2 - The Awesome GUI for Play16
+BKR.Rally.jpg      pix/trace   39K   3+Lightwave traced Bigfoot
+BKR.Walker.jpg     pix/trace   29K   3+Lightwave traced Walker
+BKR.Watertap.jpg   pix/trace   28K   3+Lightwave traced Watertap
+bkr.omf.jpg        pix/trace   38K   3+Lightwave traced One Man Fighter
+LTLv12.lha         util/arc    15K   3+GUI to repack LHA into LZX
+NewIconsV3.lha     util/wb    539K   7+The Ultimate GUI Enhancement System, V3!
+viscorp3.lha       docs/misc   30K   3+VIScorp Information 960621 to 960831
+AmIRC.lha          comm/tcp   816K  25+Fully featured GUI IRC Client (v1.1)
+a1200hardfaq.lha   hard/misc    9K   7+A1200 Hardware FAQ, v2.0 (08/96)
+a4khard.lha        hard/misc   65K   7+Amiga 4000 Hardware Guide, v4.0 (08/96)
+StormC_Demo1_1.lha biz/demo   1.2M   5+StormC (Demo): ANSI C & C++ Development 

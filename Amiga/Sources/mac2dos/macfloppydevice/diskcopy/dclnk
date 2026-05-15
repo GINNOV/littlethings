@@ -1,0 +1,4 @@
+FROM diskcopy.obj
+TO diskcopy
+LIBRARY dh0:lib/amiga.lib
+SMALLCODE

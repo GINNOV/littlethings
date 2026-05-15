@@ -1,0 +1,16 @@
+* "colorwheel.gadget"
+##base _ColorWheelBase
+##bias 30
+##public
+*
+* colorwheel.gadget (V40) fd -- Created by Harry Sintonen.
+* This file is public domain.
+*
+*--- functions in V39 or higher (Release 3) ---
+##public
+*
+* Public entries
+*
+ConvertHSBToRGB(hsb,rgb)(a0/a1)
+ConvertRGBToHSB(rgb,hsb)(a0/a1)
+##end

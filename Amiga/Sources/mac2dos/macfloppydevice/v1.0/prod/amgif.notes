@@ -1,0 +1,50 @@
+AMGIF vn 0.5 - Amiga IFF to GIF converter
+
+Converts Amiga IFF pictures to GIF.  Supports 320x200 & 320x400 in up to
+32 colors or HAM mode, and 640x200 & 640x400 in up to 16 colors.  HAM mode
+pictures are reduced to 256 colors.
+
+This program runs only from CLI.  It requires two parameters: an
+input file name and an output file name.  The input file must be in
+IFF format, and the output file will be in GIF format.  To use this
+program, type:
+
+	AmGIF inputfilename outputfilename
+
+This is an early version of this program.  I don't really see it changing
+much, except to fix bugs, and maybe some speedup, but its too soon to
+declare this as version 1.0.
+
+This program is basically the same as IFF2GIF, by Steve Wilhite (and uses
+the modules COMPRESS.C and BUILDGIF.C from that program...), but will also
+convert HAM pictures.  It also might be a bit faster with non-HAM pictures.
+It is used identically to IFF2GIF.
+
+It does, however, require a significant amount of memory to run.  (roughly
+200-300K, depending on resolution...)  It can also require over 512K for
+pictures in Hires interlaced mode (ie 640 x 400).  If you only have 512K
+and want to convert a 640 x 400 picture, you can still use IFF2GIF for this.
+AMGIF will eventually support a low memory usage mode, but since IFF2GIF can
+handle that for now, it doesn't.
+
+HAM images can take a significant amount of time to encode, mainly due to
+the calculations required to sort and remap the colors.  HAM images are
+reduced to a 256 color map, choosing the most frequently used colors for the
+color map, and remapping all the other used colors to the nearest match in
+that color map.  Many HAM images will not suffer much from this.  Others may
+suffer significantly.  It depends on the image.
+
+Note that AMGIF doesn't do Extra-Halfbrite pics currently, mainly because I
+don't know the format for them and have none to test with.  I suspect that
+they will be incorrectly identified as HAM pics.  This may be added later.
+
+
+Thanks to Steve Wilhite, who wrote COMPRESS.C and BUILDGIF.C, which
+are used in this program.  He also wrote IFF2GIF.C, which I heavily
+remodeled to become AMGIF.
+
+Thanks also to Jim Kent, who wrote JIFF.C, which is also used in
+this program to read IFF pics.
+
+-->Steve Bennett           Compuserve:[70046,441]        01/03/88
+

@@ -1,0 +1,65 @@
+name: binutils-gdb-gcc
+
+on:
+  push:
+    paths:
+      - "gcc-barto.patch"
+      - "ci/**"
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+# make sure to run ci/binutils-gdb/install.sh after ci/gcc/build.sh
+# otherwise it finds m68k-amiga-elf/bin/as and enables .cfi directives
+# thus breaking compatibility with the interrupt FP fix
+
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    env:
+      CC:   gcc-10
+      CXX:  g++-10
+    steps:
+      - uses: actions/checkout@v3
+      - run: ci/install-packages-linux.sh
+      - run: ci/binutils-gdb/clone.sh
+      - run: ci/binutils-gdb/download-prerequisites.sh
+      - run: ci/binutils-gdb/configure-linux.sh
+      - run: ci/binutils-gdb/build-linux.sh
+      - run: ci/gcc/download.sh
+      - run: ci/gcc/patch.sh
+      - run: ci/gcc/download-prerequisites.sh
+      - run: ci/gcc/configure-linux.sh
+      - run: ci/gcc/build.sh
+      - run: ci/binutils-gdb/install.sh
+      - run: ci/gcc/install.sh
+      - run: ci/clean-up.sh
+      - run: ci/archive-linux.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binutils-gdb-gcc-linux
+          path: binutils-gdb-gcc-linux.tar
+
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v3
+      - run: ci/install-packages-macos.sh
+      - run: ci/binutils-gdb/clone.sh
+      - run: ci/binutils-gdb/download-prerequisites.sh
+      - run: ci/binutils-gdb/configure-macos.sh
+      - run: ci/binutils-gdb/build-macos.sh
+      - run: ci/gcc/download.sh
+      - run: ci/gcc/patch.sh
+      - run: ci/gcc/download-prerequisites.sh
+      - run: ci/gcc/configure-macos.sh
+      - run: ci/gcc/build.sh
+      - run: ci/binutils-gdb/install.sh
+      - run: ci/gcc/install.sh
+      - run: ci/clean-up.sh
+      - run: ci/bundle-macos.sh
+      - run: ci/archive-macos.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binutils-gdb-gcc-macos
+          path: binutils-gdb-gcc-macos.tar

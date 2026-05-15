@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phantom Fighter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        #overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            cursor: pointer;
+        }
+        #overlay span {
+            color: #ffff00;
+            font-family: monospace;
+            font-size: 24px;
+        }
+        #overlay.hidden { display: none; }
+    </style>
+</head>
+<body>
+    <canvas id="game" width="960" height="600"></canvas>
+    <div id="overlay">
+        <span>Click to Play</span>
+    </div>
+    <script type="module">
+        import { Game } from './game.js';
+
+        const canvas = document.getElementById('game');
+        const overlay = document.getElementById('overlay');
+        const game = new Game(canvas);
+
+        overlay.addEventListener('click', async () => {
+            overlay.classList.add('hidden');
+            await game.init();
+        });
+    </script>
+</body>
+</html>

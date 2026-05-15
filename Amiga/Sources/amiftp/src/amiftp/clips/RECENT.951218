@@ -1,0 +1,237 @@
+| Recent uploads to ftp.amigalib.com [165.247.33.6] on 17-Dec-95
+| The last 7 days' uploads, newest first. Blank line=new day, + = long .readme
+|
+|File              Dir        Size Description
+|----------------- ---        ---- -----------
+DayDream117PCH.lha comm/bbs    10K+Patch to fix Daydream 1.17 to work on 68000
+DD-Request11.lha   comm/bbs    13K+Request door for DayDream BBS
+LZX_Repack204b.lha util/arc   134K+LHA/DMS/ZIP/ARJ/ARC/ZOO/GZ/Z to LZX
+
+DayDreamBBS117.lha comm/bbs   378K+DayDream BBS V1.17 - BBS Software
+EnvoyARexx10.lha   comm/envoy  39K+Send ARexx-commands via Envoy (1.0)
+TermSFXv1.lha      comm/misc  723K+Random sound effects for Term
+amiconnect.lha     comm/tcp   199K+V3 of Combined PPP/SLIP Dialler & Config Pro
+amiconnectsm.lha   comm/tcp    35K+A Lib-less/reduced Amiconnect3 setup
+AmiFTP.lha         comm/tcp   207K+AmiTCP/AS225 FTP-client v1.0 (ClassAct GUI)
+cp5.lha            comm/tcp   129K+V5.7 of the AmiTCP front end package
+DFunc.lha          dev/amos     3K+DFunc  AMOS 
+gutil_dev_3657.lha dev/gui    267K+GUI creation library - developer archive
+BtoC_v32.lha       dev/src     95K+Data/Sprite/ANSI/Palette/Image/Mask source g
+CyberStorm060.txt  docs/rview  13K REVIEW: Cyberstorm 060 accelerator
+IPISA95.txt        docs/rview  15K REVIEW: IPISA '95 (conference)
+Zeewolf2demo.dms   game/demo  369K+Demo of Zeewolf 2
+top_hk13.lha       hard/hack  366K+Hard-Hack:  Put A500 into Black Tower Case!
+berzbench11c.lha   pix/icon   226K+V1.1c Probably the best patterns for WB AGA
+UselessMWB.lha     pix/icon    37K+YACUMWBBPC (Patterns for MWB)
+MartinsReader.lha  text/misc   14K+AutoDoc Reader with MUI3.0+ (Dirk Holtwick)
+SMps2pk.lha        text/tex   607K+Use Postscript font with PasTeX1.4 and more
+Request_v13.lha    util/batch   2K+Pops up a requester with selectable title, b
+MultiBlank.lha     util/blank  46K+V1.4 of the modular screen blanker
+BServer_v15.lha    util/cdity 681K+Modular screen blanker, CARDWARE.
+CloseWB_v19.lha    util/cdity  25K+Closes, locks or reopens WB screen. Closes w
+PSM_v12.lha        util/cdity  39K+Public screens manager, CARDWARE.
+Split_v11.lha      util/cdity  44K+Splits/rebuilds big files. Comfortable GUI, 
+TBClock.lha        util/cdity   8K+V1.10 of the title bar clock
+DefaultScrn1_1.lha util/cli     3K+Changes the default public screen and option
+gutil_usr_3657.lha util/libs   31K+GUI creation library (small & fast)
+GCatalogsITA.lha   util/misc   10K+Italian catalogs for PowerSnap, AlertPatch a
+ICookie_RT.lha     util/misc  142K+IntuiCookie for Reqtools
+IntuiCookie.lha    util/misc  164K+VERY GOOD Fortune cookie program (MUI!)
+MakeCalendar.lha   util/rexx    8K+Creates a calendar in FinalWriter
+Zoom_v15.lha       util/wb     18K+A simple zoomer for default public screen. F
+
+Dig_Universe.lha   biz/demo   3.3M+Digital Universe demo 1.02, Astronomy s/w
+ww3_1r2p.lha       biz/patch  234K+WW3.1 R1 -> R2 patch [UK version only]
+FateCall.lha       comm/cnet   10K+Detailed, colorful Last Callers util - try!
+TDisp12.lha        comm/fido   36K+A call scheduler for TrapDoor with nice GUI
+AmiNote22.lha      comm/misc   48K+V2.2 - GUI to store your AmiNet dloads
+recent13.lha       comm/misc   41K+V1.3 GUI to parse AmiNet RECENT files
+tftdbbs.lha        demo/euro  126K+Magic's Darkside BBStro
+Generation19.lha   demo/mag   561K+Scene Messy-Mag #19 from Artwork
+make-3.75-bin.lha  dev/c       53K+Port of GNU make with SAS/C (no ixemul.libra
+make-3.75-src.lha  dev/c      597K+Port of GNU make with SAS/C (no ixemul.libra
+MC.lha             dev/misc   379K+Faster&Shorter version of MultiColor
+makeStereo3D.lha   gfx/3d     290K+Stereo3D for the masses !!!
+MagicSelV1_80.lha  gfx/misc   500K+WBPrn & Snd at Boot, Now Freeware!(MUI)
+Vinfo20.lha        gfx/misc   105K+Info system with text & gfx. V2.0
+DJLang_NoseMix.lha mods/techn 241K+Hardcore song by David Gerber. 196 bpm!
+ArcsPack-15.lha    pix/icon   2.8M+F*@#?'ing *BEAUTIFUL* Workbench/MUI System E
+PATZ-MWBIcons.lha  pix/icon   184K+MagicWB icon set by PATZ
+ArcsWeb-2.lha      pix/misc   524K+Decorate your WWW Homepage With Arctangent's
+ArcTexture-3.lha   pix/misc   205K+128x128 & 256x256 Hi-Quality patterns for 3D
+BFont10.lha        text/font  242K+BFont multibyte font rendering system; NIS N
+addicon.lha        util/cli    15K+Add any icon to multiple files
+PATZ-TDir.lha      util/cli    23K+Shows directory tree V2.10
+REXX-ArgParse.lha  util/rexx    6K+Argument parsing with ARexx V1.06
+shell-1.0.lha      util/sys    88K+New shell commands (IF, FOR) +source
+
+tower_wh.lha       comm/cnet   17K+A CNET C who program for cnet 3.0x
+wd-abbs.lha        comm/cnet    9K Adds BBS'es to logoffscreen in cnet 3.05c
+jjanos.lha         comm/misc  602K+Jnos port whith many new commands. (update)
+rtool21.lha        comm/misc   13K+RecentTool version 2.0 Adds File_ID.diz to A
+PC2Am302.lha       comm/net    74K+PC<->Amiga SerNet(or TWIN)-like filesys
+httpproxy.lha      comm/tcp    93K+Caching Proxy usable with any Web-Browser
+netecho.lha        comm/tcp     3K+Netecho checks if a host is available.
+nettime.lha        comm/tcp     3K+TCP/IP client for the daytime service
+Mystify.lha        demo/sound 603K+Music disk from BFB Team. (Big Fat Brothers)
+fant-asm.lha       dev/asm    657K+Assemblercourse in german language, Disk1
+GTBoxConv.lha      dev/basic   40K+GTBox Conv V4.11 Now should work on OS2 mach
+mui31_MaxonC++.lha dev/gui     25K+MaxonC++ pragmas for MagicUserInterface V3.1
+fixzappo.lha       disk/cdrom 142K+Fixes an annoying bug in Zappo CD drive
+Gcat46_01.lha      disk/misc   61K+Simple disk catalogger: upgrade. WB2+
+b-r_xf2.lha        docs/mags   16K+Issue 2 (dec 95) of the scene news mag
+RAW_WWW.txt        docs/misc   22K+Information text-file about R.A.W. ON-LINE
+jacket.lha         game/misc    8K+A Custom Map for Worms
+WormsMaps.lha      game/misc  144K+Updated Worms Maps by Stone-D
+ztools.lha         game/role   50K+Tools for Infocom games, release 5/10
+MakeImageMap.lha   gfx/edit     4K+ImageFX ARexx-script to make imagemaps...
+flickfix.lha       hard/hack    5K+A1200 Screen flicker fix V1.0
+pcb.lha            hard/hack   53K+How to create PCB s German+Italian AG
+GluemachineHC.lha  hard/misc   73K+A simple single-chip computer using HC11
+UNd64_384.lha      misc/emu    20K+THE .d64/.t64/.p00 archive fileprocessor
+Mandelbrot2.lha    misc/math   28K+Explore the beauty of Mandelbrot and Julia f
+cell.lha           misc/misc   36K+Simulator for cellular wire automatons
+LDI.lha            misc/sci    12K+Helps you to have lucid dreams. V1.10
+Dreamworld.mpg     mods/smpl  6.7M+MPEG Audio of a synthesizer song
+MidiLibUtils.lha   mus/midi    31K+Recompiled utilities for midi.library 2.0 fr
+spiscope.lha       mus/misc     2K+Spectro Peak Indicator scope for HiP 2.12+ v
+FrexxEdV1_11A.lha  text/edit  550K+Very configurable text editor (1/2)
+FrexxEdV1_11B.lha  text/edit  210K+Very configurable text editor (2/2)
+ScreenKeys.lha     util/cdity  13K+Add hotkeys for screens. V1.1.
+addfreq.lha        util/cli     7K+Automatic filerequesters in toolsdaemon
+msdos_30.lha       util/cli   199K+Use MSDOS6 commands on your Amiga (Shell uti
+SCrypter.lha       util/crypt  10K+Crypt/Decrypt files. V1.31a (All Amigas) 
+ROSuomi120.lha     util/dir     2K+Finnish catalog for RO V1.20
+DFunc3714.lha      util/libs   87K+Tool library. Gadgets,text,converting +
+alog10.lha         util/misc    4K+Different logfile entries in ONE window
+MergeRec.lha       util/misc    9K+Updates Aminet INDEX with RECENT files
+PhoneBook.lha      util/misc   25K+Keeps track of Phone Numbers. V1.0
+syn1_05.lha        util/misc  140K+Latest Syndicate Lottery Demo For OS3.x
+scout25.lha        util/moni  269K+System monitor (MUI and AmiTCP optional)
+varexx.lha         util/rexx   93K+A GUI system for Arexx. v1.4
+ShellBench.lha     util/sys    55K+Replacement for WB2+ 'Execute', V1.1
+FrontClock.lha     util/time    5K+Nice to-front snapshottable clock
+VZ_II126.lha       util/virus 160K+VirusZ v1.26 by Georg H rmann
+CGWBPattern101.lha util/wb    199K+Replacement WBPattern (supports. CGfx)
+iconconv.lha       util/wb     69K+Convert icons between palettes (v1.2)
+
+ArcByName.lha      biz/dopus    7K+Arc-script for Dopus5 and Lha/LZX V1.0
+KillJoy2.lha       comm/bbs    42K+Remove mail pointers for Zeus,Xeno,Dlg & E.
+Protector2_01.lha  comm/bbs    24K+BBS-Safety-Utility
+FateStats.lha      comm/cnet   18K+Time bank, also with exchange of credits
+lgc-fb10.lha       comm/cnet   10K+Time bank, also with exchange of credits
+lgc-fc21.lha       comm/cnet    6K+Multi-Feedback with comments to the whole te
+lgc-fe12.lha       comm/cnet   12K+Welcomes users eg. with Nodescan like /X
+lgc-fl11.lha       comm/cnet   41K+Quickly browses certain subs for new files
+statdoor1.01.lha   comm/mebbs  10K+StatDoor v1.01 for MeBBSNet Pro
+AMosaicSpan121.lha comm/tcp     2K+Spanish catalog v1.21 for AMosaic 2.0 Pr
+sib.dms            demo/aga   521K+2nd place AGA Demo of the AMIGA Magazine Com
+ooc1.dms           demo/sound 533K+-Out of Control-  a cool Techno-Collection b
+ooc2.dms           demo/sound 759K+-Out of Control-  a cool Techno-Collection b
+AMOSZine.lha       dev/amos   266K+A demo of AMOSZine
+BlitzBasic_211.lha dev/basic  636K+Updated Demo Version of Blitz Basic 2.1
+SerialClass1_0.lha dev/src      7K+SAS 6.56 source code for an object oriented 
+CompactPlayer.lha  disk/cdrom 143K+SCSI-2 CD-Audio player v1.6 (ClassAct GUI)
+StusCDXLGUI.lha    disk/cdrom  41K+V1.3 (final) of this CD-ROM essention CDXL p
+DKpriser.lha       docs/misc   26K+DataKompaniet's new pricelist (Scandinavia)
+CC2_Ed.lha         game/hint   54K+A planet editor for Colonial Conquest II
+AGPLapTime.lha     game/misc   33K+Logs your races in F1GP V1.0.
+F1GP-Ed.lha        game/misc  302K+Formula One Grand Prix / WC Editor V3.11
+JTEWorms.lha       game/misc   54K+4 Custom Maps for Worms
+10000.lha          game/think  56K+Dice game, 0-8 plr, Amiga & IBM vers.
+ADProRunner1_8.lha gfx/misc    71K+Runs ADPro with memory spesification.
+FastECS.lha        misc/emu    67K+Fast 16 color ECS driver for ShapeShifter
+xmgr24.lha         misc/sci   418K+ACE/gr graphics for exploratory data analysi
+xmgr24_docs.lha    misc/sci   228K+Docs for ACE/gr graphics for exploratory dat
+xmgr24_example.lha misc/sci   275K+Examples for ACE/gr graphics for exploratory
+CloseToYou.lha     mods/misc  1.3M+Close To You, by ACH/END
+TearsOfFire.lha    mods/misc  177K+Tears Of Fire, by ACH/END
+JTEBPic.lha        pix/misc    91K+AmigaStart BootPics
+jtemwb5.lha        pix/mwb    105K+JTE MagicWB Icons 5
+jtemwb6.lha        pix/mwb    318K+JTE MagicWB Icons 6
+jtemwb7.lha        pix/mwb     60K+JTE MagicWB Icons 7
+jtemwb8.lha        pix/mwb     48K+JTE MagicWB Icons 8
+amilogo.lha        pix/trace  660K+Picture of the new Amiga-Logo with AMIGA-Com
+hsc.lha            text/hyper 151K+HTML preprocessor v0.9.4,14-Dec-1995
+VideoKanji.lha     text/misc  701K+Kanji fast search **** DEMO VERSION ****
+bcode20.lha        util/arc    64K+UUEncode NUCODE/UUCODE/BCODE/HEXCODE
+FastExec10.lzh     util/boot    5K+Moves exec.library to fast memory
+SysPic210.lha      util/boot   84K+The best boot-time picture displayer!
+mcx231.lha         util/cdity  51K+Multi Function Commodity
+mcxp117.lha        util/cdity  45K+MUI Preferences for MultiCX
+DiskInfo_01.lha    util/cli     8K+Small CLI program which will give you some i
+Bioday12.lha       util/misc   32K+1.2ver new FEATURE & updated 
+PatchWBPens.lha    util/wb      9K+Use 3 bitplane icons on >8 color WB (OS3.x, 
+
+PBDEMO304.lha      biz/demo   626K+Demo version of ProBoard 3.04 autorouter
+PNDEMO20C.lha      biz/demo   267K+Schematic Capture program, demo version
+Hasso.lha          comm/ambos  14K+Tool to search in userdatabase   
+MiniTools_01.lha   comm/ambos 131K+16 little usefull tools for AmBoS
+c342q08.lha        comm/bbs   216K+Citadel BBS Version 3.42.Q08
+nw132.lha          comm/bbs    37K+Nuclear Warfare
+s342q08.lha        comm/bbs   520K+Citadel BBS Version 3.42.Q08, SOURCE
+cdaxe_20.lha       comm/cnet   34K+CDAxe v2.0 - CDRom/Aminet/Direct interface f
+ADMail.lha         comm/mail   62K+GUI EMail package, v1.7
+FTP.lha            comm/maxs    4K+FTP Door for MAX BBS V 1.0
+WWWCache2.lha      comm/net    13K+V2.0 of Arexx script for caching images and 
+AMosaicFrench.lha  comm/tcp     6K+French catalog for Amiga Mosaic 2.0 Pre.
+Telemako.lha       comm/term  189K+The best PRESTEL emulator and editor. V0.9b.
+Barfly1_28.lha     dev/asm    575K+Barfly Assembler Development System
+D68k208.lha        dev/asm     47K+D68k v2.0.8, very fast MC68060/881/851 Disas
+Python13.lha       dev/lang   765K+Amiga port of Python 1.3 (bin+lib)
+TimeKpDev9512.lha  dev/misc    48K+TimeClock Util for Project Development
+OReport.lha        dev/obero   13K+V0.14 Generates bugreports for Amiga Oberon
+CDROM34.lha        docs/help   30K+CDROM FAQ 3.4 for Amiga (deu)
+AMIL_1138.lha      docs/hyper  69K+Amiga Main Internet List -1138-
+GDListe12.lha      docs/misc   54K+Game/demo developper list V 1.2
+GridLock95.lha     game/2play 147K+V95.Dec.12 - 2 player game Modem/NullModem/A
+Bangboo-Demo.lha   game/demo  107K+Bangboo-Demo
+CyberRace.dms      game/demo   46K+Car racing platform game with parallax scrol
+HankyBankyDemo.dms game/demo  425K+HankyBankyDemo
+Marblelous.dms     game/demo  413K+Marblelous Demoversion
+BangerIsharIns.lha game/patch   4K+Install Ishar I to HD
+itf201.lha         game/role  153K+Infocom game interpreter
+X-Wins.lha         game/think  61K+MUI based "4-in-a-row" game V2.3
+raider.lha         gfx/3dobj  1.0M+Lightwave Scene of B5-Objekcts
+cybershow56.lha    gfx/board   94K+SlideShow&Viewer(incl.PCD)for CybGfx&AGA (OS
+cybertvplayer4.lha gfx/board  652K+Animation player for CyberGfx & AGA (OS3.x)
+egstv54a.lha       gfx/board  465K+EGS animation,framegrabber&handyscanner soft
+egstvplayer3.lha   gfx/board   10K+Animation player for EGS
+fastifxmodul50.lha gfx/misc    33K+ImageFX loaders(incl.PCD)&savers(incl.animat
+xipaintmodul30.lha gfx/misc    25K+Univ. loader&anim.saver for XiPaint
+MPEGIntuition.lha  gfx/show   115K+Ver 2.3 MPEG with SOUND (GUI 4 mp & Amipeg)
+Visage.lha         gfx/show   146K+Picture viewer for OS 3.0+. V39.3
+in-out-board.lha   hard/hack  171K+In-Out-Board
+Atrctn.lha         mods/ctp   381K+Atrocitation, weird techno by Counterpoint/W
+HB1.lha            mods/jungl 196K+Happy Hardcore by Sheffra
+HB2.lha            mods/jungl 182K+Happy Breaks vol.2 by Sheffra
+Mindwash.lha       mods/misc  122K+Mod by Luke Cadwell. 10/12/95
+pro2.lha           mus/edit    97K+Tracker deluxe, plays from fastmemory
+dominatorV1_02.lha mus/midi   113K+Midi sequencer, 250 multichannel tracks, Qba
+RynoDocks2.lha     pix/icon   109K+A set of ToolManager AnimBrushes
+Longbow.jpg        pix/irc     37K+Longbow from IRC #AmigaCafe
+wa95pics.lha       pix/misc   104K+B&W thumbnails of photos from World of Amiga
+Scraper.jpg        pix/trace   51K+Rendered Image of a scraper (800x600x24)
+predoc.lha         text/edit  111K+Textlinker-Softwarepackage to create Docs fr
+EVPaths141.lha     text/tex    55K+Paths routines for TeX related progs
+IconGrid.lha       util/cli     8K+"snap to grid" for Workbench icons
+gnuplot.lha        util/gnu   753K+Gnuplot, AmigaDOS 3.0 driver
+find362.lha        util/misc    7K+Locate/process files. Small & powerful!
+Stat36_2.lha       util/sys     8K+An extension of C:Status. 
+VInfo36_3.lha      util/sys    10K+An alternative to C:Info
+EZCron.lha         util/time   49K+UN*X like Cron with E-Z to use GUI w/reminde
+ETrashCan.lha      util/wb     11K+Mac like trashcan. Changes image with conten
+ScreenMaster.lha   util/wb    154K+Comprehensive Public Screen Manager V1.0
+
+Oberon-NonFPU.lha  dev/obero  100K+Use Oberon V4-V1.0 without FPU
+Oberon-Src.lha     dev/obero  582K+Source of Oberon System V4-V1.0
+Oberon.lha         dev/obero  1.1M+Oberon System V4 for Amiga V1.0
+Rewind.lha         mods/jungl 187K+Drum & Bass by Sheffra.
+ChanceLite.lha     mods/misc  1.0M+Lite Version of "Chance" mod by ACH/END
+MKUnpack.lha       util/arc     8K+Automated File Unpacker for .lha, .lzh archi
+
+blup.lha           comm/ambos  11K+Checks for BIN-remains in user-postboxes
+QbistAmiga.lha     gfx/misc   105K+Creates good looking abstract art pics
+spira.lha          mods/techn 201K+Progressive House MOD / By SkyFusion A&V
+trans.lha          mods/techn 258K+House & Techno MOD / By SkyFusion A&V
+ScreenMenu.lha     util/wb     10K+Screen List Menu. With a DELAY option!

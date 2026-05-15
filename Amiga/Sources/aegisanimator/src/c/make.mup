@@ -1,0 +1,5 @@
+for i in active animdata animmenu bigrepla bringin centerpo changedi code colormen confirm control cseq cursorda digitgau displays findcolo hlstorgb io mainmenu morphdat morphmen reindex rotate rotateme scalescr scroller spikemen splitscr splittwe storagem story text timemenu undo upstream vbop vclone vgeneric vhook vloop vkill vmove vsample vspike vsupport workpoly wsubs zmenu slider
+do
+	\megamax\mmcc $i.c
+	test $? -eq 0 || { echo "compiling $i.c failed"; break; }
+done

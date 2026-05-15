@@ -1,0 +1,35 @@
+Short:    Patch program for Alien Breed 3D
+Author:   girv@girvnet.demon.co.uk (John Girvin)
+Uploader: girv@girvnet.demon.co.uk (John Girvin)
+Type:     game/patch
+Replaces: game/patch/AB3DTrainer.lha
+Requires: KS2.04, Alien Breed 3D
+
+DESCRIPTION
+
+    This is version 3.01 of a patch program for "Alien Breed 3D" from
+    Team 17. It supports:
+      - Floppy AB3D as distributed by Team 17
+      - Patched AB3D with 8-channel stero sound added, available from
+        the Team 17 ftp site ftp2.team17.com and Aminet.
+      - CD32 version
+
+    Also compatible with HackAB3D.
+
+    Provides:
+    - infinite energy
+    - infinite ammunition for all weapons (once collected).
+    - joypad/joystick compatibility patch
+
+    Does not modify your game executable on disk. Does not require you
+    to decrunch your Alien Breed 3D executable.
+
+
+AUTHOR
+
+    John Girvin
+
+    E-Mail: girv@girvnet.demon.co.uk
+
+    WWW:    http://www.girvnet.demon.co.uk/index.html
+

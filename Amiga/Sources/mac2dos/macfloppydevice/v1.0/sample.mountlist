@@ -1,0 +1,12 @@
+MF0:       Device = macfloppy.device
+           Unit   = 3
+           Flags  = 0
+           Surfaces  = 2
+           BlocksPerTrack = 11
+           Reserved = 2
+           Interleave = 0
+           LowCyl = 0  ;  HighCyl = 79
+           Buffers = 5
+           BufMemType = 3
+	   MOUNT = 1
+#

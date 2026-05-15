@@ -1,0 +1,138 @@
+	include	/includes/exec/exec_lib.i
+	include	/includes/graphics/graphics_lib.i
+	include	/includes/intuition/intuition_lib.i
+	include	/includes/libraries/diskfont_lib.i
+ZEICHEN	macro
+	dc.l	\1
+	dc.w	\2
+	dc.b	\3
+	dc.b	\4
+	endm
+PRINT	macro
+	dc.b	\1,0
+	dc.b	\2
+	even
+	dc.w	0
+	dc.w	0
+	dc.l	0
+	dc.l	\3
+	dc.l	0
+	endm
+WINDOW	macro							
+	dc.w	\1
+	dc.w	\2
+	dc.w	\3
+	dc.w	\4
+	dc.b	0,1
+	dc.l	\5
+	dc.l	\9
+	dc.l	\6
+	dc.l	0
+	dc.l	\7					
+\8	dc.l	0
+	dc.l	0
+	dc.w	\3
+	dc.w	\4
+	dc.w	\3
+	dc.w	\4
+	dc.w	15
+	endm
+SCREEN	macro  
+	dc.w	0
+	dc.w	0
+	dc.w	\1
+	dc.w	\2
+	dc.w	\3
+	dc.b	2,3
+	dc.w	\4
+	dc.w	15
+	dc.l	0
+	dc.l	\5
+	dc.l	0
+	dc.l	0
+	endm
+	lea	intname,a1
+	clr.l	d0
+	CALLEXEC	OpenLibrary
+	tst.l	d0			
+	beq	abbruch
+	move.l	d0,_IntuitionBase
+	lea	diskfontname,a1
+	clr.l	d0
+	CALLEXEC	OpenLibrary
+	tst.l	d0			
+	beq	abbruch2
+	move.l	d0,_DiskfontBase
+	lea	grafname,a1
+	clr.l	d0
+	CALLEXEC	OpenLibrary
+	tst.l	d0
+	beq	abbruch3
+	move.l	d0,_GfxBase
+	lea	screendata,a0
+	CALLINT	OpenScreen
+	move.l	d0,screenpointer
+	move.l	d0,point1
+	move.l	d0,point2
+	move.l	d0,point3
+	lea	windowdata,a0
+	CALLINT	OpenWindow
+	move.l	d0,windowpointer
+	lea	Zeichensatz,a0
+	CALLDISKFONT	OpenDiskFont
+	move.l	d0,a1
+	move.l	d0,courier24
+	CALLGRAF	AddFont
+	move.l	courier24,a0
+	move.l	windowpointer,a1
+	move.l	50(a1),a1
+	CALLGRAF	SetFont
+	move.l	windowpointer,a0
+	move.l	50(a0),a0
+	move.l	#text,a1
+	move.l	#61,d0
+	move.l	#93,d1
+	CALLINT	PrintIText
+	move.l	#20,d6
+jn	sub	#01,d6
+	move.l	$A0000000,d5
+nb	sub	#01,d5
+	cmpi	#01,d5
+	bne	nb
+	cmpi	#01,d6
+	bne	jn
+	move.l	windowpointer,a0
+	CALLINT	CloseWindow
+	move.l	screenpointer,a0
+	CALLINT	CloseScreen
+abbruch3	move.l	_GfxBase,a1
+	CALLEXEC	CloseLibrary
+abbruch2	move.l	_DiskfontBase,a1
+	CALLEXEC	CloseLibrary
+abbruch	move.l	_IntuitionBase,a1
+	CALLEXEC	CloseLibrary
+	rts
+_IntuitionBase 	dc.l	0
+_DiskfontBase	dc.l	0
+_GfxBase		dc.l	0
+grafname		GRAFNAME
+intname		intname
+diskfontname		DISKFONTNAME
+screendata	SCREEN	320,200,2,$0000,screenname
+screenname	dc.b	"Ein Screen ...",0
+		cnop	0,4
+screenpointer	dc.l	0
+windowdata	WINDOW	20,20,280,160,%00000000000000000000000,0,windowname,point3,%1000000001111    
+*		x1,y1, x2, y2,     IDCMP-Flags,     Gadgets, Name,   Screen,   Window-Flags
+windowname	dc.b	"... und ein Window",0
+		cnop	0,2
+windowpointer	dc.l	0
+		even
+point1	dc.l	0
+point2	dc.l	0
+text	PRINT	1,0,nachricht
+nachricht	dc.b	"Phoyh",0
+Zeichensatz	ZEICHEN	Courier.font,24,0,$62
+courier24	dc.l	0
+Courier.font	dc.b	"Courier.font",0
+	even

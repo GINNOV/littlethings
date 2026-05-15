@@ -1,0 +1,189 @@
+;
+;$VER: AB3DTrainer Installer script v3.01 (c) 1997 John Girvin
+;
+
+(welcome "Welcome to the AB3DTrainer Installer v3.01")
+(set @app-name "AB3DTrainer")
+(set #GDESTDIR "DH0:")
+
+(set #GUSEGUI 0)
+(set #GUSEHACK 0)
+(set #GCONTROL 0)
+(set #GDEFTRAINERS 0)
+
+(if
+	(<> @user-level 2)
+	(abort "You must select 'Expert' user level")
+)
+
+(message "\n\nWelcome to the AB3DTrainer Installer\n"
+		 "(c) 1997 John Girvin\n\n"
+		 "Please read the documentation thoroughly before"
+		 " attempting to use this installer!\n\n"
+		 "This is version 3.01\n\n"
+		 "Click 'Proceed' to begin."
+)
+
+(set #GDESTDIR
+	(askdir
+		(prompt "Where do you have Alien Breed 3D installed?\n"
+				"(select the directory containing the 'abd.pk' or 'abd' program)"
+		)
+		(help @askdir-help)
+		(default #GDESTDIR)
+	)
+)
+(set @default-dest #GDESTDIR)
+
+(set #GUSEGUI
+	(askchoice
+		(prompt "Do you want the cheat GUI to appear every time you load AB3DTrainer?\n"
+				"(this may be changed later by editing the tooltypes of AB3DTrainer)"
+		)
+		(help @askchoice-help)
+		(choices "Yes - use the GUI" "No  - don't use the GUI")
+		(default #GUSEGUI)
+	)
+)
+
+(set #GUSEHACK
+	(askchoice
+		(prompt "Do you want to use HackAB3D by default?\n"
+				"(this may be changed later by either "
+				"editing the tooltypes of AB3DTrainer "
+				"or using the GUI)"
+		)
+		(help @askchoice-help)
+		(choices "Yes - use HackAB3D" "No  - don't use HackAB3D")
+		(default #GUSEHACK)
+	)
+)
+
+
+(if (= 1
+		(askbool
+			(prompt "\nDo you want to specify the type of game controller to use?")
+			(help (cat @askchoice-help
+					"\n\nIf you have trouble using a joystick or CD32 joypad "
+					"to control AB3D and wish to use either of these control "
+					"methods, you should choose 'Yes'. On th other hand, if "
+					"you have no trouble using your preferred control method, "
+					"you should choose 'No' instead."
+					"\n\nIn either case, this choice may be changed later by "
+					"editing the tooltypes of AB3DTrainer or using the GUI."
+				  )
+			)
+			(default 0)
+		)
+	)
+	(
+		(set #GCONTROL
+			(askchoice
+				(prompt "Please select how you will control AB3D.\n"
+						"(this may be changed later by either "
+						"editing the tooltypes of AB3DTrainer "
+						"or using the GUI)"
+				)
+				(help @askchoice-help)
+				(choices "Standard joystick" "CD32 Joypad")
+				(default #GCONTROL)
+			)
+		)
+		(set #GCONTROL (+ 1 #GCONTROL))
+	)
+	(
+		(set #GCONTROL 0)
+	)		
+)
+
+(set #GDEFTRAINERS
+	(askoptions
+		(prompt "Please select the default trainers to use.\n"
+				"(these may be changed later by either "
+				"editing the tooltypes of AB3DTrainer "
+				"or using the cheat GUI)"
+		)
+		(help @askoptions-help)
+		(choices "Infinite energy"
+				 "Infinite ammunition"
+    	)
+		(default #GDEFTRAINERS)
+	)
+)
+
+(copyfiles
+	(prompt "Copying trainer program")
+	(help @copyfiles-help)
+	(source "AB3DTrainer")
+	(dest #GDESTDIR)
+	(nogauge)
+	(noposition)
+	(optional fail force)
+)
+
+(copyfiles
+	(prompt "Copying trainer program icon")
+	(help @copyfiles-help)
+	(source "AB3DTrainer_icon")
+	(newname "AB3DTrainer.info")
+	(dest #GDESTDIR)
+	(nogauge)
+	(optional fail force)
+)
+
+(if (= #GUSEGUI 1)
+	(tooltype
+		(prompt "Setting trainer program icon tooltypes")
+		(dest (tackon #GDESTDIR "AB3DTrainer"))
+		(settooltype "NOGUI" "")
+	)
+)
+
+(if (= #GUSEHACK 0)
+	(tooltype
+		(prompt "Setting trainer program icon tooltypes")
+		(dest (tackon #GDESTDIR "AB3DTrainer"))
+		(settooltype "HACKAB3D" "")
+	)
+)
+
+(if (= 1 #GCONTROL)
+	(tooltype
+		(prompt "Setting trainer program icon tooltypes")
+		(dest (tackon #GDESTDIR "AB3DTrainer"))
+		(settooltype "CONTROL" "JOYSTICK")
+	)
+)
+
+(if (= 2 #GCONTROL)
+	(tooltype
+		(prompt "Setting trainer program icon tooltypes")
+		(dest (tackon #GDESTDIR "AB3DTrainer"))
+		(settooltype "CONTROL" "JOYPAD")
+	)
+)
+
+(if (<> 0 (IN #GDEFTRAINERS 0))
+	(tooltype
+		(prompt "Setting trainer program icon tooltypes")
+		(dest (tackon #GDESTDIR "AB3DTrainer"))
+		(settooltype "INF_ENERGY" "")
+	)
+)
+
+(if (<> 0 (IN #GDEFTRAINERS 1))
+	(tooltype
+		(prompt "Setting trainer program icon tooltypes")
+		(dest (tackon #GDESTDIR "AB3DTrainer"))
+		(settooltype "INF_AMMO" "")
+	)
+)
+
+(copyfiles
+	(prompt (cat "Copying trainer loader"))
+	(help @copyfiles-help)
+	(source "AB3DTBoot")
+	(dest #GDESTDIR)
+	(nogauge)
+	(optional fail force)
+)

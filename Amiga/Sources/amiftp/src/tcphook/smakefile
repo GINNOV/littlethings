@@ -1,0 +1,11 @@
+tcp.lib: tcp.o amitcp.o as225.o
+	oml -b tcp.lib R tcp.o R amitcp.o R as225.o
+
+tcp.o: tcp.c
+	sc tcp.c
+
+amitcp.o: amitcp.c tcphooks.h
+	sc amitcp.c
+
+as225.o: as225.c tcphooks.h
+	sc IDIR=dh1:sc/as225/include IDIR=sc:include IDIR=dh1:sc/include as225.c

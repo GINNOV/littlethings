@@ -1,0 +1,19 @@
+# Ignore the build and lib dirs
+src/build
+src/bin
+lib/*
+
+# Ignore any executables
+src/bin/*
+
+# Ignore Mac specific files
+.DS_Store
+
+# Ignore FS-Uae files
+*.uaem
+
+# Ignore temp files
+*.swp
+
+# Ignore object files
+*.o

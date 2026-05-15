@@ -1,0 +1,12 @@
+build*
+projects
+download
+Output
+*.log
+.lock
+.state
+.vscode
+.DS_Store
+.repos*
+tickets
+amiga

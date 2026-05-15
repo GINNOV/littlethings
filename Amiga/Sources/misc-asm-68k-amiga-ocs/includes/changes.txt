@@ -1,0 +1,13 @@
+Changes made to auto-converted CBM 1.2 Include Files
+====================================================
+
+devices/bootblock.i	EQU-SET
+devices/clipboard.i	EQU-SET, removed spurious semi-colons
+devices/printer.i	EQU-SET
+devices/prtbase.i	EQU-SET
+resources/cia.i		added surrounding conditional
+resources/potgo.i	EQU-SET
+workbench/startup.i	added surrounding conditional
+workbench/workbench.i	added surrounding conditional
+
+

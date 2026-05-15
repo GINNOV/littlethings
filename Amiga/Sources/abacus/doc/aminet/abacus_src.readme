@@ -1,0 +1,33 @@
+Short:        Abacus source code
+Uploader:     amigasourcecodepreservation@gmail.com
+Author:       Kai Nickel
+Type:         game/board
+Version:      2.20
+Architecture: generic
+
+Source code for the board game Abacus.
+Binaries: http://aminet.net/package/game/board/abacus220
+Uploaded to aminet for historical preservation.
+Many thanks to Kai Nickel for releasing the code.
+
+License
+=======
+Abacus is distributed under the terms of the GNU General Public License,
+version 2 or later. See the COPYING file for details.
+
+Cheers!
+https://twitter.com/AmigaSourcePres
+
+  _____ ___   _   __  __     _   __  __ ___ ___   _   
+ |_   _| __| /_\ |  \/  |   /_\ |  \/  |_ _/ __| /_\  
+   | | | _| / _ \| |\/| |  / _ \| |\/| || | (_ |/ _ \ 
+  _|_| |___/_/ \_\_|_ |_|_/_/_\_\_|__|_|___\___/_/_\_\
+ / __|/ _ \| | | | _ \/ __| __|  / __/ _ \|   \| __|  
+ \__ \ (_) | |_| |   / (__| _|  | (_| (_) | |) | _|   
+ |___/\___/_\___/|_|_\\___|___|__\___\___/|___/|___|_ 
+ | _ \ _ \ __/ __| __| _ \ \ / /_\_   _|_ _/ _ \| \| |
+ |  _/   / _|\__ \ _||   /\ V / _ \| |  | | (_) | .` |
+ |_| |_|_\___|___/___|_|_\ \_/_/ \_\_| |___\___/|_|\_|
+                                                      
+
+

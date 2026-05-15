@@ -1,0 +1,9 @@
+FROM 
+MFcmd.obj,
+MFfmt.obj,
+MFamy.obj,
+MFio.obj
+TO PROD/macfloppy.device
+SMALLCODE
+NODEBUG
+LIBRARY dh0:lib/amiga.lib

@@ -1,0 +1,16 @@
+# AmigaOS/68k
+
+TARGET = _os3
+TARGETEXTENSION = 
+
+CC = vc +aos68k
+CCOUT = -o=
+CFLAGS = -c -cpu=68020 -merge-strings -DAMIGA $(OUTFMTS) -O1
+
+LD = $(CC)
+LDOUT = $(CCOUT)
+LDFLAGS = -lmieee
+
+RM = delete force quiet
+
+include make.rules

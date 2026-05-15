@@ -1,0 +1,182 @@
+.key NAME/K,AMIFTPDIR/K,SCA/K,SCAGAD/K,SCAIMG/K,DCA/K,DCAGAD/K,DCAIMG/K,MD5/K
+.bra {
+.ket }
+.def AMIFTPDIR T:AmiFTP/
+
+.def SCA dh1:ClassAct/Classes/
+.def SCAGAD {SCA}Gadgets/
+.def SCAIMG {SCA}Images/
+.def DCA {AMIFTPDIR}Classes/
+.def DCAGAD {DCA}Gadgets/
+.def DCAIMG {DCA}Images/
+.def MD5 work:pgpamiga/contrib/md5sum/md5sum
+
+;echo {AMIFTPDIR}
+;echo {SCA} {SCAGAD} {SCAIMG}
+;echo {DCA} {DCAGAD} {DCAIMG}
+;echo {MD5}
+;exit
+set dir `cd`
+Cd dh1:tcp/amiftp
+Makedir T:AmiFTP
+;Makedir T:AmiFTP/C
+Makedir T:AmiFTP/Catalogs
+Makedir T:AmiFTP/Catalogs/Dansk
+Makedir T:AmiFTP/Catalogs/Deutsch
+Makedir T:AmiFTP/Catalogs/Español
+Makedir T:AmiFTP/Catalogs/Français
+Makedir T:AmiFTP/Catalogs/Greek
+Makedir T:AmiFTP/Catalogs/íslenska
+Makedir T:AmiFTP/Catalogs/Italiano
+Makedir T:AmiFTP/Catalogs/Nederlands
+Makedir T:AmiFTP/Catalogs/Norsk
+Makedir T:AmiFTP/Catalogs/Suomi
+Makedir T:AmiFTP/Catalogs/Svenska
+;Makedir T:AmiFTP/Classes
+;Makedir T:AmiFTP/Classes/Gadgets
+;Makedir T:AmiFTP/Classes/Images
+Makedir T:AmiFTP/REXX
+;Makedir T:AmiFTP/Prefs
+Makedir T:AmiFTP/Icons
+
+Copy Icons.info T:AmiFTP/
+Copy /AmiFTP.info                  T:AmiFTP.info
+Copy AmiFTP.info                   {AMIFTPDIR}AmiFTP.info
+Copy AmiFTP                        {AMIFTPDIR}AmiFTP
+;Copy dh1:classact/c/CheckAssign   {AMIFTPDIR}C/CheckAssign
+Copy doc/ReadMe                    {AMIFTPDIR}ReadMe
+Copy doc/ReadMe.info               {AMIFTPDIR}ReadMe.info
+Copy doc/HISTORY                   {AMIFTPDIR}HISTORY
+Copy doc/HISTORY.info              {AMIFTPDIR}HISTORY.info
+Copy doc/REGISTER                  {AMIFTPDIR}REGISTER
+Copy doc/REGISTER.info             {AMIFTPDIR}REGISTER.info
+Copy doc/AmiFTP.guide              {AMIFTPDIR}AmiFTP.guide
+Copy doc/AmiFTP.guide.info         {AMIFTPDIR}AmiFTP.guide.info
+Copy doc/AmiFTP2.prefs             {AMIFTPDIR}AmiFTP2.prefs
+Copy doc/Install_AmiFTP            {AMIFTPDIR}Install_AmiFTP
+Copy doc/Install_AmiFTP.info       {AMIFTPDIR}Install_AmiFTP.info
+Copy rexx/find.amiftp {AMIFTPDIR}REXX/find.amiftp
+Copy rexx/FindAminet.doc {AMIFTPDIR}REXX/FindAminet.doc
+Copy icons/AmiFTP.KMI-dock.info {AMIFTPDIR}Icons/
+Copy icons/AmiFTP.NI.info {AMIFTPDIR}Icons/
+
+; Locale stuff
+
+Copy Catalogs/NewCatalog.ct             {AMIFTPDIR}Catalogs/NewCatalog.ct
+Copy Catalogs/Dansk/AmiFTP.catalog      {AMIFTPDIR}Catalogs/Dansk/
+Copy Catalogs/Dansk/AmiFTP.ct           {AMIFTPDIR}Catalogs/Dansk/
+Copy Catalogs/Deutsch/AmiFTP.catalog    {AMIFTPDIR}Catalogs/Deutsch/
+Copy Catalogs/Deutsch/AmiFTP.ct         {AMIFTPDIR}Catalogs/Deutsch/
+Copy Catalogs/Français/AmiFTP.catalog   {AMIFTPDIR}Catalogs/Français/
+Copy Catalogs/Français/AmiFTP.ct        {AMIFTPDIR}Catalogs/Français/
+Copy Catalogs/Español/AmiFTP.catalog    {AMIFTPDIR}Catalogs/Español/
+Copy Catalogs/Español/AmiFTP.ct         {AMIFTPDIR}Catalogs/Español/
+Copy Catalogs/Greek/AmiFTP.catalog      {AMIFTPDIR}Catalogs/Greek/
+Copy Catalogs/Greek/AmiFTP.ct           {AMIFTPDIR}Catalogs/Greek/
+Copy Catalogs/íslenska/AmiFTP.catalog   {AMIFTPDIR}Catalogs/íslenska/
+Copy Catalogs/íslenska/AmiFTP.ct        {AMIFTPDIR}Catalogs/íslenska/
+Copy Catalogs/Italiano/AmiFTP.catalog   {AMIFTPDIR}Catalogs/Italiano/
+Copy Catalogs/Italiano/AmiFTP.ct        {AMIFTPDIR}Catalogs/Italiano/
+Copy Catalogs/Nederlands/AmiFTP.catalog {AMIFTPDIR}Catalogs/Nederlands/
+Copy Catalogs/Nederlands/AmiFTP.ct      {AMIFTPDIR}Catalogs/Nederlands/
+Copy Catalogs/Norsk/AmiFTP.catalog      {AMIFTPDIR}Catalogs/Norsk/
+Copy Catalogs/Norsk/AmiFTP.ct           {AMIFTPDIR}Catalogs/Norsk/
+Copy Catalogs/Suomi/AmiFTP.catalog      {AMIFTPDIR}Catalogs/Suomi/
+Copy Catalogs/Suomi/AmiFTP.ct           {AMIFTPDIR}Catalogs/Suomi/
+Copy Catalogs/Svenska/AmiFTP.catalog    {AMIFTPDIR}Catalogs/Svenska/
+Copy Catalogs/Svenska/AmiFTP.ct         {AMIFTPDIR}Catalogs/Svenska/
+Copy AmiFTP.cd {AMIFTPDIR}Catalogs/
+
+; ClassAct stuff
+
+;Copy {SCA}window.class          {DCA} Clone
+;Copy {SCA}arexx.class           {DCA} Clone
+;Copy {SCAGAD}button.gadget      {DCAGAD} Clone
+;Copy {SCAGAD}checkbox.gadget    {DCAGAD} Clone
+;Copy {SCAGAD}chooser.gadget     {DCAGAD} Clone
+;Copy {SCAGAD}clicktab.gadget    {DCAGAD} Clone
+;Copy {SCAGAD}fuelgauge.gadget   {DCAGAD} Clone
+;Copy {SCAGAD}integer.gadget     {DCAGAD} Clone
+;Copy {SCAGAD}layout.gadget      {DCAGAD} Clone
+;Copy {SCAGAD}layout.gadget.020  {DCAGAD} Clone
+;Copy {SCAGAD}listbrowser.gadget {DCAGAD} Clone
+;Copy {SCAGAD}radiobutton.gadget {DCAGAD} Clone
+;Copy {SCAGAD}scroller.gadget    {DCAGAD} Clone
+;Copy {SCAGAD}string.gadget      {DCAGAD} Clone
+;Copy {SCAGAD}tabs.gadget        {DCAGAD} Clone
+;Copy {SCAIMG}bevel.image        {DCAIMG} Clone
+;Copy {SCAIMG}drawlist.image     {DCAIMG} Clone
+;Copy {SCAIMG}glyph.image        {DCAIMG} Clone 
+;Copy {SCAIMG}label.image        {DCAIMG} Clone
+;Copy {SCAIMG}penmap.image       {DCAIMG} Clone
+;Copy dh1:classact/Prefs.info    {AMIFTPDIR} Clone
+;Copy dh1:classact/Prefs/CAPrefs       {AMIFTPDIR}Prefs/ Clone
+;Copy dh1:classact/Prefs/ClassAct      {AMIFTPDIR}Prefs/ Clone
+;Copy dh1:classact/Prefs/ClassAct.info {AMIFTPDIR}Prefs/ Clone
+
+Cd T:AmiFTP
+Copy dh1:tcp/amiftp/doc/sigheader.txt T:md5sigs
+{MD5} -b AmiFTP AmiFTP.info AmiFTP2.prefs >>T:md5sigs
+{MD5}    AmiFTP.guide           >>T:md5sigs
+{MD5} -b AmiFTP.guide.info      >>T:md5sigs
+{MD5}    Install_AmiFTP         >>T:md5sigs
+{MD5} -b Install_AmiFTP.info    >>T:md5sigs
+{MD5}    ReadMe                 >>T:md5sigs
+{MD5} -b ReadMe.info            >>T:md5sigs
+{MD5}    HISTORY                >>T:md5sigs
+{MD5} -b HISTORY.info           >>T:md5sigs
+{MD5}    REGISTER               >>T:md5sigs
+{MD5} -b REGISTER.info          >>T:md5sigs
+;{MD5} -b C/CheckAssign          >>T:md5sigs
+{MD5}    Catalogs/Newcatalog.ct >>T:md5sigs
+{MD5} -b Catalogs/Dansk/AmiFTP.catalog      >>T:md5sigs
+{MD5} -b Catalogs/Dansk/AmiFTP.ct           >>T:md5sigs
+{MD5} -b Catalogs/Deutsch/AmiFTP.catalog    >>T:md5sigs
+{MD5} -b Catalogs/Deutsch/AmiFTP.ct         >>T:md5sigs
+{MD5} -b Catalogs/Français/AmiFTP.catalog   >>T:md5sigs
+{MD5} -b Catalogs/Français/AmiFTP.ct        >>T:md5sigs
+{MD5} -b Catalogs/Español/AmiFTP.catalog    >>T:md5sigs
+{MD5} -b Catalogs/Español/AmiFTP.ct         >>T:md5sigs
+{MD5} -b Catalogs/Greek/AmiFTP.catalog      >>T:md5sigs
+{MD5} -b Catalogs/Greek/AmiFTP.ct           >>T:md5sigs
+{MD5} -b Catalogs/íslenska/AmiFTP.catalog   >>T:md5sigs
+{MD5} -b Catalogs/íslenska/AmiFTP.ct        >>T:md5sigs
+{MD5} -b Catalogs/Italiano/AmiFTP.catalog   >>T:md5sigs
+{MD5} -b Catalogs/Italiano/AmiFTP.ct        >>T:md5sigs
+{MD5} -b Catalogs/Nederlands/AmiFTP.catalog >>T:md5sigs
+{MD5} -b Catalogs/Nederlands/AmiFTP.ct      >>T:md5sigs
+{MD5} -b Catalogs/Norsk/AmiFTP.catalog      >>T:md5sigs
+{MD5} -b Catalogs/Norsk/AmiFTP.ct           >>T:md5sigs
+{MD5} -b Catalogs/Svenska/AmiFTP.catalog    >>T:md5sigs
+{MD5} -b Catalogs/Svenska/AmiFTP.ct         >>T:md5sigs
+
+;{MD5} -b Classes/window.class               >>T:md5sigs
+;{MD5} -b Classes/arexx.class                >>T:md5sigs
+;{MD5} -b Classes/Gadgets/button.gadget      >>T:md5sigs
+;{MD5} -b Classes/Gadgets/checkbox.gadget    >>T:md5sigs
+;{MD5} -b Classes/Gadgets/chooser.gadget     >>T:md5sigs
+;{MD5} -b Classes/Gadgets/clicktab.gadget    >>T:md5sigs
+;{MD5} -b Classes/Gadgets/fuelgauge.gadget   >>T:md5sigs
+;{MD5} -b Classes/Gadgets/integer.gadget     >>T:md5sigs
+;{MD5} -b Classes/Gadgets/layout.gadget      >>T:md5sigs
+;{MD5} -b Classes/Gadgets/layout.gadget.020  >>T:md5sigs
+;{MD5} -b Classes/Gadgets/listbrowser.gadget >>T:md5sigs
+;{MD5} -b Classes/Gadgets/radiobutton.gadget >>T:md5sigs
+;{MD5} -b Classes/Gadgets/scroller.gadget    >>T:md5sigs
+;{MD5} -b Classes/Gadgets/string.gadget      >>T:md5sigs
+;{MD5} -b Classes/Gadgets/tabs.gadget        >>T:md5sigs
+;{MD5} -b Classes/Images/bevel.image         >>T:md5sigs
+;{MD5} -b Classes/Images/drawlist.image      >>T:md5sigs
+;{MD5} -b Classes/Images/glyph.image         >>T:md5sigs
+;{MD5} -b Classes/Images/label.image         >>T:md5sigs
+;{MD5} -b Classes/Images/penmap.image        >>T:md5sigs
+;{MD5} -b REXX/find.amiftp                   >>T:md5sigs
+;{MD5} -b REXX/FindAminet.doc                >>T:md5sigs
+;{MD5} -b Prefs/CAPrefs                      >>T:md5sigs
+;{MD5} -b Prefs/ClassAct                     >>T:md5sigs
+
+work:pgpamiga/bin/pgp -as +clearsig=on +textmode=on T:md5sigs
+Copy T:md5sigs.asc T:AmiFTP/md5sigs.asc
+
+;lha -r -x a dh1:tcp/<NAME> AmiFTP AmiFTP.info
+cd $dir

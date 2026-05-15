@@ -1,0 +1,50 @@
+
+		Mac-2-Dos Notes
+
+		George Chamberlain
+
+		December 13, 1988
+
+
+As of this date I have successfully read data from both the Laser and Apple
+3.5-inch external Macintosh disk drives.  The two drives do not work in
+exactly the same way, which affects our development and marketing plans.
+
+All Mac floppy disk drives spin at five different speeds, depending upon
+which track the drive is accessing.  The Macintosh was (and is still)
+designed to control the speed of its disk drives through some special
+hardware and software which senses the speed of the drive and controls the
+speed of the motor.  The original 400K (single-sided) Mac drives use that
+method of speed control.  Later Apple introduced 800K (double-sided) drives
+which control their own speed.  They ignore the speed signal from the
+Macintosh.  They automatically spin at the correct speed based on the track
+the drive is positioned at.
+
+The Laser external Mac drive does not control its own speed.  Even though
+it is an 800K, double-sided drive, it depends upon the speed control signal
+from the Macintosh to control the motor speed.  To me this seems a bit
+foolish...Apple may not continue to provide such a signal in later versions
+of the Mac.  But for now that offers us the possibility of using the
+Laser drive to read and write Amiga files.  My tests show that the Laser
+drives will spin as slowly as 290 RPM.  The Apple drives, by comparison,
+spin no slower than 390 RPM, and then only for certain tracks.  (Amiga
+disks spin at a constant speed of 300 RPM for all tracks.)
+
+While the Apple drives cannot be used to read/write Amiga disks, there is
+an offsetting advantage: since they don't use the motor speed signal from
+the Mac, they require one less signal lead on the interface...this means
+that we could use an Apple drive as DF1, DF2, or DF3.  The Laser drive, by
+comparison, must have the motor speed lead, and cannot be used as DF3.
+
+Presumably we will want to support EITHER of these drives, but these
+differences in their usage presents some problems in designing the disk
+interface cirsuit, marketing the product and supporting the user.  If
+we choose the Laser, we can read/write Amiga disks, but cannot function as
+DF3.  If we choose the Apple, we cannot read/write Amiga files, but we can
+function as DF3.  If we try to support both drives, we must force the user
+to "install" the drive -- that is tell us which type of drive he is using. 
+(Well maybe not...if the program tries to change to motor speed and the
+drive doesn't respond, then it must be an Apple or Apple look-alike.)
+
+From a pure cost point of view, the Laser wins hands down, since we can buy
+it at $150 in quantities of 25 or more, while we canno

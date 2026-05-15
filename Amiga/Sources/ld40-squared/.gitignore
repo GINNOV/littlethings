@@ -1,0 +1,12 @@
+
+\.vscode/
+
+game\.log
+
+memory\.log
+
+build/
+
+ld40-squared\.adf
+
+exe2adf\.exe

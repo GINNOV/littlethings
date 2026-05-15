@@ -1,0 +1,2 @@
+.key file/a
+BLINK <file>.obj TO <file> LIBRARY DH0:LIB/AMIGA.LIB SMALLCODE

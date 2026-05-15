@@ -1,0 +1,21 @@
+#
+#	MysticView makefile
+#
+.c.o:
+	sc $< $(CFLAGS) cpu=$(CPU)
+
+###############################################################################
+
+#LFLAGS =		smallcode smalldata noicons stripdebug
+
+LIBS =			lib:sc.lib libjpeg.lib
+
+OBJS =			lib:c.o asm.o
+
+Test:			$(OBJS)
+			slink with <<
+				from $(OBJS)
+				to $@
+				lib $(LIBS)
+				$(LFLAGS)
+			<

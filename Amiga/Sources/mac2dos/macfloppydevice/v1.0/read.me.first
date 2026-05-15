@@ -1,0 +1,390 @@
+
+
+			MAC-2-DOS Translation Notes
+			     September 21, 1989
+
+
+The purpose of these notes is to assist you in translating Mac-2-Dos text
+and error messages from English into your native language.  To simplify this
+task, we have saved on disk a collection of Mac-2-Dos screen images, showing
+most English text and error messages as they appear on the screen.  One
+reason for doing this is to encourage you to choose words in your language
+which will fit into the space allowed on the screen.  In some cases the size
+of the messages does not matter.  In other cases the size is very important.
+
+We recommend that you call up each screen and compare the messages described
+here with their location and appearance on the screen.  To examine a
+Mac-2-Dos screen image, simply double-click on the icon for the desired
+screen.
+
+
+MAIN SCREEN
+
+This is the main Mac-2-Dos screen.  This screen has several fixed text
+strings which identify gadgets and specific data.  The length of these
+strings is  critical:
+
+	Mac volume:
+	Amiga volume:
+	COPY
+	Root
+	Parent
+	Bytes free:
+
+	Drawer
+	Folder
+	(root)
+	No Mac disk loaded
+	Untitled
+
+
+LOADING.MAC SCREEN
+
+This screen shows a text message in the left window which appears while
+Mac-2-Dos is reading the directory of a Mac disk.  Size is not critical as
+long as the text fits inside the left file window.
+
+	Loading Mac disk directory...
+
+
+LOADING.AMY SCREEN
+
+This screen shows a text message in the right window which appears while
+Mac-2-Dos is reading the directory of an Amiga disk.  Size is not critical,
+as long as the text fits inside the right file window.
+
+	Loading Amiga directory...
+
+
+COPY.STATUS SCREEN
+
+This screen appears during the actual file copy, and presents information
+describing the actual file being copied, the source and destination paths,
+the type of conversion being applied to the data, and a block count showing
+the progress of the copy.  These text strings are not critical in length.
+
+	File Copy Status
+	Copying files from Mac to Amiga
+	Copying files from Amiga to Mac
+	File n of n
+	From Amiga:
+	From Mac:
+	To Amiga:
+	To Mac:
+	Conversion:
+	Block n of n
+
+The following text strings describe the types of data conversions available
+in the current version of Mac-2-Dos.  One (and only one) of these strings
+appears after the word "Conversion:".
+
+	None (pure binary)
+	MacBinary
+	Mac ASCII <--> Amiga ASCII
+	PostScript
+	MacPaint <--> Amiga IFF
+
+
+EDIT.TYPES SCREEN
+
+This screen allows the user to customize Mac-2-Dos by changing the standard
+file type, creator codes, and default tool names for each type of data
+conversion supported by Mac-2-Dos.  The text strings are used to describe
+the rows and columns of string gadgets.  Three additional gadgets appear at
+the bottom of the screen to permit exit from this screen.  While string
+lengths are not critical, there is not much extra space on this screen. 
+MacBinary does not appear as a conversion option on this screen, because its
+codes are not changeable.
+
+	Edit File type/creator and Default tool names
+	Mac Type
+	Creator
+	Amiga Default Tool Name
+
+	No Conversion
+	ASCII (text)
+	PostScript
+	MacPaint-IFF
+
+	Save
+	Use
+	Cancel
+
+
+FORMAT.DISK SCREEN
+
+This screen shows a requester which appears when the user selects the Format
+Disk menu item.  Space in this requester is limited, and string lengths are
+critical.
+
+	Format Macintosh diskette
+	WARNING - Old contents will be lost!
+	Enter new volume name:
+
+	Two-Sided
+	One-Sided
+	Cancel
+
+
+FORMAT2 SCREEN
+
+This screen shows a requester which appears while Mac-2-Dos is formatting a
+Mac disk.
+
+	Formatting Mac disk ... please wait
+
+
+VERIFY.DISK SCREEN
+
+This screen shows a requester which appears while Mac-2-Dos is verifying the
+format of a Mac disk.
+
+	Verifying Mac disk ... please wait
+
+
+CREATE.DIR SCREEN
+
+This screen shows a requester which appears while Mac-2-Dos is creating a
+new directory on a Mac disk which has just been formatted.
+
+	Creating directory ... please wait
+
+
+DUP.FILE SCREEN
+
+This screen shows a requester which appears during the copy process if
+Mac-2-Dos finds that the file already exists.  
+
+	This file already exists:
+	Do you want to replace it?
+
+	YES
+	NO
+
+
+EXC.NAME SCREEN
+
+This screen shows a requester which appears when the user selects the
+Exclude Name menu item.
+
+	Enter name of file to be excluded.
+	Use wildcards '?' or '#?' for groups.
+
+
+INC.NAME SCREEN
+
+This screen shows a requester which appears when the user selects the
+Include Name menu item.
+
+	Enter name of file to be included.
+	Use wildcards '?' or '#?' for groups.
+
+
+DELETE.FILE SCREEN
+
+This screen shows a requester which appears when the user selects the Delete
+File menu item and has selected at least one file.
+
+	WARNING - You are about to delete
+	n Mac file(s).
+	n Amiga file(s).
+	Are you sure you want to proceed?
+
+	YES
+	NO
+
+
+RENAME.VOL SCREEN
+
+This screen shows a requester which appears when the user selects the Rename
+Volume menu item.
+
+	Enter new volume name:
+
+	CANCEL
+
+
+ERROR.REQ SCREEN
+
+This screen shows a requester in the upper left corner which is used for
+many different error messages.  This requester is coded to adjust its size
+to the length of the error text, but the text must be limited to a single
+line.  Here is a list of error messages which can appear in this requester:
+
+	Can't find Mac disk drive...quitting.
+	No Mac files selected to process.
+	No Amiga files selected to process.
+	No files selected to delete.
+	Not a Mac disk in Mac drive.
+	Amiga volume undefined.
+	Out of memory...cannot copy file.
+	Invalid directory.
+	No parent directory.
+	No root directory.
+	Unknown Mac disk format.
+	Mac disk is full.
+	Mac directory is full.
+	Out of memory...aborting.
+	Amiga path error.
+	Amiga directory error: garbage.
+	Amiga directory error: looping.
+	Error reading Mac disk.
+	Error writing Mac disk.
+	Error formatting Mac disk.
+	Mac disk is write-protected.
+	Mac disk verify failed.
+	Formatting attempt unsuccessful.
+	Your Mac drive is single-sided.
+	Timer B already in use.
+
+	RETRY
+
+
+FILETYPE SCREEN
+
+This screen shows a requester which appears when the user selects the No
+Conversion menu item and the direction of the copy is to the Mac.  This
+permits the user to specify the Mac file type and file creator codes to be
+assigned during this conversion.
+
+	Enter Mac file type:
+	Enter Mac file creator:
+	See User''s Guide for details.
+
+
+TOOL SCREEN
+
+This screen shows a requester which appears when the user selects the No
+Conversion menu item and the direction of the copy is to the Amiga.  This
+permits the user to specify the Mac file type and file creator codes to be
+assigned during this conversion.
+
+	Enter Amiga tool type:
+	See User''s Guide for details.
+
+
+FILE.INFO SCREEN
+
+This screen shows a requester which appears when the user selects the File
+Info menu item.  This requester allows the user to modify the name and
+protection status of any file and the file type and creator codes of a Mac
+file.  String lengths are very critical in this requester.
+
+	FILE INFO
+	Name:
+	Size:
+	Date:
+	Protected:
+	Type:
+	Creator:
+
+
+DISP.FILE SCREEN
+
+This special screen appears when the user selects the Display Text menu
+item.  The text string lengths are not critical, although gadget strings are
+critical.
+
+	Contents of file:
+	End of file.
+
+	CANCEL
+	SKIP
+	PROCEED
+
+
+FILE.ERROR SCREEN
+
+This screen shows a requester which appears when an error occurs in the
+processing of a specific file.  The actual error text varies, depending on
+the nature of the error, but the name of the file affected by the error is
+always displayed as the second text line.  Error text is limited to one line
+and the length is limited by the size of the requester.
+
+	File is not in MacPaint format:
+	File is not in IFF format:
+	IFF LIST format not supported:
+	IFF file data corrupted:
+	Unable to open Mac file:
+	Unable to create Mac file:
+	Can't delete protected file:
+	Unable to open Amiga file:
+	Unable to create icon for file:
+	Unable to create Amiga file:
+
+	Okay
+
+
+The following is a list of text strings which appear in menu items.  The
+length of these items is VERY critical.  Items in the same group should be
+of the same or similar length.
+
+	Project
+	Mac Disk
+	File Utilities
+	Select Files
+	Conversions
+	Other Options
+
+	About M2D
+	Load Options
+	Edit Types/Tools
+	Save Options
+	Quit
+
+	Eject Disk
+	Rename Disk
+	Verify Disk
+	Format Disk
+
+	File info
+	Display Text
+	Rename File
+	Delete File
+
+	Include All
+	Include Name
+	Exclude All
+	Exclude Name
+
+	No Conversion
+	MacBinary
+	ASCII (text)
+	PostScript
+	MacPaint-IFF
+
+	Amiga Icon
+	Ask Amiga Tool
+	Ask Mac Type
+	Auto-Replace
+	Amiga Resolution
+
+	320x200
+	640x400
+
+
+The following text strings are the Mac-2-Dos product identification, which
+appears in a requester when the user selects the About M2D menu item.  You may
+wish to include your company name and address here; however, we must insist
+that our company name also appear here along with the copyright notice.
+
+	MAC-2-DOS V1.1a, August 30, 1989
+	Copyright (c) 1989
+	Central Coast Software
+	424 Vista Avenue
+	Golden, CO 80401 USA
+	303-526-1030
+
+
+We hope that by presenting the English text and error messages to you in
+this manner you will have fewer problems translating Mac-2-Dos to your
+language, and we will have fewer problems incorporating the translated text
+into the program.  If you have any questions, please contact us as soon as
+possible.  We wish to work with you to make this translation as accurate and
+complete as possible.
+
+Sincerely,
+
+George and Betty Chamberlain
+Central Coast Software
+

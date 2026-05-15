@@ -1,0 +1,283 @@
+
+
+                   DOS-2-DOS V3.5 Release Notes
+
+                        February 26, 1991
+
+
+Thank you for purchasing Dos-2-Dos.  We encourage you to return the
+postage-paid Dos-2-Dos registration card to us so that you will be
+eligible for support and product updates.  We will also send you
+information about other new products for your Amiga as they become
+available.
+
+		New Features in Version 3.5
+
+Dos-2-Dos now runs properly under Workbench V2.0 on the Amiga 3000.
+
+WARNING - 5.25-INCH FLOPPY DRIVE USERS - Dos-2-Dos now requires that
+the 5.25-inch floppy drive be MOUNTed, just as AmigaDOS does if you
+try to use the drive with AmigaDOS.  If you do NOT already have a
+MOUNT command for the 5.25-inch drive in your startup-sequence, you
+must make appropriate changes to your startup-sequence in the S:
+directory and to the MOUNTLIST file in the DEVS: directory.
+
+Workbench 1.2 and 1.3 both include a Mountlist entry for a 5.5-inch
+drive.  If yo are using one of these versions and your 5.25-inch
+drive is DF2, just add the command:
+
+	MOUNT DF2:
+
+to your startup-sequence.  Workbench 2.0 does NOT include a Mountlist
+entry for a 5.25-inch floppy drive.  So if you are using Workbench
+2.0, or if your 5.25-inch floppy drive is NOT DF2, you must edit
+the Mountlist file to include such an entry.  Using your favorite
+text editor, edit the file DEVS:Mountlist, and add the following to
+the end of the file:
+
+/* Mount a 5.25" disk drive as DF2: */
+
+DF2:       Device = trackdisk.device
+           Unit   = 2
+           Flags  = 1
+           Surfaces  = 2
+           BlocksPerTrack = 11
+           Reserved = 2
+           Interleave = 0
+           LowCyl = 0  ;  HighCyl = 39
+           Buffers = 20
+           BufMemType = 3
+           MOUNT = 1
+#
+
+If your drive is DF1 or DF3 instead of DF2, change DF2 as necessary,
+and change the Unit = 2 parameter to match.
+
+After modifying the Mountlist, edit the startup-sequence file in the
+S: directory, adding:
+
+	MOUNT DF2:
+
+again, changing DF2 to DF1 or DF3 as appropriate.
+
+After you have made all these changes, reboot your Amiga so that the
+new drive will be officially mounted.  Then Dos-2-Dos should be able
+to find and use the drive as an MS-DOS drive.
+
+
+		New Features in Dos-2-Dos Version 3.3
+
+Added Switch Option.  In response to problems encountered by several
+customers, we have added a new -W switch option.  This option forces
+Dos-2-Dos to strip (ignore) the high-order bit of all ASCII characters
+when translating from MS-DOS to Amiga ASCII.  You may find this switch
+useful in converting WosdStar text files (hence "-W") to Amiga ASCII.
+Try this option if the translated ASCII text appears to have very
+unusual characters scattered through it.  The -W goes at the end of
+the command line, and MUST be used with the -A option.
+
+
+		Features in Dos-2-Dos Version 3.2
+
+Dos-2-Dos now searches a non-floppy device for a partition table, if it
+does not find a legal boot block at block 0.  The partition table must
+follow MS-DOS standards.  Dos-2-Dos uses the first entry in the partition
+table to locate the base of the MS-DOS partition.  It then looks there
+for a valid boot block.  It also uses the cylinder offset information to
+position properly for all subsequent reads and writes to that volume.
+
+This change was implemented to handle the new autoboot partitions used
+with the A2500.
+
+Dos-2-Dos used to search the Mountlist file in the DEVS: directory to
+find necessary information about non-floppy devices.  Now it searches the
+internal device list of AmigaDOS, and no longer requires access to the
+Mountlist.  You should ignore all references to the Mountlist in the
+manual.
+
+Version 3.2 contains the following bug fixes:
+
+	1.  A fix for crashes when reading MS-DOS 5.25-inch disks
+	    written by the DEC VaxMate.
+
+	2.  A fix for crashes when the MS-DOS directory contains
+	    garbage.
+
+	3.  A fix to correct a CLI lockup that occurred if you
+	    typed RUN D2D.
+
+	4.  A fix to correct crashes when deleting files from RAM: using
+	    wild cards.
+
+
+
+		Features in DOS-2-DOS Version 3.1
+
+We have changed the way Dos-2-Dos opens its window.  If Dos-2-Dos is
+invoked from Workbench, it opens its own window, as before.  However, it
+does open the window to the size of the Workbench screen.  If Dos-2-Dos is
+invoked from CLI, it DOES NOT open its own window, but uses the CLI
+window.  This makes the program easier to use with CLI shell programs.
+
+We have enhanced the ASCII translation -A option so that the Amiga
+extended character set is properly translated to the IBM PC extended
+character set and vice versa.  This makes Dos-2-Dos work properly for
+various European languages which make use of special characters which are
+not a part of the standard ASCII set. 
+
+Dos-2-Dos now accepts command line parameters when invoked from CLI.  The
+command must include the MS-DOS/Atari ST drive code and one full command
+with all Dos-2-Dos parameters.  The command can be any of the standard
+commands, but the most useful command would appear to be the COPY command.
+
+Example:
+
+	D2D DF2: COPY DF2:*.BAT -A -R
+
+This command invokes Dos-2-Dos, specifies DF2: as the MS-DOS drive, copies
+all files from the root directory of DF2: having a file type of .BAT to the
+current Amiga directory, performs the ASCII translation on each file and
+replaces any existing Amiga files having the same name as the MS-DOS
+files.  Pretty neat, huh?  Thanks to Brad Dalton, Manassas, Virginia, for
+bribing us to add this feature!
+
+
+		Features in DOS-2-DOS Version 3.0
+
+In addition to accessing MS-DOS and Atari ST files via standard Amiga
+floppy drives, Dos-2-Dos version 3.0 permits access to any MS-DOS volume
+available via AmigaDOS.  This includes MS-DOS partitions on hard disks and
+MS-DOS volumes on LANs or SCSI networks.  Dos-2-Dos also can read a
+variety of 5.25-inch MS-DOS floppy formats via the 10.7MB Konica
+high-density floppy drive, sold by CLtd and Supra, among others. 
+
+The MS-DOS (Atari) device is now assigned dynamically, and can be ANY
+AmagaDOS device.
+
+The DELETE command now accepts wild cards!  User beware!
+
+MS-DOS files copied to AmigaDOS now retain their original date/time stamp.
+
+The directory display (DIR command) now looks the same on the screen for
+both MS-DOS and AmigaDOS directories.
+
+
+
+			80-track Disk Drives
+
+Skip this section unless you use special 80-track 5.25-inch floppy disk
+drives on your Amiga.
+
+Some Amiga hackers have adapted 80-track 5.25-inch disk drives to the
+Amiga.  Such drives are designed to appear to AmigaDOS as 3.5-inch 880KB
+drives, and can be read and written directly by AmigaDOS.  These drives
+can also be used by Dos-2-Dos to read and write 80-track or 40-track
+5.25-inch diskettes.  In order for these drives to work correctly with
+40-track diskettes, Dos-2-Dos must issue double-step commands to the
+drive.  This conflicts with 3.5-inch drives reading 360KB 3.5-inch floppy
+disks, such as those produced by Transformer and some lap portable
+computers.  Dos-2-Dos cannot tell the difference between an 80-track
+5.25-inch drive and a normal 80-track 3.5-inch drive.  For this reason, we
+have placed two different versions of Dos-2-Dos on the distribution disk. 
+The normal version is named Dos-2-Dos and also D2D.  It NEVER double-steps
+ANY drive.  The special 80-track version, called D2D80, double-steps an
+80-track drive if the diskette boot block indicates 40-track media.  
+
+If you wish to format a 5.25-inch diskette using 80-track drives, D2D80
+automatically formats the disk to 720KB (80 tracks).  If you wish to
+format a normal 40-track DSDD (360KB) diskette, you must use this new
+format option:
+
+	FORMAT /40
+
+This format option forces Dos-2-Dos to limit the number of tracks to 40
+tracks (360KB).
+
+Dos-2-Dos automatically adjusts its track counting and stepping according
+to the unique disk format code contained in the boot block of the disk. 
+This means that there is no need to notify Dos-2-Dos of the type of disk
+to be used in these drives.
+
+
+
+			Accelerator boards
+
+Older versions of Dos-2-Dos used instruction loops to accomplish critical
+timing.  Such loops executed too fast with most accelerator boards,
+causing problems.  Dos-2-Dos no longer uses instruction loops for timing,
+and should work fine with all accelerator boards.
+
+
+
+		'MS-DOS Drive Not Ready' error message
+
+Dos-2-Dos uses certain hardware features of Amiga floppy disk drives which
+AmigaDOS does not use.  This is necessary because of the different way that
+data is stored on MS-DOS and Atari ST diskettes.  One such feature is an
+index interrupt which occurs when the index hole in the spinning diskette
+passes the index sensor in the disk drive.  The Amiga hardware ties this
+diskette signal to a totally unrelated signal from the serial port.  Under
+normal circumstances this causes no problems.  However, we have found that
+some non-standard Amiga serial cables can cause problems for Dos-2-Dos by
+interfering with the index hole signal.  Usually this problem appears as
+an erroneous "MS-DOS drive not ready" error message.  The solution in this
+case is to disconnect the cable on the serial port while using Dos-2-Dos.
+
+All 3.5-inch floppy disk drives are designed to produce the index pulse.
+However, since AmigaDOS does NOT utilize this pulse, your disk drive MAY
+NOT PRODUCE THIS PULSE because of an undetected hardware failure.  This
+can explain why Dos-2-Dos may report 'MS-DOS Drive Not Ready' when, in
+fact, there is a diskette in the drive, and the drive works fine with
+AmigaDOS.  In this case you may have to use a different drive or repair or 
+replace the faulty disk drive.
+
+
+
+		Using Dos-2-Dos to access an MS-DOS hard disk
+
+Amiga 2000 users who have a hard disk on the MS-DOS side of the
+bridgeboard may wish to access their MS-DOS files on that drive using
+Dos-2-Dos.  While some Dos-2-Dos users have been successful in doing this,
+WE DO NOT GUARANTEE THAT YOU WILL BE ABLE TO DO SO.  The following
+discussion offers suggestions for accessing this volume.  If you are not
+successful in getting this to work, we recommend using the AREAD and
+AWRITE commands to transfer your files.
+
+Here are the steps to access the MS-DOS volume:
+
+1.  Use the FDISK program (on MS-DOS) to determine the size
+of the MS-DOS partition.  In particular, the high and low cylinders
+must be determined.
+
+2.  Using your favorite editor, edit the Mountlist file in the DEVS:
+directory to include a new device, using any convenient name (MSDOS: is a
+good choice), and using the partition information from step 1.  Be sure to
+specify the proper device driver (use the same device name as for JH0). 
+The driver name is JDISK.device.  Case in this name is critical.
+
+3.  Type:	MOUNT MSDOS:
+
+4.  Run Dos-2-Dos.  Enter MSDOS: as the device.
+
+5.  Use Dos-2-Dos as you normally would.
+
+Remember that any time you wish to access this partition, you must
+type MOUNT MSDOS: before you run Dos-2-Dos.  As an alternative, you
+can add this mount command to your STARTUP-SEQUENCE in the S:
+subdirectory.
+
+If you attempt to access this new device from AmigaDOS you will get many
+errors.  Don't do it!  This is a 'phony' device for Dos-2-Dos access only!
+
+
+Good luck in using Dos-2-Dos.  If you have problems, don't hesitate to
+call us.  We'll do our best to help you.
+
+Sincerely,
+
+George and Betty Chamberlain
+Central Coast Software
+424 Vista Avenue
+Golden, Colorado 80401
+
+(303) 526-1030

@@ -1,0 +1,8 @@
+api/** linguist-language=Assembly
+bin/** linguist-generated
+commands/** linguist-language=Assembly
+includes/** linguist-vendored
+libs/** linguist-language=Assembly
+macros/** linguist-language=Assembly
+pocs/** linguist-language=Assembly
+programs/** linguist-language=Assembly

@@ -1,0 +1,39 @@
+**********************************
+*
+*	Startup code using VBR
+*
+*
+**********************************
+
+
+	MOVE.L	4.W,A6
+	BTST.B	#0,$129(A6) 		; CHECK IF CPU >= 68010
+	BEQ.B	START
+	LEA	SuperCode(PC),A5
+	JSR	-$1E(A6)		; SuperVisor,trap to a short SVMod func
+	BRA.B	START
+
+SuperCode:
+	MOVE.L	A0,-(SP)
+	MOVEC	VBR,A0			; uncomment line below if assembler
+;	DC.L	$4E7A8801		; does not recognize this instruction
+	MOVE.L	A0,BaseVBR
+	MOVEM.L	(SP)+,A0
+	RTE
+
+BaseVBR:
+	DC.L	0
+OldInt6C:
+	DC.L	0
+
+
+START:
+	MOVE.L	BaseVBR(PC),A0
+	MOVE.L	$6C(A0),OldInt6C
+
+	; ...
+
+	MOVE.L	BaseVBR(PC),A0
+	MOVE.L	OldInt6C(PC),$6C(A0)
+	RTS
+

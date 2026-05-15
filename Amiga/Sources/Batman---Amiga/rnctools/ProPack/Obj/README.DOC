@@ -1,0 +1,57 @@
+PRO-PACK UNPACK Prototype
+-------------------------
+
+Function
+--------
+
+To unpack a PRO-PACK packed file
+
+Syntax
+------
+
+extern long near UNPACK(void far *input, void far *output)
+
+OR
+
+extern long near UNPACK(void far *input, void far *output, word key)
+
+On entry
+--------
+
+*input is the address of the packed file and *output is the address the
+file gets unpacked to. If the packed file has been protected with a key
+then the same key must be used to unpack the file.
+
+On exit
+-------
+
+On successful completion UNPACK returns the length in bytes of the unpacked
+file. Otherwise it returns an error code
+
+ 0 = on entry *input does not point to a packed file
+-1 = packed data CRC error
+-2 = unpacked data CRC error
+
+Note:
+-----
+
+The packed file can be unpacked 'over itself' by making *output equal to
+*input. If this is the case the last 32 bytes of memory after the end of
+the unpacked file will be corrupted.
+
+
+UNPACK PC Linkable Object Files
+-------------------------------
+
+Object File     - Type of Packed File
+
+unpk_1.obj      - Method 1
+unpk_1k.obj     - Method 1, Key
+unpk_1v.obj     - Method 1, Verify
+unpk_1kv.obj    - Method 1, Key, Verify
+unpk_2.obj      - Method 2
+unpk_2k.obj     - Method 2, Key
+unpk_2v.obj     - Method 2, Verify
+unpk_2kv.obj    - Method 2, Key, Verify
+
+

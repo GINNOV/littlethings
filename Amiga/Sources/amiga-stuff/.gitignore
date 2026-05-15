@@ -1,0 +1,16 @@
+*.[oa]
+.*.d
+*~
+*.adf
+*.elf
+*.bin
+*.hex
+*.orig
+*.rej
+*.exe
+*.tmp
+*.gz
+*.zip
+degzip
+kickconv
+hunk_loader

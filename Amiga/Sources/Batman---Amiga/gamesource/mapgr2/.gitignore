@@ -1,0 +1,7 @@
+build
+**/panel.o
+uae/dh0/panel
+uae/dh0/*
+.DS_Store
+**/bin
+.vscode/settings.json

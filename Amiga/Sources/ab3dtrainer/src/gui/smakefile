@@ -1,0 +1,49 @@
+##### options
+
+CC =			sc
+
+LD =			slink
+
+LIB =			lib:sc.lib lib:amiga.lib
+DLIB = 			CDE:MyLib/gle.lib.debug
+RLIB = 			CDE:MyLib/gle.lib
+
+OBJECTS =		trainer.o panel.o
+
+RELEASE =		/dist/AB3DTrainer/AB3DTrainer
+DEBUG =			RAM:ab
+
+##### main program
+
+everything:		release debug
+
+release:		$(RELEASE)
+
+debug:			$(DEBUG)
+
+
+$(RELEASE):		$(OBJECTS) $(RLIB)
+				$(LD) <with <
+				FROM LIB:c.o $(OBJECTS)
+				TO $(RELEASE)
+				LIBRARY $(LIB) $(RLIB)
+				STRIPDEBUG SMALLCODE SMALLDATA
+				<
+				DoVer $(RELEASE) FORCE QUIET
+
+$(DEBUG):		$(OBJECTS) $(DLIB)
+				$(LD) <with <
+				FROM LIB:c.o $(OBJECTS)
+				TO $(DEBUG)
+				LIBRARY $(LIB) $(DLIB)
+				SMALLCODE SMALLDATA
+				<
+				DoVer $(DEBUG) FORCE QUIET
+
+##### object files
+
+trainer.o:		trainer.c
+				$(CC) trainer.c
+
+panel.o:		panel.c
+				$(CC) panel.c

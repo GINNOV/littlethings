@@ -1,0 +1,8 @@
+FROM 
+test.MFcmd.obj,
+MFfmt.obj,
+MFamy.obj,
+MFio.obj
+TO MF.device
+SMALLCODE
+LIBRARY dh0:lib/amiga.lib

@@ -1,0 +1,14 @@
+# C compiler intermediate files
+*.o
+
+# Input file types
+*.jpg
+*.png
+*.gpl
+
+# Output file types
+*.plt
+*.bm
+
+# Varia
+*.lnk

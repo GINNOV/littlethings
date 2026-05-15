@@ -1,0 +1,13 @@
+[submodule "rtaudio"]
+	path = src/submodules/rtaudio
+	url = https://github.com/thestk/rtaudio.git
+	branch = releases
+[submodule "lhasa"]
+	path = src/submodules/lhasa
+	url = https://github.com/fragglet/lhasa.git
+[submodule "zlib"]
+	path = src/submodules/zlib
+	url = https://github.com/madler/zlib.git
+[submodule "zziplib"]
+	path = src/submodules/zziplib
+	url = https://github.com/gdraheim/zziplib.git

@@ -1,0 +1,26 @@
+	suba.l	a1,a1
+	clr.l	HeadWBStartPoi
+	move.l	4.w,a6
+	jsr	FindTask(a6)
+	move.l	d0,a4
+	tst.l	172(a4)
+	bne	HeadNoWBStart
+	lea	92(a4),a0
+	jsr	WaitPort(a6)
+	lea	92(a4),a0
+	jsr	GetMsg(a6)
+	move.l	d0,HeadWBStartPoi
+HeadNoWBStart	bsr	HeadPRGStart
+	tst.l	HeadWBStartPoi
+	beq	HeadNoWBOut
+	move.l	d0,-(sp)
+	move.l	4.w,a6
+	jsr	Forbid(a6)
+	move.l	HeadWBStartPoi,a1
+	jsr	ReplyMsg(a6)
+	move.l	(sp)+,d0
+HeadNoWBOut	rts
+HeadWBStartPoi	dc.l	0
+HeadPRGStart
+
+	

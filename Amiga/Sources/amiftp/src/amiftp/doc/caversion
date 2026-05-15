@@ -1,0 +1,76 @@
+echo "window.class"
+VERSION file sys:classes/window.class
+VERSION file dh1:classact/classes/window.class
+
+echo "arexx.class"
+VERSION file sys:classes/arexx.class
+VERSION file dh1:classact/classes/arexx.class
+
+echo "button.gadget"
+VERSION file sys:classes/gadgets/button.gadget
+VERSION file dh1:classact/classes/gadgets/button.gadget
+
+echo "checkbox.gadget"
+VERSION file sys:classes/gadgets/checkbox.gadget
+VERSION file dh1:classact/classes/gadgets/checkbox.gadget
+
+echo "chooser.gadget"
+VERSION file sys:classes/gadgets/chooser.gadget
+VERSION file dh1:classact/classes/gadgets/chooser.gadget
+
+echo "clicktab.gadget"
+VERSION file sys:classes/gadgets/clicktab.gadget
+VERSION file dh1:classact/classes/gadgets/clicktab.gadget
+
+echo "fuelgauge.gadget"
+VERSION file sys:classes/gadgets/fuelgauge.gadget
+VERSION file dh1:classact/classes/gadgets/fuelgauge.gadget
+
+echo "integer.gadget"
+VERSION file sys:classes/gadgets/integer.gadget
+VERSION file dh1:classact/classes/gadgets/integer.gadget
+
+echo "layout.gadget"
+VERSION file sys:classes/gadgets/layout.gadget
+VERSION file dh1:classact/classes/gadgets/layout.gadget.020
+
+echo "listbrowser.gadget"
+VERSION file sys:classes/gadgets/listbrowser.gadget
+VERSION file dh1:classact/classes/gadgets/listbrowser.gadget
+
+echo "radiobutton.gadget"
+VERSION file sys:classes/gadgets/radiobutton.gadget
+VERSION file dh1:classact/classes/gadgets/radiobutton.gadget
+
+echo "scroller.gadget"
+VERSION file sys:classes/gadgets/scroller.gadget
+VERSION file dh1:classact/classes/gadgets/scroller.gadget
+
+echo "string.gadget"
+VERSION file sys:classes/gadgets/string.gadget
+VERSION file dh1:classact/classes/gadgets/string.gadget
+
+echo "tabs.gadget"
+VERSION file sys:classes/gadgets/tabs.gadget
+VERSION file dh1:classact/classes/gadgets/tabs.gadget
+
+echo "bevel.image"
+VERSION file sys:classes/images/bevel.image
+VERSION file dh1:classact/classes/images/bevel.image
+
+echo "drawlist.image"
+VERSION file sys:classes/images/drawlist.image
+VERSION file dh1:classact/classes/images/drawlist.image
+
+echo "glyph.image"
+VERSION file sys:classes/images/glyph.image
+VERSION file dh1:classact/classes/images/glyph.image
+
+echo "label.image"
+VERSION file sys:classes/images/label.image
+VERSION file dh1:classact/classes/images/label.image
+
+echo "penmap.image"
+VERSION file sys:classes/images/penmap.image
+VERSION file dh1:classact/classes/images/penmap.image
+

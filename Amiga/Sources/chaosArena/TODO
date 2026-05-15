@@ -1,0 +1,49 @@
+Game:
+	✔ collision with enemies @done(22-10-12 21:09)
+	✔ Move warrior coord to bottom center of sprite @done(22-10-12 21:24)
+	✔ sorting warrior bobs @done(22-10-13 18:30)
+	✔ pushing enemies with attacks @done(22-10-13 20:42)
+	✘ stopping on other enemies/edge of screen @cancelled(22-10-13 20:45)
+	✔ die when out of map @done(22-10-14 17:30)
+	✔ spawn points @done(22-10-14 19:01)
+	✔ fall anim @done(22-10-15 10:37)
+	✔ shuffle spawn points @done(22-10-15 10:37)
+	✔ win conditions @done(22-10-15 13:51)
+	✔ countdown @done(22-10-15 21:45)
+	✔ crumbling of map @done(22-10-16 17:50)
+	✔ crumbling starting of edges of map @done(22-10-16 19:44)
+	✔ sfx @done(22-10-16 22:33)
+	✔ reset map between game restarts @done(22-10-17 17:13)
+	✔ basic AI @done(22-10-21 22:15)
+	✔ countdown sfx @done(22-10-22 12:28)
+	✔ fix bobs/crumble flickering when going to menu @done(22-10-21 22:15)
+	✔ change to raw copperlist mode @done(22-10-27 14:19)
+	✔ global debug stuff @done(22-10-27 14:23)
+	✔ lower viewport margin to 1 tile, saves 20k chip @done(22-10-28 17:44)
+	✔ add thunder mechanics @done(22-10-28 19:03)
+	✔ proper thunder colors @done(22-10-29 17:57)
+	✔ wait for game results a bit so that remaining player can fall @done(22-11-01 15:16)
+	✔ fade on launch/exit @done(22-11-03 19:02)
+	✘ proper crumble gfx @cancelled(22-11-03 19:02)
+	✔ thunder sfx @done(22-11-04 18:24)
+	✔ better player selection @done(22-11-18 17:38)
+	✘ different offsets of frames, move to 16x16 blits @cancelled(22-11-18 17:38)
+
+Optional:
+	☐ 8 player support
+	☐ add initial sprites for showing who is who
+
+Logo screens:
+	✔ ACE from germz @done(22-11-04 18:24)
+	✔ LMC from germz @done(22-11-04 18:24)
+
+Menu:
+	✔ player selection (P1-P6, left-right switches config) @done(22-10-15 17:04)
+	✘ fire enables/disables player @cancelled(22-10-15 17:04)
+	✔ start game @done(22-10-15 20:47)
+	✔ exit to workbench @done(22-10-15 17:05)
+	✔ credits at the bottom of menu @done(22-10-17 15:57)
+	✔ pass steer presets to game @done(22-10-17 16:25)
+	✔ summary after match @done(22-10-21 22:15)
+	✔ credits screen @done(22-10-21 22:15)
+	✔ bots off/on @done(22-10-21 22:15)
