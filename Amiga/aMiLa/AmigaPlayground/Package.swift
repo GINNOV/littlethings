@@ -12,7 +12,13 @@ let package = Package(
             name: "AmigaPlayground",
             dependencies: [],
             path: ".",
-            exclude: ["AmigaPlayground.app", "AmigaPlaygroundTests", "AmigaPlayground.xcodeproj"]
+            exclude: [
+                ".build",
+                "build",
+                "AmigaPlayground.app",
+                "AmigaPlaygroundTests",
+                "AmigaPlayground.xcodeproj"
+            ]
         ),
         .testTarget(
             name: "AmigaPlaygroundTests",
