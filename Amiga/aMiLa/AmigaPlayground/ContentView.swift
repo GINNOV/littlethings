@@ -329,6 +329,19 @@ SineWave:
                 }
                 .disabled(isCompiling || isExportingADF)
 
+                Button(action: validateInVAmiga) {
+                    HStack {
+                        Image(systemName: "checkmark.seal.fill")
+                        Text("Validate vAmiga [F8]")
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(isCompiling ? Color.gray : Color(red: 0.8, green: 0.45, blue: 0.0))
+                    .cornerRadius(4)
+                    .foregroundColor(.white)
+                }
+                .disabled(isCompiling || isExportingADF)
+
                 Button(action: runInWebEmulator) {
                     HStack {
                         Image(systemName: "safari")
@@ -696,10 +709,28 @@ SineWave:
         }
     }
 
-    // Run compiled code in the selected native emulator backend
     private func runInEmulator() {
+        runNativeEmulator(
+            backend: selectedBackend,
+            label: selectedBackendName,
+            openingMessage: "Assembling code and packaging bootable ADF for \(selectedBackendName)...\n"
+        )
+    }
+
+    // Validate compiled code by forcing the native vAmiga RetroShell trace backend.
+    private func validateInVAmiga() {
+        runNativeEmulator(
+            backend: .vAmiga,
+            label: EmulatorBackend.vAmiga.displayName,
+            openingMessage: "Validating code by building a bootable ADF and launching it in vAmiga RetroShell...\n"
+        )
+    }
+
+    // Build a bootable ADF and run it in a native emulator backend.
+    private func runNativeEmulator(backend: EmulatorBackend, label: String, openingMessage: String) {
         isCompiling = true
-        outputConsole = "Assembling code and packaging bootable ADF for \(selectedBackendName)...\n"
+        isShowingWebEmulator = false
+        outputConsole = openingMessage
 
         let tempADFPath = "/tmp/amiga_playground_temp.adf"
 
@@ -711,10 +742,10 @@ SineWave:
                 return
             }
 
-            self.outputConsole = resultMessage + "\n\nLaunching \(self.selectedBackendName) with selected ROM and configuration..."
+            self.outputConsole = resultMessage + "\n\nLaunching \(label) with selected ROM and configuration..."
 
             let launchConfig = EmulatorLaunchConfig(
-                backend: self.selectedBackend,
+                backend: backend,
                 adfPath: tempADFPath,
                 romRelativePath: self.selectedRomFilename,
                 model: self.emulatorModel,
@@ -732,7 +763,7 @@ SineWave:
                 self.compileSuccess = result.success
                 self.outputConsole = self.outputConsole + "\n\n" + result.message
                 if let tracePath = result.tracePath {
-                    self.outputConsole += "\n\nTrace Output:\n\(tracePath)"
+                    self.outputConsole += "\n\nValidation Trace Output:\n\(tracePath)"
                 }
             }
         }
