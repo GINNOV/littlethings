@@ -1,27 +1,30 @@
-# TOOLS
-In this folder you find a set of quick and dirty tools to feed information or seek information needed for some of the blog post's projects.
+# Useful Scripts
 
-* **FindMyRPI.sh**
-It's a shell script that helps you find a RPi on the network when you have just turned it on and have no clue of what was its IP address and have no screen connected to it.
+Small, quick scripts used by blog posts, media workflows, and file cleanup experiments. Review a script before running it against important files.
 
-* **spoofOutput.sh**
-It's a basic script to grab the output of a previous command and grep that output for executing whatever you want after that.
+## Scripts
 
-* **cropper.sh**
-Crops a video based on parameters using ffmpeg. Details are [here](cropper.md)
+| Script | Purpose | Notes |
+| --- | --- | --- |
+| `FindMyRPi.sh` | Finds a Raspberry Pi on the local network when you do not know its IP address. | Requires local network access. |
+| `spoofOutput.sh` | Reuses the output of a previous command and filters it before running another command. | Read before use; behavior depends on the command pipeline. |
+| `cropper.sh` | Crops a video with `ffmpeg`. | Details: `cropper.md`. |
+| `get_frame.sh` | Extracts a specific frame from a video. | Details: `get_frame.md`. |
+| `organize_files.sh` | Organizes large dumps of ROMs, PDFs, or similar files into browseable folders. | Details: `organize_files.md`. |
+| `wavtoMP4.sh` | Converts WAV audio to MP4 and can be paired with a macOS Shortcut. | Requires media conversion tools. |
+| `freqChange.sh` | Converts source audio to 44.1 kHz PCM. | Requires media conversion tools. |
+| `mp3toWav.sh` | Converts MP3 audio to WAV. | Requires media conversion tools. |
 
-* **get_frame.sh**
-Extract a given frame number from a video. Details are [here](get_frame.md)
+## Common Dependencies
 
-* **organize_files.sh**
-If you have toon of ROMS or PDFs dumped into a folder and want to make sense of it when browsing [here](get_frame.md) is the tool.
+Several scripts expect command-line media tools such as `ffmpeg`. Install missing tools with Homebrew or your preferred package manager.
 
-* **Convert to MP4 format**
-From a wave file to MP4
-`wavtoMP4.sh` also associate with a Shortcut
+```bash
+brew install ffmpeg
+```
 
-* **Convert Bitrate**
-From source to 44K Hz PCM
-`freqChange.sh`
+## Safety Notes
 
-
+- Run file-organization scripts on a copy first.
+- Use quoted paths when files or folders contain spaces.
+- Check each companion `.md` file for examples before running a script.

@@ -1,12 +1,29 @@
 # Amiga Tools for macOS
 
-The whole spiel on what the tools do and why I am doing this is all nicely
-documented [here](https://ginnov.github.io/littlethings/).
+This folder contains utility apps and experiments built during the Amiga flashback journey. The public write-up and project list live on the website:
 
-Each project folder has the source code, and if there's any additional documentation, that too. If you are looking just for the compiled app (Apple Silicon only 99.9% of the times), take a look at the folder [releases](https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/releases).
+<https://ginnov.github.io/littlethings/>
 
-Some of those tools have an Amiga counterpart. I test them in FS-UAE and/or vAmiga, occasionally I bust out my Amiga 1200, but not as often as I probably should. 😅
+## Folder Guide
 
-If you have questions, you know what to do.
+| Folder | Purpose |
+| --- | --- |
+| `ADFinder/` | ADF-related macOS utility project. |
+| `AuDeluxe/` | Audio-related macOS utility project. |
+| `IFFViewer/` | IFF viewing and preview tooling. |
+| `PixDeluxe/` | Pixel/image utility project. |
+| `send2adf/` | Tooling and docs for sending data to ADF workflows. |
+| `releases/` | Compiled release builds when they are available. |
+| `assets/` | Shared assets used by the tools. |
 
-Enjoy.
+## Releases
+
+If you only want a compiled app, start with:
+
+<https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/releases>
+
+Most builds are macOS-first, and often Apple Silicon-first. Check the project folder for source, build notes, and any extra documentation.
+
+## Testing Notes
+
+Some tools have an Amiga counterpart. They are tested in FS-UAE and/or vAmiga, with occasional checks on an Amiga 1200. Treat each project README as the source of truth for current status.

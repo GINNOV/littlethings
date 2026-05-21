@@ -1,0 +1,463 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A11100002E80002100000000 /* AmigaPlaygroundApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001100000000 /* AmigaPlaygroundApp.swift */; };
+		A11100002E80002200000000 /* BoingBallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001200000000 /* BoingBallView.swift */; };
+		A11100002E80002300000000 /* CompilerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001300000000 /* CompilerService.swift */; };
+		A11100002E80002400000000 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001400000000 /* ContentView.swift */; };
+		A11100002E80002500000000 /* OllamaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001500000000 /* OllamaService.swift */; };
+		A11100002E80002600000000 /* EmulatorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001600000000 /* EmulatorService.swift */; };
+		A11100002E80002700000000 /* WebEmulatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001700000000 /* WebEmulatorView.swift */; };
+		A11100002E80002800000000 /* AmigaPlaygroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001800000000 /* AmigaPlaygroundTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A11100002E80000A00000000 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A11100002E80000100000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A11100002E80000500000000;
+			remoteInfo = AmigaPlayground;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A11100002E80000600000000 /* AmigaPlayground.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AmigaPlayground.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A11100002E80000900000000 /* AmigaPlaygroundTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AmigaPlaygroundTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A11100002E80001100000000 /* AmigaPlaygroundApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmigaPlaygroundApp.swift; sourceTree = "<group>"; };
+		A11100002E80001200000000 /* BoingBallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoingBallView.swift; sourceTree = "<group>"; };
+		A11100002E80001300000000 /* CompilerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompilerService.swift; sourceTree = "<group>"; };
+		A11100002E80001400000000 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A11100002E80001500000000 /* OllamaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OllamaService.swift; sourceTree = "<group>"; };
+		A11100002E80001600000000 /* EmulatorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmulatorService.swift; sourceTree = "<group>"; };
+		A11100002E80001700000000 /* WebEmulatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebEmulatorView.swift; sourceTree = "<group>"; };
+		A11100002E80001800000000 /* AmigaPlaygroundTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AmigaPlaygroundTests.swift; path = AmigaPlaygroundTests/AmigaPlaygroundTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A11100002E80003200000000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A11100002E80003500000000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A11100002E80000200000000 = {
+			isa = PBXGroup;
+			children = (
+				A11100002E80000400000000 /* Sources */,
+				A11100002E80000300000000 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A11100002E80000300000000 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A11100002E80000600000000 /* AmigaPlayground.app */,
+				A11100002E80000900000000 /* AmigaPlaygroundTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A11100002E80000400000000 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				A11100002E80001100000000 /* AmigaPlaygroundApp.swift */,
+				A11100002E80001200000000 /* BoingBallView.swift */,
+				A11100002E80001300000000 /* CompilerService.swift */,
+				A11100002E80001400000000 /* ContentView.swift */,
+				A11100002E80001500000000 /* OllamaService.swift */,
+				A11100002E80001600000000 /* EmulatorService.swift */,
+				A11100002E80001700000000 /* WebEmulatorView.swift */,
+				A11100002E80001800000000 /* AmigaPlaygroundTests.swift */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A11100002E80000500000000 /* AmigaPlayground */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A11100002E80004200000000 /* Build configuration list for PBXNativeTarget "AmigaPlayground" */;
+			buildPhases = (
+				A11100002E80003100000000 /* Sources */,
+				A11100002E80003200000000 /* Frameworks */,
+				A11100002E80003300000000 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AmigaPlayground;
+			productName = AmigaPlayground;
+			productReference = A11100002E80000600000000 /* AmigaPlayground.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A11100002E80000700000000 /* AmigaPlaygroundTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A11100002E80004300000000 /* Build configuration list for PBXNativeTarget "AmigaPlaygroundTests" */;
+			buildPhases = (
+				A11100002E80003400000000 /* Sources */,
+				A11100002E80003500000000 /* Frameworks */,
+				A11100002E80003600000000 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A11100002E80000800000000 /* PBXTargetDependency */,
+			);
+			name = AmigaPlaygroundTests;
+			productName = AmigaPlaygroundTests;
+			productReference = A11100002E80000900000000 /* AmigaPlaygroundTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A11100002E80000100000000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					A11100002E80000500000000 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					A11100002E80000700000000 = {
+						CreatedOnToolsVersion = 15.0;
+						TestHostTarget = A11100002E80000500000000 /* AmigaPlayground */;
+					};
+				};
+			};
+			buildConfigurationList = A11100002E80004100000000 /* Build configuration list for PBXProject "AmigaPlayground" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A11100002E80000200000000;
+			productRefGroup = A11100002E80000300000000 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A11100002E80000500000000 /* AmigaPlayground */,
+				A11100002E80000700000000 /* AmigaPlaygroundTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A11100002E80003300000000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A11100002E80003600000000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A11100002E80003100000000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A11100002E80002100000000 /* AmigaPlaygroundApp.swift in Sources */,
+				A11100002E80002200000000 /* BoingBallView.swift in Sources */,
+				A11100002E80002300000000 /* CompilerService.swift in Sources */,
+				A11100002E80002400000000 /* ContentView.swift in Sources */,
+				A11100002E80002500000000 /* OllamaService.swift in Sources */,
+				A11100002E80002600000000 /* EmulatorService.swift in Sources */,
+				A11100002E80002700000000 /* WebEmulatorView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A11100002E80003400000000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A11100002E80002800000000 /* AmigaPlaygroundTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A11100002E80000800000000 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A11100002E80000500000000 /* AmigaPlayground */;
+			targetProxy = A11100002E80000A00000000 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A11100002E80005100000000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A11100002E80005200000000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		A11100002E80005300000000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "AmigaPlayground";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 GINNOV. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = GINNOV.AmigaPlayground;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A11100002E80005400000000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "AmigaPlayground";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 GINNOV. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = GINNOV.AmigaPlayground;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A11100002E80005500000000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = GINNOV.AmigaPlaygroundTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AmigaPlayground.app/Contents/MacOS/AmigaPlayground";
+			};
+			name = Debug;
+		};
+		A11100002E80005600000000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = GINNOV.AmigaPlaygroundTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AmigaPlayground.app/Contents/MacOS/AmigaPlayground";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A11100002E80004100000000 /* Build configuration list for PBXProject "AmigaPlayground" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A11100002E80005100000000 /* Debug */,
+				A11100002E80005200000000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A11100002E80004200000000 /* Build configuration list for PBXNativeTarget "AmigaPlayground" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A11100002E80005300000000 /* Debug */,
+				A11100002E80005400000000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A11100002E80004300000000 /* Build configuration list for PBXNativeTarget "AmigaPlaygroundTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A11100002E80005500000000 /* Debug */,
+				A11100002E80005600000000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A11100002E80000100000000 /* Project object */;
+}

@@ -1,0 +1,19 @@
+{
+  "name": "mcp-server-vamigaweb",
+  "version": "1.0.0",
+  "description": "MCP Server to automate vAmigaWeb headlessly and visually test Amiga ADF floppy files",
+  "main": "build/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "playwright": "^1.42.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.0"
+  }
+}

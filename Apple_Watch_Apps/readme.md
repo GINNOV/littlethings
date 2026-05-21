@@ -1,4 +1,21 @@
-# DinoBasic
-How to create an independent watch app with XCODE 11. Using dinosaurs and a bit of additional fun.
+# Apple Watch Apps
 
-This code is in support of this [post](https://iamsensoria.com/post/188036694106/build-an-independent-watch-app) on my [blog]("http://iamsensoria.com").
+Small Apple Watch experiments and supporting code.
+
+## DinoBasic
+
+`DinoBasic/` is an older Xcode 11-era independent watch app experiment using dinosaurs and a bit of additional fun.
+
+The code supports this post:
+
+<https://iamsensoria.com/post/188036694106/build-an-independent-watch-app>
+
+Blog home:
+
+<http://iamsensoria.com>
+
+## Notes
+
+- Open the `.xcodeproj` inside the project folder with Xcode.
+- Expect older watchOS/Xcode settings; modern Xcode may require project migration before building.
+- Check signing, bundle identifiers, and deployment targets before running on a device.

@@ -1,40 +1,62 @@
 # Flume Personal Water Dashboard
 
-A private web application built with Next.js to visualize, analyze, and explore Flume water usage data.
+A private Next.js application for visualizing, analyzing, and exploring Flume water usage data.
 
 ## Features
-- **Authentication**: Secure server-side authentication with Flume API.
-- **Dashboard**: Real-time monitoring of today's usage and last 14 days history.
-- **Historical Explorer**: Deep dive into your data with custom date ranges and granularity (Hourly, Daily, Monthly).
-- **Responsive Design**: Modern UI built with Tailwind CSS and Recharts.
 
-## Getting Started
+- Server-side authentication against the Flume API.
+- Dashboard for today's usage and recent history.
+- Historical explorer with custom date ranges and hourly, daily, or monthly granularity.
+- Responsive charts built with Tailwind CSS and Recharts.
+- Optional settings UI for storing Flume credentials locally in an encrypted cookie.
 
-### 1. Prerequisites
-- Node.js 18+
-- Flume API Credentials (obtain from [Flume Portal](https://portal.flumewater.com/))
+## Prerequisites
 
-### 2. Environment Setup
-Copy `.env.example` to `.env.local` and fill in your credentials:
+- Node.js 20 or newer.
+- npm.
+- Flume API credentials from the [Flume Portal](https://portal.flumewater.com/).
+
+## Environment
+
+Create `.env.local` in this folder:
+
 ```bash
-cp .env.example .env.local
+FLUME_CLIENT_ID=your_client_id_here
+FLUME_CLIENT_SECRET=your_client_secret_here
+FLUME_USERNAME=your_flume_email@example.com
+FLUME_PASSWORD=your_flume_password_here
+FLUME_CONFIG_SECRET=change_this_to_a_long_random_value
 ```
 
-### 3. Install Dependencies
+`FLUME_CONFIG_SECRET` is used to encrypt the optional browser-stored configuration. Use a stable, private value in production.
+
+## Development
+
 ```bash
 npm install
-```
-
-### 4. Run Development Server
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see your dashboard.
+Open <http://localhost:3000>.
+
+## Useful Commands
+
+```bash
+npm run lint
+npm run build
+npm run start
+```
 
 ## Tech Stack
-- **Framework**: Next.js 15+ (App Router)
-- **Styling**: Tailwind CSS
-- **Charts**: Recharts
-- **API**: Flume API v1
-- **Deployment**: Vercel
+
+- Next.js 16 App Router
+- React 19
+- Tailwind CSS 4
+- Recharts
+- Flume API v1
+
+## Security Notes
+
+- Do not commit `.env.local` or Flume API credentials.
+- This app is intended as a private dashboard, not a public multi-user service.
+- The Flume API has rate limits; avoid aggressive refresh loops or large repeated historical queries.

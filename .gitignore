@@ -1,6 +1,7 @@
 # Xcode
-DerivedData/
-build/
+**/DerivedData/
+**/build/
+**/*.app/
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -16,16 +17,16 @@ xcuserdata/
 *.xcscmblueprint
 
 # Swift Package Manager
-.build/
-Packages/
-Package.resolved
+**/.build/
+**/Packages/
+**/Package.resolved
 
 # CocoaPods
-Pods/
+**/Pods/
 Podfile.lock
 
 # Carthage
-Carthage/Build/
+**/Carthage/Build/
 
 # Fastlane
 fastlane/report.xml
@@ -36,6 +37,14 @@ fastlane/test_output
 # Archive files
 *.xcarchive
 
+# Node
+**/node_modules/
+
+# Python
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+
 # Other
 *.DS_Store
 *.idea/
@@ -44,26 +53,33 @@ fastlane/test_output
 *.tmp
 *.env
 *.log
-__pycache__/
-*.py[cod]
-*.egg-info/
+*.out
 
-# model training
-Amiga/Tools/amigALM/amiga_gemma3-270m_finetuned
-Amiga/Tools/amigALM/amiga_asm_dataset
-Amiga/Tools/amigALM/model_answers/answer*
-Amiga/Tools/amigALM/pdf_docs/*.pdf
-
-amiga-asm-model-f16.gguf
-robotics/huenit/joe_controller/__pycache__
-robotics/huenit/__pycache__
+# model files
 yolov8n.pt
-
-AI/video_pipeline/src/__pycache__/
 
 AI/video_pipeline/videoclips/
 
 AI/video_pipeline/debug_frames/
-Amiga/Tools/GamigALM/amiga_gemma3-270m_merged
-Amiga/Tools/GamigALM/amiga_gemma3-270m_finetuned
-Amiga/Tools/GamigALM/amiga_asm_dataset
+
+# Amiga local firmware and emulator/generated media
+Amiga/commodore-amiga-firmware/*
+!Amiga/commodore-amiga-firmware/readme.txt
+Amiga/**/roms/
+Amiga/**/*.rom
+Amiga/**/*.key
+Amiga/**/*.hdf
+Amiga/**/*.ipf
+Amiga/**/*.dms
+Amiga/**/*.fs-uae
+Amiga/**/*.uae
+
+# Generated disk images are usually local build/test artifacts. Existing
+# tracked ADFs remain tracked unless explicitly removed with git.
+Amiga/**/*.adf
+!Amiga/Tools/releases/*.adf
+
+# aMiLa local/generated artifacts
+Amiga/aMiLa/**/*.o
+Amiga/aMiLa/**/*.a
+Amiga/aMiLa/.antigravitycli/
