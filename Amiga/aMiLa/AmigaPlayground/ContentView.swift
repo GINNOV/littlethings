@@ -888,6 +888,14 @@ struct SettingsView: View {
     let chipRams = ["512 KB", "1 MB", "2 MB", "4 MB", "8 MB"]
     let fastRams = ["0 MB", "1 MB", "2 MB", "4 MB", "8 MB", "16 MB", "32 MB", "64 MB"]
 
+    private var selectedRomDisplayName: String {
+        if selectedRomFilename.isEmpty {
+            return "Default / vAmiga configured ROM"
+        }
+
+        return availableRoms.first(where: { $0.relativePath == selectedRomFilename })?.displayName ?? selectedRomFilename
+    }
+
     private func chooseRomsDirectory() {
         let panel = NSOpenPanel()
         panel.title = "Select Kickstart ROM Directory"
@@ -1006,14 +1014,16 @@ struct SettingsView: View {
                                 .background(Color.red.opacity(0.1))
                                 .cornerRadius(4)
                         } else {
-                            Picker("Select Kickstart ROM:", selection: $selectedRomFilename) {
+                            SettingsPickerField(
+                                title: "Select Kickstart ROM",
+                                displayValue: selectedRomDisplayName,
+                                selection: $selectedRomFilename
+                            ) {
                                 Text("Default / vAmiga configured ROM").tag("")
                                 ForEach(availableRoms) { rom in
                                     Text(rom.displayName).tag(rom.relativePath)
                                 }
                             }
-                            .pickerStyle(DefaultPickerStyle())
-                            .font(.system(.body, design: .monospaced))
                         }
                     }
                     .padding(12)
@@ -1028,28 +1038,24 @@ struct SettingsView: View {
                             .foregroundColor(.orange)
 
                         HStack(spacing: 16) {
-                            VStack(alignment: .leading) {
-                                Text("Amiga Model")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                Picker("", selection: $emulatorModel) {
-                                    ForEach(models, id: \.self) { model in
-                                        Text(model).tag(model)
-                                    }
+                            SettingsPickerField(
+                                title: "Amiga Model",
+                                displayValue: emulatorModel,
+                                selection: $emulatorModel
+                            ) {
+                                ForEach(models, id: \.self) { model in
+                                    Text(model).tag(model)
                                 }
-                                .pickerStyle(DefaultPickerStyle())
                             }
 
-                            VStack(alignment: .leading) {
-                                Text("CPU Type")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                Picker("", selection: $emulatorCpu) {
-                                    ForEach(cpus, id: \.self) { cpu in
-                                        Text(cpu).tag(cpu)
-                                    }
+                            SettingsPickerField(
+                                title: "CPU Type",
+                                displayValue: emulatorCpu,
+                                selection: $emulatorCpu
+                            ) {
+                                ForEach(cpus, id: \.self) { cpu in
+                                    Text(cpu).tag(cpu)
                                 }
-                                .pickerStyle(DefaultPickerStyle())
                             }
                         }
                     }
@@ -1065,28 +1071,24 @@ struct SettingsView: View {
                             .foregroundColor(.orange)
 
                         HStack(spacing: 16) {
-                            VStack(alignment: .leading) {
-                                Text("Chip RAM")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                Picker("", selection: $emulatorChipRam) {
-                                    ForEach(chipRams, id: \.self) { ram in
-                                        Text(ram).tag(ram)
-                                    }
+                            SettingsPickerField(
+                                title: "Chip RAM",
+                                displayValue: emulatorChipRam,
+                                selection: $emulatorChipRam
+                            ) {
+                                ForEach(chipRams, id: \.self) { ram in
+                                    Text(ram).tag(ram)
                                 }
-                                .pickerStyle(DefaultPickerStyle())
                             }
 
-                            VStack(alignment: .leading) {
-                                Text("Fast RAM")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                Picker("", selection: $emulatorFastRam) {
-                                    ForEach(fastRams, id: \.self) { ram in
-                                        Text(ram).tag(ram)
-                                    }
+                            SettingsPickerField(
+                                title: "Fast RAM",
+                                displayValue: emulatorFastRam,
+                                selection: $emulatorFastRam
+                            ) {
+                                ForEach(fastRams, id: \.self) { ram in
+                                    Text(ram).tag(ram)
                                 }
-                                .pickerStyle(DefaultPickerStyle())
                             }
                         }
                     }
@@ -1204,6 +1206,52 @@ struct SettingsView: View {
                 selectedRomFilename = ""
             }
         }
+    }
+}
+
+struct SettingsPickerField<SelectionValue: Hashable, Content: View>: View {
+    let title: String
+    let displayValue: String
+    @Binding var selection: SelectionValue
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.gray)
+
+            ZStack {
+                HStack(spacing: 8) {
+                    Text(displayValue)
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+
+                    Spacer(minLength: 8)
+
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.orange.opacity(0.9))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .background(Color(red: 0.18, green: 0.18, blue: 0.22))
+                .cornerRadius(4)
+                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.45), lineWidth: 1))
+
+                Picker(title, selection: $selection) {
+                    content()
+                }
+                .labelsHidden()
+                .pickerStyle(MenuPickerStyle())
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .opacity(0.02)
+            }
+            .frame(minWidth: 160, maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 
