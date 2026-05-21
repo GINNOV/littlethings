@@ -317,121 +317,125 @@ SineWave:
             .shadow(color: .black.opacity(0.3), radius: 1, y: 1)
 
             // Top Editor Custom Action Toolbar
-            HStack(spacing: 12) {
-                Button(action: runCompilation) {
-                    HStack {
-                        Image(systemName: "play.fill")
-                        Text("Assemble [F5]")
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    Button(action: runCompilation) {
+                        HStack {
+                            Image(systemName: "play.fill")
+                            Text("Assemble [F5]")
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(isCompiling ? Color.gray : Color(red: 0.0, green: 0.6, blue: 0.2))
+                        .cornerRadius(4)
+                        .foregroundColor(.white)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(isCompiling ? Color.gray : Color(red: 0.0, green: 0.6, blue: 0.2))
-                    .cornerRadius(4)
-                    .foregroundColor(.white)
-                }
-                .disabled(isCompiling || isExportingADF)
+                    .disabled(isCompiling || isExportingADF)
 
-                Button(action: runInEmulator) {
-                    HStack {
-                        Image(systemName: "play.tv")
-                        Text("Run in \(selectedBackendName) [F6]")
+                    Button(action: runInEmulator) {
+                        HStack {
+                            Image(systemName: "play.tv")
+                            Text("Run in \(selectedBackendName) [F6]")
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(isCompiling ? Color.gray : Color(red: 0.0, green: 0.47, blue: 0.8))
+                        .cornerRadius(4)
+                        .foregroundColor(.white)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(isCompiling ? Color.gray : Color(red: 0.0, green: 0.47, blue: 0.8))
-                    .cornerRadius(4)
-                    .foregroundColor(.white)
-                }
-                .disabled(isCompiling || isExportingADF)
+                    .disabled(isCompiling || isExportingADF)
 
-                Button(action: validateInVAmiga) {
-                    HStack {
-                        Image(systemName: "checkmark.seal.fill")
-                        Text("Validate vAmiga [F8]")
+                    Button(action: validateInVAmiga) {
+                        HStack {
+                            Image(systemName: "checkmark.seal.fill")
+                            Text("Validate vAmiga [F8]")
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(isCompiling ? Color.gray : Color(red: 0.8, green: 0.45, blue: 0.0))
+                        .cornerRadius(4)
+                        .foregroundColor(.white)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(isCompiling ? Color.gray : Color(red: 0.8, green: 0.45, blue: 0.0))
-                    .cornerRadius(4)
-                    .foregroundColor(.white)
-                }
-                .disabled(isCompiling || isExportingADF)
+                    .disabled(isCompiling || isExportingADF)
 
-                Button(action: runInWebEmulator) {
-                    HStack {
-                        Image(systemName: "safari")
-                        Text("Web Emulator [F7]")
+                    Button(action: runInWebEmulator) {
+                        HStack {
+                            Image(systemName: "safari")
+                            Text("Web Emulator [F7]")
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(isCompiling ? Color.gray : Color(red: 0.5, green: 0.0, blue: 0.8))
+                        .cornerRadius(4)
+                        .foregroundColor(.white)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(isCompiling ? Color.gray : Color(red: 0.5, green: 0.0, blue: 0.8))
-                    .cornerRadius(4)
-                    .foregroundColor(.white)
-                }
-                .disabled(isCompiling || isExportingADF)
+                    .disabled(isCompiling || isExportingADF)
 
-                Button(action: { isShowingSettings = true }) {
-                    HStack {
-                        Image(systemName: "gearshape.fill")
-                        Text("Settings")
+                    Button(action: { isShowingSettings = true }) {
+                        HStack {
+                            Image(systemName: "gearshape.fill")
+                            Text("Settings")
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color(red: 0.25, green: 0.25, blue: 0.3))
+                        .cornerRadius(4)
+                        .foregroundColor(.white)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color(red: 0.25, green: 0.25, blue: 0.3))
-                    .cornerRadius(4)
-                    .foregroundColor(.white)
-                }
 
-                Button(action: exportToADF) {
-                    HStack {
-                        Image(systemName: "opticaldisc")
-                        Text("Export Bootable ADF")
+                    Button(action: exportToADF) {
+                        HStack {
+                            Image(systemName: "opticaldisc")
+                            Text("Export Bootable ADF")
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background((isCompiling || isExportingADF) ? Color.gray : Color(red: 0.85, green: 0.45, blue: 0.0))
+                        .cornerRadius(4)
+                        .foregroundColor(.white)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background((isCompiling || isExportingADF) ? Color.gray : Color(red: 0.85, green: 0.45, blue: 0.0))
-                    .cornerRadius(4)
-                    .foregroundColor(.white)
-                }
-                .disabled(isCompiling || isExportingADF)
+                    .disabled(isCompiling || isExportingADF)
 
-                Menu("Load Gold Examples") {
-                    ForEach(Array(examples.keys), id: \.self) { key in
-                        Button(key) {
-                            codeText = examples[key] ?? ""
-                            outputConsole = "Loaded '\(key)' example assembly source code."
+                    Menu("Load Gold Examples") {
+                        ForEach(Array(examples.keys), id: \.self) { key in
+                            Button(key) {
+                                codeText = examples[key] ?? ""
+                                outputConsole = "Loaded '\(key)' example assembly source code."
+                            }
                         }
                     }
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color(red: 0.2, green: 0.2, blue: 0.2))
-                .cornerRadius(4)
-                .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(red: 0.2, green: 0.2, blue: 0.2))
+                    .cornerRadius(4)
+                    .foregroundColor(.white)
 
-                Button("Clear Editor") {
-                    codeText = ""
-                    outputConsole = "Editor Cleared."
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color(red: 0.7, green: 0.2, blue: 0.2))
-                .cornerRadius(4)
-                .foregroundColor(.white)
+                    Button("Clear Editor") {
+                        codeText = ""
+                        outputConsole = "Editor Cleared."
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(red: 0.7, green: 0.2, blue: 0.2))
+                    .cornerRadius(4)
+                    .foregroundColor(.white)
 
-                Spacer()
+                    Spacer(minLength: 12)
 
-                // Active status indicators
-                HStack(spacing: 6) {
-                    Text(compileSuccess ? "VALID" : "COMPILER ERROR")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundColor(compileSuccess ? .green : .red)
-                    Circle()
-                        .fill(compileSuccess ? Color.green : Color.red)
-                        .frame(width: 10, height: 10)
+                    // Active status indicators
+                    HStack(spacing: 6) {
+                        Text(compileSuccess ? "VALID" : "COMPILER ERROR")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundColor(compileSuccess ? .green : .red)
+                        Circle()
+                            .fill(compileSuccess ? Color.green : Color.red)
+                            .frame(width: 10, height: 10)
+                    }
+                    .padding(.horizontal, 10)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(10)
             .background(Color(red: 0.15, green: 0.15, blue: 0.18))
 
@@ -604,7 +608,7 @@ SineWave:
                     .padding(10)
                     .background(Color(red: 0.1, green: 0.1, blue: 0.12))
                 }
-                .frame(minWidth: 320, maxWidth: 450)
+                .frame(minWidth: 260, idealWidth: 340, maxWidth: 420)
                 .background(Color(red: 0.08, green: 0.08, blue: 0.1))
 
                 // RIGHT: Split Code Editor + VASM Console output
@@ -698,9 +702,10 @@ SineWave:
                     }
                     .frame(minHeight: 180, maxHeight: 400)
                 }
+                .frame(minWidth: 420)
             }
         }
-        .frame(minWidth: 900, minHeight: 650)
+        .frame(minWidth: 760, minHeight: 650)
         .background(Color.black)
         .sheet(isPresented: $isShowingSettings) {
             SettingsView(isPresented: $isShowingSettings)
