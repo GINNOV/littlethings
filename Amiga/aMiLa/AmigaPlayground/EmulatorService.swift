@@ -152,10 +152,9 @@ class EmulatorService {
         return args
     }
 
-    func buildVAmigaArguments(config: EmulatorLaunchConfig, scriptPath: String) -> [String] {
+    func buildVAmigaArguments(config: EmulatorLaunchConfig) -> [String] {
         var args: [String] = []
         args.append(config.adfPath)
-        args.append(scriptPath)
         args.append(contentsOf: splitCommandLine(config.vAmigaCustomArgs))
         return args
     }
@@ -305,7 +304,7 @@ class EmulatorService {
                 let scriptPath = try self.createVAmigaRetroShellScript(config: config, tracePath: tracePath)
                 let process = Process()
                 process.executableURL = URL(fileURLWithPath: executablePath)
-                process.arguments = self.buildVAmigaArguments(config: config, scriptPath: scriptPath)
+                process.arguments = self.buildVAmigaArguments(config: config)
 
                 let outputPipe = Pipe()
                 let errorPipe = Pipe()
@@ -339,7 +338,7 @@ class EmulatorService {
                     completion(EmulatorLaunchResult(
                         success: true,
                         backend: .vAmiga,
-                        message: "Successfully launched vAmiga Desktop with RetroShell trace bootstrap.\nTrace output will be captured at:\n\(tracePath)\n\nRetroShell script:\n\(scriptPath)",
+                        message: "Successfully launched vAmiga Desktop with the generated ADF.\nTrace output will be captured at:\n\(tracePath)\n\nRetroShell script prepared for this run:\n\(scriptPath)",
                         tracePath: tracePath
                     ))
                 }

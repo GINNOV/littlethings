@@ -106,7 +106,7 @@ class AmigaPlaygroundTests: XCTestCase {
         ])
     }
 
-    func testBuildVAmigaArgumentsIncludesAdfScriptAndCustomArgs() {
+    func testBuildVAmigaArgumentsPrioritizesAdfBootDocument() {
         let service = EmulatorService.shared
         let config = EmulatorLaunchConfig(
             backend: .vAmiga,
@@ -122,9 +122,8 @@ class AmigaPlaygroundTests: XCTestCase {
             vAmigaCustomArgs: "-\"help\" --debug"
         )
 
-        XCTAssertEqual(service.buildVAmigaArguments(config: config, scriptPath: "/tmp/session.retrosh"), [
+        XCTAssertEqual(service.buildVAmigaArguments(config: config), [
             "/tmp/test.adf",
-            "/tmp/session.retrosh",
             "-help",
             "--debug"
         ])
