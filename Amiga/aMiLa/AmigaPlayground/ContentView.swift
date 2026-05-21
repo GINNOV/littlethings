@@ -5,6 +5,52 @@ import UniformTypeIdentifiers
 struct ContentView: View {
     @StateObject private var llm = OllamaService.shared
 
+    enum BuildStatus {
+        case idle
+        case running
+        case success
+        case failure
+
+        var label: String {
+            switch self {
+            case .idle:
+                return "IDLE"
+            case .running:
+                return "RUNNING"
+            case .success:
+                return "VALID"
+            case .failure:
+                return "ERROR"
+            }
+        }
+
+        var detailLabel: String {
+            switch self {
+            case .idle:
+                return "IDLE"
+            case .running:
+                return "RUNNING"
+            case .success:
+                return "VALID"
+            case .failure:
+                return "COMPILER ERROR"
+            }
+        }
+
+        var color: Color {
+            switch self {
+            case .idle:
+                return .gray
+            case .running:
+                return .orange
+            case .success:
+                return .green
+            case .failure:
+                return .red
+            }
+        }
+    }
+
     // Editor State
     @State private var codeText: String = """
 ; ==========================================================
@@ -121,7 +167,7 @@ CopperList:
     @State private var outputConsole: String = "VASM Compiler Idle.\nPress 'Assemble [F5]' to build the program."
     @State private var isCompiling: Bool = false
     @State private var isExportingADF: Bool = false
-    @State private var compileSuccess: Bool = true
+    @State private var buildStatus: BuildStatus = .idle
     @State private var isShowingSettings: Bool = false
     @State private var adfTrigger: Int = 0
     @State private var isShowingWebEmulator: Bool = false
@@ -304,11 +350,6 @@ SineWave:
                 Spacer()
                 Text("Chip Mem: 2,048,000  |  Fast Mem: 16,777,216  |  68020 Active  |  Ollama Connected")
                     .font(.system(.caption, design: .monospaced))
-                Spacer()
-                HStack(spacing: 4) {
-                    Circle().fill(Color.orange).frame(width: 8, height: 8)
-                    Circle().fill(Color.gray).frame(width: 8, height: 8)
-                }
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
@@ -424,12 +465,12 @@ SineWave:
 
                     // Active status indicators
                     HStack(spacing: 6) {
-                        Text(compileSuccess ? "VALID" : "COMPILER ERROR")
+                        Text(buildStatus.detailLabel)
                             .font(.caption)
                             .fontWeight(.bold)
-                            .foregroundColor(compileSuccess ? .green : .red)
+                            .foregroundColor(buildStatus.color)
                         Circle()
-                            .fill(compileSuccess ? Color.green : Color.red)
+                            .fill(buildStatus.color)
                             .frame(width: 10, height: 10)
                     }
                     .padding(.horizontal, 10)
@@ -674,12 +715,12 @@ SineWave:
                             Spacer()
 
                             HStack(spacing: 6) {
-                                Text(compileSuccess ? "VALID" : "ERROR")
+                                Text(buildStatus.label)
                                     .font(.caption)
                                     .fontWeight(.bold)
-                                    .foregroundColor(compileSuccess ? .green : .red)
+                                    .foregroundColor(buildStatus.color)
                                 Circle()
-                                    .fill(compileSuccess ? Color.green : Color.red)
+                                    .fill(buildStatus.color)
                                     .frame(width: 8, height: 8)
                             }
                             .padding(.trailing, 10)
@@ -720,11 +761,12 @@ SineWave:
         }
 
         isCompiling = true
+        buildStatus = .running
         outputConsole = "Assembling code using vasmm68k_mot...\n"
 
         CompilerService.shared.compile(assemblyCode: codeText) { success, output in
             self.isCompiling = false
-            self.compileSuccess = success
+            self.buildStatus = success ? .success : .failure
             self.outputConsole = output
         }
     }
@@ -740,6 +782,7 @@ SineWave:
     // Validate compiled code through vAmiga Desktop automation servers.
     private func validateInVAmiga() {
         isCompiling = true
+        buildStatus = .running
         isShowingWebEmulator = false
         outputConsole = "Validating code by building a bootable ADF and collecting vAmiga debug evidence...\n"
 
@@ -748,7 +791,7 @@ SineWave:
         CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: tempADFPath) { success, resultMessage in
             if !success {
                 self.isCompiling = false
-                self.compileSuccess = false
+                self.buildStatus = .failure
                 self.outputConsole = resultMessage
                 self.writeCompileFailureValidationArtifact(message: resultMessage)
                 return
@@ -773,7 +816,7 @@ SineWave:
 
             VAmigaValidationService.shared.validate(config: launchConfig) { result in
                 self.isCompiling = false
-                self.compileSuccess = result.success
+                self.buildStatus = result.success ? .success : .failure
                 self.outputConsole += "\n\n\(result.summary)"
                 if !result.failures.isEmpty {
                     self.outputConsole += "\n\nFailures:\n" + result.failures.map { "- \($0)" }.joined(separator: "\n")
@@ -786,6 +829,7 @@ SineWave:
     // Build a bootable ADF and run it in a native emulator backend.
     private func runNativeEmulator(backend: EmulatorBackend, label: String, openingMessage: String) {
         isCompiling = true
+        buildStatus = .running
         isShowingWebEmulator = false
         outputConsole = openingMessage
 
@@ -794,7 +838,7 @@ SineWave:
         CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: tempADFPath) { success, resultMessage in
             if !success {
                 self.isCompiling = false
-                self.compileSuccess = false
+                self.buildStatus = .failure
                 self.outputConsole = resultMessage
                 return
             }
@@ -818,7 +862,7 @@ SineWave:
 
             EmulatorService.shared.launchEmulator(config: launchConfig) { result in
                 self.isCompiling = false
-                self.compileSuccess = result.success
+                self.buildStatus = result.success ? .success : .failure
                 self.outputConsole = self.outputConsole + "\n\n" + result.message
                 if let tracePath = result.tracePath {
                     self.outputConsole += "\n\nValidation Trace Output:\n\(tracePath)"
@@ -854,6 +898,7 @@ SineWave:
     // Run compiled code in Embedded Web Emulator (vAmigaWeb Option B)
     private func runInWebEmulator() {
         isCompiling = true
+        buildStatus = .running
         isShowingWebEmulator = true
         outputConsole = "Assembling code and packaging bootable ADF for Web Emulator...\n"
 
@@ -861,7 +906,7 @@ SineWave:
 
         CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: tempADFPath) { success, resultMessage in
             self.isCompiling = false
-            self.compileSuccess = success
+            self.buildStatus = success ? .success : .failure
             self.outputConsole = resultMessage
 
             if success {
@@ -937,11 +982,12 @@ SineWave:
 
     private func generateADF(at url: URL) {
         self.isExportingADF = true
+        self.buildStatus = .running
         self.outputConsole = "Generating bootable ADF disk image at:\n\(url.path)...\n"
 
         CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: url.path) { success, resultMessage in
             self.isExportingADF = false
-            self.compileSuccess = success
+            self.buildStatus = success ? .success : .failure
             self.outputConsole = resultMessage
         }
     }
