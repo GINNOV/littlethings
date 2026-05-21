@@ -110,6 +110,11 @@ CopperList:
     @AppStorage("emulatorBackend") private var emulatorBackend: String = EmulatorBackend.fsUAE.rawValue
     @AppStorage("vAmigaExecutablePath") private var vAmigaExecutablePath: String = "/Applications/vAmiga.app/Contents/MacOS/vAmiga"
     @AppStorage("vAmigaCustomArgs") private var vAmigaCustomArgs: String = ""
+    @AppStorage("vAmigaAutoConfigureServers") private var vAmigaAutoConfigureServers: Bool = true
+    @AppStorage("vAmigaRemoteShellPort") private var vAmigaRemoteShellPort: Int = 8080
+    @AppStorage("vAmigaRPCPort") private var vAmigaRPCPort: Int = 8081
+    @AppStorage("vAmigaPrometheusPort") private var vAmigaPrometheusPort: Int = 8083
+    @AppStorage("vAmigaSerialPort") private var vAmigaSerialPort: Int = 8085
     @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
 
     // Compilation & Output State
@@ -127,6 +132,16 @@ CopperList:
 
     private var selectedBackendName: String {
         selectedBackend.displayName
+    }
+
+    private var vAmigaServerConfig: VAmigaServerConfig {
+        VAmigaServerConfig(
+            remoteShellPort: vAmigaRemoteShellPort,
+            rpcPort: vAmigaRPCPort,
+            prometheusPort: vAmigaPrometheusPort,
+            serialPort: vAmigaSerialPort,
+            autoConfigure: vAmigaAutoConfigureServers
+        )
     }
 
     // Chat Panel State
@@ -717,13 +732,50 @@ SineWave:
         )
     }
 
-    // Validate compiled code by forcing the native vAmiga RetroShell trace backend.
+    // Validate compiled code through vAmiga Desktop automation servers.
     private func validateInVAmiga() {
-        runNativeEmulator(
-            backend: .vAmiga,
-            label: EmulatorBackend.vAmiga.displayName,
-            openingMessage: "Validating code by building a bootable ADF and launching it in vAmiga RetroShell...\n"
-        )
+        isCompiling = true
+        isShowingWebEmulator = false
+        outputConsole = "Validating code by building a bootable ADF and collecting vAmiga debug evidence...\n"
+
+        let tempADFPath = "/tmp/amiga_playground_temp.adf"
+
+        CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: tempADFPath) { success, resultMessage in
+            if !success {
+                self.isCompiling = false
+                self.compileSuccess = false
+                self.outputConsole = resultMessage
+                self.writeCompileFailureValidationArtifact(message: resultMessage)
+                return
+            }
+
+            self.outputConsole = resultMessage + "\n\nLaunching vAmiga and connecting to RPC/Prometheus servers..."
+
+            let launchConfig = EmulatorLaunchConfig(
+                backend: .vAmiga,
+                adfPath: tempADFPath,
+                romRelativePath: self.selectedRomFilename,
+                model: self.emulatorModel,
+                chipRamMb: self.emulatorChipRam,
+                fastRamMb: self.emulatorFastRam,
+                cpu: self.emulatorCpu,
+                jit: self.emulatorJit,
+                customArgs: self.emulatorCustomArgs,
+                vAmigaExecutablePath: self.vAmigaExecutablePath,
+                vAmigaCustomArgs: self.vAmigaCustomArgs,
+                vAmigaServerConfig: self.vAmigaServerConfig
+            )
+
+            VAmigaValidationService.shared.validate(config: launchConfig) { result in
+                self.isCompiling = false
+                self.compileSuccess = result.success
+                self.outputConsole += "\n\n\(result.summary)"
+                if !result.failures.isEmpty {
+                    self.outputConsole += "\n\nFailures:\n" + result.failures.map { "- \($0)" }.joined(separator: "\n")
+                }
+                self.outputConsole += "\n\nValidation artifacts:\n\(result.artifactDirectory)\nTrace:\n\(result.tracePath)\nMetrics:\n\(result.metricsPath)"
+            }
+        }
     }
 
     // Build a bootable ADF and run it in a native emulator backend.
@@ -755,7 +807,8 @@ SineWave:
                 jit: self.emulatorJit,
                 customArgs: self.emulatorCustomArgs,
                 vAmigaExecutablePath: self.vAmigaExecutablePath,
-                vAmigaCustomArgs: self.vAmigaCustomArgs
+                vAmigaCustomArgs: self.vAmigaCustomArgs,
+                vAmigaServerConfig: self.vAmigaServerConfig
             )
 
             EmulatorService.shared.launchEmulator(config: launchConfig) { result in
@@ -764,6 +817,30 @@ SineWave:
                 self.outputConsole = self.outputConsole + "\n\n" + result.message
                 if let tracePath = result.tracePath {
                     self.outputConsole += "\n\nValidation Trace Output:\n\(tracePath)"
+                }
+            }
+        }
+    }
+
+    private func writeCompileFailureValidationArtifact(message: String) {
+        DispatchQueue.global(qos: .utility).async {
+            let runId = "vamiga-compile-failure-\(UUID().uuidString.prefix(8))"
+            do {
+                let result = try VAmigaValidationArtifactWriter().write(
+                    runId: runId,
+                    config: self.vAmigaServerConfig,
+                    commands: [],
+                    metrics: "# Validation stopped before vAmiga launch because compilation failed.\n",
+                    stdoutStderr: message,
+                    failures: [message],
+                    summary: "Validation failed during compile/ADF generation."
+                )
+                DispatchQueue.main.async {
+                    self.outputConsole += "\n\nValidation artifacts:\n\(result.artifactDirectory)"
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.outputConsole += "\n\nCould not write validation failure artifacts: \(error.localizedDescription)"
                 }
             }
         }
@@ -878,6 +955,11 @@ struct SettingsView: View {
     @AppStorage("emulatorBackend") private var emulatorBackend: String = EmulatorBackend.fsUAE.rawValue
     @AppStorage("vAmigaExecutablePath") private var vAmigaExecutablePath: String = "/Applications/vAmiga.app/Contents/MacOS/vAmiga"
     @AppStorage("vAmigaCustomArgs") private var vAmigaCustomArgs: String = ""
+    @AppStorage("vAmigaAutoConfigureServers") private var vAmigaAutoConfigureServers: Bool = true
+    @AppStorage("vAmigaRemoteShellPort") private var vAmigaRemoteShellPort: Int = 8080
+    @AppStorage("vAmigaRPCPort") private var vAmigaRPCPort: Int = 8081
+    @AppStorage("vAmigaPrometheusPort") private var vAmigaPrometheusPort: Int = 8083
+    @AppStorage("vAmigaSerialPort") private var vAmigaSerialPort: Int = 8085
     @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
     @AppStorage("romsDirectoryPath") private var romsDirectoryPath: String = "/Users/megov/code/GitHub/littlethings/Amiga/commodore-amiga-firmware"
 
@@ -887,6 +969,14 @@ struct SettingsView: View {
     let cpus = ["68000", "68010", "68020", "68030", "68040", "68060"]
     let chipRams = ["512 KB", "1 MB", "2 MB", "4 MB", "8 MB"]
     let fastRams = ["0 MB", "1 MB", "2 MB", "4 MB", "8 MB", "16 MB", "32 MB", "64 MB"]
+
+    private var portFormatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.minimum = 1
+        formatter.maximum = 65535
+        formatter.allowsFloats = false
+        return formatter
+    }
 
     private var selectedRomDisplayName: String {
         if selectedRomFilename.isEmpty {
@@ -1176,6 +1266,31 @@ struct SettingsView: View {
                     .padding(12)
                     .background(Color(red: 0.1, green: 0.1, blue: 0.12))
                     .cornerRadius(6)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("VAMIGA SERVER VALIDATION")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundColor(.orange)
+
+                        Toggle("Auto-configure vAmiga automation servers", isOn: $vAmigaAutoConfigureServers)
+                            .toggleStyle(SwitchToggleStyle(tint: .orange))
+                            .foregroundColor(.white)
+                            .font(.system(.body, design: .monospaced))
+
+                        HStack(spacing: 12) {
+                            SettingsPortField(title: "Remote Shell", value: $vAmigaRemoteShellPort, formatter: portFormatter)
+                            SettingsPortField(title: "RPC", value: $vAmigaRPCPort, formatter: portFormatter)
+                        }
+
+                        HStack(spacing: 12) {
+                            SettingsPortField(title: "Prometheus", value: $vAmigaPrometheusPort, formatter: portFormatter)
+                            SettingsPortField(title: "Serial", value: $vAmigaSerialPort, formatter: portFormatter)
+                        }
+                    }
+                    .padding(12)
+                    .background(Color(red: 0.1, green: 0.1, blue: 0.12))
+                    .cornerRadius(6)
                 }
                 .padding(16)
             }
@@ -1252,6 +1367,30 @@ struct SettingsPickerField<SelectionValue: Hashable, Content: View>: View {
             .frame(minWidth: 160, maxWidth: .infinity, alignment: .leading)
         }
         .accessibilityElement(children: .combine)
+    }
+}
+
+struct SettingsPortField: View {
+    let title: String
+    @Binding var value: Int
+    let formatter: NumberFormatter
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.gray)
+
+            TextField("8080", value: $value, formatter: formatter)
+                .textFieldStyle(PlainTextFieldStyle())
+                .padding(8)
+                .background(Color(red: 0.18, green: 0.18, blue: 0.22))
+                .cornerRadius(4)
+                .foregroundColor(.white)
+                .font(.system(.body, design: .monospaced))
+                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.45), lineWidth: 1))
+                .frame(minWidth: 120)
+        }
     }
 }
 

@@ -210,6 +210,107 @@ class AmigaPlaygroundTests: XCTestCase {
         XCTAssertEqual(records[3].event, "watchpoint")
     }
 
+    func testVAmigaServerConfigPatcherPreservesExistingSettingsAndCreatesBackup() throws {
+        let tempRoot = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: tempRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempRoot) }
+
+        let iniURL = tempRoot.appendingPathComponent("vAmiga.ini")
+        try """
+        [MEM]
+        CHIP_RAM=512
+
+        [SRV]
+        AUTORUN0=0
+        PORT0=9000
+        VERBOSE0=1
+
+        [VID]
+        WHITE_NOISE=1
+        """.write(to: iniURL, atomically: true, encoding: .utf8)
+
+        let config = VAmigaServerConfig(configPath: iniURL.path)
+        let patched = try VAmigaServerConfigPatcher().apply(config: config)
+        let text = try String(contentsOf: iniURL, encoding: .utf8)
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: patched.backupPath ?? ""))
+        XCTAssertTrue(text.contains("[MEM]\nCHIP_RAM=512"))
+        XCTAssertTrue(text.contains("[VID]\nWHITE_NOISE=1"))
+        XCTAssertTrue(text.contains("[SRV]"))
+        XCTAssertTrue(text.contains("AUTORUN0=1"))
+        XCTAssertTrue(text.contains("AUTORUN1=1"))
+        XCTAssertTrue(text.contains("AUTORUN3=1"))
+        XCTAssertTrue(text.contains("AUTORUN4=1"))
+        XCTAssertTrue(text.contains("PORT0=8080"))
+        XCTAssertTrue(text.contains("PORT1=8081"))
+        XCTAssertTrue(text.contains("PORT3=8083"))
+        XCTAssertTrue(text.contains("PORT4=8085"))
+    }
+
+    func testVAmigaRPCClientBuildsAndParsesRetroShellRequests() throws {
+        let payload = try VAmigaRPCClient.makeRequest(command: "r cpu", id: 42)
+        let json = try JSONSerialization.jsonObject(with: payload.data(using: .utf8) ?? Data()) as? [String: Any]
+
+        XCTAssertEqual(json?["jsonrpc"] as? String, "2.0")
+        XCTAssertEqual(json?["method"] as? String, "retroshell")
+        XCTAssertEqual(json?["params"] as? String, "r cpu")
+        XCTAssertEqual(json?["id"] as? Int, 42)
+
+        let response = try VAmigaRPCClient.parseResponse(#"{"jsonrpc":"2.0","result":"PC:00F80000 SR:2700","id":42}"#)
+        XCTAssertEqual(response.result, "PC:00F80000 SR:2700")
+        XCTAssertNil(response.errorMessage)
+
+        let error = try VAmigaRPCClient.parseResponse(#"{"jsonrpc":"2.0","error":{"code":-32000,"message":"bad command"},"id":42}"#)
+        XCTAssertEqual(error.errorMessage, "bad command")
+    }
+
+    func testPrometheusParserExtractsRuntimeMetrics() {
+        let metrics = VAmigaPrometheusClient.parseMetrics("""
+        # TYPE vamiga_cpu_load gauge
+        vamiga_cpu_load{component="emulator"} 0.2500
+
+        vamiga_fps{component="emulator"} 49.9200
+        vamiga_mem_accesses{component="memory",location="chip_ram",type="write"} 128
+        """)
+
+        XCTAssertEqual(metrics["vamiga_cpu_load{component=\"emulator\"}"], 0.25)
+        XCTAssertEqual(metrics["vamiga_fps{component=\"emulator\"}"], 49.92)
+        XCTAssertEqual(metrics["vamiga_mem_accesses{component=\"memory\",location=\"chip_ram\",type=\"write\"}"], 128)
+    }
+
+    func testVAmigaValidationArtifactWriterCreatesStableFiles() throws {
+        let tempRoot = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: tempRoot) }
+
+        let writer = VAmigaValidationArtifactWriter(rootDirectory: tempRoot.path)
+        let record = VAmigaCommandRecord(
+            command: "r cpu",
+            response: "PC:00F80000 SR:2700",
+            timestamp: "2026-05-21T00:00:00Z",
+            durationMs: 12,
+            parsedRecords: EmulatorService.shared.parseCpuTrace("PC:00F80000 SR:2700"),
+            error: nil
+        )
+        let result = try writer.write(
+            runId: "test-run",
+            config: VAmigaServerConfig(configPath: "/tmp/vAmiga.ini", backupPath: "/tmp/vAmiga.ini.bak"),
+            commands: [record],
+            metrics: "vamiga_fps 50.0\n",
+            stdoutStderr: "launch ok\n",
+            failures: [],
+            summary: "Validation passed"
+        )
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: result.artifactDirectory))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: result.tracePath))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: result.metricsPath))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: URL(fileURLWithPath: result.artifactDirectory).appendingPathComponent("manifest.json").path))
+        XCTAssertTrue(try String(contentsOfFile: result.tracePath).contains(#""command":"r cpu""#))
+        XCTAssertTrue(try String(contentsOfFile: URL(fileURLWithPath: result.artifactDirectory).appendingPathComponent("failure-summary.md").path).contains("Validation passed"))
+    }
+
     // MARK: - VASM Compiler Service Tests
 
     func testVasmCompilerSuccess() {

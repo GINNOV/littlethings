@@ -37,6 +37,35 @@ struct EmulatorLaunchConfig {
     let customArgs: String
     let vAmigaExecutablePath: String
     let vAmigaCustomArgs: String
+    let vAmigaServerConfig: VAmigaServerConfig
+
+    init(
+        backend: EmulatorBackend,
+        adfPath: String,
+        romRelativePath: String,
+        model: String,
+        chipRamMb: String,
+        fastRamMb: String,
+        cpu: String,
+        jit: Bool,
+        customArgs: String,
+        vAmigaExecutablePath: String,
+        vAmigaCustomArgs: String,
+        vAmigaServerConfig: VAmigaServerConfig = VAmigaServerConfig()
+    ) {
+        self.backend = backend
+        self.adfPath = adfPath
+        self.romRelativePath = romRelativePath
+        self.model = model
+        self.chipRamMb = chipRamMb
+        self.fastRamMb = fastRamMb
+        self.cpu = cpu
+        self.jit = jit
+        self.customArgs = customArgs
+        self.vAmigaExecutablePath = vAmigaExecutablePath
+        self.vAmigaCustomArgs = vAmigaCustomArgs
+        self.vAmigaServerConfig = vAmigaServerConfig
+    }
 }
 
 struct EmulatorLaunchResult {
@@ -410,6 +439,10 @@ class EmulatorService {
         let url = URL(fileURLWithPath: relativePath)
         let path = url.isFileURL && relativePath.hasPrefix("/") ? relativePath : URL(fileURLWithPath: romsDirectory, isDirectory: true).appendingPathComponent(relativePath).path
         return FileManager.default.fileExists(atPath: path) ? path : nil
+    }
+
+    func resolveRomPathForValidation(_ relativePath: String) -> String? {
+        resolveRomPath(relativePath)
     }
 
     private func vAmigaAppBundlePath(from executablePath: String) -> String? {
