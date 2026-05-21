@@ -106,7 +106,7 @@ class AmigaPlaygroundTests: XCTestCase {
         ])
     }
 
-    func testBuildVAmigaArgumentsPrioritizesAdfBootDocument() {
+    func testBuildVAmigaArgumentsPrioritizesRetroShellValidationScript() {
         let service = EmulatorService.shared
         let config = EmulatorLaunchConfig(
             backend: .vAmiga,
@@ -122,9 +122,42 @@ class AmigaPlaygroundTests: XCTestCase {
             vAmigaCustomArgs: "-\"help\" --debug"
         )
 
-        XCTAssertEqual(service.buildVAmigaArguments(config: config), [
-            "/tmp/test.adf",
+        XCTAssertEqual(service.buildVAmigaArguments(config: config, scriptPath: "/tmp/session.retrosh"), [
+            "/tmp/session.retrosh",
             "-help",
+            "--debug"
+        ])
+    }
+
+    func testBuildVAmigaInvocationUsesOpenForAppBundleContext() {
+        let service = EmulatorService.shared
+        let config = EmulatorLaunchConfig(
+            backend: .vAmiga,
+            adfPath: "/tmp/test.adf",
+            romRelativePath: "",
+            model: "A500",
+            chipRamMb: "512 KB",
+            fastRamMb: "0 MB",
+            cpu: "68000",
+            jit: false,
+            customArgs: "",
+            vAmigaExecutablePath: service.defaultVAmigaPath,
+            vAmigaCustomArgs: "--debug"
+        )
+
+        let invocation = service.buildVAmigaInvocation(
+            executablePath: "/Applications/vAmiga.app/Contents/MacOS/vAmiga",
+            config: config,
+            scriptPath: "/tmp/session.retrosh"
+        )
+
+        XCTAssertEqual(invocation.executablePath, "/usr/bin/open")
+        XCTAssertEqual(invocation.arguments, [
+            "-n",
+            "-a",
+            "/Applications/vAmiga.app",
+            "/tmp/session.retrosh",
+            "--args",
             "--debug"
         ])
     }
@@ -151,6 +184,9 @@ class AmigaPlaygroundTests: XCTestCase {
 
         XCTAssertTrue(script.contains("AmigaPlayground vAmiga CPU trace bootstrap"))
         XCTAssertTrue(script.contains("No explicit ROM selected"))
+        XCTAssertTrue(script.contains("try df0 insert \"/tmp/test.adf\""))
+        XCTAssertTrue(script.contains("try amiga run"))
+        XCTAssertTrue(script.contains("try run"))
         XCTAssertTrue(script.contains("regs"))
         XCTAssertTrue(script.contains("disassemble"))
     }

@@ -46,6 +46,11 @@ struct EmulatorLaunchResult {
     let tracePath: String?
 }
 
+struct VAmigaProcessInvocation: Equatable {
+    let executablePath: String
+    let arguments: [String]
+}
+
 struct CpuTraceRecord: Equatable {
     let event: String
     let pc: String?
@@ -152,11 +157,28 @@ class EmulatorService {
         return args
     }
 
-    func buildVAmigaArguments(config: EmulatorLaunchConfig) -> [String] {
+    func buildVAmigaArguments(config: EmulatorLaunchConfig, scriptPath: String) -> [String] {
         var args: [String] = []
-        args.append(config.adfPath)
+        args.append(scriptPath)
         args.append(contentsOf: splitCommandLine(config.vAmigaCustomArgs))
         return args
+    }
+
+    func buildVAmigaInvocation(executablePath: String, config: EmulatorLaunchConfig, scriptPath: String) -> VAmigaProcessInvocation {
+        let customArgs = splitCommandLine(config.vAmigaCustomArgs)
+        if let appBundlePath = vAmigaAppBundlePath(from: executablePath) {
+            var args = ["-n", "-a", appBundlePath, scriptPath]
+            if !customArgs.isEmpty {
+                args.append("--args")
+                args.append(contentsOf: customArgs)
+            }
+            return VAmigaProcessInvocation(executablePath: "/usr/bin/open", arguments: args)
+        }
+
+        return VAmigaProcessInvocation(
+            executablePath: executablePath,
+            arguments: buildVAmigaArguments(config: config, scriptPath: scriptPath)
+        )
     }
 
     func createVAmigaRetroShellScript(config: EmulatorLaunchConfig, tracePath: String) throws -> String {
@@ -175,10 +197,17 @@ class EmulatorService {
         let script = """
         # AmigaPlayground vAmiga CPU trace bootstrap
         # Trace file target: \(tracePath)
-        # This script is intentionally conservative. vAmiga Desktop RetroShell accepts
-        # scripts and command-line commands; unsupported commands remain visible in
-        # captured output so the parser can preserve them as raw lines.
+        # The validation path opens this RetroShell script as the vAmiga document.
+        # It explicitly inserts the generated ADF into DF0 and starts execution,
+        # which is more reliable than opening an ADF document and relying on the
+        # previous desktop power/run state.
         \(romBootstrap)
+        try df0 connect
+        try df0 insert \(retroShellQuotedPath(config.adfPath))
+        try amiga power on
+        try amiga run
+        try power on
+        try run
         help
         config
         cpu
@@ -302,9 +331,10 @@ class EmulatorService {
             do {
                 let tracePath = try self.createTraceFilePath()
                 let scriptPath = try self.createVAmigaRetroShellScript(config: config, tracePath: tracePath)
+                let invocation = self.buildVAmigaInvocation(executablePath: executablePath, config: config, scriptPath: scriptPath)
                 let process = Process()
-                process.executableURL = URL(fileURLWithPath: executablePath)
-                process.arguments = self.buildVAmigaArguments(config: config)
+                process.executableURL = URL(fileURLWithPath: invocation.executablePath)
+                process.arguments = invocation.arguments
 
                 let outputPipe = Pipe()
                 let errorPipe = Pipe()
@@ -329,7 +359,7 @@ class EmulatorService {
                     self.writeTraceSnapshot(
                         path: tracePath,
                         scriptPath: scriptPath,
-                        processArguments: process.arguments ?? [],
+                        processArguments: [invocation.executablePath] + invocation.arguments,
                         capturedOutput: capturedOutput
                     )
                 }
@@ -338,7 +368,7 @@ class EmulatorService {
                     completion(EmulatorLaunchResult(
                         success: true,
                         backend: .vAmiga,
-                        message: "Successfully launched vAmiga Desktop with the generated ADF.\nTrace output will be captured at:\n\(tracePath)\n\nRetroShell script prepared for this run:\n\(scriptPath)",
+                        message: "Successfully launched vAmiga Desktop through the app bundle with an explicit RetroShell validation script.\nTrace output will be captured at:\n\(tracePath)\n\nRetroShell script:\n\(scriptPath)",
                         tracePath: tracePath
                     ))
                 }
@@ -380,6 +410,20 @@ class EmulatorService {
         let url = URL(fileURLWithPath: relativePath)
         let path = url.isFileURL && relativePath.hasPrefix("/") ? relativePath : URL(fileURLWithPath: romsDirectory, isDirectory: true).appendingPathComponent(relativePath).path
         return FileManager.default.fileExists(atPath: path) ? path : nil
+    }
+
+    private func vAmigaAppBundlePath(from executablePath: String) -> String? {
+        let url = URL(fileURLWithPath: executablePath)
+        if url.pathExtension == "app" {
+            return url.path
+        }
+
+        let components = url.pathComponents
+        guard let appIndex = components.firstIndex(where: { $0.hasSuffix(".app") }) else {
+            return nil
+        }
+
+        return NSString.path(withComponents: Array(components[0...appIndex]))
     }
 
     private func createTraceFilePath() throws -> String {
