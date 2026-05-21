@@ -1,4 +1,0 @@
-cls
-echo "Setting WHDLoad quit key to the Asterisk key."
-copy AGS:WhdloadPrefs/WHDLoad.astx s:WHDLoad.prefs >NIL:
-wait 3

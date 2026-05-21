@@ -1,4 +1,0 @@
-cls
-echo "Setting WHDLoad quit key to the F9 key."
-copy AGS:WhdloadPrefs/WHDLoad.F9 s:WHDLoad.prefs >NIL:
-wait 3

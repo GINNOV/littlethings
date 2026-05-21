@@ -1,5 +1,0 @@
-*.sln
-*.csproj
-*.cache
-/Tools/PC/GraphicsConverter/MenaceToPNG/obj
-/Tools/PC/GraphicsConverter/MenaceToPNG/bin

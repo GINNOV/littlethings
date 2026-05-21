@@ -1,2 +1,0 @@
-**Vertical sync start (VARVSY)**
-

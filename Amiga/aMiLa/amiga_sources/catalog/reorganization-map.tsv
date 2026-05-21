@@ -1,0 +1,76 @@
+current_path	proposed_path	category	move_priority	notes
+aMiLa/amiga_sources/ab3dtrainer	aMiLa/amiga_sources/tools/ab3dtrainer	tools	later	Trainer utility; sample selectively.
+aMiLa/amiga_sources/abackup	aMiLa/amiga_sources/applications/abackup	applications	later	Backup application; moderate reference value.
+aMiLa/amiga_sources/abacus	aMiLa/amiga_sources/applications/abacus	applications	later	Application archive; moderate reference value.
+aMiLa/amiga_sources/ace	aMiLa/amiga_sources/libraries/ace	libraries	later	Amiga C Engine; useful as a game/framework reference.
+aMiLa/amiga_sources/aegisanimator	aMiLa/amiga_sources/applications/aegisanimator	applications	later	Larger application/archive; targeted use only.
+aMiLa/amiga_sources/agj2024-bs2	aMiLa/amiga_sources/games/agj2024-bs2	games	later	Game-jam style source; inspect before training.
+aMiLa/amiga_sources/ambermoon	aMiLa/amiga_sources/games/ambermoon	games	later	Large game archive; targeted use only.
+aMiLa/amiga_sources/ami-dwn-under	aMiLa/amiga_sources/applications/ami-dwn-under	applications	later	Application/archive with minimal visible metadata.
+aMiLa/amiga_sources/amiftp	aMiLa/amiga_sources/applications/amiftp	applications	later	FTP client application; sample selectively.
+aMiLa/amiga_sources/amiga	aMiLa/amiga_sources/reference/amiga	reference	later	General Amiga reference/source collection.
+aMiLa/amiga_sources/amiga-asmdev-workflow	aMiLa/amiga_sources/learning/amiga-asmdev-workflow	learning	first	Assembly workflow example with Makefile.
+aMiLa/amiga_sources/amiga-assembler	aMiLa/amiga_sources/learning/amiga-assembler	learning	first	Small assembly lessons; high-value first-pass corpus.
+aMiLa/amiga_sources/amiga-c	aMiLa/amiga_sources/learning/amiga-c	learning	first	C examples; preferred training source.
+aMiLa/amiga_sources/amiga-c-tutorials	aMiLa/amiga_sources/learning/amiga-c-tutorials	learning	first	C tutorials; preferred training source.
+aMiLa/amiga_sources/amiga-dev	aMiLa/amiga_sources/learning/amiga-dev	learning	first	Development notes/examples; preferred training source.
+aMiLa/amiga_sources/amiga-examples	aMiLa/amiga_sources/learning/amiga-examples	learning	first	Examples with Makefile; preferred corpus.
+aMiLa/amiga_sources/amiga-game-prog	aMiLa/amiga_sources/learning/amiga-game-prog	learning	first	Game programming lessons/examples.
+aMiLa/amiga_sources/amiga-game-selector	aMiLa/amiga_sources/applications/amiga-game-selector	applications	later	Focused selector utility; likely useful project corpus.
+aMiLa/amiga_sources/amiga-gpt	aMiLa/amiga_sources/applications/amiga-gpt	applications	later	Modern Amiga app with Makefile; useful runnable project.
+aMiLa/amiga_sources/amiga-hardware-in-c	aMiLa/amiga_sources/learning/amiga-hardware-in-c	learning	first	Hardware programming in C; preferred corpus.
+aMiLa/amiga_sources/amiga-parcade	aMiLa/amiga_sources/games/amiga-parcade	games	later	Game/project corpus.
+aMiLa/amiga_sources/amiga-playground	aMiLa/amiga_sources/learning/amiga-playground	learning	first	Playground examples; preferred training source.
+aMiLa/amiga_sources/amiga-programming-examples	aMiLa/amiga_sources/learning/amiga-programming-examples	learning	first	Programming examples; preferred training source.
+aMiLa/amiga_sources/amiga-starfield	aMiLa/amiga_sources/demos/asm-effects/amiga-starfield	asm-demos	later	Compact visual demo; good effects corpus.
+aMiLa/amiga_sources/amiga-stuff	aMiLa/amiga_sources/reference/amiga-stuff	reference	later	Mixed source/reference material.
+aMiLa/amiga_sources/amigaexamples	aMiLa/amiga_sources/learning/amigaexamples	learning	first	Example collection; preferred corpus.
+aMiLa/amiga_sources/amigaos-cpp-examples	aMiLa/amiga_sources/examples/c/amigaos-cpp-examples	c-examples	first	C++ AmigaOS examples; useful API corpus.
+aMiLa/amiga_sources/aminer	aMiLa/amiga_sources/applications/aminer	applications	later	Larger Amiga application/archive; sample selectively.
+aMiLa/amiga_sources/analay	aMiLa/amiga_sources/applications/analay	applications	later	Application/archive; moderate reference value.
+aMiLa/amiga_sources/arcade-game-selector	aMiLa/amiga_sources/applications/arcade-game-selector	applications	later	Makefile-backed selector app.
+aMiLa/amiga_sources/artpro	aMiLa/amiga_sources/applications/artpro	applications	later	Larger application/archive; targeted use only.
+aMiLa/amiga_sources/assemble-amiga	aMiLa/amiga_sources/toolchains/assemble-amiga	toolchains	later	Assembler source; valuable for toolchain tasks.
+aMiLa/amiga_sources/atarenium-falcon	aMiLa/amiga_sources/games/atarenium-falcon	games	later	Game source with multiple source files.
+aMiLa/amiga_sources/awesome-amiga	aMiLa/amiga_sources/reference/awesome-amiga	reference	later	Curated list/reference docs, not source-heavy training.
+aMiLa/amiga_sources/batman-amiga	aMiLa/amiga_sources/games/batman-amiga	games	later	Game source/recovery material; targeted use only.
+aMiLa/amiga_sources/chaos-arena	aMiLa/amiga_sources/games/chaos-arena	games	later	Game project; useful second-tier corpus.
+aMiLa/amiga_sources/clib2	aMiLa/amiga_sources/libraries/clib2	libraries	later	Runtime/library source; sample carefully.
+aMiLa/amiga_sources/complete-ndk39	aMiLa/amiga_sources/libraries/complete-ndk39	libraries	later	NDK material; include docs/headers selectively.
+aMiLa/amiga_sources/diskmaster2	aMiLa/amiga_sources/applications/diskmaster2	applications	later	Larger application; targeted use only.
+aMiLa/amiga_sources/dos2dos	aMiLa/amiga_sources/tools/dos2dos	tools	later	Disk/filesystem utility; useful reference.
+aMiLa/amiga_sources/flappy-ace-win	aMiLa/amiga_sources/games/flappy-ace-win	games	later	Small game project; useful after tutorials.
+aMiLa/amiga_sources/germz	aMiLa/amiga_sources/games/germz	games	later	Game project; useful second-tier corpus.
+aMiLa/amiga_sources/goblin-villages	aMiLa/amiga_sources/games/goblin-villages	games	later	Game project; useful second-tier corpus.
+aMiLa/amiga_sources/hamazing	aMiLa/amiga_sources/games/hamazing	games	later	Small game/demo project.
+aMiLa/amiga_sources/hello-ami	aMiLa/amiga_sources/learning/hello-ami	learning	first	Hello-world style Amiga project; preferred training source.
+aMiLa/amiga_sources/hello-bars	aMiLa/amiga_sources/demos/asm-effects/hello-bars	asm-demos	first	Small visual demo; good first-pass effects corpus.
+aMiLa/amiga_sources/hippoplayer	aMiLa/amiga_sources/applications/hippoplayer	applications	later	Player application; sample selectively.
+aMiLa/amiga_sources/identify	aMiLa/amiga_sources/tools/identify	tools	later	Hardware identification utility; useful reference.
+aMiLa/amiga_sources/impsbru	aMiLa/amiga_sources/applications/impsbru	applications	later	Application/archive; moderate reference value.
+aMiLa/amiga_sources/joy-ride1	aMiLa/amiga_sources/games/joy-ride1	games	later	Small game/demo project.
+aMiLa/amiga_sources/ld40-squared	aMiLa/amiga_sources/games/ld40-squared	games	later	Game project; useful second-tier corpus.
+aMiLa/amiga_sources/m68k-amigaos-gcc	aMiLa/amiga_sources/toolchains/m68k-amigaos-gcc	toolchains	later	Cross compiler/toolchain material; sample selectively.
+aMiLa/amiga_sources/m68k-elf-gcc	aMiLa/amiga_sources/toolchains/m68k-elf-gcc	toolchains	later	Cross compiler/toolchain material; sample selectively.
+aMiLa/amiga_sources/mac2dos	aMiLa/amiga_sources/tools/mac2dos	tools	later	Conversion utility/source; useful reference.
+aMiLa/amiga_sources/menace-amiga-format	aMiLa/amiga_sources/games/menace-amiga-format	games	later	Game-source reference; targeted use only.
+aMiLa/amiga_sources/milky-tracker	aMiLa/amiga_sources/applications/milky-tracker	applications	later	Large tracker application; sample selectively.
+aMiLa/amiga_sources/misc-asm-68k-amiga-ocs	aMiLa/amiga_sources/learning/misc-asm-68k-amiga-ocs	learning	first	Small OCS assembly examples; preferred corpus.
+aMiLa/amiga_sources/mod1	aMiLa/amiga_sources/demos/asm-effects/mod1	asm-demos	later	Music/module demo source; inspect assets.
+aMiLa/amiga_sources/muidev	aMiLa/amiga_sources/examples/c/muidev	c-examples	later	MUI development examples/reference.
+aMiLa/amiga_sources/newstartup	aMiLa/amiga_sources/tools/newstartup	tools	later	Startup/system utility; useful reference.
+aMiLa/amiga_sources/no-cpu-challenge	aMiLa/amiga_sources/demos/asm-effects/no-cpu-challenge	asm-demos	later	Constrained demo/challenge source.
+aMiLa/amiga_sources/open-fire	aMiLa/amiga_sources/games/open-fire	games	later	Game project with makefile; useful corpus.
+aMiLa/amiga_sources/pdalink	aMiLa/amiga_sources/applications/pdalink	applications	later	Application/archive; moderate reference value.
+aMiLa/amiga_sources/phantom-fighter	aMiLa/amiga_sources/games/phantom-fighter	games	later	Game source with design/conversion docs.
+aMiLa/amiga_sources/rainbow	aMiLa/amiga_sources/demos/asm-effects/rainbow	asm-demos	first	Small visual demo; good first-pass effects corpus.
+aMiLa/amiga_sources/sdl	aMiLa/amiga_sources/libraries/sdl	libraries	later	Library/port material; sample headers/docs first.
+aMiLa/amiga_sources/sfdc	aMiLa/amiga_sources/tools/sfdc	tools	later	System/file utility source; inspect before ingestion.
+aMiLa/amiga_sources/tutorials	aMiLa/amiga_sources/learning/tutorials	learning	first	Tutorial material; preferred corpus after inspection.
+aMiLa/amiga_sources/uuid-lib	aMiLa/amiga_sources/libraries/uuid-lib	libraries	later	Reusable library source.
+aMiLa/amiga_sources/vasm	aMiLa/amiga_sources/toolchains/vasm	toolchains	later	Assembler source; valuable but large/specialized.
+aMiLa/amiga_sources/vbcc	aMiLa/amiga_sources/toolchains/vbcc	toolchains	later	Compiler source; valuable but large/specialized.
+aMiLa/amiga_sources/vhscroll	aMiLa/amiga_sources/demos/asm-effects/vhscroll	asm-demos	first	Compact assembly demo with build script; strong corpus candidate.
+aMiLa/amiga_sources/vscode-amiga-assembly	aMiLa/amiga_sources/toolchains/vscode-amiga-assembly	toolchains	later	VS Code extension; host tooling, not Amiga runtime corpus.
+aMiLa/amiga_sources/vscode-amiga-debug	aMiLa/amiga_sources/toolchains/vscode-amiga-debug	toolchains	later	VS Code extension/debug toolchain; sample selectively.
+aMiLa/amiga_sources/yam	aMiLa/amiga_sources/applications/yam	applications	later	Large mail application; targeted use only.

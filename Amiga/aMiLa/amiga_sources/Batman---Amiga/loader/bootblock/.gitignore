@@ -1,7 +1,0 @@
-build
-**/bootblock.o
-uae/dh0/bootblock
-uae/dh0/myprogram
-.DS_Store
-bin
-.vscode/settings.json

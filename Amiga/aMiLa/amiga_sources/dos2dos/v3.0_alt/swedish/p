@@ -1,3 +1,0 @@
-.key file/a
-run assem <file>.asm -o prod/<file>.obj -c=W80000
-

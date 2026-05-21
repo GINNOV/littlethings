@@ -1,4 +1,0 @@
-cls
-echo "Setting WHDLoad quit key to the slave default key."
-copy AGS:WhdloadPrefs/WHDLoad.def s:WHDLoad.prefs >NIL:
-wait 3

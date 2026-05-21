@@ -1,3 +1,0 @@
-[submodule "deps/ace"]
-	path = deps/ace
-	url = https://github.com/AmigaPorts/ACE.git
