@@ -986,6 +986,15 @@ struct SettingsView: View {
         return availableRoms.first(where: { $0.relativePath == selectedRomFilename })?.displayName ?? selectedRomFilename
     }
 
+    private var selectedBackendDescription: String {
+        switch EmulatorBackend(rawValue: emulatorBackend) ?? .fsUAE {
+        case .fsUAE:
+            return "FS-UAE launches the generated ADF with the selected ROM and hardware configuration."
+        case .vAmiga:
+            return "vAmiga validation uses Desktop automation servers to collect RPC trace, CPU, and runtime evidence."
+        }
+    }
+
     private func chooseRomsDirectory() {
         let panel = NSOpenPanel()
         panel.title = "Select Kickstart ROM Directory"
@@ -1035,14 +1044,9 @@ struct SettingsView: View {
                             .fontWeight(.bold)
                             .foregroundColor(.orange)
 
-                        Picker("Backend:", selection: $emulatorBackend) {
-                            ForEach(EmulatorBackend.allCases) { backend in
-                                Text(backend.displayName).tag(backend.rawValue)
-                            }
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
+                        SettingsBackendPicker(selection: $emulatorBackend)
 
-                        Text("vAmiga CPU Trace uses vAmiga Desktop RetroShell scripts and captures trace output for LLM review.")
+                        Text(selectedBackendDescription)
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
@@ -1207,32 +1211,26 @@ struct SettingsView: View {
                     .background(Color(red: 0.1, green: 0.1, blue: 0.12))
                     .cornerRadius(6)
 
-                    // Custom CLI Arguments
+                    // FS-UAE Settings
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("CUSTOM COMMAND LINE ARGUMENTS")
+                        Text("FS-UAE SETTINGS")
                             .font(.caption)
                             .fontWeight(.bold)
                             .foregroundColor(.orange)
 
-                        Text("Append custom FS-UAE parameters for the FS-UAE backend.")
+                        Text("Custom FS-UAE launch arguments")
                             .font(.caption)
                             .foregroundColor(.gray)
 
-                        TextField("--fullscreen", text: $emulatorCustomArgs)
-                            .textFieldStyle(PlainTextFieldStyle())
-                            .padding(8)
-                            .background(Color(red: 0.18, green: 0.18, blue: 0.22))
-                            .cornerRadius(4)
-                            .foregroundColor(.white)
-                            .font(.system(.body, design: .monospaced))
-                            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.5), lineWidth: 1))
+                        SettingsTextInput(placeholder: "--fullscreen", text: $emulatorCustomArgs)
+                            .settingsTextInputStyle()
                     }
                     .padding(12)
                     .background(Color(red: 0.1, green: 0.1, blue: 0.12))
                     .cornerRadius(6)
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("VAMIGA RETROSHELL TRACE")
+                        Text("VAMIGA SETTINGS")
                             .font(.caption)
                             .fontWeight(.bold)
                             .foregroundColor(.orange)
@@ -1241,27 +1239,18 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundColor(.gray)
 
-                        TextField("/Applications/vAmiga.app/Contents/MacOS/vAmiga", text: $vAmigaExecutablePath)
-                            .textFieldStyle(PlainTextFieldStyle())
-                            .padding(8)
-                            .background(Color(red: 0.18, green: 0.18, blue: 0.22))
-                            .cornerRadius(4)
-                            .foregroundColor(.white)
-                            .font(.system(.body, design: .monospaced))
-                            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.5), lineWidth: 1))
+                        SettingsTextInput(
+                            placeholder: "/Applications/vAmiga.app/Contents/MacOS/vAmiga",
+                            text: $vAmigaExecutablePath
+                        )
+                        .settingsTextInputStyle()
 
-                        Text("Additional vAmiga arguments")
+                        Text("vAmiga launch arguments")
                             .font(.caption)
                             .foregroundColor(.gray)
 
-                        TextField("-\"help\"", text: $vAmigaCustomArgs)
-                            .textFieldStyle(PlainTextFieldStyle())
-                            .padding(8)
-                            .background(Color(red: 0.18, green: 0.18, blue: 0.22))
-                            .cornerRadius(4)
-                            .foregroundColor(.white)
-                            .font(.system(.body, design: .monospaced))
-                            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.5), lineWidth: 1))
+                        SettingsTextInput(placeholder: "-\"help\"", text: $vAmigaCustomArgs)
+                            .settingsTextInputStyle()
                     }
                     .padding(12)
                     .background(Color(red: 0.1, green: 0.1, blue: 0.12))
@@ -1336,7 +1325,11 @@ struct SettingsPickerField<SelectionValue: Hashable, Content: View>: View {
                 .font(.caption)
                 .foregroundColor(.gray)
 
-            ZStack {
+            Menu {
+                Picker(title, selection: $selection) {
+                    content()
+                }
+            } label: {
                 HStack(spacing: 8) {
                     Text(displayValue)
                         .font(.system(.body, design: .monospaced))
@@ -1355,18 +1348,42 @@ struct SettingsPickerField<SelectionValue: Hashable, Content: View>: View {
                 .background(Color(red: 0.18, green: 0.18, blue: 0.22))
                 .cornerRadius(4)
                 .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.45), lineWidth: 1))
-
-                Picker(title, selection: $selection) {
-                    content()
-                }
-                .labelsHidden()
-                .pickerStyle(MenuPickerStyle())
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .opacity(0.02)
             }
+            .buttonStyle(PlainButtonStyle())
             .frame(minWidth: 160, maxWidth: .infinity, alignment: .leading)
         }
         .accessibilityElement(children: .combine)
+    }
+}
+
+struct SettingsBackendPicker: View {
+    @Binding var selection: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text("Backend:")
+                .font(.system(.body, design: .monospaced))
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+
+            ForEach(EmulatorBackend.allCases) { backend in
+                Button(action: {
+                    selection = backend.rawValue
+                }) {
+                    Text(backend.displayName)
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(selection == backend.rawValue ? .black : .white)
+                        .lineLimit(1)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .frame(minWidth: 130)
+                        .background(selection == backend.rawValue ? Color.orange : Color(red: 0.18, green: 0.18, blue: 0.22))
+                        .cornerRadius(4)
+                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(selection == backend.rawValue ? 1.0 : 0.45), lineWidth: 1))
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
     }
 }
 
@@ -1381,15 +1398,117 @@ struct SettingsPortField: View {
                 .font(.caption)
                 .foregroundColor(.gray)
 
-            TextField("8080", value: $value, formatter: formatter)
-                .textFieldStyle(PlainTextFieldStyle())
-                .padding(8)
-                .background(Color(red: 0.18, green: 0.18, blue: 0.22))
-                .cornerRadius(4)
-                .foregroundColor(.white)
-                .font(.system(.body, design: .monospaced))
-                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.45), lineWidth: 1))
+            SettingsNumberInput(placeholder: "8080", value: $value, formatter: formatter)
+                .settingsTextInputStyle()
                 .frame(minWidth: 120)
+        }
+    }
+}
+
+private extension View {
+    func settingsTextInputStyle() -> some View {
+        self
+            .frame(height: 20)
+            .padding(8)
+            .background(Color(red: 0.18, green: 0.18, blue: 0.22))
+            .cornerRadius(4)
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.5), lineWidth: 1))
+    }
+}
+
+struct SettingsTextInput: NSViewRepresentable {
+    let placeholder: String
+    @Binding var text: String
+
+    func makeNSView(context: Context) -> NSTextField {
+        let field = NSTextField()
+        field.delegate = context.coordinator
+        field.isBordered = false
+        field.isBezeled = false
+        field.drawsBackground = false
+        field.textColor = .white
+        field.placeholderString = placeholder
+        field.font = NSFont.monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        field.focusRingType = .none
+        field.lineBreakMode = .byTruncatingMiddle
+        field.cell?.sendsActionOnEndEditing = true
+        return field
+    }
+
+    func updateNSView(_ field: NSTextField, context: Context) {
+        if field.stringValue != text {
+            field.stringValue = text
+        }
+        field.textColor = .white
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $text)
+    }
+
+    final class Coordinator: NSObject, NSTextFieldDelegate {
+        @Binding var text: String
+
+        init(text: Binding<String>) {
+            _text = text
+        }
+
+        func controlTextDidChange(_ notification: Notification) {
+            guard let field = notification.object as? NSTextField else { return }
+            text = field.stringValue
+        }
+    }
+}
+
+struct SettingsNumberInput: NSViewRepresentable {
+    let placeholder: String
+    @Binding var value: Int
+    let formatter: NumberFormatter
+
+    func makeNSView(context: Context) -> NSTextField {
+        let field = NSTextField()
+        field.delegate = context.coordinator
+        field.formatter = formatter
+        field.isBordered = false
+        field.isBezeled = false
+        field.drawsBackground = false
+        field.textColor = .white
+        field.placeholderString = placeholder
+        field.font = NSFont.monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        field.focusRingType = .none
+        field.alignment = .left
+        return field
+    }
+
+    func updateNSView(_ field: NSTextField, context: Context) {
+        let current = "\(value)"
+        if field.stringValue != current {
+            field.stringValue = current
+        }
+        field.textColor = .white
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(value: $value)
+    }
+
+    final class Coordinator: NSObject, NSTextFieldDelegate {
+        @Binding var value: Int
+
+        init(value: Binding<Int>) {
+            _value = value
+        }
+
+        func controlTextDidChange(_ notification: Notification) {
+            guard let field = notification.object as? NSTextField else { return }
+            if let intValue = Int(field.stringValue), (1...65535).contains(intValue) {
+                value = intValue
+            }
+        }
+
+        func controlTextDidEndEditing(_ notification: Notification) {
+            guard let field = notification.object as? NSTextField else { return }
+            field.stringValue = "\(value)"
         }
     }
 }
