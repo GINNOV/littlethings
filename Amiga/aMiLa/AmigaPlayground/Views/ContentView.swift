@@ -679,7 +679,7 @@ SineWave:
                 // RIGHT: Split Code Editor + VASM Console output
                 VSplitView {
                     // UPPER: Retro Custom Assembly Code Editor
-                    HStack(spacing: 0) {
+                    HStack(alignment: .top, spacing: 0) {
                         // Custom Synchronized Line Numbers column
                         VStack(alignment: .trailing, spacing: 4) {
                             ForEach(1...max(codeText.components(separatedBy: "\n").count, 1), id: \.self) { line in
@@ -693,6 +693,8 @@ SineWave:
                         .padding(.trailing, 10)
                         .padding(.vertical, 8)
                         .background(Color(red: 0.05, green: 0.12, blue: 0.25))
+                        .frame(maxHeight: .infinity, alignment: .top)
+                        .clipped()
 
                         // Text Editor with Deep Amiga Blue theme
                         TextEditor(text: $codeText)
@@ -704,7 +706,8 @@ SineWave:
                             .cornerRadius(4)
                             .accessibilityIdentifier("assemblyEditor")
                     }
-                    .frame(minHeight: 250)
+                    .frame(minHeight: 250, maxHeight: .infinity, alignment: .top)
+                    .clipped()
 
                     // LOWER: Dual-mode VASM Console or WebEmulatorView
                     VStack(alignment: .leading, spacing: 0) {
