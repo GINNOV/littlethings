@@ -1,0 +1,8 @@
+Documentation for L
+
+       L is a replacement for the BCPL "list" program, written in C.  It hilights
+directories, and programs that are dated with todays date are also hilited. 
+Standard Amiga pattern matching may be used.  A flag that has so far been
+ignored, the archive flag, is shown if active.
+
+   Copyright 1987 Kirk Davies.

@@ -1,0 +1,17 @@
+Short:	  Experimental Progam to halt Enforcerhitting Processes
+Author:   noll@alma.student.uni-kl.de
+Uploader: noll@alma.student.uni-kl.de
+Type:	  dev/src
+
+EnforcerFreeze can be used to halt a program, that has
+produced an Enforcerhit. The hitting task is either decreased
+in Priority, or we open a requester about what to do w/ the
+Task.
+
+Note that this program is highly experimental.
+
+Source in C and Asm is included.
+
+Requirements:
+  Workbench 2.04 or better, 68030, Enforcer
+

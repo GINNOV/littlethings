@@ -1,0 +1,13 @@
+Short:        Complete C compilation system. V3.33
+Author:       Lionel Hummel
+Version:      3.33
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Publicly Distributable C (PDC) is a complete C compilation system including
+a compiler, assembler, linker, librarian, and numerous utilities,
+documentation files, libraries, and header files.  PDC supports many ANSI
+features including all ANSI preprocessor directives, function prototyping,
+structure passing and assignment.  In addition it supports Lattice C
+compatible libcall pragmas, precompiled header files, builtin functions,
+and stack checking code.

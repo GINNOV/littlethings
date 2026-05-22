@@ -1,0 +1,88 @@
+ 
+                               File O Faxer 
+			       ~~~~~~~~~~~~
+                             © M.Meany, 1992. 
+ 
+Disclaimer 
+~~~~~~~~~~ 
+ I accept no responsibility for  the  performance  of  this  program or any 
+circumstances that may arise due to it. 
+ 
+Function 
+~~~~~~~~ 
+ I needed a small program in my  startup-sequence  that  would remind me of 
+any appointments I had made. This utility  is the result. It will look at a 
+data file and display any comments attached to the date in question. 
+ 
+Requirements 
+~~~~~~~~~~~~ 
+ The program requires v37 of the dos.library  or higher to run. This limits 
+it use to v2.0 or higher machines.  However  I  have supplied the source as 
+well should you wish to produce a version that will run on older machines. 
+ 
+Usage 
+~~~~~ 
+ Only ever call from the CLI.  The  filename  can  be  followed with a date 
+string if you want details  of  appointments  relating  to a day other than 
+'today'. If no date string is supplied, the program will use todays date. 
+ 
+eg1.   file-o-fax 
+ 
+ This will produce a list of all comments  relating to today. This is how I 
+call the program from my startup-sequence so I can see what I'm supposed to 
+be doing. 
+ 
+eg2.   file-o-fax 05-may-92 
+ 
+ This will list all appointments for the 5th of may 1992. What happens when 
+we reach the year 2000 I'm not sure! 
+ 
+Data File 
+~~~~~~~~~ 
+ File-O-Fax relies on a text file for  it's  information. This file must be 
+called 'Fax' and should be located in either the 's' directory of your boot 
+disk or in the current directory. Use any text editor to create this file. 
+ 
+ Each entry in the file is one line  of  text. This line of text MUST start 
+with the date. You can follow  the  date  with  whatever you wish. The date 
+must be in the following format: 
+ 
+   dd-mmm-yy 
+ 
+ egs   15-may-92, 01-jan-93, 07-MAY-92 
+ 
+ The leading zero is important for  the  first nine days of the month. Also 
+the case of the month can be upper or lower, the program is impartial. 
+ 
+ Lines of text not starting with a date will be ignored. 
+ 
+Future 
+~~~~~~ 
+ This is just the start. I intend to  add  more  features to the program in 
+the very near future such as: 
+ 
+   - Display the day of the week. Useful when querying dates in the future. 
+   - Optional deletion of comments once displayed to save having to use a 
+     text editor. 
+   - Update parameter to delete all old comments based on current date. 
+   - 'Hot-Key' activation. The program will sit in the background incase 
+     you want to make an entry. 
+   - In-built facility to allow comments to be added to data file. 
+   - Audible prompt when time approaches that specified in comment. 
+ 
+ If I get all these changes working, the program will merit a place in many 
+a hard disk startup-sequence. 
+ 
+Lastly 
+~~~~~~ 
+ This program is Greet Ware. If you  like  it or want to know more about an 
+updated version, send me a postcard: 
+ 
+   M.Meany, 
+   216 Bluebell Road, 
+   Southampton, 
+   Hant's, 
+   United Kingdom. 
+ 
+ This is not my address, but a SAFE one that should be fairly future proof! 
+

@@ -1,0 +1,131 @@
+Short:    indent C-source in GoldEd4
+Version:  1.2
+Uploader: Thomas Aglassinger <agi@giga.or.at>
+Author:   Thomas Aglassinger <agi@giga.or.at>
+Type:     dev/c
+Kurz:     C-Quellcode in GoldEd4 einruecken
+Requires: GoldEd 4.x, GNUindent
+
+TITLE
+
+  ged4indent
+
+VERSION
+
+  1.2
+
+AUTHOR
+
+  Thomas Aglassinger <agi@giga.or.at>
+
+DESCRIPTION
+
+  Ged4indent is an ARexx-script which indents a C-source currently
+  displayed by GoldEd using GNUindent.
+
+FEATURES
+
+  None; simply does it's job.
+
+SPECIAL REQUIREMENTS
+
+  o GoldEd, Version 4.x (aminet:text/edit/)
+  o GNUindent (aminet:dev/c/)
+
+AVAILABILITY
+
+  aminet:dev/c/ged4indent.lha
+
+PRICE
+
+  Freeware
+
+DISTRIBUTABILITY
+
+  This stuff is Public Domain.
+
+DISCLAIMER
+
+  No responsibilities are taken for trashed sources, damaged Amigas
+  or any other components or data involved while using ged4indent.
+
+CREDITS
+
+  This script is based on material written by Michael Bauer. His
+  scripts are available from `aminet:dev/c/GEDindent.lha', but
+  does no longer work with GoldEd, release 4.
+
+INSTALLATION
+
+  Copy the ARexx-script `ged4indent.ged' to `GoldEd:ARexx/', and
+  build up a new menu entry for it, for example:
+
+  COMMAND: GoldEd:Arexx/ged4indent.ged
+  TYPE   : Arexx
+  OUTPUT : CON:0/2048/384/128/indent/AUTO/WAIT/CLOSE/SCREENGOLDED.1
+
+  Error messages will then appear on the screen of GoldEd.
+
+CONFIGURATION
+
+  By default, `indent' will be invoked using options which will match
+  the style GoldEd supports in it's initial configuration. If you do
+  not like this style, you can set an environment variable named
+  `ged4indent.prefs' with your preferred style, for example:
+
+    setenv ged4indent.prefs "-bl -bli0 -i4 -sob -sc -npsl -npcs -lp"
+
+  You can add a line like the above to your s:user-startup.
+
+  Refer to the manual of indent for the meaning of these options.
+
+ERROR HANDLING
+
+  In case of `indent' shows up any error messages, a window will open
+  and display these messages. The source code in the current editor
+  window remains untouched.
+
+  But usually the message reported by `indent' are not of much use.
+  You better run a compiler on your faulty source code to find out
+  details.
+
+INDENTING A SINGLE FUNCTIONS
+
+  If you do not want to indent the whole file, but just the function
+  the cursor currently is in, there is a second script included called
+  `ged4findent.ged'.
+
+  To find the beginning of the current function, it searches backwards
+  for a `{' at the first column of a line. If found, it searches for
+  the corresponding `}' and marks the text in between.
+
+  This block is written to a temporary file, processed by `indent' and
+  reloaded again. Because of the block operations, there will be some
+  flickering on the screen.
+
+  Installation and configuration work as described above, too.
+
+PROBLEMS
+
+  The version of `indent' included on the Geek Gadgets v1 always opens
+  an output window on the screen, even if `indent' does not show any
+  messages. I do not know why. Use the SAS-compiled port in
+  aminet:dev/c.
+
+  For `ged4findent.ged' it is important that the first curly bracket
+  (`{') of the function is in the first column of a line.
+
+HISTORY
+
+  v1.2, 25-Sep-1997
+  - added `ged4findent.ged' which indents only current function
+  - temporary files are always removed, even in case of error
+  - cursor position is always restored, even in case of error
+
+  v1.1, 11-Jun-1997
+  - added support for environment variable `ged4indent.prefs'
+  - indented version is first created in a temporary file, and only
+    read into editor again if no error occurred
+
+  v1.0, 26-Jan-1997
+  - initial release

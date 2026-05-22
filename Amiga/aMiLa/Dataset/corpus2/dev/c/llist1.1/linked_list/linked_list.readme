@@ -1,0 +1,61 @@
+LINKED LIST LIBRARY
+version 1.1
+
+INTRODUCTION
+
+This library contains several functions to manipulate three basic
+types of linked lists; single, double, and circular.
+
+In the header file for this library, there are predefined linked
+list structures for each type.
+
+This code was built with SAS C compiler version 6.3 on an Amiga 3000. 
+When testing this library, both the library and test code were 
+compiled and linked with the Memlib tool included with the SAS compiler 
+to ensure no memory leaks.  That's not to say any code developed with
+this library included won't have any leaks, I'm just saying the
+library itself has no leaks.
+
+Within the full documentation I have included some of the code I
+used to test the library with.  It shows some of the areas where
+memory leaks could develop if one is not careful.
+
+SOFTWARE RELEASE
+
+The following files are in the full release for version 1.1
+
+./linked_list
+./linked_list.info
+./linked_list/linked_list.readme      ....This file
+./linked_list/linklist.fw             ....Docs in Final Writter 3 format
+./linked_list/linklist.fw.info
+./linked_list/linklist.guide          ....Docs in Amiga Guide format
+./linked_list/linklist.guide.info
+./linked_list/linklist.h              ....C header file for the library
+./linked_list/linklist.lib            ....The library
+./linked_list/linklist.PS             ....Docs in Postscript format
+./linked_list/linklist.PS.info
+
+INSTALLATION
+
+Installation is quite easy.  Copy 'linklist.h' to a directory
+where the compiler can find it (ie SC:include/).  Copy 'linklist.lib'
+to a directory where the linker can find it (ie SC:lib).  Copy the
+documentation files to wherever you keep your doc files.
+
+Done.  Enjoy........
+
+LEGAL STUFF
+
+Permission is granted to use this library to develop and release code
+public and commercial.  Permission is NOT granted to dissasemble,
+modify and re-release the code or documentation.
+
+SAS/C® Copyright ©1992 by SAS Institute Inc., Cary, NC, USA
+Memlib was written and copyrighted © 1988-1992 by Doug Walker
+
+DISCLAIMER
+
+This software is provided as is.  I claim no responsibility for any
+damages that may occur from the use of this product.  Use this
+software at your own risk.

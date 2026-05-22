@@ -1,0 +1,47 @@
+Anleitung zu Carmichael.SCM Version 2.0
+=======================================
+
+Carmichael.SCM - Ein Scheme Programm zum Auffinden von Carmichael-Zahlen.
+Carmichael-Zahlen sind Zahlen, die den Fermat-Test überlisten.
+
+Autor:  Norman Walter
+www:    http://www.norman-interactive.com
+e-mail: walternn@studi.informatik.uni-stuttgart.de
+
+Das Scheme-Programm Carmichael.SCM muß in einen Scheme-Interpreter
+geladen werden. Hierfür empfielt sich z.B. Guile, welcher z.B. für
+Linux und Amiga verfügbar ist.
+
+Laden den Programms mit Guile:
+==============================
+
+1. Schritt: In das Verzeichnis, indem sich die Datei Carmichael.SCM
+            befindet wechseln.
+
+2. Schritt: Den Scheme-Interpreter Guile mittels
+
+            guile -l Carmichael.SCM
+
+            aufrufen.
+            Es erscheint dann ein Promt:
+
+            guile>
+
+3. Schritt: (carmichael-bis <Zahl>)
+
+            eingeben.
+            Für <Zahl> setzt man einen Wert ein, bis zu dem
+            das Programm die Carmichael-Zahlen herausfinden
+            soll.
+
+            So ergibt z.B. der Aufruf
+
+            (carmichael-bis 1800)
+
+            561
+            1105
+            1729
+
+            Das sind alle Carmichael-Zahlen bis 1800.
+
+

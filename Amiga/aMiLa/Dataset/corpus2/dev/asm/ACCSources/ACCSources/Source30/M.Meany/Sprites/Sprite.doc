@@ -1,0 +1,406 @@
+
+
+                           Hardware Sprites
+                           ~~~~~~~~~~~~~~~~
+
+ Introduction
+ ~~~~~~~~~~~~
+ The Amiga has available  8  hardware  sprites  that  the  programmer can take
+advantage of. A sprite is a graphic object  that can be displayed and moved on
+the screen, without disturbing the bitplane data used to generate the display. 
+The sprite data is merged  with  the  bitplane  data  as  the display is being
+drawn. In order to see sprites, bitplane DMA must also be enabled.
+
+ The Amigas sprites have a fixed  width  of  16  pixels, but can be any height
+from 1 line to the height of  the  display.  When  used individually, a sprite
+consists of three colours  and  transparent.  Where  transparent  is used, the
+graphics from the underlying display can be seen through the sprite.
+
+ It is possible to  attach  sprites  together  in  pairs  to produce 16 colour
+sprites by setting a control bit. Objects wider than the limited 16 pixels can
+be displayed by positioning two  sprites  next  to each other. A single sprite
+channel may also be  reused  so  that  one  sprite  channel  can  display many
+sprites, the restriction on this is the position of the sprites: there must be
+at least one raster line between them.
+
+ The Amiga hardware  also  preforms  collision  detection  that  can be easily
+checked to see if sprites  have  collided  with  either the background or each
+other. This simplifies the task of the game programmer considerably.
+
+ Sprite DMA
+ ~~~~~~~~~~
+ There are eight sprites available,  referred  to  as sprite0 to sprite7. Each
+sprite has it's own DMA channel, but these  cannot be individually switched on
+and off. Instead the SPREN bit  in  DMACON  is  used  to enable or disable all
+sprite channels. This results in  the  necessity  to  define all eight sprites
+even if only a couple are to be used.
+
+ Sprite DMA should only be enabled if  bitplane  DMA is enabled. Ignoring this
+will not crash the machine, but the  sprites  will  not be visible. The sprite
+hardware generates the  sprites  as  the  screen  is  displayed, combining the
+sprite colour  information  with  the  colour  information  generated  by  the
+bitplane DMA.
+
+ To enable sprite DMA, set the SPREN bit in DMACON,
+
+               move.w          #SETIT!SPREN,DMACON(a5)        enable sprites
+
+
+ The Hardware Sprite Structure
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ The sprite hardware requires a simple structure  to be present in CHIP memory
+for each sprite displayed. The form of this structure is shown below,
+
+       1st Control Word
+       2nd Control Word
+              |
+              |
+       sprite graphics
+              |
+              |
+       Next Sprite Pointer
+
+ The two control words define the x,y start position of the sprite, the y stop 
+position of the sprite and specify  when  attached sprites are being used. The
+control worlds are constructed as follows:
+
+1st Word  bit Number     15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+          component      V7 V6 V5 V4 V3 V2 V1 V0 H8 H7 H6 H5 H4 H3 H2 H1
+
+2nd Word  bit Number     15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+          component      v7 v6 v5 v4 v3 v2 v1 v0 AT  0  0  0  0 V8 v8 H0
+
+V8-V0    First line on which to display sprite
+v7-v0    Line following last line of sprite
+H8-H0    Horizontal position of the sprite
+
+ As you can see, the x, y start and  y  stop  values  are encoded in a complex
+manner. A subroutine will be presented  shortly  that will encode these values
+for you.
+
+ The coordinates start from the top  left  corner  of the display, not the top
+left corner of the display window defined  using DIWSTRT. This means that some
+adjustment of coordinates  will  be  required  to  map  sprite  coordinates to
+display coordinates.
+
+ The sprite graphics consist of two  words  (  16 pixels ) of data per line of
+sprite. Sprites can be thought of as consisting of two bitplanes, the data for
+these bitplanes are  contained  in  the  structure  in  interleaved  form. For
+example, a sprite three lines  high  would  have  its  graphic data defined as
+follows,
+
+1st word       plane 1, line 1
+2nd word       plane 2, line 1
+3rd word       plane 1, line 2
+4th word       plane 2, line 2
+5th word       plane 1, line 3
+6th word       plane 2, line 3
+
+ The Next Sprite Pointer can contain the  address of another sprite structure,
+in which case the sprite channel will display that sprite next. If the pointer 
+is set to 0, the sprite hardware assumes this is the last sprite to display on
+the channel involved.
+
+ Sprite Colour Assignments
+ ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ The colours used by the hardware when  displaying  a sprite are obtained from
+the highest 16 colour registers as shown in the table below,
+
+ Sprite        colour 0     colour 1     colour 2      colour 3
+
+    0          transparent  COLOR17      COLOR18       COLOR19
+    1          transparent  COLOR17      COLOR18       COLOR19
+    2          transparent  COLOR21      COLOR22       COLOR23
+    3          transparent  COLOR21      COLOR22       COLOR23
+    4          transparent  COLOR25      COLOR26       COLOR27
+    5          transparent  COLOR25      COLOR26       COLOR27
+    6          transparent  COLOR29      COLOR30       COLOR31
+    7          transparent  COLOR29      COLOR30       COLOR31
+
+ In attach mode, the sixteen colour  sprites  utalises  colours from registers
+COLOR16 to COLOR31, with COLOR16 being treated as transparent.
+
+ Sprite Control Registers
+ ~~~~~~~~~~~~~~~~~~~~~~~~
+ For each sprite channel there is  a  hardware  register  pair  that should be
+loaded with the address of the  appropriate  sprite structure. These registers
+are analogues to the bitplane pointer  registers  and must be set at the start
+of every vertical blank. For this  reason  the Copper list is normally used to
+set the registers, though this is not a requirement.
+
+ The register pairs are called SPRxPTH and SPRxPTL, x = 0->7. If a Copper list 
+is used to set these registers at  the  start  of  each vertical blank, then a
+routine must be written that  will  poke  the  address of the sprite structure
+into the Copper list in the same way as  bitplane addresses are poked into it.
+The following fragment demonstrates this.
+
+               *********************************
+
+               """""           """""""""
+               move.l          #Sprite1,d0              get addr of sprite
+               lea             SprtBase,a0              a0->into Copper list
+
+               move.w          d0,6(a0)                 write low part of addr
+               swap            d0
+               move.w          d0,2(a0)                 write high part
+
+               """""           """""""""
+
+; The following data must be located in CHIP memory
+
+CopperList     CMOVE           COLOR00,0       background to black
+                 "                "
+SprtBase       CMOVE           SPR0PTH,0       pointer to 1st sprite
+               CMOVE           SPR0PTL,0
+               CMOVE           SPR1PTH,0       pointer to 2nd sprite
+               CMOVE           SPR1PTL,0
+                 "                "    "
+               CMOVE           SPR7PTH,0       pointer to 8th sprite
+               CMOVE           SPR7PPL,0
+                 "                "    "
+               ENDCOP                          end of copper list
+
+Sprite1        dc.w            0,0
+               dc.w            0,0
+               dc.w            $ffff,$8FFE,$ffff
+               dc.w            0,0
+
+               *********************************
+
+ Note the use of the label 'SprtBase'  to  indicate the position in the Copper
+list at which sprite pointers  are  assigned.  This  label will be used in all
+following examples and is required by the  macros and subroutines presented to
+simplify manipulation of hardware sprites.  If you intend to use the macros or
+subroutines, you must  set  this  label  correctly  in  your  own Copper list.
+Following the label should be the  Copper  list entries that define the sprite
+pointers for sprites 0 to 7, with the high word of the address defined first.
+
+ A Blank Sprite
+ ~~~~~~~~~~~~~~
+ As stated above, when using sprites you  must define all 8 of them. If you do
+not intend to use all 8, it makes sense to define a blank sprite that will not 
+be displayed. This can be achieved by simply setting both control words to 0:
+
+BlankSprite    dc.w    0,0             a sprite that is never displayed
+
+ By setting the SPRxPT register pairs  to  point to this blank sprite you will
+ensure that unwanted rubbish is not  displayed  by sprite channels you are not
+using.
+
+ It is often a good idea to have a  subroutine  that will set all SPRxPT pairs
+to point to a blank sprite. This gives a simple means of switching all sprites 
+off as may be required at some point during a game. As a game may utalise more
+than one Copper list, the address of  SprtBase  in  the appropriate subroutine
+should be passed in an address register:
+
+               *********************************
+
+; Subroutine to switch all sprites off
+
+; Entry        a0->Start of sprite pointer declerations in Copper list
+
+SpritesOff     move.l          #BlankSprite,d0          d0=addr of blank
+               moveq.l         #7,d1                    d1=sprite counter
+
+_sprloop       swap            d0                       get high part of addr
+               move.w          d0,2(a0)                 into Copper list
+               swap            d0                       get low part of addr
+               move.w          d0,6(a0)                 into Copper list
+               addq.l          #8,a0                    step to next sprite
+               dbra            d1,_sprloop              for all 8 sprites
+
+               rts
+
+               *********************************
+
+ After calling this  routine,  all  sprites  will  disappear  during  the next
+display update, within one fiftieth of a second.
+
+ A Simple Example
+ ~~~~~~~~~~~~~~~~
+ Before going any further, lets get a  sprite  onto the screen. The first step
+is deciding on the sprite, well one is provided  for you and is 20 lines high.
+The sprite is to appear at position  (201,96),  so  the following calculations
+are used to determine the control words for the sprite:
+
+x=201          %11001001
+y=96           %01100000
+height=20      %00010100
+
+ystop+1=116    %01110100
+
+1st control word = %01100000 01100100 = $6064
+                    <V0-V7>  <H1-H8>
+
+2nd control word = %01110100 00000001 = $7401
+                    <v0-v7>  AT,V8,v8,H0
+
+ The sprite structure can now be written out:
+
+               *********************************
+
+FirstSpr       dc.w    $6064,$7401             control words
+
+               dc.w    $0000,$0000             |
+                "        "     "               |- Data for graphics
+                "        "     "               |- 20 lines in all.
+               dc.w    $3ffe,$fadc             |
+
+               dc.l    0                       next sprite pointer
+
+               *********************************
+
+ Example 1 displays such a sprite.  The  program  outline  is shown below, you
+should look at it and then study the example.
+
+1. Install bitplane pointers into the Copper list.
+2. Blank all sprites
+3. Install sprite0 pointer into copper list.
+4. Enable sprite, Copper and bitplane DMA.
+5. Strobe Copper
+6. Wait for user to press the left mouse button.
+7. Finish.
+
+ Notice that the colour registers 16 to 19 are initialised by the Copper. This 
+is necessary if the sprite is to be displayed correctly!
+
+ Introducing An Extended Sprite Structure
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ As you can see from the above example,  sprite  control words are not easy to
+work with. In practise, the  x,y  position  of  a  sprite will be contained in
+variables and a subroutine used to calculate  the appropriate control words. A
+common practise amongst programmers is  to  construct their own structures for
+containing such details. For every sprite in a game the X and Y position needs
+to be tracked and the height also  needs  to  be known to calculate the sprite
+control words. A structure that would contains all the information required on
+a particular sprite is shown below:
+
+spr_X          WORD            contains the x coordinate of the sprite
+spr_Y          WORD            contains the y coordinate of the sprite
+spr_H          WORD            contains the height of the sprite
+spr_Data       LONG            contains a pointer to the hardware structure
+
+ Below is a suitable method of implementing such a structure:
+
+Sprite1        dc.w            0               x position of sprite
+               dc.w            0               y position of sprite
+               dc.w            0               height of sprite
+               dc.l            Sprite1Data     pointer to hardware structure
+
+               < More declarations >
+
+Sprite1Data    dc.w            0               1st control word
+               dc.w            0               2nd control word
+               dc.w            $ffff,$f00f     start of graphical data
+                "                "     "
+               dc.w            $f00f,$ffff     end of graphical data
+               dc.l            0               Next sprite pointer
+
+ Using such  a  structure,  the  coordinates  and  height  of  a sprite can be
+referenced using an offset from  the  start  address.  This is both faster and
+more convenient to use as each sprite  no  longer needs a specific variable to
+track its position. The offsets can be defined using equates:
+
+spr_X          equ             0               offset to X ordinate
+spr_Y          equ             2               offset to Y ordinate
+spr_H          equ             4               offset to height of sprite
+spr_Data       equ             6               offset to hardware structure
+                                               pointer
+
+ The above structure will be used  from  now  on.  There is no need for you to
+enter the equates yourself, they are defined  in the file 'HW_Sprites.i' which
+also contains some useful subroutines.
+
+ With such a structure defined, subroutines  can be developed that can operate
+on any sprite given only the address  of  the start of its structure. One such
+subroutine, found in HW_Sprites.i,  will  set  the sprite control words of any
+sprite. The routine  is  called  'SetSprPos'  and  the  address  of the sprite
+concerned should be passed to it in a0.
+
+ Example 2 uses SetSprPos to  initialise  the  same hardware sprite as used in
+Example 1. As no cumbersome  calculations  need  be preformed prior to writing
+the program, the advantages of such a technique are obvious.
+
+ Sprite Macro
+ ~~~~~~~~~~~~
+ It is often desirable to  switch  sprites  on  and off during the course of a
+game. For this  reason  two  macros  have  been  provided,  one  too  switch a
+specified sprite channel off (  displaying  a  blank sprite ) and the other to
+switch a specified sprite channel  to  a  specified  sprite. As a game may use
+different Copper lists for different scenes, the address in the Copper list of
+the first sprite channel declaration can be passed as well. If this address is 
+omitted, the macro will assume it  is  at  the  label  SprtBase as used in the
+previous example.  The  macro  templates  and  some  examples of use are shown
+below.
+
+SPRITEOFF      channel {,Copper}
+
+SPRITEON       channel,Sprite {,Copper}
+
+eg1.           SPRITEOFF       #2
+
+ Switch off the sprite displayed by channel 2.
+
+eg2.           SPRITEOFF       d3,#L2_SprtBase
+
+ Switch off the sprite displayed by the channel held in d3. The address in the 
+Copper list at which the sprite channel pointers are defined is 'L2_SprtBase'.
+
+eg3.           SPRITEON        #5,#Sprite2
+
+ Display the sprite defined at the label 'Sprite2' using sprite channel 5.
+
+eg4.           SPRITEON        d3,a2,a3
+
+ Display the sprite pointed to by  a2,  using  sprite  channel  held in d3 and
+Sprite channel pointers pointed to by a3.
+
+NOTE: When passing values to macros  in  registers,  never use d0,d1,a0 or a1.
+These registers are considered as scratch by all Sprite macros.
+
+ Example 3 uses the above macro to  switch  on the sprite used in the previous
+example.
+
+ Moving A Sprite
+ ~~~~~~~~~~~~~~~
+ Sprite movement is best handled during  a  vertical blank interrupt, this way
+you can be fairly confident that a  sprites  control words will not be updated
+at the same time the sprite  DMA  controller  is  accessing  them. Though this
+would not crash the Amiga, it would  cause  some  unpredictable graphics to be
+displayed that would ruin the appeal of your program.
+
+ Moving a sprite simply requires  the  two  control  words  to be updated. The
+actual path followed by a sprite  could  be  controlled either by a subroutine
+calculating the next position from the current one, a subroutine that sets the
+sprite position according to a predefined  movement table or a subroutine that
+monitors the joystick (or mouse) and  moves  the sprite according to the users
+desires.
+
+ Example 4 moves a sprite around the screen. When the sprite reaches a border,
+specified by the  equates  X_MIN,  Y_MIN,  X_MAX  and  Y_MAX, its direction is
+reversed. The effect is a very simple 'Boing' demo.
+
+ The movement of the sprite  is  governed  by  two  fields added to the sprite
+structure, spr_dX and spr_dY. These  values  are  added to the spr_X and spr_Y
+fields respectively. This also demonstrates  how you can expand on a structure
+to suit the needs of your program.
+
+ ReUsing A Sprite DMA Channel
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ So far, the last longword of a hardware sprite structure has been set to zero 
+to indicate that no more sprites are required  on this channel. If, instead of
+writing a NULL to this long word, it  is  replaced  with the first two control
+words of another sprite structure, the sprite  DMA channel will reuse the same
+sprite at the new position  specified.  The  only  restriction on this is that
+successive sprites have at least one  blank  scan line between them. Example 5
+demonstrates this by using just  one  sprite  channel  to move and display two
+sprites on the screen.
+
+
+ That's all for now. I  have  written  examples  that  demonstrate  animation,
+sprite-sprite collision checking,  sprite-background  collision checking and a
+simple game employing these. They will appear next issue.
+
+                                                         Mark.
+

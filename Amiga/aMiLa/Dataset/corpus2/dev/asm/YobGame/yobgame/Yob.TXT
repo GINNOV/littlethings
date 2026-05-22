@@ -1,0 +1,19 @@
+MACHINE:A1200 or any with enough ram
+CODE:Andyrew
+GFX:OJ except a few badly drawn baddies and the iff backdrop
+LEFT SHIFT TO QUIT
+
+This is a little game i am still writing (along with all the others)
+its about half way through completion.
+Ive got to fo another 6 (at least) weapons for the players
+I can have upto 256 weapons per player but only 4 bullets each
+
+256 different baddies
+unlimited levels,graphics etc
+
+Its a fun little game and one day ill finish it..
+
+This probrably isnt my most technical of proggies but i think
+its my most fun one.
+
+Email:The_Widds@MSN.COM

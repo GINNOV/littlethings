@@ -1,0 +1,61 @@
+CircleSquared from Sept. '86 Scientific American "Computer Recreations"
+column produces wildly colorful but mathematically precise patterns on
+your Amiga display.  There is also a treatment of this topic in the
+Oct. '86 issue of Computer Language in their "Theory & Practice" column.
+It doesn't take nearly as long as the generation of a Mandelbrot either.
+
+The program is controlled thru standard intuition menus, gadgets,
+and requesters.  Most of the important operating parameters, i.e. corna,
+cornb, side, and modval, are modifiable thru these gadgets, requesters,
+menues and such.
+
+   corna  - the X coordinate of the upper left hand corner of the window
+   cornb  - the Y coordinate of the upper left hand corner of the window
+   side   - the length of the side of the square
+   modval - the modulus value that determines the color of the pixel at
+            the point(i, j)
+
+The following calculations are made for each point plotted on the display.
+Note that this routine, PlotPoints(), was written using the Motorola
+Fast Floating Point library.
+
+   x = corna + side * i/linesize
+   y = cornb + side * j/linesize
+   z = x * x + y * y
+   c = z MOD modval
+
+The point at coordinates (i,j) is colored with color "c".  Note that
+the palette of colors is also modifiable thru another requester
+containing sixteen color selection gadgets.  Three proportional
+gadgets allow the modification the Red, Green, and Blue components
+of the selected color.
+
+The CLOSEWINDOW gadget causes the program to exit.
+
+Also note that there is a Hi-Res mode of operation.  Instead of invoking
+the program (from the CLI) as "CSquared" include a runtime parameter of
+"-h" such that the new invocation becomes "CSquared -h".  Lo-Res is the
+default mode of operation.
+
+I freely admit that this program is a hack and was strictly done for
+my own personal entertainment.  I am new to C so if you see any wretched
+code perhaps you will be understanding.  (I'm also new to the Amiga.)
+I am placing this program into the public domain although if you make use
+of major portions of the code please give credit where credit is due.
+(I'd like to see my name up in lights, too.)  Have fun!
+
+This program compiles cleanly under Lattice C version 3.03.  No other
+external routines are required except for some of those found in Lattice's
+LC.LIB and, of course, AMIGA.LIB.  The standard c.o startup code is also
+used as well.
+
+   Author:      Bill DuPree (with many thanks to Rob Peck)  
+   Date:        09/23/86
+
+Address BIX mail to bdupree.
+Address written correspondence to:
+
+      Bill DuPree
+      434 W. Wellington #505
+      Chicago, IL. 60657
+

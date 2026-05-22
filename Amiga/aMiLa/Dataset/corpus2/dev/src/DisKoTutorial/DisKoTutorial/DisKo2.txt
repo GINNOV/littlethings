@@ -1,0 +1,66 @@
+Chapitre 2 : Communication, notification
+Par Corto
+
+Ce chapitre réutilise bien sûr les bases du chapitre 1 et porte plus précisément sur l'intéraction entre les composants. Toujours dans l'optique de notre lecteur de CD, nous lui attribuerons un bouton "Play" et un autre "Stop", les deux agissant sur un objet graphique Busy appartenant à une classe externe. Cet objet dynamique symbolisera la lecture d'un morceau en cours ; il se figera lors d'un clic sur Stop.
+
+La bibliothèque Busy.mcc et ses includes peut être récupérée sur : http://www.zerohero.se/mui/download.php
+
+
+ Complément
+
+L'organisation du programme a légèrement changé. Les bibliothèques sont cette fois-ci ouvertes et fermées dans la fonction main. Mais l'intérêt porte sur la fonction CreateGui qui nous intéresse ; elle a changé en plusieurs points :
+
+1. Les boutons sont créés différemment, avec l'appellation KeyButton ici, qui spécifie un raccourci clavier. D'autre part, ils sont affectés à une variable de type "Object *", c'est à dire un pointeur sur un composant MUI (objet BOOPSI en fait) alloué dynamiquement. On trouve parfois la notation "APTR" à la place, ce qui n'est pas une faute mais se trouve moins appropriée. La variable ainsi renseignée va permettre de communiquer avec le composant associé, comme c'était déjà le cas de la fenêtre (DoMethod() sur la variable window).
+
+2. La description de l'interface présente une autre nouveauté : l'attribut MUIA_Application_UsedClasses. Mentionné dans le fichier MUIUndoc (voir sur Aminet), il n'est utilisé qu'à partir de MUI 3.9 : chaque classe externe est indiquée dans une liste de chaînes de caractères et fera que l'application ne fournira le panel des préférences que pour ces classes référencées. Voila donc une bonne habitude à prendre. Comme cet attribut n'est pas défini dans les includes de bases, il doit être rajouté à la main au début du source (#define MUIA_Application_UsedClasses ...).
+
+3. La classe Busy a l'avantage d'être vraiment simple ! On la construit de façon à ce qu'elle soit inactive au démarrage puis on change sa vitesse de défilement :
+- 20 (valeur arbitraire, vous pouvez en tester d'autres) lorsque l'on clique sur Play
+- 0 (avec la valeur particulière MUIV_Busy_Speed_Off) quand on stoppe
+
+4. Il est possible d'associer une bulle d'aide à un composant grâce au simple attribut MUIA_ShortHelp, suivi de la chaîne de caractères à afficher après quelques secondes. Pour les boutons, à cause de la notation choisie, on ne peut leur ajouter un attribut. Nous verrons par la suite un nouveau moyen pour décrire un bouton de manière plus expansée.
+
+5. Un dernier détail concerne la mise en forme du texte : pour montrer que ça existe, on utilise les defines MUIX_U et MUIX_N dans le TextObjet au lieu des codes \33u et \33n équivalents.
+
+6. Après la construction de l'interface, nous nous trouvons en présence de la fonction SetAttrs(). Cette dernière agit comme la fonction set du chapitre 1 mais permet de passer plusieurs paramètres, donc de modifier plusieurs attributs d'un objet, avec l'appel d'une seule fonction.
+
+Voila à quoi ressemble désormais notre programme (téléchargeable ici) :
+
+
+
+Les notifications
+
+Une notification permet d'indiquer à un objet quoi faire quand il lui arrive quelque chose, c'est aussi simple que ça ! Par exemple, pour que l'application reçoive un événement de fin lorsque l'on clique sur le bouton de fermeture de la fenêtre, on utilise la fonction à tout faire DoMethod() comme ceci :
+
+ DoMethod(window, MUIM_Notify, MUIA_Window_CloseRequest, TRUE,
+app, 2, MUIM_Application_ReturnID, UIV_Application_ReturnID_Quit);
+
+Voici l'explication de chaque paramètre, dans l'ordre :
+- l'objet sur lequel on veut appeler une méthode, ici la fenêtre
+- le nom de la méthode, MUIM_Notify
+- l'attribut qui déclenchera la notification lors du changement de sa valeur
+- la valeur : ici on veut déclencher l'action lorsque l'attribut MUIA_Window_CloseRequest passe à TRUE, c'est à dire quand on clique sur le gadget de fermeture ou qu'on appuie sur la touche Escape
+- l'objet cible sur lequel porte la notification
+- le nombre de paramètres qui restent à suivre
+- la méthode que l'objet cible doit exécuter , ici l'affectation d'une valeur de retour à l'application
+- le paramètre passée à cette méthode
+
+Pour plus d'informations, réferrez-vous au Fichier MUI_Notify.doc dans les autodocs de MUI. Mais le principe est là, applicable à nos composants :
+
+ DoMethod(bt_play, MUIM_Notify, MUIA_Pressed, FALSE,
+bt_stop, 3, MUIM_Set, MUIA_Disabled, FALSE);
+
+Dans ce cas, on indique au bouton Play, quand il est sélectionné (plus précisément au moment où il est relâché) de griser le bouton Stop. On remarque toute la puissance des notifications ici. Il est ensuite inutile de gérer les événements dans un boucle. Les actions sont définies ainsi et il n'y a plus rien à faire !
+
+
+ Notions acquises dans ce chapitre
+
+- notion de notification
+- interactions entre composants avec set()/SetAttrs() et DoMethod()
+- utilisation d'une classe externe, à opposer aux classes de base dites "builtin"
+- ajout de bulles d'aide
+- imbrication de groupes : un horizontal dans le groupe vertical principal
+- raccourcis clavier avec KeyButton
+- attribut MUIA_Application_UsedClasses
+
+

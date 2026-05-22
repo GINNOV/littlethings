@@ -1,0 +1,69 @@
+
+                         EXCEPTION HANDLER
+                        ===================
+
+
+                         V 0.6 First Release
+                           July 5th, 1988
+                          ©1988 G.T. HEWES
+
+
+--------------------- Distribution Note -----------------------------
+
+   Excption is copyright © 1988 Gerald T. HEWES
+   This product may be distributed freely under the following conditions:
+
+      - All parts must be distributed together
+      - This copyright must not be removed
+      - This utility must not be sold nor used in a commercial product
+        without prior written consent of the author
+
+---------------------------------------------------------------------
+
+Please give feedbacks on the use of this codes: bugs, comments,
+syntaxe usage,...
+
+   To use this software, read the excption.man documentation first.
+If you intend to program with it, consult both the examples provided:
+essai.c and fact.c. Consulting excption.h is also neccessary for
+good use. Only relevant data is in this file. excppriv.h is private
+and should only be used by advanced C programmers wishing to change
+the sources. Consulting the excption.doc documentation is also a good
+idea, but I do not recommend using these function directly. This is
+why they are prefixed with an EI.
+
+   To compile essai and fact just do (with a lattice compiler 4.01 & +):
+
+>lc essai.c
+>blink with essai.lnk
+
+>lc fact.c
+>blink with fact.lnk
+
+   Please report bugs and comments to the author:
+                  G.T.Hewes
+                  46 Blvd Inkermann
+                  92200 NEUILLY S/Seine
+                  FRANCE
+
+### Version 0.5 / 880517
+
+   The puts functions in EIRaise and EIBlow have been protected by an
+#if DEBUG statements in order to not blow the amiga for programs with no
+stderr open. Anyway these puts where used only in corrupted situations
+and did not bother operation. If you want them back (for debug) just
+recompile these two files with the DEBUG flag on.
+   The exption.h file is moved in the local: directory, and the private
+files are in the local:private directory.
+   The excption.doc file was slightly improved. The exption.man file
+is the same as for version 0.4
+
+### Version 0.6 / 880705
+
+   Added two functions in order to debug programs using this module
+with an external debugger. All functions were recompiled using
+the proto/exec.h file.
+   The mentionned memory problems in version 0.5 never existed, just
+that csh consumes/releases its memory in its history lists. Confusing!
+Added Boolean.h in the arc file, this somehow got lost in version 0.5.
+

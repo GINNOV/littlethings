@@ -1,0 +1,71 @@
+Short:        USB lister 0.06
+Author:       Gilles Pelletier
+Uploader:     Gilles Pelletier
+Type:         dev/c
+Version:      0.06 (29-Aug-08)
+Requires:     USB Stack
+Architecture: m68k-amigaos
+
+Introduction
+~~~~~~~~~~~~
+Here some samples of lister to show all devices connected into the usb system.
+Requires Sirion on OS4.0 or ANAIIS v0.97 on all others OSes.
+From the original code of Thomas Graff Thøger.
+Thanks to all brave beta-testers ;-)
+
+
+usbhello: put some text into the stack logs.
+
+usblist : list usb devices present in the system like linux lsusb command.
+
+usblist1: usblist ? show a lot of things 
+
+usbstat : something more clever ?
+
+
+Compilation
+~~~~~~~~~~~
+- SASC6.0
+- OS4.0 includes only or OS3.1 includes + all usb related from OS4.0 includes
+ 
+
+Installation
+~~~~~~~~~~~~
+Just click.
+
+
+Future
+~~~~~~
+none
+
+Known Bugs
+~~~~~~~~~~
+source included, so let's go.
+
+Steps
+~~~~~
+V0.06 29-Aug-2008 usbstat... to see what is free or not.
+      22-Apr-2008 wrong way, Sirion can't show hid nor hub... ANAIIS does it using
+                  extra tags.
+V0.05 07-Apr-2008 hid, hub, device capabilities.
+V0.04 13-Mar-2008 more tested routines.
+V0.03 03-Mar-2008 did a stupid thing concerning DeleteMsgPort (v1.x only)
+V0.02 02-Mar-2008 try to print unicode strings.
+V0.01 29-Feb-2008 more code.
+V0.00 28-Feb-2008 first steps.
+
+Help me!
+~~~~~~~~
+Please, if you use it, could you test the following commands and
+send me files at my contact address with the title "usblist"
+usblist1 -vv -hid -hub >ram:usblist.txt
+usbstat >ram:usbstat.txt
+
+Many thanks
+
+Contact address
+~~~~~~~~~~~~~~~
+Any mail, comments, suggestions, documentations are welcome!
+gilles dot pelletier at voila point fr
+
+Enjoy USB on old classic Amiga, and remember: Only Amiga makes it possible!

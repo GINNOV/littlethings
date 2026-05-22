@@ -1,0 +1,139 @@
+Chapitre 5 : Amélioration de l'interface
+Par Corto
+
+Nous avons abordé le maniement des classes externes qui augmentent la variété des classes disponibles. Mais il ne faut pas se précipiter dessus au détriment de l'étude du contenu des classes de base. C'est pourquoi nous commençons par rentrer dans le détail d'éléments apparemment simples comme les boutons et les labels.
+
+
+ mui.h, une mine d'or !
+
+En consultant de nombreux sources, je m'étais trouvé nez à nez avec plusieurs écritures différentes pour des objets aussi basiques que les boutons et labels. Leur description se trouve dans l'include et c'est en remontant ainsi à la source qu'on constate que la notation SimpleButton n'est qu'une toute petite macro qui cache le texte "MUI_MakeObject(MUIO_Button,label)", parfois utilisé tel quel dans des exemples. Il y a donc bien un objet bouton ! C'est ce qu'on pourrait croire mais le code appelé derrière utilise bien un TextObjet avec un Button Frame. La notation SimpleButton possède des contraintes : elle ne supporte ni les bulles d'aide ni la navigation entre composants avec la touche TAB (attribut MUIA_CycleChain).
+
+On remarque aussi l'autre façon de créer un bouton passe par la macro KeyButton(), qui utilise un TextObject et semble plus paramétrable. Mais cette macro appartient à une zone marquée MUI_OBSOLETE, c'est à dire que son usage est à éviter bien que cela continue de fonctionner pour une raison évidente de compatibilité.
+
+On en vient à ne plus savoir que faire entre un SimpleButton limité et un KeyButton déprécié ... La marche à suivre la plus appropriée semble être de se créer soi-même dans son application une macro ou une fonction d'encapsulation sur la base du code contenu dans KeyButton.
+
+
+ Object *_ KeyGadget (CONST_STRPTR content, BYTE controlchar)
+
+{
+
+    return TextObject,
+
+        ButtonFrame,
+
+        MUIA_Font,          MUIV_Font_Button,
+
+        MUIA_Text_Contents, content,
+
+        MUIA_Text_PreParse, "\33c",
+
+        MUIA_Text_HiChar,   controlchar,
+
+        MUIA_ControlChar,   controlchar,
+
+        MUIA_InputMode,     MUIV_InputMode_RelVerify,
+
+        MUIA_Background,    MUII_ButtonBack,
+
+        MUIA_CycleChain,    TRUE,
+
+    End;
+
+}
+
+Dans ce cas, le contenu est exactement le même que pour KeyButton auquel on a rajouté l'attribut MUIA_CycleChain, qu'il faudrait sinon fixer avec un appel à la méthode set() pour chaque bouton.
+On peut se demander ce qui est le plus élégant mais l'encapsulation personnelle semble être la voie choisie par MUI sans que ça n'ait été clairement énoncé.
+
+Le cas des boutons est intéressant car on constate que pour ce composant incontournable, tout n'est pas aussi établi qu'on pourrait le penser. Et ce n'est pas plus simple avec les labels ! Le fichier est à consulter absolument, y compris pour ce point-là.
+
+
+ Retour sur interface
+
+Repartons de notre code propre du chapitre précédent pour enrichir l'interface afin qu'elle ressemble réellement à un vrai player de CD. Nous envisagerons 2 onglets : le premier contenant les composants de l'interface telle qu'on la connaît jusqu'ici ; le deuxième dédié aux réglages du logiciel.
+Pour mettre des onglets en place, il faut déjà savoir combien on en souhaite et quel sera le titre de chacun. Chaque titre est une chaîne de caractères que l'on doit consigner dans un tableau qui sera passé en paramètre à la construction des onglets. On a donc ici "utilisation" et "configuration" dans un tableau nommé "Pages". Ce tableau est passé à la macro MUI RegisterPages() qui déclare un groupe composé d'onglets. Les onglets ne font apparaître aucune difficulté ; au lieu d'avoir deux groupes, traditionnellement horizontaux ou verticaux, les voila superposés, rien de plus. On trouve juste pour l'occasion le terme de RegisterGroups, auquel est passé le nom du tableau de chaînes.
+
+Voici le code correspondant (le source complet est téléchargeable ici) :
+
+
+
+ 
+
+Le premier groupe (donc le premier onglet) présente les composants propres à l'utilisation classique d'un lecteur CD. On regroupe simplement tout ce qu'on avait jusque là, avec en plus un nouveau composant : l'information sur la piste courante pourra indiquer le numéro, le titre, ... et pourra servir au-dela ! ;-)
+Le "VSpace(2)" se trouve là uniquement pour attirer l'attention sur lui et pour se donner l'occasion de découvrir un nouvel élément de MUI. Les espaces prennent leur importance dans le redimensionnement des interfaces, ce sont par exemple eux qui vont être étirés de préférence par rapport à d'autres composants.
+
+Le contenu du deuxième onglet est nouveau et demande une légère anticipation sur le prochain chapitre. Pour qu'un CD puisse être joué, il va falloir que le logiciel sache à quel périphérique s'adresser. Cela passera de près ou de loin par un device donc il va falloir que son nom et son unité soient renseignés.
+
+Voyons donc la partie configuration : elle se compose d'un encadré qui contient des labels et des champs texte, alignés proprement en colonnes. L'encadré est d'abord obtenu avec la macro GroupFrameT que l'on gère comme un groupe classique. La seule différence provient du fait qu'on lui passe un titre. A l'intérieur, on dispose des composants à loisirs. Pour l'occasion, deux colonnes sont définies avec ColGroup(). Les composants contenus seront placés naturellement de manière à remplir une ligne avant de passer à la suivante. Dans notre exemple, nous avons deux colonnes donc le 3 ème élément sera placé sur la deuxième ligne, etc.
+
+Enfin, un bouton de validation permettra de prendre en compte dynamiquement le changement des réglages, ce qui ne sera d'ailleurs pas traité par la suite. Il s'agirait d'interrompre l'accès au disque et de le réinitialiser avec les nouvelles valeurs du device et de son unité.
+
+
+ Notions acquises dans ce chapitre
+
+- le point sur les boutons MUI et ce que cachent les macros
+- onglets, groupes de type encadré, colonnes, espaces, ...
+
+
+  
+
+  
+
+  
+
+  
+
+ 
+
+
+
+
+
+
+
+ 
+
+ Commentaires 
+
+
+
+  2004-09-20 12:17:51 - Amifred 
+
+Pas moyen de compiler avec VBCC...
+
+avec les mêmes options de compile que pour disco4:
+-Dno_inline_stdarg
+
+VBCC plante ma machine (led rouge clignotante) à la fin de la compile, juste avant de linker....je pense...
+
+Une piste ?  
+
+
+  2004-09-20 12:18:47 - Amifred 
+
+J'suis sous OS3.9...
+VBCC 0.8 je crois
+  
+
+  2004-09-21 21:09:18 - Amifred 
+
+Bon avec gcc...ça marche...
+
+Une autre petite chose...
+Dans Disko4.c la Méthode corceranat le hook ne donne rien...
+Je l'ai remplacée par celle-ci:
+DoMethod(sl_volume, MUIM_Notify, MUIA_Slider_Level, MUIV_EveryTime,
+sl_volume, 2, MUIM_CallHook, &hook_ChangeVolume)
+
+Mais il y a sûrement mieux en ne recupérant la valeur que lorsqu'on relache le curseur du slider... Mais j'ai pas encore trouvé...
+
+J'aimerai bien pouvoir récupérer cette valeur et en faire quelque chose... mais avec la bonne...
+  
+
+  2004-09-26 13:30:45 - maurensen 
+
+Your examples works well under my Peg2 G3 with MOS 1.4.2 and
+SDK. Keep your good work guys, I'm learning a little bit much
+of MUI with your exaples!
+Excuse moi mais je crois que mon englais est moin terrible que
+mon francais... :-)
+Ciao from Padva, Italy!

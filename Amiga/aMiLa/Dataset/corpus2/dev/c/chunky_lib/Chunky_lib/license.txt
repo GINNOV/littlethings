@@ -1,0 +1,29 @@
+LICENSE
+
+You may use the included sources in this package for your own personal use,
+albeit commerical, shareware, freeware or otherwise.  
+
+You may alter it as you need, although you must report all changes
+(including any bug fixes) to the author.
+
+Please send your altered sources to:
+
+oondy@bigfoot.com
+
+or any of the contact points listed in usage.txt.
+
+THE CHUNKY SUB SYSTEM REMAINS COPYRIGHT 1998 ROSANDE LIMITED, ALL RIGHTS
+RESERVED.  YOUR CHANGES TO THE SOURCE DO NOT REVOKE THIS COPYRIGHT -
+ROSANDE LIMITED STILL OWNS THE RIGHTS TO THE SOURCE INCLUDING YOUR CHANGES.
+
+USE IT AT YOUR OWN RISK!  THESE SOURCES ARE PROVIDED 'AS IS' AND ROSANDE
+LIMITED DISCLAIMS ALL WARRENTIES REGUARDING THE USE OF THE SOURCES AND
+OTHERWISE.  You've got nothing on us, basically :).
+
+Have fun!
+
+Andrew King
+Co-director/Head of Technical Development
+Rosande Limited
+
+17-Dec-98

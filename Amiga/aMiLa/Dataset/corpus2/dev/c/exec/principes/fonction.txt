@@ -1,0 +1,8 @@
+
+Le typedef void (*Procedure)() sert à toutes fonctions qui ne prennent pas
+leurs paramètres dans la pile. Généralement les paramètres sont passés par
+registre et le fonction renvoie qqch dans D0/A0. Mais pour simplifier et
+par que cela permet une rapide vérification, le typedef "Procedure" est
+utilisé pour les fonctions écrites en assembleurs ou sans paramètre,
+les fonctions d'interruptions.
+

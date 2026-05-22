@@ -1,0 +1,70 @@
+DIY
+
+This chapter will shortly describe how you can print out the
+documents, and put them together into a manual.
+
+1. Print out the document "Contents.doc" which is placed in
+   the directory "Appendix" on this disk. It should be placed
+   first in the manual.
+
+2. As you have noticed, each chapter is put into a directory
+   together with its examples. There exist for the moment 11
+   chapters (0 - 10) which each should be printed out.
+
+3. If you want you can print out the pictures (the files which
+   are put in this directory and have a ".pic" extension), and
+   put each picture in front of corresponding chapter.
+
+4. After the last chapter (10 Sprites) should the documents in
+   directory "Appendix" be placed.
+
+
+--------------------------
+|  Contents.doc          |
+|------------------------|
+|                        |
+|    Introduction.pic    |
+|  0 Introduction.doc    |
+|                        |
+|    Screens.pic         |
+|  1 Screens.doc         |
+|                        |
+|    Windows.pic         |
+|  2 Windows.doc         |
+|                        |
+|    Graphics.pic        |
+|  3 Graphics.doc        |
+|                        |
+|    Gadgets.pic         |
+|  4 Gadgets.doc         |
+|                        |
+|    Requesters.pic      |
+|  5 Requesters.doc      |
+|                        |
+|    Alerts.pic          |
+|  6 Alerts.doc          |
+|                        |
+|    Menus.pic           |
+|  7 Menus.doc           |
+|                        |
+|    IDCMP.pic           |
+|  8 IDCMP.doc           |
+|                        |
+|    Miscellaneous.pic   |
+|  9 Miscellaneous.doc   |
+|                        |
+|    Sprites.pic         |
+| 10 Sprites.doc         |
+|                        |
+|------------------------|
+|                        |
+|    Appendix.pic        |
+| A  Examples.doc        |
+| B  Functions.doc       |
+| C  RawKey-Codes.doc    |
+| D  ASCII-Codes.doc     |
+| E  DataTypes.doc       |
+| F  Guru-Meditation.doc |
+| G  Operators.doc       |
+|                        |
+--------------------------

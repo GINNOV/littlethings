@@ -1,0 +1,98 @@
+Portable Object Compiler (c) 1997,98,2002.  All Rights Reserved.
+
+
+This file contains some notes that are specific to running "objc"
+(pronounced as "Object Compiler") on the Macintosh using the
+MPW environment.
+
+STARTUP
+-------
+
+	You will need to set the directory where you installed the
+	ObjectiveC MPW tools.
+
+	I have a UserStartup.stes file (where '.' stands for a bullet)
+	in stes:System Folder:Preferences:MPW.  It contains the following
+	lines :
+	
+		set OBJCDIR stes:ObjectiveC
+		export OBJCDIR
+	
+		set COMMANDS "{COMMANDS},{OBJCDIR}:bin:"
+		export COMMANDS
+
+	The driver is configured for "MWCPCC" (as CC) and the "MWLinkPPC" tool
+	as linker.
+	
+	It's possible to compile objc output with MrC, but the MrC -e option
+	doesn't seem to preprocess Objective-C.
+
+Script Driver
+-------------
+
+	Since release 1.9.5, we also have a driver using the MPW script
+	language (before we used to use the binary driver).
+	
+	Since this new driver is more convenient that the older driver
+	(which was basically the Windows driver with some modfs), the new
+	MPW script driver is the default.
+
+	This means that the 'objc' program is a script that you can edit.
+
+Binary Driver
+-------------
+
+	The binary, compiled, version can still be used.
+	(it is, and probably will continue to be, also more up to date
+	with the Windows versions, since the code is shared)
+	
+	This driver simply outputs commands to be evaluated by the MPW
+	shell (on UNIX, this is the -check option).
+
+YACC & LEX
+----------
+
+	The parser C sources are generated on UNIX, not on the Macintosh.
+
+Makefiles
+---------
+
+	They are separate from the UNIX/WATCOM makefiles : Makefile.MPW
+	
+
+Header Files
+------------
+
+I've found code like this in Mac headers :
+
+           extern pascal void SetClientID(short id);
+           extern OSStatus RegistryEntryIDInit(RegEntryID *id);
+           extern OSStatus RegistryEntryIDDispose(RegEntryID *id);
+           extern OSStatus RegistryEntryDelete(const RegEntryID *id);
+
+and worked around it by editing (replacing 'id' by 'ide')
+the headers in question ...  It's occuring in a couple of headers :
+Collections.h, ImageCompression.h, Movies.h, NameRegistry.h and
+QuickTimeComponents.h and on one location in Quickdraw.h.
+
+(Acceptable) ideas for a compiler-solution to this problem are
+welcome ...
+
+
+Libraries
+---------
+
+[This is probably CW/11 specific]
+
+For building mpwtools, use the -mpwtool option.  This will MSL libraries.
+For building sioux apps, use -sioux.  Will also use MSL libraries.
+
+Now, for building a regular app, use -appl *AND USE DIFFERENT HEADER FILES*.
+This is not really Objective-C specific, but it turns out that you have
+to set MWCIncludes to "CIncludes" to be able to link against the non-MSL
+libs (the MSL libs were compiled with MWCIncludes).
+
+Also note that a known bug in the MSL MPW libs is that some symbols are missing.
+Notably __getcreator() and __getfiletype().  You have to add the file unix.mac.c(located in the source of the runtime) to the library yourself.  If you haven't
+already done (since this is not Objective-C specific).
+

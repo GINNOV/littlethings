@@ -1,0 +1,37 @@
+example.c
+
+This is an example of how you can use dbtools.
+You should ofcourse check for errors in your code. I skipped errorchecking
+to make the code less confusing.
+
+This is the output of DumpDB for the files saved by the demo:
+
+demo.testsave1:
+BASE:	NODE:	Integer: 10 (0x0000000a)
+		Integer: 20 (0x00000014)
+		Integer: 30 (0x0000001e)
+		Integer: 40 (0x00000028)
+		
+	NODE:	Integer: 15 (0x0000000f)
+		Integer: 25 (0x00000019)
+		Integer: 131872498 (0x07dc36f2)
+		
+	
+END
+
+demo.testsave2:
+BASE:	NODE:	Integer: 123 (0x0000007b)
+		Integer: 321 (0x00000141)
+		
+	NODE:	Integer: 456 (0x000001c8)
+		Integer: 654 (0x0000028e)
+		String: "string"
+		
+	NODE:	String: "more data"
+		
+	
+BASE:	NODE:	String: "text"
+		String: "more text"
+		
+	
+END

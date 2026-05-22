@@ -1,0 +1,30 @@
+Short:    PopHelp, old file utility +asm.source
+Version:  v2.58a (01.06.1997)
+Uploader: c71829@uwasa.fi (Mika Lundell)
+Author:   c71829@uwasa.fi (Mika Lundell)
+Type:     dev/src
+
+Oh, look what I found hiding in the bottom drawer of my desk.
+Travel back in time...
+
+This is my, err, "Dopus clone" that I was putting together with my
+old trusty A500/KS1.3/DD just a few years ago. Yep, it is _old_ and
+very useless by todays standards but here it is anyway.
+
+Full assembler source code is included. Maybe it is useful to someone
+who is learning assembler? The source is not exactly well commented
+(if at all) or clear. The program also does a few hardware hits while
+doing some very difficult things, like while checking if anybody hit
+'Esc' to abort. :-)
+
+The source compiles straight with the old A68k assembler
+(dev/asm/a68k271.lzh + dev/misc/blink67.lzh) or with AsmOne after
+a few minor changes. PhxAss had some problems but I didn't bother
+to sort them out.
+
+If you have an old A500 with KS1.3 and a single floppy drive then
+this is a must download.
+If you do not have an old A500 with KS1.3, well, this should provide
+a couple of laughs anyway.
+If you are paying for your download time, take a look at something
+else in this same directory instead. ;-)

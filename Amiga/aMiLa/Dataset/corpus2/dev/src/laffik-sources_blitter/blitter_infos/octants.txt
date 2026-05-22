@@ -1,0 +1,76 @@
+Hop-hop!
+
+
+I've been searching through many sources in net - winnicki.net, Aminet, Amiga SDK, Adam Doligalski... also in few other places and I couldn't find proper procedure for it. All are erronous.
+
+So... I developed it by myself. It's not that hard when U get focus on and mind made-up.
+
+about octant decides three comparisons:
+- octants leaning to X axis - the ones with DeltaX>=DeltaY and to Y axis DeltaX<DeltaY
+- octants for X2>=X1 - on right side of Y axis and X2<X1 - on left side
+- octants for Y2>=Y1 - under X axis and Y2<Y1 - above
+
+for the first comparison true sets bit 2 of temporary variable
+for the second comparison true sets bit 1 of temporary variable
+for the third comparison true sets bit 0 of temporary variable
+
+next goes serie where from we read value with position indicated by our temporary variable:
+
+0,4,1,6,2,5,3,7
+
+such octant has to be multiplied by four and logically summed (OR.B) with BLTCON1 - $dff042
+
+Here's the code part, that selects octant for line drawn from x1,y1 to x2,y2.
+
+		x1 -> d1
+		y1 -> d2
+		x2 -> d3
+		y2 -> d4
+Start:
+		MOVEQ	#0,d0
+		MOVE.L	d1,d5
+		SUB.L	d3,d5
+		CMP.L	#0,d5
+		BGE	noneg
+		NEG.L	d5
+	noneg:	MOVE.L	d5,DeltaX
+
+		MOVE.L	d2,d6
+		SUB.L	d4,d6
+		CMP.L	#0,d6
+		BGE	noneg2
+		NEG.L	d6
+	noneg2:	MOVE.L	d6,DeltaY
+
+		CMP.L	d5,d6
+		BGE	nooneset1
+		BSET.B	#0,d0
+	nooneset1:
+		CMP.L	d2,d4
+		BGE	nooneset2
+		BSET.B	#1,d0
+	nooneset2:
+		CMP.L	d1,d3
+		BGE	nooneset3
+		BSET.B	#2,d0
+	nooneset3:
+		LEA	Function,a3
+		MOVE.B	(a3,d0.w),d7
+
+		d7 -> octant
+
+		RTS
+
+
+Function:
+	DC.B	0,16,4,24,8,20,12,28
+
+
+octant in this procedure is already multiplied by four.
+
+and here is the link for full procedure:
+
+https://www.laffik.com/freebies/Lafficka%20Kurewska%20Kreska%20Blitterem%20MC680x0%20AsmOne.S
+
+
+Howk!!!

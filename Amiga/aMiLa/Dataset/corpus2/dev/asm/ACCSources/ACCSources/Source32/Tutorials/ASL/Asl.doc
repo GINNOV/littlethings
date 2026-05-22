@@ -1,0 +1,603 @@
+
+				Using ASL Library
+				~~~~~~~~~~~~~~~~~
+
+ 					by M.Meany
+
+ Introduction
+ ~~~~~~~~~~~~
+ I am assuming you have already read the Workbench 2 introduction located
+elsewhere on this disk and are now familiar with passing TAGs to a function.
+
+ If you are not familiar with VPrintf() I suggest you read the docs elsewhere
+on this disk before continuing!
+
+ The ASL library contains two, three on WB3, requesters that can be called up
+by a program. The first of these is a file requester that all WB2 owners must
+have seen by now and the second is a Font requester. Workbench 3 asl.library
+also has a screen requester.
+
+ The following notes explain how to access the asl file requester and give
+examples of it's use. Throught these notes I will refer to asl.library
+simply as ASL.
+
+ I will not cover opening and closing ASL, this should go without saying!
+
+ ASL Request
+ ~~~~~~~~~~~
+ To access an ASL requester a program must first obtain an ASL Request
+structure. This is done by calling AllocAslRequest(). This function
+requires two entry parameters: the type of requester you want in register
+d0 and a pointer to a Tag List in register a0. The type of requesters
+available are specified as follows:
+
+	ASL_FileRequest		for a file requester
+	ASL_FontRequest		for a font requester
+	ASL_ScreenModeRequest	( v39+ only ) for a screen mode requester
+
+ The Tag List can contain any of the TAGs specific to the type of requester
+you are going to use. See the explanations below for details of TAGs
+available.
+
+ AllocAslRequest() will return a pointer to an initialised structure of the
+type you specified or a NULL if this was not possible.
+
+ The request structure returned will be either a FileRequester, a
+FontRequester or a ScreenModeRequester structure. Whenever you want the
+requester to be displayed simply call AslRequest() with a pointer to the
+required structure in register a0 and a pointer to a Tag List in register a1.
+This function is used to access all three types of requester! If this
+function returns NULL then either the user cancelled the operation or ASL
+could not open the requester, if the return value is not NULL then examine
+the requester structure you passed to it for information on the users
+selection.
+
+ Before your program finishes, it must free the requester created by
+AllocAslRequest(). This is done by calling FreeAslRequest() with the
+address of the request structure in register a0.
+
+ ASL File Requester
+ ~~~~~~~~~~~~~~~~~~
+ The ASL file requester is an efficient and versatile little beast. You can
+use it to get the name of one file, a list of many files or the name of a
+directory.
+
+ The following TAGs can be applied to a file requester, the explanations
+have been taken straight from the include file libraries/asl.i:
+
+ASLFR_Window          Parent window
+ASLFR_Screen          Screen to open on if no window
+ASLFR_PubScreenName   Name of public screen
+ASLFR_PrivateIDCMP    Allocate private IDCMP?
+ASLFR_IntuiMsgFunc    Function to handle IntuiMessages
+ASLFR_SleepWindow     Block input in ASLFR_Window?
+ASLFR_UserData        What to put in fr_UserData
+
+ASLFR_TextAttr        Text font to use for gadget text
+ASLFR_Locale          Locale ASL should use for text
+ASLFR_TitleText       Title of requester
+ASLFR_PositiveText    Positive gadget text
+ASLFR_NegativeText    Negative gadget text
+
+ASLFR_InitialLeftEdge Initial requester coordinates
+ASLFR_InitialTopEdge  
+ASLFR_InitialWidth    Initial requester dimensions
+ASLFR_InitialHeight   
+ASLFR_InitialFile     Initial contents of File gadget
+ASLFR_InitialDrawer   Initial contents of Drawer gadget
+ASLFR_InitialPattern  Initial contents of Pattern gadget
+
+ASLFR_Flags1	      Option flags
+ASLFR_Flags2	      Additional option flags
+ASLFR_DoSaveMode      Being used for saving?
+ASLFR_DoMultiSelect   Do multi-select?
+ASLFR_DoPatterns      Display a Pattern gadget?
+
+ASLFR_DrawersOnly     Don't display files?
+ASLFR_FilterFunc      Function to filter files
+ASLFR_RejectIcons     Display .info files?
+ASLFR_RejectPattern   Don't display files matching pattern
+ASLFR_AcceptPattern   Accept only files matching pattern
+ASLFR_FilterDrawers   Also filter drawers with patterns
+ASLFR_HookFunc	      Combined callback function
+
+Flag bits for the ASLFR_Flags1 tag
+
+FR_DOWILDFUNC
+FR_DOMSGFUNC
+FR_DOSAVEMODE
+FR_PRIVATEIDCMP
+FR_DOMULTISELECT
+FR_DOPATTERNS
+
+Flag bits for the ASLFR_Flags2 tag
+
+FR_DRAWERSONLY
+FR_FILTERDRAWERS
+FR_REJECTICONS
+
+ As you can see the file requester can be set up in many ways! It is time
+to introduce the basic code on which all following example are based:
+
+		***************************************
+
+; Basic code for asl library tutorial
+
+		include		exec/exec.i
+		include		exec/exec_lib.i
+		include		dos/dos.i
+		include		dos/dos_lib.i
+		include		dos/dosextens.i
+		include		libraries/asl.i
+		include		libraries/asl_lib.i
+
+CALLASL		macro
+
+		move.l		_AslBase,a6
+		jsr		_LVO\1(a6)
+		
+		endm
+
+; Open DOS library
+
+Start		lea		dosname,a1
+		moveq.l		#36,d0			WB2+
+		CALLEXEC	OpenLibrary
+		move.l		d0,_DOSBase
+		beq		Error
+
+; Open ASL library
+
+		lea		aslname,a1
+		moveq.l		#36,d0			WB2+
+		CALLEXEC	OpenLibrary
+		move.l		d0,_AslBase
+		beq		Error1
+
+; Get an ASL Request structure for use in the program
+
+		move.l		#ASL_FileRequest,d0
+		lea		OpenTags,a0
+		CALLASL		AllocAslRequest
+		move.l		d0,OurRequest
+		beq		Error2
+		
+; Use the requester
+
+		bsr		TestRequester
+
+; Free the ASL Request
+
+Error3		move.l		OurRequest,a0
+		CALLASL		FreeAslRequest
+
+; Close ASL Library
+
+Error2		move.l		_AslBase,a1
+		CALLEXEC	CloseLibrary
+
+; Close DOS Library
+
+Error1		move.l		_DOSBase,a1
+		CALLEXEC	CloseLibrary
+
+; All done so exit
+
+Error		moveq.l		#0,d0
+		rts
+
+
+dosname		DOSNAME
+aslname		dc.b		'asl.library',0
+		even
+
+_DOSBase	dc.l		0
+_AslBase	dc.l		0
+
+OurRequest	dc.l		0
+
+OpenTags	dc.l		ASLFR_TitleText,ReqName
+		dc.l		TAG_DONE
+		
+ReqName		dc.b		'Select file to load ...',0
+		even
+		
+; Code for specific examples will follow
+
+TestRequester	rts
+
+		***************************************
+
+ The above code will not be continually repeated, rather changes to the Tag 
+List at label OpenTags will be shown and the subroutine TestRequester will
+be replaced with actual code. For font and screen requesters the type passed
+to AllocAslRequest() will also be changed accordingly, but this will not be
+shown in these notes. All examples are saved complete on the disk for you to
+examine!
+
+ Displaying A FileRequester
+ ==========================
+
+ If you examine the above source you will see that the opening Tags declare
+the title of the file requester only. Lets show a basic file requester, the
+TestRequester routine below will suffice:
+
+		***************************************
+
+; Example Name: FileReq_1.s
+
+TestRequester	move.l		OurRequest,a0
+		suba.l		a1,a1			NULL => no tags
+		CALLASL		AslRequest
+
+		rts
+
+		***************************************
+
+ The FileRequester Structure
+ ===========================
+
+ If you run this example a file requester is displayed from which you can
+select a file. When you do so, nothing happens though! To get information
+about the file selected we need to know about the FileRequester structure.
+This is defined in libraries/asl.i as follows:
+
+   STRUCTURE FileRequester,4
+	APTR	fr_File	  	  ; Contents of File gadget on exit
+	APTR	fr_Drawer     	  ; Contents of Drawer gadget on exit
+	STRUCT	fr_Reserved1,10
+	WORD	fr_LeftEdge	  ; Coordinates of requester on exit
+	WORD	fr_TopEdge
+	WORD	fr_Width
+	WORD	fr_Height
+	STRUCT	fr_Reserved2,2
+	LONG	fr_NumArgs	  ; Number of files selected
+	APTR	fr_ArgList        ; List of files selected
+	APTR	fr_UserData       ; You can store your own data here
+	STRUCT	fr_Reserved3,8
+	APTR	fr_Pattern        ; Contents of Pattern gadget on exit
+
+ The fr_File field will contain a pointer to the name of the selected file
+and the fr_Drawer field a pointer to the name of the directory it is in. Do
+not worry about the other fields for the time being.
+
+ Lets modify the previous example so that it will display the name and path
+of the file we selected. Below is the new TestRequester source:
+
+ 		***************************************
+
+; Example Name: FileReq_2.s
+
+TestRequester	move.l		OurRequest,a0
+		suba.l		a1,a1			NULL => no tags
+		CALLASL		AslRequest
+
+; check if user cancelled and exit if they did
+
+		tst.l		d0
+		beq.s		TR_Done
+
+; Never cancelled, display details of file in CLI. This code cheats a little
+;and uses the requester structure as it's DataStream :-)
+
+		move.l		#Template,d1		string template
+		move.l		OurRequest,a0
+		lea		fr_File(a0),a0
+		move.l		a0,d2
+		CALLDOS		VPrintf
+
+TR_Done		rts
+
+Template	dc.b		"You selected  '%s'.",$0a
+		dc.b		"In the drawer '%s'.",$0a,0
+		even
+
+		***************************************
+
+ Accessing The Selected File
+ ===========================
+
+ If you want to access the file selected, do not attempt to join the files
+name to the files path. Instead use CurrentDir() to temporarily switch into
+the drawer containing the file, access the file and then return to the drawer
+you started in. This is demonstrated in the following example which reads and
+displays the byte length of the selected file:
+
+ 		***************************************
+
+; Example Name: FileReq_3.s
+
+TestRequester	move.l		OurRequest,a0
+		suba.l		a1,a1			NULL => no tags
+		CALLASL		AslRequest
+
+; check if user cancelled and exit if they did
+
+		tst.l		d0
+		beq.s		TR_Done
+
+; Never cancelled, get a lock on the drawer containing the file
+
+		move.l		OurRequest,a4
+		move.l		fr_Drawer(a4),d1
+		move.l		#ACCESS_READ,d2
+		CALLDOS		Lock			lock the drawer
+		tst.l		d0			get it?
+		beq.s		TR_Done			no, exit!
+
+; Switch directories. NB CurrentDir() returns lock on directory just left!
+
+		move.l		d0,d1
+		CALLDOS		CurrentDir
+		move.l		d0,d7			save old lock
+
+; Now determine length of the file by Seek()ing through it
+
+		move.l		fr_Name(a4),d1
+		move.l		#MODE_OLDFILE,d2
+		CALLDOS		Open
+		move.l		d0,d4			handle
+		beq		TR_Err
+		
+		move.l		d4,d1
+		moveq.l		#0,d2
+		moveq.l		#1,d3			OFFSET_END
+		CALLDOS		Seek
+		
+		move.l		d4,d1
+		moveq.l		#0,d2
+		moveq.l		#-1,d3			OFFSET_BEGINNING
+		CALLDOS		Seek
+		move.l		d0,d3			end of file
+		
+		move.l		d4,d1
+		CALLDOS		Close
+
+		move.l		d3,DStream+4		save file length
+
+; Switch back to original directory
+
+TR_Err		move.l		d7,d1
+		CALLDOS		CurrentDir
+
+; Unlock the drawer containing file
+
+		move.l		d0,d1
+		CALLDOS		UnLock
+
+; Now display name and size of file
+
+		move.l		fr_Name(a4),DStream	save ->files name
+
+		move.l		#Template,d1		string template
+		move.l		#DStream,d2
+		CALLDOS		VPrintf
+
+TR_Done		rts
+
+Template	dc.b		"You selected  '%s'. This file is %ld bytes"
+		dc.b		"long.",$0a,0
+		even
+
+DStream		dc.l		2
+
+		***************************************
+
+ Rejecting .Info Files
+ =====================
+
+ That's the basics of the ASL file requester out of the way, now we can
+experiment with some of the TAGs available. To start with, having all files
+icons displayed is a pain in the neck, so we could set the ASLFR_RejectIcons
+Tag when allocating our requester. This can be acheived simply by changing
+the OpenTags as shown below:
+
+OpenTags	dc.l		ASLFR_TitleText,ReqName
+		dc.l		ASLFR_RejectIcons,1
+		dc.l		TAG_DONE
+
+ Note that the value 1 follows the new Tag. 1 represents TRUE, so we are
+enabaling this feature. If we wished to disable a feature we would follow
+it with 0, FALSE!
+
+ Try FileReq_4.s which is the same as FileReq_3.s except that the new Tag
+has been added. Ahhhhh, no .info entries :-)
+
+ A Save File Requester
+ =====================
+ 
+ The requesters used so far allow the user to double-click on the name of a
+file to select it. This is fine for selecting a file for loading, but for
+selecting a file for an operation that could make changes to the file more
+caution is required. You do not want the user to accidentally select the
+wrong file because their mouse button is playing up! So you can set the ASL
+file requester into save mode which will require the user to click on the
+OK button to select a file.
+
+ To enable the save only mode you need to set the FRF_DOSAVEONLY bit in the
+ASLFR_Flags1 field. This can be done either when the request structure is
+first allocated, or when you call AslRequest(). In Example 5 I have set the
+flag when calling AslRequest(), so the required changes to our standard
+example file are:
+
+		***************************************
+
+; Example Name: FileReq_5.s
+
+TestRequester	move.l		OurRequest,a0
+		lea		SaveReqT(pc),a1		open TAGs
+		CALLASL		AslRequest
+
+; check if user cancelled and exit if they did
+
+		tst.l		d0
+		beq.s		TR_Done
+
+; Never cancelled, display details of file in CLI. This code cheats a little
+;and uses the requester structure as it's DataStream :-)
+
+		move.l		#Template,d1		string template
+		move.l		OurRequest,a0
+		lea		fr_File(a0),a0
+		move.l		a0,d2
+		CALLDOS		VPrintf
+
+TR_Done		rts
+
+Template	dc.b		"You selected  '%s'.",$0a
+		dc.b		"In the drawer '%s'.",$0a,0
+		even
+
+SaveReqT	dc.l		ASLFR_Flags1,FR_DoSaveOnly
+		dc.l		TAG_DONE
+
+		***************************************
+ 
+ Adding Pattern Filters
+ ======================
+
+ Under certain circumstances you may want the requester to display only
+files with certain extensions. For example, a requester displayed by an
+assembler may want to limit selections to files ending in .s or .asm.
+
+ ASL offers a complex means of filtering filnames displayed by the
+requester. For the time being I am just going to scratch the surface and
+look at basic filtering.
+
+ Adding patterns requires the ASLFR_InitialPattern Tag to be followed by a
+pointer to a NULL terminated pattern string, you should then set the 
+FRF_DOPATTERNS flag in ASLFR_Flags1. The following fragment will issue a
+file requester that will only display files ending with .s or .asm:
+
+		***************************************
+
+; Example Name: FileReq_6.s
+
+TestRequester	move.l		OurRequest,a0
+		lea		SaveReqT(pc),a1		open TAGs
+		CALLASL		AslRequest
+
+; check if user cancelled and exit if they did
+
+		tst.l		d0
+		beq.s		TR_Done
+
+; Never cancelled, display details of file in CLI. This code cheats a little
+;and uses the requester structure as it's DataStream :-)
+
+		move.l		#Template,d1		string template
+		move.l		OurRequest,a0
+		lea		fr_File(a0),a0
+		move.l		a0,d2
+		CALLDOS		VPrintf
+
+TR_Done		rts
+
+Template	dc.b		"You selected  '%s'.",$0a
+		dc.b		"In the drawer '%s'.",$0a,0
+		even
+
+SaveReqT	dc.l		ASLFR_InitialPattern,StartPattern
+		dc.l		ASLFR_Flags1,FRF_DOPATTERNS
+		dc.l		TAG_DONE
+
+StartPattern	dc.b		'*.s|*.asm",0
+		even
+
+		***************************************
+
+ The pattern string is built up by ORing patterns together. The * can be
+used as a wild card in the pattern string as shown in the example above.
+
+ Multi-Selection of Files
+ ========================
+
+ The final aspect of the ASL file requester that I'm going to look at here
+is multiple selection of files. Enabaling this feature allows the user to
+select more than one file by holding down the shift key while selecting
+files. Multi-selection is enabled by setting the FRF_DOMULTISELECT bit in
+ASLFR_Flags1.
+
+ When in multi-select mode, the fr_Drawer field of the requester structure
+will still point to the name of the drawer containing the files. The
+fr_NumArgs field contains the number of files selected by the user and the
+fr_ArgList field points to the data for the first file selected.
+
+ For each file selected, the ASL requester adds a WBArg to the list located
+at the address in fr_ArgList. A WBArg consists of two long word ( see
+workbench/startup.i ), the first is a lock on the file and the second a
+pointer to the files name. The WBArgs are arranged consecutively in memory,
+so if three files were selected, fr_ArgList would point to the following
+data structure:
+
+	Lock on file 1		long word
+	->name of file 1	long word
+	Lock on file 2		long word
+	->name of file 2	long word
+	Lock on file 3		long word
+	->name of file 3	long word
+
+ As RKM Libraries says this is an array of WBArgs, I have used the wa_SIZEOF
+to step from one entry to the next. The following example displays the name
+of the drawer and of all files selected.
+
+		***************************************
+
+TestRequester	move.l		OurRequest,a0
+		lea		SelReqT(pc),a1		open TAGs
+		CALLASL		AslRequest
+
+; check if user cancelled and exit if they did
+
+		tst.l		d0
+		beq.s		TR_Done
+
+; Get a counter of the number of files selected
+
+		move.l		OurRequest,a4
+		move.l		fr_NumArgs(a4),d7
+		subq.l		#1,d7			dbra adjust
+
+; Display the name of the drawer we are in
+
+		move.l		fr_Drawer(a4),DStream
+		move.l		#DStream,d2
+		move.l		#DrawerTmp,d1
+		CALLDOS		VPrintf
+
+; Now loop through displaying names of all selected files
+
+		move.l		fr_ArgList(a4),a4	a4->WBArgs array
+
+DisplayLoop	move.l		wa_Name(a4),DStream
+		move.l		#FileTmp,d1
+		move.l		#DStream,d2
+		CALLDOS		VPrintf
+
+	; step to next entry in array
+	
+		add.l		#wa_SIZEOF,a4
+		
+		dbra		d7,DisplayLoop
+
+TR_Done		rts
+
+DrawerTmp	dc.b		"Drawer  '%s'.",$0a
+		dc.b		"Files selected:",$0a,0
+		even
+
+FileTmp		dc.b		$09,'%s',$0a,0
+		even
+		
+SelReqT		dc.l		ASLFR_Flags1,FRF_DOMULTISELECT
+		dc.l		TAG_DONE
+
+DStream		dc.l		0,0
+
+		***************************************
+
+ Well that concludes this introduction to the asl.library, any one for fonts?
+
+
+								M.Meany
+

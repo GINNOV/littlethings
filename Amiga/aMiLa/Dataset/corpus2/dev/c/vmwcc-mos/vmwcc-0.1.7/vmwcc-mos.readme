@@ -1,0 +1,138 @@
+Short:        c-subset compiler
+Author:       Vince Weaver <vince@deater.net>, Morphos port by Fabrizio "Lanch" Bartoloni
+Uploader:     lanch@tiscali.it (Fabrizio Bartoloni)
+Version:      0.1.5
+Type:         dev/c
+Architecture: ppc-morphos;
+
+
+vmwcc version 0.1.5
+
+  a c-subset compiler by Vince Weaver <vince@deater.net>
+            originally based off of code by Martin Burtscher (@cornell.edu)
+		  
+		  
+Current Status:
+   Output:         32 bit PPC assembly
+   Optimizations:  _OFF_
+   Known Bugs:     Few
+   Unknown bugs:   Many
+   
+Eventual Goal:
+   Output:        PPC, Alpha, RiSC, more?
+   Optimizations: Strength Reduction, Common sub-expression elimination
+                  Dead code removal
+		  
+		  		  
+The C-Subset
+~~~~~~~~~~~~
+
+   feature          working        will it ever
+   
+   if/else          yes
+   while            yes
+   for loops        yes
+   structs          yes
+   arrays           yes
+   integer math     yes
+   long type        yes
+   int type         yes
+   non-void funcs   yes
+   
+   link to libc     partially
+   sizeof  	    partially
+   
+   floating-point   no             unlikely
+   ternary (?:)     no             unlikely   
+   typedef 	    no		   unlikely
+   bitwise ops      no             maybe
+   pointers         no             maybe
+   pre/post inc/dec no             maybe
+   +=,-=,*=,etc     no             maybe
+   in-line assembly no		   maybe
+   chars            no             hopefully
+   c pre-processor  no             hopefully a subset
+   goto             no             unlikely
+   switch()/case    no		   unlikely
+   self-hosting     no             when pigs fly
+     
+   
+  Non-standard functions supported:
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   WriteLine();    -- write a blank line
+   WriteLong(x);   -- write out a long (x) to stdout
+   ReadLong(x);    -- read a long into x
+   
+
+Technology:
+~~~~~~~~~~~
+
+ Uses a parser created directly from EBNF.
+ Uses SSA (Static Single Assignment) as an intermediate language.
+
+Background:
+~~~~~~~~~~~
+
+ This began as my ECE495 project.  Unfortunately it wasn't done at
+ the end of the semester.  I've worked on it since then and it has
+ made progress.
+
+
+Running:
+~~~~~~~~
+
+  The options are designed to be as compatible as possible with gcc.
+  	       
+  Please note.  Optimizations are not debugged yet, so use -O2 at your
+     own risk.  Also, while many tests are made before release
+     (see the ./samples directory) there are undoubtedly many
+     bugs lurking.  So please be patient and always use gcc
+     if you absolutely need your code working perfectly.
+	       
+	       
+  Usage:
+    ./vmwcc [-Ox] [-S] [-W] [-c] [-dom] [-h] [-m arch] [-o filename]
+	    [-ssa] [-v] filename.c
+				 
+    -Ox             : Use optimization level x (0 means none)
+    -S              : Output assembly language file only
+    -W              : Enable warnings
+    -c              : Output object file only
+    -dom            : Output dominator tree in .dot format
+    -g              : Ignored.  For compatibility with gcc only
+    -h              : Help.  This help message
+    -m arch         : Output target.  Defaults to ppc-linux for now
+    -o filename     : Output object or executable to this filename
+    -pg             : Ignored.  For compatibility with gcc only
+    -ssa            : Output internal SSA information to file
+    -v              : Output version information
+	
+	
+Compatability:
+~~~~~~~~~~~~~~
+
+  To make programs compile in both gcc and vmwcc add the following
+  lines to the top of the file:
+  
+  #include <stdio.h>
+  #define WriteLine() printf("\n");
+  #define WriteLong(x) printf(" %ld", x);
+  #define ReadLong(a) if (fscanf(stdin, "%ld", &a) != 1) a = 0;
+  
+  vmwcc will ignore them but gcc will do the right thing.
+
+Why:
+~~~~
+
+ Why create such an obviously broken compiler when gcc works fine?
+ 
+ Because it is fun.  Also I am seeing if I can have the compiler 
+ optimize for size, rather than speed.
+ 
+ And also, gcc is a mess if you ever look at the code.  vmwcc is too
+ but there's a lot less of it to sort through.
+ 
+~~~
+
+Vince Weaver, vince@deater.net  http://www.deater.net/weave/
+16 June 2004

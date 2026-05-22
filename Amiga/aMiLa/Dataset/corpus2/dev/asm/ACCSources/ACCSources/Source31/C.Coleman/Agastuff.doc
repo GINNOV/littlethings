@@ -1,0 +1,236 @@
+				"Carisbrooke"     or	St John's College
+				27 Nursery Lane	 after	   St John's St.
+				South Wootton	  1st	     Cambridge
+				King's Lynn	  Oct.		CB2 1TP
+				Norfolk
+				PE30 3NG
+
+Hi! Thought you might be interested in the following AGA info.
+
+
+Thanks to Commodore's insistence on not giving information on the new chipsets
+(unless you're paying them a healthy sum to be a registered developer) it is
+not easy to activate the new graphic modes.
+The following is a summary of what I have so far learnt about the new AGA
+graphics modes by continuously deciphering various Workbench Copperlists for 
+different screen setups:
+
+	(1)	24-bit Palette
+	(2)	Extra bit planes & Low, High and Super-hires modes
+	(3)	What I don't know (ie LOTS)
+	
+I also include two programs and their corresponding sources ( which I'm
+afraid are written with a68k - though my copy of Devpac3 has been ordered).
+The first of these programs AGACOPPER not surprisingly demonstrates the
+classic copper background though here it is from blue to cyan in 256 steps. 
+The second program AGAMANDEL creates a 64 colour super hi-res Mandelbrot
+set reasonably quickly. It can be easily changed to normal hires etc..
+ Anyway .......
+
+-----------------------------------------------------------------
+
+
+(1)	24-bit palette
+
+The 24-bit palette is acessed by the previously 'unused' register $106.
+This register not only controls the 24 bit palette, but also lets you set
+up a maximum of 256 colours instead of the original 32.
+
+In effect, you 'page' the new paletee or colours onto existing ones.
+
+For example,	MOVE.W	#$0FFF,$180(A5)		(a5 = $DFF000)
+
+is meaningless on its own since register $180 controls both the high
+12-bits of the palette and the low 12 bits of the palette.
+
+To give a white background, the following should be issued:
+
+		MOVE.W	#$0C40,$106(A5)		; Specify high 12 bits
+		MOVE.W	#$0FFF,$180(A5)
+		MOVE.W	#$0E40,$106(A5)		; Specify low 12 bits
+		MOVE.W	#$0FFF,$180(A5)
+
+
+The structure of register $106 appears to be as follows:
+
+Bit :		15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+Status:		 'Page'  0  1  1  1/0 0  0  1  0  0  0  0  0  0
+
+Bit 9 specifies the high 12-bits (if unset) or the low 12-bits (if set)
+
+Bits 13,14&15 select the required colour 'page':
+
+bit:	15 14 13			Action
+
+	0  0  0			$180-$1BE	=	COLOR00 - COLOR31
+	0  0  1					=	COLOR32 - COLOR63
+	0  1  0					=	COLOR64 - COLOR95
+	0  1  1					=	COLOR96 - COLOR127
+	. . . 
+        etc..
+	 . . .
+	1  1  1					=	COLOR224 - COLOR255
+
+
+Hence a typical Copper list for 64 colors would be as follows:
+
+		$106,$C40	; Colors 0-31, high 12 bits
+		$180,...
+		....
+		...
+		$1BE,...
+		$106,$E40	; Colors 0-31, low 12 bits
+		$180,..
+		.....
+		$1BE,...
+		$106,$2C40	; Colors 32-63, high 12 bits
+		$180,...
+		....
+		$1BE,...
+		$106,$2E40	; Colors 32-63, low bits
+		$180,...
+		$1BE,...
+
+
+-------------------------------------------------------------------
+
+	
+(2) Extra Bitplanes and Low, High And Super-High res
+
+For anyone with the Hardware reference manual or Amiga Syst.Prog.Guide
+it is not too difficult to 'guess' that the four 'unused' registers
+directly after BPL1PTH - BPL6PTL do in fact refer to the extra 
+bitplanes 7 and 8. Suitable loading of BPLCON0 ($100) will cause
+these pointers to be used for the extra bitplanes. However, for
+8 bitplanes, we cannot write 1000 into bits 14-12 of BPLCON0
+for the simple reason that BPLCON0 can only hold from 0-7 in
+bits 14-12. The solution is to use 'unused' bit 4 of BPLCON0.
+By setting this bit and resetting bits 14-12 in BPLCON0, the 
+hardware interprets this to mean an 8 bitplane display.
+
+The good thing is that the number of bitplanes available is not
+dictated by the screen resolution (as is obvious from preferences)
+
+The 'unused' bits 8-15 in BPLCON1 ($102) appear to play a part in
+delaying the start of the bitplane DMA in the same sense as
+DDFSTRT ($092) and DDFSTOP ($094) have conventionally done. I say
+this because the relations :
+
+	DDFSTRT = (HStart/2-8.5) AND $FFF8
+	DDFSTOP = DDFSTRT + (pixels per line/2-8)
+ (for low res or high res replace 8.5 with 4.5 and 2 with 4)
+
+do not seem to always hold.
+
+At the end of this section, I will give values for the hardware
+registers which give stable images for various resolutions and
+depth of planes.
+
+Selection of resolution:
+
+As before, to set high resolution you set bit 15 of BPLCON0 and
+to select low resolution you clear bit 15.
+In order to select Super-High resolution, bit 15 must be reset 
+and bit 6 must be set.
+
+e.g for 64 color super hires, move.w #$6240,$100(a5)
+
+For interleaved bitplanes such as is used on Workbench, the
+modulo values BPL1MOD and BPL2MOD ($108,$10A) are calculated
+as follows:
+
+
+BPL1MOD = BPL2MOD = planewidth in bytes * (no. planes - 1) - 8
+
+
+e.g 64 color super hires = 160*5-8 = 792 = $318
+
+
+
+Typical Copper Structure for 640*256 in 64 colors:
+
+$2601,$fffe	;	wait till start of screen
+$106,$c40	;	}
+$180,...	;	}
+...		;	 }Set up colors (as in section (1))
+$106,$e40	;	}
+...		;	}
+$10c,$11	;	**** See section 3 ****
+$8e,$297e	;	DIWSTRT
+$100,$e200	;	64 color hires
+$104,$224	;	Sprite<>playfield priority
+$106,$c40	;	Appears necessary
+$90,$29be	;	DIWSTOP
+$92,$28		;	DDFSTRT
+$94,$c8		;	DDFSTOP
+$102,$44dd	;	Scroll value
+$108,$188	;	Modulo for odd-planes
+$10a,$188	;	ditto evenplanes
+$e0,...		;
+$e2,...		;	Set up bitplane pointers
+...		;
+$f6,...		;
+$1e4,$2100	;	**** See section 3 ****
+$1fc,$3		;	**** See section 3 ****
+$ffff,$fffe
+
+
+Changes for other resolutions / colors:
+
+(a) Remember to change the modulo value ($108,$10a)
+e.g
+Hires 8 bitplanes ; use $228,$228
+Superhires 6 bitplanes; use $318,$318
+Lowres 5 bitplanes; use $98,$98
+
+(b) Remeber to set up BPLCON0 ($100) correctly
+e.g
+Hires 8 bitplanes ; use $8210
+Superhires 6 bitplanes; use $6240
+Lowres 5 bitplanes ; use $5200
+
+(c)For centred, stable screen set up
+   DDFSTRT ($92), DDFSTOP($94), BPLCON1($102) as:
+
+Lowres ; use $28, $c8, $0000
+
+Hires ; use $28, $c8, $44dd
+
+Superhires ; use $30, $d0, $00dd
+
+
+(works for all no.s of bitplanes)
+
+-----------------------------------------------------------
+
+
+(3) What I don't know
+
+
+At the moment I can set up a copperlist for any screen res and
+any no. of bitplanes. The problems I have are:
+
+(a) In the Workbench copperlists there are the following entries
+
+  $10c,$11		;	after the color declarations
+  $1e4,$2100,$1fc,$3	;	before the final $ffff,$fffe
+
+	I assume that these registers are to do with sprite DMA
+since their absence in my copperlists does not affect the display.
+
+(b) I am also playing around with the 'unused' blitter registers
+    and would be interested to know if any extensions have been
+    made to the blitter. For example, the 4 unused registers
+    after BLTDMOD and BLTADAT  and bits 11-5 in BLTCON1 ($42).
+
+(c) Its worth a try ringing up Psygnosis - I got someone on the
+    end of the phone who was going to give me some hardware
+    details but was persuaded not to by someone else.
+
+
+Hope this stuff has been of use. It's the result of too many hours
+playing around with unused registers and system crashes.
+
+
+
+Chris Colman   (August 1993)

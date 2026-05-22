@@ -1,0 +1,135 @@
+
+Come usare l'istruzione SKIP del copper, by The Dark Coder.
+
+L'istruzione SKIP fa saltare al copper l'istruzione seguente se il pennello
+elettronico ha superato la posizione specificata. Per esempio consideriamo
+le seguenti istruzioni:
+
+	dc.w	$4037,$ffff	; SKIP (salta) se si supera la linea $40
+ISTR1:	dc.w	$182,$0456	; istruzione move del copper
+ISTR2:	dc.w	$182,$0fff	; istruzione move del copper
+
+Quando il copper esegue l'istruzione SKIP controlla dove si trova il pennello
+elettronico. Se esso ha superato la posizione specificata (nell'esempio X=$36
+e Y=$40) salta l'istruzione seguente (all'indirizzo ISTR1) ed esegue
+l'istruzione successiva ad essa (cioe` l'istruzione all'indirizzo ISTR2).
+Se invece il pennello elettronico non ha ancora raggiunto la posizione indicata
+viene eseguita nomalmente l'istruzione successiva come se la SKIP non ci fosse.
+
+Mediante la SKIP si possono realizzare dei loop nella copperlist. Un loop nella
+copperlist e` un insieme di istruzioni copper che viene ripetuto fino a che 
+il pennello elettronico non raggiunge una determinata posizione. Per realizzare
+il loop si usa anche il registro COP2LC. Il meccanismo e` illustrato dal
+seguente esempio:
+
+nel programma principale si esegue una
+
+	move.l	#Copperloop,$dff084	; scrive l'indirizzo del loop
+					; nel registro COP2LC
+
+e nella copperlist si mettono le seguenti istruzioni:
+
+	dc.w	$2007,$FFFE	; WAIT linea $20
+Copperloop:
+	dc.w	$180,$F00	; istruzioni copper del loop
+	dc.w	$180,$0F0
+	dc.w	$180,$00F
+
+	.
+	.
+
+	dc.w	$180,$F0F	; ultima istruzione del loop
+	dc.w	$4007,$ffff	; SKIP (salta) se si supera la linea $40
+	dc.w	$8a,0		; COPJMP2 salta all'inizio del loop
+
+	dc.w	$182,$00F	; istruzione fuori dal loop
+ 
+Il funzionamento e` molto semplice. Dopo la linea $20, il copper entra nel loop
+Dopo aver eseguito tutte le istruzioni del loop arrivera` alla SKIP. A questo
+punto se il pennello elettronico NON ha ancora superato la linea $40 (cioe` si
+trova piu` in alto sullo schermo) il copper NON saltera` l'istruzione seguente.
+L'istruzione seguente, pero` scrive in COPJMP2 provocando un salto del copper
+all'indirizzo scritto in COP2LC, ovvero all'indirizzo della prima istruzione
+del loop. In questo modo il loop viene ripetuto. Dopo un certo numero di
+ripetizioni, il pennello elettronico raggiungera` la linea $40. A questo punto
+quando viene eseguita di nuovo la SKIP, essa fara` saltare al copper
+l'istruzione che scrive in COPJMP2; in questo modo esso non fa piu` il salto
+all'inizio del loop ma passa ad eseguire la prima istruzione esterna al loop.
+
+A cosa servono i loop nella copperlist? E` chiaro, che possiamo sempre farne
+a meno: invece di fare il loop scriviamo tante volte quante ci servono la
+parte di copperlist da ripetere. In questo modo ci risparmiamo la SKIP e 
+l'istruzione che scrive in COPJMP2, che rallentano un pochettino il copper.
+L'uso dei loop presenta pero` dei vantaggi: in primo luogo risparmiamo
+memoria, perche` scrivaimo una volta sola il pezzo di copperlist. In secondo
+luogo, se il pezzo di copperlist ripetuto deve essere modificato dal processore
+per realizzare qualche effetto, naturalmente facendo il loop il pezzo di
+copperlist dovra` essere modificato una sola volta, velocizzando moltissimo
+il lavoro del processore.
+
+L'utilizzo di istruzioni WAIT all'interno dei loop presenta alcuni problemini.
+supponiamo di avere un loop che si ripete dalla riga $20 alla riga $70, e
+che all'interno del loop ci sia una WAIT alla riga $38. Che succede?
+La prima volta che il loop viene eseguito, la WAIT blocca il copper.
+Dopo la linea $38 il copper si sblocca, arriva alla fine del loop e lo
+ripete. A questo punto, siccome il pennello elettronico ha superato la
+riga $38, la WAIT non blocca piu` il copper. Come risultato, l'esecuzione
+della prima iterazione del loop produrra` risultati molto diversi dalle
+iterazioni successive. Di solito questo non e` cio` che si vuole. Nei loop
+con il copper sarebbe desiderabile poter aspettare una determinata riga
+del loop ad ogni iterazione. Per esempio si potrebbe volere qualcosa del
+genere:
+
+CopperLoop:	
+		; istruzioni varie
+
+		aspetta 4 righe dall'inizio dell'iterazione
+
+		; istruzioni varie
+
+		ripeti il loop fino ad una certa riga.
+
+Come si puo` realizzare un meccanismo del genere? E` necessario utilizzare
+delle WAIT con mascherati alcuni bit della posizione verticale.
+Per esempio supponiamo di avere un loop che si estende per 16 righe di raster
+e che vogliamo ripetere dalla riga $10 alla riga $70, ovvero per 96 righe.
+Poiche` 96/16=6 il copper eseguira` 6 iterazioni. Notate che 96 e` divisibile
+per 16 (non c'e` resto), il che vuol dire che il pennello elettronico
+raggiungera` la riga 96 esattamente nel momento in cui il copper finisce
+la sesta iterazione. Vogliamo che in ogni iterazione del loop il copper si
+blocchi alla quarta riga a partire dall'inizio dell'iterazione. Per ottenere
+cio` usiamo una WAIT in cui mascheriamo i bit piu` significativi della
+posizione verticale. In questo caso poiche` il loop si ripete ogni 16 righe,
+la WAIT si deve comportare allo stesso modo ogni 16 righe, e non deve
+considerare le differenze di posizione tra un gruppo di 16 righe e l'altro.
+Quindi e` necessario considerare solo i 4 bit meno significativi (che formano
+appunto un gruppo di 16 linee). Per mascherare i bit della posizione verticale
+si agisce sulla seconda word della WAIT:
+
+	dc.w	$0301,$0FFE
+
+questa istruzione aspetta la quarta riga di un gruppo di 16 linee.
+Vediamo cosa accade nel nostro esempio. Il loop inizia alla riga $20.
+Il copper esegue le prime istruzioni e incontra la WAIT. Essa considera
+solo i 4 bit meno significativi della posizione per cui si mette ad aspettare
+una riga che abbia tali 4 bit al valore $3. Cio` accade alla riga $23. A questo
+punto il copper si sblocca. La seconda iterazione del loop inizia alla riga
+$30. Anche qui il copper arriva alla WAIT e aspetta una riga che abbia i 4 bit
+meno significativi al valore $3, cosa che accade alla riga $33, ovvero ancora
+alla quarta riga del loop. Questo comportamento si ripete ad ogni successiva
+iterazione. Se volessimo delle iterazioni lunghe 8 righe con delle WAIT di
+questo tipo dovremmo lasciare abilitati solo i 3 bit meno significativi della
+posizione. Notate che questa tecnica si implementa facilmente solo se la
+lunghezza di un iterazione e` una potenza di 2.
+
+Un esempio e` in lezioneskip.s
+
+Una limitazione all'uso delle WAIT nella maniera che abbiamo mostrato e` dovuta
+al fatto che il bit piu` significativo della posizione verticale non e`
+mascherabile. Cio` ci impedisce di realizzare loop che si comportino nella
+stessa maniera sia al di sopra della riga $80, dove il bit piu` significativo
+vale 0, sia al di sotto, dove il bit piu` significativo vale 1, proprio
+perche` non possiamo ignorare questa differenza mascherando il bit.
+L'unica soluzione e` di fare 2 loop, uno da eseguire al di sopra di $80
+e uno al di sotto, come mostrato in lezioneskip2.s
+ 

@@ -1,0 +1,57 @@
+
+			    LibHelp Manual
+			    ~~~~~~~~~~~~~~
+
+			By Mark Meany, January 92.
+
+ Credits
+ ~~~~~~~
+ The windows used by this program were designed using PowerSource v3.0, a
+utility available on Fred Fish #547 written by Jan van den Baard.
+
+ Disclaimer
+ ~~~~~~~~~~
+ Every effort has been made to ensure the correct function of this program
+on a version 2.0 Amiga and the data it presents is extracted from the
+version 2 .fd files. I must point out that I cannot gaurantee the accuracy
+of this information and will not be responsible for mistakes or the
+consequences of any mistakes.
+
+ Program Function
+ ~~~~~~~~~~~~~~~~
+ The program has been designed to give quick access to the calling
+parameters for system library functions. The parameters are displayed in
+the order of decleration for the convenience of C programmers. To assist
+assembly language programmers, the registers in which the parameters should
+be located are also displayed.
+
+ I wrote this utility because I have a terrible memory. I use the libraries
+all the time and this means constantly refering to books to discover what
+to put into which register. Those days are now gone.
+
+ Use
+ ~~~
+ If your programming the Amiga then figuring out how to use this utility
+should take you about five seconds. There is a string entry gadget where
+the name of the function you require info on should be entered. The search
+mode in not case sensitive, so openlibrary is as good as OpenLibrary.
+
+ The program will respond to an input by either displaying information on
+the function or giving a message saying no information was available.
+
+ There is a sleep gadget which can be used to shrink the main window to
+minimum size and send it to sleep. To wake the program up again first
+activate the small window, then press the mouse menu ( right ) button.
+
+ The About gadget is just a freeware notice.
+
+ Distribution
+ ~~~~~~~~~~~~
+ This program is Freeware, spread as you please, but you must not ask any
+money from this program ( as if you could! ). The following files must all
+be distributed as one package:
+
+	LibHelp			The executable
+	LibHelp.doc		This file 
+	LibHelp.s		The assembler source
+	LibHelpData.i		The raw data

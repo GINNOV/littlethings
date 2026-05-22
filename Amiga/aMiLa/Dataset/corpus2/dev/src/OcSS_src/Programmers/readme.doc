@@ -1,0 +1,81 @@
+    OctaMED Soundstudio V1 Player Sources (internal V7.0)
+
+    Copyright © 1995-1996 Teijo Kinnunen and RBF Software.
+          (Read the full copyright notice below.)
+
+
+=================== Programmers' Source material contents ================
+
+
+Document/instruction files (in the recommended order of reading):
+-----------------------------------------------------------------
+Licence.doc     Licence conditions and application form.
+Proplayer.doc       Introduction to player routines and embedded
+            player routine (proplayer) instructions.
+Library.doc     Player library instructions and autodocs.
+MMD_FileFormat.doc  OctaMED/MED module format specifications.
+
+Source files:
+-------------
+proplayer.a     The main four channel player routine.
+pro8player.a        Eight channel player routine.
+promixplayer.a      Mixing mode player routine.
+med-mixasm.a        Mixing routines for promixplayer.a.
+loadmod.a       Module loading/unloading/relocation routines.
+reloc.a         A separate module relocation routine.
+aura.a          Special Aura output routines.
+chinfo.i, medtrkdata.i  Header files required by the player routines.
+
+Header files:
+-------------
+proplayer.h     Prototypes and definitions for the player
+            routines.
+libproto.h      Library function prototypes and #pragmas.
+
+Miscellaneous
+-------------
+objconv         A binary->object file converter.
+medplayer_lib.fd    A function definition file for medplayer.library
+octaplayer_lib.fd   A function definition file for octaplayer.library
+octamix_lib.fd      A function definition file for
+            octamixplayer.library
+Examples (dir)      Some example sources
+
+=================== Programmers' Source material copyright ===============
+
+This is the OctaMED Source disk and it is fully Copyrighted to RBF Software
+(Teijo Kinnunen and Ray Burt-Frost).
+
+The source is NOT public Domain.
+
+However, public domain libraries are very welcome to offer this material to
+customers for no more than a very reasonable copying fee only.
+
+If you have not allready applied for a programmers licence then it is in
+your own interests to do so by printing out, (or copying), the included
+copyright licence file titled "Licence.doc" and send it to:
+
+            RBF Software.
+            169, Dale Valley Road,
+            Hollybrook,
+            Southampton.
+            S016 6QX
+            England
+
+Those private/individual programmers that intend to use the libraries only
+within and for release as Public Domain or Freeware programs, (no charges
+made), are encouraged to make use of these routines in their progs.
+
+Those programmers intending to release a program under the licenceware or
+Copyright banner, MUST, (to avoid legal problems), READ ON:
+
+Companies and Programmers that are intending to use the libraries within a
+commercial, or even the now popular "budget" progs being sold via PD
+libraries that pay the author a "share of the sales", MUST, to avoid
+undesirable legal problems regarding the use of our Copyrighted libraries,
+fill in and return the copyright licence form found on this diskette..
+
+We believe all commercial/part-time programmers that are intending to earn
+money from the routines will see this as fair, considering the high
+earnings that are often forthcoming from their usage in such ventures and
+the hard work that Teijo puts into this program.

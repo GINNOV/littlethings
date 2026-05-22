@@ -1,0 +1,12 @@
+Short:    V1.1 generates SAS/C MakeFiles, w/source
+Uploader: raydar@netcom.com (Ray Darrah III)
+Author:   raydar@netcom.com (Ray Darrah III)
+Type:     dev/c
+
+DependantScan V1.1 automatically creates and maintains SAS/C makefiles.
+Main features include:
+
+- usable from the WorkBench or the CLI
+- many configurable items
+- full AmigaGuide documentation
+- well commented source code included

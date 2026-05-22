@@ -1,0 +1,27 @@
+Short: Fast sorted linked list library & source
+Uploader: agmsmith@achilles.net
+Author: agmsmith@bix.com
+Type: dev/c
+Requires: AmigaDOS 2.04 (V37) or later, random250.library.
+Version: 1.0
+
+This is an implementation of William Pugh's Skip List algorithm as an
+Amiga shared library, skiplist.library.  It lets you have the
+flexiblity of linked lists with the sorting ability of arrays, without
+the fixed size problems of arrays or slow (linear) sorting speed of
+lists.
+
+The GNU C source code for the library is included.  Examples of using
+it in GNU C are also available (including a unique words counting
+program).  You can easily add it to other languages just like you add
+other Amiga libraries.  Read SkipList.h for heavily commented data
+structures and functions, or just play around with WordCount.c to get
+started quickly.
+
+Skiplist.library and the included examples are released to the public
+domain.  That means you can hack it up or do whatever you want to it.
+That also means I'm not responsible for it running amuck.  But if you
+do find bugs, or add some interfaces to other compilers, please let me
+know so that I can update it.
+
+- Alex

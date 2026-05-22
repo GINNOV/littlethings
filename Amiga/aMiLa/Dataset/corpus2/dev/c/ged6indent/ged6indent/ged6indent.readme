@@ -1,0 +1,187 @@
+Short:    indent C source code in GoldEd6
+Version:  1.3
+Uploader: Thomas Aglassinger <agi@giga.or.at>
+Author:   Thomas Aglassinger <agi@giga.or.at>
+Type:     dev/c
+Kurz:     C-Quellcode in GoldEd6 einrücken
+Requires: GoldEd 6.x, GNUindent
+
+TITLE
+
+  ged6indent
+
+VERSION
+
+  1.3
+
+AUTHOR
+
+  Thomas Aglassinger <agi@giga.or.at>
+
+DESCRIPTION
+
+  Ged6indent is an ARexx-script which indents a C-source currently
+  displayed in GoldEd by using GNUindent.
+
+FEATURES
+
+  None; simply does its job.
+
+SPECIAL REQUIREMENTS
+
+  o GoldEd, release 6.x (http://members.tripod.com/golded/)
+  o GNUindent (aminet:dev/c/Indent191.lha)
+
+AVAILABILITY
+
+  aminet:dev/c/ged6indent.lha
+
+PRICE
+
+  Freeware
+
+DISTRIBUTABILITY
+
+  Public Domain.
+
+DISCLAIMER
+
+  No responsibilities are taken for trashed sources, damaged Amigas
+  or any other components or data involved while using ged6indent.
+
+CREDITS
+
+  This script is based on material written by Michael Bauer. His
+  scripts are available from `aminet:dev/c/GEDindent.lha', but
+  do no longer work with GoldEd, release 6.
+
+  An older version of the script that works with GoldEd, release 6,
+  can be found in `aminet:dev/c/ged6indent.lha'.
+
+  There is also a related tool in `aminet:text/edit/Smartindent.lha',
+  indenting your code online - not only on request like this script.
+  Maybe you prefer this approach.
+
+INSTALLATION
+
+  Copy the ARexx-script `ged6indent.ged' to `GoldEd:ARexx/', and
+  build up a new menu entry for it, for example:
+
+  COMMAND: GoldEd:Arexx/ged6indent.ged
+  TYPE   : Arexx
+  OUTPUT : CON:0/2048/384/128/Indent/AUTO/WAIT/CLOSE/SCREEN*
+
+  Error messages will then appear at the bottom of the front-most
+  screen, which should be the screen of GoldEd.
+
+CONFIGURATION
+
+  By default, `indent' will be invoked using options matching the
+  style GoldEd supports in its initial configuration. If you do not
+  like this style, you can set an environment variable named
+  `ged6indent.prefs' with your preferred style, for example:
+
+    setenv ged6indent.prefs "-bl -bli0 -i4 -sob -sc -npsl -npcs -lp"
+
+  You can add a line like the above to your s:user-startup.
+
+  Refer to the manual of indent for the meaning of these options.
+
+ERROR HANDLING
+
+  In case of `indent' shows up any error messages, a window will open
+  and display these messages. The source code in the current editor
+  window remains untouched.
+
+  But usually the message reported by `indent' are not of much use.
+  You better run a compiler on your faulty source code to find out
+  details.
+
+INDENTING A SINGLE FUNCTION
+
+  If you do not want to indent the whole file, but just the function
+  the cursor currently is on, there is a second script included called
+  `ged6findent.ged'.
+
+  To find the beginning of the current function, it searches backwards
+  for a `{' at the first column of a line. If found, it searches for
+  the corresponding `}' and marks the text in between.
+
+  This block is written to a temporary file, processed by `indent' and
+  reloaded again. Because of the block operations, there will be some
+  flickering on the screen.
+
+  Installation and configuration also work as described above.
+
+PROBLEMS
+
+  The version of `indent' included on the Geek Gadgets always opens an
+  output window on the screen, even if `indent' does not show any
+  messages. I do not know why exactly, but it seems to be related to
+  the way ixemul.library handles the `stdout' stream. To avoid this,
+  use the SAS-compiled port in aminet:dev/c/Indent191.lha.
+
+  For `ged6findent.ged' it is important that the first curly brace
+  (`{') of the function is in the first column of a line. This means,
+  if you think you have to use a style like
+
+    int sepp(char *hugo) {
+      ....
+    }
+
+  the script will be unable to determine where the function starts.
+  Instead, you have to use
+
+    int sepp(char *hugo)
+    {
+      ....
+    }
+
+  to make it work properly.
+
+  Because `ged6findent.ged' uses the internal bracket matching
+  routines of GoldEd, it also has the same quirks. For example,
+
+  void sepp(int x)
+  {
+      if (x) {
+          printf("\"}");
+      }
+  }
+
+  will not work. This is because bracket matching in GoldEd does not
+  care about which language the code is written in, and therefore does
+  not recognise the escaped `\"'.
+
+  As a workaround, you can use the global `ged6indent.ged' for code
+  that contains fragments like the above.
+
+HISTORY
+
+  v1.3, 5-Aug-1999
+  - basically took `ged4indent.lha' and replaced all 4's by 6's
+  - renamed ged4indent.prefs to ged6indent.prefs; if you are upgrading
+    from the old v4 script, remember to change a possible `setenv' in
+    your s:user-startup
+  - replaced PING/PONG by QUERY LINE/GOTO LINE due to GoldEd6's new
+    behavior of purging PING-information after loading a file. The
+    column is not restored anymore. Instead, the cursor jumps to the
+    beginning of the line (using GOTO INDENT).
+  - `ged6findent.ged' now restores the find string, so the find
+    requester does not display a `{' to the user the next time he
+    wants to search the text.
+  - added status message "Reformatting..." while script is running
+  - fixed a typo in one of the requester texts
+
+  v1.2, 25-Sep-1997
+  - added `ged4findent.ged' which indents only the current function
+  - temporary files are always removed, even in case of error
+  - cursor position is always restored, even in case of error
+
+  v1.1, 11-Jun-1997
+  - added support for environment variable `ged4indent.prefs'
+  - indented version is first created in a temporary file, and only
+    read into editor again if no error occurred
+
+  v1.0, 26-Jan-1997
+  - initial release

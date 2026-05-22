@@ -1,0 +1,603 @@
+
+ CORSO DI ASSEMBLER - LEZIONE 6
+
+In questa lezione vedremo come visualizzare dei testi sullo schermo, come
+far scorrere schermi piu' grandi della finestra video, e l'uso delle tabelle
+di valori predefiniti per simulare movimenti di rimbalzo e ondeggiamento.
+
+Imparare a visualizzare delle scritte sullo schermo e' importantissimo, non
+si puo' fare a meno di una routine di stampa caratteri in un gioco o in una
+demo grafica: se vogliamo scrivere il punteggio e il numero delle vite, o un
+messaggio tra un livello e l'altro, oppure il dialogo tra i personaggi, una
+scritta con i saluti agli amici, eccetera.
+E' chiaro che non vengono visualizzate delle figure 320x256 con le scritte
+gia' fatte! Immaginatevi di voler visualizzare 5 pagine di testo per introdurre
+la storia del vostro gioco: "un cavaliere di un periodo storico imprecisato
+decise di andare alla ricerca del santo graal..." eccetera.
+Le soluzioni sono due: o vi disegnate col programma da disegno cinque figure
+col testo stampato, e in questo caso avremmo 5 figure da 40*256 = 51200 byte
+utilizzati, che vi rubano spazio su disco e memoria, oppure con 1k di FONT
+caratteri e pochi byte di routine che stampa quei caratteri fate lo stesso
+lavoro, risparmiando 50k.
+Avrete presenti i FONT di caratteri del sistema operativo: TOPAZ,DIAMOND
+eccetera, che potete scegliere?
+Ebbene a noi non interessano i FONT di sistema, perche' ne usiamo di nostri.
+Si possono usare anche i font di sistema, ma sono limitati, mentre
+facendosi i font e la routine che stampa i caratteri di quel font si possono
+visualizzare scritte di qualsiasi dimensione, anche colorate, basta disegnare
+il font e farsi la routine giusta.
+Una volta capito il sistema di PRINT, ossia di STAMPA dei caratteri si possono
+fare variazioni senza difficolta'.
+Per cominciare vediamo come stampare un font piccolo, largo 8 pixel e alto 8,
+ad un solo colore.
+Come prima cosa bisogna disporre di un BITPLANE dove stampare il testo e di
+un FONT CARATTERI dove sono disegnati tutti i caratteri da copiare.
+Per il bitplane non ci sono problemi, infatti basta crearsi nel listato un
+pezzo di memoria azzerato della dimensione di un bitplane, e "puntarlo", ossia
+farlo visualizzare. Per fare uno spazio azzerato si puo' usare
+il comando DCB.B 40*256,0 che, appunto, crea uno spazio azzerato della
+dimensione giusta; ma esiste una SECTION specifica per i "BUFFER" azzerati:
+la section BSS, in cui si puo' usare la sola direttiva DS.B/DS.w/DS.l, che
+stabilisce quanti bytes/word/longword azzerati creare. Il vantaggio sta nella
+lunghezza finale del FILE ESEGUIBILE: mentre creando lo spazio azzerato
+con un: "BITPLANE: dcb.b  40*256,0" i 10240 bytes sono aggiunti alla lunghezza
+totale del file, definendo una Section BSS:
+
+	SECTION	UnBitplaneQua,BSS_C	; _C significa che deve essere caricata
+					; in CHIP RAM, senza il _C verrebbe
+					; caricata dove capita, anche in FAST!
+					; ma i bitplane devono essere in CHIP.
+BITPLANE:
+	ds.b	40*256		; 10240 bytes a zero
+
+Al file verra' aggiunto un HUNK di pochi bytes che "varra'" 40*256 bytes al
+momento del caricamento in memoria del file. Il "dcb.b 40*256,0" e' come
+avere un ingombrante sacchetto di monete da 100 lire, mentre il "ds.b 40*256"
+e' come un piccolo biglietto da 100.000 lire. Il risultato e' lo stesso, ma
+il file e' piu' snello.
+
+Da notare che il "ds.b 40*256" non e' seguito dal ",0" come nel "DCB", infatti
+il "DS" indica sempre degli zeri, mentre il DCB puo' mettere in memoria un
+qualsiasi valore ripetuto X volte.
+
+Ora abbiamo il "PEZZO DI CARTA" dove scrivere le nostre cose, ma non abbiamo
+ne' il font ne' la routine che stampa.
+Vediamo cosa e' un FONT e come e' fatto. Un font e' un file che contiene
+le parole e i numeri necessari per scrivere, e puo' essere di vari formati.
+Il font non e' altro che una fila di caratteri uno sotto l'altro, precisamente
+sono TUTTI i caratteri in fila: "ABCDEFGHI...".
+Certi font sono disegnati in .IFF, cioe' una schermata con i caratteri:
+
+	 ------------
+	|ABCDEFGHIJKL|
+	|MNOPQRSTUVWX|
+	|YZ1234567890|
+	|	     |
+	|	     |
+	 ------------
+
+Il disegno viene poi convertito in RAW, e i caratteri sono presi da quella
+figura e copiati nel bitplane: se va stampata una "A", viene copiata dal FONT
+in RAW al BITPLANE, con dei move, e la "A" appare sul bitplane. Cosi' ogni
+volta che serve una "A" sappiamo dove si trova e la copiamo dal FONT, cosi'
+per le altre lettere.
+Parliamo del sistema usato nei font 8x8 in questo corso: i caratteri occupano
+8 pixel*8pixel, dunque sono grandi come il FONT del kickstart. In realta' sono
+piu' stretti in quanto devono contenere anche la "spaziatura" di un pixel tra
+una parola e l'altra, o la scrittura sembrerebbe in corsivo!!
+I caratteri poi sono messi nell'ordine "giusto", ossia che rispetta quello
+ASCII, che e' il seguente:
+
+	dc.b	$1f,' !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNO'
+	dc.b	'PQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~',$7F
+
+Il $1f iniziale e il $7f finale indicano che il primo carattere, lo SPAZIO,
+e' quello dopo il $1f, ossia il $20, segue "!" che e' il $21 eccetera, mentre
+dopo gli ultimi caratteri si arriva al $7f. Questo e' per darvi un'idea della
+disposizione dei caratteri ASCII. Abbiamo gia' parlato del fatto che i numeri
+possono essere anche caratteri ASCII, basta provare con un "?$21", verificando
+che il risultato viene dato in esadecimale ($), decimale, ASCII "...!", e
+binario. Abbiamo anche visto che un:
+
+	dc.b	"CANE"
+
+E' equivalente ad un:
+
+	dc.b	$63,$61,$6e,$65
+
+Infatti "C" in memoria e' $63, "A" e' $61 eccetera.
+Ogni carattere infatti occupa un byte in memoria, e un testo lungo 5000 bytes
+contiene 5000 caratteri.
+Ritornando al nostro font, immaginatevi una figura larga solo 8 pixel, e alta
+abbastanza da contenere tutti i caratteri posti l'uno sotto l'altro:
+
+!
+"
+#
+$
+%
+&
+'
+(
+)
+*
++
+,
+-
+.
+/
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+:
+;
+<
+=
+>
+?
+@
+A
+B
+C
+D
+E
+F
+G
+H
+I
+J
+K
+L
+M
+N
+O
+
+ECCETERA ECCETERA..... 
+
+Il font 8x8 che usiamo nel corso non e' altro che una figura del genere in RAW.
+In realta' questo tipo di font viene fatto normalmente con un apposito EDITOR,
+un programma dedicato al disegno di questi font 8x8 ad un colore.
+Per i font piu' grandi e colorati pero' conviene disegnare le lettere in una
+figura, normalmente 320x256, e usare una routine propria per prelevare i
+caratteri da stampare. Per cominciare pero' vediamo il font piu' semplice come
+viene stampato a video: innanzitutto bisogna preparare una stringa di testo
+con le parole da stampare, ad esempio:
+
+	dc.b	"Prima scritta!"	; nota: si possono usare '' oppure ""
+
+	EVEN				; ossia allinea ad indirizzo PARI
+
+La direttiva EVEN serve ad evitare gli indirizzi dispari per le istruzioni o
+i dati che si trovano sotto il dc.b. Le stringhe di testo sono composte
+di bytes e puo' succedere che siano un numero dispari, in tal caso la label
+sottostante sara' ad un indirizzo dispari, e questo puo' generare errori di
+assemblaggio: infatti, nel 68000, le istruzioni devono sempre essere ad
+indirizzi pari, e anche i dati dovrebbero essere ad indirizzi pari per evitare
+GURU MEDITATION in fase di esecuzione, infatti un MOVE.L o MOVE.W eseguito su
+un indirizzo dispari causa un bel Crash con GURU MEDITATION ed esplosioni.
+Ricordatevi dunque di mettere sempre un EVEN al termine di una stringa di
+testo, o di accertarvi che sia pari.
+Potete anche aggiungere uno zero in piu' al termine della stringa per
+pareggiare il conto, come ho fatto per GfxName:
+
+GfxName:
+	dc.b	"graphics.library",0,0
+
+Potete scrivere anche:
+
+GfxName:
+	dc.b	"graphics.library",0
+	even
+
+Infatti basta uno zero alla fine del testo, l'altro lo mettera' EVEN.
+Dunque, una volta stabilita la stringa di testo da visualizzare, basta vedere
+come copiare i caratteri giusti al posto giusto.
+Vi propongo gia' la routine che stampa un carattere:
+
+PRINT:
+	LEA	TESTO(PC),A0	; Indirizzo del testo da stampare in a0
+	LEA	BITPLANE,A3	; Indirizzo del bitplane destinazione in a3
+	MOVEQ	#0,D2		; Pulisci d2
+	MOVE.B	(A0),D2		; Prossimo carattere in d2
+	SUB.B	#$20,D2		; TOGLI 32 AL VALORE ASCII DEL CARATTERE, IN
+				; MODO DA TRASFORMARE, AD ESEMPIO, QUELLO
+				; DELLO SPAZIO (che e' $20), in $00, quello
+				; DELL'ASTERISCO ($21), in $01...
+	MULU.W	#8,D2		; MOLTIPLICA PER 8 IL NUMERO PRECEDENTE,
+				; essendo i caratteri alti 8 pixel
+	MOVE.L	D2,A2
+	ADD.L	#FONT,A2	; TROVA IL CARATTERE DESIDERATO NEL FONT...
+
+				; STAMPIAMO IL CARATTERE LINEA PER LINEA
+	MOVE.B	(A2)+,(A3)	; stampa LA LINEA 1 del carattere
+	MOVE.B	(A2)+,40(A3)	; stampa LA LINEA 2  " "
+	MOVE.B	(A2)+,40*2(A3)	; stampa LA LINEA 3  " "
+	MOVE.B	(A2)+,40*3(A3)	; stampa LA LINEA 4  " "
+	MOVE.B	(A2)+,40*4(A3)	; stampa LA LINEA 5  " "
+	MOVE.B	(A2)+,40*5(A3)	; stampa LA LINEA 6  " "
+	MOVE.B	(A2)+,40*6(A3)	; stampa LA LINEA 7  " "
+	MOVE.B	(A2)+,40*7(A3)	; stampa LA LINEA 8  " "
+
+	RTS
+
+Avete gia' capito???
+Analizziamola punto per punto:
+
+	LEA	TESTO(PC),A0	; Indirizzo del testo da stampare in a0
+	LEA	BITPLANE,A3	; Indirizzo del bitplane destinazione in a3
+	MOVEQ	#0,D2		; Pulisci d2
+	MOVE.B	(A0),D2		; Prossimo carattere in d2
+
+Fino a qua non ci sono problemi, abbiamo in d2 il valore del carattere, se
+fosse una "A", allora abbiamo $41 in d2
+
+	SUB.B	#$20,D2		; TOGLI 32 AL VALORE ASCII DEL CARATTERE, IN
+				; MODO DA TRASFORMARE, AD ESEMPIO, QUELLO
+				; DELLO SPAZIO (che e' $20), in $00, quello
+				; DELL'ASTERISCO ($21), in $01...
+
+Anche qua cosa succede e' chiaro, vediamo perche' sottraiamo 32 ($20):
+
+	MULU.W	#8,D2		; MOLTIPLICA PER 8 IL NUMERO PRECEDENTE,
+				; essendo i caratteri alti 8 pixel
+	MOVE.L	D2,A2
+	ADD.L	#FONT,A2	; TROVA IL CARATTERE DESIDERATO NEL FONT...
+
+Questa operazione porta ad avere in A2 l'indirizzo del carattere "A" presente
+nel font, ossia l'indirizzo da dove dobbiamo "prendere" il carattere per
+copiarlo nel bitplane che stiamo visualizzando.
+Vediamo cosa e' successo: ricordate che i caratteri sono stati messi nel font
+nello stesso ordine dello standard ASCII? Per cui, disponendo del valore
+ASCII del carattere, in questo caso $41 per la "A", possiamo individuare a che
+distanza dall'inizio del FONT si trova la "A" in RAW! Se ogni carattere e' di
+8x8 pixel, significa che e' lungo 8 bit, ossia un byte a linea * 8 linee, in
+totale 8 bytes.
+Dunque lo spazio (il primo carattere nel FONT) si trova all'inizio del FONT
+stesso e finisce al byte 8, dove inizia "!" (il secondo) , e cosi' via.
+Avendo sottratto $20 al valore ASCII, il valore dello spazio diventera' $00, il
+carattere successivo "!" $01, eccetera (la "A" risultera' $21), dunque basta
+moltiplicare per 8 il numero ottenuto dopo la sottrazione per ricavare la
+distanza, dall'inizio del FONT, del carattere in questione!!! Rivediamo il
+passaggio:
+
+	SUB.B	#$20,D2		; TOGLI 32 AL VALORE ASCII DEL CARATTERE, IN
+				; MODO DA TRASFORMARE, AD ESEMPIO, QUELLO
+				; DELLO SPAZIO (che e' $20), in $00, quello
+				; DELL'ASTERISCO ($21), in $01...
+	MULU.W	#8,D2		; MOLTIPLICA PER 8 IL NUMERO PRECEDENTE,
+				; essendo i caratteri alti 8 pixel
+
+Ora in D2 abbiamo la distanza (l'offset) dell'inizio del carattere dall'inizio
+del FONT! Ora per trovare l'indirizzo effettivo del carattere, aggiungiamo
+la "distanza dall'inizio" che abbiamo in D2 all'indirizzo del FONT:
+
+	MOVE.L	D2,A2
+	ADD.L	#FONT,A2	; TROVA IL CARATTERE DESIDERATO NEL FONT...
+
+Ora abbiamo in a2 l'indirizzo dove si trova il nostro carattere da copiare,
+ad esempio la "A". Bastera' ora copiarla da FONT allo schermo, cioe' al
+BITPLANE 320x256, in cui ogni linea e' lunga 40 bytes:
+
+				; STAMPIAMO IL CARATTERE LINEA PER LINEA
+	MOVE.B	(A2)+,(A3)	; stampa LA LINEA 1 del carattere
+	MOVE.B	(A2)+,40(A3)	; stampa LA LINEA 2  " "
+	MOVE.B	(A2)+,40*2(A3)	; stampa LA LINEA 3  " "
+	MOVE.B	(A2)+,40*3(A3)	; stampa LA LINEA 4  " "
+	MOVE.B	(A2)+,40*4(A3)	; stampa LA LINEA 5  " "
+	MOVE.B	(A2)+,40*5(A3)	; stampa LA LINEA 6  " "
+	MOVE.B	(A2)+,40*6(A3)	; stampa LA LINEA 7  " "
+	MOVE.B	(A2)+,40*7(A3)	; stampa LA LINEA 8  " "
+
+La copia avviene per "linee", infatti il carattere e' alto 8 linee, ognuna
+delle quali e' larga 8 bit (1 byte):
+
+	12345678
+
+	...###.. linea	1 - 8 bit, 1 byte
+	..#...#. 2
+	..#...#. 3
+	..#####. 4
+	..#...#. 5
+	..#...#. 6
+	..#...#. 7
+	........ 8
+
+Dunque per copiarlo una linea alla volta occorre copiarne un byte alla volta.
+Ma lo schermo destinazione e' largo 40 bytes per linea, e dobbiamo considerare
+che ogni linea deve essere allineata l'una sotto l'altra, se non saltiamo 40
+bytes ogni volta copieremmo cosi' il carattere:
+
+	...###....#...#...#...#...#####...#...#...#...#...#...#.........
+
+Invece dobbiamo copiare un byte, poi ANDARE A CAPO saltando 40 bytes, e
+copiare un'altro byte:
+
+	MOVE.B	(A2)+,(A3)	; stampa LA LINEA 1 del carattere
+
+Sul monitor:
+
+	...###..
+
+	MOVE.B	(A2)+,40(A3)	; stampa LA LINEA 2 (40 bytes dopo)
+
+Sul monitor:
+
+	...###..
+	..#...#.
+
+
+	MOVE.B	(A2)+,40*2(A3)	; stampa LA LINEA 3 (80 bytes dopo)
+
+Sul monitor:
+
+	...###..
+	..#...#.
+	..#...#.
+
+Eccetera. Per uno schermo largo 80 bytes (640x256 HIRES) basterebbe cambiare
+la routine cosi':
+
+	MOVE.B	(A2)+,(A3)	; stampa LA LINEA 1 del carattere
+	MOVE.B	(A2)+,80(A3)	; stampa LA LINEA 2  " "
+	MOVE.B	(A2)+,80*2(A3)	; stampa LA LINEA 3  " "
+	MOVE.B	(A2)+,80*3(A3)	; stampa LA LINEA 4  " "
+	MOVE.B	(A2)+,80*4(A3)	; stampa LA LINEA 5  " "
+	MOVE.B	(A2)+,80*5(A3)	; stampa LA LINEA 6  " "
+	MOVE.B	(A2)+,80*6(A3)	; stampa LA LINEA 7  " "
+	MOVE.B	(A2)+,80*7(A3)	; stampa LA LINEA 8  " "
+
+Vediamo in pratica la stampa di questa "A" su un bitplane in Lezione6a.s
+
+Ora passeremo a stampare un'intera riga di testo con Lezione6b.s
+
+E infine stampiamo quante righe vogliamo in Lezione6c.s. Questa routine e'
+quella DEFINITIVA, che potete usare quando volete scrivere qualcosa a video.
+
+Perche' non disegnarsi il proprio font di caratteri? In Lezione6c2.s il FONT
+e' nel listato in dc.b come questo esempio:
+
+; "B"
+	dc.b	%01111110
+	dc.b	%01100011
+	dc.b	%01100011
+	dc.b	%01111110
+	dc.b	%01100011
+	dc.b	%01100011
+	dc.b	%01111110
+	dc.b	%00000000
+
+I caratteri sono messi in memoria con dei dc.b % (binario). Potete cambiare
+ogni singolo carattere come volete. Se fate un vostro font, salvatelo su
+un disco formattato o sull'HARD DISK!
+
+
+Ora abbiamo l'occasione di provare una cosa che non abbiamo mai fatto prima:
+nello stesso schermo proviamo a far convivere una figura in LOWRES a 8 colori
+e un bitplane in HIRES. L'Amiga infatti puo' visualizzare contemporaneamente
+diverse risoluzioni video, (cosa che non mi risulta possa fare il PC MSDOS),
+basta mettere un WAIT nella copperlist e ridefinire sotto di esso il BPLCON0,
+proprio come se definissimo i colori per fare una sfumatura!
+Per esempio potremmo visualizzare dalla prima linea alla linea $50 una figura
+in HAM a 4096 colori in LOWRES, sotto di essa una in HIRES a 16 colori, sotto
+ancora una in LOWRES a 32 colori, e cosi' via. In alcuni giochi per esempio
+la schermata dove si muovono i personaggi e' in LOWRES, mentre il pannello
+con il punteggio e simili e' in HIRES (vedi AGONY).
+Visualizziamo subito la figura in LOWRES sopra una in HIRES in Lezione6d.s
+
+Vediamo ora un "trucchetto" che ci permette di ottenere un effetto di "RILIEVO"
+alle parole che stampiamo: in Lezione6e.s attiviamo 2 bitplane anziche' 1 e
+sovrapponiamo il secondo al primo, ma il secondo spostato in basso di una
+linea. Cosa succede se mettiamo due immagini uguali trasparenti l'una
+sull'altra? L'immagine si sdoppia!!! E se scegliamo i colori giusti, facendo
+piu' chiaro lo sdoppiamento in "alto" e piu' scuro quello in "BASSO" cosa
+succede? Che abbiamo capito come funziona Lezione6e.s
+
+A proposito di sovrapposizioni, perche' non attivare un bitplane "SOPRA" una
+figura per scriverci?? Vediamo in Lezione6f.s cosa succede.
+
+In Lezione6g.s viene evidenziato l'effetto "TRASPARENZA" muovendo la scritta
+sopra la figura.
+
+In Lezione6h.s, invece, troverete un modo per stampare testi a 3 colori,
+sovrapponendo due testi in due bitplanes.
+
+In Lezione6i.s viene fatto lampeggiare uno dei 3 colori del testo, usando
+una TABELLA di valori predefiniti. Abbiamo gia' parlato di TABELLE nella
+LEZIONE1, ora vediamo in pratica il vantaggio che portano.
+
+In Lezione6l.s viene usata una variazione della routine che legge da una TAB
+per var variare un colore; la variazione consiste nel fatto che anziche'
+leggere dall'inizio alla fine della tabella e ripartire da capo, rilegge la
+tabella all'indietro, cioe' dalla fine all'inizio.
+
+Le tabelle possono essere utili o indispensabili per molti usi, ad esempio per
+simulare movimenti di rimbalzi o di oscillazioni. Vediamo in pratica la
+superiorita' dell'uso di una tabella rispetto a semplici ADD e SUB nel
+movimento di una figura in Lezione6m.s
+
+
+A proposito di movimento, per ora abbiamo visto lo scroll orizzontale tramite
+il BPLCON1 ($dff102) che permette uno scorrimento massimo di 16 pixel.
+Ma allora come si fa a scorrere lo schermo a destra e a sinistra quanto
+vogliamo?? La risposta e' abbastanza semplice: basta usare anche i puntatori
+ai bitplanes! Infatti, tramite i puntatori ai bitplanes abbiamo gia' visto
+che possiamo scorrere in alto e in basso, basta aggiungere o sottrarre la
+lunghezza di una linea (40 in lowres e 80 in HIRES). Ma possiamo scorrere
+anche in avanti e indietro, per la precisione a "scatti" di 8 pixel alla volta,
+basta sottrarre o aggiungere 1 al puntatore bitplane e abbiamo spostato a
+destra o a sinistra la figura di un byte, ossia 8 bit, ossia 8 pixel.
+Se possiamo scorrere di 8 pixel alla volta con i Bitplane Pointers e di 1 alla
+volta con il $dff102 (BPLCON1), bastera' scorrere 8 pixel uno alla volta col
+$dff102, appunto, poi "scattare" 8 pixel piu' avanti con un:
+
+ subq.l #1,BITPLANEPOINTER
+
+E azzerare contemporaneamente il BPLCON1 ($dff102), andando al nono pixel,
+dopodiche' scorrere di altri 8 pixel col $dff102 di un pixel alla volta,
+giungendo al pixel 9+8= 11, poi scattare in avanti di 8 pixel col Bitplane
+Pointer eccetera. Negli esempi pero', considerando che il $dff102 puo' scorrere
+fino ad un massimo di $FF, ossia da 0 a 15, e non solo da 0 a 7, ho adottato
+questa tecnica: per scorrere di 16 pixel alla volta basta aggiungere o
+sottrarre 2 ai puntatori bitplane (dato che con 1 spostavamo la PIC di 8 pixel)
+Dunque scorro un pixel alla volta col $dff102 usando la sua possibilita'
+massima, cioe' da $00 a $FF, totale 16 posizioni, dopodiche' "scatto" ai 16
+pixel seguenti con un ADDQ o SUBQ #2,BITPLANEPOINTERS.
+Ecco una routine che scorre verso destra un bitplane di un pixel alla volta per
+quanti pixel vogliamo: considerate che MIOBPCON1 e' il byte del $dff102
+
+
+Destra:
+	CMP.B	#$ff,MIOBPCON1	; siamo arrivati al massimo scorrimento? (15)
+	BNE.s	CON1ADDA	; se non ancora, scorri in avanti di 1
+				; con il BPLCON1
+
+;	Legge l'indirizzo del bitplane
+
+	LEA	BPLPOINTERS,A1	; Con queste 4 istruzioni preleviamo dalla
+	move.w	2(a1),d0	; copperlist l'indirizzo dove sta puntando
+	swap	d0		; attualmente il $dff0e0 e lo poiniamo in d0
+	move.w	6(a1),d0
+
+;	Scorre a destra di 16 pixel col puntatore bitplane
+
+	subq.l	#2,d0		; punta 16 bit piu' indietro ( la PIC scorre
+				; verso destra di 16 pixel)
+
+;	Fa ripartire da zero il BPLCON1
+
+	clr.b	MIOBPCON1	; azzera lo scroll hardware BPLCON1 ($dff102)
+				; infatti abbiamo "saltato" 16 pixel con il
+				; bitplane pointer, ora dobbiamo ricominciare
+				; da zero con il $dff102 per scattare a
+				; destra di un pixel alla volta.
+
+	move.w	d0,6(a1)	; copia la word BASSA dell'indirizzo del plane
+	swap	d0		; scambia le 2 word
+	move.w	d0,2(a1)	; copia la word ALTA dell'indirizzo del plane
+	rts			; esci dalla routine
+
+CON1ADDA:
+	add.b	#$11,MIOBPCON1	; scorri a destra di 1 pixel la figura
+	rts			; esci dalla routine
+
+
+La routine aumenta di uno il BPLCON1 ($dff102), facendolo passare per le 16
+posizioni possibili: 00,11,22,33,44,55,66,77,88,99,aa,bb,cc,dd,ee,ff dopodiche'
+salta al pixel ff+1 facendo 2 operazioni:
+
+1) Puntare 2 bytes (1 word, 16 bits) piu' indietro i puntatori bitplanes,
+   facendo scorrere a destra di 16 pixel la figura (dunque 1 pixel dopo la
+   posizione $FF, ossia 15 raggiunta il fotogramma precedente dal $dff102
+
+2) Azzerare il $dff102, dato che abbiamo "saltato" 16 pixel, altrimenti si
+   sommerebbero i 16 pixel aggiunti col Puntatore Bitplane e i 15 ($FF)
+   raggiunti col $dff102 (BPLCON1). Invece azzerando il BPLCON1 ripartiamo
+   da $00+16= sedicesimo pixel, dopodiche' andremo ai seguenti 15 con
+   il BPLCON1, lasciando inalterato il puntatore bitplane.
+
+Se non fosse ancora chiaro, seguite questo schemino, tenendo presente che # e'
+la "figura" che spostiamo verso destra:
+
+				; VAL. BPLCON1	- BYTE SOTTRATTI AI PUNT. PLANE
+
+#				;	$00	-	0	- tot. pixel:
+ #				;	$11	-	0	-	1
+  #				;	$22	-	0	-	2
+   #				;	$33	-	0	-	3
+    #				;	$44	-	0	-	4
+     #				;	$55	-	0	-	5
+      #				;	$66	-	0	-	6
+       #			;	$77	-	0	-	7
+	#			;	$88	-	0	-	8
+	 #			;	$99	-	0	-	9
+	  #			;	$aa	-	0	-	10
+	   #			;	$bb	-	0	-	11
+	    #			;	$cc	-	0	-	12
+	     #			;	$dd	-	0	-	13
+	      #			;	$ee	-	0	-	14
+	       #		;	$ff	-	0	-	15
+		#		;	$00	-	2	-	16
+		 #		;	$11	-	2	-	17
+		  #		;	$22	-	2	-	18
+		   #		;	$33	-	2	-	19
+		    #		;	$44	-	2	-	20
+		     #		;	$55	-	2	-	21
+		      #		;	$66	-	2	-	22
+		       #	;	$77	-	2	-	23
+
+eccetera....
+
+Questo schema parla da solo: per esempio se vogliamo scorrere verso destra di
+22 pixel un bitplane basta sottrarre 2 al bitplane pointer e mettere $66 al
+BPLCON1 ($dff102).
+
+Per scorrere a sinistra dovremo invece aggiungere 2 ai puntatori bitplanes
+ogni 16 pixel e procedere al contrario con il $dff102: $ff,$ee,$dd.....
+
+Vediamo in Lezione6n.s la routine in funzione.
+Noterete un'imprevisto: sul lato sinistro avviene un disturbo a scatti; questo
+non e' dovuto ad errori nella routine, ma ad una caratteristica dell'hardware
+di Amiga, per toglierlo basta un piccolo accorgimento gia' presente nelle
+modifiche consigliate del listato stesso.
+
+Gia' che sappiamo scorrere quanto vogliamo anche in orizzontale, perche' non
+scorrere un bitplane piu' grande della finestra video?? Esattamente facciamo
+scorrere uno schermo largo 640 pixel in uno largo 320 spostandolo a destra e
+sinistra, tutto questo in Lezione6o.s
+
+Abbiamo gia' visto per le tabelle l'utilizzo di una longword come puntatore
+ad un indirizzo:
+
+PUNTATORE:
+	DC.L	TABELLA
+
+Nella longword "PUNTATORE" viene assemblato l'indirizzo di tabella, per cui
+possiamo tenere "il conto" di dove siamo arrivati nella tabella aggiungendo
+o sottraendo la lunghezza di un elemento della tabella.
+Dobbiamo salvare l'indirizzo a cui siamo arrivati ogni volta perche' la
+routine viene eseguita ogni fotogramma e non continuamente, dunque possono
+essere eseguite anche altre routine prima che quella routine sia eseguita
+nuovamente. Quando questa routine viene rieseguita, deve continuare a prelevare
+valori dalla tabella da dove era rimasta la volta prima, e lo puo' fare
+leggendo l'indirizzo in PUNTATORE: con un semplice:
+
+	MOVE.L	PUNTATORE(PC),d0	; In d0 l'indirizzo dove siamo arrivati
+					; l'ultima volta.
+
+Prima di uscire dalla routine bastera' salvare l'ultima posizione.
+Questo espediente puo' essere usato per molti scopi, per esempio per poter
+stampare un carattere solo ogni fotogramma, anziche' stampare tutto il testo
+e poi vederlo. Per fare cio' basta modificare la routine PRINT: e farsi due
+puntatori: uno che punti all'ultimo carattere stampato, ed uno che punti
+all'ultimo indirizzo nel bitplane dove abbiamo stampato l'ultimo carattere.
+In questo modo e' come se stampassimo un carattere, congelassimo la routine
+per tutto un fotogramma, la riattivassimo per stampare un carattere, poi la
+ricongelassimo eccetera. In realta' anziche' congelarla la eseguiamo per
+stampare un solo carattere, poi salviamo il punto dove siamo arrivati, usciamo
+dalla routine, aspettiamo che passi il fotogramma, rieseguiamo la routine
+ripartendo dal punto dov siamo arrivati, risalviamo tutto, usciamo eccetera.
+Il listato che mette in pratica questa possibilita' e' Lezione6p.s
+
+
+In un bitplane oltre che stampare testo possiamo anche creare disegni con
+routine apposite, come scacchiere, trame e tessiture. Basta porre ad 1 i bit
+giusti!!! In Lezione6q.s ci sono delle routine esempio.
+
+
+Siamo giunti alla fine della LEZIONE6, non ci resta che mettere insieme i
+listati e le "novita'" di questa lezione nel consueto listatone finale di
+esempio con musica: Lezione6r.s
+
+
+Ora passeremo allo studio degli sprite. Quello che dovete fare e' caricare
+la LEZIONE7.TXT, dopodiche' dovete cambiare il path per caricare gli incbin dei
+suoi listati, con "V DF0:SORGENTI3"
+I sorgenti, infatti, si trovano nella directory SORGENTI3 del disco 1.
+

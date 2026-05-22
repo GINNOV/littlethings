@@ -1,0 +1,36 @@
+Short:        V1.0, automatic localization for C/C++ sourcecodes
+Author:       meixner@rbg.informatik.th-darmstadt.de (Matthias Meixner)
+Uploader:     meixner rbg informatik th-darmstadt de (Matthias Meixner)
+Architecture: m68k-amigaos
+
+
+                           Background
+                           ----------
+From version 2.1 of the Amiga operatingsystem on, it is possible to generate
+programs that support more than one language. One language is compiled into
+the program and the other languages are stored in the so called catalogs.
+The operatingsystem determines the language on runtime and loads the corres-
+ponding catalog. If you want to write a program that supports catalogs, you
+must replace all strings by a localizeable version, since the strings are not
+the same in all languages. The goal of C2Local was to allow the programmer to
+continue programming in the old way, using normal strings, since such source-
+code is more readable, and then automatically generate a localized version of
+this program. C2Local allows this for nearly all C and C++ sourcecodes. Pro-
+grams like CatComp generate sourcecode to access localized strings, but the
+programmer must adapt his program by hand. "Localize" is able to patch source-
+codes to support locale.library, but it leaves many cases, which cannot be
+automatically localized, e.g. the static initialization of structures. Now
+C2Local can even localize most of these cases. There is only one exception:
+the static initialization of char-arrays.
+
+e.g.
+
+   char a[]="test";
+
+cannot be localized automatically, but the more important case
+
+   char *a="test"
+
+can be localized using C2Local. This latter case is far more often used, e.g.
+it is required for static initialization of menus. Therefore one can localize
+menus or gadgets without any problems using C2Local.

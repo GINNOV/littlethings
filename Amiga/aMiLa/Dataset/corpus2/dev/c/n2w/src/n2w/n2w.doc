@@ -1,0 +1,89 @@
+Short:	  Convert numbers to words w/source
+Author:   Chris F.A. Johnson
+Uploader: Chris F.A. Johnson <bq933@torfree.net>
+Type:	  dev/c
+Requires: ANSI C compiler (on almost any system); binary requires an Amiga
+
+  Copyright 2000, Chris F.A. Johnson
+  This program is released under the GNU General Public Licence.
+
+   Usage: n2w [OPTIONS] num [num ...]
+
+   OPTIONS:
+    -$, --dollars	       display as dollars and cents
+    -U units, --units=units    print "units" after number
+
+       By default, n2w gives the number by itself, e.g.:
+	    n2w 21 => twenty-one
+
+       and fractions are printed as:
+	    n2w 4.56 => four point five six
+
+       With the -$ or --dollars option, these would appear as:
+	    n2w -$ 21	  => twenty-one dollars only
+	    n2w -$ 4.56   => four dollars and 56 cents
+
+       By selecting another unit, e.g. degrees, these would become:
+	    n2w -U degrees 21	  => twenty-one degrees
+	    n2w -U degrees 4.56   => four point five six degrees
+
+
+    -u,  --nand, --US	do not use "and" after "hundred"
+       In the USA, unlike other English-speaking countries, the "and" is
+       ommitted after the word hundred, e.g.:
+	    n2w 234	    => two hundred thirty-four
+       instead of:
+	    n2w 234	    => two hundred and thirty-four
+
+
+    -&,  --ampersand	use "&" instead of "and" after "hundred", etc.
+
+	 --help 	display this help and exit
+
+    -v,  --verbose	set verbose mode on
+    -Vn, --verbose=n	set level of verbosity
+	Verbose mode does nothing at the moment; I include it in all my
+	programs  for help in debugging. Is there a possible use for it in
+	n2w?
+
+	 --version	output version information and exit
+
+  Options may be placed anywhere on the command line EXCEPT that a negative
+  number must be preceded by "--" (to indicate end of dashed options).
+
+  BUGS: No warning is given if number supplied exceeds the limit
+
+
+  Files included in this package:
+
+	n2w-main.c     - command line interface for n2w()
+	n2w.c	       - n2w() can be used in your own progs.
+	n2w.h	       - header to #include in order to use nw2()
+	Makefile       - Makefile for command line prog. (gcc)
+	defs.h	       - miscellaneous macros & defines
+	getopt.c       \    GNU source for getopt, getopt_long, etc.
+	getopt.h	|-  allowing long options and options
+	getopt1.c      /    anywhere on the command line
+	n2w.doc        - this file
+	n2w.readme     - the bare bones of this file
+	n2w	       - Amiga binary (should run on any Amiga, I think)
+	COPYING        - GNU General Public Licence
+
+  HISTORY:
+
+      I originally wrote n2w in 1987 in ARexx, then converted it to C, in
+      order to print cheques. As I am planning to move most of my work from
+      the Amiga to a Linux box, I have been converting all my programs to a
+      more-or-less standard C. I could not find the C source to n2w, so I
+      rewrote it yesterday, adding a number of features.
+
+      It could do with some cleaning up, and there are probably obvious
+      things I have forgotten to include, but it does the job I originally
+      intended: converting relatively small amounts for printing cheques.
+
+      Please let me know if you find any bugs, or have any suggestions for
+      improvement.
+
+				-- Chris F.A. Johnson, 4 January 2000
+				   bq933@torfree.net
+

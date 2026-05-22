@@ -1,0 +1,156 @@
+Short:        BrainF_ck Interpreter for AMIGA Python 2.4.6.
+Author:       wisecracker.bazza@gmail.com (Barry Walker, G0LCU)
+Uploader:     LAG (Lincolnshire Amiga Group)
+Type:         dev/src
+Version:      1.00.10
+Architecture: generic
+Distribution: Aminet
+Replaces:     dev/src/BrainF_ck_Int._Python.lha
+
+============================================================================
+
+Architectures: AMIGA A1200(HD), FS-UAE, (OSX 10.15.7 and Ubuntu).
+-----------------------------------------------------------------
+
+  MINIMUM Requirements Are:-
+  --------------------------
+
+        Stock A1200(HD) and 4MB Fastram.
+        FS-UAE 3.0.2, minimum.
+        Standard AMIGA OS 3.0.x install or better.
+        Python Version 2.4.6 install, (full install on AMINET):
+        http://aminet.net/package/dev/gg/python2.4-m68k-amigaos
+
+        NOT tested on WinUAE but it should work.
+
+----------------------------------------------------------------------------
+
+  History:-
+  ---------
+
+  Now replaced with:- dev/src/BrainF_ck_Interpreter.lha
+  06-05-2021.
+  -----------
+  Version 1.00.10. Cured a silly bug in the original code and added the code
+                   version that caused an occasional error on FS-UAE.
+
+  First uploaded as:- dev/src/BrainF_ck_Int._Python.lha
+  15-04-2021.
+  -----------
+  Version 1.00.00. Probably the one and only upload for this archive.
+  (This version reached 203 downloads.)
+
+----------------------------------------------------------------------------
+
+  General:-
+  ---------
+
+  (Apologies for any typos, etc...)
+  This is a very basic, simple Python BrainFuck Interpreter.
+  It was inspired by this Python 3.x.x code:
+
+  https://rosettacode.org/wiki/Execute_Brain****/Python
+
+  I re[-]factored it to work on an AMIGA Python 2.4.6 for we AMIGAns.
+  If you have never heard of BrainFuck then read the 'wiki' on it here:
+
+  https://en.wikipedia.org/wiki/Brainfuck
+
+  I don't think Python 1.4.0 to 2.0.1 is possible using this simplicity of
+  code but may be possible as a more verbose longhand style of program.
+
+  There are 6 files inside the drawer:
+  1) This readme file.
+  2) BrainFuck.py - the naive Python code.
+  3) BrainFuck_POP.py - the code that had an occasional error on FS-UAE.
+  4) BrainFuck_Notes.txt - a very basic rundown of how BrainFuck works.
+  5) Goodbye.bf - a BF source file that prints Goodbye, World!
+  6) Hello.bf - a BF source file that prints the usual Hello World!
+  7) BrainFuck_Bell.sh - a *NIX 'dash' shell script that rings the bell.
+
+  All the source files have marginally differing BrainFuck approaches to
+  get the job done.
+
+  The shell script is for 'dash' and will need changing to suit your shell
+  if you don't have 'dash'. It saves the BrainFuck script inside the /tmp/
+  drawer of your *NIX flavour that you might use. That path to BrainFuck.py
+  will need changing too but it is assumed that python itself is in the
+  *NIX path.
+
+  There may be bugs and limitations but it is a script and you can do with
+  it as you please. Read 'The Legal Stuff.' below.
+  I am a bit of a naive coder and choose to use 'x = x + 1' instead of
+  'x += 1' and other small code snippets.
+  In the code from the URL above there is a line:
+
+  sptr = loop_stack.pop()
+
+  It does work fine on a Classic AMIGA and now added for fullness. It is a
+  fraction quicker too.
+  I took it out because FS-UAE had a problem with it although Python 2.4.6
+  does have it as an attribute, hence the long hand code. It might be a
+  problem of Python running under FS-UAE, who knows.
+  All the __variables__ have more verbose names to make it easier to
+  read and understand.
+
+  LBNL, the archive of Python 2.4.6 is limited, as many of the expected
+  builtins are not there, 'math' and 'cmath' are but two. Also the inbuilt
+  floating point arithmetic is poor compared to AMIGA Python 1.4.0 - 2.0.1.
+  It does run under a stock AMIGA A1200(HD) and requires no extras.
+
+  I look forwards to seeing some BrainFuck code snippets on here. <wink>
+  OR...
+  Maybe a vastly improved BF Interpreter, in AmigaBASIC for A500 users. ;oO
+
+  Enjoy...
+
+  Bazza...
+
+----------------------------------------------------------------------------
+
+  Lincolnshire Amiga Group:
+  https://lincsamiga.org.uk/wordpress/
+
+----------------------------------------------------------------------------
+
+  This archive is issued under the CC0 Licence. Public Domain.
+
+----------------------------------------------------------------------------
+
+                                IMPORTANT:-
+                                -----------
+
+    The Legal Stuff:-
+    -----------------
+
+    This code is CC0 licenced. (Public Domain.)
+
+    The author is not responsible for any damage to, or loss of, or failure
+    of equipment or data caused in any way by the use of this code.
+
+    There is NO warranty with the use of this software release and
+    YOU USE IT AT YOUR OWN RISK.
+
+----------------------------------------------------------------------------
+
+    Testing Evaluation:-
+    --------------------
+
+    A1200(HD) and FS-UAE conditions were/are running standard OS 3.0.x and
+    using standard ~topaz 8~ fonts throughout. The minimum hardware and
+    software requirements ARE needed however.
+    I have no idea what strange configuration setups will create so refer
+    to the ~The Legal Stuff~ above.
+
+----------------------------------------------------------------------------
+
+    Barry Walker, G0LCU.
+
+----------------------------------------------------------------------------
+
+    A very useful HardWare related site, (C) Anthony Hoffman, for
+    modifications, schematics, repairs and the like is:-
+
+                          http://amiga.serveftp.net/
+
+============================================================================

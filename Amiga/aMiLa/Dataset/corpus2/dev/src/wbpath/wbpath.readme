@@ -1,0 +1,13 @@
+Short:        Clone the Workbench process's command path
+Author:       rbabel@babylon.pfm-mainz.de (Ralph Babel)
+Uploader:     rbabel babylon pfm-mainz de (Ralph Babel)
+Type:         dev/src
+Architecture: m68k-amigaos
+
+Workbench processes do not operate in a CLI environment, so
+they cannot inherit the Workbench path, and new shells
+spawned by such processes via SystemTagList() start with an
+"empty" path. The function CloneWorkbenchPath() creates a
+local copy of the current Workbench path, usually for the
+purpose of it being passed to SystemTagList() or to
+CreateNewProc() via the NP_Path tag.

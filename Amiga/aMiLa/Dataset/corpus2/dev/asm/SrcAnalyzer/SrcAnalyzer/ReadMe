@@ -1,0 +1,71 @@
+*************************************************************************
+*									*
+*	Conditions of use			SrcAnalyzer		*
+*	-----------------			-----------		*
+*									*
+*	This program has been provided for the enjoyment of the masses.	*
+*	It is Public Domain.						*
+*	Since the author doesn't ask for anything in return, the user	*
+*	will accept the following conditions:				*
+*									*
+*	1) In no case whatsoever shall the author be liable for any	*
+*	   damages, losses etc... due to the use of this program.	*
+*	2) Distribution of the program is only allowed subject to the	*
+*	   following restrictions:					*
+*									*
+*	2.a) No file part of this distribution will be omitted or	*
+*	     modified in any way.					*
+*	2.b) None of the files which are part of this distribution	*
+*	     should be stored on environmentally unfriendly media.	*
+*	     (e.g. paper! (listings, faxes))				*
+*									*
+*					Laurence Vanhelsuwé		*
+*					22-FEB-92			*
+*									*
+*************************************************************************
+
+			Program Title : SrcAnalyzer
+			---------------------------
+			Author : Laurence Vanhelsuwé
+			----------------------------
+
+1. How to "install":
+   -----------------
+
+	"SrcAnalyzer" is a standalone executable.
+	It doesn't need any assigns or run-time files.
+
+2. How to use it:
+   --------------
+
+	SrcAnalyzer is used to analyse 68000 source files to determine
+	mnemonic frequencies.
+	The program produces an ASCII file called "chart.dat" of the format
+
+		:
+	XXXXX MNEM
+	XXXXX MNEM
+	XXXXX MNEM
+		:
+
+	Where XXXXX is a decimal integer and MNEM is the assembler mnemonic
+	string (Use program "Chart" to display a bargraph of this data).
+	Any source lines with unknown mnemonics are dumped to standard out.
+
+	I wrote this program to get an idea of which 68K instructions are
+	most frequently used.
+	This information in turn can be used to optimize the parsing of
+	mnemonics in a 68K assembler.
+
+
+	Any comments, ideas or bug reports? 
+	My name and address are:
+	
+	Laurence Vanhelsuwé
+	Christinastraat 105
+	8400 Oostende
+	Belgium
+
+
+
+							Enjoy !

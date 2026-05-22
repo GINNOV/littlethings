@@ -1,0 +1,42 @@
+
+	Source docs - Mike Cross.
+	
+
+	All source supplied by me on this ACC disk is full Public
+	Domain.  This means you can use it as you please with no
+	conditions whatsoever.  If you do actually use something of mine
+	in a demo/production - please let me see it!  I would very
+	much like to see my source being put to use.  The source
+	included this month includes :-
+	
+	Sprites - two starfields and a 16 colour animation routine.
+	Read sprite tutorial for a full explanation of using sprites.
+	
+	Coppers - Cycling (again!) and drawing copper bars with the
+	blitter.   The blitter copper bars where my preliminary
+	attempts at a plasma routine.  The plasma has progressed since
+	these early efforts and I hope to include it on ACC soon.
+	
+	Timer - A simple stop watch type routine.
+	
+	
+	All of my routines use a macro include file titled 'MyMacros.i'
+	(how original)  This file should be included with these sources
+	and should be copied into your include/misc/ directory.  
+	Remember - Only copy the file onto a back-up of your DevPac II
+	disk - Never the original.  I used to use another perosnal
+	include file called 'hardware/bplconbits.i'  If ever you come
+	accross code which asks for this file - delete it from the
+	include list - I don't use it anymore.
+	
+	Warning ->  When opening libraries I usually specify Version 34
+	(V1.3 Amiga)  If you only have a version 1.2 Amiga you will need
+	to alter this number to either 33 (V1.2) or zero (any version)
+	
+	If you notice any comments in my source which don't seem to apply
+	to anything relevant - Ignore them - they are probably there
+	by mistake!
+	
+	Mike Cross, September 1991
+	
+	 

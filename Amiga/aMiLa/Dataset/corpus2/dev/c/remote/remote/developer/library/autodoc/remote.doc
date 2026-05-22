@@ -1,0 +1,160 @@
+TABLE OF CONTENTS
+
+remote.library/RemoteInit
+remote.library/RemoteAdd   
+remote.library/RemoteRemove
+remote.library/RemoteOpen
+remote.library/RemoteValidate
+
+remote.library/RemoteInit                 remote.library/RemoteInit
+
+    NAME
+        RemoteInit - Initialize remote.library (optional)
+
+    SYNOPSIS
+        error = RemoteInit()
+
+        int error = RemoteInit(void)
+             D0
+    FUNCTION
+        Initializes library before first use (optional)
+
+    INPUTS
+
+    RESULTS
+        error - error code or 0 if successful
+
+    SEE ALSO
+        RemoteError
+
+    BUGS
+
+
+remote.library/RemoteAdd                  remote.library/RemoteAdd
+
+    NAME
+        RemoteAdd - add new application to database
+
+    SYNOPSIS
+        error = RemoteAdd(config)
+
+        int error = RemoteAdd(char *)
+             D0                A0
+    FUNCTION
+        Adds a new application entry to the database of supported
+        applications.
+
+    INPUTS
+        config - application configuration string (LF-terminated)
+
+    RESULTS
+        error - error code or 0 if successful
+
+    SEE ALSO
+        RemoteError
+
+    BUGS
+
+remote.library/RemoteRemove               remote.library/RemoteRemove
+
+    NAME
+        RemoteRemove - remove application from database
+
+    SYNOPSIS
+        error = RemoteRemove(appname)
+
+        int error = RemoteRemove(char *appname)
+             D0                       A0
+
+    FUNCTION
+        Removes specified application(s) from the database of supported
+        applications.
+
+    INPUTS
+        appname - application name; may contain wildcards
+
+    RESULTS
+        error - error code or 0 if successful
+
+    SEE ALSO
+        RemoteError
+
+    BUGS
+
+remote.library/RemoteOpen                 remote.library/RemoteOpen
+
+    NAME
+        RemoteOpen - open file in a remote application
+
+    SYNOPSIS
+        error = RemoteOpen(class, appname, file, flags)
+
+        int error = RemoteOpen(char *, char *, char *, int)
+             D0                 A0      A1      D0      D1
+
+    FUNCTION
+        Open specified file
+
+    INPUTS
+        class   - class ID string
+        appname - application name (or NULL); may contain wildcards
+        file    - file to open (or NULL)
+        flags   - flags (see remote.h)
+
+    RESULTS
+        error - error code or 0 if successful
+
+    SEE ALSO
+        RemoteError
+
+    BUGS
+
+
+remote.library/RemoteError                remote.library/RemoteError
+
+    NAME
+        RemoteError - return the text associated with an error code
+
+    SYNOPSIS
+        text = RemoteError(error)
+
+        char text = RemoteError(int error)
+              D0                D0
+
+    FUNCTION
+        Returns the text associated with an error code
+
+    INPUTS
+        error - error code
+
+    RESULTS
+        text - error text
+
+    SEE ALSO
+
+    BUGS
+
+remote.library/RemoteValidate             remote.library/RemoteValidate
+
+    NAME
+        RemoteValidate - rebuild application database
+
+    SYNOPSIS
+        error = RemoteValidate(folder, flags)
+
+        int error = RemoteValidate(char *folder, int flags)
+            D0                         A0           D0
+
+    FUNCTION
+        Scans specified folder and rebuilds application database
+
+    INPUTS
+        folder - directory name (or NULL for all drives)
+        flags  - flags (see remote.h)
+
+    RESULTS
+        error - error code or 0 if successful
+
+    SEE ALSO
+
+    BUGS

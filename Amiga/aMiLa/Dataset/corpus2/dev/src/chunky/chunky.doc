@@ -1,0 +1,44 @@
+CHUNKY ROTATION DEMO, (c) 1994 RANULF DOSWELL.
+
+Well here it is. The much eagerly awaited chunky rotation demo...
+
+It seemed too much including both the executable file _and_ the source brush,
+and so as the executable compressed to a smaller file than the source (it's
+true!! ;) I have provided the utility to create data files...
+
+The utility dump (and source dump.c) was modified from tmapdemo to output a
+12-bit colour value for each pixel in the source bitmap, and this is what
+you need for a picture.
+
+Make a 256x256 pixel brush, and type "dump <brushname> pic" and then assemble
+the source (RotatePicture.s) and marvel and the result.
+
+I fyou use this then please credit me somewhere. I was going to use this in
+an AGA megademo (and so not provide source to Internet) but I felt guitly, so
+I gave in. Please do not take the credit for this work.
+
+I am currently doing my A-level exams, and have no tru internet access of my
+own, so it is hard to contact me by e-mail, so try s-mail instead. I will be
+around comp.sys.amiga.programmer as from October 1994, so you can find me there!
+
+My address is:
+ Ranulf Doswell, 1 Ayr Street, Lancaster, Lancashire, LA1 3DT, England
+
+If you _must_ use e-mail then write to my friend at csuoj@csv.warwick.ac.uk,
+but please only write if absolutely required.
+
+I am currently working on a Doom-type game (straight after my exams) so watch
+out for this in late 1994. I have pretty much worked out in my head some ideas
+to virtually eliminate all multiplications during screen update, so it should
+be fast. Please provide any feedback with this idea, and also for this demo.
+
+If you have a machine other than a base (unexpanded) 1200 (like me:( then
+please tell me what screen-sizes you can run at and still get 25fps (for the
+doom conversion...)
+
+Idea was originally based upon chopper code (COPASM.A) by Patrick van Logchem
+which reminded me of an idea I had once, but forgot all about until now...
+
+I have tried fiddling with HTOTAL as suggested on c.s.a.p, but I have found
+that it doesn't work with TV's (like mine...sobsob) and so I haven't used that
+speedup. Please don't use it - it'll alienate your target audience...

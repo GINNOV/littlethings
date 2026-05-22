@@ -1,0 +1,39 @@
+Short:        Best scrolling algor. for games (doc+src)
+Author:       georg.steger@rolmail.net (Georg Steger)
+Uploader:     georg steger rolmail net (Georg Steger)
+Type:         dev/src
+Version:      1.0
+Requires:     OS 3.0, OCS/ECS/AGA, 15khz Monitor (or scandoubler), Joystick
+Architecture: m68k-amigaos
+
+In this archive you find the fastest possible scrolling algorithms for
+block-based (tile-based) games like Turrican, Giana Sisters, Lionheart,
+Battle Squadron, Z-Out, R-Type, ...
+
+You will find documentation (HTML) and demo programs with source code in C
+for horizontal-only, vertical-only and 8-way scrollers. The scrolling algo-
+rithms are extremely fast. They never scroll anything with the CPU or the
+Blitter, only blocks that "come in" are blitted. The routines never blit
+whole block-columns (horizontal scrolling) or whole block-rows (vertical
+scrolling). Instead the job is divided into BLOCKWIDTH/BLOCKHEIGHT steps. 
+
+All demo programs have an option to show what happens to the bitmap intern-
+ally when one scrolls around. This makes it much easier to understand how
+the algorithms work.
+
+The algorithms are designed for the Amiga chipset and the demo programs hit
+the hardware directly. Anyway it should be possible to use very very simi-
+liar techniques on GFX cards. The docs gives some info on what to take into
+account when trying to port certain algorithms to GFX cards (chunky pixel
+mode). Maybe future versions of this archive will include RTG versions of
+the demo programs which should also work on GFX cards = only OS functions
+are used. Unfortunately I don't have a GFX card, so this is still very
+uncertain.
+
+
+  Georg Steger
+  Hochlercher 30
+
+  I-39030 St. Johann/Ahrntal
+  
+  EMail: georg.steger@rolmail.net

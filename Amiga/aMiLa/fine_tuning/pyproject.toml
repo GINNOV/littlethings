@@ -1,0 +1,15 @@
+[project]
+name = "amila-fine-tuning"
+version = "0.1.0"
+description = "MLX-LM fine-tuning pipeline for the Antigravity Amiga 68k model."
+requires-python = ">=3.10"
+dependencies = [
+    "amitools>=0.8.1",
+    "google-genai>=0.1.0",
+    "mlx-lm>=0.20.0",
+    "python-dotenv>=1.0.0",
+    "tqdm>=4.65.0",
+]
+
+[tool.uv]
+package = false

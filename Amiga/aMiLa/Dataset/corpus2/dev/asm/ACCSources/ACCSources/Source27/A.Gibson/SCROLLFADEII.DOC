@@ -1,0 +1,85 @@
+                        SCROLL FADE II
+                        ---------------
+
+        The second scroll and fade  routine  scrolls  the  2 bit planes of the
+picture separately. To do this,you  only  have  to make a small adjustments as
+the calculations and offsets are already  set up. First lets take another look
+at how the scroll works.
+
+        This is for the basic scroll downwards.
+
+        D0=counter for line numbers to show.
+        d0 * 40 = number of BYTES to move, it is also used how far from the
+        bottom of the picture plane the copy is to start i.e
+
+
+        5 lines are to be drawn  D0=5   This = 200 bytes at 40 bytes per line
+
+        The picture displayed always starts at the start of the Bit Plane
+        
+        The source address of the copy on the picture bit plane is D0*40 
+        bytes away from the end of the picture plane
+
+        Therefore, if the copy always starts at the to of the display and 
+        start 'n' bytes away from the end of the first picture bit plane and
+        'n' bytes are copied then the bottom 5 lines of the picture is copied
+        onto the top of the display bit plane
+
+        To copy the second bit plane, we take the picture address pointer and
+        the screen bit plane pointer and add on #10240 decimal so that there
+        is an offset of 10240 bytes which is the size of a whole bit plane
+        and the pointers now point to the second screen bit plane and the 
+        second picture bit plane.
+
+        I used a3 and a4 registers to point to the second planes and a0 and
+        a1 pointed to the first bit planes since I could then copy both 
+        planes is one loop speeding thing up.
+
+        In the second scroll routine, I worked out the offsets for the first
+        bitplane and then used them to calculate the second bit plane 
+        addresses. For the second bit plane,the copy does not start at the top
+        of the display. The copy starts at 'n' bytes away from the end of the
+        second bitplane which was calculated the same way as the picture 
+        source address for the first bit plane. 'n' is the number of bytes to
+        copy and = D0 * 40. The picture source address is always the start
+        of the SECOND picture bit plane.
+
+        This all sounds confusing and weird, but just look at the code and
+        try to figure things out for yourself. I always think you need a good
+        imagination for coding to visualize these thing happening!
+
+        Here is my top tips for setting the environment for coding.
+
+        1/ DON'T clean your bedroom.
+        2/ Hours before you start to code stick a pile of drinks in the
+           fridge.
+        3/ Close your curtains unless it's cloudy and definitely not if it is
+           Thunder and lightening!!
+        4/ Stick a record on. Depending what you like but I consider DIO an
+           excellent choice for coding. (MOOODY!)
+        5/ Ring your girlfriend so your are not thinking about it all day and
+           so she doesn't ring you.
+        6/ Light some incense oil or sticks.
+        7/ Say a quick prayer to your earth mother (free masons only)
+        8/ Check nothing is hiding in the cupboards (for piece of mind!)
+        9/ Have lunch so you do not have to break off for it!
+       10/ Pay homage to the Amiga to ask for a safe journey whilst coding
+           the Amiga.
+
+       11/ Now and only now are you able to go and get a drink,turn on the
+            Amiga and begin to code.
+
+
+        By the way,go and get a copy of the Amiga  Hardware Reference Guide by
+Addison and Wesley, it is amazing and essential.
+
+        Also by the way,the fade routine for the second program is the same
+        as the first program's fade routine.
+        
+        Right that's about it for this program. I hope you find the docs and
+        code comments helpfull. If you dont or can't understand them then 
+        write to me or just write to me for any reason. My address is on the
+        other DOC and if you include an S.A.E I'll certainly reply.
+
+        BYE BYE for now......
+ 

@@ -1,0 +1,24 @@
+Short:        Alloca() implementation for SAS/C
+Author:       proels@fmi.uni-passau.de (Stefan Proels)
+Uploader:     proels fmi uni-passau de (Stefan Proels)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+The use of alloca() is quite common for many UNIX applications.
+If you intend to port such a program using SAS/C you'd have to
+eliminate all alloca()s as SAS/C doesn't supply this function.
+
+There is already another "mostly portable" implementation of
+alloca(). However, it does not work with SAS/C as it makes
+assumptions about the compiler's handling of the stack-pointer
+which are not true for SAS/C.
+
+This is where SASalloca comes in. The idea is to (ab)use the
+_PROLOG() and _EPILOG() hooks used by the profiler.
+
+There are no limitations regarding the use of stackextention,
+setjmp() and longjmp(), etc. In general, all you have to do is
+to compile your sources with PROFILE enabled and to link them
+with this alloca implementation.
+
+This package is PUBLIC DOMAIN. Source included.

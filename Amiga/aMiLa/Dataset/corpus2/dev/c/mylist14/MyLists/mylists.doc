@@ -1,0 +1,818 @@
+ **************************************************************************
+
+
+                             " MyLists V1.4 "
+
+
+                       Developed by Chris De Maeyer
+
+    Sources are © 1994-1996 Blue Heaven Software - All Rights Reserved
+
+
+
+             SAS C Development System is © SAS Institute Inc.
+
+             
+
+          Thanks to : Robert Sedgewick, Princeton University.
+                      Donald E. Knuth (you should know him).
+                      Al Kelley & Ira Pohl, California University.
+
+
+                Released as MAILWARE on 25 February 1996
+ 
+ 
+ **************************************************************************
+
+         
+ Public Domain
+ =============
+ MyLists is MAILWARE for the Amiga.  There is no fee for using it for
+ non-commercial purposes, nor anyone can ask anything for it (except for
+ the media). Bare in mind that you may use & distribute these files as
+ long as all files remain included and unchanged (so no disassembling).  
+ If you  want to make a donation for my effort, it gives you the right
+ to get the latest version in your mailbox (make sure your donation at
+ least covers the expence of mailing & media ! Include your full address
+ for sending the update).
+ Anyway, this program is MAILWARE, so if you use this program send
+ a postcard/letter.
+
+ If you develop something using this library you MAY send the finished
+ product to me, I would also appreciate mentioning my name in the manual
+ or README file shipped with your program. 
+ Commercial developers can obtain full source code, at the cost of a
+ negotiable fee.
+ As a user you fully agree with the terms pointed out above. Any illegal
+ use is prohibited and prosecution will follow when terms are abused.
+ As a fellow programmer you surely can appreciate the effort I have done
+ here, all for your benefit (and mine).
+ 
+
+ Disclaimer
+ ==========
+ I can't be held responsible for any damage inflicted on your computer
+ system when using the files mentioned herein. However, this library has
+ been tested by myself and others on correct behaviour.
+ It is your duty as user of this tool to report any strange occurences
+ which evolve from using it.
+
+
+
+ Introduction
+ ============
+ MyLists is a linkable library intended to be used with the SAS C compiler.
+
+ It includes functions to create and maintain generic stacks, queues and
+ single linked lists & binary trees.
+ New in this release are the functions for double linked lists & priority
+ queues.
+ Generic means that you can create all data structures as any datatype.
+ Allocation is fully dynamic and the number of entries in the lists is
+ dependent of your available memory. The internal structure has been kept
+ as small as possible, while maintaining quick access to it.
+ 
+ As you surely know, stacks follow a LIFO (Last In/First Out) scheme. Push
+ puts data into the stack. Pop gets the data out of the stack.
+
+ And, queues follow a FIFO (First In/First Out) scheme. Enqueue puts data
+ into the queue, and Serve gets data out of the queue.
+
+ For the single list, there are various funtions for traversing a list.
+ Of course, functions to insert, delete, update and retrieve entries.
+
+ The binary tree is a data structure which enables you to search through
+ data keys very quickly.  This version does not allow for duplicate keys.
+
+ The double linked lists contain the same functions as single linked list.
+ They are more performant with a slight increase of memory usage.
+ 
+ As last, priority queues. This data structure organizes the data sequence
+ according to a given priority. Enqueue adds a data entry with a certain
+ priority. Serve takes the entry with the highest priority. This version
+ works as a single linked list with a pointer to a priority bucket where
+ all the nodes with the same priority reside.
+ There are 16 levels of priority (changeable), with 0 being the lowest
+ priority and 15 the highest.
+
+
+ About SAS
+ =========
+ The object files where created with version 6.51 of the SAS C Development
+ System. The library was then created using the 'oml' librarian.
+
+
+ Library description
+ ===================
+ List of functions:
+
+  ==================================================================
+  SAS/C Amiga Format Librarian  Version 6.51
+  Copyright © 1992  SAS Institute, Inc.
+
+                 L i b r a r y   L i s t i n g
+-Module-   ------------- Symbol Definitions ------------
+
+btree.c   _BTree_Create           @BTree_Create           _BTree_Free
+          @BTree_Free             _BTree_Clear            @BTree_Clear
+          _IsBTree_Empty          @IsBTree_Empty          _IsBTree_Full
+          @IsBTree_Full           _BTree_Size             @BTree_Size
+          _BTree_FindLeft         @BTree_FindLeft         _BTree_FindRight
+          @BTree_FindRight        _BTree_FindKey          @BTree_FindKey
+          _BTree_Retrieve         @BTree_Retrieve         _BTree_DelLeaf
+          @BTree_DelLeaf          _BTree_Insert           @BTree_Insert
+          _BTree_GetNode          @BTree_GetNode          _BTree_FreeNode
+          @BTree_FreeNode
+dlist.c   _DList_Create           @DList_Create           _DList_Free
+          @DList_Free             _DList_Clear            @DList_Clear
+          _IsDList_Empty          @IsDList_Empty          _IsDList_Full
+          @IsDList_Full           _DList_Size             @DList_Size
+          _DList_GetPos           @DList_GetPos           _DList_SetPos
+          @DList_SetPos           _DList_FindNext         @DList_FindNext
+          _DList_FindPrev         @DList_FindPrev         _DList_FindKey
+          @DList_FindKey          _DList_Update           @DList_Update
+          _DList_Retrieve         @DList_Retrieve         _DList_Delete
+          @DList_Delete           _DList_InsertAfter      @DList_InsertAfter
+          _DList_InsertBefore     @DList_InsertBefore     _DList_GetNode
+          @DList_GetNode          _DList_FreeNode         @DList_FreeNode
+priqueue.c_PriQueue_Create        @PriQueue_Create
+          _PriQueue_Free          @PriQueue_Free          _PriQueue_Clear
+          @PriQueue_Clear         _IsPriQueue_Empty       @IsPriQueue_Empty
+          _IsPriQueue_Full        @IsPriQueue_Full        _PriQueue_Size
+          @PriQueue_Size          _PriQueue_Enqueue       @PriQueue_Enqueue
+          _PriQueue_Serve         @PriQueue_Serve         _PriQueue_GetNode
+          @PriQueue_GetNode       _PriQueue_FreeNode      @PriQueue_FreeNode
+          _FindPri    @FindPri
+queue.c   _Queue_Create           @Queue_Create           _Queue_Free
+          @Queue_Free             _Queue_Clear            @Queue_Clear
+          _IsQueue_Empty          @IsQueue_Empty          _IsQueue_Full
+          @IsQueue_Full           _Queue_Size             @Queue_Size
+          _Queue_Enqueue          @Queue_Enqueue          _Queue_Serve
+          @Queue_Serve            _Queue_GetNode          @Queue_GetNode
+          _Queue_FreeNode         @Queue_FreeNode
+slist.c   _SList_Create           @SList_Create           _SList_Free
+          @SList_Free             _SList_Clear            @SList_Clear
+          _IsSList_Empty          @IsSList_Empty          _IsSList_Full
+          @IsSList_Full           _SList_Size             @SList_Size
+          _SList_GetPos           @SList_GetPos           _SList_SetPos
+          @SList_SetPos           _SList_FindNext         @SList_FindNext
+          _SList_FindPrev         @SList_FindPrev         _SList_FindKey
+          @SList_FindKey          _SList_Update           @SList_Update
+          _SList_Retrieve         @SList_Retrieve         _SList_Delete
+          @SList_Delete           _SList_InsertAfter      @SList_InsertAfter
+          _SList_InsertBefore     @SList_InsertBefore     _SList_GetNode
+          @SList_GetNode          _SList_FreeNode         @SList_FreeNode
+stack.c   _Stack_Create           @Stack_Create           _Stack_Free
+          @Stack_Free             _Stack_Clear            @Stack_Clear
+          _IsStack_Empty          @IsStack_Empty          _IsStack_Full
+          @IsStack_Full           _Stack_Size             @Stack_Size
+          _Stack_Push             @Stack_Push             _Stack_Pop
+          @Stack_Pop              _Stack_GetNode          @Stack_GetNode
+          _Stack_FreeNode         @Stack_FreeNode
+  ==================================================================
+
+
+ Header files & function explanation
+ ===================================
+ To use the library just include the necessary header and link in
+ 'mylists.lib' (or 'mylists.l20 for other CPUs).
+
+
+ STACK.H
+ ----------------------------------------------------------------------
+        #define STACK_MAX INT_MAX     /* Max number of entries */
+  
+  You can change this constant to anything you like, but I think the
+  current value will suit you fine.
+ ----------------------------------------------------------------------
+        STACK *Stack_Create(int len);   
+
+  Allocates a stack structure, which will contain data of 'len' size.
+  Of course, 'len' MUST be greater then zero.
+  Returns : NULL for failure.
+ ----------------------------------------------------------------------
+        void Stack_Free(STACK *theStack);
+
+  Deallocates the stack structure. It performs a Stack_Clear and then
+  frees the structure.    
+ ----------------------------------------------------------------------
+        void Stack_Clear(STACK *theStack);
+
+  Removes all data nodes (entries) from the stack. The stack structure
+  itself remains intact.
+ ----------------------------------------------------------------------
+        int IsStack_Empty(STACK *theStack);     
+        
+  Returns TRUE when the stack is empty, FALSE if there are nodes in it.
+  Returns : TRUE when stack not allocated.
+ ----------------------------------------------------------------------
+        int IsStack_Full(STACK *theStack);      
+
+  Returns TRUE when STACK_MAX has been reached.
+ ----------------------------------------------------------------------
+        int Stack_Size(STACK *theStack);        
+
+  Returns the number of nodes (entries) in the stack.
+  Returns : 0 for not allocated stack.
+ ----------------------------------------------------------------------
+        int Stack_Push(STACK *theStack,void *ndata); 
+
+  Pushes a node (entry) onto the stack, using 'ndata' as its content.
+  Returns : STACK_OK      push succesfull
+            STACK_MEMORY  when no stack allocated
+            STACK_FULL    when stack is full
+            STACK_GETNODE when node allocation failed.
+ ----------------------------------------------------------------------
+        int Stack_Pop(STACK *theStack,void *ndata);  
+
+  Pops a node from the stack, putting its content in 'ndata'.
+  Returns : STACK_OK      pop succesfull
+            STACK_MEMORY  when no stack allocated
+            STACK_EMPTY   when stack empty.
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+ QUEUE.H
+ ----------------------------------------------------------------------
+        #define QUEUE_MAX INT_MAX     /* Max number of entries */
+  
+  You can change this constant to anything you like, but I think the
+  current value will suit you fine.
+ ----------------------------------------------------------------------
+        QUEUE *Queue_Create(int len);   
+
+  Allocates a queue structure, which will contain data of 'len' size.
+  'len' MUST be greater than zero.
+  Return : NULL  when allocation failed or 'len' <= 0.
+ ----------------------------------------------------------------------
+        void Queue_Free(QUEUE *theQueue);
+
+  Deallocates the queue structure. It performs a Queue_Clear and then
+  frees the structure.    
+ ----------------------------------------------------------------------
+        void Queue_Clear(QUEUE *theQueue);
+
+  Removes all data nodes (entries) from the queue. The queue structure
+  itself remains intact.
+ ----------------------------------------------------------------------
+        int IsQueue_Empty(QUEUE *theQueue);     
+        
+  Returns TRUE when the queue is empty, FALSE if there are nodes in it.
+  Returns : TRUE when queue not allocated.
+ ----------------------------------------------------------------------
+        int IsQueue_Full(QUEUE *theQueue);      
+
+  Returns TRUE when QUEUE_MAX has been reached.
+ ----------------------------------------------------------------------
+        int Queue_Size(QUEUE *theQueue);        
+
+  Returns the number of nodes (entries) in the queue.
+  Returns : 0   queue is empty or not allocated.
+ ----------------------------------------------------------------------
+        int Queue_Enqueue(QUEUE *theQueue,void *ndata); 
+
+  Puts a node (entry) into the queue, using 'ndata' as its content.
+  Returns : QUEUE_OK      enqueue succesfull
+            QUEUE_MEMORY  when no queue allocated
+            QUEUE_FULL    when queue is full
+            QUEUE_GETNODE when node allocation failed.
+ ----------------------------------------------------------------------
+        int Queue_Serve(QUEUE *theQueue,void *ndata);  
+
+  Gets a node from the queue, putting its content in 'ndata'.
+  Returns : QUEUE_OK      serve succesfull
+            QUEUE_MEMORY  when no queue allocated
+            QUEUE_EMPTY   when queue is empty.
+            
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+ SLIST.H
+ 
+ A list consist of a head node. There is a pointer named 'current' which
+ points to a node. You have to set this pointer to get access to a node.
+ 
+ ----------------------------------------------------------------------
+        #define SLIST_MAX INT_MAX
+        
+ Idem dito as previous constants.            
+ ----------------------------------------------------------------------
+        SLIST *SList_Create(int len);               
+
+  Allocates a slist structure, which will contain data of 'len' size.
+  'len' MUST be greater than zero.
+  Return : NULL  when allocation failed or 'len' <= 0.
+ ----------------------------------------------------------------------
+        void SList_Free(SLIST *theSList);           
+ 
+ Deallocates the slist structure. It performs a SList_Clear first.
+ ----------------------------------------------------------------------
+        void SList_Clear(SLIST *theSList);          
+        
+ Removes all nodes from the list, leaving the slist structure allocated.
+ Head & Current become NULL.       
+ ----------------------------------------------------------------------
+        int IsSList_Empty(SLIST *theSList);         
+
+ Returns TRUE when list is empty or not allocated.
+ ----------------------------------------------------------------------
+        int IsSList_Full(SLIST *theSList);
+        
+ Returns TRUE when number of nodes reaches SLIST_MAX. FALSE is returned
+ when list is not allocated.                 
+ ----------------------------------------------------------------------
+        int SList_Size(SLIST *theSList);            
+        
+ Returns the number of nodes currently in the list. FALSE is returned
+ when the list is not allocated.       
+ ----------------------------------------------------------------------
+        int SList_GetPos(SLIST *theSList);       
+        
+ Gets the position of the current pointer. First node is position zero.
+ Last position is nr_nodes-1.
+ Returns: SLIST_MEMORY   when list not allocated
+          SLIST_EMPTY    when list empty.          
+ ----------------------------------------------------------------------
+        int SList_SetPos(SLIST *theSList,int pos);
+        
+ Sets the position of the current pointer, ranging from 0 upto nr_nodes-1.
+ Returns: SLIST_OK       set succesfull
+          SLIST_MEMORY   when list not allocated
+          SLIST_EMPTY    when list empty
+          SLIST_POSITION when invalid position.
+ ----------------------------------------------------------------------
+        int SList_FindNext(SLIST *theSList);        
+
+ Sets the position to the next node.
+ Returns: SLIST_OK      set succesfull
+          SLIST_MEMORY  when list not allocated
+          SLIST_EMPTY   when list empty
+          SLIST_EOL     when end of list reached.
+ ----------------------------------------------------------------------
+        int SList_FindPrev(SLIST *theSList);     
+        
+ Sets the position to the previous node.
+ Returns: SLIST_OK      set succesfull
+          SLIST_MEMORY  when list not allocated
+          SLIST_EMPTY   when list empty
+          SLIST_BOL     when begin of list reached.
+ ----------------------------------------------------------------------
+        int SList_FindKey(SLIST *theSList,
+                          void *key);
+                          
+ Sets position to node with data exactly as key.
+ Returns: TRUE          node found and set succesfull
+          FALSE         node not found
+          SLIST_MEMORY  when list not allocated
+          SLIST_EMPTY   when list empty.
+          
+ Remark: you can not search for a part of the data (yet!). Also the
+         case (if comparing strings) is important.        
+ ----------------------------------------------------------------------
+        int SList_Update(SLIST *theSList,
+                         void *ndata);  
+                        
+ Updates the current node with new data.
+ Returns: SLIST_OK       update succesfull
+          SLIST_MEMORY   when list not allocated
+          SLIST_POSITION when current not set (NULL).
+ ----------------------------------------------------------------------
+        int SList_Retrieve(SLIST *theSList,
+                           void *ndata);            
+
+ Retrieves data from current node. (no deletion of node)
+ Returns: SLIST_OK       retrieve succesfull
+          SLIST_MEMORY   when list not allocated
+          SLIST_POSITION when current not set (NULL).
+ ----------------------------------------------------------------------
+        int SList_Delete(SLIST *theSList);          
+        
+ Deletes the current node from the list.
+ Returns: SLIST_OK       delete succesfull
+          SLIST_MEMORY   when list not allocated
+          SLIST_POSITION when current not set (NULL).
+ ----------------------------------------------------------------------
+        int SList_InsertBefore(SLIST *theSList,     
+                            void *ndata);
+                            
+ Insert a new node before the current one.
+ Returns: SLIST_OK       insert succesfull
+          SLIST_MEMORY   when list not allocated
+          SLIST_FULL     when list is full
+          SLIST_GETNODE  when allocation of new node failed.
+ ----------------------------------------------------------------------
+        int SList_InsertAfter(SLIST *theSList,      
+                              void *ndata);
+
+ Inserts a new node after the current node.
+ Returns: SLIST_OK       insert succesfull
+          SLIST_MEMORY   when list not allocated
+          SLIST_FULL     when list is full
+          SLIST_GETNODE  when allocation of new node failed.
+ 
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+ BTREE.H
+
+ Binary trees are structures with following operations: when inserting
+ nodes with smaller keys are placed left, bigger keys are placed right.
+ In this implementation only unique keys can be inserted, when a duplicate
+ key is found BTREE_FOUND is returned.  Also, only a leaf (a node with no
+ successors) can be deleted. As normal, there is a root pointer to the
+ begin of the tree. A tree can also be traversed, current point to a
+ node to where is traversed.
+
+ ----------------------------------------------------------------------
+        #define BTREE_MAX INT_MAX
+        
+ Idem dito as previous constants.            
+ ----------------------------------------------------------------------
+        BTREE *BTree_Create(int len);               
+
+  Allocates a Btree structure, which will contain data of 'len' size.
+  'len' MUST be greater than zero.
+  Return : NULL  when allocation failed or 'len' <= 0.
+ ----------------------------------------------------------------------
+        void BTree_Free(BTREE *theBTree);           
+ 
+ Deallocates the Btree structure. It performs a BTree_Clear first.
+ ----------------------------------------------------------------------
+        void BTree_Clear(BTREE *theBTree);          
+        
+ Removes all nodes from the Btree, leaving the Btree structure allocated.
+ Root & Current become NULL.       
+ ----------------------------------------------------------------------
+        int IsBTree_Empty(BTREE *theBTree);         
+
+ Returns TRUE when Btree is empty or not allocated.
+ ----------------------------------------------------------------------
+        int IsBTree_Full(BTREE *theBTree);
+        
+ Returns TRUE when number of nodes reaches BTREE_MAX. FALSE is returned
+ when BTree is not allocated.                 
+ ----------------------------------------------------------------------
+        int BTree_Size(BTREE *theBTree);            
+        
+ Returns the number of nodes currently in the BTree. FALSE is returned
+ when the BTree is not allocated.       
+ ----------------------------------------------------------------------
+        int BTree_FindLeft(BTREE *theBTree);        
+
+ Sets the position to the left branch of the current node.
+ Returns: BTREE_OK      set succesfull
+          BTREE_MEMORY  when btree not allocated
+          BTREE_EMPTY   when btree empty
+          BTREE_LEFT    when there is no left branch.
+ ----------------------------------------------------------------------
+        int BTree_FindRight(BTREE *theBTree);     
+        
+ Sets the position to the right branch of current node.
+ Returns: BTREE_OK      set succesfull
+          BTREE_MEMORY  when btree not allocated
+          BTREE_EMPTY   when btree empty
+          BTREE_RIGHT   when there is no right branch.
+ ----------------------------------------------------------------------
+        int BTree_FindKey(BTREE *theBTree,void *key);
+                          
+ Sets current position to node with data exactly as key.
+ Returns: TRUE          node found and set succesfull
+          FALSE         node not found
+          BTREE_MEMORY  when btree not allocated
+          BTREE_EMPTY   when btree empty.
+          
+ Remark: you can not search for a part of the data (yet!). Also the
+         case (if comparing strings) is important.        
+ ----------------------------------------------------------------------
+        int BTree_Retrieve(BTREE *theBTree,void *ndata);            
+
+ Retrieves data from current node. (no deletion of node)
+ Returns: BTREE_OK       retrieve succesfull
+          BTREE_MEMORY   when list not allocated
+          BTREE_POSITION when current not set (NULL).
+ ----------------------------------------------------------------------
+        int BTree_DelLeaf(BTREE *theBTree);          
+        
+ Deletes the current leaf from the Btree.
+ Returns: BTREE_OK       delete succesfull
+          BTREE_MEMORY   when btree not allocated
+          BTREE_POSITION when current not set (NULL)
+          BTREE_EMPTY    when tree is empty
+          BTREE_LEFT     when there is still a left branch
+          BTREE_RIGHT    there is still a right branch.
+          
+ Remark: when the leaf is deleted, current is set to its parent node. When
+         the leaf was the last one (root) current becomes NULL.
+ ----------------------------------------------------------------------
+        int BTree_Insert(BTREE *theBTree,void *ndata);
+                            
+ Insert a new node in the tree.
+ Returns: BTREE_OK       insert succesfull
+          BTREE_MEMORY   when btree not allocated
+          BTREE_FULL     when btree is full
+          BTREE_FOUND    duplicate entry
+          BTREE_GETNODE  when allocation of new node failed.
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ DLIST.H
+ 
+ A double list consists of a head node and a tail node. There is a pointer
+ named 'current' which points to a node. You have to set this pointer to
+ get access to a node.
+ 
+ ----------------------------------------------------------------------
+        #define DLIST_MAX INT_MAX
+        
+ Idem dito as previous constants.            
+ ----------------------------------------------------------------------
+        DLIST *DList_Create(int len);
+
+  Allocates a dlist structure, which will contain data of 'len' size.
+  'len' MUST be greater than zero.
+  Return : NULL  when allocation failed or 'len' <= 0.
+ ----------------------------------------------------------------------
+        void DList_Free(DLIST *theDList);
+ 
+ Deallocates the dlist structure. It performs a DList_Clear first.
+ ----------------------------------------------------------------------
+        void DList_Clear(DLIST *theDList);
+        
+ Removes all nodes from the list, leaving the dlist structure allocated.
+ Head, Tail & Current become NULL.
+ ----------------------------------------------------------------------
+        int IsDList_Empty(DLIST *theDList);
+
+ Returns TRUE when list is empty or not allocated.
+ ----------------------------------------------------------------------
+        int IsDList_Full(DLIST *theDList);
+        
+ Returns TRUE when number of nodes reaches DLIST_MAX. FALSE is returned
+ when list is not allocated.                 
+ ----------------------------------------------------------------------
+        int DList_Size(DLIST *theDList);
+        
+ Returns the number of nodes currently in the list. FALSE is returned
+ when the list is not allocated.       
+ ----------------------------------------------------------------------
+        int DList_GetPos(DLIST *theDList);
+        
+ Gets the position of the current pointer. First node is position zero.
+ Last position is nr_nodes-1.
+ Returns: DLIST_MEMORY   when list not allocated
+          DLIST_EMPTY    when list empty.
+ ----------------------------------------------------------------------
+        int DList_SetPos(DLIST *theDList,int pos);
+        
+ Sets the position of the current pointer, ranging from 0 upto nr_nodes-1.
+ Returns: DLIST_OK       set succesfull
+          DLIST_MEMORY   when list not allocated
+          DLIST_EMPTY    when list empty
+          DLIST_POSITION when invalid position.
+ ----------------------------------------------------------------------
+        int DList_FindNext(DLIST *theDList);
+
+ Sets the position to the next node.
+ Returns: DLIST_OK      set succesfull
+          DLIST_MEMORY  when list not allocated
+          DLIST_EMPTY   when list empty
+          DLIST_EOL     when end of list reached.
+ ----------------------------------------------------------------------
+        int DList_FindPrev(DLIST *theDList);
+        
+ Sets the position to the previous node.
+ Returns: DLIST_OK      set succesfull
+          DLIST_MEMORY  when list not allocated
+          DLIST_EMPTY   when list empty
+          DLIST_BOL     when begin of list reached.
+ ----------------------------------------------------------------------
+        int DList_FindKey(DLIST *theDList,
+                          void *key);
+                          
+ Sets position to node with data exactly as key.
+ Returns: TRUE          node found and set succesfull
+          FALSE         node not found
+          DLIST_MEMORY  when list not allocated
+          DLIST_EMPTY   when list empty.
+          
+ Remark: you can not search for a part of the data (yet!). Also the
+         case (if comparing strings) is important.        
+ ----------------------------------------------------------------------
+        int DList_Update(DLIST *theDList,
+                         void *ndata);  
+                        
+ Updates the current node with new data.
+ Returns: DLIST_OK       update succesfull
+          DLIST_MEMORY   when list not allocated
+          DLIST_POSITION when current not set (NULL).
+ ----------------------------------------------------------------------
+        int DList_Retrieve(DLIST *theDList,
+                           void *ndata);            
+
+ Retrieves data from current node. (no deletion of node)
+ Returns: DLIST_OK       retrieve succesfull
+          DLIST_MEMORY   when list not allocated
+          DLIST_POSITION when current not set (NULL).
+ ----------------------------------------------------------------------
+        int DList_Delete(DLIST *theDList);
+        
+ Deletes the current node from the list.
+ Returns: DLIST_OK       delete succesfull
+          DLIST_MEMORY   when list not allocated
+          DLIST_POSITION when current not set (NULL).
+ ----------------------------------------------------------------------
+        int DList_InsertBefore(DLIST *theDList,
+                               void *ndata);
+                            
+ Insert a new node before the current one. If the current node is the
+ headnode, Head becomes the new node.
+ Returns: DLIST_OK       insert succesfull
+          DLIST_MEMORY   when list not allocated
+          DLIST_FULL     when list is full
+          DLIST_GETNODE  when allocation of new node failed.
+ ----------------------------------------------------------------------
+        int DList_InsertAfter(DLIST *theDList,
+                              void *ndata);
+
+ Inserts a new node after the current node. If the tailnode is the current
+ node, newnode becomes Tail.
+ Returns: DLIST_OK       insert succesfull
+          DLIST_MEMORY   when list not allocated
+          DLIST_FULL     when list is full
+          DLIST_GETNODE  when allocation of new node failed.
+ 
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+ PRIQUEUE.H
+ ----------------------------------------------------------------------
+        #define PRIQUEUE_MAX INT_MAX     /* Max number of entries */
+  
+  You can change this constant to anything you like, but I think the
+  current value will suit you fine.
+ ----------------------------------------------------------------------
+        #define MAX_PRI     15           /* highest priority */
+
+  Important: MAX_PRI MUST be > MIN_PRI
+ ----------------------------------------------------------------------
+        #define MIN_PRI     0            /* lowest priority */
+
+  Note: procedures have not been tested with negative values. So, strange
+  effects may occur when doing this.
+ ----------------------------------------------------------------------
+        PRIQUEUE *PriQueue_Create(int len);
+
+  Allocates a priqueue structure, which will contain data of 'len' size.
+  'len' MUST be greater than zero.
+  Return : NULL  when allocation failed or 'len' <= 0.
+ ----------------------------------------------------------------------
+        void PriQueue_Free(PRIQUEUE *theQueue);
+
+  Deallocates the priqueue structure. It performs a PriQueue_Clear and
+  then frees the structure.
+ ----------------------------------------------------------------------
+        void PriQueue_Clear(PRIQUEUE *theQueue);
+
+  Removes all data nodes (entries) from the priqueue. The priqueue
+  structure itself remains intact.
+ ----------------------------------------------------------------------
+        int IsPriQueue_Empty(PRIQUEUE *theQueue);
+        
+  Returns TRUE when the queue is empty, FALSE if there are nodes in it.
+  Returns : TRUE when queue not allocated.
+ ----------------------------------------------------------------------
+        int IsPriQueue_Full(PRIQUEUE *theQueue);
+
+  Returns TRUE when PRIQUEUE_MAX has been reached.
+ ----------------------------------------------------------------------
+        int PriQueue_Size(PRIQUEUE *theQueue);
+
+  Returns the number of nodes (entries) in the priqueue.
+  Returns : 0   queue is empty or not allocated.
+ ----------------------------------------------------------------------
+        int PriQueue_Enqueue(PRIQUEUE *theQueue,void *ndata,short pri);
+
+  Puts a node (entry) into the priqueue, using 'ndata' as its content and
+  with priority pri.
+  Returns : PRIQUEUE_OK      enqueue succesfull
+            PRIQUEUE_MEMORY  when no queue allocated
+            PRIQUEUE_FULL    when queue is full
+            PRIQUEUE_GETNODE when node allocation failed
+            PRIQUEUE_LOW     when pri < MIN_PRI
+            PRIQUEUE_HIGH    when pri > MAX_PRI.
+ ----------------------------------------------------------------------
+        int PriQueue_Serve(PRIQUEUE *theQueue,void *ndata,short *pri);
+
+  Gets a node from the priqueue, putting its content in 'ndata' and the
+  priority in pri.
+  Returns : QUEUE_OK      serve succesfull
+            QUEUE_MEMORY  when no queue allocated
+            QUEUE_EMPTY   when queue is empty.
+            
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  
+ Examples
+ ========
+ 
+ There are examples included. Study them to get a quick intro.
+
+   stacktest.c    - creates an integer stack and pushes & pops a number,
+                    creates a char stack and turns a string around.
+    
+   queuetest.c    - creates an integer stack and enqueues & serves some
+                    numbers.
+
+   slisttest.c    - creates an integer list, inserts some numbers and
+                    then dumps the list to screen.
+
+
+   btreetest.c    - tests some functions. Integer & character btrees.
+   
+   dlisttest.c    - creates a double list and plays around with it.
+
+   priqueuetest.c - creates integer priority queue.
+
+
+ About Versions & Bugfixes
+ =========================
+
+ V0.99     - test version (integers only).
+ 
+ V1.00     - initial version with fixed datatypes (integers & chars).
+
+ V1.01     - added generic datatypes part (no separation anymore ! Same
+             functions for all types).
+           - added more checking on allocation.
+           - changed using memcpy() into movmem() since there were some
+             problems when passing the data between functions, which
+             resulted in strange results.
+
+ V1.02     - added single linked lists.
+           - added library version for 68020 or over.
+
+ V1.03     - added binary tree data structure.
+           - added manual in Final Writer format.
+ 
+ V1.04     - added double linked lists & priority queues.
+           - optimized some functions in various modules.
+           - fixed bug in SLists, it didn't update the number of nodes
+             when deleting (Oops !).
+           - deleted document in Final Writer format.
+
+
+ The Future
+ ==========
+
+ I will throw in Circular lists (rings) in future too... Expect it in a
+ couple of months (if I find the time and the motivation !).
+
+ If you got suggestions for other data structures, let me know and motivate
+ me...
+
+
+ The Author
+ ==========
+
+ If you want to send me bug reports or comments/suggestions/donations:
+
+
+    by mail        Chris De Maeyer
+                   Norbertijnenstraat 4
+                   B-2040   ANTWERPEN
+                   BELGIUM
+
+    by email       cdemaeyer@mmm.com
+
+
+
+ Archive file list
+ =================
+
+        mylists.lib     - the library for any CPU
+        mylists.l20     - the library for at least a 68020
+        mylists.doc     - the document
+
+        stack.h         - the stack header
+        queue.h         - the queue header
+        slist.h         - the list header
+        btree.h         - the binary tree header
+        dlist.h         - the double list header
+        priqueue.h      - the priority queue header
+
+        stacktest.c     - the stack test program source
+        stacktest       - the stack test executable
+        queuetest.c     - the queue test program source
+        queuetest       - the queue test executable
+        slisttest.c     - the slist test program source
+        slisttest       - the slist test executable
+        btreetest.c     - the btree test program source
+        btreetest       - the btree test executable
+        dlisttest.c     - the dlist test program source
+        dlisttest       - the dlist test executable
+        priqueuetest.c  - the priqueue test program source
+        priqueuetest    - the priqueue test executable
+        
+        
+ That's it folks !
+
+ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

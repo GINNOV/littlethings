@@ -1,0 +1,365 @@
+			   popt: Peephole OPTimizer
+			   ------------------------
+				   V1.00 beta
+
+			 (c) by Samuel DEVULDER, 1995.
+
+DESCRIPTION (short):
+-------------------
+
+	Popt is an  optimizer  of  assembly  sourcefile.  It  does  various
+    standard peephole optimizations by pattern-matching. It ranges  from  1
+    intruction lookahead to 3 and many more ! It makes more job than  usual
+    bluid-in assembler optimizer and uses data-flow analysis to find  which
+    register are used or not. With those  informations	it  is	capable  of
+    deleting intructions that are of no use and re-assigning  registers  to
+    produce a code of better quality/looking. It is specialy  powerfull  on
+    code produced by C-compilers (even those that optimize their code !).
+
+	It is designed to keep the extra-code statements very much the same
+    as the original. Thus comments and pseudo-op are kept intact so that if
+    they bear special informations for the assembler  (for  debugging,  for
+    example), those are kept intact. In fact  it  makes  no  assumption  on
+    pseudo-op  and  only  work	on  real  micro-processor   operation-code.
+    Therefore, it is usefull with any  assembler  sourcefile  in  spite  of
+    their pseudo-op syntax and usage.
+
+USAGE:
+-----
+
+    Usage: popt [-revinfo] [flags] <inputfile.asm> [-o <outputfile.asm>]
+
+    Valid optimizer flags are:
+	-d	      : Debug
+	-v	      : Verbose
+	-s	      : Safe optimization only
+	-z	      : Optimize size
+	-cr <REGMASK> : Set regs refs in jsr (def='')
+	-cs <REGMASK> : Set regs sets in jsr (def=D0/D1/A0/A1)
+	-ru <REGMASK> : Set regs used after rts (def=D0/D2-D7/A2-A6)
+	-4	      : Optimize for 68040
+	-2	      : Optimize for 68020/030
+	-ns	      : Output new syntax
+	-nw	      : Do not display warnings
+        -np           : Supress stack fixup
+        -ni           : Allow usage of new instructions for 68020+
+ 	-kc	      : Keep lines only containing comments
+	-kl	      : Keep unused label
+	-sl	      : Put labels in separate lines
+	-h	      : This usage (same as -? or ?)
+
+	Use the -revinfo argument if you whish to  have  some  informations
+    about the program: Number of successful compilations done sofar, name &
+    size & date of the modules it is build of.
+
+	Be sure that the "-o" flags is followed by the name of  the  output
+    file. This name can be concatenated with the "-o".  So  "-ofoo.asm"  is
+    the same as "-o foo.asm". If this flags is not used, the output file is
+    the same as the input file.
+
+	Flags can be anywhere on the  command  line.  They  can  be  merged
+    together. So "-dvz" is like "-d -v -z". This can work  for  flags  that
+    expects an extra argument (such as "-o <filename>"), but  the  rest  of
+    the flag will be treated as the extra argument. So be carefull  because
+    "-dvoz foo.asm" will output a file called "z" ! The good way to do this
+    is to use "-dvzo foo.asm" or "-dvzofoo.asm" (ie. the 'o' letter must be
+    the last of the argument).
+
+    Detailed description of the flags:
+
+	-d:  Outputs some debug informations while optimizing,	as  well as
+	     information in the ouputfile related to live/dead analysis (in
+	     a comment preceded by ';'  on  each  line  containing  a  real
+	     op-code). Use this for curiosity...  The  comment	is  of	the
+	     form: ref=XXXX set=XXXX live=XXXX where  XXXX  stands  for  an
+	     hexadecimal  number.  Those  numbers  represent   a   set	 of
+	     registers. Bit 1 (lsb) represents A0, Bit 7 represents A7, Bit
+	     8: D0, Bit 15 (msb) is D7. The number in  ref=XXXX  represents
+	     the registers referenced (bit set means a referenced register)
+	     by the  instruction  on  that  line.  The	one  with  set=XXXX
+	     represents registers that are set and the live=XXXX represents
+	     registers that are alive for that instruction. This  can  help
+	     to know why POPT did or did not do an optimization.
+
+	-v:  Outputs some statistics about the optimizations  and  the file
+	     beeing optimized.
+
+	-s:  Avoid making optimizations that can make  your  program behave
+	     wrongly. (It's hard to really guarantee this statement :-).
+
+	-z:  Avoid optimizations that increase the size of the output (that
+	     is to say, roughly, optimizations of mul operations).
+
+	-4:  Perform specific optimizations  for  the  68040.  Note  that a
+	     code optimized for a 68000 may work slower (proportionally) on
+	     a 68040.
+
+	-2:  Perform  specific	optimizations  for  the 68020/68030  micro-
+	     processors. Same remark as for '-4' flag.
+
+	-ru: Set registers that are used after	a  RTS	instruction.  Those
+	     registers are those in which return values  of  functions	are
+	     and registers not scratched by function  call  (ie.  registers
+	     pushed  onto  the	stack  in  a  function).  By  default  only
+	     D0/D2-D7/A2-A6 are assumed for that perpose. If you don't know
+	     what registers your compiler use, or if you whish	to  make  a
+	     safer optimization, use D0-D7/A0-A7 as <REGMASK>. <REGMASK> is
+	     a register mask. A  register  mask  is  a	list  of  registers
+	     separated by '/'. You can use a '-' between two  registers  to
+	     describe  all  registers  betweens  those	two  (a  range   of
+	     registers). For example D0-D2 is the same as D0/D1/D2.
+
+	-cs: Set registers that are set (scratched) in jsr/bsr calls. Those
+	     registers are supposed to be set by the code executed  by	the
+	     jsr. Those registers include also the register(s)  that  bears
+	     the return value of the function. By default, D0-D1/A0-A1	are
+	     used as such scratched registers. If you wish to make a  safer
+	     optimization, you should use an empty mask of  registers  (use
+	     '' for that).
+
+	-cr: Set registers that are used in jsr/bsr calls. Those  registers
+	     are supposed to be used for passing variables  to	a  function
+	     without using the stack. By default, no registers are  assumed
+	     for that (empty <REGMASK>).  If  you  wish  to  make  a  safer
+	     optimization, you can use D0-D7/A0-A6 as <REGMASK>.
+
+	-ns: This  forces  POPT  to  output a  code  with the new  MOTOROLA
+	     syntax.  With this,  -4(A5) will be printed as (-4,A5). Please
+	     note that	the new  syntax  may  be  bad  interpreted by  your
+	     assembler as a sub-mode of a new addressing mode and hence may
+	     slow down your program !
+
+	-nw: With that option, POPT will  not  complain  about	an  unknown
+	     addressing mode or opcode. Use this if you  are  using  68020+
+	     opcodes (like bitfields) and you know that POPT will  complain
+	     about it (see BUG section for further explanations).
+
+	-np: This option tells POPT to avoid stack optimisations.
+
+        -ni: With that option, POPT will occasionaly use 68020 instructions
+             or addressing mode.
+
+	-kc: This prevent POPT from deleting empty lines that consists only
+	     of comments. NOTE: This can disable some optimisations.
+
+	-kl: That makes POPT keep all labels. Even if some are unused.	Use
+	     this if you code is to be included in an other  one  and  POPT
+	     removes some labels (it can't figure which one must  be  kept,
+	     because there is no xdef or so for that way of programming).
+
+	-sl: POPT will put all your labels on separate lines. Use this	for
+	     aesthetic reasons. Some people told me  that  they  think	the
+	     optimized code is much more readable like that (Hello FLINT  !
+	     :-).
+
+MORE DESCRIPTION:
+----------------
+
+	We can describe peephole optimizations by saying that  the  program
+    looks for special pattern locally in the code  (with  a  window  of  1,
+    2,... contiguous instructions) and replace it by an other one  that  is
+    executed faster by the microprocessor.
+
+	Those optimizations are safe for the data.  That  is  to  say  that
+    result (in the data/registers) of the sequence of instructions  do  not
+    change when replaced. However, those are not safe for the control flags
+    of the processor (i.e. some flags may be wrong when  some  instructions
+    are replaced), so the code may execute wrongly.  It  is  very  hard  to
+    combine optimizations with strict flags preservation, but popt does its
+    best to do so.
+
+	By default it doesn't care about flags  preservation  (that  allows
+    more optimizations), but you  can  make  it  more  secure  by  avoiding
+    optimizations that might give wrong flags.	Anyway,  BE  WARNNED  THAT,
+    even so, OPTIMIZATIONS  ARE  NOT  100%  SECURE,  and  you  should  test
+    INTENSIVELY an optimized program to see if its behaviour is correct.  I
+    can tell you that most C-program are  ok,  since  they  don't  rely  on
+    strange flags (Carry, Halfbyte, Overflow, ...) and  on  flags  sets  by
+    instructions (the compiler puts tests instruction usually, so tests are
+    right).
+
+	Although it does speed	optimizations,	you  can  prevent  it  from
+    optimizations that increase size.
+
+	The data-flow analysis is used to determine for each instruction in
+    the code which register is dead or not. A register is said to  be  dead
+    in an intruction if its value is not used by some intructions that	can
+    be executed after the one considered. For example, register D0 is  dead
+    for instructions just before MOVE.L #0,D0 because the value  of  D0  is
+    about to be scratched by the move operation. A  register  that  is	not
+    dead is said to be (... guess !) alive. An operation that references D0
+    value brings it back to life.
+
+	POPT uses well kwown peephole  optimisations  that  keep  the  data
+    intact such as quick move, additions, subtaction, replace .L  operation
+    by .W for A-registers, replace a MUL instruction by a  shift  one  (and
+    many more:	see  the  other  documentation	file  containing  the  list
+    (peephole.doc)) ... but it can do more by using the data-flow analysis.
+    For example, it can transform a CMPI  instruction  by  a  SUBQ  if	the
+    register is dead or suppress an instruction that sets a dead  register.
+    It can even find temporary-scrached registers to perform replacement of
+    MUL by SHIFT & ADD.
+
+	In addition to	peephole  optimizations,  it  can  do  some  global
+    optimizations such as branch optimizations (branch to branch, branch to
+    next instruction,  branch  to  conditional	branch,  branch  inversion,
+    pre-computing  a  conditional  branch),   supression   of	LINK/UNLINK
+    instruction if the link'ed register is not  used  (good  for  low-level
+    routine in C !), deleting unused regs in MOVEM instruction and  merging
+    multiple labels (just for sourcefile  size  optimization,  good-looking
+    source and, actually, for internal purpouse :^) ).
+
+	It can also replace a register by an other one to avoid silly moves
+    that usually occur in code generated by C  compilers.  For	example  it
+    replaces the sequence
+
+		MOVE.L	D3,D1
+		LSL.L	D5,D1
+		ADD.L	D2,D1
+		MOVE.L	D1,D4
+    by
+		MOVE.L	D3,D4
+		LSL.L	D5,D4
+		ADD.L	D2,D4
+
+    The code looks better, doesn't it ? And it takes one instruction less !
+    Those replacements are done independently of local windows. So they are
+    a kind of global optimizations. It	can  also  detect  when  A-register
+    pre-decrement  or  post-increment  modes  can  be  used  so  that  a  C
+    expression like a=*ptr++ can be  efficiently  translated  to  something
+    like MOVE.L (A0)+,D0 even if the compiler use a strange sequence like:
+
+		MOVE.L	A0,A6
+		ADD.L	#4,A0
+		MOVE.L	(A6),D0
+
+	POPT is able to simulate part of a code  to  avoid  an	unnecessary
+     test. Thus it can detect code  generated  by  for(;;)  statement  like
+     {short i,j;for(i=10;i--;++j);} (generated by DCC):
+
+		MOVEQ	#10,D2
+		BRA	l4
+	    l1
+	    l2
+		ADDQ.W	#$01,D3
+	    l4
+		MOVE.W	D2,D0
+		SUBQ.W	#$01,D2
+		TST.W	D0
+		BNE	l1
+
+    and replace it by a very efficient code:
+
+		MOVEQ	#9,D2
+	    l1	ADDQ.W	#1,D3
+	    l4	DBF	D2,l1
+
+    Nice, isn't it ? (The test in the first iteration in the loop is always
+    true, so POPT removes the branch to l4 and replace 10 by 9 !).
+
+	The 68040 and 68020 optimizations  include  re-arrangement  of	the
+    code to prevent pipeline stalls, expansion of movem to multiples moves,
+    and inversion of most 68000 optimizations that are really bad for  that
+    microprocessor (see peephole.doc to see the list).
+
+DISTRIBUTION:
+------------
+
+    That distribution contains:
+
+	- popt: 	The main program.
+
+	- popt.apurify: The version of	this  program  linked  with APurify
+			(If the original program makes  a  guru,  use  that
+			version to see, which access  to  memory  makes  an
+			APURIFY warning/error, and give me a bug report).
+
+	- popt.doc:	This document.
+
+	- peephole.doc: The document  listing  the  peephole  optimizations
+			made by popt.
+
+MISC:
+----
+	All the cited marks/logos are property of their respective owner.
+
+	I'm am not responsible for the dammage that this  program  can  do.
+    Use it at your own risk. It is given "as is". Have in mind  that,  that
+    kind of  program  is  not  guaranteed  to  be  safe.  This  archive  is 
+    copyrighted but freeware.  You  can redistribute it for free (or little 
+    media cost) provided the archive is kept unadulterated.
+
+	It is based initially on the optimizer of the HCC distribution, top
+    ((c) Sozobon ltd.), but it has been modified and improved a lot to suit
+    my needs. Anyway, it helped me a lot with the data-flow analysis.  Some
+    optimizations come also from  the  ASP68K  project	(by  Michael  Glew,
+    January  1994,  mglew@laurel.ocs.mq.edu.au),   Pascal   Lauly   (lauly@
+    cnam.fr) who helped me a lot for  68040-optimizations),  Loïc  Maréchal
+    (marechal@cnam.fr) who  helped  me  for  68020-optimizations,  and from
+    other sources I don't remind. I thank them very much, since I'm  not an
+    ASM-wizard, they helped me a lot.
+
+	That program is about 250Kb and 11600 lines of C code. It has  been
+    compiled with the non-registered dcc version of DICE, by Matt DILLON.
+
+	This program was  initialy  build  with this configuration: a stock
+    A500, KS1.3,  512Kb  CHIP  +  512Kb FAST, one single  diskdrive.   I've
+    must have been mad in fact	to  stay with that configuration it takes a
+    *VERY*  long  time	to  compile:  Use  the '-revinfo' option to see the
+    number of successful compilations and multiply it by 5  mins (actually,
+    to compile a file it takes at least 10 mins with my config. ;-). Then I
+    think you can see how long	it  is for me to make a full re-compilation
+    :-). Now I've upgraded a little bit, but I  must  say  that program can
+    still be build with my previous configuration.
+
+	You can ask me for the sources via e-mail  (not  too  many requests
+    please :-). Note that it is bigger than  250Ko, so think about the size
+    of your mailbox first !
+
+    I can be reached by:
+
+	Electronic Mail:    devulder@info.unicaen.fr
+
+	Postal Mail:	    M. DEVULDER
+			    1, Rue du chateau
+			    59380 STEENE
+			    FRANCE
+
+BUGS:
+----
+
+	POPT is unable to expand macros. Thus LIBCALL macro is	treated  as
+    an unknown instruction. This modifies register live/death analysis	and
+    can avoid some optimizations (unknown instructions  use  all  registers
+    for savety !). But the code will certainly be more optimized  than	the
+    original, anyway.
+
+	POPT doesn't know addressings modes specific for the 68020+. If  it
+    finds such an  unknown  addressing	mode,  it  will  output  a  warning
+    message, and will do no optimization on that mode. But  it	won't  fail
+    because it didn't know an adressing mode or an instruction.  The  '-ni'
+    option does not allow POPT to recognize those opcodes. It just tells it
+    to use new-opcodes for output.
+
+	POPT works better on compiler generated code. Code written by  hand
+    are  usually  very	powerfull  and	well  optimized  anyway  (usage  of
+    automatically set flags). On that kind of writing/optimizations POPT is
+    likely to create a bugged code, even if the '-s' option is  used  (POPT
+    did not detail flags, and some code  rely  on  instructions  that  only
+    touch a part of the status register). Try and  test  heavily  to  check
+    before using a POPT'ed code of that kind (doing  the  optimizations  by
+    yourself instead is far more safer).
+
+	You should have in mind that if you use safe option and safe  setup
+    (for -cs, -cr, -ru), many optimizations will not be done. I think  that
+    you can safely not use the -s option if the code is generated  by  a  C
+    compiler (those are not clever enough to use very  smart  optimizations
+    (differenciation half data registers,  taking  into  account  automatic
+    flags setting/preservations through instructions, for example)).
+
+	Beware that if your code is using half-registers, POPT is likely to
+    produce a buggy code, because it does not care about lower/higher  word
+    of a register. So avoid putting things in registers high-word,  because
+    they'll be probably scratched by some optimization.  In  fact  that  is
+    only true if your code was written by hand. (I don't think  a  compiler
+    can use half-registers to store data).

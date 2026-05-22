@@ -1,0 +1,19 @@
+Short:        keeps assembly-sources uptodate
+Architecture: m68k-amigaos
+
+                        BumpRevision Deluxe V2.200
+
+
+DESCRIPTION
+        This is a tool for all assembly language programmers  who
+        want to document the changes at the different  revisions.
+        BumpRevision    Deluxe    generates    the     well-known
+        $REVISION-HEADER autoMAGICally and allows you to  comment
+        the changes.
+
+        In spite  of  the  existing  tools,  BumpRevision  Deluxe
+        features the  typical  OS  2.xxx  userinterface  and  was
+        written in pure assembly-language for maximum  speed  and
+        minimum size.
+
+

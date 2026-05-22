@@ -1,0 +1,72 @@
+JustBeeps    by Phil Burk
+
+Written using JForth Professional V2.0
+
+Public Domain.  Freely Redistributable.
+
+JustBeeps demonstrates the use of the Audio and Timer devices.
+It plays a series of notes, that are related to each other
+by just intoned intervals.
+
+To hear the program, from the CLI, enter:
+
+	JustBeeps
+
+To compile and run the program, enter JForth as you normally would,
+then enter:
+
+	cd :JustBeeps
+        include JustBeeps.f
+        JustBeeps
+
+What is Just Intonation versus Equal Temperament?
+
+Most western instruments are tuned in a 12 tone equal temperament.
+Every note in this scale is higher than the previous one by
+the 12th root of two.  If you go up 12 notes, you have gone up
+by 2**(12/12), or 2, which is an octave.
+Since all intervals between adjacent notes are
+equal, you can play equally well (or equally poorly) in any key.
+Bach, Lanfranco, and others developeded this tuning to make it
+easy to change keys during a piece, and also so you can play
+pieces in different keys without having to retune the instrument.
+This tuning was designed more for convenience then anything else
+and is basically a kludge.
+
+Non-western instrument, eg. Indonesian gamelans, Indian sitars,
+etc. are typically tuned very differently.  They are generally
+tuned based on a just intoned system, with some deviations to
+get a more lively sound.  A just intoned system is one where
+the note intervals are based on ratios of whole numbers.
+A fifth might be exactly 3/2 higher in frequency than
+the tonic.  A third might be 5/4 higher in frequency.
+This can often give a much sweeter sound then equal temper.
+It can also sound "out of tune" to western ears.
+
+In this simple program, there is no tonic.  Each note is some
+whole number ratio higher or lower then the previous note.
+Each interval will sound fairly "nice" but the tuning
+will sound like it is wandering all over the place.
+The program will select two whole number to make a ratio
+and calculate a new period for the note.  If the period
+is out of range it keeps trying till it gets one in range.
+It prints each pair of numbers it trys, then prints the final
+period.
+
+I hope this simple example program will encourage you to
+experiment with the Amiga Audio capabilities.  If you are
+interested in experimental music you may want to get HMSL,
+the Hieracrchical Music Specification Language.
+This is an experimental object oriented composition language
+available for purchase from Frog Peak Music.  For information
+write:
+
+	Frog Peak Music
+	P.O. Box 1051
+	San Rafael, CA
+	94915
+
+HMSL has an extensive toolbox for experimenting with different
+tuning systems, MIDI, algorithmic composition, and interactive
+performance.
+

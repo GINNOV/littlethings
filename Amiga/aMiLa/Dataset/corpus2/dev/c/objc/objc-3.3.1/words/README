@@ -1,0 +1,38 @@
+
+WORDS README
+------------
+
+"words" is a small program for testing ObjectPak.
+
+When not given a command-line option, it simply reads words (strings
+consisting of letters only) from "stdin" and prints nothing to "stdout".
+
+(words -cltn < erasmus)
+	Prints all the words in the file "erasmus", in the same order as
+	they are encountered
+
+(words -set < erasmus)
+	Prints an unordered list of the words in the file, suppressing
+	duplicate entries
+
+(words -dic < erasmus)
+	 Prints a list of the words in the file and, for each word, its
+	 frecuency, i.e., the number of times the word is encountered.
+
+(words -sort < erasmus)
+	 Prints a sorted list of the words in the file (sorted with respect
+	 to dictionary ordering)
+
+INSTALLATION
+------------
+
+Configuration of "ObjectPak" should have created a Makefile for "words".
+Type "make" to compile "words"
+
+EXPERIMENTS
+------------
+
+(cat erasmus | words -cltn | wc -l)
+(cat erasmus | words -cltn | sort -u | wc -l)
+(cat erasmus | words -set | wc -l)
+(cat erasmus | words -dic | sort -u +1)

@@ -1,0 +1,23 @@
+Short: GL Cell shading from Nehe lesson37
+Author: Sami Hamlaoui (MENTAL) / Jeff Molofee (NeHe) 
+Uploader: thellier@free.fr 
+Type: dev/src 
+Version: 1 
+Requires: StormMesa libraries,Warp3D or Wazp3D library,68020-68881 
+Architecture: m68k-amigaos >= 3.0.0; 
+http://aminet.net/package/dev/src/Nehe-lesson37     
+
+DESCRIPTION 
+How To Create Cartoon Renderings with OpenGL
+OpenGL Tutorial #37.
+Project Name: Cel-Shading
+Authors Name: Sami Hamlaoui (MENTAL) / Jeff Molofee (NeHe)
+Hosted Web Site: http://nehe.gamedev.net
+COPYRIGHT AND DISCLAIMER: (c)2001 Jeff Molofee
+
+Adaptation to AmigaOS3 StormMesa - Alain Thellier - 2011 
+This version use an other rendering method more adapted to the poors Warp3D's drivers
+Original was using big black lines to render the outline
+This version use bigger black triangles to render the outline
+
+

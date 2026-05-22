@@ -1,0 +1,925 @@
+
+
+
+			Fill Algorithms Revisited
+			=========================
+
+
+				Yet Again!
+				==========
+
+
+			     By Dave Edwards
+			     ===============
+
+
+
+Introduction
+------------
+
+	So far, I have dwelt upon the problem of filling a pre-drawn polygon
+in the fastest time possible. So far, two approaches have been demonstrated,
+both of which have been illustrated with diagrams AND the appropriate code.
+
+
+	Firstly, those who remember the first article on this subject & who
+used the code, will recall that my initial approach was to create TWO polygon
+memory areas, draw the boundary in both, and perform the most simple-minded
+of fills on both regions, one region being filled from left to right, and the
+other being filled from right to left. These two regions were then ANDed to-
+gether. The beauty of this approach was that it was simple to understand, and
+the ANDing operation could be farmed out to the blitter while the 68000 pre-
+pared the next pair of polygons. This approach was my first attempt, and was
+slowed somewhat by the rather awkward method I used to determine which repl-
+acement fill data I was to use in a given situation (it wasn't a straightfor-
+ward table lookup).
+
+
+	The second approach dispensed with the extra polygon memory region,
+and performed a more intelligent fill (again using the raster line method). I
+mentioned that this second routine was also made more efficient by the use of
+a table lookup system for the replacement fill data. However, I also explain-
+ed that this was a BYTE fill algorithm, because to create a table of WORDS to
+use as the replacement fill data would chew up 256K of memory as opposed to a
+512-byte table of replacement fill BYTES.
+
+
+	This was a little naive, however, since I assumed that I would be us-
+ing word-sized data read from the polygon memory region to directly index in-
+to a table of words for both the left hand and right hand fills. Such tables
+(one for the left hand side, one for the right) would indeed occupy 256K of
+memory. However, to take advantage of the fact that the 68000 can perform a
+word read/write in the same time as a byte read/write, it IS possible to use
+a table of replaement fill WORDS. The trick lies in how such a table is in-
+dexed!
+
+
+	Before going on to explain the new tricks I have used, bear in mind
+that this fill shares one feature with all previous fills:it operates upon a
+single-bitplane image. To create a polygon on a multi-coloured screen, create
+one copy and simply render it into more than one screen bitplane. Dithering,
+masking and other tricks are extensions of this procedure.
+
+
+Word-Width Filling
+------------------
+
+	As already stated, a word-width fill is desirable because it conveys
+a speed advantage over a byte-width fill. Approximately twice as much memory
+can be filled in unit time by a word-width fill as by a byte-width fill. The
+only remaining problem is how to create tables of words that do NOT occupy a
+256K wedge of memory!
+
+
+	Well, just because word data is being accessed, it does not automati-
+cally follow that the index must be word-sized too! If one has access to se-
+veral data types (and the 68000 handles byte, word and longword data types in
+one go), then one can use a variable of one type to index an array or table
+made up of data entries of a different type (with some restrictions). I thus
+propose to use a byte to contain an ARRAY index, to be converted into a WORD
+offset within a table (using a nice, fast, 4-cycle ADD.W Dn,Dn instruction!).
+
+
+	Since the 68000 provides a truly wonderful addressing mode for acces-
+sing tables, namely:
+
+
+			MOVE.W const(An,Xn.W),Dn
+
+
+to give it in its most general form, or:
+
+
+			MOVE.W	0(An,Dn.W),Dn
+
+
+in the form I intend to use it, the byte index will HAVE to be converted to a
+word-sized unit of data anyway. If our table is pointed to by register A0, &
+our byte index is contained in register D0, we can do this:
+
+
+		MOVEQ	#0,D1		;zero offset
+		MOVE.B	D0,D1		;create index
+		ADD.W	D1,D1		;create true offset
+		MOVE.W	0(A0,D1.W),D1	;get replacement fill word
+
+
+and code similar to this (differing mainly in the choice of registers) is the
+key to the word-width polygon fill. Our tables thus become 512 bytes each!
+
+
+	The principal problem now becomes how to convert a polygon boundary
+word into a byte index! This isn't too bad a problem:for the left hand half
+of the fill, read both a byte AND a word then use the byte to determine which
+of the polygon boundary data units becomes our byte index. For the right hand
+fill, a similar but not identical approach is used (because we want to check
+rightmost set pixels instead of leftmost set pixels). This requires us to use
+FOUR tables, two for the left-hand fill and two for the right-hand fill, and
+thus we end up with 2K of data used for the replacement fill word tables. A
+great improvement upon 256K!
+
+
+	Basically, this fill routine fills from the leftmost set pixel to the
+rightmost set pixel encountered. To determine the leftmost pixel, the pointer
+to the polygon boundary data is used to read the complete word and the upper
+byte. Whichever of these contains the leftmost set pixel (if the BYTE is zero
+then the set pixels are all in the lower byte of the WORD) is selected as the
+index into the chosen table, and the choice of index also affects the choice
+of table. For the right hand fill, the polygon word AND byte are read also,
+but this time the low byte of the WORD is tested for zero status, and used as
+the index if nonzero - the upper BYTE read separately is only used as an in-
+dex if there ar NO set pixels in the low byte of the WORD. Any space left in
+between the replacement words is filled with -1.W ($FFFF) to set all of the
+pixels. Again, if the leftmost and rightmost pixels lie within the same word
+of the polygon memory area, the two replacement fill words are logically AND-
+ed to produce a single, composite fill word, an approach first adopted within
+the byte-fill algorithm (reproduced below in the timing analysis section).
+
+
+The Code
+--------
+
+	I now propose to list the routine I have devised. I have tested this
+upon a pre-computed polygon and upon that polygon, it works. If this routine
+should fail, the principal source of error will be the data being accessed. I
+created the data by hand, but it follows a systematic pattern for each of the
+data tables, so creating support routines to generate the data should not be
+too difficult. The reason I didn't do this for the new code was because I had
+already created suitable data by hand from a previous (and admittedly failed)
+experiment.
+
+
+	So, the routine looks like this:
+
+
+* Fill(a0,d0)
+* a0 = ptr to memory area containing polygon outline
+* d0 = width & height: d0{31:16}=width, d0{15:0}=height
+* NOTE:width is in WORDS!!!
+
+* Perform a fast fill of the polygon outline.
+
+* d0-d6/a0-a3 corrupt
+
+
+Fill		moveq	#-1,d1			;filler value
+
+		lea	FillTables(pc),a2	;ptr to fill tables
+
+Fill_L1		swap	d0		;get width
+		move.l	a0,a1		;copy raster line ptr
+		add.w	d0,a1
+		add.w	d0,a1		;point to next line
+		move.l	a1,d2		;and save ptr
+		swap	d0		;recover height
+
+
+* Now, get left hand side (LHS) outline. If we don't find one then
+* move on to next raster line of polygon.
+
+
+Fill_1		move.b	(a0),d3		;get polygon byte
+		move.w	(a0),d4		;and word
+		bne.s	Fill_2		;skip if hit outline
+		addq.l	#2,a0		;else point to next
+		cmp.l	a1,a0		;blank raster line?
+		bcs.s	Fill_1		;back for more if not
+		bra.s	Fill_10		;else do next raster line
+
+Fill_2		move.l	a2,a3		;copy fill table ptr
+		tst.b	d3		;outline in upper byte?
+		beq.s	Fill_3		;skip if not
+
+
+* Here outline bits are present in the upper byte. Use it as
+* index into the LHS upper table & extract fill word.
+
+
+		moveq	#0,d4		;clear word index
+		move.b	d3,d4		;get index value
+		add.w	d4,d4		;word scale index
+		move.w	0(a3,d4.w),d5	;get fill word
+		bra.s	Fill_4		;and continue
+
+
+* Here outline bits in lower byte only. Use entire word as
+* index into LHS lower byte table, extract fill word.
+
+
+Fill_3		add.w	d4,d4		;word scale index
+		add.w	#512,a3		;point to LHS lower table
+		move.w	0(a3,d4.w),d5	;get fill word
+
+
+* Here repeat the procedure for the right hand side (RHS) outline.
+
+
+Fill_4		move.l	a2,a3		;copy table ptr again
+
+Fill_5		move.w	-(a1),d4	;get RHS boundary
+		beq.s	Fill_5		;fetch new word if not found
+		move.b	(a1),d3		;get upper byte also
+
+
+* Now check which byte contains the rightmost boundary bits.
+
+
+		tst.b	d4		;outline in lower byte?
+		bne.s	Fill_6		;skip if so
+
+
+* Here outline bits in upper byte only. Use as index into
+* RHS upper byte table & extract fill word.
+
+
+		moveq	#0,d4		;clear index
+		move.b	d3,d4		;create it
+		add.w	d4,d4		;word scale it
+		add.w	#1024,a3	;point to correct table
+		move.w	0(a3,d4.w),d6	;get fill word
+		bra.s	Fill_7		;and continue
+
+
+* Here outline bits are in lower byte also. Use as index into
+* RHS lower byte table & extract fill word.
+
+
+Fill_6		add.w	#1536,a3	;point to correct table
+		moveq	#0,d3		;clear index
+		move.b	d4,d3		;create it
+		add.w	d3,d3		;word scale it
+		move.w	0(a3,d3.w),d6	;get fill word
+
+
+* Here see if LHS and RHS fill words at same address. If so,
+* create combination fill word & exit.
+
+
+Fill_7		cmp.l	a1,a0		;LHS ptr = RHS ptr?
+		bne.s	Fill_8		;skip if not
+
+		and.w	d5,d6		;create combination fill word
+		move.w	d6,(a0)		;fill it
+		bra.s	Fill_10		;and continue
+
+
+* Here, fill words in different regions of the polygon. So fill LHS
+* & RHS ends, then fill any blank space remaining.
+
+
+Fill_8		move.w	d6,(a1)		;fill RHS extremity
+		move.w	d5,(a0)+	;now do LHS extremity
+
+		cmp.l	a1,a0		;LHS ptr = RHS ptr?
+		beq.s	Fill_10		;exit if so
+
+Fill_9		move.w	d1,(a0)+		;fill blank space
+		cmp.l	a1,a0		;done all blank space?
+		bcs.s	Fill_9		;back for more if not
+
+Fill_10		move.l	d2,a0		;point to next raster line
+
+		subq.w	#1,d0		;done all raster lines?
+		bne.s	Fill_L1		;back for more if not
+
+		rts			;done!!!
+
+
+Just lift this code out and insert it into your own programs -it is ready to
+use almost 'as is'. The only thing missing is the collection of fill tables,
+which I now list:
+
+
+* Fill tables. These are four tables of 256 words each, following
+* consecutively.
+
+* Table 1 = LHS upper byte fill words
+* Table 2 = LHS lower byte fill words
+* Table 3 = RHS upper byte fill words
+* Table 4 = RHS lower byte fill words
+
+
+* Table 1 LHS
+
+
+FillTables	dc.w	$00FF,$01FF,$03FF,$03FF	;0
+		dc.w	$07FF,$07FF,$07FF,$07FF
+		dc.w	$0FFF,$0FFF,$0FFF,$0FFF
+		dc.w	$0FFF,$0FFF,$0FFF,$0FFF
+		dc.w	$1FFF,$1FFF,$1FFF,$1FFF
+		dc.w	$1FFF,$1FFF,$1FFF,$1FFF
+		dc.w	$1FFF,$1FFF,$1FFF,$1FFF
+		dc.w	$1FFF,$1FFF,$1FFF,$1FFF
+
+		dc.w	$3FFF,$3FFF,$3FFF,$3FFF	;32
+		dc.w	$3FFF,$3FFF,$3FFF,$3FFF
+		dc.w	$3FFF,$3FFF,$3FFF,$3FFF
+		dc.w	$3FFF,$3FFF,$3FFF,$3FFF
+		dc.w	$3FFF,$3FFF,$3FFF,$3FFF
+		dc.w	$3FFF,$3FFF,$3FFF,$3FFF
+		dc.w	$3FFF,$3FFF,$3FFF,$3FFF
+		dc.w	$3FFF,$3FFF,$3FFF,$3FFF
+
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF	;64
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF	;96
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+		dc.w	$7FFF,$7FFF,$7FFF,$7FFF
+
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF	;128
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF	;160
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF	;192
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF	;224
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF
+
+
+* Table 2 LHS
+
+
+		dc.w	$0000,$0001,$0003,$0003	;0
+		dc.w	$0007,$0007,$0007,$0007
+		dc.w	$000F,$000F,$000F,$000F
+		dc.w	$000F,$000F,$000F,$000F
+		dc.w	$001F,$001F,$001F,$001F
+		dc.w	$001F,$001F,$001F,$001F
+		dc.w	$001F,$001F,$001F,$001F
+		dc.w	$001F,$001F,$001F,$001F
+
+		dc.w	$003F,$003F,$003F,$003F	;32
+		dc.w	$003F,$003F,$003F,$003F
+		dc.w	$003F,$003F,$003F,$003F
+		dc.w	$003F,$003F,$003F,$003F
+		dc.w	$003F,$003F,$003F,$003F
+		dc.w	$003F,$003F,$003F,$003F
+		dc.w	$003F,$003F,$003F,$003F
+		dc.w	$003F,$003F,$003F,$003F
+
+		dc.w	$007F,$007F,$007F,$007F	;64
+		dc.w	$007F,$007F,$007F,$007F
+		dc.w	$007F,$007F,$007F,$007F
+		dc.w	$007F,$007F,$007F,$007F
+		dc.w	$007F,$007F,$007F,$007F
+		dc.w	$007F,$007F,$007F,$007F
+		dc.w	$007F,$007F,$007F,$007F
+		dc.w	$007F,$007F,$007F,$007F
+
+		dc.w	$007F,$007F,$007F,$007F	;96
+		dc.w	$007F,$007F,$007F,$007F
+		dc.w	$007F,$007F,$007F,$007F
+		dc.w	$007F,$007F,$007F,$007F
+		dc.w	$007F,$007F,$007F,$007F
+		dc.w	$007F,$007F,$007F,$007F
+		dc.w	$007F,$007F,$007F,$007F
+		dc.w	$007F,$007F,$007F,$007F
+
+		dc.w	$00FF,$00FF,$00FF,$00FF	;128
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+
+		dc.w	$00FF,$00FF,$00FF,$00FF	;160
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+
+		dc.w	$00FF,$00FF,$00FF,$00FF	;192
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+
+		dc.w	$00FF,$00FF,$00FF,$00FF	;224
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+		dc.w	$00FF,$00FF,$00FF,$00FF
+
+
+* Table 3 RHS
+
+
+		dc.w	$0000,$FF00,$FE00,$FF00	;0
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F000,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+
+		dc.w	$E000,$FF00,$FE00,$FF00	;32
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F000,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+
+		dc.w	$C000,$FF00,$FE00,$FF00	;64
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F000,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+
+		dc.w	$F800,$FF00,$FE00,$FF00	;96
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F000,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+
+		dc.w	$8000,$FF00,$FE00,$FF00	;128
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F000,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+
+		dc.w	$E000,$FF00,$FE00,$FF00	;160
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F000,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+
+		dc.w	$C000,$FF00,$FE00,$FF00	;192
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F000,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+
+		dc.w	$E000,$FF00,$FE00,$FF00	;224
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F000,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+		dc.w	$F800,$FF00,$FE00,$FF00
+		dc.w	$FC00,$FF00,$FE00,$FF00
+
+
+* Table 4 RHS
+
+
+		dc.w	$FF00,$FFFF,$FFFE,$FFFF	;0
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF0,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+
+		dc.w	$FFE0,$FFFF,$FFFE,$FFFF	;32
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF0,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+
+		dc.w	$FFC0,$FFFF,$FFFE,$FFFF	;64
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF0,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF	;96
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF0,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+
+		dc.w	$FF80,$FFFF,$FFFE,$FFFF	;128
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF0,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+
+		dc.w	$FFE0,$FFFF,$FFFE,$FFFF	;160
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF0,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+
+		dc.w	$FFC0,$FFFF,$FFFE,$FFFF	;192
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF0,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+
+		dc.w	$FFE0,$FFFF,$FFFE,$FFFF	;224
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF0,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+		dc.w	$FFF8,$FFFF,$FFFE,$FFFF
+		dc.w	$FFFC,$FFFF,$FFFE,$FFFF
+
+
+Admittedly that was a lot to scroll through when reading, but at least all of
+the necessary code and data are available for etching out of this article if
+so desired. It is best to locate the fill tables immediately after the fill
+routine code in your own programs otherwise the PC relative reference might
+fall out of range if located too far from the code.
+
+
+	One word of warning. The caveat about only filling CONVEX polygons as
+defined in the earlier articles holds for this new routine too! This isn't a
+severe restriction, since ALL concave polygons can be built Lego-style using
+convex pieces (in fact, a mathematical proof exists that all you need is one
+or more triangles!).
+
+
+Timing Comparisons
+------------------
+
+	All this is very well, but how does this routine compare with the now
+superseded byte fill routine?
+
+
+	Well, a quick timing analysis is VERY interesting. Below I list both
+of the routines complete with the instruction timings in square brackets. The
+timings for branches are NOT enclosed in square brackets since two values are
+possible for conditional branches-the first figure is the timing for branch
+taken, the second for branch not taken.
+
+
+	First, the byte fill routine timings:
+
+
+* FillArea(a0,d0,d1)
+* a0 = ptr to start of area to fill
+* d0 = width of 1 line in BYTES
+* d1 = number of lines
+
+* d1-d4/a0-a4 corrupt
+
+* Timing Analysis in []
+
+
+FillArea	moveq	#-1,d4		4[1/0]
+
+		lea	leftbytes(pc),a3	8[2/0]
+		lea	rightbytes(pc),a4	8[2/0]
+
+FAR_1		move.l	a0,a1		4[1/0]
+		move.l	a0,a2		4[1/0]
+		add.w	d0,a2		8[1/0]
+
+
+* Here, locate first nonzero byte in raster line starting from
+* the left. If ALL bytes in the raster line are zero, skip to next.
+
+
+		moveq	#0,d3		4[2/0]
+
+FAR_2		move.b	(a1),d2		8[2/0]
+		bne.s	FAR_3		10:8
+		addq.l	#1,a1		8[1/0]
+		addq.w	#1,d3		4[1/0]
+		cmp.w	d0,d3		4[1/0]
+		beq.s	FAR_6		10:8
+		bra.s	FAR_2		10
+
+
+* Here, locate first nonzero byte in raster line starting from
+* the right.
+
+
+FAR_3		move.b	-(a2),d2	10[2/0]
+		beq.s	FAR_3		10:8
+
+
+* Here, a1 and a2 point to the first nonzero bytes in the raster line
+* from LHS and RHS.
+
+
+		cmp.l	a1,a2		6[1/0]
+		bne.s	FAR_4		10:8
+
+
+* Here, a1 and a2 point to the same byte. So perform separate fill
+* on this byte.
+
+
+		moveq	#0,d2		4[1/0]
+		move.b	(a1),d2		8[2/0]
+		move.b	0(a3,d2.w),d2	14[3/0]
+
+		moveq	#0,d3		4[1/0]
+		move.b	(a1),d3		8[2/0]
+		move.b	0(a4,d3.w),d3	14[3/0]
+
+		and.b	d3,d2		4[1/0]
+		move.b	d2,(a1)		8[1/1]
+		bra.s	FAR_6		10
+
+
+* Here, a1 and a2 point to different bytes. Fill LHS byte first.
+
+
+FAR_4		moveq	#0,d2		4[1/0]
+		move.b	(a1),d2		8[2/0]
+		move.b	0(a3,d2.w),d2	14[3/0]
+		move.b	d2,(a1)+	8[1/1]
+
+
+* Now fill RHS byte.
+
+
+		moveq	#0,d2		4[1/0]
+		move.b	(a2),d2		8[2/0]
+		move.b	0(a4,d2.w),d2	14[3/0]
+		move.b	d2,(a2)		8[1/1]
+
+
+* Now fill remaining bytes with -1 (solid pixels).
+
+
+FAR_5		cmp.l	a1,a2		6[1/0]
+		beq.s	FAR_6		10:8
+
+		move.b	d4,(a1)+	8[1/1]
+		bra.s	FAR_5		10
+
+
+* Now, point all pointers to next raster line, prior to next fill
+* and see if all raster lines done.
+
+
+FAR_6		add.w	d0,a0		8[1/0]
+		subq.w	#1,d1		4[1/0]
+		bne.s	FAR_1		10:8
+
+		rts			16[4/0]
+
+
+Now for our new word-width fill routine, the timings are:
+
+
+* Fill(a0,d0)
+
+* Timing Analysis in []
+
+
+Fill		moveq	#-1,d1		4[1/0]
+
+		lea	FillTables(pc),a2	8[2/0]
+
+Fill_L1		swap	d0		8[0/2]
+		move.l	a0,a1		4[1/0]
+		add.w	d0,a1		8[1/0]
+		add.w	d0,a1		8[1/0]
+		move.l	a1,d2		4[1/0]
+		swap	d0		8[0/2]
+
+
+* Now, get left hand side (LHS) outline. If we don't find one then
+* move on to next raster line of polygon.
+
+
+Fill_1		move.b	(a0),d3		8[2/0]
+		move.w	(a0),d4		8[2/0]
+		bne.s	Fill_2		10:8
+		addq.l	#2,a0		8[1/0]
+		cmp.l	a1,a0		6[1/0]
+		bcs.s	Fill_1		10:8
+		bra.s	Fill_10		10[2/0]
+
+Fill_2		move.l	a2,a3		4[1/0]
+		tst.b	d3		4[1/0]
+		beq.s	Fill_3		10:8
+
+
+* Here outline bits are present in the upper byte. Use it as
+* index into the LHS upper table & extract fill word.
+
+
+		moveq	#0,d4		4[1/0]
+		move.b	d3,d4		4[1/0]
+		add.w	d4,d4		4[1/0]
+		move.w	0(a3,d4.w),d5	14[3/0]
+		bra.s	Fill_4		10[2/0]
+
+
+* Here outline bits in lower byte only. Use entire word as
+* index into LHS lower byte table, extract fill word.
+
+
+Fill_3		add.w	d4,d4		4[1/0]
+		add.w	#512,a3		12[2/0]
+		move.w	0(a3,d4.w),d5	14[3/0]
+
+
+* Here repeat the procedure for the right hand side (RHS) outline.
+
+
+Fill_4		move.l	a2,a3		4[1/0]
+
+Fill_5		move.w	-(a1),d4	10[2/0]
+		beq.s	Fill_5		10:8
+		move.b	(a1),d3		8[2/0]
+
+
+* Now check which byte contains the rightmost boundary bits.
+
+
+		tst.b	d4		4[1/0]
+		bne.s	Fill_6		10:8
+
+
+* Here outline bits in upper byte only. Use as index into
+* RHS upper byte table & extract fill word.
+
+
+		moveq	#0,d4		4[1/0]
+		move.b	d3,d4		4[1/0]
+		add.w	d4,d4		4[1/0]
+		add.w	#1024,a3	12[2/0]
+		move.w	0(a3,d4.w),d6	14[3/0]
+		bra.s	Fill_7		10[2/0]
+
+
+* Here outline bits are in lower byte also. Use as index into
+* RHS lower byte table & extract fill word.
+
+
+Fill_6		add.w	#1536,a3	12[2/0]
+		moveq	#0,d3		4[1/0]
+		move.b	d4,d3		4[1/0]
+		add.w	d3,d3		4[1/0]
+		move.w	0(a3,d3.w),d6	14[3/0]
+
+
+* Here see if LHS and RHS fill words at same address. If so,
+* create combination fill word & exit.
+
+
+Fill_7		cmp.l	a1,a0		6[1/0]
+		bne.s	Fill_8		10:8
+
+		and.w	d5,d6		4[1/0]
+		move.w	d6,(a0)		8[1/1]
+		bra.s	Fill_10		10[2/0]
+
+
+* Here, fill words in different regions of the polygon. So fill LHS
+* & RHS ends, then fill any blank space remaining.
+
+
+Fill_8		move.w	d6,(a1)		8[1/1]
+		move.w	d5,(a0)+	8[1/1]
+
+		cmp.l	a1,a0		6[1/0]
+		beq.s	Fill_10		10:8
+
+Fill_9		move.w	d1,(a0)+	8[1/1]
+		cmp.l	a1,a0		6[1/0]
+		bcs.s	Fill_9		10:8
+
+Fill_10		move.l	d2,a0		4[1/0]
+
+		subq.w	#1,d0		4[1/0]
+		bne.s	Fill_L1		10:8
+
+		rts			16[4/0]
+
+
+Now how do these two routines compare? Well, if we take my pre-computed poly-
+gon, which is 16 bytes across by 8 raster lines deep, the routines produce a
+set of timings as follows:
+
+
+		FillArea() byte fill	: 5240 machine cycles
+
+					  = 655 microseconds
+
+		Fill() word fill	: 1378 machine cycles
+
+					  = 172.25 microseconds
+
+
+This is one hell of an improvement! The new routine is between 3 and 4 times
+faster than the byte-width fill (in this case, 3.81 times faster)! So if the
+byte-width routine is used to fill a given area, the word-width fill is cap-
+able of filling almost four times the area in the same time!
+
+
+	Needless to say, this new routine will make filled polygon generation
+far more efficient, and allows bigger and more complex polygons to be filled.
+Now that I've hit upon a REALLY efficient polygon filler, perhaps I can use
+it and start writing some decent 3D filled vector code...!
+
+
+Using This Code
+---------------
+
+	Again, the above code, data tables and associated material are freely
+distributable. Decrunch this file using PowerPacker or Mark Meany's ARP De-
+cruncher, etch out the code and data tables and insert into your own code as
+desired. If you need a fast polygon fill and don't mind restricting yourself
+to convex polygons for your application (a restriction that isn't too bad as
+I have already explained above), then this fill routine is for you!
+
+
+	In the meantime, happy coding to all my readers!
+
+
+		Live fast, code hard & die in a beautiful way,
+
+
+
+			Dave Edwards.
+
+
+
+
+	
+

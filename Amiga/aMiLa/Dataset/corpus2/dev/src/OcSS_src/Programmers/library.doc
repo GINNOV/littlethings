@@ -1,0 +1,524 @@
+***************************************************************************
+
+Instructions for using "medplayer.library", "octaplayer.library" and
+"octamixplayer.library" V7.0.
+
+***************************************************************************
+
+
+		medplayer.library
+		~~~~~~~~~~~~~~~~~
+
+"medplayer.library" is a shared library, which can be used to load and play
+MED/OctaMED  4-channel modules You can call its functions from any language
+which supports library calls (C, Assembler, Basic...)
+
+"medplayer.library" supports only 4-channel MED songs. For OctaMED 5 - 8
+channel songs, you must use octaplayer.library. "octamixplayer.library" is
+provided for OctaMED Soundstudio songs that use the mixing routine.
+
+There's a header file 'libproto.h' that contains the prototypes and
+#pragmas of all three libraries for use with SAS/C.
+
+Here's the complete list of the functions in "medplayer.library" (in RKM
+autodoc-style):
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+GetPlayer
+
+NAME
+	GetPlayer -- get and initialize the player routine
+
+SYNOPSIS
+	error = GetPlayer(midi)
+	D0                D0
+
+FUNCTION
+	This routine allocates the audio channels and CIAB timer A/B
+	and prepares the interrupt. If "midi" is nonzero, serial
+	port is allocated and initialized. You should call this
+	routine when your programs starts up.
+
+INPUTS
+	midi =  0 no midi, 1 set up midi. When you use a song that
+		has only Amiga samples, there's no reason to allocate
+		the serial port. Then set midi to 0.
+
+RESULT
+	If everything is OK, GetPlayer() returns zero. If initialization
+	failed or somebody else is currently using the library, then
+	GetPlayer() returns nonzero value.
+	NOTE: Even if GetPlayer() returned an error, you can still call
+	      the library functions without making harm. They just won't
+	      work (except LoadModule(), UnLoadModule(), RelocModule()
+	      and GetCurrentModule(), which always work).
+
+SEE ALSO
+	FreePlayer
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+FreePlayer
+
+NAME
+	FreePlayer -- free the resources allocated by GetPlayer()
+
+SYNOPSIS
+	FreePlayer()
+
+FUNCTION
+	This routine frees all resources allocated by GetPlayer().
+	Remember always call this routine before your program
+	exits. It doesn't harm to call this if GetPlayer() failed.
+	If you don't call this function during exit, audio channels,
+	timer etc. will remain allocated until reboot.
+
+SEE ALSO
+	GetPlayer
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+PlayModule
+
+NAME
+	PlayModule -- play module from the beginning
+
+SYNOPSIS
+	PlayModule(module)
+	           A0
+
+FUNCTION
+	This routine starts to play the module from the beginning.
+	The module can be obtained by calling LoadModule() or it can
+	be incorporated directly into your program. The module has to
+	be relocated before calling PlayModule()!
+
+INPUTS
+	module = pointer to the module.
+
+SEE ALSO
+	ContModule, StopPlayer
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+ContModule
+
+NAME
+	ContModule -- continue playing the module from where it stopped
+
+SYNOPSIS
+	ContModule(module)
+	           A0
+
+FUNCTION
+	ContModule() functions just like PlayModule() except if you
+	have stopped playing with StopPlayer(), the playing will
+	continue where it stopped. When you play the module first
+	time, you should use PlayModule().
+
+INPUTS
+	module = pointer to module.
+
+SEE ALSO
+	PlayModule, StopPlayer
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+StopPlayer
+
+NAME
+	StopPlayer -- stops playing immediately
+
+SYNOPSIS
+	StopPlayer()
+
+FUNCTION
+	Stop.
+
+SEE ALSO
+	PlayModule, ContModule
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+DimOffPlayer
+
+NOTE
+	This is an obsolete function! It was removed in V2 of the library,
+	and it now just does StopPlayer()!
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+SetTempo
+
+NAME
+	SetTempo -- modify the playing speed
+
+SYNOPSIS
+	SetTempo(tempo)
+	         D0
+
+FUNCTION
+	If you want to modify the playback speed, you can call this one.
+	This number should be 1 - 240. Note that tempos 1 - 10 are
+	recognized as SoundTracker tempos. This function probably has not
+	much use.
+
+INPUTS
+	tempo = new tempo
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+LoadModule
+
+NAME
+	LoadModule -- load a MED module from disk and relocate it
+
+SYNOPSIS
+	module = LoadModule(name)
+	D0                  A0
+
+FUNCTION
+	When you want to load a module from disk, call this function.
+	The function loads only MED modules (MMD0). It doesn't load
+	Tracker-modules, MED songs or object files. Only MMD0's
+	(MMD0 is the identification word at the beginning of the file).
+	Because the module contains many pointers, they must be
+	relocated. This function relocates the module automatically.
+	If you include the module as a binary file converted with
+	Objconv, YOU must relocate it. This is an easy thing to do.
+	Just call RelocModule().
+
+	Medplayer.library version 3 and later also handle OctaMED Pro
+	MMD1 modules. Versions 5 and above handle MMD2 modules as well.
+
+INPUTS
+	name = pointer to file name (null-terminated)
+
+RESULT
+	module = pointer to module. If failed to load for some reason
+	         (disk error, out of memory, not a module), zero will
+		  be returned.
+
+SEE ALSO
+	UnLoadModule
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+UnLoadModule
+
+NAME
+	UnLoadModule -- frees the module from memory
+
+SYNOPSIS
+	UnLoadModule(module)
+	             A0
+FUNCTION
+	When you don't need the module anymore, you MUST free the
+	memory it has used. Use this routine for it. Remember to
+	stop the player before unloading the module it is playing.
+
+	NOTE: unload only those modules which are loaded with
+	LoadModule(). If you attempt to free module which is a part
+	of the program, you will get a guru (81000009/81000005).
+
+INPUTS
+	module = pointer to module. If zero, nothing happens.
+
+SEE ALSO
+	LoadModule
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+GetCurrentModule
+
+NAME
+	GetCurrentModule -- returns the address of module currently playing
+
+SYNOPSIS
+	module = GetCurrentModule()
+	D0
+
+FUNCTION
+	Simply returns the pointer of the module, which is currently
+	playing (or if player is stopped, which was played last). This
+	works also if some other task is currently playing. In this case,
+	because of multitasking, you should have no use for the value
+	(the module can be already unloaded). You may ask what use this
+	function has. Well, I'm not sure, but because this function
+	takes only 2 machine language instructions (8 bytes of memory)
+	there's not much harm of it.
+
+RESULT
+	module = pointer to current module
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+ResetMIDI
+
+NAME
+	ResetMIDI -- reset all pitchbenders and modulation wheels and
+	             ask player to resend the preset values
+
+SYNOPSIS
+	ResetMIDI()
+
+FUNCTION
+	This function resets pitchbenders and modulation wheels on all
+	MIDI channels. It also asks the player to send again the
+	preset change requests for all instruments, so that the presets
+	will be correct if the user has changed them. It performs the
+	same function as Ctrl-Space in OctaMED.
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+Note: The following functions are only available in medplayer.library V2
+or later, be sure that you're really using V2 of the library
+e.g.  MEDPlayerBase = OpenLibrary("medplayer.library",2);
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+SetModnum
+
+NAME
+	SetModnum -- select the number of the song (in multi-module)
+
+SYNOPSIS
+	SetModnum(modnum)
+		  D0
+
+FUNCTION
+	Use this function to set the number of song you want to play.
+	Call this before PlayModule(). 0 is the first song, 1 is the
+	second, and so on. If the module is not a multi-module, this
+	function has no effect.
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+RelocModule
+
+NAME
+	RelocModule -- relocate module
+
+SYNOPSIS
+	RelocModule(module)
+		    A0
+
+FUNCTION
+	This function relocates the module. It should be used if you've
+	incorporated the module with Objconv program before using the
+	module. Note that LoadModule() automatically relocs everything.
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+Note: The following functions are only available in medplayer.library V7
+or later, be sure that you're really using V7 of the library
+e.g.  MEDPlayerBase = OpenLibrary("medplayer.library",7);
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+RequiredPlayRoutine
+
+NAME
+	RequiredPlayRoutine -- tell which playing routine this mod needs
+
+SYNOPSIS
+	routine = RequiredPlayRoutine(module)
+	D0				A0
+
+FUNCTION
+	Returns the number of the playing routine (and therefore playing
+	library) which is required for correctly replaying the module.
+
+RESULT
+	0 = normal four channel routine (medplayer.library)
+	1 = 5-8 channel routine (octaplayer.library)
+	2 = 1-64 channel mixing routine (octamixplayer.library)
+	Other values are reserved for the future. You shouldn't do
+	anything with the module if any other value is returned.
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+FastMemPlayRecommended
+
+NAME
+	FastMemPlayRecommended -- does the module require fast mem playing?
+
+SYNOPSIS
+	result = FastMemPlayRecommended(module)
+	D0				A0
+
+FUNCTION
+	Tells if the module uses some of the goodies (long samples and/or
+	odd repeat values) that are only available with FastMem playing.
+	It's up to you to activate FastMem playing.
+
+RESULT
+	0 = doesn't require FastMem playing
+	1 = does require it
+
+SEE ALSO
+	SetFastMemPlay()
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+LoadModule_Fast
+
+NAME
+	LoadModule_Fast -- load a module from disk into Fast RAM
+
+SYNOPSIS
+	module = LoadModule_Fast(module)
+	D0			 A0
+
+FUNCTION
+	Loads a module into Fast RAM. Otherwise identical to LoadModule().
+
+RESULT
+	module = pointer to the loaded module
+
+SEE ALSO
+	LoadModule()
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+SetFastMemPlay
+
+NAME
+	SetFastMemPlay -- activates/deactivates Fast RAM playing
+
+SYNOPSIS
+	SetFastMemPlay(newstate,buffsize)
+			D0	 D1
+
+FUNCTION
+	Enables or disables Fast RAM playing, and sets the size of the
+	output buffer. This routine should only be called when playing
+	is stopped.
+
+INPUT
+	newstate = New state of Fast RAM playing mode (i.e. 1 or 0)
+	buffsize = Size of the output buffer, must be between 4 and 400,
+		   and divisible by four. Use 0 if you want to retain the
+		   old value
+
+SEE ALSO
+	FastMemPlayRecommended()
+
+***************************************************************************
+
+		octaplayer.library
+		~~~~~~~~~~~~~~~~~~
+
+This library is made for playing OctaMED 5 - 8 channel songs ONLY. It does
+not support MIDI or 4-channel songs. The functions in it are analogous to
+functions in medplayer.library. (See the medplayer.library docs above for
+explanation of their usage.)
+
+The functions are:
+
+	GetPlayer8()		(midi switch ignored)
+	FreePlayer8()
+	PlayModule8(module)
+	ContModule8(module)
+	StopPlayer8()
+	LoadModule8(filename)
+	UnLoadModule8(module)
+	SetModnum8(modnum)
+	RelocModule8(module)
+	RequiredPlayRoutine8(module)
+	FastMemPlayRecommended8(module)
+	LoadModule_Fast8(module)
+	SetFastMemPlay8(newstate,buffsize)
+
+As you can see, every function has '8' in its name, and some functions that
+are in medplayer.library don't exist. There's also an additional function
+that exists only in octaplayer.library (V6 and above):
+
+---------------------------------------------------------------------------
+
+SetHQ
+
+NAME
+	SetHQ - set high quality mode		(V6)
+
+SYNOPSIS
+	SetHQ(hq)
+	      D0
+
+FUNCTION
+	When you allocate the player with GetPlayer8(), the HQ mode is set
+	off by default. This function switches the HQ mode on or off.
+	(D0: nonzero = on, zero = off).
+
+	Note: The player should be stopped when calling this.
+
+	Also note: No check is made whether the computer is fast enough to
+	handle HQ properly.
+
+---------------------------------------------------------------------------
+
+***************************************************************************
+Note:
+~~~~~
+Version 3 of both medplayer.library and octaplayer.library handle the new
+MMD1 module type correctly. No changes are required to programs calling
+these libraries. If you absolutely want MMD1 support, be sure to request
+V3 of the libraries.
+
+(e.g. OpenLibrary("medplayer.library",3); )
+
+As well, if you want MMD2 support, be sure to ask version 5 or later.
+
+***************************************************************************
+
+		octamixplayer.library
+		~~~~~~~~~~~~~~~~~~~~~
+
+This library is for playing OctaMED Soundstudio modules which utilize the
+mixing mode (with 1-64 channels). These functions in octamixplayer.library
+are identical (in functionality) to routines in the above two libraries:
+
+	GetPlayerM()		(midi switch ignored)
+	FreePlayerM()
+	PlayModuleM(module)	(see note below!)
+	ContModuleM(module)
+	StopPlayerM()
+	LoadModule_FastM(filename) (loading to chip mem is unnecessary)
+	UnLoadModuleM(module)
+	SetModnumM(modnum)
+	RelocModuleM(module)
+	RequiredPlayRoutineM(module)
+
+Note that PlayModuleM() may fail (probably because out of memory), and it
+returns a non-zero value if it does.
+
+These functions control the settings of the mixing routine. They should be
+called only when playing is stopped:
+
+				Acceptable values	Default value
+Set14BitMode(newmode)		0 or 1 (*)		1
+SetMixingFrequency(newfreq)	1000 - 65535 (**)	15000
+SetMixBufferSize(newbuffsize)	4 - 32764 (***)		1024
+
+*  The sound is louder (but more noisy) if 14-bit mode is turned off.
+
+** Note that the maximum usable mixing frequency depends on the screen mode.
+   The highest value that works in the standard 50 Hz modes is about 28800.
+
+*** The default value is suitable for most applications.

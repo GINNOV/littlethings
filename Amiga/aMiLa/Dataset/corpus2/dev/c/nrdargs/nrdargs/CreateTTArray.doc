@@ -1,0 +1,58 @@
+	               CreateTTArray.c
+        	 © 1998 by Stephan Rupprecht
+             	      All rights reserved.
+    
+
+COPYRIGHT AND DISCLAIMER
+   CreateTTArray copyrighted 1998 by Stephan Rupprecht. All rights 
+   reserved. This program is freeware, so no financial donations 
+   required. Redistribution allowed if the package is left unchanged.   
+   The author is not responsible for any damage caused by the use or 
+   misuse of this documentation and/or the program(s) it describes.
+
+
+FUNCTION
+   CreateTTArray is a simple function that creates a tooltype array from
+   ReadArgs() template string and an intialized LONGWORD array (eg. previously
+   passed to [New]ReadArgs). This function is meant for programs that save their
+   preferences (like PrintManager v39 by me:) in their icon.
+
+   char **CreateTTArray( STRPTR template, LONG *array, APTR *poolp, char **orig )
+
+   template: valid ReadArgs() template string
+   array:    ReadArgs longword array (must be correctly intialized)
+   poolp:    Pointer to an APTR that will (in case of success) hold the address
+	     of a memory pool that were created by the exec.lib function CreatePool
+   orig:     optional pointer to the old tooltype array (currently only used to 
+	     decide if STARTPRI and TOOLPRI should be included into the new array).
+
+EXAMPLE
+
+   ...
+
+   rd = ReadArgs( TEMPLATE, array, NULL );
+
+   ...
+
+   if( dobj = GetDiskObject( MYICON ) )
+   {
+    oldtta = dobj->do_ToolTypes;
+    
+    if( tta = CreateTTArray( TEMPLATE, array, &pool, oldtta ) )
+    {
+      dobj->do_ToolTypes = tta;
+      PutDiskObject( dobj );
+      dobj->do_ToolTypes = oldtta;
+      DeletePool( pool );
+    }
+    FreeDiskObject( dobj );
+   }
+
+   ...
+
+   FreeArgs( rd );
+
+   ...
+
+NOTE
+   You can always find the DONOTWAIT tooltype in the array created by CreateTTArray.

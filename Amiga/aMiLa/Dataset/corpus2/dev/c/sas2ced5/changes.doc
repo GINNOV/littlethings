@@ -1,0 +1,60 @@
+Changes
+
+03/21/92 v2.24
+	Fixed Arexx result code if function is not available.  Returns
+	rm_Result1=5, rm_Result2=1.
+
+	Changed it so it will not quit if it can't open lc's error file,
+	it will just do nothing.
+
+	Changed the order of some of the code.
+
+	If you are using WShell 2.0 you must use BRKMODE#2 so Sas2Ced can
+	find the WShell window when compiling.
+
+
+09/20/91 v2.20
+	The Arexx port has a new command: compile <path> <command>
+	Compile tries to find a shell in the system that has a
+	current directory the same a <path>, if one is found
+	<command> is executed in it.  With this sas2ced fully
+	intergrates Sas/C to Ced.
+
+	compile.s2c arexx script is included.
+
+	Next error requester will now appear directly above the error
+	or directly below if it can not fit above.  Basiclly the cursor
+	will never be covered.
+
+	Added a command line option for the path to look for an
+	include file if it can not be found.
+
+	Changed the name of the sas2ced arexx port from 'sas2ced'
+	to 'SAS2CED' to comform to the Amiga User Style Guide.
+
+
+05/07/91 v2.00 & v1.20	
+	V2.00 is the same as v1.20, but v2.00 only runs under
+	AmigaDOS 2.0.  V2.00 uses 2.0 system calls to make it
+	smaller and faster.
+
+	Added logic so Ced will not be pulled to the front if an
+	invald filename is given to LC.
+
+	Changed it so Ced will not be pulled to the front if you
+	press ctrl-c while compiling.
+
+	Changed quitting Sas2Ced from ctrl-f to ctrl-c.		
+
+
+03/12/91 v1.10
+	I added better logic to check to see if a file is already open.
+
+	I also added three command line options.
+	next- (default) next error requester comes up if an error is found
+	show- showerrors requester comes up if an error is found
+	quiet-no requester comes up, just moves cursor to first error
+
+
+02/01/91 v1.00
+	Release of version 1.00

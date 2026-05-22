@@ -1,0 +1,98 @@
+
+
+ I was asked by Paul Firth to show how to use the graphics.library Flood()
+function. This baby will flood fill areas of a RastPort with a specified
+colour.
+
+ The problem with Flood(), like some other graphics.library functions, is
+the reliance on a Temporary RastPort being linked to the RastPort into
+which the rendering is to be done. The Temporary RastPort, TmpRas, is used
+as a scratch area by these routines.
+
+ Intuition Windows and Screens do not have TmpRas structures linked to
+their RastPorts, so we must do the job manually. A TmpRas structure is
+initialised by calling InitTmpRas(), this function requires three
+parameters:
+
+	success = InitTmpRas( TmpRas, buffer, size )
+	  d0                    a0      a0     d0
+
+ TmpRas		Pointer to the TmpRas structure to initialise
+
+ buffer		Bitplane to use for scratch
+
+ size		Byte size of the bitplane
+
+ Now the RKM manuals state that the bitplane used should be the same size
+as one of the bitplanes in the target RastPort, so who am I to argue. In
+the example program I have opened a window on the WorkBench screen, by
+rights I should use the value Window->RPort->Bitmap->(BytesPerRow * Rows)
+but to keep things simple I have assumed a 640*256 display as this is the
+standard WorkBench size. Also, rather than allocating CHIP memory for the
+buffer I have simply created space for it within the program using 
+
+		ds.b 		(640/8)*256
+
+ The same is true for the TmpRas structure itself, rather than allocate
+memory for it, I have used:
+
+WorkRas		rs.b		tr_SIZEOF
+
+ This ensures that sufficient memory is available in the BSS section of the
+program.
+
+ So, to initialise the TmpRas in the example the following fragment is used:
+
+		lea		WorkRas(a5),a0		TmpRas
+		lea		ScratchBpl,a1		Buffer
+		move.l		#(640/8)*256,d0		Size
+		CALLGRAF	InitTmpRas		initialise it
+		tst.l		d0
+		beq		Error
+
+ Once the TmpRas has been initialised it can be linked to the RastPort we
+are going to render in. To do this the address of the TmpRas must be
+written into the RastPort->TmpRas field. The address of the RastPort itself
+is obtained from the Window structure, Window->RPort:
+
+		move.l		win.rp(a5),a0		RastPort
+		lea		WorkRas(a5),a1		TmpRas
+		move.l		a1,rp_TmpRas(a0)
+
+ We can now use the Flood() function!
+
+ The example provided allows you to fill areas within a window with
+different colours. I should point out that Flood() has two modes of
+operation:
+
+	0		Fill all adjacent pixels searching for border
+	1		Fill all adjacent pixels that have same pen number
+
+ In the example I have used mode 1, the mode being passed in register d2:
+
+	error = Flood( RastPort, Mode, X, Y )
+	 d0               a1      d2   d0 d1
+
+
+ Bearing this in mind, you can now start working on a fully fledged paint
+package to rival Brilliance :-)
+
+ nb. Passing though, to draw a circle you need to call DrawEllipse() with
+the horizontal radius = vertical radius. Can't remember who asked for this
+titbit of information!
+
+		DrawEllipse( RastPort, cX, cY,  a, b )
+				a1     d0  d1  d2 d3
+
+ To draw a circle:
+
+		move.l		win.rp(a5),a1		RastPort
+		move.l		x,d0			x-ord of center
+		move.l		y,d1			y-ord of center
+		move.l		radius,d2		a
+		move.l		d2,d3			b
+
+
+ That's all folks!
+
+			M.Meany.

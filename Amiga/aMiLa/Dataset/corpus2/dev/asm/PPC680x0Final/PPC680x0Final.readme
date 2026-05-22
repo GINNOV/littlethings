@@ -1,0 +1,168 @@
+Short:        Use your PPC as the ultimate 68k! Final Promo 1.8!
+Author:       sraghoeb@ocenl.nl (Sharwin & Rakesh Raghoebardayal)
+Uploader:     sandoz speed a2000 nl (Sander Assenbroek Machielsen)
+Type:         dev/asm
+Version:      1.8 Promo
+Replaces:     dev/asm/PPC680x0.lha
+Architecture: m68k-amigaos
+
+WHAT IS PPC680x0???
+
+PPC680x0 is a source-level converting utility (which means you can convert
+your old 680x0 source codes straight to PowerPC source-codes) and a highly
+powerful 680x0-based programming language.
+
+There's a lot of programmers who don't seem to be happy with the programming
+architecture of the Motorola/IBM PowerPC family. Although the PPC is an
+extremely powerful piece of silicon, it suffers a bit from its
+not-exactly-user-friendly design.
+
+Although many people (and even universities) seem to deny it, machine
+language is the only way to make programs run at maximum speed. Just take a
+look at the demo-scene, where coders push the most advanced effects through a
+'theoretically slow' 68k CPU.
+
+PPC680x0 is a program that should help out coders in a easy but (when used in
+the right way) extremely powerful way. You can actually treat the PowerPC CPU
+as a very big 68060.
+
+Try to imagine yourself an 68060 with over 27 general purpose registers
+(which means it doesn't matter if you use one as an address or data
+register), many extra instructions, more addressing modes, Quad-word
+operations, etc. etc... It is now possible, thanks to PPC680x0...
+
+PPC680x0 outputs 100% Storm PowerAsm compatible code.
+
+This version is for promotional use ONLY and should not be spread as a Public
+Domain utility. This promo version might have some little bugs in the output
+codes although they weren't spotted yet. It should have no fatal bugs,
+though.
+
+Let's hope this utility will make PPC programming easier for all of you!
+
+Just a little note: PPC680x0 is a big library function that is called
+everytime you push a button on the PPC68k interface. The library version will
+be released together with the final version, allowing realtime conversion
+etc.
+
+Also remember that we are always happy to see bug reports!!!
+
+WHAT'S MISSING IN THIS VERSION:
+
+This promo-version has nearly all 68000 instructions enabled except for:
+
+ * link/unlk
+ * some extremely low-level instructions which include trapping
+   and exception instructions.
+
+But there's a lot of other things missing, such as:
+
+ * low-level carry emulation
+ * 64-bits implementations output
+ * Intelligent label detection:
+    At this moment PPC680x0 does not detect brackets in labels
+    which results in errors. The final version will detect labels
+    as well as their perfect sizes for optimizations
+ * Support for equr, fequr equrl and reg directives
+ * 68020+ (EXTRA) instructions support
+   (which means the promo does support divs etc. but 
+   no bitfield commands etc.. 64->32 bits divisions are also left 
+   out)
+ * 68881+ instructions support
+ * low-level SR/CCR emulation
+ * low-level register emulation
+ * extra WarpUp/PowerUp goodies
+ * rest emulation for divisions/multiplications
+ * next 50% of SUPER architecture instructions
+ * More error messages for the interface
+ * Amiga-guide instruction file with a LOT of more information in it
+ * IFF-pictures with schedules and conversion methods
+ * full-color interface on 8 bitplane+ Amiga's.
+ * PPC680x0.library for low-level usage 
+
+AND MOST IMPORTANT:
+
+ * modular interface, which means you can always get free patches,
+   optimizations, additional instructions etc. from Aminet.
+ * all functions tested 100%
+ * output-organ extensions: There's a possibility that there will
+   be new output languages for PPC680x0, which means you can then
+   convert your codes to PowerPC, ColdFire, AmigaNG etc.. 
+
+REMOVED IN PROMO 1.8 (FROM COMMERCIAL RELEASE 1.04)
+
+ SORRY, but we have removed slightly more from the latest promo
+ as it is a cut-down version of the near-perfect commercial
+ release. Placing too much features in the promo would make it
+ TOO powerful for a promotional release...! ALL the other features
+ than listed here ARE implemented, though...!
+
+ - FPU
+ - some bitfield instructions
+ - multiplications (sorry...!)
+ - SUPER2 architecture
+ - good guidefile
+ - extensive internal interfacing
+ - 64-bits implementations (Button turns 'dead'!)
+ - carry emulation (Button turns 'dead'!)
+
+COMMERCIAL RELEASE 1.01 - 1.04 (CLEAN SUPER-VERSION!!!)
+
+ - Fixed almost every single bug that was in it, including
+   all Enforcer Hits and trash commands
+ - Recoded almost the entire address calculator
+ - Fixed the r0 suffix
+ - Fixed the movem/lea/pea/jsr/jmp commands
+ - Official 'clean' version, intensively & succesfully tested!
+ - New 'parallel' instruction optimizations
+
+REMOVED IN PROMO 1.7 (FROM COMMERCIAL RELEASE)
+
+ - FPU
+ - some instructions for bitfields etc.
+ - SUPER2 architecture
+ - rest emulation
+ - good guidefile
+ - extensive internal interfacing
+
+ADDED IN COMMERCIAL RELEASE 1.0 (7th July 1999)
+
+ - A LOT EXTRA!!!
+ - rN suffix
+ - good guidefile
+ - most bitfield commands
+ - optimizations (too much to list!)
+ - bug-fixes (too much to list!)
+ - dctv.library conversion routines succesfully converted
+
+ADDED IN COMMERCIAL PRE-RELEASE EDITION 0.82  (5th July 1999)
+
+ - link/unlk set to enabled
+ - return terminators added to prevent spaces in between code
+ - rest emulation added
+ - ext carry emulation fixed
+ - many tiny fixes for parts that created trash or forgotten tabs
+ - Bit Fields are now in the work-in-progress state, they don't
+   give an error, but don't give an output either. Expect them
+   tomorrow...!
+
+ADDED IN COMMERCIAL PRE-RELEASE EDITION 0.8
+
+ - link, unlk
+ - 68060 Floating Point Unit working and enabled
+ - bug-fixes for all conditional and branching instructions
+ - optimizations in loading/storing
+ - 40% EXTRA of Super Architecture
+ - new guidefile
+ - better immediate handling
+ - modular interface native functions
+ - X=D button
+ - header questions enable/disable
+ - carry emulation now better
+ - 'not' fixed
+ - better low-level register handling
+
+For a longer revision history, please read the guide...
+
+NOTE: PPC680x0 Commercial V1.0 will be released at the World Of Amiga 1999
+show, held on the 24th and 25th of July 1999 in London. See you there :)

@@ -1,0 +1,180 @@
+ReadIff V1.0 --- Documentation
+
+by Chaos/Sanity
+
+contact me (for any legal reason)
+
+Dierk Ohlerich
+Thuner Str 181
+21680 Stade
+Germany
+Tel. 04141/69509
+
+
+
+
+
+Scope:
+------
+
+ReadIff  is  a  small  CLI-Tool  that converts IFF-Graphics to diverse
+raw-formats and palette-informations.  It needs Kick 3.0+, it supports
+AGA and Chunky modes.  It is 100% OS and 100% written in C.  It is not
+thought to be efficent or even bug-free.
+
+This  is  really  Public  Domain.  You may do everything you want with
+this code except spreading modified versions without notice and making
+lot's of money.
+
+
+Preface:
+--------
+
+ReadIff  is  another  kind  of Iff to Raw-Converter.  You migth expect
+such  a  programm  to  open a hardware-coded screen with a nice, small
+menu  containing  nice  graphical  gadgets, but this one is completely
+different:  it is totally controlled by CLI.
+
+All  you  have  to  do to convert an image is to type its name and the
+name  of  the  converted raw file.  That's all, if you want to convert
+the  complete  picture.   If you want to convert only a part of it, it
+must  be  positioned  in the upper left corner and you can specify its
+width, height and depth.  You can also specify some options about what
+kind  of  palette  you  want and what format you want for the bitmaps.
+ReadIff  can  also handle 8 and 12 Bit chunky bitmaps and AGA palettes
+in OS and Copper format.  It is extremly usefull for usage in AmigaDos
+script  files.   I usually write a small script file that contains all
+conversion  commands  needed  for  a  complete  project, and when some
+graphics change (as they do very often),  I simply call the script and
+relax.  This is the main advantage of CLI-based converters compared to
+programs like the Kefrens Converter.
+
+This  program  was not written to present a great and powerful tool to
+the  Amiga  comunity,  it was written to satisfy my personal needs.  I
+used  to  use  a  very  old,  selfwritten  CLI-Command, but it doesn't
+support  AGA  and  Chunky  and  the source is really crap, so I had to
+write  a  new  one.   This  program does exactly what I need, and that
+migth  not  be  what you expect or hope.  The CLI user interface migth
+look  very  unusual  to  you, but I think it is very usefull and fast.
+Also  I  didn't spend much time to create efficent code.  I just wrote
+what  was  most  easy  to  formulate in C, and therefore you migth get
+upset  about the operation speed of this utility (exspecially in batch
+usage).   But  I  don't  care  a lot since I have an A4000/40.  Please
+don't  misunderstand  me, I don't think that software can be lame just
+because  we have brilliant computers, but in this case I simply didn't
+care (You can be quite shure that my next demo will run on an A500)
+
+
+
+Usage:
+------
+
+To convert a picture simply type
+
+>readiff picture.iff picture.raw
+
+The Picture will be loaded and displayed for a short time, and the raw
+data will be saved. You can also load brushes. If you don't want to
+have the full picture to be converted, you can limit the size of the
+saved picture:
+
+>readiff picture.iff picture.raw 128 128 4
+>readiff picture.iff picture.raw XSIZE 128 YSIZE 128 DEPTH 4
+
+In Both cases, only the upper left corner will be saved. 
+
+
+Formats:
+--------
+
+Usually, the picture will be saved plane by plane, line by line, pixel
+by pixel. If you want to work with the blitter, you migth prefer an
+Interleaved format. Simply type:
+
+>readiff picture.iff picture.raw IL
+
+Now  the  data  will  be  saved line by line, plane by plane, pixel by
+pixel. IL means InterLeaved.
+
+You can write the data as 8 Bit Chunky data, independent of the
+depth:
+
+>readiff picture.iff picture.raw CHUNKY8
+
+You can also write the data as 12 Bit Chunky data. Each word in the
+raw file contains the ECS/OCS color information of that Pixel. This is
+very usefull for copper-Chunky modes as they are used very often in
+demos.
+
+>readiff picture.iff picture.raw CHUNKY12
+
+
+Colors:
+-------
+
+If  you specify COLORS, then all 32 Colors of the ECS/OCS palette will
+be saved.  This takes 64 bytes at the beginning of the file.
+
+If you specify AGACOPPER, then all 256 Colors will be saved. First the
+256 upper words, then the 256 lower words, a total of 1024 bytes.
+
+If  you  specify  AGAOS, then you will get a complete 32 Bit per color
+gun  information as needed for LoadRGB32.  You will also get the first
+control-longword and the trailing zero, a total of exacly 3080 bytes.
+
+If you want the palette behind the picture, specify PICFIRST.
+
+If  you  want only the palette-information without the raw image data,
+specify NOPIC
+
+
+Control:
+--------
+
+Normally, the Picture to be converted is shown very shortly on an
+Intuition screen. If you want to watch this picture longer, then
+specify WAIT. The picture will be shown until you press the
+(invisible) close-Gadget or any key. The picture can be scrolled as
+any oversized Intuition screen, if the picture is bigger then the
+screen.
+
+If you don't want the picture to be displayed, specify NODISPLAY. 
+
+If you don't want to see the copyrigth notice on the screen, specify
+BRIEF.
+
+
+Bugs:
+-----
+
+Hey,  this  is a pretty long list for such a small tool, and it's only
+the  KNOWN  Bugs!   But  I did all the code in one evening and it does
+what  I  want  it to do, so this is the rigth point to stop working on
+this  tool. 
+
+If  you  really  like  this  utility,  then  nerve me with letters and
+phonecalls, and If you are successfull I will perhaps spend a few days
+for bugfixes, some new options and optimising.
+
+- The NODISPLAY option has never been implemented. I should use
+  AllocBitmap and CustomBitmap-Screens instead of the Screen's 
+  Bitmap.
+
+- There should be no stencils in the picture, or the IFF-Parse code 
+  will fail.
+
+- The picture must be compressed, or you will get a nice crash.
+
+- I should not use ReadPixel for the chunky to planar conversion. But
+  I do...
+
+- All screens are lores.
+
+- This program should be totally 100% compatible.  Therefore every
+  crash you get is a real bug, no excuses.
+
+- EHB-Pictures are not shown in EHB.
+
+- File may not be longer then 128 KBytes.
+
+- Program wastes fast memory like hell.

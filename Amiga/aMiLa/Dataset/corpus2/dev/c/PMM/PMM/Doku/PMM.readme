@@ -1,0 +1,100 @@
+Short:     Project-Make-Manager (PMM) for vbcc
+Author:    Michaela Pruess (GatewayBBS@bigfoot.de)
+Uploader:  Michaela Pruess (GatewayBBS@bigfoot.de)
+Kurz:      Projekt-Make-Manager (PMM) für vbcc
+Type:      dev/c
+URL:       http://Gateway.To/Gateway5/index.html
+Version:   1.10a
+
+English:   (deutsch, siehe unten)
+
+About:     A alternative make-system for vbcc (and other compilers)
+           - automatic buildlist of sourcefiles
+           - automatic depend scan
+           - build prototype-includes
+           - can manage hundreds of programs
+           - making from everywhere without changing directory
+           - only ONE general config for all programs
+           - only a little definition for any program
+           - included example config for build version for
+             differnt cpu's (all 68k, ppc, wos).
+           - manage upto 10 cpu-version, build from same source
+             and config
+           - support all features from vbcc
+           - errorlist's (don't stop at any error)
+           - multiple make (multiple cpu and/or programs)
+           - work in cli, alternative intui-interface in future
+           - can build linklibs, stublibs, library's and programs
+           - no more build makefiles
+           - if a program is included and sourcefiles delete or
+             add, PMM rebuild sourcelist and prototype files allone.
+           - new libr-command (can work with filelists)
+           - tool for compare and datecompare
+           (it's a beta, can have bugs!)
+
+Requires:  Amiga :-)
+           The are version's for all different CPU-types
+
+Install:   Read the install-documents
+
+Copyright: All copyright's reserved by Michaela Pruess.
+           You have only permission for non-commercial use of this tool.
+           The Aminet has permission to publish this file on all
+           Aminet-sites, Aminet-mirror's and Aminet-CD's.
+           This software is provided as-is, without warranty of any kind,
+           either expressed or implied. In no event will the authoress be
+           liable for direct, indirect, incidental or consequential damages
+           or data loss resulting from the use or application of this software.
+           The entire risk as to the results and performance of this software
+           is assumed by the user. Furthermore, the contents of the archive
+           cannot be altered in any way, although the archive itself can be
+           transmitted electronically via BBS systems or the Internet.
+
+
+
+Deutsch:
+
+Ueber:     Ein alternatives Make-System für vbcc (und andere Compiler)
+           - automatische Make-Listen der Quellen
+           - automatischer Depend-Scan (Abhängigkeiten)
+           - erstellt Prototype-Include-Dateien
+           - kann hunderte von Programmen verwalten
+           - Übersetzt von überall ohne daß das Quellenverzeichnis erst
+             aufgerufen werden muß
+           - nur EINE generelle Konfiguraationsdatei für alle Programme
+           - nur eine kleine Programmdefinition notwendig
+           - enthalten ist eine Konfig für verschiedene CPU's (alle 68k,
+             PPC, WOS).
+           - verwaltert bis zu 10 CPU-Version, erstellt aus dem gleichen
+             Quellen und Konfigurationen
+           - Unterstützt alle Funktionen von vbcc
+           - Errorlisten (ohne halt bei jedem Fehler)
+           - mehrfaches make (unterschiedliche CPU's und/oder Programme)
+           - läuft im CLI, alternative Intui-Oberfläche ist geplant
+           - Kann Link-Libs, Stubs-Libs, Library's und Programme bilden
+           - nie wieder MakeFiles erstellen
+           - ist ein Programm enthalten und Quellfiles kommen hinzu oder
+             werden gelöscht, dann baut PMM die Liste der Files und die
+             Prototype-Files alleine neu auf
+           - Neues Libr-Kommando (kann auch mit Filelisten arbeiten)
+           - Tool für Vergleich und Datumsvergleich
+           Es ist eine beta, kann immer noch Fehler haben!
+
+Benoetigt: Amiga :-)
+           Es gibt Versionen für für verschiedene CPU-Typen
+
+Install.:  Unbedingt die Installationsdoku lesen!
+
+Copyright: Alle Copyright's verbleiben bei Michaela Prüß.
+           Das Programm darf nicht kommerziell benutzt werden, ansonsten
+           ist die Nutzung frei.
+           Das Aminet hat die Erlaubnis zur Verbreitung über alle Server,
+           Mirror's und die AmiNet-CD's.
+           Diese Software wird verbreitet, wie sie ist, ohne eine Garantie
+           jeglicher Art. In keinem Fall, weder direkt noch indirekt ist
+           die Autorin haftbar für Schäden oder Datenverluste die durch die
+           Verwendung dieser Software entstehen. Die Benutzung erfolgt
+           ausschließlich auf eigenes Risiko des Benutzers. Jede Änderung
+           des Archives oder Teilen davon ist verboten. Das Archiv darf
+           auf elektronischm Weg via Mailbox oder Internet verbreitet
+           werden.

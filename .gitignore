@@ -50,6 +50,7 @@ fastlane/test_output
 *.idea/
 *.swp
 *.lock
+!Amiga/aMiLa/fine_tuning/uv.lock
 *.tmp
 *.env
 *.log

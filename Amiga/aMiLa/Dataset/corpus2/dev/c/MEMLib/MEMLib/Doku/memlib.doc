@@ -1,0 +1,312 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
+* |_o_o|\\ Copyright (c) 1988-1995 Doug Walker                            *
+* |. o.| ||          All Rights Reserved.                                 *
+* | .  | ||          Written by Doug Walker                               *
+* | o  | ||          4701 Oak Park Road                                   *
+* |  . |//           Raleigh, NC 27612                                    *
+* ======             email: walker@unx.sas.com                            *
+\* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+This material is Copyright (c) 1988-1995 by Doug Walker.
+It may be distributed freely as long as the following restrictions are met:
+
+   1.  All files present in the distribution package must be redistributed
+       with the package, including this documentation file.  If you 
+       distribute on diskette, all files must be on a single diskette.
+
+   2.  The distributor may charge a reasonable fee to recover distribution
+       costs.
+
+   3.  The distributor agrees to cease distributing the programs and data
+       involved if requested to do so by the author.
+
+------------------------------DISCLAIMER
+
+Use this software at your own risk.  The author will not be liable for 
+any damage arising from the failure of this program to perform as described,
+or any destruction of other programs or data residing on a system 
+attempting to run the program.  While no damaging errors are known, the 
+user of this program uses it at his or her own risk.
+
+============================================================================
+
+Welcome to the MemWatch Library!  The MemWatch library adds lots of memory 
+debugging features that you link into your program.  The library does what
+it can to validate your memory allocations and frees and to encourage any
+misuse of memory to result in a reproducable crash rather than an erratic
+bug.
+
+The MemWatch library compiles under SAS/C 6.0 and above.  If the memory
+features are turned off, no additional code will be added to your 
+program.  If they are enabled, your code will call routines in the
+MemWatch library automatically instead of malloc, calloc, realloc, free,
+AllocMem, FreeMem, AllocVec, and FreeVec.  The MemWatch library also
+replaces the standard C library versions of getcwd(), getenv(), and
+strdup() since these functions call malloc().
+
+The program-level memory debug routines are controlled by a 
+preprocessor symbol, MWDEBUG, and are #defined to nothing if the 
+symbol is not defined.  To link the program-level routines into 
+your code, do the following:
+
+1. Include the file "memwatch.h" into each file that will be
+   allocating or freeing memory.   (Don't include "mempriv.h" - it is
+   for the internal use of the memwatch.lib routines only).
+   If you include <stdlib.h>, make sure to include "memwatch.h"
+   AFTER you include <stdlib.h>.
+
+2. #define the symbol MWDEBUG to 1 at some point before memwatch.h 
+   is included.  The symbol must be defined in each compilation 
+   somewhere.  It could be done in an include file, in the
+   program file, or on the compiler command line.  If the symbol 
+   MWDEBUG is not defined or is defined to 0, all the  MemWatch 
+   routines disappear, thus adding nothing to your code size.
+
+3. Recompile all files in your program and link with the library
+   "memwatch.lib".
+
+Unlike previous versions of MemLib, you do not need to add calls to
+the functions MWInit and MWTerm to make the MemWatch library work.
+MemWatch now takes advantage of SAS/C autoinitialization and
+autotermination functions to initialize and terminate the memory
+debugging.
+
+The program-level MemWatch interface is described below.  Note that
+your code will probably not need to call any of these functions
+directly.
+
+---------------------------------------------------------------------
+
+   void MWInit(BPTR debugfile, LONG flags, char *dbfilename);
+
+   You are not required to call MWInit, but you may call it if
+   you want to change the way MemLib behaves after it has been
+   initialized.  If you do not call it explicitly, the autoinit
+   code calls it for you as described at the end of this section.
+
+   The 'flags' parameter can be one or more of the following, ORed together 
+   if necessary:
+
+   MWF_NOLOG:   If set, do not print error or warning messages.  Useful
+                only if you want to turn off debugging for some reason.
+                Saves some CPU time.
+
+   MWF_CHECK:   If set, check all allocated memory each time a memory 
+                routine is called.  Every AllocMem, FreeMem, malloc or 
+                free call will cause all allocated memory to be examined.
+                This can be extremely slow, but it's safe.
+
+   MWF_NOFREE:  If set, do not free memory left allocated when the
+                program exits.  If not set, any memory you allocated
+                and did not free will be freed on your behalf.
+
+   MWF_NOFTRASH: If set, freed memory will not be trashed.  This does
+                save some time, but it is valuable to trash freed memory
+                to verify you aren't still using it.
+
+   MWF_NOFKEEP: If set, free memory immediately when FreeMem or free is
+                called.  If not set, 'freed' memory will actually be kept
+                on a chain and checked periodically for a change in its
+                value.  If the value changes, you have written to freed
+                memory.  MWF_NOFTRASH implies MWF_NOKEEP, since there is
+                no point in keeping memory that you don't know the value 
+                of.  If this flag is NOT set, kept memory will be freed 
+                if the machine actually runs out of memory.
+
+   MWF_NOATRASH: If set, memory will not be trashed upon allocation.  This
+                also saves some time, but it is extremely valuable to trash
+                allocated memory to be sure you aren't relying on side
+                effects for your program to run correctly.
+
+   MWF_SERIAL:  If you have recompiled MemWatch to use Commodore's debug.lib
+                to put information to the serial port, this flag tells 
+                memlib to use this feature.  If you have not recompiled
+                to use debug.lib, this flag does nothing.
+
+   If the MWF_SERIAL flag is not active, the other parameters are used to
+   determine where the debugging output goes as follows:
+
+   If you specify the "debugfile" parameter, it should be the result
+   of a call to the AmigaDOS function Open().  The specified filehandle
+   will be used for all debugging messages.
+   
+   If "debugfile" is NULL but you specify a filename with the "dbfilename"
+   parameter, MemWatch will perform an Open() on the specified filename
+   WHEN AN ERROR OCCURS.  Close() will be called automatically the next
+   time you call MWInit() or MWTerm(), or when your program exits.
+
+   If both "debugfile" and "dbfilename" are NULL, the AmigaDOS function
+   Output() is called and the result is used for the output.
+   
+   The intent is for you to provide "debugfile" if you have a convenient
+   place for debugging output to go already.  If you don't have a 
+   convenient place, you can pass the name of a console window as
+   "dbfilename" :
+ 
+      MWInit(NULL, 0, "CON:0/0/639/199/MemLib output/AUTO/CLOSE/WAIT");
+
+   The console window will be opened if/when something interesting 
+   happens, but will stay out of the way until then.  Finally, if your
+   program is run from the CLI or Shell, you can pass NULL for both
+   'debugfile' and 'dbfilename' and output will be sent to the Shell 
+   window.
+
+   If you do not call MWInit() explicitly, it is called for you by the
+   autoinitialization routine.  The autoinitialization routine uses
+   the external integer variable __MWFlags as the "flags" parameter
+   and the external character pointer variable __MWLogName as the
+   "dbfilename" parameter.  You can declare these variables in your
+   code or allow them to be pulled in from the MemWatch library.  Their
+   default values as specified in the MemWatch library are:
+   
+      unsigned long __MWFlags = MWF_SERIAL;
+
+      char *__MWLogName = "CON:0/0/639/199/MemLib/AUTO/CLOSE/WAIT";
+
+   Note that even though the default __MWFlags value is MWF_SERIAL, the
+   serial port will not be used unless you edit mempriv.h to define
+   the symbol USEDEBUGLIB to 1 and recompile the library.  See the 
+   "additional features" section below for details.
+
+   If the symbol MWDEBUG not defined to 1 or higher, MWInit() is defined
+   as an empty macro.
+
+---------------------------------------------------------------------
+
+
+   void MWTerm(void);
+
+   You are not required to call this routine.  If you do call it, 
+   however, the log file is closed and all memory routines are
+   disabled.  Any calls to allocate memory after MWTerm() has been
+   called will fail!
+
+   MWTerm() will always generate a check of all memory allocated
+   through the MemWatch library.
+
+   If the symbol MWDEBUG is not defined to 1 or higher, MWTerm() is defined
+   as an empty macro.
+
+---------------------------------------------------------------------
+
+   char *MWAllocMem(LONG size, LONG flags, char *file, int line);
+
+   You should not call this routine directly, but your AllocMem, malloc,
+   realloc, and AllocVec calls will call it if the symbol MWDEBUG 
+   is defined to 1.
+
+---------------------------------------------------------------------
+
+   void MWFreeMem(char *ptr, LONG size, char *file, int line);
+
+   You should not call this routine directly, but your FreeMem,
+   FreeVec, and free calls will be defined to call it if the symbol 
+   MWDEBUG is defined.
+
+---------------------------------------------------------------------
+
+   void MWReport(char *title, int level);
+
+   Call this routine any time you want a report on how much memory
+   you are using.  The report will be sent to the debug log file.
+
+   MWReport() always forces a MWCheck() call.
+
+   'title' is any character string you want.  It will be used to
+   label the dumped output.  Use NULL for no title.
+
+   'level' tells how much detail you want in the report.  It is one
+   of the following values:
+
+   MWR_NONE - Don't print anything.
+   MWR_SUM  - Print current and total memory usage
+   MWR_FULL - Print a short description of each outstanding allocation
+
+   If the symbol MWDEBUG is not defined to 1 or higher, MWReport() is defined
+   as an empty macro.
+
+---------------------------------------------------------------------
+
+   void MWCheck(void);
+
+   Call this routine when you want to verify all your allocations are
+   clean.  If you have set the MWF_CHECK flag, all allocations
+   are checked every time you do an Alloc or Free operation anyway,
+   but you might want to use this directly if you do not set the flag 
+   or if you go long periods of time without allocating memory.
+
+   If the symbol MWDEBUG is not defined to 1 or higher, MWCheck() is 
+   defined as an empty macro.
+
+---------------------------------------------------------------------
+
+   void MWLimit(LONG chip, LONG fast);
+
+   Call this routine if you want to set an artificial 'cap' on the
+   amount of memory available.  Any allocations that ask for memory
+   that would push your total allocation above the specified limits
+   will fail, even if memory is available to fill them.  Keep in mind
+   that this doesn't take fragmentation into account, so it doesn't
+   guarantee your program will work on a smaller memory machine!
+   You can simulate out-of-memory conditions by calling MWLimit
+   with (0,0) - no allocations will ever succeed until the limit
+   is raised above the current usage level.
+
+   The 'chip' parameter sets a limit on chip memory;  the 'fast'
+   parameter sets a limit on fast memory.  If the specified limit for
+   a category is -1, the limit will be set at the current usage amount.
+   Thus, any frees you do will improve your situation.
+
+   If you want to remove a limit, set it to some extremely large value,
+   like 0x7fffffff.
+
+   If the symbol MWDEBUG is not defined to 1 or higher, MWLimit() is 
+   defined as an empty macro.
+
+
+---------------------------------------------------------------------
+
+ADDITIONAL FEATURES
+
+Although you can set many of memlib's options from the MWInit call,
+there are some that can only be set by rebuilding the library itself.
+You can control these features by changing some #defines in the
+file "mempriv.h".
+
+The define USEDEBUGLIB controls whether MemWatch.lib will use Commodore's
+debug.lib to put data to the serial port instead of a file handle.  Change
+the definition to 1 or higher to enable this feature, then link with
+Commodore's debug.lib or ddebug.lib.  If USEDEBUGLIB is on, output will
+go to the serial port (if you link with debug.lib) or the parallel port
+(if you link with ddebug.lib) unless you change your preference by
+calling MWInit.
+
+The define MW_HEADLEN controls how many bytes will be set aside before your
+allocation to act as a header.  4 is the minimum, and the default.  The
+header will be checked for trashing when MWCheck() is called.
+
+The define MW_HEADSTR sets the value that header memory will be set to.  It
+must be a string at least MW_HEADLEN bytes long.
+
+The define MW_TRAILLEN controls how many bytes will be set aside after your
+allocation to act as a trailer.  8 is the default;  any value can be chosen
+for a maximum, but the higher the number, the more memory is wasted each 
+time you allocate memory!  The trailer will be checked whenever MWCheck()
+is called.
+
+The define MW_TRAILSTR sets the value that trailer memory will be set to.
+It must be at a string least MW_TRAILLEN bytes long.  The default is to
+set all trailer bytes to 0xbb.
+
+The define MWATRASH sets the value that newly-allocated memory will be set 
+to.  The default is 0xaa.
+
+The define MWFTRASH sets the value that newly-freed memory will be set to.
+The default is 0x55.
+
+-----------------------------------
+
+The enclosed program "example" shows how the MemWatch library can find
+problems in your code.  See the "READ.ME" file for details.
+
+

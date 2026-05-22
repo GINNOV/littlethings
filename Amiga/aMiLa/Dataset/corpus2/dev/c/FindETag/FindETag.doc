@@ -1,0 +1,219 @@
+FindETags:	A TurboText script for finding C function definitions.
+		Uses the GNU "ETags" program.
+Author:		Daniel J. Barrett, barrett@cs.umass.edu
+Distribution:	Copyright 1994 Daniel J. Barrett.
+		These files are freely distributable as long as they are
+		distributed in their entirety.
+
+WHAT IS THIS?
+=============
+
+	This script is useful only to C programmers.  
+
+	Imagine that you are working on a large program with many files.
+In your code, you have the line:
+
+		x = MyFunction(a, b, c);
+
+Suppose you want to see the definition of MyFunction().  What do you do?
+Well, you try to remember which file has MyFunction, load it into the
+editor, search for "MyFunction", and eventually you find it.
+
+	LoadETag makes this 1000 times easier!  With LoadETag, just place
+your cursor on the word "MyFunction" in the function call above, and
+press one key.  BOOM!  The file containing MyFunction is automatically
+loaded, and the cursor is positioned right on the function definition.
+WOW!!  And it does more, too!
+
+	If you know what "ctags" is on UNIX, "etags" is basically the same
+thing.  If you have never used either of these programs, NOW IS THE TIME!
+Any C programmer will *LOVE* these programs.  Trust me.
+
+
+SYSTEM REQUIREMENTS
+===================
+
+	AmigaDOS 2.04 or higher.
+	TurboText 1.03 (or higher).
+	ARexx.
+	GNU "ETags", available on various Fred Fish CD-ROM's and elsewhere.
+
+SETUP
+=====
+
+	Just copy FindETag.ttx to your REXX: directory.  Here is how I allow
+the script to be invoked in my definitions file.
+
+	CTRL-X		SetMeta2
+	META2-T		ExecARexxMacro CONSOLE FindETag
+	META2-CTRL-T	ExecARexxMacro CONSOLE FindETag CURSOR
+	META2-CTRL-X	MoveAutoMark
+
+I have control-x as my "META2" key.  Typing "control-x t" prompts me for
+the name of a function in my program and then loads it into the editor. 
+Typing "control-x control-t" loads the function whose name is beneath
+the cursor.  Typing "control-x control-x" moves the "auto mark" (see the
+TurboText manual).
+
+	The "CONSOLE" keyword is REQUIRED for FindETag to work.
+
+
+USING ETAGS
+===========
+
+	Before you can use FindETag, you must use ETags to build a "TAGS"
+file.  This is a table that lists all your C functions and the files in
+which they are found.  Just type:
+
+		etags file1.c file2.c file3.c .... file1.h file2.h ...
+
+(".h" files often contain macro definitions, and FindETag will work
+for macros too.)  More simply:
+
+		etags #?.c #?.h
+
+	FindETags will execute the above command automatically if no TAGS
+file exists.  You could also create it using a rule in your Makefile:
+
+		TAGS:
+			etags #?.c #?.h
+
+and type "make tags".
+
+
+TUTORIALS
+=========
+
+	I am assuming that you have your keys set up like I describe in the
+SETUP section, above.
+
+(1)	Go to the directory containing your C files.
+(2)	Type "etags #?.c #?.h" to create the TAGS file.
+(3)	Invoke TurboText to edit one of your C files.  Suppose it has
+	the line:
+
+		x = MyFunction(a, b, c);
+
+(4)	Place the cursor anywhere on the word "MyFunction" (or whatever your
+	function is called).
+(5)	Type control-x control-t.
+	The file containing MyFunction's definition is loaded, and the cursor
+	is placed on the function definition.  Yowza!! :-)
+(6)	Now, type control-x t.  A prompt appears.  Type
+
+		main
+
+	and press RETURN.
+(7)	The file containing "main()" is loaded, and the cursor placed
+	on the definition of main().
+(8)	Quit TurboText.
+
+---
+
+(1)	Run TurboText again.
+(2)	Type control-x t.  Type 
+
+		MaIn
+
+	and press RETURN.
+(3)	Assuming you don't have a function with this name, a requestor
+	appears and asks if you want to try ignoring case.  Click "yes".
+	Voila:  the file containing "main" is loaded as before!
+(4)	Type control-x t again.  Type
+
+		M
+
+	and press RETURN.  You will be presented with a menu of function
+	names, all of which begin with "M" (assuming you have some).  Type
+	the number of the function you want and press RETURN.
+	The file is loaded as before.
+(5)	Quit TurboText.
+
+---
+
+(1)	Run TurboText again to edit one of your C files.
+(2)	In this C file, find any function definition.  Suppose the
+	definition is for function "CreateString".
+(3)	Scroll to another part of the file.  Let's call this "location X".
+(4)	Type control-x t to bring up the requestor.  Type
+
+		CreateString
+
+	and press RETURN.
+(5)	The cursor is moved to the CreateString definition in the SAME
+	DOCUMENT.  Note that FindETag DOES NOT RE-LOAD a file that is
+	already loaded.
+(6)	Execute the standard TurboText command MoveAutoMark.  The cursor
+	jumps back to "location X"!  Execute MoveAutoMark again.  The
+	cursor jumps back to the CreateString definition.  Yes, FindETag
+	sets the "auto mark" before finding a function definition so you
+	can jump back and forth easily between the original location and
+	the function definition.  Cooool.
+(7)	Quit TurboText.  Go have a drink.  You've earned it. :-)
+
+
+TECHNICAL DETAILS
+=================
+
+o	FindETag searches for a function in 4 ways, in order:
+
+	o	Try to match the whole name exactly.
+	o	Try to match a prefix of the name exactly.
+	o	Try to match the whole name, case-insensitive.
+	o	Try to match a prefix of the name, case-insensitive.
+
+	If there are multiple matches, a menu is displayed, allowing you
+	to pick the function you want.
+
+o	FindETag warns you if:
+
+	o	It cannot find a TAGS file (and creates one if you desire).
+	o	It tries to create TAGS and fails.
+	o	The TAGS file is empty.
+	o	It cannot find the function you want.
+	o	It cannot find the file containing the function.
+	o	It finds the file you want, but the function definition
+		is missing ("Found the file, not the tag").  This generally
+		means that your TAGS file is out of date and should be
+		recreated, or the document containing the function name
+		has been edited.
+
+o	FindETag loads a file ONLY if it is not already loaded.
+
+o	FindETag sets the Auto Bookmark (SetAutoMark) before it moves the
+	cursor to a function definition.
+
+o	FindETag takes several command-line arguments.  The argument CONSOLE
+	is REQUIRED:  FindETag needs the console for displaying menus.  Other
+	command-line arguments (optional) are:
+
+		CURSOR		Find the function underneath the cursor
+		function name	Find that function
+
+	If no optional arguments are given, FindETag prompts the user for
+	a function name.
+
+	For example:
+
+		FindETag CONSOLE
+			Prompts the user for a function name.
+
+		FindETag CONSOLE myfunc
+			Searches for function myfunc.
+
+		FindETag CONSOLE CURSOR
+			Searches for the function name under the cursor.
+
+
+FOR MORE DOCUMENTATION
+======================
+
+	See the comments in FindETag.ttx.
+
+
+TESTING
+=======
+
+	I have been using this script for over a year.  It works great.
+
+	Please report any bugs or suggestions to barrett@cs.umass.edu.

@@ -1,0 +1,78 @@
+Short:    Useful SDL configurations 
+Author:   lombi@iprimus.com.au (Lorence Lombardo)
+Uploader: lombi@iprimus.com.au (Lorence Lombardo)
+Type:     dev/c
+Version:  19-Jun-2012 
+Architecture: generic
+
+
+[2nd upload]
+
+
+In this archive I have provided my most used SDL configurations.
+
+Configuration Descriptions:-
+
+
+sdl-config1:- This was infact my first SDL configuration for
+              Gabriele Greco's SDL implementation from here:-
+             
+              http://aminet.net/package/dev/misc/SDL-Amiga
+
+
+sdl-config2:- This configuration is for Bernd Roesch's update of SDL from
+              the archive "LibSDL-1.2.14dev.lha" from here:-
+
+              http://amiga.sourceforge.net/
+
+              This is without OpenGL.
+
+
+sdl-config3:- This is the lib setup of "sdl-config2" with the includes of
+              "sdl-config1".
+
+
+sdl-config4:- This is the lib setup of "sdl-config1" with the includes of
+              "sdl-config2".
+
+
+sdl-config5:- This is effectively "sdl-config2" with StormMesa's OpenGL
+              implementation from here:-
+
+              http://aminet.net/package/util/libs/StormMesa_Libs68K
+
+
+
+When ever you need to make any one these configurations the default simply 
+copy "sdl-configN" to "sdl-config".
+
+Compiling tip:-
+
+Although in the "Makefile" you might specify:-
+"CFLAGS = $(shell sdl-config2 --cflags)"
+A cross over error can occur from the source.
+e.g. "#include <SDL/SDL.h>"
+To remedy this simply remove the "SDL/". 
+
+
+NB:  Config numbers after 2 do not necessarily correspond with my
+     personal environments.
+
+
+URL's of related interest:-
+
+http://aminet.net/package/dev/lib/SDL_image-68k-1_2_12
+http://aminet.net/package/dev/lib/SDL_Mixer-Amiga-1_2_12
+http://aminet.net/package/dev/lib/SDL_ttf-2.0.9-68k
+http://aminet.net/package/dev/lib/freetype-2.3.8-68k
+http://aminet.net/package/dev/lib/SDL_net-1.2.7-68k
+http://aminet.net/package/dev/lib/libSDL_gfx
+http://aminet.net/package/dev/lib/libpdcurses_ns
+http://aminet.net/package/dev/lib/libbme_68k
+
+
+Feeling bored ?  :)
+Why not check out this URL ?
+
+http://home.iprimus.com.au/lombi/1/homepage.htm
+

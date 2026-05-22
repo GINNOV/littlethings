@@ -1,0 +1,14 @@
+Short:    A copper disassembler. Includes source in C.
+Uploader: SYSOP@BBrandes.IN-BRB.de
+Author:   T.Nokielski@BBrandes.IN-BRB.de (Thomas Nokielski)
+Type:     dev/c
+
+A simple but - maybe - useful copper disassebler in C. The disassembler
+itself is written as a C function; you can use it by simply adding the
+include file to your source code.
+
+This archive also contains a demo that disassebles the copperlist of the
+currently displayed screen.
+
+Copyright (C) 1997 by Thomas "Dobble U" Nokielski.
+All rights reserved.

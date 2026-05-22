@@ -1,0 +1,390 @@
+
+                        WhereIs Documentation
+                        ~~~~~~~~~~~~~~~~~~~~~
+ WhereIs is a CLI utility for  discovering  the location of one or more files.
+WhereIs works on ALL Amigas. It requires 'arp.library'.
+
+ 1) SIMPLE USAGE
+ ~~~~~~~~~~~~~~~
+
+ In the simplest form you just say
+
+        WhereIs <filename>
+
+ In this simple case the utility will  search  for the specified file starting
+from  the  root  directory  relative   to  the  current  directory,  and  will
+recursively search all  directories  below  this.  While  it is searching, the
+display will constantly show  the  pathname  of  the directory currently being
+searched. It will stop when it finds the  first match. If no match is found it
+will display the message "Not Found".
+
+ There are several options you can use to modify the behaviour of Whereis. The
+simplest is the ALL keyword. You use it like this:
+
+        WhereIs <filename> all
+
+ This causes WhereIs to locate ALL files  with the specified filename. It will
+not stop when it reaches the first one, but will find and display the pathname
+of ALL files which match, from the root directory downwards.
+
+ You can modify the starting location of the search, as follows:
+
+        WhereIs <filename> FROM <directory>
+OR      WhereIs FROM <directory> <filename>
+
+ For instance, "WhereIs fred FROM df1: ALL" will find all files called fred on
+the disc currently in df1:. "WhereIs  joe  FROM  MyDisc:silly" will search the
+directory "MyDisc:silly" and all directories below it. The special case
+
+        WhereIs <filename> FROM .
+OR      WhereIs FROM . <filename>
+
+ will search from the current directory downwards.  (Remember that the default
+starting position is the root directory on the current disc).
+
+ You can use upper or lower or mixed case, as you desire. This is true even of
+the file and directory names, as WhereIs  does a case insensitive search. Note
+that if either the filename or  the  directory  name  contain spaces then they
+must be enclosed  within  quotes,  otherwise  surrounding  quotes  are  merely
+optional.
+
+ Please note, however, that the  <filename>  parameter represents the filename
+component of the pathname ONLY, therefore is does not make sense to put a full
+pathname in this position. "WhereIs  RAM:fred"  is  WRONG - you should instead
+say "WhereIs fred from RAM:".
+
+ There is another way you can modify the  starting location of the search, and
+that is by setting the environment  variable  WHEREIS/ROOT to the directory of
+your choice. This modifies the default starting location from ":" to the value
+of the environment variable.  For  example,  if  you  type the following three
+lines on the command line:
+
+        MakeDir ENV:WhereIs
+        SetEnv whereis/root df0:
+        WhereIs <filename>
+
+ then WhereIs will start its search from df0:. This is convenient, because you
+can put these commands in your startup  sequence,  thereby customising WhereIs
+to use the default directory of your choice. Of course, the FROM keyword still
+overrides the default, so:
+
+        SetEnv whereis/root df0:
+        WhereIs <filename> FROM ram:
+ will still start its search from ram:, not from df0:.
+
+ 2) WILDCARDS
+ ~~~~~~~~~~~~
+ WhereIs can accept  AmigaDOS  and  ARP  wildcard  patterns  in  place  of the
+filename. For instance, "WhereIs * all"  will display every single file on the
+disc.
+
+ This makes WhereIs extremely powerful. For example:
+
+        WhereIs *.(c|s) FROM C_Disc: ALL
+
+ will locate all files on the volume C_Disc which end in either ".c" or ".s".
+
+ You can also use  the  old-fashioned  AmigaDOS  #?  instead  of * if you wish
+(though I'm not sure why anyone would want to!).
+
+ Please note, however, that the  <filename>  parameter represents the filename
+component of the pathname ONLY, therefore is does not make sense to put a full
+pathname in this position.  "WhereIs  */*.c",  for  example, makes no sense at
+all.
+
+ Note also that you CANNOT use  wildcards  in  the <directory> parameter. This
+must always be supplied in full.
+
+ 3) PRE-CONSTRUCTED CATALOGUES
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ WhereIs can search  through  a  pre-existing  catalogue  of  your  discs. The
+EarthSoft utility "UpdateCat"  can  be  used  to  construct  such a catalogue.
+UpdateCat is included on  this  disc  and  is  documented  separately, but the
+following is a brief summary of what a pre-constructed catalogue is:
+
+        A CATALOGUE, in this context, is either a disc whose volume
+        name is "Catalogue", or else a logical assignment of the name
+        "Catalogue:" to some other directory, possibly in ram or on a
+        hard disc.
+
+        Each file in the Catalogue: directory contains a list of the
+        complete contents of one floppy disc, and includes enough
+        information to reconstruct the complete pathname of each file
+        on its respective disc.
+
+        It is possible to catalogue over five hundred discs onto a single
+        (floppy) catalogue disc.
+
+ WhereIs cannot be used to create  such  a  catalogue  - for that you need the
+EarthSoft utility "UpdateCat"  (which  might  be  on this disc), but if such a
+catalogue exists then WhereIs can make use of it.
+
+ To use a catalogue, you need to include  the keyword CAT on the command line,
+like this:
+
+        WhereIs <filename> CAT
+
+ (Of course, you can use all of the other  options on the command line as well
+if you want). This keyword will cause  WhereIs  to search through a catalogue,
+thus enabling you to  locate  a  file  ANYWHERE  ON  ANY  DISC  IN YOUR ENTIRE
+COLLECTION!
+
+ By default, it the CAT  keyword  is  present  then  WhereIs  will  search the
+catalogue only. You can force it to search the directory as well with the ALSO
+keyword, as follows:
+
+        WhereIs <filename> CAT ALSO
+
+ In either case, if "Catalogue" is the name  of a disc, as will most likely be
+the case, then you will get a  system  requester  asking  you to insert volume
+Catalogue in any drive. Do so, and WhereIs will do its magic.
+
+ While WhereIs is searching, the display  will constantly show you the name of
+the disc currently being searched. This will be your own personal name for the
+disc (ie. the name written on the  label),  which  is not necessarily the same
+thing as the volume name. When a  matching  file is located WhereIs will print
+out the full pathname of the  file,  including  the  true  volume name. If the
+volume name is different  from  your  personal  name  for  the  disc then your
+personal name will be shown below it in brackets.
+
+ Of course, you can still use wildcards when  searching through the catalogue.
+This means that
+
+        WhereIs * CAT ALL
+
+ will print the full pathname of every file in your collection!
+
+ 4) INVISIBLE DIRECTORIES
+ ~~~~~~~~~~~~~~~~~~~~~~~~
+ You can cause any directory or file to be  "invisible" to WhereIs, by setting
+the file comment of that file or directory to anything beginning with ';'. For
+example, if you type at the command line
+
+        FileNote DEVS: ";Do not search this directory"
+
+ then WhereIs will not search the DEVS: directory,  nor any sub-directories of
+that directory. To put things back to normal, type
+
+        FileNote DEVS: ""
+
+ (or any string NOT starting with ';'). Note that the List command can be used
+to display the filenote of a file or directory once it's set.
+
+ You can also make certain catalogued discs invisible to WhereIs. For example,
+if you have a disc named "Rubbish"  which  you have catalogued, and you do not
+wish WhereIs to search the  catalogue  entry  for  this disc, then type at the
+command line:
+
+        FileNote Catalogue:Rubbish ";"
+
+ (or any string starting with ';').
+
+ You can override this feature by including  the keyword NOSKIP on the WhereIs
+command line. For example
+
+        WhereIs <filename> NOSKIP
+
+ will search for the  specified  filename  but  will NOT ignore directories or
+files whose filenote starts with ';'.  This  is a sort of "emergency override"
+feature so that if you've marked a directory as invisible but then decide that
+you do want to search it after all then you can do so without having to modify
+the filenote.
+
+ 5) REDIRECTING THE OUTPUT
+ ~~~~~~~~~~~~~~~~~~~~~~~~~
+ You can redirect the output of  WhereIs  by  using the > operator immediately
+after the word WhereIs and before the filename or any options. For example:
+
+        WhereIs >RAM:fred *.c ALL
+
+ Now, since WhereIs gives you a nice  pretty  display with constantly updating
+information when run normally,  you  might  expect  that  the destination file
+would end up full of console escape  sequences.  This is not the case! WhereIs
+is intelligent in this respect, and if it  finds that its output is redirected
+to a non-interactive device then it  will  not  output any unnecessary console
+escape sequences. This  means  that  the  above  example  would lead to a file
+called fred in RAM: containing a plain ASCII list of those files which WhereIs
+found. Similarly,
+
+        WhereIs >PRT: <wildcard-pattern> ALL
+
+ will give you a hardcopy of the pathnames of all files matching the pattern.
+
+ 6) FORMATTED OUTPUT
+ ~~~~~~~~~~~~~~~~~~~
+ WhereIs has an LFORMAT  option  which  works  exactly  like  that of the List
+command. The command line syntax is
+
+        WhereIs <filename> LFORMAT=<format>
+
+ where <format> is a string representing  the output you would like WhereIs to
+produce. (Of course, you can use all of  the other options on the command line
+as well if you want). The string can containing  one or more occurrence of the
+escape sequence "%S", each of which  will  be substituted with the pathname of
+the file located. A good example of how powerful this makes WhereIs would be:
+
+        WhereIs >T:rubbish <filename> LFORMAT="Echo %s*nList %s" ALL
+
+ This will construct a batch file which, when executed, will give not only the
+full pathname of each file, but also  the  file size, the protection bits, the
+last-modified date, and the  filecomment  of  each file it matched. This gives
+you a means of finding, and easily  distinguishing,  different versions of the
+same file across several discs.
+
+ 7) USING WhereIs IN BATCH FILES
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ WhereIs can be used to test for the existence  or otherwise of a file. If the
+search failed to find a match then the command returns a WARNING status, which
+you can test for within a batch or script  file using the IF WARN command. The
+following is an example I've called XRun.
+
+        .key file/a,p1,p2,p3
+        .bra {
+        .ket }
+        ;
+        ; XRun - run a program without knowing its location
+        ;
+        WhereIs >T:rubbish{$$} {file} CAT ALSO LFORMAT="%s {p1} {p2} {p3}"
+        If WARN
+                Echo "{file} not found"
+        Else
+                Execute T:rubbish{$$}
+        EndIf
+        Delete >NIL: T:rubbish{$$}
+
+ This batch file will run a program which  you don't know the location of! For
+example, suppose you have a utility called  Diff to compare two files, but you
+don't know which disc it's on, or whereabouts on the disc. Now all you have to
+do is to type
+
+        XRun Diff file1 file2
+
+ And voila! Diff will be located and run.
+
+ How it works is very simple. WhereIs  will  produce  an output something like
+"Disc23:utilities/Diff file1 file2"  which  will  get redirected into the file
+T:rubbish$$. (The $$ will get  replaced  by  the current process number - this
+avoids filename conflicts). If all went well, this freshly created script file
+then gets executed, and  thereby  runs  the  program!  All  that remains is to
+delete the temporary file.
+
+ 8) WhereIs AND THE CLI
+ ~~~~~~~~~~~~~~~~~~~~~~
+ WhereIs is a proper CLI command, which uses  an ARP/AmigaDOS command template
+- this allows you to  specify  the  command  line  arguments  in any order you
+prefer. To see this template, just type
+
+        WhereIs ?
+
+ This will display the command  template,  and will then wait for you to input
+the command line options. What you'll see is the following:
+
+        File/a,FROM/k,CAT/s,ALSO/s,ALL/s,NOSKIP/s,LFORMAT=format/k:
+
+ If you understand CLI templates then this line will make perfect sense to you
+- but many people don't! To  remedy  this,  just  type  in ? at this stage and
+you'll see a more easily understandable help message, like so:
+
+        USAGE: WhereIs <file> [FROM <directory>]
+                              [CAT [ALSO]]
+                              [NOSKIP]
+                              [LFORMAT=<format>]
+                              [ALL]
+
+ At this point you will still need to enter the rest of the command line.
+
+ For completeness, I should add that  you  can optionally precede the filename
+with the keyword FILE, and that you can abbreviate LFORMAT as FORMAT.
+
+ If you type WhereIs alone,  with  no  arguments  at  all,  then only the help
+message is displayed.
+
+ 9) OTHER FEATURES
+ ~~~~~~~~~~~~~~~~~
+
+ When the program is running you can break out using CTRL-C.
+
+ When the program is running you can abandon  the search of a single directory
+or catalogued disc by  pressing  CTRL-E.  This  will cause WhereIs to omit the
+directory it is  currently  searching,  and  go  straight  on to the next one.
+CTRL-E will not abort the program - for that you must use CTRL-C.
+
+ WhereIs is a PURE program.  This  means  that  you  can use either ARP's ARes
+command or the AmigaDOS Resident command  to make the program memory resident.
+This has two advantages: (1) the  program  doesn't then need to be loaded from
+disc each time it's run, and (2)  if  the  program  is  run twice (or more) in
+parallel then there will only be one copy of it in memory at any time.
+
+ WhereIs is, in any case, very small. It  is written entirely in machine code.
+This doesn't really affect the speed  much,  as  most of the program's time is
+spent doing disc  accesses,  but  it  does  mean  that  the  entire program is
+actually less than three K in total.
+=============================================================================
+                          PUBLIC DOMAIN NOTICE 
+==============================================================================
+
+  WhereIs is freeware, not shareware. There  is no fee. Just send a blank disc
+and a stamped self-addressed envelope  (enclose  an international reply coupon
+if writing from outside the UK) and we will fill your disc full of goodies and
+post it back to you. If you  forget  the  stamped  envelope  (or international
+reply coupon) then we shall keep your disc - you have been warned.
+
+ WhereIs was written by Arcane Jill. Copyright 1992, EarthSoft.
+
+ This program is FREEWARE, and is freely distributable. It is NOT shareware.
+
+     +------------------------------------------------------------------+
+     |                                                                  |
+     |  WhereIs version 2.01 may be reproduced as many times as you     |
+     |  like, supplied with any application, and distributed with       |
+     |  no restrictions whatsoever, PROVIDED that the following         |
+     |  condition is adhered to:                                        |
+     |                                                                  |
+     |  THE FOLLOWING FILES MUST BE SUPPLIED TOGETHER:                  |
+     |          WhereIs                                                 |
+     |          WhereIs.doc                                             |
+     |          libs/arp.library                                        |
+     |                                                                  |
+     +------------------------------------------------------------------+
+
+ You can even use the program in  commercial  applications, free of charge. No
+further  permission  is   required,   but  you  absolutely  MUST  include  the
+above-listed documents with the application.
+
+ WHO ARE EARTHSOFT?
+
+    EarthSoft are a group of Amiga enthusiasts who believe wholeheartedly
+    in the principle of PUBLIC DOMAIN. You should never have to pay
+    money for an EARTHSOFT product. Our aim is to provide high quality
+    software, fully documented, and absolutely free of charge.
+
+    Please support us in our beliefs by distributing our products
+    far and wide across the globe.
+
+    Our address is:
+
+        EarthSoft
+        5 Dumergue Avenue
+        Queenborough
+        Kent
+        ME11 5BJ
+        England
+
+    If you would like to know more about EarthSoft, our philosophy, or
+    our products (both existing and forthcoming) please write to us. If
+    you are interested in actually becoming an EarthSoft developer and
+    writing software in our name then we can send you our guidelines
+    and standards.
+
+==============================================================================
+                                    BUGS
+==============================================================================
+
+ There are no KNOWN bugs in WhereIs (-obviously,  otherwise I would have fixed
+them), but of course there MAY be bugs I don't know about, so...
+
+ If you find any, please write to me at the  above address, telling me exactly
+how to reproduce the symptoms of the bug. I will then produce a new version of
+WhereIs which does not contain the bug AND SEND YOU A FREE COPY OF THE UPDATED
+VERSION (supply own disc and postage)
+

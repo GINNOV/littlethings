@@ -1,0 +1,28 @@
+Short:    convenient C source code library
+Uploader: cbloom@mail.utexas.edu (Charles Bloom)
+Author:   cbloom@mail.utexas.edu (Charles Bloom)
+Type:     dev/c
+
+CrbLib 6-25-96 (changes frequently)
+
+C source code library
+
+also available from my web site:
+	http://wwwvms.utexas.edu/~cbloom/index.html
+
+Contains:
+
+Fast (MACM) Arithmetic coder
+Modularized Bit IO routines
+CRC32 routines
+Fast Prefix-Sum-Tree routines (cumulative probability maintenance)
+An ANSI C multi-functional dir recursion function
+Faster malloc() through grouped hunks (mempool.c)
+Good mem copies and clears (memutil.c)
+Lots of good string functions (strutil.c)
+Good Quicksort (sortnods.c)
+
+Also :
+
+ANSI stubs/replacements of AmigaDOS and SAS/C functions
+ (strins,Read,AllocMem,etc.)

@@ -1,0 +1,371 @@
+
+Directories:
+
+  jic - Acronym for 'Just In Case'
+  orig - Original "C" source files
+
+Files:
+
+  -notes.to.me - This file
+  A.h - Canned commands for building "A68kN"
+  A68KDEF.H - Source file from 386 system stripped of C/Rs and modified
+  A68kEnh.files - List of files in "A68kEnh.lha" currently on Aminet
+  A68kEnh.readme - Archive explanation  currently on Aminet
+  a68kglb.h - Source file from 386 system stripped of C/Rs
+  A68KMAIN.C - Source file from 386 system stripped of C/Rs
+  A68KMISC.C - Modified source file from 386 system
+  A68kN - New "A68k"
+  A68kN.ok - Standard of comparison for "A68kN"
+  ADIRECT.C - Source file from 386 system
+  changes.doc - Documentation of changes from "A68k" to "A68kN"
+  CODEGEN.C - Source file from 386 system
+  control.reg - List of 680x0 control registers
+  diffs.doc - What should happen when running the CLI commands in "mMS.h"
+  DMakefile - 'makefile' I created using the 'makefile' for the Atari 800
+              emulator as a model
+  ea - Reference list
+  ef - Reference list
+  m386.h - Canned CLI commands for invoking other canned CLI commands
+  mAdir.h - Canned CLI commands for comparing "Adirect.c" vs. equiv. 386 file
+  mDef.h - Canned CLI commands for comparing "A68kdefs.h" vs. equiv. 386 file
+  mGen.h - Canned CLI commands for comparing "Codegen.c" vs. equiv. 386 file
+  mglb.h - Canned CLI commands for comparing "A68kglb.h" vs. equiv. 386 file
+  mMain.h - Canned CLI commands for comparing "A68kmain.c" vs. equiv. 386 file
+  mMisc.h - Canned CLI commands for comparing "A68kmisc.c" vs. equiv. 386 file
+  mOpc.h - Canned CLI commands for comparing "Opcodes.c" vs. equiv. 386 file
+  mOper.h - Canned CLI commands for comparing "Operands.c" vs. equiv. 386 file
+  mPro.h - Canned CLI commands for comparing "Protos.h" vs. equiv. 386 file
+  mSym.h - Canned CLI commands for comparing "Symtab.c" vs. equiv. 386 file
+  near.asm - Example file included in "A68Enh.lha"
+  OPCODES.C - Source file from 386 system
+  OPERANDS.C - Source file from 386 system
+  Protos.H - Renamed "MYPROTOS.H"
+  status.doc - What's been going on
+  stripCR - Strips CRs out of files
+  stripCR.p - Pascal file for "stripCR"
+  SYMTAB.C - Source file from 386 system
+  usenew.asm - Source that "A68k" should, but cannot, assemble
+  WB_PARSE.C - Source file from 386 system
+
+
+
+1/25/1997
+    Created this directory.
+
+    Copied all '.H' and '.C' files here from the 386 system.
+
+    Renamed "PROTOS.H" as "PROTOS.H.orig" and "MYPROTOS.H" as "PROTOS.H".
+
+    Had to strip C/R characters out of "A68kdef.h", "A68kglb.h" and
+  "A68kmain.c".  Remaining file modules were OK without stripping out
+  C/R characters.
+
+    Had to get rid of '_write' in the 'xwrite' procedure in "A68kmisc.c".  The
+  way I made the change probably means that writing object code as 'S records'
+  probably won't work.
+
+    Had to delete the lines '#include malloc.h' and '#include io.h' from
+  "A68kdef.h".
+
+    Successfully 'made' "A68kN".
+
+    Discovered that "A68kN" successfully assembles added instructions
+
+    Discovered problem with ' BFEXTU (A6){D6:8},D0'
+
+1/26/1997
+    Stripped C/Rs out of "Operands.c" for readability.
+
+    Fixed problem with 'bfEncode' in "Operands.c".
+
+    Stripped C/Rs out of "Codegen.c" for readability, then modified it to
+  correctly assembly ' MOVE CCR,<ea>'
+
+2/1/1997
+    Appended '.p' to existing file files.
+
+   'Ported "A68KGLB.H" and "OPERANDS.C" from the 386 system.
+
+    Renamed "A68KGLB.H" as "A68KGLB.H.cr" and stripped out the CRs creating a
+ "a68kglb.h" that won't cause DICE to choke.
+
+    Built a new "A68kN" and copied it as "sys:MyTools/A68k".
+
+    Used "MX0:E/6502/Apple/A2000/nA2000.asm" as a test file
+
+2/2/1997
+    Added 'EXTB' to "OPCODES.C" as a comment.
+
+    Found that new version of "A68k" displays duplicate error lines if it
+  finds ' ext.b D0' in a file file.  Also does not catch ' extb.w D0'.
+
+    Created "useNew.asm" by extracting lines from
+  "MX0:E/6502/Apple/A2000/nA2000.asm"
+
+2/3/1997
+    Verified that the duplicate error lines problem discovered yesterday has
+  been fixed
+    
+2/4/1997
+    Thought I had solved all problems with implementing 'EXTB' but just noticed
+  that the error pointer is off by 1 for 'EXTB'
+
+2/5/1997
+    Wrote "mMS.h","stripCR.p" and "diffs.doc" to ensure that the file stored
+  in the 386 system matches the file stored in this directory.
+
+    Built a new "A68kN" by changing "Codegen.c" to not flag instructions with
+  odd offsets as errors.
+
+    Copied "A68kN" as "sys:MyTools/A68k".
+
+    Used the commands in "MX0:E/6502/Apple/A2000/mE.h" to test the new "A68k"
+
+2/8/1997
+    Started to get rid of occurrances of 'Error(0, 0)' in "Opcodes.c" by
+  replacing second '0' with 'OperErr'.  Newly built "A68kN" not put in
+  production; file on 386 system not updated.
+
+    Changed 'Error(' to 'Error (' in "Opcodes.c" for consistency.  Did not
+  rebuild "A68kN".
+
+    Updated 'Files:' list.
+
+    Reorganized the parent directory structure by renaming the "C" directory
+  as "orig" and making it a subdirectory of this directory.  Also changed this
+  directory's name from "newC" to "C"
+
+2/9/1997
+    Created a bunch of '.h' files for ensuring that file files on the 386
+  system match those in this directory
+
+3/8/1997
+    Updated "mOper.h" to show differences created on 2/8/1997.
+
+    Created "mA.h" to ensure "A68kN" hasn't changed.
+
+    Updated "m386.h" and all the files it invokes to include a warning about
+  "PC:" being accessible and to include a call of the next '.h' file to invoke.
+
+    Created "mPro.h" to compare "Protos.h" and its equivalent on the 386
+  system.
+
+    Decided to move 'GetInstModeSize' from "Operands.c" to "Codegen.c".
+
+    Updated "Protos.h" to reflect above move.
+
+    Copied "Protos.h", "Codegen.c" and "Operands.c" to "PC:C/A68K"
+
+3/9/1997
+    Modified "A68kdef.h", "Codegen.c" and "Operands.c" to replace 'magic
+  number' constants with 'Mode' symbols.
+
+    Re-compiled "A68kN" many times to ensure changes didn't affect executable.
+
+    Copied "A68kdef.h", "Codegen.c" and "Operands.c" to "PC:C/A68K/NEWC" to be
+  held there in case more files have to be copied over
+
+9/13/1997
+    Compared all source files here against the source files on the 386 system.
+
+    Resolved the differences by moving files held in "PC:C/A68K/NEWC" to that
+  directory's parent after moving the old files to "PC:C/A68K/OLDC".
+
+    Modified "A68kmain.c" to change version number and added display lines to
+ show my influence.
+
+    Built a new "A68kN".
+
+    Copied "A68kN" to "WB_2.x:MyTools" as "A68k".
+
+    Did *NOT* copy new "A68kmain.c" to 386 system
+
+10/3/1997
+    Started adding support for 'MOVEC' by adding a definition for 'MOVEC' to
+  "Opcodes.c".
+
+    Updated "Operands.c" and "A68kdef.h" for 'MOVEC'
+
+10/4/1997
+    Moved changed source files to 386 system
+
+10/5/1997
+    Moved changed source files from 386 system.
+
+    Made standard changes to "A68kdef.h" and "A68kmisc.c".
+
+    Stripped CRs from "A68kmain.c".  Must have used "setdate" to make date
+  stamp match date stamp of file on 386 system.
+
+    Modified most of the "mXXX.h" files for the sake of efficiency.
+
+    Updated "diffs.doc" to reflect more accurate altering of "A68kmisc.c".
+
+    Modified "A.h" to eliminate command lines that duplicated those in "mA.h".
+
+    Built new "A68kN" and copied it to "WB_2.x/MyTools" as "A68k".
+
+    Did some testing of version 3.01 in other directories
+
+10/6/1997
+    Updated "changes.doc" 
+
+10/7/1997
+    Updated "A68kEnh.readme".
+
+    Created "A68kEnh.lha" for uploading to Aminet.
+
+10/18/1997
+    Copied new source modules over from the 386 system.
+
+    Compiled new "A68kN".
+
+    Created "near.asm"
+
+    Updated "changes.doc"
+
+10/19/1997
+    Changed 'MX0' to 'DH2' in a couple of '.h' files
+
+10/20/1997
+    Repackaged "a68k271.lzh" from FF #521 as "A68kGibbs.lha" and uploaded it to
+  Aminet.
+
+    Updated "aA.h" so that "near.asm" gets into any "A68kEnh.lha".
+
+    Created version 3.02 of "A68kEnh.lha" and uploaded it to Aminet.
+
+    Created a copy of "OPERANDS.C" named "OPRNDS.C.c" to act as a backup while
+  I make changes to "OPERANDS.C"
+
+10/22/1997
+    Created a copy of "OPCODES.C" named "OPCDS.C.c" to act as a backup while
+  I make changes to "OPCODES.C".
+
+    Added 'CAS', 'CAS2', 'PACK' and 'UNPK' to "OPCODES.C" as comments.
+
+    Just noticed that "DMakefile" has lines that shouldn't be.
+
+    "OPRNDS.C.c" erased.
+
+    "OPCODES.C" moved to 386 system and "OPCDS.C.c" renamed as "OPCODES.C".
+
+    Further development shifted to 386 system
+
+10/23/1997
+    Modified "OPCODES.C" to eliminate duplicate instruction definitions
+
+    Updated 'Files:' list.
+
+    "OPCODES.C" created today will be replaced
+
+10/26/1997
+    'Ported over new source modules from 386 system.
+
+    Generated version 3.03 of "A68kN".
+
+    Copied "A68kN" to "WB_2.x:MyTools" as "A68k".
+
+    Created version 3.03 of "A68kEnh.lha" and uploaded it and and the updated
+  "A68kEnh.readme' to Aminet
+
+10/28/1997
+    Updated "Codegen.c" and "Opcodes.c" after discovering that the existing
+  "A68kN" ignores the size specified with a 'CHK' instruction.
+
+    Updated "status.doc" to show that 'CHK.L' has been implemented.
+
+    Updated "A68kdef.h", "Codegen.c" and "Opcodes.c" to add support for 'CHK2'
+  and 'CMP2'.
+
+10/29/1997
+    Updated "status.doc" after a scan of the Programmer's Reference Manual
+
+11/1/1997
+    Updated "A68kglb.h", "A68kmisc.c" and "Adirect.c" by copying changes made
+  to files of same name on 386 system.
+
+    Made questionable changes to "operands.c" and "symtab.c" on 386 system and
+  left the updated source files on '"MDA:"
+
+11/2/1997
+    Added two lines bracketed by '#ifdef MSDOS' and '#endif' to "A68kdef.h" in
+  order to eliminate the difference between the two copies of "A68kdef.h" on
+  this system and the 386 system.
+
+    Updated "mA.h" to include commands for making cosmetic (hopefully) changes
+  to source modules.
+
+    Tried removing '#define MSDOS' from "A68kdef.h" but the executable file
+  became smaller so the change was undone.  Will have to try the change again
+  when real changes are made to "A68kdef.h".
+
+    Added '#ifndef _DCC', '#else' and '#endif' to "A68kmisc.c" in order to
+  eliminate the difference between the two copies of "A68kmisc.c" on this
+  system and the 386 system.
+
+    Learned that source files with '#if[n]def' cannot contain CRs if they are
+  to be compiled with DICE.
+
+    Updated "diffs.doc".
+
+    Added CRs to "Adirect.c"
+
+11/3/1997
+    Removed definition of 'MSDOS' from 'A68kdef.h'.
+
+    Changed definition of 'MAXLINE' from 128 to 196.
+
+    Changed version number to '3.04' in 'A68main.c'.
+
+    Changed '#ifndef _DCC' to #ifdef MSDOS' in A68kmisc.c'.
+
+    Copied lines from "Operands.c" and "Symtab.c" temporarily stored on a 3.5
+  inch diskette.  These lines made permanent and preceeded by
+  '/* Major kludge */'.
+
+    Generated version 3.04 of "A68kN'.  
+
+    Copied new "A68kN" to "WB_2.x/MyTools" as "A68k"
+
+11/6/1997
+    Performed overdue tests in parent directory
+
+11/8/1997
+    Modified "OPERANDS.C".
+
+    Generated a new version of "A68kN'.
+
+4/27/1998
+    Updated "ami.H" to create archive for Aminet in a temporary subdirectory.
+
+    Updated "diffs.doc".
+
+    Discovered that "A68kN" was never promoted to production version
+
+
+
+
+
+
+
+
+*** Notes ***
+
+  1) Code starting at line 872 of "Codegen.c" sets 'nO', 'nS', 'nD' and
+     'InstSize'.  Code to support 32 bit displacements with 'ARDisp' mode will
+     have to work something like code at lines 792 and 805.
+
+  2) Add definition of 'ArDisp32' to "A68kdef.h"?  Putting definition at end
+     of current mode definitions might cause a problem.
+
+  3) 'ARInd', 'ARDisp' and 'ARDisX' are used to set 'op->Mode' in "Operands.c"
+     and are tested for in "Codegen.c".  'ARDisp' and 'ARDisX' are cases in
+     a switch statement in "Operands.c".
+
+  4) 'OperExt' is defined in "Operands.c" and used just once in both
+     "Operands.c" and "Codegen.c"
+
+  5) Check the following for questionable use of 'Mode':
+     a) 'EffAdr' in "Operands.c"
+     b) Around line 841 in "Codegen.c"

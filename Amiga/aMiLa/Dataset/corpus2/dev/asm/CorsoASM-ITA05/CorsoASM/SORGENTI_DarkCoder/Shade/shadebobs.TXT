@@ -1,0 +1,75 @@
+
+;By DeathBringer/MORBID VISIONS
+
+Shade Bobs
+
+La routine dello ShadeBob e' essenzialmente una implementazione della capacita'
+del blitter di effettuare addizioni. Basta pensare ad ogni pixel dello schermo
+sia un numero ad n cifre binarie, dove n e' il numero dei bitplane, ad esempio
+avendo 5 bitplane la situazione sarebbe la seguente:
+
+Plane5        0        0        0        0        0
+Plane4        0        0        1        0        1
+Plane3        0        1        0        1        0
+Plane2        0        1        1        0        1
+Plane1        1        0        1        0        0
+-----------------------------------------------------
+Numero        1        6       11        4        10
+
+la routine addiziona 1 a questo numero usando una semplice tecnica, utilizzata
+nei contatori binari, e con sofisticate migliorie anche nell'addizionatore
+presente nella nostra ALU.
+
+Per effettuare lo Shade, dobbiamo sommare 1 al numero rappresentato da tutti
+i bitplanes, ecco come fare.
+
+Il fatto di sommare numeri binari ci semplifica notevolmente la vita, per
+prima cosa ci calcoliamo se c'e' il riporto tra un bitplane e l'altro, come si
+fa quando lo si calcola per le cifre in una normale addizione, e poi si
+effettua la somma. 
+
+Chiaramente ci sara' un riporto se entrabi i bit sono uguali a 1, e la somma
+sara' 1 se i bit sono diversi, 0 se i bit sono uguali (0+0, 1+1) come si puo'
+verificare facilmente dalla seguente tavola:
+
+Bitplane | Bit da sommare | Somma | Riporto 
+--------------------------------------------
+    0    |        0       |   0   |    0   
+    0    |        1       |   1   |    0  
+    1    |        0       |   1   |    0  
+    1    |        1       |   0   |    1  
+---------------------------------------------    
+
+Adesso possiamo vedere quali funzioni realizzano Somma e Riporto:
+
+Somma= Bitplane XOR Bit
+
+Riporto= Bitplane AND Bit
+
+A questo punto basta iterare la procedura precedente per tutti i bitplane,
+sommando il riporto, ed il gioco e' fatto!!!
+
+Esempio:
+        Numero       Bit da sommare          Somma            Riporto
+------------------------------------------------------------------------
+plane1  1        +          __1        =        0                1 ->\    
+                           /      /---------------------<-------------|
+plane2  1        +        /   1 <-     =        0                1 ->\                                               
+                         /        /-----------------------------------|
+plane3  0        +       |    1 <-     =        1                0 ->\     
+                         |        /-----------------------------------|
+plane4  0        +       |    0 <-     =        0                0
+        ^                |                      ^
+        |                |                      |
+        3        +        \_->1        =        4
+------------------------------------------------------------------------
+        
+Il nostro bob ad 1 bitplane, rappresenta la maschera che indica quali pixel
+sono interessati all'addizione in un determinato quadro. Per prima cosa si
+prendono il bob e l'area di schermo interessata e si effettua un AND usando
+come destinazione un'area addizionale chiamata Carry (Il Riporto).
+Fatto questo si prende il bob e si effettua lo XOR con l'appropriato bitplane
+dello schermo, per ottenere la somma.
+In seguito si continua usando l'area Carry come se fosse il nostro bob per ogni
+bitplane. Chiaramente sono necessarie 2 aree Carry!!!
+

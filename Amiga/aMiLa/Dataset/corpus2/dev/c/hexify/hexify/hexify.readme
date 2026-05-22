@@ -1,0 +1,47 @@
+Short:        Convert binary data into a hex string
+Author:       Jason Pepas
+Uploader:     Carsten Larsen (carsten.larsen@mail.com)
+Type:         dev/c
+Version:      0.1
+Architecture: generic; m68k-amigaos
+URL:          https://github.com/pepaslabs/hexify.c.git
+
+About
+
+    Convert binary data (unsigned char*) into a hexidecimal string
+
+Installation
+
+    Copy hexify.h and hexify.c to your source code tree.
+
+API
+
+    int hexify(unsigned char *in, size_t in_size, char *out, size_t out_size);
+
+Example
+
+    #include <stdlib.h>
+    #include <stdio.h>
+    #include "hexify.h"
+
+    int main(int argc, char **argv) {
+        // pack a binary array
+        unsigned char binary[4];
+        binary[0] = 0xde;
+        binary[1] = 0xad;
+        binary[2] = 0xbe;
+        binary[3] = 0xef;
+
+        // convert it into a hex string
+        char hex[8+1];
+        hexify(binary, sizeof(binary), hex, sizeof(hex));
+
+        // print the result
+        printf("%s\n", hex);
+
+        return 0;
+    }
+
+License
+
+    MIT

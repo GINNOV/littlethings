@@ -1,0 +1,30 @@
+Short: Flashsort1 implementation (5.12.98)
+Type: dev/c
+Uploader: Andreas_Kleinert@t-online.de
+Author: Karl Dietrich, Andreas Kleinert (adaption)
+
+
+ Implementation of The FlashSort1 Algorithm
+
+ as described by Karl-Dietrich Neubert
+ in Dr. Dobb's Journal, February 1998
+
+ adapted to ANSI C for research purposes
+ by Andreas R. Kleinert in 1998; also added test program
+
+
+ About Flashsort:
+
+ It's simply faster than Heapsort, Quicksort and Quickersort.
+ On 10000 items it's twice as fast as Quickersort.
+
+ For more information, please refer to the original article.
+
+
+ Changes since last release:
+
+   - changed x=3 to x=3 in 3rd loop (oops)
+   - NUM2 now calculated correctly
+
+ --
+ ARK, 05/Dec/98

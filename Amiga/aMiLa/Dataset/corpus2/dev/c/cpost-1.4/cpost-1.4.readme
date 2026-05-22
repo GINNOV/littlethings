@@ -1,0 +1,6 @@
+Short:        V1.4, C language file formatter for PostScript
+Author:       Patrick Mueller <pmuellr@vnet.ibm.com>, Amiga port by Olaf `Olsen' Barthel <olsen@sourcery.han.de>
+Type:         dev/c
+Architecture: m68k-amigaos
+
+

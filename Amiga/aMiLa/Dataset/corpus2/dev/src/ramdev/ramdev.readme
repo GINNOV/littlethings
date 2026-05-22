@@ -1,0 +1,32 @@
+Short:        AmigaOS 4: simple 4 unit ram device source
+Author:       Olaf Barthel, Fredrik Wikstrom (OS4 port and modifications)
+Uploader:     fredrik a500 org (Fredrik Wikstrom)
+Type:         dev/src
+Version:      51.1
+Architecture: generic
+
+/************************************************************************
+*
+* ramdev.c -- Skeleton device code.
+*
+* A sample 4 unit ramdisk that can be bound to an expansion slot device,
+* or used without.  Works with the Fast File System.
+* This code is required reading for device driver writers.  It contains
+* information not found elsewhere.
+*
+* This example includes a task, though a task is not actually needed for
+* a simple ram disk.  Unlike a single set of hardware registers that
+* may need to be shared by multiple tasks, ram can be freely shared.
+* This example does not show arbitration of hardware resources.
+*
+************************************************************************/
+
+v51.1 changes (Fredrik Wikstrom):
+ - is now an OS4 device
+ - uses CreateTask()/DeleteTask() as opposed to setting up the Task structure (stack, etc.) manually
+ - supports the NSCMD_DEVICEQUERY command (reports itself as a trackdisk type device)
+
+Hopefully this will make it easier for people to write device drivers for OS4...
+
+
+

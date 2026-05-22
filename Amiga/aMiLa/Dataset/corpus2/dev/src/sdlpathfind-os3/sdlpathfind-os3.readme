@@ -1,0 +1,17 @@
+Short:        An SDL path find example
+Author:       M3xican, AmigaOS 3.0 compile by Orta
+Uploader:     Artur Jarosik <orta1 wp pl>
+Type:         dev/src
+Architecture: generic
+
+   A* pathfind 
+
+   This example implements A* pathfind algorithm using 
+   "manhattan distance" heuristic.
+    Author: M3xican  
+   .___________________________________________________________.
+   |                                                           |
+   |       A M I G A   O S   3 . 0   C O M P I L E   B Y       |
+   |                                                           | 
+   |                        Orta 2006                          | 
+   |___________________________________________________________|

@@ -1,0 +1,57 @@
+GhostRider - A new generation monitor for the Amiga.
+
+The GhostRider V1.9 archive contains the following files:
+
+    DOCS (dir)
+          GhostRiderLibrary (dir)
+            ghostrider                  AG formatted autodoc on gr.library.
+            ghostrider.info
+            ghostrider.doc              AutoDoc on ghostrider.library.
+            ghostrider.doc.info
+          GhostRiderPrefEditor (dir)
+            GRPrefEd.guide              AG doc on GhostRider pref. editor.
+            GRPrefEd.guide.info
+          GhostRiderDeckRunner (dir)
+            GRDR.doc                    Doc on GhostRider Deck Runner.
+            GRDR.doc.info
+          GhostRider (dir)
+            GhostRider.guide            AG doc on GhostRider V1.9.
+            GhostRider.guide.info
+       GhostRider.info
+       GhostRider.Registration          Use if you want to register GR.
+       GhostRider.Registration.info
+       GhostRiderDeckRunner.info
+       GhostRiderLibrary.info
+       GhostRiderPrefEditor.info
+     Prefs (dir)
+       GhostRider                       GhostRider preference editor.
+       GhostRider.info
+       KeyBoardTable.s                  Assembler source for keymap gen.
+     Include (dir)
+          Libraries (dir)
+            ghostrider.i                ghostrider.library include file.
+          FD (dir)
+            ghostrider_lib.fd           ghostrider.library FD file.
+     libs (dir)
+       ghostrider.library               ghostrider.library (37.2) binary.
+  DOCS.info
+  GhostRiderV19.ReadMe                  This text file.
+  GR                                    GhostRider V1.9 executable.
+  GRDR                                  GhostRider Deck Runner.
+  Prefs.info
+
+Please distribute archive unchanged. Thank you.
+
+
+Welcome!                                      (Aalborg, Denmark, 09.09.94)
+
+I hope you will be pleased with this new GhostRider release. GhostRider is
+now shareware and this archive contains a fully functional monitor - no
+crippled or missing functions. Also, it has been tested (and working) on
+A1200, A2000 and A4000's in various configurations (that's 'ooo, 'o2o, 'o3o
+and 'o4o). Check out the "History" section in GhostRider.guide for a full
+V1.0 -> V1.9 update description.
+
+Hope you like the monitor and choose to register...
+
+/Jesper

@@ -1,0 +1,12 @@
+;_InitRESERVED	Equ		-30
+fmf_flt			Equ		-36
+fmf_fix			Equ		-42
+fmf_abs			Equ		-48
+fmf_int			Equ		-54
+fmf_add			Equ		-60
+fmf_sub			Equ		-66
+fmf_mul			Equ		-72
+fmf_div			Equ		-78
+fmf_cmp			Equ		-84
+fmf_neg			Equ		-90
+fmf_tst			Equ		-96

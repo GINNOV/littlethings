@@ -1,0 +1,9 @@
+Short:        ixemul startup & stubs for Dice & SAS
+Author:       blaz.zupan@uni-mb.si
+Uploader:     blaz zupan uni-mb si
+Type:         dev/c
+Architecture: m68k-amigaos
+
+This archive contains a new startup code for Dice and SAS for use with
+ixemul.library (the Unix emulation library by Markus Wild). For more
+information please read the README file provided in the archive.

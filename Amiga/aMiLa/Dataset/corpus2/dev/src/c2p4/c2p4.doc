@@ -1,0 +1,19 @@
+
+c2p4.a (written by Peter McGavin) is a 4-plane chunky to planar covnverter
+optimized for 020+ systems with fast mem.  It uses a comparison buffer (ie.
+convert only what has changed from the previous frame).  Performs the first
+two passes with the CPU and then passes 3 and 4 with the blitter.  Returns
+immediately after starting the blitter (ie. your program can calculate the
+next frame while the blitter is still running).
+
+An example of the speedup possible is demonstrated with wolf3d.old and
+wolf3d.new - use the joystick to move around and fire to exit.
+
+wolf3d.old was taken from the wolf3d-2.lha archive, and was written by
+russell@cpsc.ucalgary.ca (Terence Russell) using a "normal" c2p converter.
+
+wolf3d.new was modified by peterm@maths.grace.cri.nz (Peter McGavin) using
+the new c2p4.a converter
+
+Enjoy!
+

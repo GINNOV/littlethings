@@ -1,0 +1,1322 @@
+                               Introducing:
+
+                          E A S Y G U I   v3.3b4
+
+        An interface builder for E, with the following highlights:
+
+          - It's totally Font-Sensitive
+          - It's Resizable
+          - It's Self-Organising, i.e. it arranges gadgets
+          - It's more StyleGuide compliant than your granny
+          - It's Fast and Flexible
+          - It's relatively small, needs no extra external libraries
+          - The layout-engine is user-extendable with PLUGINs
+          - And above all: It's extremely easy to use!!!
+
++---------------------------------------------------------------+
+|       0. History                                              |
++---------------------------------------------------------------+
+
+As of v3.3a, maintained by Jason R. Hulance, who you can contact at
+the addresses given in the Beginner's Guide to Amiga E.
+(Email: jason@fsel.com)
+
+[v3.3b4:]
+- Fixed changegui() window resizing to move window as well, if
+  necessary.
+
+[v3.3b3 is a minor update that fixes a bug with AppWindow messages
+that crept in under the guise of a safety feature in v3.3b...]
+
+Changes from the v3.3b version:
+- Fixed bug: STR, INTEGER and CHECK gadgets' action functions were not
+  getting passed the correct new value parameter.
+- Fixed bug: LISTV wasn't always wide enough for label.
+- Added EG_HIDE tag to enable the GUI to be created with a hidden (closed)
+  window.
+- Changed blockwin()/unblockwin() so they now nest properly.
+
+Changes from the v3.3a version:
+- MAJOR CHANGE: made the main functions use a taglist for their optional
+  arguments (it was getting a bit ridiculous...).  This gives a bit more
+  flexibility for the programmer and makes for much more readable code, so
+  I'm afraid it was inevitable.  To ease the change-over a bit there is an
+  example module which gives the old style versions of the functions (just
+  for EasyGUI.m; you can do your own for EasyGUI_lite.m).
+- MAJOR ADDITION: support for multi-window GUIs.  This is via the
+  multiinit(), addmultiA(), multimessage(), cleanmulti() and checkmulti()
+  functions.  The new scheme shares message ports, and efficiently
+  dispatches on the message data.  This is *massively* more efficient than
+  using the old scheme (OR-ing the signal masks of each window), and
+  effectively removes the limit of windows that a GUI can use.
+- Changed 'info' default to -1, which now gets translated to the guihandle.
+  This helps a lot with multi-window GUIs.
+- Changed 'data' default to -1, which now gets translated to the gadget
+  (not the *real* gadget, but the one that can be used with the setXXX()
+  functions). 
+- Changed the default screen to be the *default* public screen (rather than
+  specifically Workbench).
+- Changed AppWindow gadget location code to make it more robust, and now
+  includes the gadget label as "hittable".
+- Added a short description of the examples to this doc.
+- Added a reference to the guihandle to each PLUGIN so they can more easily
+  access the GUI window and use the GUI manipulation functions.
+- Added closewin()/openwin() to enable the window to be temporarily closed
+  and opened.  These are most useful for iconification (see the iconify and
+  toolify PLUGINs).  Note that this new feature may break old PLUGINs that
+  assume the GUI window will never change.
+- Added extra 'maxw' and 'maxh' parameters to make window open with maximum
+  width/height (taking into account position, too).
+- Added extra 'wintype' parameter to give control over window borders.
+- Added some more changeXXX() functions, and changed (sorry!) the other
+  changeXXX() functions to make them more uniform.
+- Added extra checking in message loop to ignore stray IDCMP_MOUSEMOVE
+  messages.  This is needed because GadTools doesn't identify the gadget if
+  you use GACT_FOLLOWMOUSE, so your PLUGIN finds it hard to trap this
+  message properly.
+  [Problem reported by Ralph Wermke <wermke@rz.uni-greifswald.de>]
+- Fixed bug in key handling code for the SLIDER gadget.
+  [Bug reported first by Fred van der Zee <free@xs4all.nl>]
+- Fixed an old bug: guihandles weren't deallocated by cleangui().
+- Fixed an old bug: some messages weren't getting replied.
+- Fixed an old bug: window wasn't being centred on screen if smaller than
+  display (and may not have been openable).
+- Minor changes to the layout of a couple of gadgets.
+- Made gadtoolsbase and workbenchbase public, mainly so that PLUGINs
+  can use them (if you have a GUI open then they must be valid).
+- Made things more friendly for multi-tasking: gh.wnd is NIL when the
+  GUI is in an unmodifiable state.
+- Made awprocs use a copy of the appmessage, mainly so that they can do
+  things like manipulate the GUI without problems.
+- Made a third version of EasyGUI.  This is EasyGUI_debug.m, which is the
+  same as EasyGUI.m except that it will print a short diagnostic message
+  before raising an exception.  This should be used when developing your
+  program to help track down the actual reason for a fault.
+
+Changes from the v3.2e version:
+- Lots of minor fixes to most gadgets.
+- Added conditional resizing.
+- Added (optional) data field for all gadgets.
+- Added Style Guide compliant keyboard shortcuts.
+- Added extra arguments to some PLUGIN methods.
+- Added simple mechanism for PLUGINs to use GadTools gadgets (gtrender()).
+- Added AppWindow support for main window, *BUTTON, LISTV, STR and PLUGINs.
+- Added a lot of GUI manipulation functions.
+- Made an EasyGUI_lite version without a lot of features.
+
+changes from the v3.2a version:
+- now supports PLUGINs for unlimited complex gui's!!! (check section 5)
+- added settext() and setnum()
+- fixed NUM gadget
+- added topaz-fallback version
+- bug: rendered into the border when used with sysihack
+- bug: could cause enforcer hits when some strings were NIL
+- bug: dealocation of resources in wrong order caused problems
+
+changes from the v3.1a version:
+- new functions to access/modify gadgets while GUI is active
+- easily add gadtools menus
+- more complete docs
+- works better with multiple simultanuous EasyGUIs
+- LISTV, MX and CYCLE have an extra "current" parameter now
+- STR now takes an _estring_ as value (change this in old sources!)
+- bug: current gadget values would reset upon resize
+- bug: would open in middle of screen instead of visible part
+- many tiny bugs removed
+
++---------------------------------------------------------------+
+|       1. EasyGUI Intro                                        |
++---------------------------------------------------------------+
+
+EasyGUI takes the form a module file that needs to be included into your E
+source (needless to say, it needs v2.04/v37 of the OS).  The most simple
+form of constructing a GUI consist of calling the function easyguiA() with
+a (possibly nested) E list which describes your GUI.  just to show how
+Easy, try this source:
+
+        MODULE 'tools/EasyGUI'
+        PROC main() IS easyguiA('um,...',[BUTTON,0,'Ok!'])
+
+This'll open a window with just one gadget in it, and wait for the user to
+push it. If easyguiA() can't get what it wants, it'll start throwing around
+exceptions, so we'll probably need an exception handler to be able to
+inform the user properly (see below).
+
+The first arg of easyguiA() is the window title, the second one is the GUI
+description. The form of these desciptions is quite simple: It's a list
+with as first element the type of gadget, the second is called an action
+value (more later), and the rest is gadget-specific.
+
+To be able to build GUI's outof more components than just one gadget, one
+can group gadgets with a ROW and a COL list:
+
+        [COLS,
+          [BUTTON,1,'Ok'],
+          [BUTTON,0,'Cancel']
+        ]
+
+This'll create a new group, consisting of two gadgets next to each other.
+COLS and ROWS groups are like a single gadget, i.e. you can easily put them
+into other groups, to create GUI's of infinite complexity.
+
+Other Grouping functions are EQCOLS and EQCOLS, which try to align gadgets
+in a group. IF you get strange layouts using these, you should try grouping
+subgroups before putting them in a larger group.
+
+[BEVEL,a] will put a bevel box around a, whatever it is (a gadget, a
+group...), and BEVELR is the recessed version.
+
+Other elements of groups are mostly gadgets, which have a specific #of
+arguments. [If the number of arguments is incorrect, EasyGUI will raise the
+"Egui" exception.]
+
+The first element is always the type of gadget to create (see below). The
+second element is always something called an "actionvalue", which tells
+EasyGUI what needs to be done when the user interacts with the gadget.  All
+elements after that are gadget specific.
+
+An action value may be:
+- a small positive integer (0-1000). If the user selects this gadget,
+  EasyGUI will close the window, and return that value as returnvalue from
+  the easyguiA() call. This is meant for "Ok" / "Cancel" type buttons.
+- a pointer to an "action function". If the user selects this gadget,
+  EasyGUI will call the function with as arguments depending on the type of
+  gadget (for example a slider will get it's current value).  After the
+  actionfunction returns, EasyGUI continues processing messages from the
+  GUI.
+  example:
+
+        ...[BUTTON,{load},'Load'],...
+
+        PROC load(info) IS WriteF('You pushed the "Load" button!\n')
+
+  
+  the value of `info' is explained below. Or:
+
+        DEF s[100]:STRING
+
+        ...[STR,{str},'input:',s,50,4],
+           [CYCLE,{cycle},'choose:',['Yep','Nope',NIL],1],...
+
+        PROC str(info,news) IS WriteF('the new string is: \s\n',news)
+        PROC cycle(info,newc) IS WriteF('the new choice is: \d\n',newc)
+
+  In the action function, you can store the new value, however EasyGUI
+  keeps track of it itself too: In the case of the STR above it will
+  StrCopy() new values into your estring, so it automatically has the
+  correct value after closing. In the case of all other gadgets it stores
+  the new (integer) value in the list (so that `1' in `CYCLE' may become
+  `0').  This has the added benefit that windows that are opened and then
+  closed again will automatically start with the current values.
+
+  If you want to close the GUI from an action function then you can call
+  the quitgui() function, which raises a "QUIT" exception (be careful to
+  not handle this exception in your code -- just ReThrow() it if your
+  action function has an exception handler).  The single argument to
+  quitgui() (which defaults to 0) will be returned from the easyguiA() call,
+  in the same way that action values are.  The definition of quitgui() is:
+
+        PROC quitgui(ret=0) IS Throw("QUIT",ret)
+
+  There are two new, optional arguments to action functions: `qual' and
+  `data'.  If you wish to use these arguments your action function must
+  include them at the beginning (and you must have a `data' argument if you
+  want to use the `qual' argument).  For instance, a button action function
+  can be defined in any of these three ways:
+
+         PROC action(info) IS WriteF('info=$\h\n',
+                                     info)
+         PROC action(data,info) IS WriteF('info=$\h,data=$\h\n',
+                                          info,data)
+         PROC action(qual,data,info) IS WriteF('info=$\h,data=$\h,qual=$\h\n',
+                                               info,data,qual)
+
+  (This scheme gives *full* compatibility with the old EasyGUI action
+  functions, whilst still allowing the new features to be used.)
+
+  The `data' argument is the optional data field specified in the gadget.
+  If it is not specified or it's -1 then the actual data value that is used
+  is the gadget list pointer (for use with the setXXX() functions).  You
+  could use it, instead, to pass a pointer to an object specific to the
+  gadget.  The action function can then just call a method of that object.
+  This allows the same action function to be used by a number of different
+  gadgets, with the specific action being carried out via the data element
+  (since the data can be different for each gadget).
+
+  The `qual' is basically the qualifier part of the intuimessage used to
+  indicate gadget clicks.  Use the IEQUALIFIER_XXX constants from the
+  module 'devices/inputevent' to see which qualifiers were pressed when
+  the gadget was clicked.  For example:
+
+        PROC buttonaction(qual,data,info)
+          IF qual AND (IEQUALIFIER_LSHIFT OR IEQUALIFIER_RSHIFT)
+            PrintF('You were pressing a shift key when you clicked on me!\n')
+          ENDIF
+        ENDPROC
+
+The easyguiA() function:
+
+        easyguiA(windowtitle,gui,tags=NIL)
+
+`tags' is a taglist which can use the following tags:
+
+EG_INFO
+  the data may be ANY value, and is passed as an arg to the action
+  functions.  For example if you write a prefsrequester, this may be the
+  the prefs OBJECT.  Your actionfunctions then have a simple task changing
+  the value of the element in question.  (If this is -1 or not present,
+  then it the info used will be the 'guihandle' value for this GUI.  See
+  Chapter 4.)
+
+EG_SCRN
+  the data is an optional screen ptr to open on. if NIL or not present
+  EasyGUI opens on the default public screen (usually Workbench).
+
+EG_FONT
+  the data is a fontdescription (i.e., a `textattr').  If NIL or not
+  present, EasyGUI will use the same font as the screen (for Workbench this
+  is the font the user selected as "screenfont" in fontprefs).
+
+EG_MENU
+  the data is a newmenus structure (as in gadtools.library). EasyGUI will
+  then automatically attach it to the window and arrange any messages.  You
+  can give the same actionvalues as gadgets in the newmenu.userdata, and
+  the actionfunction can be the same as for a `BUTTON', i.e.:
+
+        [...,NM_ITEM,0,'Load','l',0,0,{load},...]:newmenu
+
+  can use the same load() as in the example further above (the optional
+  `qual' and `data' arguments [see below] will always be NIL). [The
+  constants NM_ITEM, etc., are from the module 'libraries/gadtools'.]
+
+EG_GHVAR
+  the data is the address of a LONG variable which gets a copy of the
+  guihandle (see Multiple Windows, below).  You just specify something like
+  {gh} instead of having to use guiinitA(), etc.  Note that you can also
+  get the guihandle by using the new default for the `info' of a GUI
+  (as described above).
+
+EG_AWPROC
+  the data is a function to be called when the user drops icons on the
+  window (and no gadget handles the drop).  By default, this is NIL and
+  this means that the window will not to be made into an AppWindow.  If
+  it's *not* NIL then the window *will* be an AppWindow, and the *BUTTON,
+  LISTV and STR gadgets will get their awprocs called if icons are dropped
+  directly on them (PLUGIN gadgets can also react to AppWindow messages).
+  If the drop does not land on a gadget with an awproc then this awproc
+  (for the whole window) will be called.  (See the examples.)  awprocs are
+  like action functions and can be defined in one of two ways:
+
+        PROC awproc(info,awmsg:PTR TO appmessage)
+        PROC awproc(data,info,awmsg:PTR TO appmessage)
+
+  `info' is the GUI info, `awmsg' is a *copy* of the appmessage and `data'
+  is the optional data field for the gadget (or the `plugin_object' for
+  PLUGINs, and NIL for the window one).
+
+EG_TOP, EG_LEFT
+  the data define the top-left coordinate of the window.  If either of them
+  is -1 (the default), then the window will be centred on that axis (in the
+  visible part of the screen).
+
+EG_MAXW, EG_MAXH
+  the (boolean) data specify whether to try make the window size maximal in
+  width or height (based on screen size), rather than the default of
+  minimal (based on the GUI).  If you specify a position then the maximal
+  size of that axis will be the remaining part of the screen.  So, on a
+  screen of width 640, if you specify EG_LEFT of 100 then the maximum width
+  the window can be is 540.
+
+EG_WTYPE
+  the data is a constant to dictate the window decoration (i.e., what
+  happens with the borders).  The choices are:
+
+        WTYPE_SIZE     the default, which gives you all the standard
+                       gadgets and a size gadget at the bottom.
+        WTYPE_NOSIZE   omits the size gadget.
+        WTYPE_BASIC    just has a simple border around the window.
+        WTYPE_NOBORDER has (suprisingly) no border.
+
+  Be careful with these last two options as there is no close gadget for
+  the user to click -- you must provide them with your own method of
+  closing the GUI (a menu item?).  (Note: the window title is ignored with
+  the last two types, since there's no title bar.)
+
+EG_CLOSE
+  the data is an action value/function used when the user clicks the close
+  gadget on the GUI window.  This is most useful for multi-window GUIs (see
+  Multiple Windows), but it can be useful to prompt the user to confirm
+  before quitting the GUI.  The action value will be returned from
+  easyguiA()/guimessage()/multiloop()/multimessage(), as usual.  The action
+  function can be defined in one of two ways:
+
+        PROC closeproc(info)
+        PROC closeproc(mh:PTR TO multihandle,info)
+
+  `info' is the GUI's info parameter (see above), and `mh' is the
+  multi-window handle (see Multiple Windows) or NIL if it's a single window
+  GUI.
+
+EG_CLEAN
+  the data is a function to be called when the GUI is destroyed (e.g., by
+  calling cleangui()).  This is most useful for multi-window GUIs (see
+  Multiple Windows), but it can generally be useful for cleaning up the
+  GUI's PLUGINs (see Chapter 5).  The function will be called *after* the
+  window and the GUI has been closed and deallocated, so, for example, the
+  PLUGINs will no longer be on screen.  It should be defined like this:
+
+        PROC cleanproc(info)
+
+  `info' is the GUI's info parameter (see above).  Note: if guiinitA() or
+  addmultiA() cause an exception then this function will *not* be called.
+  This makes it easier to setup a GUI (see the examples).
+
+EG_HIDE
+  the (boolean) data specifies whether the GUI window is initially hidden
+  (closed).  The default is FALSE; if you specify TRUE then you can use
+  openwin() to show the window when you want it to be seen.  Note: this tag
+  is a bit useless for a normal call to easyguiA() as there's little chance
+  of it receiving any GUI messages if the window is closed (so the Wait()
+  will never return).
+
+
++---------------------------------------------------------------+
+|       2. Gadgets                                              |
++---------------------------------------------------------------+
+
+general format: [NAME,action,text,...]
+in {}: which direction it may resize.
++ = a value that can be affected lateron with the set#? functions
+* = optional value (can be omitted)
+
+Each gadget shows the gadget template, explanation, the form of the
+actionfunction, and a typical example.
+
+The optional arguments to action functions (qual and data) are described in
+the above chapter.
+
+
+[BUTTON,action,intext,data*,key*,awproc*,disabled+*]
+  data = user data value passed to action function
+  key = keyboard shortcut (presses button)
+  awproc(data*,info,awmsg) = AppWindow proc (see above)
+  disabled = whether this gadget is disabled or not
+  buttonaction(qual*,data*,info)
+  example: [BUTTON,0,'Cancel']
+
+[CHECK,action,righttext,checkedbool+,lefttextbool,data*,key*,disabled+*]
+  checkedbool = whether gadget should initially be check-marked
+  key = keyboard shortcut (toggles check)
+  disabled = whether this gadget is disabled or not
+  checkaction(qual*,data*,info,checkedbool)
+  example: [CHECK,{case},'Ignore case',TRUE,FALSE]
+
+[INTEGER,action,lefttext,num+,relsize,data*,key*,disabled+*]
+  num = initial value
+  key = keyboard shortcut (activates gadget)
+  disabled = whether this gadget is disabled or not
+  integeraction(qual*,data*,info,newnum) {x}
+  example: [INTEGER,{v},'int:',5,3]
+  (Note: see discussion of getinteger() in chapter 4 below.)
+
+[LISTV,action,textabove,relx,rely,execlist+,readbool,selected,current+,
+       data*,key*,awproc*,disabled+*]
+  execlist = ptr to an execlist. (see tools/constructors.m)
+  readbool = whether listview is read-only (action is ignored if it is!)
+  selected = 0=none, 1=highlight/show selected
+  key = keyboard shortcut (unshifted->select next, shifted->prev)
+  awproc(data*,info,awmsg) = AppWindow proc (see above)
+  disabled = whether this gadget is disabled or not
+  listviewaction(qual*,data*,info,num_selected) {x,y}
+  example: [LISTV,0,NIL,5,5,filenamelist,0,NIL,0]
+  (Note: disabling doesn't work under V37.)
+
+[MX,action,righttext,nil_term_elist,lefttextbool,current,
+    data*,key*,disabled+*]
+  (Note: under v37 the righttext is spaced correctly but not rendered.)
+  key = keyboard shortcut (unshifted->next choice, shifted->prev, wraps)
+  disabled = whether this gadget is disabled or not
+  mxaction(qual*,data*,info,num_selected)
+  example: [MX,{v},NIL,['One','Two','Three',NIL],FALSE,1]
+  (Note: disabling doesn't work under V37.)
+
+[CYCLE,action,lefttext,nil_term_elist,current,data*,key*,disabled+*]
+  key = keyboard shortcut (unshifted->next choice, shifted->prev, wraps)
+  disabled = whether this gadget is disabled or not
+  cycleaction(qual*,data*,info,num_selected)
+  example: [CYCLE,{v},'choose:',['Yep','Nope',NIL],1]
+
+[PALETTE,action,lefttext,depth,relx,rely,current+,data*,key*,disabled+*]
+  (Note: the current field is new to v3.3a and is _not_ optional, so any
+  existing v3.2e sources using a PALETTE gadget will need a small edit.)
+  depth = 1..8, number of bitplanes this color is for
+  key = keyboard shortcut (unshifted->next pen, shifted->prev, wraps)
+  disabled = whether this gadget is disabled or not
+  paletteaction(qual*,data*,info,colour) {x,y}
+  example: [PALETTE,{v},'color:',3,5,2]
+
+[SCROLL,action,isvert,total+,top+,visible+,relsize,data*,key*,disabled+*]
+  total = resolution of scroller
+  top = current top represented
+  visible = current
+  key = keyboard shortcut (unshifted->increment, shifted->decrement)
+  disabled = whether this gadget is disabled or not
+  scolleraction(qual*,data*,info,curtop) {x|y}
+  example: [SCROLL,{v},FALSE,10,0,2,2]
+
+[SLIDE,action,lefttext,isvert,min,max,cur+,relsize,levelformat,
+       data*,key*,disabled+*]
+  min,max = value range of slider
+  cur = current value
+  levelformat = string that shows levelformat, example '%2ld'. leave
+    a large amount of spaces left in lefttext for this.
+  key = keyboard shortcut (unshifted->increment, shifted->decrement)
+  disabled = whether this gadget is disabled or not
+  slideraction(qual*,data*,info,cur) {x|y}
+  example: [SLIDE,0,'Colors:',FALSE,1,8,3,5,'']
+
+[STR,action,lefttext,initial+,maxchars,relsize,
+     over*,data*,key*,awproc*,disabled+*]
+  initial = initial string contents: NOTE: HAS TO BE AN ESTRING!
+  maxchars = max #of chars for string
+  over = overwrite mode boolean (default is FALSE, i.e., insert mode)
+  key = keyboard shortcut (activates gadget)
+  awproc(data*,info,awmsg) = AppWindow proc (see above)
+  disabled = whether this gadget is disabled or not
+  stringaction(qual*,data*,info,string) {x}
+  (Note: action function is passed the E-string, not the gadget's buffer.)
+  example: [STR,0,'Pattern',s,100,5]      (DEF s[100]:STRING)
+  (Note: see discussion of getstr() in chapter 4 below.)
+
+[TEXT,text,lefttext,borderbool,relsize] {x}
+  borderbool = whether or not a recessed bevelbox is placed around 'text'
+  example: [TEXT,'Selected Fonts',NIL,FALSE,3]
+
+[NUM,int,lefttext,borderbool,relsize] {x}
+  borderbool: as TEXT
+  example: [NUM,123,'num:',TRUE,5]
+
+[SBUTTON,action,intext,data*,key*,awproc*,disabled+*] {x}
+  same as button, only now resizes horizontally.
+
+[PLUGIN,action,plugin_object,isgt*,awproc*]
+  isgt = whether this PLUGIN is made from GadTools gadgets (see chapter 5)
+  awproc(plugin_object*,info,awmsg) = AppWindow proc (see above)
+  pluginaction(info,plugin_object)
+  (see separate chapter 5 on using/implementing these).
+
+[BAR], [SPACE] {x,y}, [SPACEH] {x}, [SPACEV] {y}
+  BAR places a nice divider-bar between gadgets/groups. Whether it's
+  horizontal or vertical depends on which group it is in.
+  SPACE/SPACEH/SPACEV do nothing, they only eat up space. This can be very
+  handy in GUI design, they act like a spring between elements (do not use
+  them on the borders of a GUI, only in the middle).
+
+
+#?text:
+  (where #? is left/right etc.): a text to place next to the gadget.  Often
+  is allowed to be NIL.
+
+relsize,relx,rely:
+  Generally gadgets will automatically get a size depending on a number of
+  factors, but relsize allows the programmer to give a minimum size for
+  certain gadgets, thereby sizing a whole group.  If other gadgets already
+  account for the minimum size, this one can safely be set to a low value
+  such as 2.  All these sizes are calculated in terms of the _height_ of
+  the font.  Always try out your GUI with different fonts.  For example if
+  you design a gui that only just fits horizontally with an 8 point font on
+  640x200, when run on with a 13 point font on 640x512, the gui will be
+  quite a bit bigger horizontally, but the screen isn't, so it won't fit.
+  (see also: the "bigg" exception below).
+
+nil_term_elist:
+  a nil-terminated E list, such as ['One','Two','Three',NIL]
+
+isvert:
+  TRUE if gadget needs to be vertical, horizontal by default.
+
+key:
+  All keyboard shortcuts are optional (so marked with a * in the following
+  descriptions).  If specified then they must be lowercase letters ("a" to
+  "z").  However, the shifted and unshifted keystrokes are *both* handled,
+  in the way described by the Style Guide (and this is briefly outlined for
+  each gadget).  Also, if a key is specified then an "_" in the gadget
+  label text indicates the character in the label which is to be
+  underscored (and this ought to be the same letter as the key).  If a key
+  is not specified then any "_"s in the label are not special.  (If an
+  action function is invoked as a result of a key press then the `qual'
+  will always be 0.)
+
+disabled:
+  If this optional field is specified then the gadget can be disabled and
+  enabled using the setdisabled() function (see below, chapter 4), and the
+  current status of the gadget will be recorded in this field, too.
+
+
+The following constants/enumerations are defined in order to make
+referencing/creating the lists for each gadget a bit more readable.
+
+  EXPORT ENUM BEV_GUI=1,
+    BUT_ACT=1, BUT_TXT,  BUT_DATA, BUT_KEY,  BUT_APPW, BUT_DIS,
+    CHK_ACT=1, CHK_TXT,  CHK_VAL,  CHK_LEFT, CHK_DATA, CHK_KEY,  CHK_DIS,
+    INT_ACT=1, INT_TXT,  INT_VAL,  INT_REL,  INT_DATA, INT_KEY,  INT_DIS,
+    LST_ACT=1, LST_TXT,  LST_RELX, LST_RELY, LST_LIST, LST_RO,   LST_SHOW,
+               LST_CURR, LST_DATA, LST_KEY,  LST_APPW, LST_DIS,
+     MX_ACT=1,  MX_TXT,   MX_LIST,  MX_LEFT,  MX_CURR,  MX_DATA,  MX_KEY,
+                MX_DIS,
+    CYC_ACT=1, CYC_TXT,  CYC_LIST, CYC_CURR, CYC_DATA, CYC_KEY,  CYC_DIS,
+    PAL_ACT=1, PAL_TXT,  PAL_DEP,  PAL_RELX, PAL_RELY, PAL_CURR, PAL_DATA,
+               PAL_KEY,  PAL_DIS,
+    SCR_ACT=1, SCR_VERT, SCR_TOTL, SCR_TOP,  SCR_VIS,  SCR_REL,  SCR_DATA,
+               SCR_KEY,  SCR_DIS,
+    SLI_ACT=1, SLI_TXT,  SLI_VERT, SLI_MIN,  SLI_MAX,  SLI_CURR, SLI_REL,
+               SLI_FMT,  SLI_DATA, SLI_KEY,  SLI_DIS,
+    STR_ACT=1, STR_TXT,  STR_STR,  STR_MAX,  STR_REL,  STR_OVR,  STR_DATA,
+               STR_KEY,  STR_APPW, STR_DIS,
+    TXT_VAL=1, TXT_TXT,  TXT_BORD, TXT_REL,
+    NUM_VAL=1, NUM_TXT,  NUM_BORD, NUM_REL,
+    PLG_ACT=1, PLG_OBJ,  PLG_GT,   PLG_APPW
+
+
++---------------------------------------------------------------+
+|       3. How Layout Works                                     |
++---------------------------------------------------------------+
+
+EasyGUI works by automatically layouting the gadgets on the screen. In a
+first pass, it will compute the minimum size for each element: for gadgets
+this involves the size of fonts and various other things. For a ROWS list,
+for example, it will take the width of the biggest gadget as its width, and
+computes its height by adding the heights of all other gadgets. For EQROWS
+this is slightly more complicated: EasyGUI also computes a "middle" for
+various gadgets, often between the text that denotes what a gadget is about
+and the gadget itself. It then tries to align all of these. for EQCOLS it
+simply tries to make all columns equal width.
+
+In a second pass, EasyGUI assigns the final coordinates to all gadgets.
+Important to notice is that in a GUI often there is more space available
+than is required for a gadget, for example the gadget above it in a ROWS
+environment is much wider. Also, the user may have resized the window. To
+do something useful with this space, EasyGUI looks at which gadgets can do
+something useful with extra space, such as LISTV, or STR, SCROLL etc. This
+process of granting extra space propagates through ROWS/COLS, which act as
+gadgets themselves. Gadgets like BUTTON don't benefit from more space, so
+they give that away to their neighbours.
+
+
++---------------------------------------------------------------+
+|       4. Advanced features                                    |
++---------------------------------------------------------------+
+
+Different versions of EasyGUI
+-----------------------------
+For those who care more about saving a few KB than the extra functionality,
+there are two different versions:
+
+     1) EasyGUI_lite.m
+        This does not have multi-window support, keyboard support for
+        gadgets, AppWindow support or GUI manipulation functions (i.e.,
+        dynamically changing a GUI, window blocking and gadget disabling).
+          Current code size: 17324 bytes.
+     2) EasyGUI.m
+        The full version, with nothing taken out.
+          Current code size: 23968 bytes.
+
+There's also a third version of EasyGUI which is just a variant of
+EasyGUI.m: this is a debug version, EasyGUI_debug.m, which gives some more
+information about an error before raising an exception (so you shouldn't
+really distribute programs compiled with this module -- it's just for
+development purposes).
+
+
+Throwing exceptions from actionfunctions
+----------------------------------------
+is allowed: EasyGUI will catch it, close the window properly, and then
+ReThrow() if it wasn't a "QUIT" exception.  If it was "QUIT" then the
+exceptioninfo value will be the return value of the easyguiA()/guimessage()
+or multiloop()/multimessage() functions, just like the way actionvalues
+work (except for the slight difference in a multi-window GUI, as noted
+below).
+
+Exceptions raised by EasyGUI itself:
+
+"MEM"   -- no mem
+"GUI"   -- for things like CreateGadgetA, OpenWindowTagList etc.
+"GT"    -- couldn't open gadtools.library
+
+"bigg"  -- for "BIG Gui": interface is calculated to be bigger than the
+           screen.  Generally you should keep gui's small, so that they
+           still fit on 640x200 topaz screens. If the user runs Times/30 on
+           a screen this size, he probably knows he has a problem.
+"Egui"  -- a design error: most probably handed over a list to dogui() that
+           was either to long or too short
+<other> -- Raise()ed by own function
+
+
+Multiple Windows
+----------------
+There are two ways of handling multiple windows in EasyGUI.  The first
+has really been superseded by the second, though.
+
+1) The simplest use of EasyGUI is just by calling easyguiA(). You can
+  however open any number of windows, and check messages for all of them.
+
+        guiinitA(windowtitle,gui,tags=NIL)
+        guimessage(guihandle)
+        cleangui(guihandle)
+
+  Call guiinitA() for each window (exactly the same arguments as
+  easyguiA().  Then, keep calling guimessage() for each of them, when
+  messages arive.  you can close them again with cleangui(), for example
+  when a gui returns a positive integer (the actioncode). Negative integers
+  signal that it simply finished processing all messages, but no need to
+  close the window yet.  Note: it is *not* safe to call cleangui() from
+  *any* action function (except as noted below, in the description of
+  cleanmulti()).  (If you want to close the GUI prematurely, you can use
+  the closewin() function.)
+
+  example of usage of these three function (= definition easyguiA())
+
+        EXPORT PROC easyguiA(windowtitle,gui,tags=NIL) HANDLE
+          DEF gh=NIL:PTR TO guihandle,res=-1
+          gh:=guiinitA(windowtitle,gui,tags)
+          WHILE res<0
+            Wait(gh.sig)
+            res:=guimessage(gh)
+          ENDWHILE
+        EXCEPT DO
+          cleangui(gh)
+          ReThrow()
+        ENDPROC res
+
+  the object you get has some handy fields in there: the window in question
+  `wnd' (or NIL if it's currently closed), the sigmask `sig' (i.e., _not_
+  the signal bits) if you want to do a proper Wait() (OR them), the GUI's
+  info and the handle for the multi-window group `mh' (or NIL if this is a
+  single GUI) [see below for more details on this].
+
+        OBJECT guihandle
+        /* Public (read-only) parts: */
+          wnd:PTR TO window
+          sig:LONG
+          info
+          mh:PTR TO multihandle  -> See below...
+        ENDOBJECT
+
+  The GUI's info is provided to make retrieving the info from the guihandle
+  easier (in an EG_CLEAN proc, for instance).  If you want to draw into
+  `wnd': stdrast is automatically set to the last EasyGUI opened.  `wnd'
+  can also be used a flag to indicate when it is safe to manipulate the
+  GUI (to help with multi-tasking): when it's NIL it's not safe to modify
+  the GUI directly, unless you've been passed the window pointer (e.g.,
+  render() and clear_render()).  The setXXX() functions are always safe.
+  Note: `wnd' can change due to closewin()/openwin() calls which mean that
+  the GUI may be in different windows during its life.
+
+2) But starting in v3.3b, there's a much more efficient (and simpler) way
+  of handling multiple-window GUIs.  This uses the functions multiinit(),
+  addmultiA(), multiloop() (which uses multimessage()) and cleanmulti(), in
+  roughly the same way as the single window versions.  It's all based
+  around a `multihandle':
+
+        OBJECT multihandle
+        /* Public (read-only) parts: */
+          sig:LONG
+          opencount:LONG
+        ENDOBJECT
+
+        multiinit()
+        addmultiA(multihandle,windowtitle,gui,tags=NIL)
+        multiloop(multihandle)
+        multimessage(multihandle)
+        cleanmulti(multihandle)
+
+  multiinit() is used to initialise a new group of GUIs and produce a new
+  `multihandle'.  It takes no arguments.  You must call this function first
+  and use the multihandle with the other functions to refer to your group
+  of GUIs.  You can still refer to each individual GUI using a guihandle
+  (see below).  A quick example to show how simple the new multi-window
+  scheme is:
+
+        PROC multiplewindows() HANDLE
+          DEF mh=NIL, gh1:PTR TO guihandle, gh2:PTR TO guihandle,res
+          mh:=multiinit()
+          gh1:=addmultiA(mh,'GUI One',[BUTTON,{but1},'Press Me'])
+          gh2:=addmultiA(mh,'GUI Two',[BUTTON,{but2},'Press Me'])
+          -> Could add more GUIs...
+          res:=multiloop(mh)
+        EXCEPT DO
+          cleanmulti(mh)
+        ENDPROC
+
+  addmultiA() is very much like guiinitA().  It creates a new window with
+  your specified GUI and returns the guihandle.  You can call this function
+  even from action functions, when the GUI group is active.
+
+        addmultiA(mh:PTR TO multihandle,windowtitle,gui,tags=NIL)
+
+  The extra parameter is `mh' to indicate the group to which this window
+  will be added.
+
+  If the tag EG_CLOSE is not specified or the data is an action value
+  (between 0 and 1000) then the GUI will be destroyed and removed from the
+  group (the guihandle will now be invalid) and the action value will be
+  returned (from multimessage()) -- just like a normal action value.  If it
+  is an action function then the window is *not* closed and the action
+  function is called.  As stated above, you define such an action function
+  in one of two ways:
+
+        PROC closeproc(info)
+        PROC closeproc(mh:PTR TO multihandle,info)
+
+  `info' is the GUI's info parameter and `mh' is the multihandle for this
+  group.  Use `mh' to find the `opencount' -- the number of GUIs with open
+  windows.  This count will include this GUI so if it's equal to one then
+  you know this is the last open window in the group.  Your action function
+  may want to prompt the user and then close the window (using closewin()),
+  destroy the GUI and remove it from the group (using cleangui()), or leave
+  the window open.
+
+  multiloop() is defined in terms of multimessage() and opencount, and is
+  similar to the definition of easyguiA().
+
+        EXPORT PROC multiloop(mh:PTR TO multihandle)
+          DEF res=-1
+          WHILE res<0
+          EXIT mh.opencount=0
+            Wait(mh.sig)
+            res:=multimessage(mh)
+          ENDWHILE
+        ENDPROC res
+
+  The signal mask for waiting for messages is `sig' in the multihandle.
+  You can use this for more complex Wait()s, and then call multimessage()
+  to handle any messages that may have arrived for any of the GUIs.  Any
+  action values generated by a GUI (or via quitgui()) are returned by
+  multimessage() and hence terminate multiloop().  The above example calls
+  multiloop() only once, so an action value will eventually destroy the
+  whole group (by calling cleanmulti()).  Note: a real action value will
+  cause the GUI that produced it to be closed via cleangui(), but a value
+  returned through use of quitgui() will not -- this is because if you've
+  called quitgui() then you can just as easily write code to close the
+  window (or whatever) in the same action function.
+
+  By using the `opencount', the loop will be terminated when there are no
+  more open GUI windows.  Alternatively, if you are using your own Wait()
+  you might want to check that there are no GUIs left (even ones with
+  closed windows).  To this end there's the function multiempty() which
+  returns TRUE if and only if there are no GUIs in the group.  (Note: if
+  there are only GUIs left with no window then the simple Wait() will never
+  return!)
+
+  cleanmulti() destroys all GUIs in the group (whether they have an open or
+  closed window) and deallocates the multihandle.  It is *not* safe to use
+  the multihandle or any of the guihandles after this.  So, in particular,
+  it is *not* safe to call cleanmulti() from *any* action function.  It is,
+  however, safe to call cleangui() on GUIs in the group, if you are using
+  cleanmulti() to do the final cleanup (rather than calling cleangui() on
+  remembered guihandles).
+
+  To help with manipulating a group there are the multiexists() and
+  multiforall() functions, which work in a very similar way to ForAll() and
+  Exists().
+
+        multiforall(varaddr,mh:PTR TO multihandle,expr)
+        multiexists(varaddr,mh:PTR TO multihandle,expr)
+
+  `varaddr' is the address of a (global) guihandle variable, `mh'
+  identifies the GUI group and `expr' is a quoted expression to be
+  evaluated.  multiforall() will evaluate the expression for every GUI in
+  the group (whether its window is open or closed) and return TRUE if the
+  expression is TRUE (non-zero) for all GUIs, else it will return FALSE.
+  multiexists() will stop at the first GUI for which the expression is
+  TRUE, and return the value of the expression.  Unlike Exists(), you are
+  guaranteed that the variable pointed to by `varaddr' will contain the
+  guihandle of the corresponding GUI (or NIL if none were found).  So, you
+  can use multiexists() to find GUIs.  Note: be careful what the expression
+  does with the guihandle and the GUI group; it is quite safe to cleangui()
+  on the supplied guihandle, but it is not safe to affect any other GUI in
+  this way.  Any GUIs added to the group by the expression will not be part
+  of the forall or exists (for those who can't live without knowing: the
+  list is explored from head to tail, and new GUIs are added to the head;
+  so the last GUI considered will be the oldest GUI).
+
+  For example, you can print the title of each GUI with an open window:
+
+        multiforall({gh},mh,`IF gh.wnd THEN WriteF('\s\n',gh.wnd.title) ELSE 0)
+
+  A final reminder: `varaddr' must be the *address* of a *global* variable
+  (and so must all the variables used in the quoted expression).
+
+  Useful note: as long as a guihandle is valid (i.e., as long as cleangui()
+  has not been called on it), the normal GUI functions checkgui() and
+  guimessage() will actually work on the whole group that a GUI is in.
+  (Note: the proper, safe functions to use for multi-window GUIs are
+  checkmulti() and multimessage(), respectively.)
+
+
+Multiple copies of a GUI
+------------------------
+If your app allows to have multiple copies of the _same_ gui open at the
+same time (for example if you open windows recursively, or you use the
+multiple window technique described above to open more instances of one
+GUI), you might need to dynamically allocate the GUI description, because
+of the way dynamically computed values are put into static E lists. A GUI
+desciption with [] lists is static, i.e. only allocated once. Adding NEW to
+all of them is hard to deallocate, and this is where disposegui() comes in.
+To safely use this feature, allocate ALL lists belonging to the GUI
+desciption dynamically with NEW [...] (this does not include lists such as
+the one used for the various labels in CYCLE-gadgets).
+
+        easyguiA('Bla',
+          gui:=NEW [ROWS,
+                 NEW [STR,{str},'input:',s,50,4],
+                 NEW [CYCLE,{cycle},'choose:',['Yep','Nope',NIL],1]])
+        disposegui(gui)
+
+Call disposegui() with the top-level list. On each gadget-list (i.e.,
+NEW [CYCLE,...]) it will simply call FastDisposeList(), on COLS and ROWS
+etc.  it will first deallocate each element recursively.
+
+
+Manipulating Gadgets
+--------------------
+[This assumes you've got the guihandle by using the ghaddr argument of
+easyguiA(), the DIY version of EasyGUI (as described under 'Multiple
+Windows'), or you're using the new default for the 'info' of a GUI.]
+
+You might need to modify gadgets while a GUI is active, for example to set
+a slider when a corresponding integer gadget is modified by the user, or to
+change the contents of a listview.
+
+You can denote gadgets to change by simply storing their addresses, i.e.:
+
+        [COLS,
+          mygad:=[CHECK,....],
+          ...
+        ]
+
+Now you can use `mygad' with some of the functions below. Note that, of
+course `mygad' isn't a gadget, but it helps EasyGUI to find the real
+gadget.
+
+        setcheck(gh,gad,bool)
+        setinteger(gh,gad,new)
+        setlistvlabels(gh,gad,labs)
+        setlistvselected(gh,gad,active)
+        setlistvvisible(gh,gad,vis)
+        setmx(gh,gad,active)
+        setcycle(gh,gad,active)
+        setpalette(gh,gad,colour)
+        setscrolltop(gh,gad,top)
+        setscrolltotal(gh,gad,total)
+        setscrollvisible(gh,gad,visible)
+        setslide(gh,gad,new)
+        setstr(gh,gad,new)
+        settext(gh,gad,newtext)
+        setnum(gh,gad,newnum)
+
+for all these: `gh' is the gui you're talking about (as returned from
+guiinitA()/addmultiA(), or via the `ghaddr' argument of easyguiA() or the
+new default for the 'info' of a GUI), `gad' is a value that denotes the
+gadget as described above.  the third value is whatever you're changing
+about the gadget. Note that in doing so, you need to respect usual
+restrictions on gadtools gadgets, for example setlistvlabels() requires
+that you first set it to -1, then modify the list, and put it back.
+setlistvvisible() will try to make the indicated item in the LISTV visible.
+setlistvselected() will make a new selection and try to make it visible
+(and -1 turns off the selection).
+
+        setdisabled(gh,gad,disabled=TRUE)
+
+This applies to all gadgets, but works only if you've actually specified a
+value (TRUE or FALSE) for the optional `disabled' field for the gadget.
+
+        realgadget:=findgadget(gh,list)
+
+allows you to find the gadget address, for all those modifications that
+aren't possible with the above set#? functions. It returns an intuition
+gadget structure. Note that preferably you will want to use the set#?
+functions, as these cooperate with EasyGUI very well (in keeping track of
+the current value, for example: setstr() also copies the new value to the
+estring you attached to the gadget).  While there is at least one GUI still
+allocated the `gadtoolsbase' and `workbenchbase' are valid, so you can
+quite easily manipulate gadgets in action functions using GadTools
+functions.  (If you do open either of these libraries, be careful not to
+overwrite these variables with NIL!  That is, use an automatic exception on
+OpenLibrary() or otherwise check the return value before assigning it.)
+
+        getstr(gh,gad)
+        getinteger(gh,gad)
+
+These return and store the current value of a STR or INTEGER gadget (where
+gh and gad are as described above for the setxxx() functions).  They are
+useful because Intuition only sends a message (and so causes the current
+values to be stored) when the user hits the return or tab key in these
+gadgets.  So, if you really want to know a STR or INTEGER gadget's current
+value use getstr() or getinteger().
+
+
+Topaz Fallback
+--------------
+the function `easygui_fallbackA()' is equivalent to `easyguiA()' apart from
+the fact that when EasyGUI fails with the "bigg" exception, it will try
+again with topaz-8.  Note that you should never want to rely on topaz, this
+function was only added for emergency situations.  If your GUI is too big
+on some systems, you should redesign your GUI to fit comfortably instead.
+(see other parts of this doc that talk about GUI-size and testing).
+
+
+GUI Manipulation
+----------------
+
+        closewin(gh)
+
+Temporarily closes the GUI window.  Use openwin() to reinstate the GUI.
+This function is useful for iconifying a GUI (see the iconify and toolify
+PLUGINs).  You can test whether a GUI's window is closed (or otherwise
+unmodifiable) by checking if the `wnd' element of the guihandle is NIL.
+Note that if your GUI is on the default public screen then it will no
+longer be a visitor (i.e., you can then use changescreen() to move it to a
+new screen).  (A blocked window is unblocked before it is closed.)
+
+        openwin(gh)
+
+Reopens a closed GUI window: it will reopen in the same position and size
+as it was when it closed.  Note that the window is not guaranteed to open
+correctly again (someone may have grabbed your memory, for example).  The
+window will always open unblocked.  Once open again, gh.wnd will be non-NIL
+(i.e., the address of the window).
+
+        changegui(gh,gui)
+
+Changes the GUI in a window (fairly) seamlessly.  The old GUI is removed
+and the new GUI tries to take its place, resizing if necessary (a NIL `gui'
+is just ignored).  The window will be resized if the new GUI's minimum size
+is bigger than the current size, or if the new GUI does not allow resizing.
+A side-effect of this new, dynamic ability to change GUIs is that the
+default window type is to have a size gadget, even the GUI can't be
+resized.  You can change this by specifying a different EG_WTYPE, or use
+changewindowtype().
+
+        changemenus(gh,newmenus=NIL)
+
+Changes the GUI's menus.  If `newmenus' is NIL or not present then the
+current menus are removed and the window is left with no menus.
+
+        changeinfo(gh,info=-1)
+
+Changes the GUI's info.  If `info' is -1 or not present then the GUI's
+info is changed to be the guihandle for the window.  (Remember: the info is
+passed to the GUI's action functions.)
+
+        changetitle(gh,windowtitle=NIL)
+
+Changes the title of the GUI's window.  (But remember that the title is
+ignored for window type WTYPE_BASIC and WTYPE_NOBORDER.)
+
+        changescreen(gh,scr=NIL)
+
+If the GUI window is closed (gh.wnd=NIL) then this will alter the GUI's
+screen (if it's open then this function does nothing).  If `scr' is NIL
+then the default public screen will be used.  If the font was linked to the
+screen then it will be updated, too.
+
+        changefont(gh,tattr=NIL)
+
+Again, this works only if the GUI window is closed.  If `tattr' is NIL then
+the font of the screen is used.
+
+        changewintype(gh,wintype=WTYPE_SIZE)
+
+Another one that works only if the GUI window is closed.  This sets the
+window border type.  You can use one of WTYPE_NOBORDER, WTYPE_BASIC,
+WTYPE_NOSIZE and WTYPE_SIZE, as described above.
+
+        movewin(gh,x=-1,y=-1)
+
+Moves the window of the GUI referenced by gh to the new (top-left)
+coordinate.  If x or y is -1 (the default) then that coordinate is not
+changed.  (Note: the change is delayed until the next INTUITICK.)
+
+        sizewin(gh,xs=-1,ys=-1)
+
+Attempts to resize the window of the GUI referenced by gh.  If xs or ys is
+-1 (the default) then that dimension is not changed.  The resizing is not
+guaranteed to be carried out since the size may be smaller than the GUI's
+minimum or the GUI may not be sizable.  (Note: the change is delayed until
+the next INTUITICK.)
+
+Simple window blocking to prevent the user using a GUI:
+
+        blockwin(gh)
+
+This puts up an invisible requester over the window of the GUI referenced
+by gh, and disables window sizing.  If you're running v39+ then the busy
+pointer will be set on this window.  You would use this to block a GUI
+before you put up another one.  Note: the window can still be moved and
+depth arranged.  (This works only if the GUI's window is open.)
+
+        unblockwin(gh)
+
+Reinstates the GUI, allowing the user to interact with it again.  The
+blockwin() and unblockwin() calls nest, so you need an equal number of
+unblockwin() calls to blockwin() calls before the window is actually
+unblocked.  Note: a GUI window is implicitly unblocked (forcefully!) when
+it is closed.  In general: try to design your GUIs such that the user can
+use them all simultaneously, this is much friendlier (i.e., make use of the
+multi-window support given by addmultiA()...).
+
+        checkgui(gh)
+
+Checks for any GUI messages and processes them, invoking actionfunctions if
+necessary.  If this causes the GUI to want to be closed (e.g., the user has
+pressed the close gadget), then a "QUIT" exception is thrown and the
+exceptioninfo is the value that would have been returned by the easyguiA()
+call (so, as with quitgui(), your exception handlers might like to make
+"QUIT" a special case and just ReThrow() it).
+
+This function is useful, for example, when you're in an action function
+that's performing a long calculation.  By polling the GUI at convenient
+points using this function you will make the GUI more responsive.  However,
+you are responsible for coping with the possibility that the user may
+cause, for instance, the same action function to be called again.  A simple
+solution is use some kind of semaphore (a global boolean variable, for
+example) to mark whether you are currently in an action function and busy.
+See the led_test.e examples and the old CU Amiga tutorials on Amiga E.
+
+        checkmulti(mh)
+
+This is checkgui() for multi-window GUIs.  As mentioned above (in 'Multiple
+Windows') you can use checkgui() to check and act on messages for *all* the
+GUIs in the same group as the one identified by the guihandle, but the
+guihandle must be valid.  This function uses the multihandle so is always
+safe as long as the group exists.
+
+
++---------------------------------------------------------------+
+|       5. PLUGINs                                              |
++---------------------------------------------------------------+
+
+PLUGINs allow the programmer to extend EasyGUI with new functionality,
+i.e., to add any kind of rendering/gadgets to the GUI, while cooperating
+automatically with EasyGUI's layout/resizing.  You can use plugins to add
+rendering areas in the midst of EasyGUI gadgetry (e.g., for graphics
+programs), add BOOPSI gadgets to a GUIs etc.  You can supply ready-made
+plugins for other programmers to use.
+
+        OBJECT plugin
+        /* Public (read-only) parts: */
+          -> Position and size.
+          x:INT,y:INT,xs:INT,ys:INT
+          -> guihandle for the GUI the PLUGIN is on.
+          gh:PTR TO guihandle
+        ENDOBJECT
+
+Any PLUGIN is an object inherited from the 'plugin' object found in
+easygui.m.  To implement a new plugin all that needs to be done is redefine
+a few methods.  Then, this PLUGIN can be plugged in to any EasyGUI with for
+example:
+
+        [PLUGIN,{plugaction},NEW mp.myplugin()]
+
+in your GUI-spec. Whether the action-value is used depends on the PLUGIN,
+as we'll see below.  If it is called it will be passed the PLUGIN object as
+well as the GUI info:
+
+  PROC pluginaction(info,plugin_object:PTR TO plugin)
+
+Have a quick look at the plugin example sources, or keep them handy while
+reading the bit below.
+
+Creating the object
+-------------------
+create your new object as a 'plugin'-subtype.  You may add constructors/
+destructors if you wish.  following methods implement the plugins
+behaviour, and may be redefined:
+
+        will_resize()
+
+is called once just before the window is opened.  You should return a
+flag-set telling in which ways your object can resize, making use of the
+constants RESIZEX and RESIZEY, 0 of course meaning your object is fixed in
+size (default method returns RESIZEX OR RESIZEY, i.e., resize in both
+directions).  New to v3.3a is COND_RESIZEX and COND_RESIZEY, which allow
+your PLUGIN to resize in the corresponding direction only if something else
+in its gadget group is unconditionally resizable.  (For example, a BAR is
+conditionally resizable, so that it does not force a group of BUTTONs to be
+resizable.)
+
+        min_size(ta:PTR TO textattr,fontheight)
+
+is called once just before the window is opened.  ta is the font used
+in the GUI.  you should return the _minimum_ x and y sizes of your
+PLUGIN as _two_ returnvalues, making use of `fontheight' if you wish.
+Note that EasyGUI may actually grant you a lot more space than just
+the minimum space you ask for, depending on the other gadgets and
+user-resizing.  If your object can have al sorts of sizes, pick a
+relatively small one as minimum.  The default method just returns
+(fontheight,fontheight)
+
+        render(ta:PTR TO textattr,x,y,xs,ys,win:PTR TO window)
+
+Here you should render your object to the window.  In the case of a gadget
+this means creating the gadget and attaching it to the window (AddGList(),
+RefreshGList(), make sure you render only your own gadget(s)).  ta is the
+font used in the GUI.  (xs,ys) is always at least the minimum size you
+asked for.  (x,y,xs,ys) is also copied to your object before this method is
+called, for use in other methods).  The default method paints a nice black
+box :-) You shouldn't take too long in this method as it will make window
+redraw look slow.  (It is safe to use existing v3.2e PLUGIN modules, but to
+recompile under v3.3a you will need to add the `ta' argument to your PLUGIN
+render() method.)
+
+        gtrender(gl,vis,ta:PTR TO textattr,x,y,xs,ys,win:PTR TO window)
+
+New to v3.3a: a replacement for render() which enables simple addition of
+GadTools gadgets to the standard EasyGUI gadgets.  If you want to use this
+method instead of the normal render() then: 1) the PLUGIN must support it,
+and 2) you must specify TRUE for the `isgt' field of the PLUGIN gadget.
+gtrender() should simply create its gadgets by linking into the current
+list (given by `gl') and using the visual info `vis'.  It should then
+return the new gadget list (i.e., the last GadTools gadget linked in).  And
+then that's it: your GadTools gadgets will be freed automatically, so if
+your PLUGIN is just GadTools gadgets you don't need to override the normal
+(empty) definition clear_render().  If you use gtrender() then you need not
+override render(): this will help indicate a problem if users forget to
+specify `isgt' with your PLUGIN.  See the password PLUGIN example.
+
+        clear_render(win:PTR TO window)
+
+mainly useful for gadgets to remove the gadget from the window and free it
+(RemoveGList(), remove only your own gadget(s)!).  Normally render() is
+called when the window opens, and clear_render() when the window closes,
+when the user resizes, however, clear_render() and render() are called one
+after another, in that order, to account for the changed window layout.
+The default method does nothing.
+
+        message_test(imsg:PTR TO intuimessage,win:PTR TO window)
+
+is phase-1 of the message handling, splitted in two to not block intuition
+too much.  In message_test() the only thing you should do is return TRUE
+_if_ and _only_if_ the intuimessage is meant for your object, otherwise
+FALSE.  (The only exceptions to this are IDCMP_MOUSEMOVE messages from a
+GACT_FOLLOWMOUSE or WFLG_REPORTMOUSE, which can be ignored safely [i.e.,
+you may return FALSE] as they cannot easily be attributed to an originating
+gadget).  For a mouse-click, test if it was in your area (the current
+dimensions of your object in the GUI are present in the `plugin' object),
+for gadgets, make sure it is really your gadget causing the message (check
+.iaddress).  If you reply TRUE to messages that are potentially meant for
+other objects, you might choke them.  Do not engage in other actions in
+this method, such as rendering; do these things in the message_action()
+method.  The default method returns FALSE.
+
+The GUI window uses the following IDCMP flags:
+
+        IDCMP_ACTIVEWINDOW        IDCMP_INACTIVEWINDOW
+        IDCMP_GADGETDOWN          IDCMP_GADGETUP
+        IDCMP_INTUITICKS
+        IDCMP_MOUSEBUTTONS        IDCMP_MOUSEMOVE
+        IDCMP_NEWSIZE
+        IDCMP_RAWKEY              IDCMP_VANILLAKEY
+
+You may get your PLUGIN objects to generate these messages (via gadgets)
+and then trap them (via message_test()), or you can just snoop on them in
+message_test().
+
+        message_action(class,qual,code,win:PTR TO window)
+
+is the second part, and will only be called if you returned TRUE in the
+previous method.  here you may do any action needed (additional rendering
+based on the user action).  class, qual and code are copies of the class,
+qualifier and code part of the intuimessage, so you don't need to remember
+them in message_test().  You should return TRUE if you want the action the
+user of the PLUGIN has written in his GUI-spec to be executed upon
+termination of this method (do this if your object clearly can be "hit",
+such as a gadget.  If you just do some rendering you might want to ignore
+the actionvalue).  The default method returns FALSE.  (As noted above, the
+action function is passed the PLUGIN object as well as the GUI info.)
+
+Note: do not confuse message_action() with action values: the former is for
+implementing the plugin's behaviour generally, while the latter is for
+specific behaviour in a specific GUI, attached by the user of your plugin
+(which could be you again :-).
+
+        appmessage(amsg:PTR TO appmessage,win:PTR TO window)
+
+Like the testing for window IDCMP, but for AppWindow message testing.
+Return TRUE _only_if_ the message is meant for this PLUGIN.  The PLUGINs
+(optional) awproc will then be called (as normal, with the optional data
+field being the `plugin_object').  Note: for compatibility, the
+appmessage() method is called only for PLUGINs that specify a non-NIL
+`awproc' field.  Just be careful to *not* specify a non-NIL `awproc' field
+with old PLUGIN modules.
+
+If you supply a plugin as module for others, you'll have to state what
+constructor(s) they may use, wether or not they have to supply a sensible
+action-value.  END will almost always have to be called.
+
+
++---------------------------------------------------------------+
+|       6. guide to the examples                                |
++---------------------------------------------------------------+
+
+There are numerous examples to show the various features of EasyGUI.
+Here's a small guide to help you find the ones that might be interesting:
+
+        alldist.e          - The original example.
+        alldist2.e         - The original example, using multi-windows and
+                             blocking.  You can have all the example GUIs
+                             open at once!
+
+        testaw.e           - AppWindow example.
+        testchange.e       - changegui() example.
+        testchange2.e      - changeXXX() and multi-window example.
+        testkey.e          - Keyboard shortcuts example, with window
+                             blocking and gadget disabling.
+        testmulti.e        - Multi-window example (recursive!).
+        testmulti2.e       - Multi-window and multiforall() example.
+        testqual.e         - Qualifier example.
+
+        animcontrol_test.e - Tests animcontrol PLUGIN.
+        button_test.e      - Tests flavours of button PLUGIN.
+        calendar_test.e    - Tests calender PLUGIN.
+        colorwheel_test.e  - Tests colorwheel PLUGIN.
+        gradient_test.e    - Tests gradient (slider) PLUGIN.
+        imagebutton_test.e - Tests flavours of imagebutton PLUGIN.
+        led_test.e         - Tests led PLUGIN, with pseudo-async activity.
+        led_test2.e        - Tests led PLUGIN, with multi-windows and
+                             pseudo-async activities.
+        led_test3.e        - Tests led PLUGIN, with multi-windows and
+                             *real* async activities.
+        led_test4.e        - Tests led and ticker PLUGINs, with
+                             multi-windows and pseudo-async activities.
+        password_test.e    - Tests password PLUGIN.
+        tabs_test.e        - Tests tabs PLUGIN.
+        tabs_test2.e       - Tests tabs PLUGIN and changegui() example.
+        tapedeck_test.e    - Tests tapedeck PLUGIN.
+        ticker_test.e      - Tests ticker PLUGIN.
+
+These can be found in Src/EasyGUI.  The sources for the example PLUGINs are
+in Src/Plugins.
+
+
++---------------------------------------------------------------+
+|       7. bugs/future                                          |
++---------------------------------------------------------------+
+
+bugs:
+- method of displaying slider values not bulletproof
+- GadTools sends two messages if your slider value is changed to a
+  negative value, so your action function can get called twice.  
+
+[the planned render spaces can now be done much better by using PLUGINs]
+
+
+----------------------------------------------------------------
+
+General advice: try out and modify the examples.  Sometimes something won't
+work, but EasyGUI is flexible enough that at least one way of arranging
+groups etc.  will give you a nice GUI :-).  If you need more power than
+EasyGUI currently gives, you'll have to use MUI/BGUI/WhatEver instead.
+
+Wouter (and Jason!)

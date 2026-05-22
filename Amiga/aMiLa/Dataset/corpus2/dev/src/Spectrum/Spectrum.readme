@@ -1,0 +1,13 @@
+Short:        Draws color spectrum
+Author:       walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Uploader:     walternn rupert informatik uni-stuttgart de (Norman Walter)
+Type:         dev/src
+Version:      1.02
+Replaces:     Spectrum.lha
+Requires:     C Compiler (e.g. StormC, gcc)
+Architecture: m68k-amigaos
+
+Approximates spectral lines using gaussian error distribution curves.
+This makes it possible to get the rgb values of a certain wave length.
+
+The sourcecode also shows how to use the AmigaOS function ObtainBestPen().

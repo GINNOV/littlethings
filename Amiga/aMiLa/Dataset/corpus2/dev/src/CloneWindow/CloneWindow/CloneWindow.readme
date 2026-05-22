@@ -1,0 +1,50 @@
+Short:        Clone&Filter&Resize a window
+Author:       thellier@free.fr (Alain Thellier)
+Uploader:     thellier free fr
+Type:         dev/src
+Version:      9.0
+Requires:     OS4, PowerPC
+Architecture: ppc-amigaos
+
+DESCRIPTION 
+V7.0 14 Nov 2012: Now CloneWindow is resizable + usable from shell
+v8.0 21 Nov 2012: Now redirect input (=all IDCMPs messages) to source window 
+v9.0  8 Jun 2017: test maximum size so remove the 1800 pixels limit
+
+Demonstrate how to use the OS function CompositeTags() to clone an existing window				
+So the display from source window is copied to a new dest window
+Display is resized+filtered and may be rotated (portrait,landscape,etc...)
+So may redirect a game display to a nice window
+CompositeTags() is an OS4 function that add blitter-like hardware accelerated functions
+CloneWindow idea come from an Amiga forum post
+
+USAGE 
+
+From workbench:
+Start CloneWindow then select the wanted window within 10 secondes
+'R' 'r' rotate display
+'F' 'f' skip frames
+'W' 'w' change source window
+'!' redirect input to source window
+Close gadget : quit		
+WARNING: This program may crash especially if you close the source window :-P
+
+From shell
+ CloneWindow Width Height Rot SkipFrames CopyInput
+ example:
+  CloneWindow 240 320 90 5 1
+  
+  
+You can also use CloneWindow inside WinUAE/ppc with Aminet/PatchCompositeTags (option pat q)
+                                                                                 
+LICENSE 
+CloneWindow: Clone&Filter&Resize a window - July 2012 				
+Author: Alain Thellier - Paris - France .
+GNU General Public License (GNU GPL) 
+For recompiling a modified version just clik the build icon
+
+------------------------------------------------------------------------------------------------
+If you enjoyed CloneWindow send me a postcard at: Thellier. 43 Rue Ordener. 75018 PARIS. FRANCE
+------------------------------------------------------------------------------------------------
+
+	

@@ -1,0 +1,18 @@
+Short:        An example of using SDL
+Author:       Sam Lantinga
+Uploader:     Ilkka Lehtoranta (ilkleht@isoveli.org)
+Type:         game/shoot
+Version:      1.0.2
+Requires:     util/libs/powersdl.lha
+Architecture: ppc-morphos
+
+This is an example of using SDL with the SDL_image and SDL_mixer libraries.
+It cames with prebuilt binary.
+
+To compile this demo on your Pegasos you need MorphOS SDK and little patience:
+
+1) go to aliens directory
+2) execute configure (just run it like you would run any other Amiga script)
+3) run make
+
+You dont need to enter into sh or anything like that. MorphOS does it for you.

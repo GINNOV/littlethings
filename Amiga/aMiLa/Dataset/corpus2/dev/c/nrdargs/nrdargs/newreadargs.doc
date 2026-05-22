@@ -1,0 +1,174 @@
+                 NewReadArgs
+         © 1997-1998 by Stephan Rupprecht
+              All rights reserved.
+    
+
+COPYRIGHT AND DISCLAIMER
+   NewReadArgs copyrighted 1997-1999 by Stephan Rupprecht. All rights 
+   reserved. This program is freeware, so no financial donations 
+   required. Redistribution allowed if the package is left unchanged.   
+   The author is not responsible for any damage caused by the use or 
+   misuse of this documentation and/or the program(s) it describes.
+
+   If you use NewReadArgs() in one of your programs, I'd like to get
+   an email from you. So that I know that someone is using my program.
+
+
+TABLE OF CONTENTS
+
+NewReadArgs/--background--
+NewReadArgs/NewFreeArgs
+NewReadArgs/NewReadArgs
+
+
+NewReadArgs/--background--                          NewReadArgs/--background--
+
+    PURPOSE
+        This is a CLI/Workbench transparent argument interface. It`s based
+   on ExtReadArgs by Stefan Ruppert.   
+
+    FUNCTION
+   When started from wb, NewReadArgs creates an array of STRPTRs large
+   enough to hold all arguments specified in the template. Then New-
+   ReadArgs scans all icons specified in the WBArg structure. Their
+   filename will be expanded to their fullname (incl. path) and enclosed
+   in '"'. The tooltypes will also be enclosed in '"', to make sure that
+   ReadArgs can handle them correctly. For each argument NewReadArgs 
+   has reserved one slot in the array of STRPTRs, to store their pointers 
+   in it. When a tooltype appears twice or more times in the tooltypes-
+   array(s), the old one will be automatically replaced through the new one. 
+   This prevents ReadArgs from returning an error because of wrong count 
+   of arguments. To avoid errors all tooltypes which don`t match the 
+   template (like NewIcons 'IMx=' tooltypes), will be ignored. Finally, 
+   NewReadArgs copies all strings stored in the array to one line and 
+   passes this line to ReadArgs. To prevent any error which is caused 
+   by a wrong order of arguments, NewReadArgs copies all strings to the 
+   line according to their order in the template, the filenames will be 
+   copied to the beginning of the line.
+   
+    NOTE
+        There are some special feature according to the ReadArgs() function.
+        If you have a template like "FROM/M/A,TO/A", you can select these
+        files from workbench : Select the program, then the FROM files and
+        finally select and double click th TO file. This is available,because
+        ReadArgs() grab's the last string from a MultiArg FROM and uses it
+        as the TO parameter, if no is explicitly given !
+
+        NewReadArgs comes to you as an object file, so if you want to use it
+        you have to link it to your project!
+
+
+NewReadArgs/NewFreeArgs                                NewReadArgs/NewFreeArgs
+
+    NAME
+        NewFreeArgs - free's all allocated resources from NewReadArgs()
+
+    SYNOPSIS
+        NewFreeArgs(NewRDArgs);
+
+        void NewFreeArgs(struct NewRDArgs *);
+
+    FUNCTION
+        free's all allocated resources from a previously call to
+        NewReadArgs().
+
+    INPUTS
+        NewRDArgs (struct NewRDArgs *) - same pointer, which was passed
+        to NewReadArgs()
+
+    RESULTS
+        none
+
+    SEE ALSO
+        NewReadArgs()
+
+
+NewReadArgs/NewReadArgs                                NewReadArgs/NewReadArgs
+
+    NAME
+        NewReadArgs - CLI/Workbench transparent ReadArgs() function
+
+    SYNOPSIS
+        error = NewReadArgs(WBMsg,NewRDArgs);
+
+        LONG NewReadArgs(struct WBStartup *,struct NewRDArgs *);
+
+    FUNCTION
+        this function is a CLI/Workbench transparent interface to ReadArgs().
+        The first parameter is a pointer to the wb-message or NULL if your program
+   has been invoked from cli. Before you can call this function, you must 
+   set up the library bases for dos.library, icon.library and intuiton.library.
+        If all went right you get a return value of zero. This means the
+        passed arguments fits the template and are ready to use. Otherwise
+        you get a IoErr() like return code. You can pass this return value
+        directly to PrintFault() or something like that ! (see EXAMPLE)
+
+        NOTE : You must call the NewFreeArgs() function to clean up, even
+               this function fails (see EXAMPLE) !!!
+
+    INPUTS
+        WBMsg (struct WBStartup *) - pointer to the WBStartup structure,
+      or NULL
+        NewRDArgs (struct NewRDArgs *) - structure, which holds any
+            information used by NewReadArgs()
+
+        structure fields to setup before calling NewReadArgs() :
+
+            Template - the really ReadArgs() template
+            Parameters - ReadArgs() LONG WORD array to hold the arguments
+            FileParameter - number of arguments in the template to use
+                for the files passed via WBStartup->sm_ArgList or -1, that
+                means you don't want any files. 0 means all files, the
+      name of your program is ignored, and thus will not be copied
+      to the line passed to ReadArgs() ! 
+            Window - window description string to open, if the program
+                is started from the workbench or NULL for no window ! If a
+                WINDOW description exists in the tooltypes of your icon, this is
+                used instead of the parameter of the NewRDArgs structure !
+       ExtHelp - (STRPTR) string for extended help (cli only!)
+       PrgToolTypesOnly - set this to TRUE, to prevent NewReadArgs
+      from scanning the tooltypes of other icons. The tooltypes
+      array of your program will only be scanned.             
+
+    RESULTS
+        zero for success, otherwise an IoErr() like error code.
+
+    EXAMPLE
+   see file test.c       
+
+    SEE ALSO
+        NewFreeArgs(), dos.library/ReadArgs(),
+        icon.library/GetDiskObject()
+
+
+HISTORY
+   37.0 first public release
+   37.1 fixed 2 bugs: 1) templates with only one argument did not work
+        2) wb window could "hang", now the window is opened after ReadArgs().
+   37.2 bug fix: NewReadArgs() clears the pr_Result2 field (SetIoErr(0L)), before
+    calling ReadArgs(). ReadArgs() seems not to do it if parsing was successful, this
+    could lead to failures under certain circumstances.
+   37.3 Ooops! Found some enforcer hits, I could swear that there were none!?
+    Reworked most of the code, NewReadArgs() is now some bytes smaller.
+   37.4 releases temporary memory in NewReadArgs() now. to speed up icon 
+      loading a bit, GetIconTagList() will be used when icon.library v44
+      is available. accepts multiple tooltypes for /M options now (before
+      it only passed the last one to ReadArgs()).
+
+
+AUTHOR
+Please send bug reports and ideas to:
+
+ Stephan Rupprecht
+ Apfeldweg 1
+ D44359 Dortmund
+ Germany
+
+ Send emails to
+
+ stephan.rupprecht@gmx.de
+ 
+ WWW
+ 
+  http://home.debitel.net/user/stephan.rupprecht
+  http://go.to/stephanr (not confirmed yet)

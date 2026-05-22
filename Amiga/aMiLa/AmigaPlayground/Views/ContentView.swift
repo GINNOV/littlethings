@@ -1,0 +1,1616 @@
+import SwiftUI
+import Combine
+import UniformTypeIdentifiers
+import AppKit
+
+struct AmigaPlaygroundActions {
+    let assemble: () -> Void
+    let runDefaultEmulator: () -> Void
+    let validateVAmiga: () -> Void
+    let runWebEmulator: () -> Void
+    let exportADF: () -> Void
+    let clearEditor: () -> Void
+    let canRun: Bool
+}
+
+private struct AmigaPlaygroundActionsKey: FocusedValueKey {
+    typealias Value = AmigaPlaygroundActions
+}
+
+extension FocusedValues {
+    var amigaPlaygroundActions: AmigaPlaygroundActions? {
+        get { self[AmigaPlaygroundActionsKey.self] }
+        set { self[AmigaPlaygroundActionsKey.self] = newValue }
+    }
+}
+
+enum AppPreferenceDefaults {
+    static let showChatBoingBallKey = "showChatBoingBall"
+    static let showChatBoingBall = true
+}
+
+struct AmigaPlaygroundCommands: Commands {
+    @FocusedValue(\.amigaPlaygroundActions) private var actions
+
+    var body: some Commands {
+        CommandMenu("Playground") {
+            if let actions {
+                Button("Assemble") {
+                    actions.assemble()
+                }
+                .disabled(!actions.canRun)
+                .keyboardShortcut("r", modifiers: .command)
+
+                Button("Export Bootable ADF...") {
+                    actions.exportADF()
+                }
+                .disabled(!actions.canRun)
+
+                Button("Clear Editor") {
+                    actions.clearEditor()
+                }
+            }
+        }
+
+        CommandMenu("Emulator") {
+            if let actions {
+                Button("Run Default Emulator") {
+                    actions.runDefaultEmulator()
+                }
+                .disabled(!actions.canRun)
+                .keyboardShortcut("r", modifiers: [.command, .shift])
+
+                Divider()
+
+                Button("Validate with vAmiga") {
+                    actions.validateVAmiga()
+                }
+                .disabled(!actions.canRun)
+
+                Button("Run Web Emulator") {
+                    actions.runWebEmulator()
+                }
+                .disabled(!actions.canRun)
+            }
+        }
+
+    }
+}
+
+struct ContentView: View {
+    @StateObject private var llm = OllamaService.shared
+
+    enum BuildStatus {
+        case idle
+        case running
+        case success
+        case failure
+
+        var label: String {
+            switch self {
+            case .idle:
+                return "IDLE"
+            case .running:
+                return "RUNNING"
+            case .success:
+                return "VALID"
+            case .failure:
+                return "ERROR"
+            }
+        }
+
+        var detailLabel: String {
+            switch self {
+            case .idle:
+                return "IDLE"
+            case .running:
+                return "RUNNING"
+            case .success:
+                return "VALID"
+            case .failure:
+                return "COMPILER ERROR"
+            }
+        }
+
+        var color: Color {
+            switch self {
+            case .idle:
+                return Color(red: 0.45, green: 0.82, blue: 1.0)
+            case .running:
+                return .orange
+            case .success:
+                return .green
+            case .failure:
+                return .red
+            }
+        }
+
+        var accessibilityColorName: String {
+            switch self {
+            case .idle:
+                return "light blue"
+            case .running:
+                return "orange"
+            case .success:
+                return "green"
+            case .failure:
+                return "red"
+            }
+        }
+    }
+
+    // Editor State
+    @State private var codeText: String = """
+; ==========================================================
+;   Amiga 68000 Copper List Example
+;   Generates a classic vertical raster rainbow bar
+;   (System-friendly graphics.library takeover)
+; ==========================================================
+
+            SECTION    Code,CODE,CHIP       ; Must be in CHIP RAM!
+
+            XDEF       _StartCopper
+_StartCopper:
+            movem.l    d2-d7/a2-a6,-(sp)    ; Save registers
+
+            ; 1. Open Graphics Library
+            move.l     $4.w,a6              ; ExecBase
+            lea        gfxName(pc),a1
+            moveq      #0,d0
+            jsr        -408(a6)             ; OpenLibrary
+            move.l     d0,GfxBase
+            beq.s      .exit
+
+            ; 2. Shut down OS View/Display (System-friendly loadview)
+            move.l     GfxBase(pc),a6
+            move.l     34(a6),oldView       ; Save GfxBase->ActiView (offset 34)
+
+            sub.l      a1,a1                ; Load NULL view (turns off OS screen)
+            jsr        -222(a6)             ; LoadView(NULL)
+            jsr        -270(a6)             ; WaitTOF()
+            jsr        -270(a6)             ; Double WaitTOF for interlaced setup
+
+            ; 3. Setup Custom Copper List
+            lea        $dff000,a5
+            lea        CopperList(pc),a0
+            move.l     a0,$80(a5)           ; Write COP1LC ($DFF080)
+            move.w     #$0000,$88(a5)       ; Strobe COPJMP1 ($DFF088) to activate
+
+            ; Enable copper DMA
+            move.w     #$8280,$96(a5)       ; DMACON: set COPEN and DMAEN
+
+.waitButton:
+            ; Wait for left mouse button (Port $bfe001, bit 6)
+            btst       #6,$bfe001
+            bne.s      .waitButton
+
+            ; 4. Restore OS View and Copper
+            move.l     GfxBase(pc),a6
+            move.l     oldView(pc),a1       ; Load old view pointer
+            jsr        -222(a6)             ; LoadView(oldView)
+            jsr        -270(a6)             ; WaitTOF()
+            jsr        -270(a6)             ; WaitTOF()
+
+            ; Close Graphics Library
+            move.l     $4.w,a6
+            move.l     GfxBase(pc),a1
+            jsr        -414(a6)             ; CloseLibrary
+
+.exit:
+            movem.l    (sp)+,d2-d7/a2-a6    ; Restore registers
+            moveq      #0,d0                ; Return 0
+            rts
+
+gfxName:    dc.b       "graphics.library",0
+            EVEN
+GfxBase:    dc.l       0
+oldView:    dc.l       0
+
+            ALIGN      4
+CopperList:
+            ; Custom screen copper instructions
+            dc.w       $0100,$0200          ; BPLCON0: disable all bitplanes (black screen)
+
+            ; Vertical color raster splits
+            dc.w       $5007,$fffe          ; Wait for line 80
+            dc.w       $0180,$0f00          ; Color 0 = Red
+            dc.w       $5807,$fffe          ; Wait for line 88
+            dc.w       $0180,$0f70          ; Color 0 = Orange
+            dc.w       $6007,$fffe          ; Wait for line 96
+            dc.w       $0180,$0ff0          ; Color 0 = Yellow
+            dc.w       $6807,$fffe          ; Wait for line 104
+            dc.w       $0180,$00f0          ; Color 0 = Green
+            dc.w       $7007,$fffe          ; Wait for line 112
+            dc.w       $0180,$00ff          ; Color 0 = Cyan
+            dc.w       $7807,$fffe          ; Wait for line 120
+            dc.w       $0180,$000f          ; Color 0 = Blue
+            dc.w       $8007,$fffe          ; Wait for line 128
+            dc.w       $0180,$0f0f          ; Color 0 = Purple
+            dc.w       $8807,$fffe          ; Wait for line 136
+            dc.w       $0180,$0000          ; Color 0 = Black
+
+            dc.w       $ffff,$fffe          ; End of copper list
+"""
+
+
+    // Persisted Amiga Hardware Settings
+    @AppStorage("emulatorModel") private var emulatorModel: String = "A500"
+    @AppStorage("emulatorCpu") private var emulatorCpu: String = "68000"
+    @AppStorage("emulatorChipRam") private var emulatorChipRam: String = "512 KB"
+    @AppStorage("emulatorFastRam") private var emulatorFastRam: String = "0 MB"
+    @AppStorage("emulatorJit") private var emulatorJit: Bool = false
+    @AppStorage("selectedRomFilename") private var selectedRomFilename: String = ""
+    @AppStorage("emulatorCustomArgs") private var emulatorCustomArgs: String = ""
+    @AppStorage("emulatorBackend") private var emulatorBackend: String = EmulatorBackend.fsUAE.rawValue
+    @AppStorage("vAmigaExecutablePath") private var vAmigaExecutablePath: String = "/Applications/vAmiga.app/Contents/MacOS/vAmiga"
+    @AppStorage("vAmigaCustomArgs") private var vAmigaCustomArgs: String = ""
+    @AppStorage("vAmigaAutoConfigureServers") private var vAmigaAutoConfigureServers: Bool = true
+    @AppStorage("vAmigaRemoteShellPort") private var vAmigaRemoteShellPort: Int = 8080
+    @AppStorage("vAmigaRPCPort") private var vAmigaRPCPort: Int = 8081
+    @AppStorage("vAmigaPrometheusPort") private var vAmigaPrometheusPort: Int = 8083
+    @AppStorage("vAmigaSerialPort") private var vAmigaSerialPort: Int = 8085
+    @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
+    @AppStorage(AppPreferenceDefaults.showChatBoingBallKey) private var showChatBoingBall: Bool = AppPreferenceDefaults.showChatBoingBall
+
+    // Compilation & Output State
+    @State private var outputConsole: String = "VASM compiler idle.\nPress Assemble to build the program."
+    @State private var isCompiling: Bool = false
+    @State private var isExportingADF: Bool = false
+    @State private var buildStatus: BuildStatus = .idle
+    @State private var adfTrigger: Int = 0
+    @State private var isShowingWebEmulator: Bool = false
+
+    private var selectedBackend: EmulatorBackend {
+        EmulatorBackend(rawValue: emulatorBackend) ?? .fsUAE
+    }
+
+    private var selectedBackendName: String {
+        selectedBackend.displayName
+    }
+
+    private var vAmigaServerConfig: VAmigaServerConfig {
+        VAmigaServerConfig(
+            remoteShellPort: vAmigaRemoteShellPort,
+            rpcPort: vAmigaRPCPort,
+            prometheusPort: vAmigaPrometheusPort,
+            serialPort: vAmigaSerialPort,
+            autoConfigure: vAmigaAutoConfigureServers
+        )
+    }
+
+    // Chat Panel State
+    @StateObject private var assistantChat = AssistantChatSession()
+    @State private var currentMessage: String = ""
+    @State private var copiedPromptMessageID: UUID?
+
+    // Examples Database
+    static let examples: [String: String] = [
+        "Copper Rainbow": """
+; ==========================================================
+;   Amiga 68000 Copper List Example
+;   Generates a classic vertical raster rainbow bar
+;   (System-friendly graphics.library takeover)
+; ==========================================================
+            SECTION    Code,CODE,CHIP       ; Must be in CHIP RAM!
+            XDEF       _Start
+_Start:
+            movem.l    d2-d7/a2-a6,-(sp)    ; Save registers
+
+            ; 1. Open Graphics Library
+            move.l     $4.w,a6              ; ExecBase
+            lea        gfxName(pc),a1
+            moveq      #0,d0
+            jsr        -408(a6)             ; OpenLibrary
+            move.l     d0,GfxBase
+            beq.s      .exit
+
+            ; 2. Shut down OS View/Display (System-friendly loadview)
+            move.l     GfxBase(pc),a6
+            move.l     34(a6),oldView       ; Save GfxBase->ActiView
+
+            sub.l      a1,a1                ; Load NULL view (turns off OS screen)
+            jsr        -222(a6)             ; LoadView(NULL)
+            jsr        -270(a6)             ; WaitTOF()
+            jsr        -270(a6)             ; Double WaitTOF
+
+            ; 3. Setup Custom Copper List
+            lea        $dff000,a5
+            lea        CopperList(pc),a0
+            move.l     a0,$80(a5)           ; Write COP1LC ($DFF080)
+            move.w     #$0000,$88(a5)       ; Strobe COPJMP1 ($DFF088) to activate
+
+            ; Enable copper DMA
+            move.w     #$8280,$96(a5)       ; DMACON: set COPEN and DMAEN
+
+.waitButton:
+            ; Wait for left mouse button (Port $bfe001, bit 6)
+            btst       #6,$bfe001
+            bne.s      .waitButton
+
+            ; 4. Restore OS View and Copper
+            move.l     GfxBase(pc),a6
+            move.l     oldView(pc),a1       ; Load old view pointer
+            jsr        -222(a6)             ; LoadView(oldView)
+            jsr        -270(a6)             ; WaitTOF()
+            jsr        -270(a6)             ; WaitTOF()
+
+            ; Close Graphics Library
+            move.l     $4.w,a6
+            move.l     GfxBase(pc),a1
+            jsr        -414(a6)             ; CloseLibrary
+
+.exit:
+            movem.l    (sp)+,d2-d7/a2-a6    ; Restore registers
+            moveq      #0,d0                ; Return 0
+            rts
+
+gfxName:    dc.b       "graphics.library",0
+            EVEN
+GfxBase:    dc.l       0
+oldView:    dc.l       0
+
+            ALIGN      4
+CopperList:
+            dc.w       $0100,$0200          ; No planes
+            dc.w       $5007,$fffe          ; Wait for line 80
+            dc.w       $0180,$0f00          ; Red
+            dc.w       $5807,$fffe          ; Wait for line 88
+            dc.w       $0180,$0f70          ; Orange
+            dc.w       $6007,$fffe          ; Wait for line 96
+            dc.w       $0180,$0ff0          ; Yellow
+            dc.w       $6807,$fffe          ; Wait for line 104
+            dc.w       $0180,$00f0          ; Green
+            dc.w       $7007,$fffe          ; Wait for line 112
+            dc.w       $0180,$00ff          ; Cyan
+            dc.w       $7807,$fffe          ; Wait for line 120
+            dc.w       $0180,$000f          ; Blue
+            dc.w       $8007,$fffe          ; Wait for line 128
+            dc.w       $0180,$0f0f          ; Purple
+            dc.w       $8807,$fffe          ; Wait for line 136
+            dc.w       $0180,$0000          ; Black
+            dc.w       $ffff,$fffe          ; End of copper list
+""",
+        "Joystick Reader": """
+; ==========================================================
+;   Amiga 68000 Joystick Detection Example
+; ==========================================================
+            SECTION    Code,CODE
+            XDEF       _ReadJoy
+_ReadJoy:
+            move.w     $dff00c,d0           ; Read JOY1DAT (Joystick 1 Port)
+
+            ; Decode directions
+            move.w     d0,d1
+            and.w      #$0001,d1            ; Bit 0: Y-axis XOR (Forward)
+
+            move.w     d0,d2
+            and.w      #$0002,d2            ; Bit 1: X-axis XOR (Right)
+
+            ; Test for Fire button (Port $bfe001 bit 7 for Joy 0 / CIA bit for Joy 1)
+            ; Typically check Game Port 1 custom pin registers
+            moveq      #0,d0
+            rts
+""",
+        "Audio Sine Player": """
+; ==========================================================
+;   Amiga 68000 Audio Sine Channel 0 Example
+; ==========================================================
+            SECTION    Code,CODE
+            XDEF       _PlayAudio
+_PlayAudio:
+            lea        $dff000,a6
+
+            ; 1. Set channel 0 pointer to sample data
+            lea        SineWave(pc),a0
+            move.l     a0,$a0(a6)           ; AUD0LCH/AUD0LCL
+
+            ; 2. Set sample length (in words)
+            move.w     #4,$a4(a6)           ; AUD0LEN (8 bytes = 4 words)
+
+            ; 3. Set volume (0 to 64)
+            move.w     #64,$a8(a6)          ; AUD0VOL (Max)
+
+            ; 4. Set period (lower = higher pitch)
+            move.w     #428,$a6(a6)         ; AUD0PER (~440Hz Sine)
+
+            ; 5. Enable audio DMA channel 0
+            move.w     #$8201,$96(a6)       ; DMACON: AUD0EN and DMAEN
+            rts
+
+            ALIGN      4
+SineWave:
+            ; 8-bit signed audio sample wave data (8 bytes)
+            dc.b       0, 90, 127, 90, 0, -90, -127, -90
+"""
+    ]
+
+    var examples: [String: String] {
+        ContentView.examples
+    }
+
+    private var playgroundActions: AmigaPlaygroundActions {
+        AmigaPlaygroundActions(
+            assemble: runCompilation,
+            runDefaultEmulator: runInEmulator,
+            validateVAmiga: validateInVAmiga,
+            runWebEmulator: runInWebEmulator,
+            exportADF: exportToADF,
+            clearEditor: clearEditor,
+            canRun: !isCompiling && !isExportingADF
+        )
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        Button(action: runCompilation) {
+                            HStack {
+                                Image(systemName: "play.fill")
+                                Text("Assemble")
+                            }
+                        }
+                        .disabled(isCompiling || isExportingADF)
+                        .keyboardShortcut(.init("r"), modifiers: .command)
+                        .controlSize(.large)
+                        .buttonStyle(.borderedProminent)
+                        .accessibilityIdentifier("assembleButton")
+                        .help("Assemble the current source")
+
+                        Button(action: runInEmulator) {
+                            HStack {
+                                Image(systemName: "play.tv")
+                                Text("Run")
+                            }
+                        }
+                        .disabled(isCompiling || isExportingADF)
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("runDefaultEmulatorButton")
+                        .help("Assemble and run in the selected emulator")
+
+                        Button(action: exportToADF) {
+                            HStack {
+                                Image(systemName: "opticaldisc")
+                                Text("Export ADF")
+                            }
+                        }
+                        .disabled(isCompiling || isExportingADF)
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("exportADFButton")
+                        .help("Export a bootable ADF")
+
+                        Menu {
+                            ForEach(Array(examples.keys).sorted(), id: \.self) { key in
+                                Button(key) {
+                                    loadExample(named: key)
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "books.vertical")
+                                Text("Examples")
+                            }
+                        }
+                        .menuStyle(.button)
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("goldExamplesMenu")
+                        .help("Load an example assembly program")
+
+                        Button(role: .destructive) {
+                            clearEditor()
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                        .buttonStyle(.bordered)
+                        .help("Clear editor")
+                        .accessibilityLabel("Clear editor")
+                        .accessibilityIdentifier("clearEditorButton")
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color(nsColor: .windowBackgroundColor))
+
+            HSplitView {
+                // LEFT: Assistant sidebar
+                VStack(spacing: 0) {
+                    HStack(alignment: .firstTextBaseline) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Assistant")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            Text(llm.provider.connectionStatusLabel)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .accessibilityIdentifier("assistantConnectionStatusLabel")
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "sparkles")
+                            .foregroundStyle(.orange)
+                            .accessibilityHidden(true)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(Color(nsColor: .controlBackgroundColor))
+
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 10) {
+                                if assistantChat.messages.isEmpty {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text("Antigravity 68k")
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundColor(.orange)
+                                        Text("Ask for copper lists, blitter copies, joystick readers, or audio routines. Generated code is optimized and validated for vasm.")
+                                            .font(.caption)
+                                            .foregroundColor(.white.opacity(0.72))
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                    .padding(12)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                } else {
+                                    ForEach(assistantChat.messages) { msg in
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            HStack(spacing: 6) {
+                                                Text(msg.role == "user" ? "You" : "Assistant")
+                                                    .font(.caption)
+                                                    .fontWeight(.semibold)
+                                                    .foregroundColor(msg.role == "user" ? .cyan : .orange)
+
+                                                if let prompt = assistantChat.reusablePrompt(from: msg) {
+                                                    Button {
+                                                        copyPromptToClipboard(prompt, messageID: msg.id)
+                                                    } label: {
+                                                        Image(systemName: copiedPromptMessageID == msg.id ? "checkmark" : "doc.on.doc")
+                                                            .font(.caption)
+                                                            .frame(width: 18, height: 18)
+                                                    }
+                                                    .buttonStyle(.plain)
+                                                    .foregroundColor(copiedPromptMessageID == msg.id ? .green : .cyan.opacity(0.9))
+                                                    .help("Copy prompt")
+                                                    .accessibilityLabel("Copy prompt to clipboard")
+                                                    .accessibilityIdentifier("copyPromptButton")
+                                                }
+                                            }
+
+                                            Text(msg.content)
+                                                .font(.system(.body, design: .monospaced))
+                                                .foregroundColor(.white)
+                                                .padding(8)
+                                                .background(msg.role == "user" ? Color.blue.opacity(0.2) : Color.orange.opacity(0.12))
+                                                .cornerRadius(6)
+                                                .textSelection(.enabled)
+
+                                            // Quick Code Inject Button
+                                            if msg.role == "assistant" && assistantChat.isLikelyInjectableCode(msg.content) {
+                                                Button(action: {
+                                                    injectCodeBlock(from: msg.content)
+                                                }) {
+                                                    HStack {
+                                                        Image(systemName: "arrow.right.doc.on.clipboard")
+                                                        Text("Inject Code into Editor")
+                                                    }
+                                                    .font(.caption)
+                                                    .padding(.horizontal, 8)
+                                                    .padding(.vertical, 4)
+                                                    .background(Color.orange)
+                                                    .cornerRadius(4)
+                                                    .foregroundColor(.black)
+                                                }
+                                            }
+                                        }
+                                        .padding(.horizontal, 10)
+                                        .id(msg.id)
+                                    }
+                                }
+
+                                if assistantChat.isGenerating {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Assistant")
+                                            .font(.caption)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.orange)
+                                        Text(assistantChat.currentGeneration)
+                                            .font(.system(.body, design: .monospaced))
+                                            .foregroundColor(.white)
+                                            .padding(8)
+                                            .background(Color.orange.opacity(0.12))
+                                            .cornerRadius(6)
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .id("generation")
+                                }
+                            }
+                            .padding(.vertical, 10)
+                        }
+                        .onChange(of: assistantChat.messages.count) {
+                            if let last = assistantChat.messages.last {
+                                withAnimation { proxy.scrollTo(last.id, anchor: .bottom) }
+                            }
+                        }
+                        .onChange(of: assistantChat.currentGeneration) {
+                            proxy.scrollTo("generation", anchor: .bottom)
+                        }
+                    }
+
+                    Spacer()
+
+                    if showChatBoingBall {
+                        BoingBallView()
+                            .padding(.vertical, 8)
+                            .accessibilityIdentifier("chatBoingBall")
+                    }
+
+                    Divider()
+
+                    HStack(spacing: 8) {
+                        ChatTextInput(
+                            placeholder: "Ask the assistant...",
+                            text: $currentMessage,
+                            onCommit: sendMessage,
+                            accessibilityIdentifier: "assistantPromptField"
+                        )
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
+                            .background(Color(red: 0.18, green: 0.18, blue: 0.22))
+                            .cornerRadius(4)
+                            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.35), lineWidth: 1))
+                            .disabled(assistantChat.isGenerating)
+
+                        Button(action: sendMessage) {
+                            Text("Send")
+                        }
+                        .disabled(assistantChat.isGenerating)
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.regular)
+                        .accessibilityIdentifier("sendMessageButton")
+                    }
+                    .padding(10)
+                    .background(Color(nsColor: .controlBackgroundColor))
+                }
+                .frame(minWidth: 260, idealWidth: 340, maxWidth: 420)
+                .background(Color(red: 0.08, green: 0.08, blue: 0.1))
+
+                // RIGHT: Split Code Editor + VASM Console output
+                VSplitView {
+                    // UPPER: Retro Custom Assembly Code Editor
+                    HStack(spacing: 0) {
+                        // Custom Synchronized Line Numbers column
+                        VStack(alignment: .trailing, spacing: 4) {
+                            ForEach(1...max(codeText.components(separatedBy: "\n").count, 1), id: \.self) { line in
+                                Text("\(line)")
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.gray)
+                                    .frame(height: 18)
+                            }
+                        }
+                        .padding(.leading, 6)
+                        .padding(.trailing, 10)
+                        .padding(.vertical, 8)
+                        .background(Color(red: 0.05, green: 0.12, blue: 0.25))
+
+                        // Text Editor with Deep Amiga Blue theme
+                        TextEditor(text: $codeText)
+                            .font(.system(.body, design: .monospaced))
+                            .foregroundColor(.white)
+                            .padding(.vertical, 4)
+                            .scrollContentBackground(.hidden)
+                            .background(Color(red: 0.0, green: 0.18, blue: 0.35)) // Deep Classic Blue
+                            .cornerRadius(4)
+                            .accessibilityIdentifier("assemblyEditor")
+                    }
+                    .frame(minHeight: 250)
+
+                    // LOWER: Dual-mode VASM Console or WebEmulatorView
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack(spacing: 12) {
+                            Picker("Output", selection: $isShowingWebEmulator) {
+                                Label("Console", systemImage: "terminal.fill").tag(false)
+                                Label("Web Emulator", systemImage: "safari.fill").tag(true)
+                            }
+                            .pickerStyle(.segmented)
+                            .labelsHidden()
+                            .frame(width: 260)
+                            .accessibilityIdentifier("outputPanePicker")
+
+                            Spacer()
+
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(buildStatus.color)
+                                    .frame(width: 8, height: 8)
+                                    .accessibilityHidden(true)
+                                Text(buildStatus.detailLabel)
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundColor(buildStatus.color)
+                            }
+                            .accessibilityIdentifier("consoleBuildStatusIndicator")
+                            .accessibilityLabel("Build status")
+                            .accessibilityValue(buildStatus.accessibilityColorName)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color(nsColor: .controlBackgroundColor))
+
+                        if !isShowingWebEmulator {
+                            ScrollView {
+                                Text(outputConsole)
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.white)
+                                    .padding(10)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .background(Color.black)
+                        } else {
+                            WebEmulatorView(adfTrigger: $adfTrigger, adfPath: "/tmp/amiga_playground_temp.adf")
+                                .background(Color.black)
+                        }
+                    }
+                    .frame(minHeight: 180, maxHeight: 400)
+                }
+                .frame(minWidth: 420)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            HStack(spacing: 10) {
+                Label(selectedBackendName, systemImage: "display")
+                Divider()
+                    .frame(height: 12)
+                Text("Chip \(emulatorChipRam)")
+                Text("Fast \(emulatorFastRam)")
+                Text(emulatorCpu)
+                Spacer()
+                Label(llm.provider.connectionStatusLabel, systemImage: "sparkles")
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 5)
+            .frame(height: 28)
+            .background(Color(nsColor: .windowBackgroundColor))
+            .accessibilityIdentifier("hardwareStatusLabel")
+        }
+        .frame(minWidth: 760, minHeight: 650)
+        .background(Color.black)
+        .accessibilityIdentifier("mainWindowContent")
+        .focusedSceneValue(\.amigaPlaygroundActions, playgroundActions)
+    }
+
+    // Assemble the code using VASM Process helper
+    private func runCompilation() {
+        if autoRunEmulator {
+            runInEmulator()
+            return
+        }
+
+        isCompiling = true
+        buildStatus = .running
+        outputConsole = "Assembling code using vasmm68k_mot...\n"
+
+        CompilerService.shared.compile(assemblyCode: codeText) { success, output in
+            self.isCompiling = false
+            self.buildStatus = success ? .success : .failure
+            self.outputConsole = output
+        }
+    }
+
+    private func clearEditor() {
+        codeText = ""
+        outputConsole = "Editor Cleared."
+    }
+
+    private func loadExample(named key: String) {
+        codeText = examples[key] ?? ""
+        outputConsole = "Loaded '\(key)' example assembly source code."
+    }
+
+    private func runInEmulator() {
+        runNativeEmulator(
+            backend: selectedBackend,
+            label: selectedBackendName,
+            openingMessage: "Assembling code and packaging bootable ADF for \(selectedBackendName)...\n"
+        )
+    }
+
+    // Validate compiled code through vAmiga Desktop automation servers.
+    private func validateInVAmiga() {
+        isCompiling = true
+        buildStatus = .running
+        isShowingWebEmulator = false
+        outputConsole = "Validating code by building a bootable ADF and collecting vAmiga debug evidence...\n"
+
+        let tempADFPath = "/tmp/amiga_playground_temp.adf"
+
+        CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: tempADFPath) { success, resultMessage in
+            if !success {
+                self.isCompiling = false
+                self.buildStatus = .failure
+                self.outputConsole = resultMessage
+                self.writeCompileFailureValidationArtifact(message: resultMessage)
+                return
+            }
+
+            self.outputConsole = resultMessage + "\n\nLaunching vAmiga and connecting to RPC/Prometheus servers..."
+
+            let launchConfig = EmulatorLaunchConfig(
+                backend: .vAmiga,
+                adfPath: tempADFPath,
+                romRelativePath: self.selectedRomFilename,
+                model: self.emulatorModel,
+                chipRamMb: self.emulatorChipRam,
+                fastRamMb: self.emulatorFastRam,
+                cpu: self.emulatorCpu,
+                jit: self.emulatorJit,
+                customArgs: self.emulatorCustomArgs,
+                vAmigaExecutablePath: self.vAmigaExecutablePath,
+                vAmigaCustomArgs: self.vAmigaCustomArgs,
+                vAmigaServerConfig: self.vAmigaServerConfig
+            )
+
+            VAmigaValidationService.shared.validate(config: launchConfig) { result in
+                self.isCompiling = false
+                self.buildStatus = result.success ? .success : .failure
+                self.outputConsole += "\n\n\(result.summary)"
+                if !result.failures.isEmpty {
+                    self.outputConsole += "\n\nFailures:\n" + result.failures.map { "- \($0)" }.joined(separator: "\n")
+                }
+                self.outputConsole += "\n\nValidation artifacts:\n\(result.artifactDirectory)\nTrace:\n\(result.tracePath)\nMetrics:\n\(result.metricsPath)"
+            }
+        }
+    }
+
+    // Build a bootable ADF and run it in a native emulator backend.
+    private func runNativeEmulator(backend: EmulatorBackend, label: String, openingMessage: String) {
+        isCompiling = true
+        buildStatus = .running
+        isShowingWebEmulator = false
+        outputConsole = openingMessage
+
+        let tempADFPath = "/tmp/amiga_playground_temp.adf"
+
+        CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: tempADFPath) { success, resultMessage in
+            if !success {
+                self.isCompiling = false
+                self.buildStatus = .failure
+                self.outputConsole = resultMessage
+                return
+            }
+
+            self.outputConsole = resultMessage + "\n\nLaunching \(label) with selected ROM and configuration..."
+
+            let launchConfig = EmulatorLaunchConfig(
+                backend: backend,
+                adfPath: tempADFPath,
+                romRelativePath: self.selectedRomFilename,
+                model: self.emulatorModel,
+                chipRamMb: self.emulatorChipRam,
+                fastRamMb: self.emulatorFastRam,
+                cpu: self.emulatorCpu,
+                jit: self.emulatorJit,
+                customArgs: self.emulatorCustomArgs,
+                vAmigaExecutablePath: self.vAmigaExecutablePath,
+                vAmigaCustomArgs: self.vAmigaCustomArgs,
+                vAmigaServerConfig: self.vAmigaServerConfig
+            )
+
+            EmulatorService.shared.launchEmulator(config: launchConfig) { result in
+                self.isCompiling = false
+                self.buildStatus = result.success ? .success : .failure
+                self.outputConsole = self.outputConsole + "\n\n" + result.message
+                if let tracePath = result.tracePath {
+                    self.outputConsole += "\n\nValidation Trace Output:\n\(tracePath)"
+                }
+            }
+        }
+    }
+
+    private func writeCompileFailureValidationArtifact(message: String) {
+        DispatchQueue.global(qos: .utility).async {
+            let runId = "vamiga-compile-failure-\(UUID().uuidString.prefix(8))"
+            do {
+                let result = try VAmigaValidationArtifactWriter().write(
+                    runId: runId,
+                    config: self.vAmigaServerConfig,
+                    commands: [],
+                    metrics: "# Validation stopped before vAmiga launch because compilation failed.\n",
+                    stdoutStderr: message,
+                    failures: [message],
+                    summary: "Validation failed during compile/ADF generation."
+                )
+                DispatchQueue.main.async {
+                    self.outputConsole += "\n\nValidation artifacts:\n\(result.artifactDirectory)"
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.outputConsole += "\n\nCould not write validation failure artifacts: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    // Run compiled code in Embedded Web Emulator (vAmigaWeb Option B)
+    private func runInWebEmulator() {
+        isCompiling = true
+        buildStatus = .running
+        isShowingWebEmulator = true
+        outputConsole = "Assembling code and packaging bootable ADF for Web Emulator...\n"
+
+        let tempADFPath = "/tmp/amiga_playground_temp.adf"
+
+        CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: tempADFPath) { success, resultMessage in
+            self.isCompiling = false
+            self.buildStatus = success ? .success : .failure
+            self.outputConsole = resultMessage
+
+            if success {
+                // Increment trigger to notify WKWebView updateNSView to inject ADF file
+                self.adfTrigger += 1
+            }
+        }
+    }
+
+    // Interfacing with local LLM APIs
+    private func sendMessage() {
+        guard let request = assistantChat.submit(currentMessage) else { return }
+
+        currentMessage = ""
+
+        OllamaService.shared.streamChat(
+            messages: request.messages,
+            onChunk: { chunk in
+                assistantChat.appendChunk(chunk)
+            },
+            onCompletion: { fullResponse in
+                let completion = assistantChat.complete(
+                    fullResponse: fullResponse,
+                    streamedResponse: assistantChat.currentGeneration
+                )
+                if let injectedCode = completion.injectedCode {
+                    codeText = injectedCode
+                }
+                if let consoleMessage = completion.consoleMessage {
+                    outputConsole = consoleMessage
+                }
+            },
+            onError: { error in
+                assistantChat.fail(error)
+            }
+        )
+    }
+
+    private func copyPromptToClipboard(_ prompt: String, messageID: UUID) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(prompt, forType: .string)
+        copiedPromptMessageID = messageID
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            if copiedPromptMessageID == messageID {
+                copiedPromptMessageID = nil
+            }
+        }
+    }
+
+    // Simple helper to isolate block between markdown fences and overwrite the editor
+    private func injectCodeBlock(from responseText: String) {
+        if let range = responseText.range(of: "```[a-zA-Z0-9]*\n", options: .regularExpression) {
+            let codeStart = responseText.index(range.upperBound, offsetBy: 0)
+            if let endRange = responseText[codeStart...].range(of: "```") {
+                let codeContent = responseText[codeStart..<endRange.lowerBound]
+                self.codeText = String(codeContent).trimmingCharacters(in: .whitespacesAndNewlines)
+                self.outputConsole = "Injected code block from Amiga Assistant."
+                return
+            }
+        }
+
+        // Fallback if no code fences are found
+        self.codeText = responseText
+        self.outputConsole = "Injected full assistant text block."
+    }
+
+    // ADF Generation Helpers
+    private func exportToADF() {
+        let savePanel = NSSavePanel()
+        savePanel.allowedContentTypes = [UTType(filenameExtension: "adf")].compactMap { $0 }
+        savePanel.nameFieldStringValue = "amiga_playground.adf"
+        savePanel.title = "Export Bootable ADF"
+        savePanel.message = "Choose where to save your bootable Amiga Disk File (ADF)."
+
+        savePanel.begin { response in
+            if response == .OK, let targetURL = savePanel.url {
+                self.generateADF(at: targetURL)
+            }
+        }
+    }
+
+    private func generateADF(at url: URL) {
+        self.isExportingADF = true
+        self.buildStatus = .running
+        self.outputConsole = "Generating bootable ADF disk image at:\n\(url.path)...\n"
+
+        CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: url.path) { success, resultMessage in
+            self.isExportingADF = false
+            self.buildStatus = success ? .success : .failure
+            self.outputConsole = resultMessage
+        }
+    }
+}
+
+struct SettingsView: View {
+    @StateObject private var llm = OllamaService.shared
+
+    @AppStorage("emulatorModel") private var emulatorModel: String = "A500"
+    @AppStorage("emulatorCpu") private var emulatorCpu: String = "68000"
+    @AppStorage("emulatorChipRam") private var emulatorChipRam: String = "512 KB"
+    @AppStorage("emulatorFastRam") private var emulatorFastRam: String = "0 MB"
+    @AppStorage("emulatorJit") private var emulatorJit: Bool = false
+    @AppStorage("selectedRomFilename") private var selectedRomFilename: String = ""
+    @AppStorage("emulatorCustomArgs") private var emulatorCustomArgs: String = ""
+    @AppStorage("emulatorBackend") private var emulatorBackend: String = EmulatorBackend.fsUAE.rawValue
+    @AppStorage("vAmigaExecutablePath") private var vAmigaExecutablePath: String = "/Applications/vAmiga.app/Contents/MacOS/vAmiga"
+    @AppStorage("vAmigaCustomArgs") private var vAmigaCustomArgs: String = ""
+    @AppStorage("vAmigaAutoConfigureServers") private var vAmigaAutoConfigureServers: Bool = true
+    @AppStorage("vAmigaRemoteShellPort") private var vAmigaRemoteShellPort: Int = 8080
+    @AppStorage("vAmigaRPCPort") private var vAmigaRPCPort: Int = 8081
+    @AppStorage("vAmigaPrometheusPort") private var vAmigaPrometheusPort: Int = 8083
+    @AppStorage("vAmigaSerialPort") private var vAmigaSerialPort: Int = 8085
+    @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
+    @AppStorage(AppPreferenceDefaults.showChatBoingBallKey) private var showChatBoingBall: Bool = AppPreferenceDefaults.showChatBoingBall
+    @AppStorage("romsDirectoryPath") private var romsDirectoryPath: String = "/Users/megov/code/GitHub/littlethings/Amiga/commodore-amiga-firmware"
+
+    @State private var availableRoms: [RomEntry] = []
+
+    let models = ["A500", "A500+", "A600", "A1000", "A1200", "A2000", "A3000", "A4000"]
+    let cpus = ["68000", "68010", "68020", "68030", "68040", "68060"]
+    let chipRams = ["512 KB", "1 MB", "2 MB", "4 MB", "8 MB"]
+    let fastRams = ["0 MB", "1 MB", "2 MB", "4 MB", "8 MB", "16 MB", "32 MB", "64 MB"]
+
+    private var portFormatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.minimum = 1
+        formatter.maximum = 65535
+        formatter.allowsFloats = false
+        return formatter
+    }
+
+    private var selectedRomDisplayName: String {
+        if selectedRomFilename.isEmpty {
+            return "Default / vAmiga configured ROM"
+        }
+
+        return availableRoms.first(where: { $0.relativePath == selectedRomFilename })?.displayName ?? selectedRomFilename
+    }
+
+    private var selectedBackendDescription: String {
+        switch EmulatorBackend(rawValue: emulatorBackend) ?? .fsUAE {
+        case .fsUAE:
+            return "FS-UAE launches the generated ADF with the selected ROM and hardware configuration."
+        case .vAmiga:
+            return "vAmiga validation uses Desktop automation servers to collect RPC trace, CPU, and runtime evidence."
+        }
+    }
+
+    private func chooseRomsDirectory() {
+        let panel = NSOpenPanel()
+        panel.title = "Select Kickstart ROM Directory"
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        if !romsDirectoryPath.isEmpty && FileManager.default.fileExists(atPath: romsDirectoryPath) {
+            panel.directoryURL = URL(fileURLWithPath: romsDirectoryPath)
+        }
+
+        if panel.runModal() == .OK {
+            if let path = panel.url?.path {
+                self.romsDirectoryPath = path
+                self.availableRoms = EmulatorService.shared.getAvailableRoms()
+                if !selectedRomFilename.isEmpty && !availableRoms.contains(where: { $0.relativePath == selectedRomFilename }) {
+                    selectedRomFilename = ""
+                }
+            }
+        }
+    }
+
+    var body: some View {
+        TabView {
+            generalSettings
+                .tabItem { Label("General", systemImage: "gearshape") }
+                .accessibilityIdentifier("settingsGeneralTab")
+
+            aiSettings
+                .tabItem { Label("AI", systemImage: "sparkles") }
+                .accessibilityIdentifier("settingsAITab")
+
+            hardwareSettings
+                .tabItem { Label("Hardware", systemImage: "cpu") }
+                .accessibilityIdentifier("settingsHardwareTab")
+
+            fsUaeSettings
+                .tabItem { Label("FS-UAE", systemImage: "display") }
+                .accessibilityIdentifier("settingsFSUAETab")
+
+            vAmigaSettings
+                .tabItem { Label("vAmiga", systemImage: "waveform.path.ecg") }
+                .accessibilityIdentifier("settingsVAmigaTab")
+        }
+        .padding(20)
+        .frame(width: 680, height: 520)
+        .onAppear {
+            self.availableRoms = EmulatorService.shared.getAvailableRoms()
+            if !selectedRomFilename.isEmpty && !availableRoms.contains(where: { $0.relativePath == selectedRomFilename }) {
+                selectedRomFilename = ""
+            }
+        }
+    }
+
+    private var generalSettings: some View {
+        Form {
+            Picker("Default emulator", selection: $emulatorBackend) {
+                ForEach(EmulatorBackend.allCases) { backend in
+                    Text(backend.displayName).tag(backend.rawValue)
+                }
+            }
+            Text(selectedBackendDescription)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Toggle("Automatically run default emulator after assembly", isOn: $autoRunEmulator)
+
+            Toggle("Show Boing Ball animation in chat", isOn: $showChatBoingBall)
+                .accessibilityIdentifier("showChatBoingBallToggle")
+        }
+        .formStyle(.grouped)
+        .padding()
+    }
+
+    private var aiSettings: some View {
+        Form {
+            Picker("Provider", selection: $llm.provider) {
+                ForEach(OllamaService.Provider.allCases) { provider in
+                    Text(provider.rawValue).tag(provider)
+                }
+            }
+
+            TextField("Model name", text: $llm.modelName)
+                .textFieldStyle(.roundedBorder)
+
+            TextField("Custom API URL", text: $llm.customUrl)
+                .textFieldStyle(.roundedBorder)
+
+            Text("Active endpoint: \(llm.apiUrl)")
+                .font(.caption.monospaced())
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("activeEndpointLabel")
+
+            Text("Request model: \(llm.requestModelName)")
+                .font(.caption.monospaced())
+                .foregroundStyle(.secondary)
+        }
+        .formStyle(.grouped)
+        .padding()
+        .accessibilityIdentifier("aiSettingsPane")
+    }
+
+    private var hardwareSettings: some View {
+        Form {
+            Section("Kickstart ROM") {
+                Text("Directory: \(romsDirectoryPath)")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .truncationMode(.middle)
+
+                HStack {
+                    Button("Choose Folder...") {
+                        chooseRomsDirectory()
+                    }
+
+                    Button("Reset to Default") {
+                        romsDirectoryPath = "/Users/megov/code/GitHub/littlethings/Amiga/commodore-amiga-firmware"
+                        availableRoms = EmulatorService.shared.getAvailableRoms()
+                        if !selectedRomFilename.isEmpty && !availableRoms.contains(where: { $0.relativePath == selectedRomFilename }) {
+                            selectedRomFilename = ""
+                        }
+                    }
+                }
+
+                if availableRoms.isEmpty {
+                    Text("No ROM files found in the selected directory.")
+                        .foregroundStyle(.red)
+                } else {
+                    Picker("Kickstart ROM", selection: $selectedRomFilename) {
+                        Text("Default / vAmiga configured ROM").tag("")
+                        ForEach(availableRoms) { rom in
+                            Text(rom.displayName).tag(rom.relativePath)
+                        }
+                    }
+                }
+            }
+
+            Section("Model and CPU") {
+                Picker("Amiga model", selection: $emulatorModel) {
+                    ForEach(models, id: \.self) { model in Text(model).tag(model) }
+                }
+
+                Picker("CPU", selection: $emulatorCpu) {
+                    ForEach(cpus, id: \.self) { cpu in Text(cpu).tag(cpu) }
+                }
+            }
+
+            Section("Memory") {
+                Picker("Chip RAM", selection: $emulatorChipRam) {
+                    ForEach(chipRams, id: \.self) { ram in Text(ram).tag(ram) }
+                }
+
+                Picker("Fast RAM", selection: $emulatorFastRam) {
+                    ForEach(fastRams, id: \.self) { ram in Text(ram).tag(ram) }
+                }
+
+                Toggle("Enable JIT", isOn: $emulatorJit)
+            }
+        }
+        .formStyle(.grouped)
+        .padding()
+    }
+
+    private var fsUaeSettings: some View {
+        Form {
+            TextField("Custom FS-UAE launch arguments", text: $emulatorCustomArgs)
+                .textFieldStyle(.roundedBorder)
+            Text("These arguments are appended when the default emulator is FS-UAE.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .formStyle(.grouped)
+        .padding()
+    }
+
+    private var vAmigaSettings: some View {
+        Form {
+            Section("Application") {
+                TextField("vAmiga executable", text: $vAmigaExecutablePath)
+                    .textFieldStyle(.roundedBorder)
+
+                TextField("vAmiga launch arguments", text: $vAmigaCustomArgs)
+                    .textFieldStyle(.roundedBorder)
+            }
+
+            Section("Server Validation") {
+                Toggle("Auto-configure vAmiga automation servers", isOn: $vAmigaAutoConfigureServers)
+
+                TextField("Remote Shell port", value: $vAmigaRemoteShellPort, formatter: portFormatter)
+                    .textFieldStyle(.roundedBorder)
+
+                TextField("RPC port", value: $vAmigaRPCPort, formatter: portFormatter)
+                    .textFieldStyle(.roundedBorder)
+
+                TextField("Prometheus port", value: $vAmigaPrometheusPort, formatter: portFormatter)
+                    .textFieldStyle(.roundedBorder)
+
+                TextField("Serial port", value: $vAmigaSerialPort, formatter: portFormatter)
+                    .textFieldStyle(.roundedBorder)
+            }
+        }
+        .formStyle(.grouped)
+        .padding()
+    }
+}
+
+struct SettingsPickerField<SelectionValue: Hashable, Content: View>: View {
+    let title: String
+    let displayValue: String
+    @Binding var selection: SelectionValue
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.gray)
+
+            Menu {
+                Picker(title, selection: $selection) {
+                    content()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Text(displayValue)
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+
+                    Spacer(minLength: 8)
+
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.orange.opacity(0.9))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .background(Color(red: 0.18, green: 0.18, blue: 0.22))
+                .cornerRadius(4)
+                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.45), lineWidth: 1))
+            }
+            .buttonStyle(PlainButtonStyle())
+            .frame(minWidth: 160, maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+struct SettingsBackendPicker: View {
+    @Binding var selection: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text("Backend:")
+                .font(.system(.body, design: .monospaced))
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+
+            ForEach(EmulatorBackend.allCases) { backend in
+                Button(action: {
+                    selection = backend.rawValue
+                }) {
+                    Text(backend.displayName)
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(selection == backend.rawValue ? .black : .white)
+                        .lineLimit(1)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .frame(minWidth: 130)
+                        .background(selection == backend.rawValue ? Color.orange : Color(red: 0.18, green: 0.18, blue: 0.22))
+                        .cornerRadius(4)
+                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(selection == backend.rawValue ? 1.0 : 0.45), lineWidth: 1))
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
+    }
+}
+
+struct SettingsAssistantProviderPicker: View {
+    @Binding var selection: OllamaService.Provider
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Provider")
+                .font(.caption)
+                .foregroundColor(.gray)
+
+            HStack(spacing: 0) {
+                ForEach(OllamaService.Provider.allCases) { provider in
+                    Button(action: {
+                        selection = provider
+                    }) {
+                        Text(provider.rawValue)
+                            .font(.system(.body, design: .monospaced))
+                            .fontWeight(.bold)
+                            .foregroundColor(selection == provider ? .black : .white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                            .padding(.vertical, 8)
+                            .frame(maxWidth: .infinity)
+                            .background(selection == provider ? Color.orange : Color(red: 0.18, green: 0.18, blue: 0.22))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    if provider != OllamaService.Provider.allCases.last {
+                        Spacer().frame(width: 1)
+                    }
+                }
+            }
+            .cornerRadius(4)
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.75), lineWidth: 1))
+        }
+    }
+}
+
+struct SettingsPortField: View {
+    let title: String
+    @Binding var value: Int
+    let formatter: NumberFormatter
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.gray)
+
+            SettingsNumberInput(placeholder: "8080", value: $value, formatter: formatter)
+                .settingsTextInputStyle()
+                .frame(minWidth: 120)
+        }
+    }
+}
+
+private extension View {
+    func settingsTextInputStyle() -> some View {
+        self
+            .frame(height: 20)
+            .padding(8)
+            .background(Color(red: 0.18, green: 0.18, blue: 0.22))
+            .cornerRadius(4)
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.5), lineWidth: 1))
+    }
+}
+
+struct ChatTextInput: NSViewRepresentable {
+    let placeholder: String
+    @Binding var text: String
+    let onCommit: () -> Void
+    let accessibilityIdentifier: String?
+
+    init(
+        placeholder: String,
+        text: Binding<String>,
+        onCommit: @escaping () -> Void,
+        accessibilityIdentifier: String? = nil
+    ) {
+        self.placeholder = placeholder
+        _text = text
+        self.onCommit = onCommit
+        self.accessibilityIdentifier = accessibilityIdentifier
+    }
+
+    func makeNSView(context: Context) -> NSTextField {
+        let field = NSTextField()
+        field.delegate = context.coordinator
+        field.isBordered = false
+        field.isBezeled = false
+        field.drawsBackground = false
+        field.textColor = .white
+        field.placeholderAttributedString = NSAttributedString(
+            string: placeholder,
+            attributes: [.foregroundColor: NSColor.secondaryLabelColor]
+        )
+        field.font = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        field.focusRingType = .none
+        field.cell?.sendsActionOnEndEditing = false
+        field.target = context.coordinator
+        field.action = #selector(Coordinator.commit)
+        field.setAccessibilityIdentifier(accessibilityIdentifier)
+        field.setAccessibilityLabel(placeholder)
+        return field
+    }
+
+    func updateNSView(_ field: NSTextField, context: Context) {
+        if field.stringValue != text {
+            field.stringValue = text
+        }
+        field.textColor = .white
+        field.setAccessibilityIdentifier(accessibilityIdentifier)
+        field.setAccessibilityLabel(placeholder)
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $text, onCommit: onCommit)
+    }
+
+    final class Coordinator: NSObject, NSTextFieldDelegate {
+        @Binding var text: String
+        let onCommit: () -> Void
+
+        init(text: Binding<String>, onCommit: @escaping () -> Void) {
+            _text = text
+            self.onCommit = onCommit
+        }
+
+        func controlTextDidChange(_ notification: Notification) {
+            guard let field = notification.object as? NSTextField else { return }
+            text = field.stringValue
+        }
+
+        @objc func commit(_ sender: NSTextField) {
+            text = sender.stringValue
+            onCommit()
+        }
+    }
+}
+
+struct SettingsTextInput: NSViewRepresentable {
+    let placeholder: String
+    @Binding var text: String
+
+    func makeNSView(context: Context) -> NSTextField {
+        let field = NSTextField()
+        field.delegate = context.coordinator
+        field.isBordered = false
+        field.isBezeled = false
+        field.drawsBackground = false
+        field.textColor = .white
+        field.placeholderString = placeholder
+        field.font = NSFont.monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        field.focusRingType = .none
+        field.lineBreakMode = .byTruncatingMiddle
+        field.cell?.sendsActionOnEndEditing = true
+        return field
+    }
+
+    func updateNSView(_ field: NSTextField, context: Context) {
+        if field.stringValue != text {
+            field.stringValue = text
+        }
+        field.textColor = .white
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $text)
+    }
+
+    final class Coordinator: NSObject, NSTextFieldDelegate {
+        @Binding var text: String
+
+        init(text: Binding<String>) {
+            _text = text
+        }
+
+        func controlTextDidChange(_ notification: Notification) {
+            guard let field = notification.object as? NSTextField else { return }
+            text = field.stringValue
+        }
+    }
+}
+
+struct SettingsNumberInput: NSViewRepresentable {
+    let placeholder: String
+    @Binding var value: Int
+    let formatter: NumberFormatter
+
+    func makeNSView(context: Context) -> NSTextField {
+        let field = NSTextField()
+        field.delegate = context.coordinator
+        field.formatter = formatter
+        field.isBordered = false
+        field.isBezeled = false
+        field.drawsBackground = false
+        field.textColor = .white
+        field.placeholderString = placeholder
+        field.font = NSFont.monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        field.focusRingType = .none
+        field.alignment = .left
+        return field
+    }
+
+    func updateNSView(_ field: NSTextField, context: Context) {
+        let current = "\(value)"
+        if field.stringValue != current {
+            field.stringValue = current
+        }
+        field.textColor = .white
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(value: $value)
+    }
+
+    final class Coordinator: NSObject, NSTextFieldDelegate {
+        @Binding var value: Int
+
+        init(value: Binding<Int>) {
+            _value = value
+        }
+
+        func controlTextDidChange(_ notification: Notification) {
+            guard let field = notification.object as? NSTextField else { return }
+            if let intValue = Int(field.stringValue), (1...65535).contains(intValue) {
+                value = intValue
+            }
+        }
+
+        func controlTextDidEndEditing(_ notification: Notification) {
+            guard let field = notification.object as? NSTextField else { return }
+            field.stringValue = "\(value)"
+        }
+    }
+}
+
+#Preview {
+    ContentView()
+}

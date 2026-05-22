@@ -1,0 +1,11 @@
+
+The RevCo installation script requires Commodore's standard Installer utility.
+Since Installer is copyrighted by Commodore it is not included with RevCo.
+
+If you have Workbench 2.1, 3.0 or higher you will find Installer on your
+Workbench installation disk. Simply copy it to your C: directory
+(or anywhere in your Shell command path).
+
+I'm sorry about this inconvenience.
+
+PS: Read the documentation to find out how you can install RevCo manually.

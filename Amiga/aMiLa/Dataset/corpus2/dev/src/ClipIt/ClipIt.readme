@@ -1,0 +1,12 @@
+ClipIt! is a GUI that allows the User to access the Clipboard system in 
+AmigaDOS.  It was created with GadToolsBox V2.0b & the SAS-C Compiler 
+V6.58.  The source code can be used & modified as long as you acknowledge
+the original Author.  You need the functions in CommonFuncs.c in order to
+re-compile this program.  Very few non-ANSI functions were used to make 
+this program, specifically stci_d(), which is an Integer to ASCII convertor
+function from the SAS-C link library.  Only FTXT & ILBM clip types are
+recognized by the program.
+
+WARNING:  There might still be some bugs in this program, so only use it on
+          copies of your clips!
+

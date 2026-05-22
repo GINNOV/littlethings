@@ -1,0 +1,32 @@
+Short:    Extended memory functions for C
+Author:   lombi@iprimus.com.au (Lorence Lombardo)
+Uploader: lombi@iprimus.com.au (Lorence Lombardo)
+Type:     dev/c
+Version:  21-Apr-2014
+Architecture: m68k-amigaos; generic
+
+
+Extended Memory functions for C
+(C) 2014  Lorence Lombardo.
+
+
+Functions List:-
+
+peekb, peekw, peekl, upeek24, speek24, fpeekl, fpeekw, ufpeek24,
+sfpeek24, poke24, pokel, pokew, pokeb
+
+
+I am still a noob at C so feel free to contact me if you have any
+suggestions. But on the plus side all the tests were as expected.
+
+
+See the following URL for related interest:-
+
+http://aminet.net/package/dev/basic/ACE_mem
+
+
+Feeling bored ?  :)
+Why not check out this URL ?
+
+http://home.iprimus.com.au/lombi/1/homepage.htm
+

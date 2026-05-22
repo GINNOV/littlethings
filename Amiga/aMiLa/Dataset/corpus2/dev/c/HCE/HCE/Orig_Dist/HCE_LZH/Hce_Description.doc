@@ -1,0 +1,19 @@
+
+
+        DESCRIPTION
+        ----------- 
+
+HCE     HCE V1.0 is a new release of the HCC Sozobon C Compiler from Fish 508.
+        Now has a Text Editor front end which uses intuition menus and 
+        gadtools gadgets. Can do common editor commands such as Cut/Copy/
+        Insert/Print/Find/Replace. Can also do basic file commands such as 
+        Copy/Delete/Makedir/Assign/Rename. Can handle all processes required
+        to make an executable program. Can recompile itself and complete 
+        source is provided. Includes, own version of Amiga.lib, Original HCC 
+        C libraries with bug fixes and enhancements, standard include files,
+        documentation, and everything required to make your own C programs. 
+        Requires 1MB minimum and kickstart 2.0 or above.
+        Author: HCE by Jason Petty. Based upon HCC 2.0 by Sozobon Limited,
+                amiga port and improvements by Detlef Wuerkner.
+
+

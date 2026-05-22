@@ -1,0 +1,10 @@
+Short:        Time Preferences replacement w/source
+Author:       rodsch@telusplanet.net (Rod Schnell)
+Uploader:     rodsch telusplanet net (Rod Schnell)
+Type:         dev/c
+Version:      1.0
+Requires:     ClassAct
+Architecture: m68k-amigaos
+
+System Time Preferences replacement with font sensitive, resizeable GUI.
+Source is included.

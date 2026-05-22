@@ -1,0 +1,55 @@
+
+
+
+
+                    IRAPOST  V1.02  11/93
+
+         Postprocessor for assembly files produced by IRA.
+
+      (C) 1993 Tim Ruehsen. Original coded by Morten Eriksen.
+
+       IRAPOST and this docfile are part of the IRA package.
+
+
+
+
+
+WHAT IS IRAPOST FOR ?
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+IRAPOST symbolizes library calls. That means, library calls like
+<jmp/jsr -ddd(a6)> are replaced by <jmp/jsr _LVOname(a6)>.
+That makes it easier to read alien source codes.
+
+
+
+HOW TO RUN IRAPOST
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+To run IRAPOST successfully you need the following:
+
+   o You need Commodores (or others)  .FD files in some directory.
+
+   o You have to assign FD: to that directory, so IRAPOST knows where to find
+     the .FD files needed.
+
+   o You have to rename all libbase loadings (like move.l lab_abcd,A6) to the
+     specific libbase name (like move.l DOSBASE,A6). Best way is to find out
+     where SYSBASE is loaded to (if it is loaded somewhere) and rename that.
+     Then invoke IRAPOST (irapost exec file1 file2). After that search for all
+     _LVOOpenLibrary/_LVOOldOpenLibrary calls and see where the libbases are
+     stored. Now rename the apropriate labels.
+     If you are unsure about the names of the bases, look at the .FD files.
+     There is ##base entry where you find the name. E.g. it's called
+     graphics.library but GFXBASE (look at graphics.fd).
+
+
+Now it should be no problem to run IRAPOST on all occurring libraries.
+Like >irapost dos test.asm test.asm2
+
+
+If you specify 'exec' as libname IRAPOST searches for SYSBASE and ABSEXECBASE.
+
+
+
+       Have a good time,
+
+                 TIM RUEHSEN.

@@ -1,0 +1,41 @@
+[ Ed note:  for convenience the following was excerpted from the 
+            ciatimer.c and ciafinder.c files.  -Fred ><> ]
+
+/* TIMER - Amiga CIA Timer Control Software 0.1a
+   originally by Paul Higginbottom, Public Domain
+
+   hacked on by Karl Lehenbauer to produce a monotonically increasing
+   microsecond clock, 12/30/88, Public Domain
+
+   further hacking by Karl to provide arbitrary tasks the ability to locate
+   the CIA interrupt's time data, 1/5/88, Public Domain
+
+   cc +p ciatimer.c
+   ln ciatimer.o -lcl32
+
+To start up the timer, execute ciatimer.  To kill it, control-C.  The task
+doesn't do anything except wait for the control-C and clean up afterwards,
+removing the interrupt.
+
+ciafinder may then be used to locate the is_Data section of ciatimer's
+interrupt, where ciatimer writes its time data.
+*/
+
+
+/* TIMER - Amiga CIA Timer Control Software 0.1a
+
+  originally by Paul Higginbottom, Public Domain
+
+  hacked on by karl to produce a monotonically increasing microsecond
+  clock, 12/30/88, Public Domain
+
+  ciafinder is a companion program to ciatimer.  When ciatimer is running,
+  it has a timer interrupt installed for a CIA timer, ciafinder will locate
+  it and get the time.  ciafinder contains the code you need for your
+  application to find the microsecond-resolution CIA timer time.
+
+  cc +p ciafinder.c
+  ln ciafinder.o -lcl32
+
+*/
+

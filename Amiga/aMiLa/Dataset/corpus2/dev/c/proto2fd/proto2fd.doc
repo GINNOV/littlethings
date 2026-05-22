@@ -1,0 +1,111 @@
+Short:    SAS/C++ Proto->FD->Pragmas convert v37.3
+Uploader: schneidr@igt.baum.ethz.ch
+Type:     dev/c
+
+************************************************************************
+
+                      Proto2FD v37.3 (19.11.1995)
+
+                ©1995 Quarz Development / A.H.Schneider
+
+                             - Freeware -
+
+************************************************************************
+
+
+This  is  a  little tool I wrote when creating a shared library with C++
+code  using  SAS/C++.  It  simly  does  what  its  name  tells:  convert
+prototypes to function description entries (.FD) (used to create pragmas
+for library calls).
+
+Creating C code shared libraries with SAS/C++  6.56  is  a  pretty  easy
+task.  This  is  not  the case for C++! Not only you have to provide all
+your  class  declarations  AND  definitions  with  '__asm'  and   '__asm
+__saveds'  keywords  as  well  as  a  register  info  for every function
+arguments. This you could bear. But you also have to create an entry  in
+the  function  description  file  (.FD)  for  EACH of the translated and
+*name-mangled* C-function of your C++ classes!!!
+
+That's where this tiny tool helps out. It just takes  a  prototype  file
+generated  with  the  SAS/C  *GenProto*  option  (or any other prototype
+extraction program, like f.e. protoman) as input  an  creates  fast  and
+easy  for  every function with the keywords '__asm' the desired function
+description entry into the output file.
+
+The command syntax is:
+
+        proto2fd <infile> [outfile]
+
+        infile:  filename of the file containing the prototypes.
+
+        outfile: filename of the output file (optional). If left out, an
+                 appropriate filename with .fd extension will be created
+                 from the infile name.
+
+
+For example to create the FD file  from  'foo.cpp',  say  'foo.fd',  the
+following  steps  are  necessary  (assuming  the  class  declaration and
+definitions contain the '__asm' and '__saveds' keywords as described  in
+the 'SAS/C Library Reference'):
+
+        1. First create C translation of 'foo.cpp',
+           > sc CxxOnly foo.cpp         ; this will create foo..c
+
+        2. then create the prototypes file
+           > sc GenProto foo..c GenProtoParm GenProtoFile=foo.protos 
+
+        3. and finally create 'foo.fd'
+           > proto2fd foo.protos foo.fd
+
+Using smake you can easily automate the 3 steps by adding the  following
+rules and depencies to your makefile:
+
+foo.fd:         foo.cpp
+
+.cpp.fd:
+        sc cxxonly $?
+        sc genproto $*..c genprotoparm genprotofile=$*.protos
+        proto2fd $*.protos $@
+
+There seems to be a problem with the SAS/C/C++ GenProto  option  as  the
+length  of  the  function  names  may  not be more than 32 chars. Longer
+function names will be truncated automatically to 32 chars and will  not
+be  found  later  by the linker! Mangled C function names may easily get
+longer than 32 chars.
+
+If you like to use floating point registers (FPx) as parameters for your
+library  function  calls,  there seems to be a problems with the SAS/C++
+6.56 version of the FD2Pragma tool. (In  SAS/C++,  you  get  a  compiler
+error,  if you try to use a Ax or Dx register for parameters of floating
+point type, f.e. 'double'). A replacement for this tool is  provided  in
+this  distribution  archive  (See  fd2pragma.doc, for more details about
+this).
+
+
+If you have any problems using this tool or suggestions, please  let  me
+know.
+
+Alex H. Schneider
+
+schneidr@igt.baum.ethz.ch
+
+************************************************************************
+  If you know a faster way to do the above things, PLEASE let me know.
+************************************************************************
+
+Program History:
+
+        v37.3 (19.11.1995):     . Added ability to use floating point 
+                                  registers (FPx).
+                                . Added a replacement for SAS/C++
+                                  fd2proto tools for FPx use with FPx
+                                  registers.
+
+        v37.2 (12.11.1995):     . Fixed to work with other prototype 
+                                  extractors: f.e: ProtoMan
+                                . check for '__saveds' key word removed
+
+        v37.1 (30.10.1995):     . First public release
+
+
+************************************************************************

@@ -1,4 +1,0 @@
-mlx-lm>=0.20.0
-google-genai>=0.1.0
-python-dotenv>=1.0.0
-tqdm>=4.65.0

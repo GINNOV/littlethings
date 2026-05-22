@@ -1,0 +1,37 @@
+
+Archive from tutorial on Obligement website "Music and drawing in C and SDL2 on MorphOS" :
+
+http://obligement.free.fr/articles/musique_dessin_c_sdl2_morphos.php
+
+Tutorial developed and written by Sebastien 'Jedi' Jeudy (March 2025).
+
+Archive contents :
+
+- Butterfly.bmp : picture used in the program
+- Butterfly2 : MorphOS executable of this project
+- Butterfly2.c : source code of the program
+- Butterfly2.gif : result in animated GIF format
+- Butterfly2.png : snapshot of the result
+- Butterfly2.readme : this text file ;)
+- compilation : command line to compile this program
+- SpaceLam3rs.mp3 : music used in the program
+
+----------------------------------------------------------------------------------------------
+
+Archive du tutoriel Obligement "Musique et dessin en langage C et SDL2 sur MorphOS" :
+
+http://obligement.free.fr/articles/musique_dessin_c_sdl2_morphos.php
+
+Tutoriel développé et écrit par Sébastien 'Jedi' Jeudy (Mars 2025).
+
+Contenu de l'archive :
+
+- Butterfly.bmp : image utilisée dans le programme
+- Butterfly2 : fichier exécutable du programme étudié (exécutable MorphOS)
+- Butterfly2.c : code source du programme
+- Butterfly2.gif : image animée du résultat
+- Butterfly2.png : capture d'écran du résultat
+- Butterfly2.readme : ce texte ;)
+- compilation : commande de compilation du programme
+- SpaceLam3rs.mp3 : musique utilisée dans le programme
+

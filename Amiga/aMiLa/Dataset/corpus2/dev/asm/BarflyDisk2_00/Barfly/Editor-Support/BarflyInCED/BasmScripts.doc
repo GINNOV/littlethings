@@ -1,0 +1,153 @@
+
+
+        BarflyInCED (BasmAssemble.ced & BasmNextError.ced)
+       ====================================================
+
+Two ARexx scripts for the use of Basm directly from within CygnusED.
+
+
+ 0. CONTENTS
+-------------
+
+ 1. Disclaimer
+ 2. Requirements
+ 3. Installation
+ 4. Usage
+ 5. Limitations
+ 6. Author
+
+
+ 1. DISCLAIMER
+---------------
+
+Copyright (c) 1995 by Christian Rattei.
+
+Use  these  scripts  at  your  own  risk.  I,  the  author, cannot be made
+responsible  for  any  damage  that  is  directly  or indirectly caused by
+the use of these scripts.
+
+These  scripts  are  freeware.  This  means  they  may be copied freely as
+long  as  all  files  are kept together and remain unchanged. This package
+may   be  uploaded  to  Bulletin  Board  Systems  and  FTP  servers.  This
+package    may    be   included   in   Public-Domain   collections,   too.
+Please only upload/spread the original archive 'BarflyInCED.lha'.
+
+If  you  have  paid  more  than  some units on your phonebill or the price
+of an empty floppy disc only for these scripts, someone betrayed you.
+
+
+ 2. REQUIREMENTS
+-----------------
+
+To  work with these scripts it is required that you have installed Barfly,
+CygnusED 2.12 or newer and last but not least ARexx on your Amiga.
+
+
+ 3. INSTALLATION
+-----------------
+
+Copy  the  two  files  'BasmAssemble.ced'  and 'BasmNextError.ced' to your
+'REXX:' directory.
+
+Start  CygnusED  and  assign  the  scripts  to two F keys (select the menu
+Special,  DOS/ARexx  interface  ª  Install  DOS/ARexx  cammand...),  let's
+say 'BasmNextError.ced' to F9 and 'BasmAssemble.ced' to F10.
+
+If  CygnusED  was started from the Workbench, Basm has to be in 'C:' or in
+the  current directory, otherwise BasmAssemble.ced will not work correctly
+(if  CygnusED was started from the CLI, Basm may be anywhere in the path).
+
+
+ 4. USAGE
+----------
+
+Load  the  source  file  you  want  to assemble into CED. When you want to
+assemble  the  file,  press  F10  (or  the  key  that  you  have  assigned
+'BasmAssemble.ced' to) while CED's active view is one of the views of your
+source  file.  If you made some changes to the source file you do not need
+to  save before, BasmAssemble.ced does this automatically if the number of
+changes displayed in the view's title is not equal to 0.
+
+BasmAssemble.ced  now  invokes  Basm,  directing all output of Basm to the
+file  'RAM:Basm_Errors'.  When  Basm  is done, BasmAssemble.ced looks if a
+file  named 'RAM:Basm_Errors' is already loaded in the current CED. If so,
+that  view  is  made CED's active view; otherwise a new one will be opened
+just  below the current active view. Then 'RAM:Basm_Errors' will be loaded
+to the active view and BasmAssemble.ced will anlyse that file.
+
+If  everything  during  assembly went fine, a little requester will appear
+stating that no errors/warnigs were found. After answering this requester,
+the  view  from which you started BasmAssemble.ced will be the active view
+again.
+
+If  any  errors/warnings  occured  during  the  assembly, BasmAssemble.ced
+automatically invokes BasmNextError.ced.
+
+BasmNextError.ced,  started from BasmAssemble.ced or by pressing F9 or the
+key you have assigned it to, does the following:
+
+Beginning  at  the  current cursor position in 'RAM:Basm_Errors' it starts
+searching for errors/warnings. If none were found, a little requester will
+appear  stating  that  no more errors/warnings were found. After answering
+this requester the previously active view will be re-activated.
+
+If  any  error/warning  is  found, BasmNextError.ced highlights the error/
+warning  message in 'RAM:Basm_Errors', then it re-activates the previously
+acitve  view  and moves the cursor to the line and column where the error/
+warning occured. Now you can correct your source file or do anything else.
+If   you   want   to   jump   to   the   next  error/warning,  just  start
+BasmNextError.ced again.
+
+When  done  with  all  errors/warnings,  just start BasmAssemble.ced again
+until everything goes fine.
+
+
+ 5. LIMITATIONS
+----------------
+
+∑ If  you want to assemble your source file with any assembler options you
+  have  to  specify  them  at  the beginning of your source file or in the
+  global  options  file 'ENV:BasmOption'. You cannot give BasmAssemble.ced
+  any assembler options for Basm.
+
+∑ If   you   are   a   user   of   CygnusED   2.12,  BasmAssemble.ced  and
+  BasmNextError.ced  only work in the first running copy of CED. This is a
+  limitation  of  CED  2.12  which only has one ARexx port for all running
+  copies  of  itself  and  directs  all  ARexx commands to the first copy.
+  Sorry,  there  is  no  chance  for an ARexx script to even find out from
+  which copy it was invoked, so there can be no error message or something
+  like that.
+
+∑ ARexx  scripts  are executed significantly faster (about 30% to 40% !!!)
+  when  started  from the CLI (via the rx command) compared to scripts run
+  directly  from  CED.  I  am not sure for 100% but this seems to be CED's
+  fault.  I  played  a lot with task priorities of CED, RexxMaster and the
+  CLI from which the scripts were started, but that problem didn't seem to
+  have anything to do with task priorities.
+
+  Both  scripts  may  be  given  the  name  of CygnusED's Arexx port as an
+  argument.  So  it  is  possible  to  start  the scripts via rx even from
+  within  CED,  giving the ARexx port of CED as an argument to the scripts
+  (e. g. 'rx BasmAssemble.ced rexx_ced').
+
+  This  is a perfect solution for users of CED 2.12, but if you are a user
+  of CED 3.5 this solution is only perfect as long as you always work with
+  one  copy  of  CED; if you work with multiple copies of CED in memory at
+  the  same  time  the  scripts  are  fixed to the copy with the specified
+  ARexx port.
+
+  Note:  CLI commands started from ARexx scripts (via address command) are
+  not  slowed  down  when  the  script is started from within CED (so Basm
+  itself always runs with the same speed).
+
+
+ 6. AUTHOR
+-----------
+
+If you have any suggestions, ideas or bug reports, feel free to contact me
+(e-mail preferred). Gifts are welcome ;-).
+
+Christian Rattei
+Wankstraﬂe 10
+82362 Weilheim          e-mail: rattei@informatik.tu-muenchen.de
+Germany                 irc:    chrisR (#amigager)

@@ -1,0 +1,1019 @@
+
+                     Ports Messages & Communication
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+					by M.Meany.
+
+ Introduction
+ ~~~~~~~~~~~~
+ In this article I am only going to concern  myself with Workbench 2 or higher
+machines. The reason for this is that  exec  and  dos library contain routines
+that simplify the task considerably. If you are using WB 1.2 or WB 1.3 then do
+not despair, I have included Dave  Edwards  routines for creating Ports and IO
+structures.
+
+ If I get a large number of requests  from  WB1.2/3 users for suitable code, I
+will include it next issue. So if you want it, write for it!
+
+ Communication Overview
+ ~~~~~~~~~~~~~~~~~~~~~~
+ Communication between tasks is  handled  by  Ports and Messages. Consider two
+Tasks, A and B. Task A wants to send some information to Task B. Task A puts a
+Message to a Port owned by Task B. The Port  will signal Task B that a Message
+has arrived and Task B will get the Message,  examine it and then reply to it.
+Task A, after posting the Message to Task  B, will wait for Task B to reply to
+the Message. Below is an attempt to show you what both Tasks are doing as time
+passes:
+
+        Task A                                     Task B
+
+ Post Message to Task B                           Sleeping
+
+ Waiting for a reply               Wake up because a Message has arrived
+
+                                               Get The Message
+
+                                             Act on the Message
+
+                                            Reply to the Message
+
+ Wake Up because reply arrived                    Sleeping
+
+ Examine the reply if necessary
+
+ Get on with something else
+
+ ______________________________________________________________________
+
+ The above is only  a  general  overview.  Task  A  may not wait for the reply
+straight away, it may get on with another  job or send Messages to other Tasks
+even.
+
+ The key to the communication  process  is  Messages  and  Ports. A Message is
+simply a block of memory with a  standard  header. When a Message is sent to a
+Task, the  Task  is  effectively  borrowing  this  chunk  of  memory  while it
+processes the information  it  contains.  When  it has finished processing the
+information, it can give the memory back  to the Task that owns it by replying
+to the Message.
+
+ About Wait()
+ ~~~~~~~~~~~~
+ The exec function Wait() will put your task to sleep until something wakes it
+up. The wake-up call is  handled  by  signals,  each  task  having 32 possible
+signals that can alert it.  Each  signal  is  represented by a single bit in a
+long word that is contained in your tasks  structure. A set bit indicates that
+a particular signal has been activated!
+
+ While your task is sleeping, exec is  monitoring  the signals associated with
+the task. When one of these signals is  activated  exec will wake your task up
+and return the long word representing your tasks signals in register d0.
+
+ Some of the signals  associated  with  a  task  are  maintained  by exec, for
+instance there is the CTRL-C signal  bit.  If  your task was launched from the
+CLI and the user presses both  the  Ctrl  and  C  keys simultaneously then the
+appropriate signal is activated for your task. If you are not waiting for this
+signal then nothing further will  happen  and your task will not know the user
+has issued a break command ( Ctrl-C  is  the  standard break sequence that has
+been implemented on numerous platforms, not just the Amiga ).
+
+ Wait() requires a mask  of  all  signals  you  wish  to  hear about passed in
+register d0. If a signal is activated,  but  you are not interested in it then
+Wait() will leave you sleeping. The Ctrl-C  signal is represented by bit 12 of
+the long word, so the following  example  will  sleep until a Ctrl-C signal is
+received:
+
+                ***********************************
+ ; Suitable for WB1.2/3          
+
+                include         exec/exec_lib.i
+ Sleeping        move.l          #$1000,d0               only bit 12 is set
+                CALLEXEC        Wait                    go to sleep
+
+                move.l          #$1000,d1               set bit 12
+                and.l           d0,d1
+                beq.s           Sleeping                not Ctrl-C
+
+                moveq.l         #0,d0                   no errors
+                rts                                     return
+
+                ***********************************
+
+ Try running this example, it's called Sleepy, to convince yourself.
+
+ Ports
+ ~~~~~
+ A Port is a rendezvous  point  which  provides  a  mechanism  for  inter task
+communication. When a  Port  is  created  it  is  allocated one of the signals
+associated with the task creating it.
+
+ There are two types of Port, Private and Public. A Private Port is known only
+to the task that created it where as  a  Public  Port can be found by any task
+that is running. A Private port is made  Public by giving it a name and adding
+it to the systems Port List. This is accomplished using AddPort(). 
+
+ As of Workbench 2 there is an exec function  that will create a Private Port,
+Workbench 1.2/3 will have to use  either  amiga.lib  or Dave Edwards source to
+create the port. The exec function  required  is  CreateMsgPort(), it does not
+require any entry parameters and  returns  the address of the Port in register
+d0 or NULL if the operation  failed.  Any  Port  created this way must at some
+time be freed by a call to  the  function  DeleteMsgPort()  which requires the
+address of the Port to free in register a0.
+
+ If your task is going to  receive  Messages  then  it will probably require a
+Public Port. To make a Private Port a  Public  Port requires some knowledge of
+the Port structure, namely that it starts with a standard Node structure. When
+the Port is created the LN_NAME field of the Node structure is set to NULL, ie
+the Port does not have a name. You  must  write a pointer to a NULL terminated
+string into this field  so  that  the  Port  has  a  name.  Once this has been
+achieved, the Port can be added to  the  systems  list of Ports using the exec
+function AddPort().  This  function  requires  the  address  of the Port to be
+passed to it in register a1. The fragment  of code below shows how to create a
+Port and add it to the systems list:
+
+                ***********************************
+ ; Start by creating a port
+
+                CALLEXEC        CreatMsrPort
+                move.l          d0,MyPort
+                beq             Error_No_Port
+ ; Give it a name
+
+                move.l          d0,a1
+                move.l          #PortName,LN_NAME(a1)
+ ; And add it to the systems list. NB a1->Port already!
+
+                CALLEXEC        AddPort
+
+                << Rest of program >>
+
+MyPort          dc.l            0
+PortName        dc.b            'Amiganuts First Port',0
+                even
+
+                ***********************************
+
+ Now that your port has been added to the systems list other Tasks can find it
+by calling FindPort() and send Messages to it.
+
+ You may want to use this Port for sending Messages as well as receiving them.
+To do this you need to know  more  about  Messages  and that is covered below,
+however the basic principle is quite simple. You attach your Port to a Message
+and then post the Message to a Port  belonging  to  some other Task. The other
+task will deal with the Message  and  then  reply  to it by calling ReplyMsg()
+which will return the Message to the Port  you attached to it. This is covered
+in more detail shortly.
+
+ All Ports must eventually  be  freed  before  a  program  exits. If a Port is
+Public it must be removed from the  systems  list  before it is freed, this is
+achieved by calling RemPort() as shown below:
+
+                ***********************************
+
+                move.l          MyPort,a1
+                CALLEXEC        RemPort
+
+                ***********************************
+
+ A port may have outstanding Messages  queued  on it that your program has not
+dealt with. This may be because the  Messages  arrived between the last Wait()
+and the removal of the Port  from  the  system  list!  These  Messages MUST be
+answered by calling  ReplyMsg()  which  is  covered  shortly.  However, a safe
+method of freeing a Port is shown below:
+
+                ***********************************
+ ; Remove all outstanding Messages from the Port
+ FreePortLoop    move.l          MyPort,a0
+                CALLEXEC        GetMsg
+                tst.l           d0
+                beq             No_More_Messages
+
+                move.l          d0,a1
+                CALLEXEC        ReplyMsg
+
+                bra             FreePortLoop
+ ; Free the Port
+ No_More_Messages
+                move.l          MyPort,a0
+                CALLEXEC        DeleteMsgPort
+
+                ***********************************
+
+ Use of GetMsg() and ReplyMsg() will be covered shortly.
+
+ Messages
+ ~~~~~~~~
+ Exec uses a standard header for all  Messages,  defined  in 'exec/io.i'. This
+header contains fields that exec uses while  sending and replying to Messages,
+so it must always be present even if  you  do not use it. The actual size of a
+Message is decided by the  Task  sending  it,  but  it MUST always be at least
+MN_SIZE bytes. A simple Message may just pass the address of a NULL terminated
+string with the Message, so  the  Message  would  need to be MN_SIZE+4 bytes (
+header + 1 long word for the address ).
+
+ The actual Message you  post  to  a  Port  is  usually  referred  to as an IO
+Request. The start of this IO Request will always be a Message header and this
+will be followed by the fields specific to this IO Request.
+
+ An IO Request  must always be  initialised  by exec. Though it is possible to
+create and initialise an IO  Request  manually  this  is  not recommended. The
+function CreateIORequest()  should  be  used  to  allocate  memory for your IO
+Request. This function requires two entry  parameters: The address of the Port
+to attach to this IO Request ( in a0 ) and the size of the IO Request (in d0).
+The value returned will be the address of the IO Request created.
+
+ To access the fields specific to this  IO  Request you need to define offsets
+into the IO Request structure  using  Devpacs  rs  directives.  In the example
+introduced above a suitable fragment would be:
+
+                rsreset                         reset counter
+myio_Msg        rs.b            MN_SIZE         the Message Header
+myio_String     rs.l            1               pointer to a string
+myio_SIZE       rs.b            0               size of this IO Request
+
+ You could then use myio_SIZE as an  entry  parameter to CreateIORequest() and
+myio_String to set/read the string pointer. This is demonstrated below:
+
+                ***********************************
+ ; Allocate an IO Request .. Uses MyPort from previous example
+
+                move.l          MyPort,a0
+                move.l          #myio_SIZE,d0
+                CALLEXEC        CreateIORequest
+                move.l          d0,IORequest
+                beq.s           Error_No_Request
+ ; Set string pointer
+
+                move.l          d0,a0
+                move.l          #String1,myio_String(a0)
+
+                << Rest of program >>
+ IORequest       dc.l            0
+ String1         dc.b            'Hi, I am here.',0
+                even
+
+                ***********************************
+
+ The IO Request structure must be freed before your program exits, however you
+should not attempt to free it if there is another task still using it. In this
+case wait for the other Task to reply the Message before freeing it.
+
+ To free an IO  Request  call  DeleteIORequest()  with  the  address of the IO
+Request in register  a0.  The  following  fragment  shows  how  to free the IO
+Request we created above:
+
+                ***********************************
+
+                move.l          IORequest,a0
+                CALLEXEC        DeleteIORequest
+
+                ***********************************
+
+ Now that creating Messages  and  Ports  has  been  covered  we can move on to
+passing information between tasks. This involves three processes:
+
+        1. Sending a Message to a Task
+        2. Getting a Message from a Port
+        3. Replying to a Message 
+
+ All three process will now be covered before  attempting to put anything into
+practise.
+
+ Waiting For A Message
+ ~~~~~~~~~~~~~~~~~~~~~
+ We have already seen Wait() in  action.  It  monitors the signals of our Task
+and when one that we are interested in becomes active it wakes our Task up.
+
+ The byte field MP_SIGBIT of  a  Port  structure  contains  the  number of the
+signal bit allocated to this  Port.  This  number  can be read and transformed
+into a signal bit mask suitable for  Wait().  The process involves reading the
+MP_SIGBIT field and then  shifting  a  set  bit  left  by  the value read. For
+example suppose the MP_SIGBIT contained  the value 4. This would indicate that
+this Port has been allocated signal  bit  number  4. To call Wait() so that it
+will wake our Task up when signal bit 4 is activated we would need to pass the
+following value in d0:  %00000000000000000000000000010000.  In  case you never
+realise I have shown the value as a long word binary number!
+
+ The following fragment will read the signal  bit number from a Port structure
+and convert it into a suitable mask to pass to Wait():
+
+                ***********************************
+ ; Assume address of Port is in register a0
+
+                moveq.l         #0,d0                   clear this
+                moveq.l         #1,d1                   one set bit
+ ; Read signal bit number from Port
+
+                move.b          MP_SIGBIT(a0),d0
+ ; Generate the mask for Wait() and save it for later
+
+                asl.l           d0,d1
+                move.l          d1,MyPortMask
+
+                ***********************************
+
+ Wait() can monitor more than just one  signal.  If you wish to Wait() for one
+of several signals to occur, OR their  masks  together  and pass the resulting
+mask to Wait(). When one of the  signals  you  specified becomes active Wait()
+will return it's mask in  d0,  you  then  check  d0  to determine which signal
+caused you to wake up. For example,  suppose  you wish to Wait() for a Message
+to arrive at a specific Port or  for  the  user  to  press Ctrl-C. This can be
+achieved using the following fragment:
+
+                ***********************************
+ ; Build composite mask for Wait()
+ Sleepy          move.l          MyPortMask,d0           get sig mask
+                or.l            #$1000,d0               OR with break sig mask 
+                CALLEXEC        Wait
+ ; When Wait() returns we need to see  what  woke  us up. See if a Message has
+;arrived.
+
+                move.l          MyPortMask,d1
+                and.l           d0,d1
+                bne             GotAMessage
+
+ ; Not a Message, test Ctrl-C
+
+                move.l          #$1000,d1
+                and.l           d0,d1
+                bne             GotABreak
+ ; Neither of the signals we expected! Ignore it and go back to sleep
+
+                bra             Sleepy
+
+                ***********************************
+
+ As you can see, Wait()s soul purpose is to wake us up when something happens.
+It is then up to our task to decide what action to take.
+
+ Sending A Message
+ ~~~~~~~~~~~~~~~~~
+ Now the fun starts!
+
+ Once you have created an IO Request  you  can  post it to a Port. If the Port
+belongs to another  task  you  can  locate  it  by  calling  FindPort(), which
+requires the address of the name to search  for and returns the address of the
+Port with this name or NULL if the Port does not exists.
+
+ Once you have located the Port you  wish  to  contact you can use PutMsg() to
+send an IO Request to it. PutMsg()  requires  the address of the IO Request in
+register a1 and the address of the destination Port in register a0.
+ NOTE: If you are sending an  IO  Request  to  a Public Port, you must disable
+multi-tasking when you start searching for the Port and do not enable it again
+until you have called PutMsg(). There is  always the possibility that the Port
+will be removed between you finding it and then putting an IO Request to it if
+you do not Forbid(). Posting an IO Request to a non existent Port will usually
+result in a visit from the Guru!
+
+ Once an IO Request has been sent you need to Wait() for a reply from the Task
+that owns the Port it was sent  to.  You  wait  for a Message to arrive at the
+Port attached to the IO Request,  this  Port  is  called a Reply Port for this
+reason. Exec will set the LN_TYPE of the Node structure that is located at the
+start of the Message header in your IO Request  to NT_REPLYMSG should you wish
+to check that it is your IO Request being returned.
+
+ Below is a fragment of code that finds a  Public Port, sends an IO Request to
+it and Wait()s for the reply.
+
+                ***********************************
+ ; Start by disabling multi-tasking, we don't want the port to vanish on us!
+
+                CALLEXEC        Forbid
+ ; Find the Port
+
+                lea             DestPortName,a1
+                CALLEXEC        FindPort
+                tst.l           d0
+                bne.s           FoundThePort
+ ; Port not found, restart multi-tasking and exit
+
+                CALLEXEC        Permit
+                bra             Error_No_Dest
+ ; Found the port, send a message to it
+ FoundThePort    move.l          d0,a0           the dest port
+                move.l          IORequest,a1    IO Request
+                CALLEXEC        PutMsg
+ ; Restart multi-tasking and wait for our message to be returned
+
+                CALLEXEC        Permit
+
+                move.l          MyPortMask,d0
+                CALLEXEC        Wait
+ ; Get on with rest of program
+
+                ***********************************
+
+ When the Task receiving our IO Request  has  finished and tells exec to reply
+to the Message, exec sends the IO  Request  back  to the Port linked to the IO
+Request. Our task should still remove the IO Request from the Port!
+ 
+ Getting A Message From A Port
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ Once our Task has been notified that a Message has arrived at a Port, it must
+remove it from the Port. This is  achieved  by calling GetMsg() which requires
+the address of the Port  in  register  a0  and  returns  the address of the IO
+Request received in register  d0.  If  GetMsg()  is  called  and  there are no
+outstanding Messages, it returns a NULL in register d0.
+
+ Our Task will be woken when a signal  is  activated and in the case where the
+signal belongs to a Port it will be due  to a Message arriving at the Port. Do
+not assume that only one Message  has  arrived,  exec  may  post more than one
+Message and only set the signal bit once. Once a Task has been woken it should
+repeatedly call GetMsg() until a NULL  is  returned, indicating that there are
+no more Message outstanding.
+
+ CBM warn that on occasions bogus  messages  may  arrive at a Port. You should
+always check that a Message has actually  been received and that it is one you
+are interested in. If you receive a bogus Message, just return it! 
+
+ The fragment of  code  below  is  an  extension  of  the  last  fragment  and
+demonstrates how to put an IO Request  to  a Public Port and then wait for the
+receiver of the IO Request to reply:
+
+                ***********************************
+ ; Start by disabling multi-tasking, we don't want the port to vanish on us!
+
+                CALLEXEC        Forbid
+ ; Find the Port
+
+                lea             DestPortName,a1
+                CALLEXEC        FindPort
+                tst.l           d0
+                bne.s           FoundThePort
+ ; Port not found, restart multi-tasking and exit
+
+                CALLEXEC        Permit
+                bra             Error_No_Dest
+ ; Found the port, send a message to it
+ FoundThePort    move.l          d0,a0           the dest port
+                move.l          IORequest,a1    IO Request
+                CALLEXEC        PutMsg
+ ; Restart multi-tasking and wait for our message to be returned
+
+                CALLEXEC        Permit
+ WaitLoop        move.l          MyPortMask,d0
+                CALLEXEC        Wait
+ ; Check that the correct signal woke us up
+
+                move.l          MyPortMask,d1
+                and.l           d0,d1
+                beq.s           WaitLoop
+ ; Get our IO Request back from Port
+ NoMsg           move.l          MyPort,a0
+                CALLEXEC        GetMsg
+                tst.l           d0
+                beq.s           NoMsg
+ ; Check this is our IO Request being returned
+
+                move.l          d0,a0
+                cmp.b           #NT_REPLYMSG,LN_TYPE(a0)
+                beq.s           GotOurReply
+
+        << Do something else with the Message, including reply >>
+
+ ; Was a reply, can get on with rest of program now!     
+
+ GotOurReply     ..............rest of program
+
+                ***********************************
+
+
+ Replying To A Message
+ ~~~~~~~~~~~~~~~~~~~~~
+ If your program owns a Public Port and is waiting for Messages to arrive, you
+need some means of returning these Messages once you have processed them. This
+is achieved by calling ReplyMsg() with the  address of the Message received in
+register a1. Below is a sample fragment  that waits for Messages arriving at a
+Port or a Ctrl-C  signal.  Messages  are  dealt  with  until  a Ctrl-C code is
+received, at which time the fragment exits:
+
+                ***********************************
+ ; Go to sleep until something happens
+
+ Sleepy          move.l          MyPortMask,d0
+                or.l            #$1000,d0
+                CALLEXEC        Wait
+
+ ; We are awake, find out why
+
+                move.l          MyPortMask,d1
+                and.l           d0,d1
+                beq             TryBreak
+
+ ; We have a Message, lets get it
+
+ NextMsg         move.l          MyPort,a1
+                CALLEXEC        GetMsg
+                move.l          d0,Received
+                beq             Sleepy
+
+ ; Go do something with the Message
+
+                bsr             HandleMessage
+
+ ; Now reply to the Message
+
+                move.l          Received,a1
+                CALLEXEC        ReplyMsg
+
+ ; Loop until no more Messages
+
+                bra             NextMsg
+
+; Was not a Message, see if Ctrl-C pressed. If not ignore this signal and loop
+
+ TryBreak        move.l          #$1000,d1
+                and.l           d0,d1
+                beq             Sleepy
+
+                << rest of program >>
+
+                ***********************************
+
+ The method outlined above is not the  only  way  of handling Messages. Rather
+than waiting until a Message has been  dealt  with  before replying to it, the
+entire Message could be copied and replied  straight away. The Task could then
+work with the copy of the Message. 
+ 
+ Some Examples
+ ~~~~~~~~~~~~~
+ At last enough ground has been covered to allow a few examples to be written.
+These examples have been kept as simple as possible and rely only upon dos and
+exec library functions. All output is  via  the CLI, so you will need at least
+one open to try them.
+
+ Program 1: Global Listener
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+ This program will open a  Public  Port  and  wait  for  Messages or Breaks to
+arrive. If a Message arrives  it  assumes  that  the header is followed by two
+pointers to a NULL terminated text  strings.  The  first string is the name of
+the task sending the Message and  the  second  string  is  a message from that
+Task.
+
+ When a Message is received this program will print the following in the CLI:
+
+ Task "<<<>>>" says "<<<>>>"
+
+ When Ctrl-C is pressed the program exits!
+
+ Below is the full listing of the  Global  Listener  program. This program has
+been pre-assembled and included in the current directory as 'Listener', so you
+can get a cli and run it now. Not much will happen though, yet!
+
+                ***********************************
+
+                incdir          sys:include2.0/
+                include         exec/exec.i
+                include         exec/exec_lib.i
+                include         dos/dos.i
+                include         dos/dos_lib.i
+
+                rsreset
+ myio_Msg        rs.b            MN_SIZE                 Message header
+ myio_Name       rs.b            1                       -> Task Name
+ myio_String     rs.l            1                       -> string
+ myio_SIZE       rs.b            0                       size of IO Request
+
+ ; Start by opening required libraries
+
+Start           lea             dosname,a1
+                moveq.l         #36,d0                  at least WB2
+                CALLEXEC        OpenLibrary
+                move.l          d0,_DOSBase
+                beq             Error1
+
+ ; Get a port for communication
+
+                CALLEXEC        CreateMsgPort
+                move.l          d0,MyPort
+                beq             Error2
+
+ ; Generate and store signal mask for this port
+
+                move.l          d0,a1
+                moveq.l         #0,d0
+                moveq.l         #1,d1
+                move.b          MP_SIGBIT(a1),d0
+                asl.l           d0,d1
+                move.l          d1,PortSigMask
+
+ ; Make the port public
+
+                move.l          #PortName,LN_NAME(a1)
+                CALLEXEC        AddPort
+
+ ; get an IO Request
+
+                move.l          MyPort,a0
+                move.l          #myio_SIZE,d0
+                CALLEXEC        CreateIORequest
+                move.l          d0,IORequest
+                beq             Error1
+
+ ; Wait for Messages or user to press Ctrl-C
+
+ Sleepy          move.l          PortSigMask,d0
+                or.l            #$1000,d0               Ctrl-C sig mask
+                CALLEXEC        Wait
+
+ ; See if a Message has awoken us
+
+                move.l          PortSigMask,d1
+                and.l           d0,d1
+                bne             NextMsg
+
+ ; See if Ctrl-C awoke us, if not we'll go back to sleep!
+
+                move.l          #$1000,d1
+                and.l           d0,d1
+                beq             Sleepy
+                bra             WannaQuit
+
+ ;--------------------------------------------------------------------------
+
+ ; Was a Message, get it from the Port
+
+ NextMsg         move.l          MyPort,a0
+                CALLEXEC        GetMsg
+                tst.l           d0
+                beq             Sleepy
+
+ ; Got the Message, deal with it!
+
+                move.l          d0,Received
+                bsr             HandleMsg
+
+ ; Now reply it and loop for more!
+
+                move.l          Received,a1
+                CALLEXEC        ReplyMsg
+                bra             NextMsg
+
+ ;--------------------------------------------------------------------------
+
+ ; Wow, the user wants us to go away! Remove Port from Public list.
+
+ WannaQuit       move.l          MyPort,a1
+                CALLEXEC        RemPort
+
+ ; Reply all outstanding Messages
+
+ ByeMsg          move.l          MyPort,a0
+                CALLEXEC        GetMsg
+                tst.l           d0
+                beq             AllGone
+                
+                move.l          d0,a1
+                CALLEXEC        ReplyMsg
+                bra             ByeMsg
+
+ ; Free the IO Request
+
+ AllGone         move.l          IORequest,a0
+                CALLEXEC        DeleteIORequest
+
+ ; Free the port
+
+ Error2          move.l          MyPort,a0
+                CALLEXEC        DeleteMsgPort
+
+ ; Close dos library
+
+ Error1          move.l          _DOSBase,a1
+                CALLEXEC        CloseLibrary
+
+ ; And exit, we're not wanted any more!
+
+ Error           moveq.l         #0,d0
+                rts
+
+ ;--------------------------------------------------------------------------
+
+ ; Here is the routine that deals with received messages.
+
+ HandleMsg       move.l          Received,a0
+                lea             myio_Name(a0),a0
+
+ ; print details supplied by calling Task
+
+                move.l          a0,d2
+                move.l          #ourtext,d1
+                CALLDOS         VPrintf
+
+ ; thats it, lets go home!
+
+                rts
+                 ;------------------------------------------------------------
+--------------
+
+ ; Data section
+
+ dosname         dc.b            'dos.library',0
+                even
+ _DOSBase        dc.l            0
+
+ MyPort          dc.l            0
+
+ PortName        dc.b            'ACC Global Port',0
+                even
+
+ PortSigMask     dc.l            0
+
+ IORequest       dc.l            0
+ Received        dc.l            0
+ ourtext         dc.b            "Task '%s' says '%s'.",$0a,0
+                even
+                
+                ***********************************
+
+
+ Program 2: Test Listener
+ ~~~~~~~~~~~~~~~~~~~~~~~~
+ The next example has to be  a  program  that  sends  a  message to the global
+listener shown above! All this program  need  do is get a port and IO Request,
+find Global Listeners port, send a message to it, wait for the reply and exit.
+Below is the complete source. Note  that  the port is not made Public so we do
+not need to check for other tasks sending messages to it:
+
+                ***********************************
+
+                incdir          sys:include2.0/
+                include         exec/exec.i
+                include         exec/exec_lib.i
+                include         dos/dos.i
+                include         dos/dos_lib.i
+
+                rsreset
+ myio_Msg        rs.b            MN_SIZE         standard message structure
+ myio_Name       rs.l            1               ->data to process
+ myio_String     rs.l            1
+ myio_SIZEOF     rs.b            0
+
+ ; get a port
+
+ Start           CALLEXEC        CreateMsgPort
+                move.l          d0,d6                   d6 = our port
+                beq             Error1
+
+ ; Build mask for this ports signal
+
+                move.l          d0,a0
+                moveq.l         #1,d5
+                moveq.l         #0,d1
+                move.b          MP_SIGBIT(a0),d1
+                asl.l           d1,d5                   d5 = mask
+
+ ; Now get an IO structure
+
+                move.l          d6,a0                   ReplyPort
+                move.l          #myio_SIZEOF,d0         size
+                CALLEXEC        CreateIORequest         make it!
+                move.l          d0,d4                   save pointer
+                beq             Error2
+
+ ; Tell global listener that we are here
+ ; To be safe you must call Forbid() while you find the port and put a message
+ ;to it, otherwise the port may be relinquished between the time when you find
+ ;it and then put the message!
+
+                CALLEXEC        Forbid
+
+                lea             HostPort(pc),a1
+                CALLEXEC        FindPort
+                move.l          d0,d7                   d7 = MMSoftware
+                bne.s           FoundIt
+
+                CALLEXEC        Permit
+                bra.s           Error3
+ FoundIt         move.l          d4,a1
+                move.l          #Msg1,myio_String(a1)   set name
+                move.l          #MyName,myio_Name(a1)   set function
+
+                move.l          d7,a0                   Port
+                CALLEXEC        PutMsg                  send it
+
+                CALLEXEC        Permit
+
+ ; Wait for global listener to answer us
+
+ WaitLoop        move.l          d5,d0                   signal set
+                CALLEXEC        Wait
+
+ ; Get the message
+
+                move.l          d6,a0
+                CALLEXEC        GetMsg
+                tst.l           d0
+                beq.s           WaitLoop
+
+ ; Make sure this was the reply, if not keep waiting
+
+                move.l          d0,a0
+                cmp.b           #NT_REPLYMSG,LN_TYPE(a0)
+                bne.s           WaitLoop
+
+ ; Free the IO request
+
+                 Error3          move.l          d4,a0
+                CALLEXEC        DeleteIORequest
+
+ ; Free the port
+
+ Error2          move.l          d6,a0
+                CALLEXEC        DeleteMsgPort
+ ; And exit
+
+ Error1          moveq.l         #0,d0
+                rts
+
+ HostPort        dc.b            'ACC Global Port',0
+                even
+
+ Msg1            dc.b            'Hi there Task, not so lonely now!',0
+                even
+
+ MyName          dc.b            'Port Tester',0
+                even
+                
+                ***********************************
+
+
+ Program 3: CLI Echo
+ ~~~~~~~~~~~~~~~~~~~
+ This example is a variation on the last example. Instead of passing text that
+is built into the program,  it  passes  it's  CLI  parameter  string to global
+listener. The result is that this  program  can  be used to pass any number of
+strings to global listener.
+
+ This example is  intended  to  demonstrate  how  a  program can be controlled
+externally, similar to an ARexx program.  The port of Global Listener could be
+listening for commands, not just  text  strings,  that  it could act upon. Any
+process could then pass it commands that would control it's actions:
+
+                ***********************************
+
+                incdir          sys:include2.0/
+                include         exec/exec.i
+                include         exec/exec_lib.i
+
+                rsreset
+ myio_Msg        rs.b            MN_SIZE         standard message structure
+ myio_Name       rs.l            1               ->data to process
+ myio_String     rs.l            1
+ myio_SIZEOF     rs.b            0
+
+ Start           move.b          #0,-1(a0,d0)
+
+                move.l          a0,Msg1
+
+ ; get a port
+
+                CALLEXEC        CreateMsgPort
+                move.l          d0,d6                   d6 = our port
+                beq             Error1
+
+ ; Build mask for this ports signal
+
+                move.l          d0,a0
+                moveq.l         #1,d5
+                moveq.l         #0,d1
+                move.b          MP_SIGBIT(a0),d1
+                asl.l           d1,d5                   d5 = mask
+
+ ; Now get an IO structure
+
+                move.l          d6,a0                   ReplyPort
+                move.l          #myio_SIZEOF,d0         size
+                CALLEXEC        CreateIORequest         make it!
+                move.l          d0,d4                   save pointer
+                beq             Error2
+
+ ; Tell global listener that we are here
+ ; To be safe you must call Forbid() while you find the port and put a message
+;to it, otherwise the port may be relinquished  between the time when you find
+;it and then put the message!
+
+                CALLEXEC        Forbid
+
+                lea             HostPort(pc),a1
+                CALLEXEC        FindPort
+                move.l          d0,d7                   d7 = MMSoftware
+                bne.s           FoundIt
+
+                CALLEXEC        Permit
+                bra.s           Error3
+ FoundIt         move.l          d4,a1
+                move.l          Msg1,myio_String(a1)    set name
+                move.l          #MyName,myio_Name(a1)   set function
+
+                move.l          d7,a0                   Port
+                CALLEXEC        PutMsg                  send it
+
+                CALLEXEC        Permit
+
+ ; Wait for global listener to answer us
+
+ WaitLoop        move.l          d5,d0                   signal set
+                CALLEXEC        Wait
+
+ ; Get the message
+
+                move.l          d6,a0
+                CALLEXEC        GetMsg
+                tst.l           d0
+                beq.s           WaitLoop
+
+ ; Make sure this was the reply, if not keep waiting
+
+                move.l          d0,a0
+                cmp.b           #NT_REPLYMSG,LN_TYPE(a0)
+                bne.s           WaitLoop
+ ; Free the IO request
+                 Error3          move.l          d4,a0
+                CALLEXEC        DeleteIORequest
+
+ ; Free the port
+
+ Error2          move.l          d6,a0
+                CALLEXEC        DeleteMsgPort
+
+ ; And exit
+
+ Error1          moveq.l         #0,d0
+                rts
+
+ HostPort        dc.b            'ACC Global Port',0
+                even
+
+ Msg1            dc.l            1
+
+ MyName          dc.b            'CLI To Global Port',0
+                even
+                
+                ***********************************
+
+ Something For You To Try
+ ~~~~~~~~~~~~~~~~~~~~~~~~
+ Having read through all this you are just itching to write a program that can
+communicate with another one, right?  Well,  the executable file Listener used
+in the above examples does more than the source reveals! It also passes back a
+pointer to a string in the myio_String field when it replies to a message.
+
+ Why not try to write a program  that  sends  a  message  to Listener and then
+displays the text that the Listener returns.
+
+ Next issue I will  include  any  attempts  that  are  sent to me, plus my own
+version. When you find out what  the  returned  string  says,  try to make the
+string you pass fit it as best as possible. All will be revealed when you read
+the string! Happy coding.
+
+ Further Considerations
+ ~~~~~~~~~~~~~~~~~~~~~~
+ If you are programming an Intuition  based  application,  then it will have a
+Window and you will probably be  monitoring  events from the window. You could
+extract the signal number from the  windows  UserPort and build a mask for it,
+OR this with the mask for a port  you  have  initialised  and  then Wait() for
+something to happen.
+
+ Simple Paint
+ ~~~~~~~~~~~~
+ Well I could not leave thing hanging in  the air like this, so I have written
+a very basic paint program.  The  problem  is  that the Paint program does not
+have any mouse accessible drawing functions, instead it has a Public Port that
+can receive some simple drawing commands! The full source for Paint is on this
+disk and is called Paint.s, it  demonstrates  how  to listen to both a Message
+Port and a Window User Port.
+
+ To use paint I needed to modify the CLI  Echo program above to search for the
+Public Port called 'MMPaint' and send  its  CLI parameters to this port. To do
+this the following IO Request was used:
+
+ myio_Msg        rs.b            MN_SIZE
+ myio_Command    rs.b            40
+ myio_SIZE       rs.b            0
+
+ The CLI parameter string  is  copied  into  the  myio_Command  field  and the
+message is sent  to  'MMPaint'.  Paint  will  look  at  the  command and if it
+understands it will perform the  desired  action.  If Paint does not recognise
+the command it will flash the screen! Paint recognises the following commands:
+
+ MOVE x,y
+ LINE x,y
+ PLOT x,y
+ PEN0 n
+ PEN0 n
+
+ Feel free to add more :-)
+
+ To test Paint open two CLI windows and  CD  to this directory in both. In one
+CLI type 'Paint' to start Paint running.  In the other CLI you use the ToPaint
+command to send instructions to Paint:
+
+ ToPaint MOVE 50,73
+ ToPaint PEN0 2
+ ToPaint LINE 100,100
+
+ Oh what fun, but I don't think it will catch on!!! 
+
+
+
+                                                        M.Meany. 

@@ -1,0 +1,44 @@
+Short:    Splint 3.1.1
+Author:   http://www.splint.org
+Type:     dev/c
+Uploaded: djbase@gmx.de - DJBase
+Requires: MorphOS
+
+
+This wonderful tool checks the integrity of C sources. It's very strict
+and really helpful, giving warnings and errors GCC doesn't report when
+it compiles, even with the -Wall option.
+
+You need a complete GG environment because splint is compiled with
+--prefix=/gg/ in its configure, so splint will search for files inside GG:.
+
+The website address is : http://www.splint.org
+
+
+Installation
+------------
+
+- copy bin/splint into GG:
+- copy the whole content of share into GG:share
+- define a CPATH setenv which indicates the system includes path :
+setenv CPATH "/gg/os-include"
+- copy ENV:CPATH into ENVARC: should be helpful after :)
+
+Splint will search into gg:include and gg:os-include. If you need some
+more exotic paths to be included, use the option -I just like in gcc way.
+
+
+Usage
+-----
+
+Just use splint with a C file in parameter : "splint myfile.c"
+
+You can specify one of four modes : weak, standard, checks, strict.
+If you want to stay optimist about your C knowledge, you should start
+with the weak option :)
+For more information : "splint -help modes"
+
+
+----------------------------------------
+
+Ported by DJBase - http://www.djbase.de

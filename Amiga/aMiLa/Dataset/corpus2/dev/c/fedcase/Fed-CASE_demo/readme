@@ -1,0 +1,228 @@
+
+
+
+
+In this document you will find the product information about Fed-CASE
+and a small manual to explain the basic functions off the flowchart-
+editor.
+
+This demo version is freely distributable. The archive may not be
+modified.
+
+If you want information about a distributor of Fed-CASE in your
+country, write to
+ 
+		Joosen Software Development
+		Dr. J.M. den Uylstraat 32
+		4908 CT Oosterhout (N-Br)
+		The Netherlands
+		
+		Tel. (31) 1620 35348
+
+		e-mail:	christian@ecl008.adsp.sub.org
+
+
+
+
+
+Product information FED-CASE
+----------------------------
+
+
+What is it about?
+
+FED-CASE(©) for the Amiga is a software tool that can assist 
+the design of software. 
+
+FED-CASE(©) consists of a graphical environment 
+to design flows the  flowchart editor and a source code 
+generator that generates C source code.
+
+FED-CASE(©) package consists of a clearly written manual and 
+the software. De manual consists of 160 pages.
+The software runs on any amiga with 1 Mb of memory. 
+FED-CASE(©) can run under all available Amiga operating 
+system releases. FED-CASE(©) is full compatible with Amiga OS 3.x, 
+and will have the same look and feel as OS 2.0 and upwards.
+
+FED-CASE(©) is easy to use and has logical symbols to define 
+the design. 
+Because of the fact that FED-CASE(©) represents the design 
+in a graphical way the designer has a better overview 
+of the function he/she is designing. 
+A lot of companies are designing their products from flowchart 
+sequence diagrams, these diagrams are drawn manually 
+with the aid of rulers. 
+Using the FED-CASE(©) flowchart editor will cut down 
+their design time.
+
+With the build in printer facilities they will get a better 
+documentation of their product. 
+One other benefit of using the tool is that maintenance 
+costs will decrease considerably. 
+
+Figures from earlier researches point out that 25-40% of all 
+costs made in software engineering are maintenance activities.
+
+Although FED-CASE(©) is running on amiga computer systems, 
+the generated code can be used to be compiled for any other 
+C compiler on any computer system.
+
+Features:
+
+The flowchart editor offers a graphical environment 
+to the designer that gives him the possibility to create 
+flowcharts. 
+All symbols are on display. 
+A number of functions are implemented to edit the flowchart
+(insert, move, delete, connect, undo, etcetera). 
+A main part of the function can be accessed by menu, 
+keyboard short-cut or on display gadgets.
+
+A text editor enables the designer to add text to the symbols. 
+
+The print option makes a paper copy of the flowcharts. 
+The flowcharts are divided into chapters and pages so that 
+good documentation is guaranteed. 
+
+The paper copy can also be made in such a manner that it is 
+possible to use company paper with headings.
+
+FED-CASE(©) is a fully localized application. 
+This means that it can be adapted to any kind of 
+natural language. 
+
+FED-CASE will determine what kind of video system it is running
+on. It will switch to the appropriate system (NTSC/PAL).
+Under OS >2.0 it uses the display database.
+
+The package comes along with a number of localized languages, 
+but it can be easily adapted to any other language by the user.
+
+It is possible to invoke the code generator from the flowchart
+editor and view the results in your favourite text editor.
+
+The FED-CASE(©) code generator generates C-source code according 
+to the C source code definition. This is including the 
+declaration and prototyping part of the source code.
+The code generator will automatically do the type casting and
+argument checking.
+An auto-comment function will take care of commenting the C source
+code with all kind of helpfull information. The source code
+generator will take care of the includes and put all the required
+includes into the source code.
+
+So you can generate code for any C compiler on any 
+target machine. 
+It is possible to generate source code for a C compiler 
+on an UNIX operating system or a PC operating system.
+
+FED-CASE(©) can be installed on harddisk using Commodore's installer.
+
+
+FED-CASE, FED-CASE sourcerer,FED-CASE editor are trademarks of
+Joosen Software Development, all other brands and product names are
+trademarks of their respective holders.
+							
+		
+
+
+Overview of the functions in the flowchart editor.
+--------------------------------------------------
+
+To start the program you can click on the icons in the workbench.
+If you want to enter the commands from the CLI enter the command
+name with no option or filenames. The build in help function will give the 
+correct syntax or options. You can also enter "type s:fdc.help" to get the
+same help printout.
+ 
+You can move the symbol cursor around by using the cursor-keys, the NUM-pad
+or the mouse pointer.
+The home, ctrl-home, end, control-end, page down, page up work in the
+usual way.
+
+You can enter a symbol by using the <enter>-key, mouse button or the
+insert-gadget in the symbol window.
+
+To delete symbols move de cursor over the symbol and press the <D>-key
+
+To connect symbols press the <C>-key. In the status window a message 
+will prompt you to select the first symbol to connect from and once 
+selected it will prompt you to move the cursor to the symbol to connect to.
+
+To add text to a symbol first move the cursor to the right position and
+press the <T>-key a small text editor will be available.
+
+To open a flow in a current window press the <O>-key
+The filerequester appears and you can select a file.
+
+The <u>-key undos the last action
+
+When you press the <h>-key the chapter edit window opens and you 
+can add or rename chapters.
+
+If you want to copy a part of the flowchart you can move the cursor to 
+the right position. You can do this by using the cursor keys or to move 
+the mouse pointer to the symbol position you want and press the right 
+mouse button. Hereafter you should  press the <F1>-key. The  program will 
+buffer the sequence following the cursor. You can also access this option 
+from the menu. To use the menu you have to move the mouse to the top of 
+the screen and push and hold the right button on your mouse. The top line 
+will change color and reveal a list of items. Move to the symbol menu and 
+go down with the mouse. The menu items will change color, when the copy  
+field changes color you should release the mouse-button.
+
+To paste the buffered sequence move to the position where you would like 
+to insert the sequence. The new position can also be in a different flowchart 
+edit window. Just select the window  and move the cursor to the desired 
+position. and press the <F2>-key.  You can also access this option from 
+the menu. 
+
+You cannot start code generation from the flowchart editor in the demo
+version of the flowchart editor. The code generator is in the same
+directory as the flowchart editor. To generate the source code of
+one of the examples type in the shell: code <name of flow>.
+Press the help keys to view the generated source code.
+The program 'more' must be accessable.
+
+If you are on a label symbol you can jump to the other end by pressing 
+the <F4>-key . The program will try to find the other label symbol position 
+and display the page with the cursor on the other label symbol. 
+
+Sometimes it is good that you can copy an entire page. A copied page will 
+be buffered and can be inserted where you would like it to have. Also in 
+an other flowchart edit window. If the current page is the one to be copied, 
+just press  the <F6>-key. The page is now copied into a special page buffer.
+It is also possible to copy the page from the menu.
+
+To move to the previous page you can press the <F9>-key.
+The flowchart editor will move to the previous page. Adjust the page number 
+in the top border of the flowchart edit window and draw the flowchart in it.
+
+To move to the next pages you  can press the <F10>-key.       
+The flowchart editor will move to the next page. Adjust the page number in 
+the top border of the flowchart edit window and draw the flowchart in it.
+
+If you want to create a new chapter you can press the <H>-key
+and you will come  in the chapter edit window. You can also access the chapter 
+edit window if you use the menu. To do this move the mouse pointer to the top 
+of the screen and hold the right mouse button . Move to the chapter menu and 
+move to the edit field. Release the mouse button and the chapter edit window 
+will be on display.
+
+To print a flowchart on a printer you must enter the <P>-key on the keyboard. 
+The flowchart editor will use the default printer that you have defined in 
+your preferences of your amiga system. After this you will be in the printer 
+window within this window you can change some of the page definitions. 
+The flowchart editor will print on every page the author's name, the name 
+of the flowchart, the date of creation and the revision. You can change 
+these options. If you do not want these fields printed leave them blank. 
+You can also print the flowchart starting a certain page and let the printing 
+stop at a certain page.
+
+If you want to exit the current flowchart, you can press the <X>-key on your 
+keyboard. The flowchart editor will terminate the current flowchart, if 
+there have been changes the flowchart editor will prompt you if this 
+flowchart should not be saved before exiting. If you do not want to save 
+you can select the YES-gadget. If you select the NO-gadget the system will 
+display a file-requester.

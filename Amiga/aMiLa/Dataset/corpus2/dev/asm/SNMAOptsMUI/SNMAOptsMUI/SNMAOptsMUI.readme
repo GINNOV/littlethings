@@ -1,0 +1,96 @@
+Short:    Modern SNMA assembler options GUI v1.4
+Author:   Przemyslaw 'SENSEI' Gruchala (sensei@box43.gnet.pl)
+Uploader: Przemyslaw 'SENSEI' Gruchala (sensei@box43.gnet.pl)
+Version:  1.4 (27.06.01)
+Type:     dev/asm
+Replaces: dev/asm/SNMAOptsMUI.lha
+Requires: SNMA, MUI v3.x
+Keywords: snmaoptsmui snmaopts snma sensei gruchala polska poland
+
+WHAT'S THIS?
+   It's a modern (uses  MUI v3.x)  version of SNMAOpts  by Samu Nuojua.  It
+   isn't  directly  based  on  the  SNMAOpts  source,  but  gives  all  the
+   functionality of  the original  programme, plus  additional support  for
+   the  latest   versions  of   SNMA  maintained   by  Mikolaj   Calusinski
+   <bloelle@priv.gold.pl>.
+
+   The latest  version  can  be  found on http://www.amiga.pl/redgroup/, in
+   the FreeWare download page.
+
+   If  you use and like it, please send me an E-Mail.  I would like to know
+   how  many people  use this utility (and if it makes sense to maintain it
+   in the future)...
+
+   Original  AmigaOS  icons  and  NewIcons (which look  MUCH MUCH better ;)
+   created in PersonalPaint v7.1 and  ImageFX  v4.1 with a little help from
+   Modules/Loaders/REDFiX_NewIcon and Modules/Savers/REDFiX_NewIcon.
+
+DISCLAIMER
+   This  software  is  provided as-is, without warranty of any kind, either
+   expressed or implied.  Under no circumstances will the authors be liable
+   for  direct,  indirect,  incidental  or  consequential damages either to
+   hardware or software or data loss resulting from the use of SNMAOptsMUI.
+   The entire risk as to the results of SNMAOptsMUI is assumed by the user.
+
+FUTURE
+   What can you expect in the future? This is a list of planned features:
+
+   - Localization (english, deutsch, svenska and polski).
+
+   - On-line help.
+
+   - Support for new features of SNMA maintained by Mikolaj Calusinski.
+
+   - Internally rewrite as classes.
+
+HISTORY
+   v1.4 (27.06.01)
+
+      - Cleanup the code.
+
+      - Program wasn't informing that popasl requesters (include
+        drawer-requester and include header file-requester) are still open.
+        Fixed.
+
+   v1.31 (19.06.01)
+
+      - Better english readme ;). Thanks Stephen ;).
+
+   v1.3 (11.06.01)
+
+      - There was no code that would check whether the window had opened
+        (in MUI it's perfectly safe). Fixed.
+
+      - There were a couple of places where bugs might appear. Fixed.
+
+      - Major cleanup.
+
+      - All printf() changed to Printf() so executable file is smaller ;).
+
+      - Now it's compiled with all optimizations turned on.
+
+   v1.2 (??.03.01)
+
+      - Sorry but I forgot ;).
+
+   v1.1 (07.03.01)
+
+      - Added support for JOPT (Jump) optimize option.
+
+   v1.0 (12.02.01)
+
+      - First public release.
+
+AUTHORS
+   Programming and GUI design:
+
+      Przemyslaw 'SENSEI' Gruchala <sensei@box43.gnet.pl>
+
+   Support:
+
+      Mikolaj Calusinski <bloelle@priv.gold.pl>
+
+   English support:
+
+      Stephen Brookes <sbrookes@tpec.freeserve.co.uk>
+

@@ -1,0 +1,1233 @@
+THIS IS A DUMP FILE THAT LISTS PEEPHOLE OPTIMIZATIONS DONE BY POPT,
+(c) by Samuel DEVULDER, 1995.
+
+UNSAFE optimizations are marked. Tell me if some marks are missing.
+
+**** WHAT IS DONE IN peep1.c:
+
+	+------------------------------------------------------------------
+	|      OP_ARITHM_UN() - is op a unary arithmetic operation
+	+------------------------------------------------------------------
+	|      clr.l  Dn               =>      moveq  #0,Dn
+	|
+	| For 68020/30 this does not improve speed but may help for
+	| further optimisations.
+	+------------------------------------------------------------------
+	|      move.x  #n,Dn           =>      moveq  #n,Dn
+	|
+	| Moveq is always a long operation, but as long as the
+	| immediate value is appropriate, we don't care what the
+	| original length was. Clearing upper bytes won't matter.
+	| This might cause a bug !
+	+------------------------------------------------------------------
+	|      move.x  #0,X            =>      clr.x   X
+	|
+	| X!=Rn.
+	+------------------------------------------------------------------
+	|      and.l #$ffffxxxx,Dx     =>      and.w #xxxx,Dx
+	+------------------------------------------------------------------
+	|      or.l #$0000xxxx,Dx      =>      or.w #xxxx,Dx
+	|
+	| OR or EOR.
+	+------------------------------------------------------------------
+	|      and.l #65535,Dx         =>      swap  dx
+	|                                      clr.w dx
+	|                                      swap  dx
+	| Not for 68020+.
+	+------------------------------------------------------------------
+	|      add.l #n,An             =>      add.w #n,An
+	|
+	| Where -32768<=n<=32767 and add or sub. Not for 68020+.
+	+------------------------------------------------------------------
+	|      add.x  #n, X            =>      addq.x  #n, X
+	|
+	| Where 1 <= n <= 8.
+	+------------------------------------------------------------------
+	|      add.x  #n, X            =>      subq.x  #-n, X
+	|
+	| Where -8 <= n <= -1.
+	+------------------------------------------------------------------
+	|      sub.x  #n, X            =>      subq.x  #n, X
+	|
+	| Where 1 <= n <= 8.
+	+------------------------------------------------------------------
+	|      sub.x  #n, X            =>      addq.x  #-n, X
+	|
+	| Where -8 <= n <= -1.
+	+------------------------------------------------------------------
+	|      movem.y X,Y             =>      <deleted>
+	|
+	| delete if mask is empty
+	+------------------------------------------------------------------
+	| Delete instruction that sets CC when CC is dead:
+	+------------------------------------------------------------------
+	|      CMP     X,Y             =>      <deleted>
+	|
+	| Delete if CC is dead and X or Y must not be INC or DEC. UNSAFE.
+	+------------------------------------------------------------------
+	|      TST     X               =>      <deleted>
+	|
+	| Delete if CC is dead and X must not be INC or DEC. UNSAFE.
+	+------------------------------------------------------------------
+	|      ARITHM  X,Rn            =>      <deleted>
+	|
+	| Remove instruction if Rn and CC are dead. This is most often
+	| used to eliminate the fixup of SP following a function call 
+	| when we're just about to return, since the "unlk" clobbers SP
+	| anyway. X must not be INC or DEC. ARITHM can also be a MOVE.
+	+------------------------------------------------------------------
+	|      ARITHM  Rn              =>      <deleted>
+	|
+	| Remove instruction if Rn and CC are dead.
+	+------------------------------------------------------------------
+	|      move.x  X,X             =>      tst.x   X
+	|
+	| If X isn't INC or DEC. (delete if X=An).
+	+------------------------------------------------------------------
+	|      add[ai].x  #n, Am       =>      lea  n(Am), Am
+	|
+	| Where 'n' is a valid displacement. UNSAFE since lea doesnt
+	| set the flags. Not for 68040.
+	+------------------------------------------------------------------
+	|      lea  n(Am),Am           =>      addq.w #n,Am    if n>0
+	|                                      subq.w #-n      if n<0
+	|
+	| Where -8<=n<=8. UNSAFE since addq sets flags.
+	+------------------------------------------------------------------
+	|      cmp.x   #0, X           =>      tst.x   X
+	|
+	| Where X is not An.
+	+------------------------------------------------------------------
+	|      cmp.l   #0,An           =>      move.l  An,Ds
+	|
+	| Where Ds is dead.
+	+------------------------------------------------------------------
+	|      cmp.l   #0,An           =>      cmp.w   #0,An
+	+------------------------------------------------------------------
+	|      cmp.x   #y, Rm          =>      subq.x  #abs(y),Rm   (y>0)
+	|                                      addq                 (y<0)
+	|
+	| Where Rm is dead and (1 <= abs(y) <= 8).
+	+------------------------------------------------------------------
+	|      lsl.x   #1,Dx           =>      add.x   Dx,Dx
+	|      asl.x
+	+------------------------------------------------------------------
+	|      move.l  An,-(SP)        =>      pea     (An)
+	|
+	| For further optimizations with INDEX mode. Will be set back
+	| to original code if useless.
+	+------------------------------------------------------------------
+	|      lea     (An),Am         =>      move.l  An,Am
+	+------------------------------------------------------------------
+	|      INST.x  #n,X            =>      moveq   #n,Ds
+	|                                      INST.x  Ds,X
+	|
+	| Where Ds is a scratch reg, INST=ADD | ADDA | ADDI | AND | ANDI |
+	| OR | ORI | EOR | EORI | CMP | CMPA | SUB | SUBI | SUBA | MOVE |
+	| MOVEA. Not for 68040.
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN peep2.c:
+
+	+------------------------------------------------------------------
+	|      move.l  #0,Dx           =>      <deleted>
+	|      move.x  Dx,X                    clr.x   X
+	|
+	| Where Dx is dead. X!=Rn
+	+------------------------------------------------------------------
+	| Avoid "tst" instructions following instructions that
+	| set the Z flag.
+	+------------------------------------------------------------------
+	|      move.x  X,Y             =>      move.x  X,Y
+	|      tst.x   X or Y                  <deleted>
+	|
+	| Where Y is not An, because "movea" doesn't set the
+	| zero flag.
+	+------------------------------------------------------------------
+	|      ARITHM.x X,Y            =>      ARITHM.x X,Y
+	|      tst.x    Y                      <deleted>
+	|
+	| Where Y is not An, because "adda" doesn't set the
+	| zero flag.
+	+------------------------------------------------------------------
+	|      ext.x   Dn              =>      ext.x   Dn
+	|      tst.x   Dn                      <deleted>
+	+------------------------------------------------------------------
+	|      move.x  X,Dn            =>      move.x  X,Dn
+	|      ext.x   Dn                      <deleted>
+	|      b<cc>                           b<cc>
+	|
+	|  Where Dn is dead after the "ext".
+	+------------------------------------------------------------------
+	|      ext.x   Dm              =>      <deleted>
+	|      tst.x   Dm                      tst.y   Dm
+	|
+	| Where Dm is dead after the "tst". y = w if x = l
+	|                                   y = b if x = w
+	+------------------------------------------------------------------
+	|      ext.l   Dm              =>      <deleted>
+	|      INST    ..N(An,Dm.l)..          INST    ..N(An,Dm.w)..
+	|
+	| Where Dm is dead.
+	+------------------------------------------------------------------
+	| Avoid intermediate registers.
+	+------------------------------------------------------------------
+	|      move.x  X,Dm            =>      INST.x  X,Dn
+	|      INST.x  Dm,Dn                   <deleted>
+	|
+	| Where Dm is dead, and INST is one of: add, sub, and, or, cmp.
+	+------------------------------------------------------------------
+	| Avoid silly moves
+	+------------------------------------------------------------------
+	|      move.x  X,Y             =>      move.x  X,Y
+	|      move.x  Y,X                     <deleted>
+	|
+	| Y can't be an A reg.
+	+------------------------------------------------------------------
+	|      move.x  X,Y             =>      move.x  X,Rn
+	|      move.x  Y,Rn                    move.x  Rn,Y
+	|
+	| Where Y isn't INC or DEC, and isn't register direct
+	| and Y doesn't depend on Rn.
+	+------------------------------------------------------------------
+	|      move.l  Dm,An           =>      move.l  Dm,Ao
+	|      lea     (An),Ao                 <deleted>
+	|
+	| Where An is dead.
+	+------------------------------------------------------------------
+	|      lea     X,An            =>      lea     X,Ao
+	|      lea     (An),Ao                 <deleted>
+	|
+	| Where An is dead.
+	+------------------------------------------------------------------
+	|      lea     N(Am), Am       =>      <deleted>
+	|      INST    (Am)[,...]              INST    N(Am)[,...]
+	|
+	| Where Am is either dead after the second instruction or
+	| is a direct destination of the second instruction.
+	+------------------------------------------------------------------
+	|      move.l  Am,An           =>      <deleted>
+	|      lea     [x](An[,Rx.y]),Ap       lea     [x](Am[,Rx.y]),Ap
+	|
+	| Where An is either dead after the second instruction or
+	| is a direct destination of the second instruction.
+	+------------------------------------------------------------------
+	|      move.l  Am,An           =>      <deleted>
+	|      INST    [N](An[,Rx.y]),X        INST    [N](Am[,Rx.y]),X
+	|
+	| Where An is dead. 
+	+------------------------------------------------------------------
+	|                                        __
+	|      s<cc>   Dn              =>      s<cc>   Dn
+	|      not.b   Dn                      <deleted>
+	+------------------------------------------------------------------
+	|      move.x  #0,Rn           =>      <deleted>
+	|      cmp.x   Rn,X                    tst.x   X
+	|
+	| Where Rn is dead.
+	+------------------------------------------------------------------
+	|      move.x  #y,Rn           =>      <deleted>
+	|      cmp.x   Rn,Rm                   subq.x  #abs(y),Rm  (y>0)
+	|                                      addq                (y<0)
+	|
+	| Where Rm and Rn are dead and (1 <= abs(y) <= 8).
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN peep2_2.c:
+
+	+------------------------------------------------------------------
+	|      lea     N(Am),Am        =>      <deleted>
+	|      INST    X,(Am)                  INST    X,N(Am)
+	|
+	| Where X doesn't reference Am, and Am is dead after the
+	| second instruction.
+	+------------------------------------------------------------------
+	|      lea     X,Am            =>      <deleted>
+	|      clr.x   (Am)                    clr.x   X
+	|
+	| Where Am is dead.
+	+------------------------------------------------------------------
+	|      lea     X,Am            =>      <deleted>
+	|      move.x  Y,(Am)                  move.x  Y,X
+	|
+	| Where Am is dead.
+	+------------------------------------------------------------------
+	|      lea     X,Am            =>      <deleted>
+	|      move.x  (Am), Y                 move.x  X,Y
+	|
+	| Where Am is dead.
+	+------------------------------------------------------------------
+	|      move.x  Dm,X            =>      move.x  Dm,X
+	|      cmp.x   #N,X                    cmp.x   #N,Dm
+	|
+	| Where X isn't register direct.
+	|
+	| Since X generally references memory, we can compare
+	| with the register faster.
+	+------------------------------------------------------------------
+	|      move.x  X,Dm            =>      move.x  X,Dm
+	|      cmp.x   #N,X                    cmp.x   #N,Dm
+	|
+	| Where X isn't register direct.
+	|
+	| Since X generally references memory, we can compare
+	| with the register faster.
+	+------------------------------------------------------------------
+	| Try to use register indirect w/ displacement and/or index
+	+------------------------------------------------------------------
+	|      add.l   Am,Rn           =>      <deleted>
+	|      move.l  Rn,Ao                   lea     0(Am,Rn.l),Ao
+	|
+	| Where Rn is dead. UNSAFE since the first add sets the flags
+	| (if Rn=Dn). Not for 68020/30/40.
+	+------------------------------------------------------------------
+	|      add.lw  Rm,An           =>      <deleted>
+	|      ...(1)                          ...(1)
+	|      INST.x  ..[N](An)..             INST.x  ..[N](An,Rm.lw)..
+	|
+	| Where An is dead and not used in (1) and Rm not set in (1). 
+	| Not for 68040. (not for 68020/30 if N=0).
+	+------------------------------------------------------------------
+	|      lea     N(Am),An        =>      lea     N(Am,Ro.l),An
+	|      add.l   Ro,An                   <deleted>
+	|
+	| Not for 68040. (For 68020/30 we gain 2 instructions bytes).
+	+------------------------------------------------------------------
+	|      lea     X,Ax            =>      lea     X,Ay
+	|      move.l  Ax,Ay                   <deleted>
+	|
+	| Where Ax is dead.
+	+------------------------------------------------------------------
+	|      move.x  An,Am           =>      <deleted>
+	|      cmp.x   X,Am                    cmp.x   X,An
+	|
+	| Where Am is dead and X does not set An.
+	+------------------------------------------------------------------
+	|      move.y  Ry,Rx           =>      <deleted>
+	|      ...(1)                          ...(1)
+	|      INST.x  ..N(An,Rx.y)..          INST.x  ..N(An,Ry.y)..
+	|
+	| Where Rx is dead and not used in (1) and Ry not set in (1). 
+	+------------------------------------------------------------------
+	|      move.l  An,Am           =>      <deleted>
+	|      ...(1)                          ...(1)
+	|      INST.x  ..N(Am[,Rx.y])..        INST.x  ..N(An[,Rx.y])..
+	|
+	| Where Am is dead and not used in (1) and An not set in (1). 
+	+------------------------------------------------------------------
+	|      addq    #N,sp           =>      addq    #N-4,sp 
+	|      ....                            ....
+	|      <stuff that  >                  <stuff that  >
+	|      <doesn't use >                  <doesn't use >
+	|      <SP ...      >                  <SP ...      >
+	|      ....                            ....
+	|      INST.l  ..-(sp)..       =>      INST.l  ..(sp)..
+	|      
+	| addq or lea N(SP),SP. addq is deleted if N==4.
+	+------------------------------------------------------------------
+	|      addq    #N,sp           =>      addq    #N-2,sp
+	|      ....                            ....
+	|      <stuff that  >                  <stuff that  >
+	|      <doesn't use >                  <doesn't use >
+	|      <SP ...      >                  <SP ...      >
+	|      ....                            ....
+	|      INST.w  ..-(sp)..       =>      INST.w  ..(sp)..
+	|
+	| addq or lea N(SP),SP. addq is deleted if N==2.
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN peep2_3.c:
+
+	+------------------------------------------------------------------
+	|      lea    N(An),Am         =>      <deleted>
+	|      ...(1)                          ...(1)
+	|      INST.x ..[M](Am[,Rx.y])..       INST.x ..[N+]M(An[,Rx.y])..
+	|
+	| Where Am is dead and not used in (1) and An not set in (1). 
+	| If Rx==Am then use 2*N instead of N.
+	+------------------------------------------------------------------
+	|      lea     N(An,Rx.y),Am   =>      <deleted>
+	|      ...(1)                          ...(1)
+	|      INST.x  ..[M](Am)..             INST.x  ..N[+M](An,Rx.y)..
+	|
+	| Where Am is dead and not used in (1) and (An,Dx) are not set 
+	| in (1). 
+	+------------------------------------------------------------------
+	|      move.?  #n,Rn           =>      move.?  #n,Rn
+	|      ....                            ....
+	|      <stuff>                         <stuff>
+	|      ....                            ....
+	|      move.?  #n,Rn           =>      <deleted>
+	|
+	| Where <stuff> doesn't set Rn. Also make sure that
+	| the second move isn't followed by a conditional branch.
+	| In that case leave everything alone since the branch
+	| probably relies on flags set by the move.
+	| UNSAFE since last instruction deleted and may set flags.
+	+------------------------------------------------------------------
+	|      move.?  Rm,Rn           =>      move.?  Rm,Rn
+	|      ....                            ....
+	|      <stuff>                         <stuff>
+	|      ....                            ....
+	|      move.?  Rm,Rn           =>      <deleted>
+	|
+	| Where <stuff> doesn't set Rm or Rn. Also make sure that
+	| the second move isn't followed by a conditional branch.
+	| In that case leave everything alone since the branch
+	| probably relies on flags set by the move.
+	| UNSAFE since last instruction deleted and may set flags.
+	+------------------------------------------------------------------
+	|      move.l  Am,Dn           =>      move.l  Am,Ao
+	|      ....                            ....
+	|      <stuff>                         <stuff>
+	|      ....                            ....
+	|      move.l  Dn,Ao           =>      <deleted>
+	|
+	| Where "stuff" doesn't set Dn. 
+	| UNSAFE since the first move may sets the flags.
+	+------------------------------------------------------------------
+	| Try to use the pre-decrement an post modes whenever possible.
+	+------------------------------------------------------------------
+	|      sub[q].lw #1,Am         =>      <deleted>
+	|      ....                            ....
+	|      <stuff>                         <stuff>
+	|      ....                            ....
+	|      INST.b  ..(Am)..        =>      INST.b  ..-(Am)..
+	|
+	| Nothing in "stuff" can refer to Am.
+	+------------------------------------------------------------------
+	|      sub[q].lw #2,Am         =>      <deleted>
+	|      ....                            ....
+	|      <stuff>                         <stuff>
+	|      ....                            ....
+	|      INST.w  ..(Am)..        =>      INST.w  ..-(Am)..
+	|
+	| Nothing in "stuff" can refer to Am.
+	+------------------------------------------------------------------
+	|      sub[q].lw #4,Am         =>      <deleted>
+	|      ....                            ....
+	|      <stuff>                         <stuff>
+	|      ....                            ....
+	|      INST.l  ..(Am)..        =>      INST.l  ..-(Am)..
+	|
+	| Nothing in "stuff" can refer to Am.
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN peep2_4.c:
+
+	+------------------------------------------------------------------
+	|      INST.b  ..(Am)..        =>      INST.b  ..(Am)+..
+	|      ....                            ....
+	|      <stuff>                         <stuff>
+	|      ....                            ....
+	|      add[q].lw #1,Am         =>      <deleted>
+	|
+	| Nothing in "stuff" can refer to Am.
+	| Note: we go upward..
+	+------------------------------------------------------------------
+	|      INST.w  ..(Am)..        =>      INST.w  ..(Am)+..
+	|      ....                            ....
+	|      <stuff>                         <stuff>
+	|      ....                            ....
+	|      add[q].lw #2,Am         =>      <deleted>
+	|
+	| Nothing in "stuff" can refer to Am.
+	| NOTE: we go upward...
+	+------------------------------------------------------------------
+	|      INST.l  ..(Am)..        =>      INST.l  ..(Am)+..
+	|      ....                            ....
+	|      <stuff>                         <stuff>
+	|      ....                            ....
+	|      add[q].lw #4,Am         =>      <deleted>
+	|
+	| Nothing in "stuff" can refer to Am.
+	| NOTE: we go upward...
+	+------------------------------------------------------------------
+	| avoid too many reg moves..
+	+------------------------------------------------------------------
+	|      move[q].x X,Ax          =>      move[q].x X,Ay
+	|      ....                            ....
+	|      <stuff1>                        <stuff2>
+	|      ....                            ....
+	|      move.x    Ax,Ay         =>      <deleted>
+	|
+	| stuff2 is stuff1 where Ax is replaced by Ay...
+	| Where Ax is dead and stuff does not ref nor set Ay and
+	| uses Ax with .x and contains no branch to subroutine.
+	+------------------------------------------------------------------
+	|      move[q].x X,Dx          =>      move[q].x X,Dy
+	|      ....                            ....
+	|      <stuff1>                        <stuff2>
+	|      ....                            ....
+	|      move.x    Dx,Dy         =>      <deleted>
+	|
+	| stuff2 is stuff1 where Dx is replaced by Dy...
+	| Where Dx is dead and stuff does not ref nor set Dy and
+	| uses Dx with .x (or < .x) and contains no branch to 
+	| subroutine.
+	| UNSAFE since the last move may set the flags and is deleted.
+	+------------------------------------------------------------------
+	|      sub.w   #1,Dx           =>      db<cc>  Dx,lbl
+	|      b<cc>   lbl                     b<cc>   lbl
+	+------------------------------------------------------------------
+	|      move.x  #n,Dx           =>      move.x  #n-1,Dx 
+	|      ...(1)                          ...(1)
+	|      bra     lbl1                    bra     lbl2
+	|      ...(2)                          ...(2)
+	| lbl1 dbf     Dx,lbl2           lbl1  dbf     Dx,lbl2
+	|      ...(3)                    lbl3  ...(3)
+	|
+	| Where Dx is not used in (1). If n==0 use (bra lbl3) else 
+	| use (bra lbl2).
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN peep2_5.c:
+
+	+------------------------------------------------------------------
+	|      move.x  X,Dx            =>      moveq   #0,Dx
+	|      and.l   #65535,Dx               move.y  X,Dx
+	|
+	| Where X is REG or IMM. If x=.l then y=.w else y=x.
+	+------------------------------------------------------------------
+	|      and.l   #65535,Dx       =>      moveq   #0,Dy
+	|      move.l  Dx,Dy                   move.w  Dx,Dy
+	|
+	| Where Dx is dead.
+	+------------------------------------------------------------------
+	|      ext.l   Dx              =>      <deleted>
+	|      move.w  Dx,X                    move.w  Dx,X
+	|
+	| Where Dx is dead.
+	+------------------------------------------------------------------
+	|      move.l  Dx,Dy           =>      <deleted>
+	|      ....                            ....
+	|      <stuff1>                        <stuff2>
+	|      ....                            ....
+	|      <inst that sets Dx>(2)          <inst that sets Dx>
+	|
+	| Where Dx is dead, Dy is dead at (2). <stuff2> is <stuff1> 
+	| where Dy is replaced by Dx. UNSAFE: the deleted move may
+	| set flags. Note (2) may also be a breakflow instruction.
+	+------------------------------------------------------------------
+	|      move.z  Ry,Rx           =>      <deleted>
+	|      ...(1)                          ...(1)
+	|      INST.x ..M(Am,Rx.y)..           INST.x ..M(An,Ry.y)..
+	|
+	| Where Rx is dead and not used in (1) and Ry not set in (1). 
+	| Note, z must be greater than y.
+	+------------------------------------------------------------------
+	|      sub[q].z #N,Rx          =>      <deleted>
+	|      ...(1)                          ...(1)
+	|      INST    ..[M](Am,Rx.y)..        INST    ..[M]-N(Am,Rx.y)..
+	|
+	| Where Rx is dead and not used in (1). If Rx==Dx then .z 
+	| must be .l. Note: if Rx uses a multiplier then multiply N too.
+	+------------------------------------------------------------------
+	|      add[q].z #N,Rx          =>      <deleted>
+	|      ...(1)                          ...(1)
+	|      INST    ..[M](Am,Rx.y)..        INST    ..[M+]N(Am,Rx.y)..
+	|
+	| Where Rx is dead and not used in (1). If Rx==Dx then .z 
+	| must be .l. Note: if Rx uses a multiplier then multiply N too.
+	+------------------------------------------------------------------
+	|      move.x  Rm,X            =>      move.x  Rm,X
+	|      ...(1)                          ...
+	|      INST.x  X,Y                     INST.x  Rm,Y
+	|
+	| Where 'x' is the same, and 'X' has no side-effects and 
+	| is not register, Rm is not used in (1). INST!=lea
+	+------------------------------------------------------------------
+	|      move.x  X,Rm            =>      move.x  X,Rm
+	|      ...(1)                          ...
+	|      INST.x  X,Y                     INST.x  Rm,Y
+	|
+	| Where 'x' is the same, and 'X' has no side-effects and 
+	| is not register, Rm is not used in (1).
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN peep3.c:
+
+	+------------------------------------------------------------------
+	|      move.l  Am,Rn           =>      lea     N(Am),Ao
+	|      add.l   #N,Rn                   <deleted>
+	|      move.l  Rn,Ao                   <deleted>
+	|
+	| Also, Rn must be dead after the third instruction.
+	| UNSAFE since the add sets the flags and move don't so check 
+	| if the 4th inst set them.
+	+------------------------------------------------------------------
+	|      move.l  Rm,Rn           =>      move.l  Rm,Ao
+	|      add.l   #N,Rn                   lea     N(Ao),Ao
+	|      move.l  Rn,Ao                   <deleted>
+	|
+	| Also, Rn must be dead after the third instruction.
+	| UNSAFE since the add sets the flags (if Rn==Dn) and move don't 
+	| so we check if the 4th inst set them. 
+	+------------------------------------------------------------------
+	|      move.l  Am,Rn           =>      lea     -N(Am),Ao
+	|      sub.l   #N,Rn                   <deleted>
+	|      move.l  Rn,Ao                   <deleted>
+	|
+	| Also, Rn must be dead after the third instruction.
+	| UNSAFE since the add sets the flags and move don't so check 
+	| if the 4th inst set them.
+	+------------------------------------------------------------------
+	|      move.l  Am,Rn           =>      lea     0(Am,Ro),Ap
+	|      add.x   Ro,Rn                   <deleted>
+	|      move.l  Rn,Ap                   <deleted>
+	|
+	| The second instruction can be either a word or long add.
+	| Also, Rn must be dead after the third instruction.
+	| UNSAFE since the add sets the flags (if Rn==Dn) and move 
+	| don't so check if the 4th inst set them. Not for 68040.
+	+------------------------------------------------------------------
+	|      move.l  X(Am),Rn        =>      move.l  X(Am),Ao
+	|      add.l   #N,Rn                   <deleted>
+	|      move.l  Rn,Ao                   lea     N(Ao),Ao
+	|
+	| Also, Rn must be dead after the third instruction.
+	| UNSAFE since the add sets the flags and move don't so check 
+	| if the 4th inst set them.
+	+------------------------------------------------------------------
+	|      move.x  X,Dn            =>      move.x  X,Do
+	|      ext.y   Dn                      ext.y   Do
+	|      move.y  Dn,Do           =>      <deleted>
+	|
+	| Where Dn is dead.
+	+------------------------------------------------------------------
+	|      move.l  X,Dm            =>      move.l  X,An
+	|      INST                            INST
+	|      move.l  Dm,An           =>      <deleted>
+	|
+	| Where INST doesn't modify Dm, and Dm is dead after i3
+	| UNSAFE since the last move doesn't change the flags.
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN peep3bis.c:
+
+	+------------------------------------------------------------------
+	| Optimize code generated by *ptr++ in C..
+	+------------------------------------------------------------------
+	|      move.l  Am,An           =>      <deleted>
+	|      addq.lw #1,Am                   <deleted>
+	|      ....                            ....
+	|      <stuff>                         <stuff>
+	|      ....                            ....
+	|      INST.b  ..(An)..        =>      INST.b  ..(Am)+..
+	|
+	| An must be dead after the last instruction. Nothing in
+	| "stuff" can modify Am.
+	+------------------------------------------------------------------
+	|      move.l  Am,An           =>      <deleted>
+	|      addq.lw #2,Am                   <deleted>
+	|      ....                            ....
+	|      <stuff>                         <stuff>
+	|      ....                            ....
+	|      INST.w  ..(An)..        =>      INST.w  ..(Am)+..
+	|
+	| An must be dead after the last instruction. Nothing in
+	| "stuff" can modify Am.
+	+------------------------------------------------------------------
+	|      move.l  Am,An           =>      <deleted>
+	|      addq.lw #4,Am                   <deleted>
+	|      ....                            ....
+	|      <stuff>                         <stuff>
+	|      ....                            ....
+	|      INST.l  ..(An)..        =>      INST.l  ..(Am)+..
+	|
+	| An must be dead after the last instruction. Nothing in
+	| "stuff" can modify Am.
+	+------------------------------------------------------------------
+	|      move.l  Ax,Dy           =>      add.l   Ax,Ax
+	|      lsl.l   #2,Dy                   add.l   Ax,Ax
+	|      move.l  Dy,Ax
+	|
+	| Where Dy is dead. UNSAFE: lsl sets the flags. add does'nt.
+	+------------------------------------------------------------------
+	|      move.x  X,Rm            =>      <deleted>
+	|      INST2.x Do,Rm                   INST2.x X,Do
+	|      INST3.x Rm,Y                    INST3.x Do,Y
+	|
+	| Where Rm!=Do and (Rm,Do) are dead and INST2=ADD | OR | AND |
+	| EOR.
+	| UNSAFE: Do may set flags in INST2 that may be untouched by
+	| INST3.
+	+------------------------------------------------------------------
+	|      move.x  #0,Rn           =>      <deleted>
+	|      cmp.x   X,Rn                    tst.x   X
+	|      b<cc>   lbl                     b<cci>  lbl
+	|
+	| Where Rn is dead. b<cci> is the inverse cond. branch.
+	+------------------------------------------------------------------
+	|      move.x  #y,Rn           =>      <deleted>
+	|      cmp.x   Rm,Rn                   subq.x  #abs(y),Rm  (y>0)
+	|                                      addq                (y<0)
+	|      b<cc>   lbl                     b<cci>  lbl
+	|
+	| Where Rm and Rn are dead and (1 <= abs(y) <= 8). b<cci> is the 
+	| inverse cond. branch.
+	+------------------------------------------------------------------
+	|      move.y #I1,Rn           =>      <deleted>
+	|      add.x  Rn,Rm                    add.x #I1+I2,Rm
+	|      ...                             ...
+	|      <stuff that does not use Rm>    <stuff>
+	|      ...                             ...
+	|      add.x  #I2,Rm                   <deleted>
+	|      
+	| Add or sub.. Where Rn is dead and y>x. UNSAFE since the 2nd 
+	| add set the flags so test if inst after last add set flags.
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN peep4.c:
+
+	+------------------------------------------------------------------
+	|      move.x  X,Dx            =>      moveq   #0,Dx
+	|      swap    Dx                      move.y  X,Dx
+	|      clr.w   Dx                      <deleted>
+	|      swap    Dx                      <deleted>
+	|
+	| Where X is REG or IMM. If x=.l then y=.w else y=x
+	+------------------------------------------------------------------
+	|      swap    Dx              =>      moveq   #0,Dy
+	|      clr.w   Dx                      move.w  Dx,Dy
+	|      swap    Dx                      <deleted>
+	|      move.l  Dx,Dy                   <deleted>
+	|
+	| Where Dx is dead.
+	+------------------------------------------------------------------
+	|      move.w  Dm, Dn          =>      dbf     Dm,lbl
+	|      sub.w   #1,Dm                   <deleted>
+	|      tst.w   Dn                      <deleted>
+	|      bne     lbl                     <deleted>
+	|
+	| Where Dn is dead after the test.
+	+------------------------------------------------------------------
+	|      move.l  Dm,Dn           =>              dbf     Dm,lbl
+	|      sub.l   #1,Dm                           clr.w   Dm
+	|      tst.l   Dn                              subq.l  #1,Dm
+	|      bne     lbl                             bcc     lbl
+	|      ...                                     ...
+	|
+	| Where Dn is dead after the test.
+	| This is faster since the inner loop is faster (if dm!=0).
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN asp68k.c:
+
+	+------------------------------------------------------------------
+	|      INST 0(An),X            =>      INST (An),X
+	+------------------------------------------------------------------
+	|      INST X,0(An)            =>      INST X,(An)
+	+------------------------------------------------------------------
+	|      add*.x #0,Dx            =>      tst.x Dx
+	+------------------------------------------------------------------
+	|      add.x #I1,Rm            =>      add.x #I1+I2,Rm
+	|      ...                             ...
+	|      <stuff that does not use Rm>    <stuff>
+	|      ...                             ...
+	|      add.x #I2,Rm                    <deleted>
+	|
+	| Add or sub.. UNSAFE since the 2nd add set the flags so test
+	| if inst after last add set flags.
+	+------------------------------------------------------------------
+	|      addq.x #4,sp            =>      move.l ax,(sp)
+	|      pea (ax)                        <deleted>
+	|
+	| Where x = w or l
+	+------------------------------------------------------------------
+	|      and.l #n,dx             =>      bclr.l #b,dx
+	|
+	| Where not(n) = 2^b (only 1 bit off). Not for 68020+.
+	+------------------------------------------------------------------
+	|      asl.b #n,dx             =>      clr.b dx
+	|
+	| For asr or lsl or lsr also. Where n>=8. UNSAFE: status flags are
+	| wrong so test if next instruction sets them.
+	+------------------------------------------------------------------
+	|      asl.l #16,dx            =>      swap  dx
+	|                                      clr.w dx
+	|
+	| For lsl also. UNSAFE: status flags are wrong so test if next
+	| instruction sets them. Not for 68020/30.
+	+------------------------------------------------------------------
+	|      asr.l #16,dx            =>      clr.w dx
+	|                                      swap  dx
+	|
+	| For lsr also. UNSAFE: status flags are wrong so test if next
+	| instruction sets them. Not for 68020/30.
+	+------------------------------------------------------------------
+	|      asl.l #n,dx             =>      asl.w #(n-16),dx
+	|                                      swap dx
+	|                                      clr.w dx
+	|
+	| Where asl or lsl and 16<n<32. UNSAFE: status flags are wrong
+	| so test if next instruction sets them. Not for 68020+.
+	+------------------------------------------------------------------
+	|      asl.l #n,dx             =>      moveq #0,dx
+	|
+	| Where asl or lsl or asr or lsr and 32<=n. UNSAFE: status flags
+	| are wrong so test if next instruction sets them.
+	+------------------------------------------------------------------
+	|      asl.w #n,dx             =>      clr.w dx
+	|
+	| Where asl or lsl or asr or lsr and 16<=n. UNSAFE: status flags
+	| are wrong so test if next instruction sets them.
+	+------------------------------------------------------------------
+	|      asr.l #n,dx             =>      swap  dx
+	|                                      asr.w #(n-16),dx
+	|                                      clr.w dx
+	|
+	| Where asl or lsl and 16<n<32. UNSAFE: status flags are wrong
+	| so test if next instruction sets them. Not for 68020+.
+	+------------------------------------------------------------------
+	|      bclr.l #n,dx            =>      and.w #m,dx
+	|
+	| Where 0 <= n <= 15, m = 65535-(2^n). UNSAFE: status flags
+	| are wrong so test if next instruction sets them.
+	+------------------------------------------------------------------
+	|      bset.l #n,dx            =>      or.w #m,dx
+	|
+	| Where 0 <= n <= 15, m = (2^n). UNSAFE: status flags are wrong
+	| so test if next instruction sets them.
+	+------------------------------------------------------------------
+	|      btst.l    #7,dx         =>      tst.b     dx
+	|      beq | bne ??                    bpl | bmi ??
+	|
+	| UNSAFE: btst just sets Z while tst sets N also. So test if
+	| next instruction sets the flags.
+	+------------------------------------------------------------------
+	|      btst.l    #15,dx        =>      tst.w     dx
+	|      beq | bne ??                    bpl | bmi ??
+	|
+	| UNSAFE: btst just sets Z while tst sets N also. So test if
+	| next instruction sets the flags.
+	+------------------------------------------------------------------
+	|      btst.l    #31,dx        =>      tst.l     dx
+	|      beq | bne ??                    bpl | bmi ??
+	|
+	| UNSAFE: btst just sets Z while tst sets N also. So test if
+	| next instruction sets the flags.
+	+------------------------------------------------------------------
+	|      No div optimisation because of the remainder..
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN asp68kbis.c:
+
+	+------------------------------------------------------------------
+	|      eor.x #-1,*             =>      not.x *
+	+------------------------------------------------------------------
+	|      lea (Am),Am             =>      <deleted>
+	+------------------------------------------------------------------
+	|      move optim
+	+------------------------------------------------------------------
+	|      move.b  #-1,X           =>      st      X
+	|
+	| UNSAFE: status flags are wrong so test if next instruction
+	| sets them. Not for 68040.
+	+------------------------------------------------------------------
+	|      move.l  #n,-(sp)        =>      pea     n.W
+	|
+	| Where n is a valid displacement. Not for 68040.
+	+------------------------------------------------------------------
+	|      move.l  #n,Dx           =>      moveq   #-128,Dx
+	|                                      subq.l  #n+128,Dx
+	|
+	| Where -136<=n<=-129. Not for 68040.
+	+------------------------------------------------------------------
+	|      move.l  #n,Dx           =>      moveq   #m,Dx
+	|                                      not.b   Dx
+	|
+	| Where n=255-m (128>m>=0). Not for 68040.
+	+------------------------------------------------------------------
+	|      move.l  #n,Dx           =>      moveq   #m,Dx
+	|                                      not.w   Dx
+	|
+	| Where 65534 <= n <= 65408 , m = 65535-n. Not for 68040.
+	+------------------------------------------------------------------
+	|      move.l  #n,Dx           =>      moveq   #m,Dx
+	|                                      not.w   Dx
+	|
+	| Where -65409 <= n <= -65536, m = 65535+n. Not for 68040.
+	+------------------------------------------------------------------
+	|      move.l  #n,Dx           =>      moveq   #m,Dx
+	|                                      swap    Dx
+	|
+	| Where n=m*65536 (-128<=m<=127). Not for 68040.
+	+------------------------------------------------------------------
+	|      Other moves are very complicated and not implemented.
+	|      Those uses thing like
+	|              move.l  #n,dx   =>      moveq   #m,dx
+	|                                      bchg    dx,dx
+	|      or
+	|                              =>      moveq   #m,dx
+	|                                      lsl.l   #p,dx
+	|      I think they are not worth.
+	+------------------------------------------------------------------
+	|      mul optim - separate module mulopt.c ...
+	|      UNSAFE...
+	+------------------------------------------------------------------
+	|      neg.x   Rx              =>      <deleted>
+	|      sub.x   Rx,Ry                   add.x   Rx,Ry
+	|
+	| add or sub. Where Rx is dead
+	+------------------------------------------------------------------
+	|      or.l #n,dx                      => bset.l #b,dx
+	|
+	| Where n = 2^b (only 1 bit on). Not for 68020+.
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN mc40opt.c:
+
+	+------------------------------------------------------------------
+	|      ext.w   Dn              =>      extb.l  Dn
+	|      ext.l   Dn                      <deleted>
+	|
+	| Only if newinsts is set.
+	+------------------------------------------------------------------
+	|      sub.l   Ax,Ax           =>      lea     0.W,Ax
+	+------------------------------------------------------------------
+	|      swap    dx              =>      and.l   #65535,dx
+	|      clr.w   dx                      <deleted>
+	|      swap    dx                      <deleted>
+	+------------------------------------------------------------------
+	|      asl.l   #N,Dn           =>      <deleted>
+	|      ...(1)                          ...(1)
+	|      INST    ..(Ap,Dn.L)..           INST    ..(Ap,Dn.L*M)..
+	|
+	| M = 2^N.
+	| Where (1) does not use Dn and Dn is dead after last instruction.
+	+------------------------------------------------------------------
+	|      lea     n(Ax),Ax        =>      adda.w  #n,Ax
+	+------------------------------------------------------------------
+	|      lea     0(Am,Rn.l),Ao   =>      move.l  Am, Ao
+	|                                      add.l   Rn, Ao
+	+------------------------------------------------------------------
+	|      INST    0(Am,Rn.l),X    =>      add.l   Rn,Am
+	|                                      INST    (Am),X
+	|
+	| Where Am is dead. X must not refer Am.
+	+------------------------------------------------------------------
+	|      INST    X,0(Am,Rn.l)    =>      add.l   Rn,Am
+	|                                      INST    X,(Am)
+	|
+	| Where Am is dead. X must not refer Am.
+	+------------------------------------------------------------------
+	|      lea     N(Am,Rn.l),Ao   =>      LEA     N(Am),Ao
+	|                                      add.l   Rn,Ao
+	+------------------------------------------------------------------
+	|      bclr.l  #b,dx           =>      and.l   #n,dx
+	|
+	| n = ~(1<<b) (not for size opt.)
+	+------------------------------------------------------------------
+	|      st      X               =>      move.b  #-1,X
+	+------------------------------------------------------------------
+	|      move.l  #X,dx           =>      move.l  #Y,dx
+	|      ARITM   #n,dx                   <deleted>
+	|
+	| Compute Y correctly.
+	+------------------------------------------------------------------
+	|      move.l  #X,dx           =>      move.l  #Y,dx
+	|      swap    dx                      <deleted>
+	|
+	| Compute Y correctly.
+	+------------------------------------------------------------------
+	|      move[q].l #X,dx         =>      move.l  #Y,dx
+	|      not.x     dx                    <deleted>
+	|
+	| Compute Y correctly.
+	+------------------------------------------------------------------
+	|      bset.l  #b,dx           =>      or.l    #n,dx
+	|
+	| n = (1<<b)
+	+------------------------------------------------------------------
+	|      pea     (Ax)            =>      move.l  Ax,-(sp)
+	+------------------------------------------------------------------
+	|      move.l  #n,Dx           =>      <deleted>
+	|      INST.x  Dx,Rn                   INST.x  #n,Rn
+	|
+	| Where Dx is dead.
+	| x = .w or .l. INST = cmp|and|or|sub|add|eor.
+	+------------------------------------------------------------------
+	|      sub.l   #n,Ax           =>      add.l   #-n,Ax
+	+------------------------------------------------------------------
+	|      INST1   <mem>           =>      INST1   <mem>
+	|      INST2   <mem>                   INST3   <reg | imm>
+	|      INST3   <reg | imm>             INST2   <mem>
+	|
+	| Where INST1 and INST2 references memory and INST3 is only using
+	| regs or immediate data. Regs sets by INST3 must not be used by
+	| INST2. Regs sets by INST2 must not be used by INST3.
+	| UNSAFE: INST2 might set regs that are also set by INST3.
+	+------------------------------------------------------------------
+	|      link    An,#0           =>      move.l  An,-(sp)
+	|                                      move.l  SP,An
+	+------------------------------------------------------------------
+	|      move    #n,Dy           =>      <deleted>
+	|      cmp.x   Dx,Dy                   cmp.x   #n,Dx
+	|      b<cc>   lbl                     b<cci>  lbl
+	|
+	| Where Dy is dead. b<cci> is the inverse branch.
+	+------------------------------------------------------------------
+	|      asl.x   #n,X            =>      lsl.x   #n,X
+	+------------------------------------------------------------------
+	|      INST (An)+,X            =>      INST (An),X
+	|
+	| Where An is dead.
+	+------------------------------------------------------------------
+	|      INST X,(An)+            =>      INST X,(An)
+	|
+	| Where An is dead.
+	+------------------------------------------------------------------
+	|      rts                     =>      move.l  (sp)+,An
+	|                                      jmp     (An)
+	|
+	| Where An is dead.
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN mc20opt.c:
+
+	+------------------------------------------------------------------
+	|      ext.w   Dn              =>      extb.l  Dn
+	|      ext.l   Dn                      <deleted>
+	|
+	| Only if newinsts is set.
+	+------------------------------------------------------------------
+	|      add.w   #n,Ax           =>      add.l   #n,Ax
+	|
+	| Add or sub.
+	+------------------------------------------------------------------
+	|      link    An,#0           =>      move.l  An,-(sp)
+	|                                      move.l  SP,An
+	+------------------------------------------------------------------
+	|      swap    dx              =>      and.l   #65535,dx
+	|      clr.w   dx                      <deleted>
+	|      swap    dx                      <deleted>
+	+------------------------------------------------------------------
+	|      asl.l   #N,Dn           =>      <deleted>
+	|      ...(1)                          ...(1)
+	|      INST    ..(Ap,Dn.L)..           INST    ..(Ap,Dn.L*M)..
+	|
+	| M = 2^N.
+	| Where (1) does not use Dn and Dn is dead after last instruction.
+	+------------------------------------------------------------------
+	|      lea     0(Am,Rn.l),Ao   =>      move.l  Am, Ao
+	|                                      add.l   Rn, Ao
+	+------------------------------------------------------------------
+	|      INST    0(Am,Rn.l),X    =>      add.l   Rn,Am
+	|                                      INST    (Am),X
+	|
+	| Where Am is dead. X must not refer Am.
+	+------------------------------------------------------------------
+	|      INST    X,0(Am,Rn.l)    =>      add.l   Rn,Am
+	|                                      INST    X,(Am)
+	|
+	| Where Am is dead. X must not refer Am.
+	+------------------------------------------------------------------
+	|      lea     N(Am,Rn.l),Ao   =>      LEA     N(Am),Ao
+	|                                      add.l   Rn,Ao
+	+------------------------------------------------------------------
+	|      bclr.l  #b,dx           =>      and.l   #n,dx
+	|
+	| n = ~(1<<b) (not for size optimisations).
+	+------------------------------------------------------------------
+	|      move.l  #X,dx           =>      move.l  #Y,dx
+	|      ARITM   #n,dx                   <deleted>
+	|
+	| Compute Y correctly.
+	+------------------------------------------------------------------
+	|      move.l  #X,dx           =>      move.l  #Y,dx
+	|      swap    dx                      <deleted>
+	|
+	| Compute Y correctly.
+	+------------------------------------------------------------------
+	|      move.l  #X,dx           =>      move.l  #Y,dx
+	|      not.x   dx                      <deleted>
+	|
+	| Compute Y correctly.
+	+------------------------------------------------------------------
+	|      bset.l  #b,dx           =>      or.l    #n,dx
+	|
+	| n = (1<<b) (not for size opt.)
+	+------------------------------------------------------------------
+	|      move.l  Ax,Dy           =>      add.l   Ax,Ax
+	|      lsl.l   #3,Dy                   add.l   Ax,Ax
+	|      move.l  Dy,Ax                   add.l   Ax,Ax
+	|
+	| Where Dy is dead. UNSAFE: lsl sets the flags. add does'nt.
+	+------------------------------------------------------------------
+	|      INST1   <mem write>     =>      INST1   <mem write>
+	|      INST2   <mem>                   INST3   <reg | imm>
+	|      INST3   <reg | imm>             INST2   <mem>
+	|
+	| Where INST1 write to memory, INST2 references memory for
+	| reading or writing and INST3 is only using regs or immediate
+	| data. Regs sets by INST3 must not be used by INST2. Regs sets
+	| by INST2 must not be used by INST3.
+	| UNSAFE: INST2 might set regs that are also set by INST3.
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN ulink.c:
+
+	+------------------------------------------------------------------
+	|      _LABEL1 ...             =>      _LABEL1 ...
+	|              link    Am,X                    <deleted>
+	|              ...                             ...
+	|              <stuff>                         <stuff>
+	|              ...                             ...
+	|              unlink  Am                      <deleted>
+	|              ...                             ...
+	|      _LABEL2 ...                     _LABEL2 ...
+	|
+	| Where Am is not used in <stuff>.
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN branchopt.c:
+
+	+------------------------------------------------------------------
+	|              ...                             ..__    
+	|              b<cc>   lbl2    =>              b<cc>   lbl1
+	|              bra     lbl1                    <deleted>
+	|      lbl2    ...                     lbl2    ...
+	+------------------------------------------------------------------
+	|              ...                             ..__    
+	|              bra     lbl1    =>              b<cc>   lbl3
+	|      lbl2    ...                     lbl2    ...
+	|              ...                             ...
+	|      lbl1    b<cc>   lbl2            lbl1    b<cc>   lbl2
+	|              ...                     lbl3    ...
+	+------------------------------------------------------------------
+	|
+	|              move.y  #n,Rn   =>              move.y  #n,Rn
+	|              ...(1)                          ...(1)
+	|              bra     lbl1                    bra     XXX
+	|              ...(2)                          ...(2)
+	|      lbl1    cmp.x   #m,Rn             lbl1  cmp.x   #m,Rn
+	|              b<cc>   lbl2                    b<cc>   lbl2
+	|              ...(3)                    lbl3  ...(3)
+	|
+	| Where Rn is not set in (1), y>=x. XXX is lbl3 if b<cc> is true
+	| or lbl2 else.
+	+------------------------------------------------------------------
+	|              move.y  #n,Rn   =>              move.y  #n,Rn
+	|              ...(1)                          ...(1)
+	|              bra     lbl1                    bra     XXX
+	|              ...(2)                          ...(2)
+	|      lbl1    move    #m,Ry             lbl1  move    #m,Ry
+	|              cmp.x   Rn,Ry                   cmp.x   Rn,Ry
+	|              b<cc>   lbl2                    b<cc>   lbl2
+	|              ...(3)                    lbl3  ...(3)
+	|
+	| Where Rn is not set in (1), y>=x. XXX is lbl3 if b<cc> is true
+	| or lbl2 else. And where Ry is dead after the cmp.
+	+------------------------------------------------------------------
+	|              move.y  #n,Rn   =>              move.y  #n,Rn
+	|              ...(1)                          ...(1)
+	|              bra     lbl1                    bra     XXX
+	|              ...(2)                          ...(2)
+	|      lbl1    move    #m,Dy             lbl1  move    #m,Dy
+	|              cmp.x   Dy,Rn                   cmp.x   Dy,Rn
+	|              b<cc>   lbl2                    b<cc>   lbl2
+	|              ...(3)                    lbl3  ...(3)
+	|
+	| Where Rn is not set in (1), y>=x. XXX is lbl3 if b<cc> is true
+	| or lbl2 else. And Dy is dead after the cmp.
+	+------------------------------------------------------------------
+	|              move.y  #n,Rn   =>              move.y  #n,Rn
+	|              ...(1)                          ...(1)
+	|              bra     lbl1                    bra     XXX
+	|              ...(2)                          ...(2)
+	|      lbl1    tst.x   Rn                lbl1  tst.x   Rn
+	|              b<cc>   lbl2                    b<cc>   lbl2
+	|              ...(3)                    lbl3  ...(3)
+	|
+	| Where Rn is not set in (1), y>=x. XXX is lbl3 if b<cc> is true 
+	| or lbl2 else.
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN branchopt2.c:
+
+	+------------------------------------------------------------------
+	|      Delete code never reached: Such a code is a
+	|      code following an inconditionnal jump that
+	|      bears no label. This is not true for a series
+	|      of      jmp     lbl1(pc)
+	|              jmp     lbl2(pc)
+	|      that is used for jump tables.
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN jsropt.c:
+
+	+------------------------------------------------------------------
+	|      jsr     LBL(pc)         =>      bsr     LBL
+	+------------------------------------------------------------------
+	|      jmp     LBL(pc)         =>      bra     LBL
+	|
+	| Not for jump tables. (bra might become bra.s, thus reduction of
+	| 2 bytes, thus mismatching address (jmp LBL(pc) takes always 4 
+	| bytes)).
+	+------------------------------------------------------------------
+	|      jsr     XXX             =>      jmp     XXX
+	|      rts                             <deleted>
+	|
+	| The rts line must not bear a label.
+	+------------------------------------------------------------------
+	|      bsr     XXX             =>      bra     XXX
+	|      rts                             <deleted>
+	|
+	| The rts line must not bear a label.
+	+------------------------------------------------------------------
+	|      bsr     lbl1            =>      pea     lbl2
+	|      bra     lbl2                    bra     lbl1
+	|      
+	| Inst jsr or bsr. bra or jmp. We need not test is bra bears
+	| a label since braopt has been performed before. 
+	| Not for 68020/30.
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN movem.c:
+
+	+------------------------------------------------------------------
+	|      _LABEL1 ...             =>      _LABEL1 ...
+	|              movem.x MSK,-(sp)               movem.x MSK2,-(sp)
+	|              ...                             sub     #N,sp
+	|              ...                             ...
+	|              ...                             ...
+	|              ...                             add     #N,sp
+	|              movem.x (sp)+,MSK               movem.x (sp)+,MSK2
+	|              ...                             ...
+	|      _LABEL2 ...                     _LABEL2 ...
+	|
+	| MSK2 is MSK without unused regs between the two labels.
+	| Delete or replace movem by move if needed. N is used to
+	| fix stack offset. On a 68000 this doesn't improve speed if
+	| x=.w and difference between MSK and MSK2 is less than two bits.
+	|
+	| Note: substituting M(SP) by M-N(SP) between the labels is 
+	| too unsafe.
+	+------------------------------------------------------------------
+	| movem40src(): movem MSK,-(Ax) => multiples moves. 
+	| return next inst. (Opt. suggested by P.Lauly)
+	+------------------------------------------------------------------
+	| movem40dst() : movem (Ax)+,MSK => multiples moves. 
+	| return next inst. (Opt. suggested by P.Lauly)
+	+------------------------------------------------------------------
+	| movem20src() : movem MSK,-(Ax) => multiples moves 
+	| (if <= 2 regs). return next inst. (Opt. suggested 
+	| by L.Marechal)
+	+------------------------------------------------------------------
+	| movem20dst() : movem (Ax)+,MSK => multiples moves 
+	| (if <= 10 regs). return next inst. (Opt. suggested 
+	| by L.Marechal)
+	+------------------------------------------------------------------
+	| movem00src() : movem MSK,-(Ax) => multiples moves 
+	| (if <= 2 regs).
+	+------------------------------------------------------------------
+	| movem00dst() : movem (Ax)+,MSK => multiples moves 
+	| (if <= 3 regs).
+	+------------------------------------------------------------------
+
+**** WHAT IS DONE IN stackopt.c:
+
+	+------------------------------------------------------------------
+	|      stackopt() - Tries to merge multiples add #n,sp together.
+	+------------------------------------------------------------------

@@ -1,0 +1,47 @@
+Short:    Converts a binary file to a linkable object
+Uploader: jgeiss@muc.de (Johannes Geiss)
+Author:   jgeiss@muc.de (Johannes Geiss)
+Type:     dev/c
+
+Requires: Any C/Asm-linker
+Version:  1.4
+
+This command (CTO) converts any binary file to an linkable object so
+you can link this binary data to your C/Asm-Code with any linker.
+
+Example:
+
+We have a binary file named "image.dat". It contains raw image data.
+And we have a compiled object file named "prg.o" which uses our
+raw datafield "image.dat".
+
+We cannot link a raw binary file to an object file, so we have to convert
+the raw file first with CTO:
+
+	CTO image.dat image.o _image_start _image_end -d
+
+Now we'll get a linkable object file named "image.o". The label
+"_image_start" points to the beginning of the raw binary data and the
+label "_image_end" points to the end. Now you can access the image
+data in your program:
+
+Asm:	xref _image_start
+	xref _image_end
+
+C:	extern char *image_start;
+	extern char *image_end;
+
+The switch "-d" converts the raw data to a HUNK_DATA and "-c" converts
+to a HUNK_CODE.
+
+
+Type "CTO ?" for more help.
+
+
+Some additional info:
+
+CTO is fully written in assembly and it's quite a bit old (1993 :-)
+but I haven't the opportunity to upload to Aminet until now.
+
+Have fun
+Johannes Geiss

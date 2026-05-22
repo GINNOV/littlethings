@@ -1,0 +1,111 @@
+Short overview over the scripts in this directory.
+Note that the scripts assume that GoldEDs ARexx port is called GoldED.DICE.
+
+
+currentdir.ged:
+    sets editor's default dir to dir of current text. I use this as startup
+    macro, so when I reload my programming session, the current dir is set
+    to something useful. When loading a new file, I mustn't click through
+    lots of volumes and dirs.
+
+dcc.ged:
+    compiles current text using DICE's DCC. Name of the executable is the
+    basename of the current text. Additional files to be compiled, assem-
+    bled and/or linked may be specified in the ADDFILES enviroment variable.
+    DCC options may be specified by the DCCOPTS variable.
+    If compiling was successful, program may be run with console I(!)O and
+    commandline parameters. Otherwise the DICE error processing system is
+    called.
+    Originally, this script featured temporary compiling. I disabled this,
+    because, in conjunction with DICE error parsing, there were problems.
+    Either you save the file under a temporary name, compile it, rename it,
+    and, if an error was found, the error parsing will load the temp file
+    into the editor (the original file will also be there). You have to
+    rename it, and you mustn't edit the other one!!. Or it isn't renamed
+    at the finish of compilation. Somehow, you have to remember the name...
+    Solutions welcome!!
+
+
+DICE_ErrorClear.ged:
+DICE_ErrorCurr.ged:
+DICE_ErrorFirst.ged:
+DICE_ErrorNext.ged:
+DICE_ErrorPrev.ged:
+GoldED_ErrorParse.rexx:
+    DICE error parsing system for GoldED. GoldED_ErrorParse.rexx must be
+    set up in DCC:Config/DCC.config. The script asks if you want to look
+    at the complete error file or just browse around with the current
+    error being displayed in  the status line. If an error file already
+    exists, the new file is loaded without asking. For some reasons
+    the errorfile is always called DCC_errorfile.
+    Use First, Curr, Next, Prev to browse around.
+    Use Clear after you processed all errors, otherwise you may still
+    browse them and get confused ;-)
+    GoldED_ErrorParse.rexx starts GoldED with port name GoldED.DICE and
+    config name GoldED_DICE.config.
+
+exeline.ged:
+    executes the current line as shell command. If argument is TRUE (also
+    default), and the first characters are non blank, they are skipped
+    until the first blank is reached. This enables "COMPILE:" lines with
+    C++ style comments
+
+func.ged:
+    inserts a new function body, prompting for name, return type, comment
+    and reference. Fold marks are automatically generated with comment.
+    Reference (Global|Local, see DICE doc) requires special keywords in
+    source (see MakeCHeader). Folding, reference and additional function
+    name comment controlable via parameters.
+
+HiSpeed.ged:
+    Print current text by HiSpeed. If not currently saved, you are prompted
+    to either save the text or save it to a temporary file (useful if you
+    want not to print parts of the text - delete them and then print the
+    text as temporary file. But be careful not to save the text accidentally.
+    I cannot be held responsible for any data loss!
+
+MakeCHeader.ged:
+    Inserts a header with programname, function, history. It prompts for
+    the program name and sets the full name to current dir/given name.
+    It also adds special keywords for auto history processing, prototyping
+    and includes. Requires C++ style comments
+
+MakeHeader.ged:
+    Same as above, but lacks prototyping and includes keywords. Comments
+    Arexx and C compatible.
+
+prototype.ged:
+    Scans the actual line for a C function definition and generates a
+    prototype entry for that function. $PROTOTYPES: keyword required in
+    source (use MakeCProto). If function is not prototyped yet, you can
+    choose between global and local prototypes (cf DICE manual).
+    This requires function definitions in the following form:
+    return type on a single line, followed by a line with the function
+    name and the arguments. Argument types must be specified in this line!
+    Best way is to watch the generated prototypes until you think they
+    are generated correctly.
+
+runexe.ged:
+    runs the program with the same path and basename as the current text.
+    E.g. if your current text is PROGRAMS:hello_world.c, the program
+    PROGRAMS:hello_world is started. This is the same as the program
+    execution part in dcc.ged. Use this to run your program again.
+
+setdccopts.ged:
+    pops up a requester to change the DCCOPTS enviroment variable
+
+setfiles.ged:
+    pops up a requester to change the ADDFILES variable (see dcc.ged)
+
+unLock_dice.ged:
+    if the DICE editor accidentally gets locked, use this script to
+    unlock it.
+
+xref.ged:
+    basically the same as the GoldED command XREF ASK. This script sets
+    the SPC characters to a space. So GoldED can reference expressions
+    containing SPC characters, like a dot. I found it very useful to
+    reference parts of the MUI autodocs containing a dot, e.g. Area.mui.
+
+
+

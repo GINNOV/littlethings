@@ -1,0 +1,41 @@
+Short:    Example C code for using LockIBase()
+Uploader: dcross@mail.netshop.net (DC Ross)
+Author:   dcross@mail.netshop.net (DC Ross)
+Type:     dev/c
+Requires: Workbench 2.0+
+Distribution: Public Domain
+
+IBase.c
+ programmed by DC Ross (e-mail: dcross@mail.netshop.net)
+ 96-11-02
+
+Description:
+  This is a little programme I wrote today to test the functions LockIBase()
+and UnlockIBase().  By using a copy of IntuitionBase, you can access quite a
+few useful feature of Intuition, such as the addresses of all Intuition
+Screens and Windows (should work with CUSTOM and PUBLIC screens; I have only
+tested PUBLIC).  Handy if you want your window to open on a screen with a
+specific name.
+  I haven't bothered to look through my old Workbench 1.3 Includes to see
+if this can be made to work on Workbench 1.2/1.3.  If I ever feel I need
+this programme on my Workbench 1.3 A500 I will try to figure it out, but
+until then, you are on your own for Wb1.3 compatability.
+  This code was created using the very sparce information in the ROM Kernal
+Reference Manual: Libraries 3rd Edition for Workbench 2.04.  The information
+can be found in Chapter 11: Intuition Special Functions on page 283.
+  Send any comments, bug reports, suggestions, etc. to me via e-mail:
+dcross@mail.netshop.net.
+
+Compiling:
+  Used SAS/C 6.00 with the default options in SCOptions.  Doesn't need math
+or any other special options set.
+
+Requirements:
+  Workbench/Kickstart 2.x+ (tested on Wb3.0)
+  Any CPU
+  256K+ memory
+
+Release Notes:
+  This small example programme is placed on the Public Domain.  I accept no
+responsibility for any damage/loss.  Use at your own risk.
+  Feel free to use any/all of this code in your own work.

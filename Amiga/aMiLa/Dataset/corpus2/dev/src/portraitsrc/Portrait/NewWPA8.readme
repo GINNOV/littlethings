@@ -1,0 +1,58 @@
+Short: Faster chunky output (update)
+Type: util/boot
+Uploader: mlelstv@serpens.swb.de
+Author: mlelstv@serpens.swb.de
+
+AmigaOS knows three functions in graphics.library that output
+chunky pixels to a RastPort: WritePixelLine8, WritePixelArray8
+and WriteChunkyPixels.
+
+The original versions of these routines in the KickstartROM
+are rather slow and have a bug that trashes the chunky source
+buffer.
+
+This patch installs improved versions that are often faster by
+a factor of 10 (on a fast CPU).
+
+-- Requirements:
+
+AmigaOS3.0 or AmigaOS3.1. The WriteChunkyPixels function exists
+only in AmigaOS3.1.
+
+An 68020 or higher CPU.
+
+-- Operation:
+
+The core of the patch are four routines that translate chunky data
+into 1..4 bitplanes and that write only complete words into a bitmap.
+
+For destinations with 5..8 bitplanes the planes are written in two
+passes translating upper and lower nibbles of the source data.
+
+If the destination rectangle is not aligned to words in the bitmap
+the unaligned border words are first converted into a buffer on the
+stack and then masked and copied to the destination bitmap.
+
+The patch utilizes the DoHookClipRects() function of AmigaOS3.x to
+write directly into the destination bitmap, even for layered RastPorts.
+This avoids completely the temporary bitmap you pass to the WPL8 and
+WPA8 functions, but of course programs must not rely on this.
+
+-- Installation:
+
+Add the newwpa8 command directly after SetPatch in your startup-sequence.
+The patch detaches itself from the Shell, there is no need to RUN it.
+
+It is most important that the patch is run before any other patch to
+the graphics system like the CyberGraphics driver that intercepts
+the calls itself.
+
+-- History
+
+1.0 initial version, used tmprp and blitter, WPA8 and WPL8
+1.1 new c2p
+1.2 direct destination writing for aligned rectangles
+1.3 direct destination writing for non-aligned rectangles, added WCP
+1.4 bugfix for modulo calculation in WPA8, WPL8
+
+Michael van Elst

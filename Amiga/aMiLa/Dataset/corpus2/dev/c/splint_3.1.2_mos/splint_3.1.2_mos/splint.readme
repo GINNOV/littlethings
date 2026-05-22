@@ -1,0 +1,85 @@
+Short:        Splint 3.1.2
+Author:       http://www.splint.org
+Type:         dev/c
+Requires:     MorphOS and its SDK
+Architecture: ppc-morphos
+Uploaded:     Mathias 'Corto' Parnaudeau
+Version:      3.1.2
+
+
+Splint (http://www.splint.org) is a tool for statically checking C programs
+for security vulnerabilities and coding mistakes.
+It is a great tool for developers to improve their code with rules stricter 
+than the compiler's ones (even gcc with -Wall).
+
+
+The short story about this port
+
+I compiled it years ago on MorphOS and recently I tried to port it to OS4. 
+I was not totally convinced by this quick and dirty port but some days later 
+Tcheko told me I've just ported splint 3.1.2 for MorphOS. I was pleased 
+to see an update for MorphOS too and I was motivated to improve the OS4 port. 
+So we started to talk with Tcheko, about our work and also about a common 
+release.
+     -- Corto--
+
+Yes, MorphOS and OS4 developers can work together to bring better sofware, 
+it was already the case with SQLite.
+
+We did separate archives but please consider them as a common port !
+
+
+Compilation
+
+Nothing special about the MorphOS release. The sources compiled straight
+once the configuration files was updated to some newer ones. Config files
+included in the source archive was 7 years old... and didn't mention
+anything about MorphOS. What a shame!
+It was compiled with --prefix=/gg/ in its configure.
+
+
+Standard installation (recommended)
+
+- Copy "splint" and ".splintrc" in "GG:bin"
+- Create the directory "GG:share/splint"
+- Copy directories "lib" and "imports" into it
+- Define a CPATH setenv which indicates the system includes path :
+setenv CPATH "/gg/os-include"
+- Copy ENV:CPATH into ENVARC:
+
+
+Custom installation
+
+- Unarchive where you want, let us call it MYDIR (for example "/Work/splint",
+you must use a path with the UNIX syntax).
+- Set environments variables :
+LARCH_PATH must be MYDIR/lib
+LCLIMPORTDIR must be MYDIR/imports
+- Set them in ENVARC :
+copy ENV:LARCH_PATH ENVARC:
+copy ENV:LCLIMPORTDIR ENVARC:
+
+splint also uses the file ".splintrc" if it exists, it defines some rules. 
+I did write some minimal rules that are mandatory, mainly for the parsing 
+of OS headers. For example, it defines these constants :
+-D__MORPHOS__, -D__GNUC__ and -D__PPC__
+
+
+Launch
+
+Here I am explaining how to run splint trying to give you some advices.
+
+To run splint in a shell, basically :
+
+splint filetocheck.c
+
+At the beginning I suggest you to add the command parameter "-weak" 
+to set splint in a mode less strict :
+
+splint -weak filetocheck.c
+
+
+Limitations
+
+- The test run went fine so I expect this release to work nicely.
+

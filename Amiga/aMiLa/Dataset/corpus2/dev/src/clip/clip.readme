@@ -1,0 +1,19 @@
+Short    : Clipboard support functions
+Uploader : dck@hol.gr (D. Keletsekis)
+Author   : dck@hol.gr (D. Keletsekis)
+Type     : dev/src
+Version  : 1.0
+
+Some support functions for adding simple clipboard 
+support for text clips.
+
+With these you can easily Open, Close, Read and Write 
+to any of 256 Clipboard units.
+
+A small CLI command for testing is also included.
+
+D. Keletsekis
+July 1998
+
+
+

@@ -1,0 +1,328 @@
+                         SASCProjectManager
+                         ==================
+
+                    ©1993,1994,1995 Donald Milne
+
+
+Please see the readme file for important copyright information.
+
+This is v2.11 of a project manager for SAS/C v6.0 or greater. It is
+freely distributable within the limits given in the readme file.
+
+Introduction
+------------
+
+This is a front end to simplify maintenance and building of SAS/C
+projects, particularly those with multiple source files and headers.
+It allows the user to construct a list of source files that make up
+the project and to define global and local compiler options for these
+files. It can also build a list of #includ'ed local headers (those
+in "...") and use all this information to construct a make file.
+
+The user can compile individual files, link the project, build the
+project via smake, set global compiler and linker options and set
+local compiler options on a file by file basis. The user can also
+edit both source files (.c/.cpp/.cxx/.cc/.s/.a/.asm) and header files.
+
+The makefile that the program consructs ensures that any changes to
+the source files, local headers, local options and global options will
+result in the recompilation and relinking of all affected parts of the
+source code.
+
+Installation
+------------
+
+1) Copy 'SASCProjectManager' to SC:C/.
+2) Delete the SC:Starter_Project drawer.
+3) Copy the supplied Starter_Project drawer to SC:
+4) Ensure the line 'C:Assign C: SC:C ADD' is in your user-startup.
+
+When the SCSetUp program is used to create a new project, the files
+in the new Starter_Project drawer will be used. The Build, Edit and
+SCoptions icons are replaced with the ProjectMan icon.
+
+Using The Program
+-----------------
+
+Double click on the ProjectMan icon. A window will appear with a large
+scrolling list and several buttons. Create your source files using the
+'Operation/Edit New File...' menu item. Once you have at least one source
+file you can select Project/Add Item... (Amiga A) and a file requester
+will appear. Use this to select a source file and click OK. The file will
+be added to the scrolling list. The file requester supports multi-selection
+of files using the shift key.
+
+Another alternative is to drag the icon(s) for the file(s) into the
+ProjectMan window as the window is an AppWindow and supports drag and
+drop of icons.
+
+Note that only files matching '#?.c', '#?.(s|a|asm) or '#?.(cpp|cxx|cc)'
+will be displayed in the file requester and the AppWindow will ignore
+any file dropped in it that fails to match one of these patterns.
+
+Note that '.a', '.asm' and '.s' assembler files are now supported (as of
+v2.3b) and are passed to 'asm' via the 'sc' frontend so the global/local
+options will apply.
+
+When you are ready to compile, select Operation/Global Options...
+(Amiga G). This will run the normal SCOpts program and allow you to
+set the options that all source files will be compiled and linked with.
+Next select the source file you wish to compile from the list then
+click on the Compile button. A window will open in which the compiler
+output will be displayed. When the compiler is finished, close the
+window using its close gadget.
+
+Use the Make button to recompile and relink all files that require it,
+using smake and will construct a smakefile if one does not exist.
+
+Use the Link button to relink all object files.
+
+Use the Build button to recompile and relink all files whether it is
+required or not, a requester will prompt you before comencing with this
+operation. If you do not have a real-time clock then you should use this
+option the first time you do a compile in order to set the correct
+datestamps on the object files and the executable.
+
+The Show Headers button will scan the selected file and display a list
+of all files that are #include'ed in "..." in a scrolling list in a
+seperate window. Click on Done to return to the main window. Note that
+only the source file will be searched, any files it #include's will not
+be searched so header files should not #include any non-system headers
+of their own. (System headers in <...> are ok however as these are not
+scanned for). The Edit button can be used to edit (using the editor
+selected by the user in the EDITOR tooltype) the currently selected
+header file.
+This also handles INCLUDE'ed '.i' files, names in single quotes (') are
+assumed to be header files and are ignored, names in double quotes (")
+are taken to be user include files and will be listed.
+The file search can take some time, particularly for larger files, to
+speed things up, put the comment /* END INC */ (the spaces are needed)
+after all the includes to stop the search at that point.
+
+The Local Options button runs the SCOpts program and allows the setting
+of options local to source file. The source file must be selected before
+clicking on this button. If the source file is an assembler file and you
+have specified another assembler via the ASMCMD tooltype then a window
+will pop up containing a string gadget enabling you to edit the options
+passed to your assembler on the command line.
+
+The Edit Files button allows the editing (using the editor selected by
+the user in the EDITOR tooltype) of the currently selected source file.
+This is also achieved by double clicking on the file in the listview.
+
+The /\ and \/ buttons move the currently selected item in the
+listview in that direction allowing the user to arrange the files
+as they wish.
+
+The Operation menu has entries that perform the same actions as these
+buttons as well as an entry for 'Global Options...' (Amiga-G), 'Edit New
+File...' (Amiga N), 'Remake...' (Amiga-R) and 'Compile & Link...'
+(Amiga-/).
+The 'remake' option does the same as make but always rebuilds the
+smakefile first, use this if you add new source or header files or
+add/delete a local options file.
+The 'compile & link' optiion compiles the currently selected source
+file then performs a link operation.
+
+The Project menu has the add item entry but also has a 'Delete Item...'
+entry (Amiga D) to remove source files from the list (it does not
+actually delete the source file itself however), an 'About...' item which
+does the same as in any other program, an 'Iconify' entry (Amiga I) which
+reduces the window to an AppIcon on the workbench (double click on it to
+get the window back) and a 'Quit...' option (Amiga Q) which performs the
+same action as the window close gadget.
+
+Gadget Keyboard Equivalents
+---------------------------
+
+Main Window :
+  Edit File      'e'
+  Show Headers   'h'
+  Local Options  'o'
+  Compile        'c'
+  Link           'l'
+  Build          'b'
+  Make           'm'
+  Move Up (/\)   'u'
+  Move Down (\/) 'd'
+  Listview       'f' & 'F'
+Show Headers Window :
+  Edit     'e'
+  Done     'd'
+  Listview 'f' & 'F'
+Edit Options Window :
+  String Gadget  'a'
+  OK             'o'
+  Cancel         'c'
+
+Note : The listview keyboard equivalents are available in V39+ only.
+
+Notes
+-----
+
+The program creates several files.
+
+ProjectMan - this is the data file assosciated with the icon and it
+             contains the source file list and the window x and y
+             positions (as of v2.6).
+
+GLOBALOPTS - this is the global options file.
+
+<sourcefile>.lopt - this is the local options file assosiated with a
+                    source file, either an scoptions style file or
+                    a single line with the command line arguments
+                    for the assembler.
+
+smakefile - the created makefile passed to smake.
+
+<projectname>.lnk - the command file passed by sc to slink.
+
+The SCOpts program creates an SCOptions file but this is renamed to
+either GLOBALOPTS or <sourcefile>.lopt by this program.
+
+Because of the way SCOpts works, not all options will be overidden
+when using local options, it is not possible to turn off the optimizer
+locally for instance, if you need to have part of your source
+compilled without the optimizer, turn it off in global options and
+turn it on in the relevant local options. This will hold for other
+on/off options (debugging for instance) as well.
+
+It is also recommended that you give the project a name in the global
+options to avoid problems, If the project is not given a name, it will
+be named after the first source file in the list and if this changes
+then the compiler etc may become confused (not to mention that you will
+get multiple copies of your executable and '.lnk' files).
+
+IMPORTANT - Only ever run SASCProjectManager from the supplied project
+icon, never give it a tool icon and run it from workbench. It should
+also not be run from the CLI. As of v2.4, it should not be possible to
+run SASCProjectManager by any other means.
+
+Using Another Assembler
+-----------------------
+
+The assembler must be runnable from the CLI and capable of taking its
+options as command line arguments. The command will take the form of
+'assembler_command' 'options' 'file_name' and therefore the assembler
+must accept this form of command line. If the assembler needs an option
+before the file name (such as 'from') then put that at the end of the
+option string (ie '-iINCLUDE: -l from').
+
+Tool Types
+----------
+EDITOR : Set the full path to the users prefered editor (defaults to
+         sc:c/se if not present).
+WINX   : Set the initial x position of the main window (defaults to 20).
+         As of v2.6, this only sets the iconified window x position as
+         the actual window position is saved in the ProjectMan file.
+WINY   : Set the initial y position of the main window (defaults to 20).
+         As of v2.6, this only sets the iconified window y position as
+         the actual window position is saved in the ProjectMan file.
+HEIGHT : Set the inner height of the window, the listview height is set
+         proportional to this (defaults to 88).
+OPCON  : Sets the output console window size and position using the
+         conventional console specification - the format is very
+         important 'x/y/w/h', eg OPCON=0/40/640/100.
+         (defaults to 0/20/640/180).
+CONDEV : Sets the output console device, eg 'CON:' or 'KCON:'.
+         (defaults to CON:).
+ASMCMD : Sets the assembler to be used (needs full path if not in C:)
+         for .asm, .a or .s files. (defaults to SC for the SAS assembler
+         via the sc front-end).
+
+Release Notes
+-------------
+v2.11  Really fixed startup enforcer hits (honest). Cleared up an error
+       in the double-click handling.
+v2.10a Fixed enforcer hits on startup (finally).
+v2.10  New menu options 'Remake' (works the same way make used to, make
+       itself now only builds a smakefile if there isn't one) and
+       'Compile & Link' to compile a single source file and relink.
+v2.9a  Oops! Make now works again!
+v2.9   Added tooltype to set the console device to be used for the output
+       window. Added tooltype to set the assembler to be used for .asm,
+       .s or .a files. LocalOpts button will produce a text edit window
+       for assembly files if another assembler is specified. Should also
+       now handle lower and upper case file names properly.
+v2.8b  More minor bug fixes (can now make without a GLOBALOPTS file).
+v2.8a  Minor bug fixes.
+v2.8   Added facility to delete local options. Added facility to speed
+       up header file search using '/* END INC */' string embedded in
+       the code. Now displays busy pointer whilst performing the
+       header file search.
+v2.7   The output console window size and position can now be specified
+       using the OPCON tooltype. The main window now opens in its saved
+       position rather than opening in its default position and then
+       moving to the saved position. The minimum window size is now 88
+       and not 100.
+v2.6a  The height option in v2.6 introduced a few problems with the
+       iconification handlers which are fixed in this version.
+v2.6   Now saves window position with ProjectMan file. WINX and WINY
+       are overridden by the saved position but can be used to set the
+       position of the iconified window. A new tool-type, HEIGHT, sets
+       the height of the window and hence of the listview.
+v2.5c  Added '.asm', '.cxx' and '.cc' to allowed file patterns.
+v2.5b  Minor bug fixes.
+v2.5a  Modified linking and  making so there is no need to run sc to
+       get slink to work properly. By placing SC:C in the C: assign, the
+       problems with paths and workbench can be avoided and sc will be
+       able to find slink itself. This also means that asm can be kept
+       in sc:c aswell.
+v2.5   Added gadget keyboard equivalents.
+v2.4c  More minor bug fixes, ASL file requester should now accept
+       assembly .s and .a files, smakefile improvements, etc.
+v2.4b  Minor bug fixes.
+v2.4a  The 'Make' option now produces a better smakefile. This should
+       sort some problems with large projects. Other minor bug fixes
+       to sort out the new batch that v2.4 introduced.
+v2.4   Added selectable editor and initial position tooltypes, ability
+       to move source items in the list, support for assembler include
+       files, project name in the window title and double click on
+       listview item to edit.
+v2.3b  More minor fixes - Thanks to Scott Johnston for the suggestions.
+       Now supports '.a' and '.s' files via the 'sc' frontend.
+       Newlook menus under OS3.0 or later added.
+       Fixed bug with pathnames to files being ignored.
+v2.3a  Minor fixes, build puts up a requester again and the wait pointer
+       will be the preferences busy pointer under v39+. Also will now
+       only run under v37 (it always did but running it on an earlier
+       OS would not be caught - until it crashed).
+v2.3   Minor bug fixes, addition of zoom gadget and persistent output
+       window.
+v2.2   Added edit files facility. (first release)
+v2.1   Added 'iconify' option. (not released)
+v2.0   Added multi-file selection and AppWindow support. (not released)
+v1.2   Original version. (not released)
+
+Archive Contents
+----------------
+
+ProjectMan.info
+ProjectMan/Starter_Project.info
+ProjectMan/Starter_Project/Debug
+ProjectMan/Starter_Project/Debug.info
+ProjectMan/Starter_Project/Find.info
+ProjectMan/Starter_Project/ProjectMan
+ProjectMan/Starter_Project/ProjectMan.info
+ProjectMan/README                            (distribution notes)
+ProjectMan/README.info
+ProjectMan/SASCProjectMan.doc                (this file)
+ProjectMan/SASCProjectMan.doc.info
+ProjectMan/SASCProjectManager                (the program)
+
+Contact Details
+---------------
+
+You can contact me by mailing 'donald' on the Alpha Complex BBS on
+01224-626203 (UK).
+
+Thanks
+------
+
+Thanks to :
+    Commodore-Amiga for the machine.
+    SAS Institute for the compiler.
+    Alex for Alpha Complex and Wintermute.
+    Gary Girvan for the suggestions and bug finding.
+    Scott Johnston for the wishlist.
+    Norman Baccari for helping with enforcer problems.

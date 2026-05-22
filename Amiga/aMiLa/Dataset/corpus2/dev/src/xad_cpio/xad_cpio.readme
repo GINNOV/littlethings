@@ -1,0 +1,26 @@
+Short:        Cpio xadmaster client (part of RPM)
+Author:       polluks@sdf.lonestar.org (Stefan Haubenthal)
+Uploader:     polluks sdf lonestar org (Stefan Haubenthal)
+Type:         dev/src
+Version:      1.3
+Requires:     util/arc/xadmaster.lha
+Architecture: m68k-amigaos
+
+--- About this archive ---
+
+This archive contains the cpio client for Dirk Stöcker's XAD system -
+util/arc/xadmaster.lha and also includes the source code to this client.
+
+--- About the client ---
+
+To install the client, unpack this archive, then execute this command
+
+ smake install
+
+This client lets XAD view and extract cpio archives. Cpio is a
+program like tar - it collects files into nothing but an archive.
+
+To unpack an RPM package execute following commands
+
+ cd dir-of-foo
+ rx redhat foo.rpm

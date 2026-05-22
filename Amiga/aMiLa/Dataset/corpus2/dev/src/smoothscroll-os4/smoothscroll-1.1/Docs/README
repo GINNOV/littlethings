@@ -1,0 +1,85 @@
+
+                Smooth Scrolling
+                ----------------
+
+      This is a simple demonstration of ultra
+    smooth scrolling, using OpenGL and sub-pixel
+      accurate rendering. Map editor included.
+
+
+The demo works best with retrace syncronized pageflipping,
+and on systems that are fast enough to maintain a steady
+full frame rate. In works pretty well without retrace sync,
+but it isn't nearly as smooth at higher speeds.
+
+Note that interpolation across tile edges is solved in a
+most primitive way in this demo; it's built right into the
+tile palette. Rather than having the engine do some magic,
+I'm just relying on the map to use only "compatible" tiles
+together. The net result is that the pixels *outside* a
+tile will always match the corresponding pixels of the
+surrounding tiles on the map.
+
+Command line switches:
+	-sdl		Use SDL 2D for rendering
+	-w		Use windowed mode
+	-s<scale>	Set scale (Default; SDL: 1, OpenGL: 2)
+	-b<bpp>		Use <bpp> bits per pixel mode
+			(Default: auto)
+	-e		Activate map editor
+	-m <name>	Use map file <name>
+	-ntf		Disable the "time filter"
+
+Redundant switches:
+	-gl		Use OpenGL for rendering (default)
+	-f		Use fullscreen mode (default)
+	-tf		Enable the "time filter"
+
+Control:
+	Arrow keys	Change the scrolling speed.
+	SPACE		Stop scrolling instantly.
+	ESC		Exit demo.
+
+
+Using the Map Editor
+--------------------
+This demo includes a primitive map editor that I used to
+create the demo map. The editor works only in SDL mode
+(which is selected automatically), and supports higher
+resolutions through the -s<scale> switch. The map file
+edited is the default map file, or the file specified
+using the -m <name> switch.
+
+Editor control:
+	F2 or S		Saves the current map, OVERWRITING
+			any existing file with the same name
+			as that specified as the map name.
+
+	ESC		Exits the editor WITHOUT saving.
+
+	SPACE		Switches between selection mode and
+			editing mode.
+
+	CTRL		Enters selection mode, but only for
+			as long as the CTRL key is held down.
+
+	Arrow keys	Scroll the map.
+
+	Mouse		Moving the mouse (obviously) moves
+			the cursor. An animated marker
+			indicates which exact tile is under
+			the cursor.
+
+	Mouse buttons
+		Selection mode:
+			Selects tile for the button clicked.
+
+		Editing mode:
+			Pastes tile selected for the clicked
+			button.
+
+
+Have fun!
+
+
+			//David Olofson <david@olofson.net>

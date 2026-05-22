@@ -1,0 +1,1906 @@
+Start:
+		JSR	StoreCopper
+
+		MOVE.L	#Plane1,Showplane
+		MOVE.L	#Plane2,Workplane
+		MOVE.L	#Copper1,Showcop
+		MOVE.L	#Copper2,Workcop
+
+		JSR	FillC1Planes
+		JSR	FillC2Planes
+
+		JSR	FillC1C2Palettes
+
+		MOVE.L	Workcop,$dff080
+
+	wblt:	BTST	#14,$dff002
+		BNE	wblt
+
+
+		MOVE.L	#$0,MaxX
+		MOVE.L	#$0fffffff,MinX
+		MOVE.L	#$0,MaxY
+		MOVE.L	#$0fffffff,MinY
+	retrigger:
+		LEA	Sequence,a2
+		LEA	Sequence,a4
+		MOVE.W	AddSub,d7
+		NOT.W	d7
+		MOVE.W	d7,AddSub
+	loopenz:
+
+		BTST.B	#6,$bfe001
+		BEQ	tu
+
+		MOVEQ	#0,d7
+		MOVE.W	(a2)+,d7
+		CMP.W	#$250,d7
+		BEQ	DrawLine
+		CMP.W	#$251,d7
+		BEQ	DrawPolyLine
+		CMP.W	#$252,d7
+		BEQ	DrawPolyLine3
+		CMP.W	#$520,d7
+		BEQ	DrawPixel
+		CMP.W	#$667,d7
+		BEQ	CopyPolygonToSpare
+		CMP.W	#$929,d7
+		BNE	noShowtime
+		MOVE.W	AddSub,d7
+		;CMP.W	#0,d7
+		;BNE	ShowtimeSub
+		;BRA	Showtime
+		BRA	ShowtimeReplace
+	noShowtime:		
+		CMP.W	#$fff,d7
+		;BEQ	tu		;quit
+		BEQ	retrigger	;loop
+		;BEQ	WaitMouse	;wait l mouse button
+	tu:
+		JSR	RestoreCopper
+		RTS
+
+WaitMouse:
+		BTST.B	#6,$bfe001
+		BNE	WaitMouse
+
+		BRA	tu
+
+DrawPixel:
+
+		MOVE.L	#DP1,a1
+
+		MOVE.W	(a2)+,d1
+		MOVE.W	(a2)+,d2
+
+		;BRA	loopenz
+
+		MOVE.W	d1,d3
+		LSR.W	#3,d3
+		MULU	#40,d2
+		ADD.W	d3,d2
+		NOT	d1
+		BCHG	d1,(a1,d2.w)
+
+		BRA	loopenz
+
+ShowtimeReplace:
+		;JSR	CopySpare2Draw2
+
+		MOVE.L	#0,d6
+
+		;JSR	CopySpare2Over
+		JSR	CopySpare2WorkRepl
+
+		ADD.L	#$2800,d6
+
+		;JSR	CopySpare2Over
+		JSR	CopySpare2WorkRepl
+
+		ADD.L	#$2800,d6
+
+		;JSR	CopySpare2Over
+		JSR	CopySpare2WorkRepl
+
+		ADD.L	#$2800,d6
+
+		;JSR	CopySpare2Over
+		JSR	CopySpare2WorkRepl
+
+		ADD.L	#$2800,d6
+
+		;JSR	CopySpare2Over
+		JSR	CopySpare2WorkRepl
+
+		JSR	ClearDraw2
+		JSR	ClearSpare
+
+		JSR	WaitVBL
+		JSR	Swap
+		;JSR	Clear
+;	rmbflickr:
+;		BTST.B	#10,$dff016
+;		BNE	rmbflickr
+
+	rmblprr:
+		BTST.B	#10,$dff016
+		BEQ	rmblprr
+
+		BRA	loopenz
+
+Showtime:
+		;JSR	CopySpare2Draw2
+
+		MOVE.L	#0,d6
+
+		JSR	CopySpare2Over
+		JSR	CopySpare2Work
+
+		ADD.L	#$2800,d6
+
+		JSR	CopySpare2Over
+		JSR	CopySpare2Work
+
+		ADD.L	#$2800,d6
+
+		JSR	CopySpare2Over
+		JSR	CopySpare2Work
+
+		ADD.L	#$2800,d6
+
+		JSR	CopySpare2Over
+		JSR	CopySpare2Work
+
+		ADD.L	#$2800,d6
+
+		JSR	CopySpare2Over
+		JSR	CopySpare2Work
+
+		JSR	ClearDraw2
+		JSR	ClearSpare
+
+		JSR	WaitVBL
+		;JSR	Swap
+		;JSR	Clear
+;	rmbflick:
+;		BTST.B	#10,$dff016
+;		BNE	rmbflick
+
+	rmblpr:	BTST.B	#10,$dff016
+		BEQ	rmblpr
+
+		BRA	loopenz
+
+
+ShowtimeSub:
+		;JSR	CopySpare2Draw2
+
+		MOVE.L	#0,d6
+
+		JSR	CopySpare2OverSub
+		JSR	CopySpare2Work
+
+		ADD.L	#$2800,d6
+
+		JSR	CopySpare2OverSub
+		JSR	CopySpare2Work
+
+		ADD.L	#$2800,d6
+
+		JSR	CopySpare2OverSub
+		JSR	CopySpare2Work
+
+		ADD.L	#$2800,d6
+
+		JSR	CopySpare2OverSub
+		JSR	CopySpare2Work
+
+		ADD.L	#$2800,d6
+
+		JSR	CopySpare2OverSub
+		JSR	CopySpare2Work
+
+		JSR	ClearDraw2
+		JSR	ClearSpare
+
+		JSR	WaitVBL
+		;JSR	Swap
+		;JSR	Clear
+;	rmbflicks:
+;		BTST.B	#10,$dff016
+;		BNE	rmbflicks
+
+	rmblprs:
+		BTST.B	#10,$dff016
+		BEQ	rmblprs
+
+		BRA	loopenz
+
+CopyPolygonToSpare:
+		MOVE.W	(a2)+,Kolorro
+		;MOVE.W	#1,Kolorro
+
+		;ADD.L	#5,MaxY
+		;SUB.L	#5,MinY
+
+		JSR	CopyDraw2Draw2
+		JSR	ClearDraw
+		MOVE.W	Kolorro,d2
+		BTST	#0,d2
+		BNE	CopyDraw22Spare0
+		BRA	CopyDraw22Spare0c
+	cdw1:	
+		MOVE.W	Kolorro,d2
+		BTST	#1,d2
+		BNE	CopyDraw22Spare1
+		BRA	CopyDraw22Spare1c
+	cdw2:	
+		MOVE.W	Kolorro,d2
+		BTST	#2,d2
+		BNE	CopyDraw22Spare2
+		BRA	CopyDraw22Spare2c
+	cdw3:	
+		MOVE.W	Kolorro,d2
+		BTST	#3,d2
+		BNE	CopyDraw22Spare3		
+		BRA	CopyDraw22Spare3c
+	cdw4:	
+		MOVE.W	Kolorro,d2
+		BTST	#4,d2
+		BNE	CopyDraw22Spare4		
+		BRA	CopyDraw22Spare4c
+	cdw5:
+		JSR	ClearDraw2
+
+		MOVE.L	#$0,MaxX
+		MOVE.L	#$0fffffff,MinX
+		MOVE.L	#$0,MaxY
+		MOVE.L	#$0fffffff,MinY
+
+		MOVE.L	#0,CoordsOffset
+
+		LEA	PolygonCoords,a0
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+		MOVE.L	#0,(a0)+
+
+		BRA	loopenz
+		
+DrawLine:
+		MOVE.W	(a2)+,d1
+		MOVE.W	(a2)+,d2
+		MOVE.W	(a2)+,d3
+		MOVE.W	(a2)+,d4
+
+		EXT.L	d1
+		EXT.L	d2
+		EXT.L	d3
+		EXT.L	d4
+		
+		JSR	SetMinMax
+
+		JSR	WriteCoords
+
+		JSR	Kreska
+
+		BRA	loopenz
+
+DrawPolyLine:
+		MOVE.W	(a2),d1
+		MOVE.W	2(a2),d2
+		MOVE.W	4(a2),d3
+		MOVE.W	6(a2),d4
+
+		EXT.L	d1
+		EXT.L	d2
+		EXT.L	d3
+		EXT.L	d4
+		
+		JSR	SetMinMax
+
+		JSR	WriteCoords
+
+		JSR	Kreska
+
+		MOVE.W	4(a2),d1
+		MOVE.W	6(a2),d2
+		MOVE.W	8(a2),d3
+		MOVE.W	10(a2),d4
+
+		EXT.L	d1
+		EXT.L	d2
+		EXT.L	d3
+		EXT.L	d4
+		
+		JSR	SetMinMax
+
+		JSR	WriteCoords
+
+		JSR	Kreska
+
+		MOVE.W	8(a2),d1
+		MOVE.W	10(a2),d2
+		MOVE.W	12(a2),d3
+		MOVE.W	14(a2),d4
+
+		EXT.L	d1
+		EXT.L	d2
+		EXT.L	d3
+		EXT.L	d4
+		
+		JSR	SetMinMax
+
+		JSR	WriteCoords
+
+		JSR	Kreska
+
+		MOVE.W	12(a2),d1
+		MOVE.W	14(a2),d2
+		MOVE.W	(a2),d3
+		MOVE.W	2(a2),d4
+
+		ADDA.L	#16,a2
+
+		EXT.L	d1
+		EXT.L	d2
+		EXT.L	d3
+		EXT.L	d4
+		
+		JSR	SetMinMax
+
+		JSR	WriteCoords
+
+		JSR	Kreska
+
+		BRA	loopenz
+
+DrawPolyLine3:
+		MOVE.W	(a2),d1
+		MOVE.W	2(a2),d2
+		MOVE.W	4(a2),d3
+		MOVE.W	6(a2),d4
+
+		EXT.L	d1
+		EXT.L	d2
+		EXT.L	d3
+		EXT.L	d4
+		
+		JSR	SetMinMax
+
+		JSR	WriteCoords
+
+		JSR	Kreska
+
+		MOVE.W	4(a2),d1
+		MOVE.W	6(a2),d2
+		MOVE.W	8(a2),d3
+		MOVE.W	10(a2),d4
+
+		EXT.L	d1
+		EXT.L	d2
+		EXT.L	d3
+		EXT.L	d4
+		
+		JSR	SetMinMax
+
+		JSR	WriteCoords
+
+		JSR	Kreska
+
+		MOVE.W	8(a2),d1
+		MOVE.W	10(a2),d2
+		MOVE.W	(a2),d3
+		MOVE.W	2(a2),d4
+
+		EXT.L	d1
+		EXT.L	d2
+		EXT.L	d3
+		EXT.L	d4
+		
+		JSR	SetMinMax
+
+		JSR	WriteCoords
+
+		JSR	Kreska
+
+		ADDA.L	#12,a2
+
+		BRA	loopenz
+
+WriteCoords:
+		LEA	PolygonCoords,a0
+		MOVE.L	CoordsOffset,d5
+
+		MOVE.L	d1,(a0,d5.l)
+		MOVE.L	d2,4(a0,d5.l)
+		MOVE.L	d3,8(a0,d5.l)
+		MOVE.L	d4,12(a0,d5.l)
+
+		ADD.L	#16,d5
+
+		MOVE.L	d5,CoordsOffset
+
+		RTS
+
+SetMinMax:
+		MOVE.L	MinX,d5
+		CMP.L	d1,d5
+		BLE	nonewmin
+		MOVE.L	d1,d5
+	nonewmin:
+		CMP.L	d3,d5
+		BLE	nonewmin2
+		MOVE.L	d3,d5
+	nonewmin2:
+		MOVE.L	d5,MinX
+
+		MOVE.L	MaxX,d5
+		CMP.L	d1,d5
+		BGE	nonewmax
+		MOVE.L	d1,d5
+	nonewmax:
+		CMP.L	d3,d5
+		BGE	nonewmax2
+		MOVE.L	d3,d5
+	nonewmax2:
+		MOVE.L	d5,MaxX
+
+		MOVE.L	MinY,d5
+		CMP.L	d2,d5
+		BLE	nonewminy
+		MOVE.L	d2,d5
+	nonewminy:
+		CMP.L	d4,d5
+		BLE	nonewminy2
+		MOVE.L	d4,d5
+	nonewminy2:
+		MOVE.L	d5,MinY
+
+		MOVE.L	MaxY,d5
+		CMP.L	d2,d5
+		BGE	nonewmaxy
+		MOVE.L	d2,d5
+	nonewmaxy:
+		CMP.L	d4,d5
+		BGE	nonewmaxy2
+		MOVE.L	d4,d5
+	nonewmaxy2:
+		MOVE.L	d5,MaxY
+	
+		RTS
+
+Kreska:
+		;BRA	aresorted
+		CMP.L	d2,d4
+		BGE	aresorted
+		EXG.L	d1,d3
+		EXG.L	d2,d4
+	aresorted:
+
+		MOVEQ	#0,d5
+		MOVE.W	d1,d5
+		ANDI.L	#$0f,d5
+		LSL.L	#8,d5
+		LSL.L	#4,d5
+		OR.L	#%0000101101011010,d5	;XOR
+		;OR.L	#%0000101111111010,d5	;OR
+
+		MOVE.W	d5,$dff040
+	
+		MOVE.L	d1,d5
+		SUB.L	d3,d5
+		CMP.L	#0,d5
+		BGE	noneg
+		NEG.L	d5
+	noneg:	MOVE.L	d5,DeltaX
+
+		MOVE.L	d2,d5
+		SUB.L	d4,d5
+		CMP.L	#0,d5
+		BGE	noneg2
+		NEG.L	d5
+	noneg2: MOVE.L	d5,DeltaY
+
+		MOVE.L	DeltaX,d5
+		MOVE.L	DeltaY,d6
+
+		CMP.L	d5,d6
+		BGE	nosfap
+		EXG	d5,d6
+	nosfap:	MOVE.L	d6,DX
+		MOVE.L	d5,DY		
+
+		MOVE.L	#DP1,d0
+
+		MOVE.W	#$8000,$dff074
+		MOVE.W	#$ffff,$dff072
+		MOVE.W	#$ffff,$dff044
+		MOVE.W	#$ffff,$dff046
+
+		SUB.L	d6,d5
+		ASL.L	#2,d5
+
+		MOVE.W	d5,$dff064
+
+		MOVE.L	DY,d5
+		ASL.L	#2,d5
+
+		MOVE.W	d5,$dff062
+
+		MOVE.W	#40,$dff060
+		MOVE.W	#40,$dff066
+
+		MOVE.L	DY,d5
+		MOVE.L	DX,d6
+
+		LSL.L	#2,d5
+		LSL.L	#2,d6
+		SUB.L	d6,d5
+
+		MOVE.B	#0,Sign
+		CMP.L	#0,d5
+		BGE	noset
+		MOVE.B	#64,Sign
+	noset:
+		MOVE.L	d5,$dff050
+		
+		MOVE.L	d2,d5
+		MULU	#40,d5
+		MOVE.L	d1,d6
+		LSR.L	#4,d6
+		LSL.L	#1,d6
+		ADD.L	d6,d5
+
+		ADD.L	d0,d5
+		MOVE.L	d5,$dff048
+		MOVE.L	d5,$dff054
+
+		MOVEQ	#0,d0
+
+		MOVE.L	DeltaX,d5
+		MOVE.L	DeltaY,d6	
+
+		CMP.L	d5,d6
+		BGE	nooneset1
+		BSET.L	#0,d0
+	nooneset1:
+		CMP.L	d2,d4
+		BGE	nooneset2
+		BSET.L	#1,d0
+	nooneset2:
+		CMP.L	d1,d3
+		BGE	nooneset3
+		BSET.L	#2,d0
+	nooneset3:
+		LEA	Function,a3
+		MOVE.B	(a3,d0.w),d6	
+
+		MOVE.W	#%0000000000000011,d5
+		OR.B	Sign,d5
+		OR.B	d6,d5
+		
+		MOVE.W	d5,$dff042
+
+		MOVE.L	DX,d5
+		ADD.L	#1,d5
+		LSL.L	#6,d5
+		ADD.L	#2,d5
+
+		MOVE.W	d5,$dff058
+
+	wblt11:	BTST	#14,$dff002
+		BNE	wblt11
+
+		RTS
+
+CopySpare2Over:
+		MOVE.L	#0,d2
+		MOVE.L	#319,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff062
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0fe80002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+
+		MOVE.L	#DP3,d4
+		MOVE.L	#255,d5
+		SUB.L	#1,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		MOVE.L	d4,$dff050	;a - obiekt
+		MOVE.L	#DP2,d4
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		ADD.L	#$2800,d4
+		CMP.L	#$a000,d6
+		BNE	nolastbt
+		SUB.L	#$c800,d4
+	nolastbt:
+		MOVE.L	d4,$dff054	;d - overflow+1
+
+		MOVE.L	Workplane,d4
+		MOVE.L	#255,d5
+		SUB.L	#1,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		MOVE.L	d4,$dff048	;c - workplane
+
+		MOVE.L	#DP2,d4
+		MOVE.L	#255,d5
+		SUB.L	#1,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		MOVE.L	d4,$dff04c	;b - overflow
+		
+		MOVE.L	#255,d5
+		SUB.L	#0,d5
+		SUB.L	#1,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw112938:
+		BTST	#14,$dff002
+		BNE.B	wbltw112938
+
+		RTS
+
+CopySpare2OverSub:
+		MOVE.L	#0,d2
+		MOVE.L	#319,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff062
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0fd40002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+
+		MOVE.L	#DP3,d4
+		MOVE.L	#255,d5
+		SUB.L	#1,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		MOVE.L	d4,$dff050	;a - obiekt
+		MOVE.L	#DP2,d4
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		ADD.L	#$2800,d4
+		CMP.L	#$a000,d6
+		BNE	nolastbts
+		SUB.L	#$c800,d4
+	nolastbts:
+		MOVE.L	d4,$dff054	;d - overflow+1
+
+		MOVE.L	Workplane,d4
+		MOVE.L	#255,d5
+		SUB.L	#1,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		MOVE.L	d4,$dff048	;c - workplane
+
+		MOVE.L	#DP2,d4
+		MOVE.L	#255,d5
+		SUB.L	#1,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		MOVE.L	d4,$dff04c	;b - overflow
+		
+		MOVE.L	#255,d5
+		SUB.L	#0,d5
+		SUB.L	#1,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw112938s:
+		BTST	#14,$dff002
+		BNE.B	wbltw112938s
+
+		RTS
+
+
+CopySpare2WorkRepl:
+
+		MOVE.L	#0,d2
+		MOVE.L	#319,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff062
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0ff00002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+
+		MOVE.L	#DP3,d4
+		MOVE.L	#255,d5
+		SUB.L	#1,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		MOVE.L	d4,$dff050	;a
+		MOVE.L	Workplane,d4
+		;ADD.L	#$2800,d4
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		MOVE.L	d4,$dff054	;d
+		MOVE.L	d4,$dff048	;c
+
+		MOVE.L	#DP2,d4
+		MOVE.L	#255,d5
+		SUB.L	#1,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		MOVE.L	d4,$dff04c	;b
+		
+		MOVE.L	#255,d5
+		SUB.L	#0,d5
+		SUB.L	#1,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw11299r:
+		BTST	#14,$dff002
+		BNE.B	wbltw11299r
+
+		RTS
+
+
+CopySpare2Work:
+		MOVE.L	#0,d2
+		MOVE.L	#319,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff062
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0f960002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+
+		MOVE.L	#DP3,d4
+		MOVE.L	#255,d5
+		SUB.L	#1,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		MOVE.L	d4,$dff050	;a
+		MOVE.L	Workplane,d4
+		;ADD.L	#$2800,d4
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		MOVE.L	d4,$dff054	;d
+		MOVE.L	d4,$dff048	;c
+
+		MOVE.L	#DP2,d4
+		MOVE.L	#255,d5
+		SUB.L	#1,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		ADD.L	d6,d4
+		MOVE.L	d4,$dff04c	;b
+		
+		MOVE.L	#255,d5
+		SUB.L	#0,d5
+		SUB.L	#1,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw11299:
+		BTST	#14,$dff002
+		BNE.B	wbltw11299
+
+		RTS
+
+
+CopyDraw22Spare0:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0bfa0002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP2,d4
+				
+		MOVE.L	MaxY,d5
+		;SUB.L	Shifter,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	#DP3,d4
+		;ADD.L	#$2800*3,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	d4,$dff048
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		;SUB.L	Shifter2,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw11290:
+		BTST	#14,$dff002
+		BNE.B	wbltw11290
+
+		BRA	cdw1
+
+CopyDraw22Spare1:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0bfa0002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP2,d4
+				
+		MOVE.L	MaxY,d5
+		;SUB.L	Shifter,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	#DP3,d4
+		ADD.L	#$2800,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	d4,$dff048
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		;SUB.L	Shifter2,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw11291:
+		BTST	#14,$dff002
+		BNE.B	wbltw11291
+
+		BRA	cdw2
+		
+CopyDraw22Spare2:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0bfa0002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP2,d4
+				
+		MOVE.L	MaxY,d5
+		;SUB.L	Shifter,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	#DP3,d4
+		ADD.L	#$2800*2,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	d4,$dff048
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		;SUB.L	Shifter2,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw11292:
+		BTST	#14,$dff002
+		BNE.B	wbltw11292
+
+		BRA	cdw3
+
+CopyDraw22Spare3:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0bfa0002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP2,d4
+				
+		MOVE.L	MaxY,d5
+		;SUB.L	Shifter,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	#DP3,d4
+		ADD.L	#$2800*3,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	d4,$dff048
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		;SUB.L	Shifter2,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw11293:
+		BTST	#14,$dff002
+		BNE.B	wbltw11293
+
+		BRA	cdw4
+
+CopyDraw22Spare4:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0bfa0002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP2,d4
+				
+		MOVE.L	MaxY,d5
+		;SUB.L	Shifter,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	#DP3,d4
+		ADD.L	#$2800*4,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	d4,$dff048
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		;SUB.L	Shifter2,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw112935:
+		BTST	#14,$dff002
+		BNE.B	wbltw112935
+
+		BRA	cdw5
+		
+CopyDraw22Spare0c:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0b0a0002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP2,d4
+				
+		MOVE.L	MaxY,d5
+		;SUB.L	Shifter,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	#DP3,d4
+		;ADD.L	#$2800*3,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	d4,$dff048
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		;SUB.L	Shifter2,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw11290c:
+		BTST	#14,$dff002
+		BNE.B	wbltw11290c
+
+		BRA	cdw1
+
+CopyDraw22Spare1c:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0b0a0002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP2,d4
+				
+		MOVE.L	MaxY,d5
+		;SUB.L	Shifter,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	#DP3,d4
+		ADD.L	#$2800,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	d4,$dff048
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		;SUB.L	Shifter2,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw11291c:
+		BTST	#14,$dff002
+		BNE.B	wbltw11291c
+
+		BRA	cdw2
+		
+CopyDraw22Spare2c:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0b0a0002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP2,d4
+				
+		MOVE.L	MaxY,d5
+		;SUB.L	Shifter,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	#DP3,d4
+		ADD.L	#$2800*2,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	d4,$dff048
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		;SUB.L	Shifter2,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw11292c:
+		BTST	#14,$dff002
+		BNE.B	wbltw11292c
+
+		BRA	cdw3
+
+CopyDraw22Spare3c:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0b0a0002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP2,d4
+				
+		MOVE.L	MaxY,d5
+		;SUB.L	Shifter,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	#DP3,d4
+		ADD.L	#$2800*3,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	d4,$dff048
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		;SUB.L	Shifter2,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw11293c:
+		BTST	#14,$dff002
+		BNE.B	wbltw11293c
+
+		BRA	cdw4
+
+CopyDraw22Spare4c:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$0b0a0002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP2,d4
+				
+		MOVE.L	MaxY,d5
+		;SUB.L	Shifter,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	#DP3,d4
+		ADD.L	#$2800*4,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	d4,$dff048
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		;SUB.L	Shifter2,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw112935c:
+		BTST	#14,$dff002
+		BNE.B	wbltw112935c
+
+		BRA	cdw5
+
+
+CopyDraw2Draw2:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff066
+		MOVE.L	#$09f0000a,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP1,d4
+				
+		MOVE.L	MaxY,d5
+		;SUB.L	Shifter,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	#DP2,d4
+		;ADD.L	#$2800*3,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		;SUB.L	Shifter2,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw1128:
+		BTST	#14,$dff002
+		BNE.B	wbltw1128
+
+		RTS
+
+ClearDraw:
+	wabltc:	BTST	#14,$dff002
+		BNE.B	wabltc
+
+		MOVE.L	#DP1,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc2:
+		BTST	#14,$dff002
+		BNE.B	wabltc2
+
+		RTS
+
+ClearDraw2:
+
+	wabltc222:
+		BTST	#14,$dff002
+		BNE.B	wabltc222
+
+		MOVE.L	#DP2,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc2222:
+		BTST	#14,$dff002
+		BNE.B	wabltc2222
+
+		MOVE.L	#DP2,d0
+		ADD.L	#$2800,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc2233:
+		BTST	#14,$dff002
+		BNE.B	wabltc2233
+		
+		MOVE.L	#DP2,d0
+		ADD.L	#$5000,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc2244:
+		BTST	#14,$dff002
+		BNE.B	wabltc2244
+		
+		MOVE.L	#DP2,d0
+		ADD.L	#$7800,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc224:
+		BTST	#14,$dff002
+		BNE.B	wabltc224
+
+		MOVE.L	#DP2,d0
+		ADD.L	#$a000,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc2245:
+		BTST	#14,$dff002
+		BNE.B	wabltc2245
+
+
+		RTS
+
+ClearSpare:
+
+	wabltc222s:
+		BTST	#14,$dff002
+		BNE.B	wabltc222s
+
+		MOVE.L	#DP3,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc2222s:
+		BTST	#14,$dff002
+		BNE.B	wabltc2222s
+
+		MOVE.L	#DP3,d0
+		ADD.L	#$2800,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc2233s:
+		BTST	#14,$dff002
+		BNE.B	wabltc2233s
+		
+		MOVE.L	#DP3,d0
+		ADD.L	#$5000,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc2244s:
+		BTST	#14,$dff002
+		BNE.B	wabltc2244s
+		
+		MOVE.L	#DP3,d0
+		ADD.L	#$7800,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc224s:
+		BTST	#14,$dff002
+		BNE.B	wabltc224s
+
+		MOVE.L	#DP3,d0
+		ADD.L	#$a000,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc225s:
+		BTST	#14,$dff002
+		BNE.B	wabltc225s
+
+
+		RTS
+
+Clear:
+		;clear Workplane - 5 bitplanes
+		
+	wablt:	BTST	#14,$dff002
+		BNE.B	wablt
+
+		MOVE.L	Workplane,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wablt2:	BTST	#14,$dff002
+		BNE.B	wablt2
+
+		ADD.L	#$2800,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wablt3:	BTST	#14,$dff002
+		BNE.B	wablt3
+
+		ADD.L	#$2800,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wablt4:	BTST	#14,$dff002
+		BNE.B	wablt4
+
+		ADD.L	#$2800,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wablt5:	BTST	#14,$dff002
+		BNE.B	wablt5
+
+		ADD.L	#$2800,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wablt6:	BTST	#14,$dff002
+		BNE.B	wablt6
+
+
+		RTS
+
+Swap:
+		MOVE.L	Showplane,d0
+		MOVE.L	Workplane,Showplane
+		MOVE.L	d0,Workplane
+
+		MOVE.L	Showcop,d0
+		MOVE.L	Workcop,Showcop
+		MOVE.L	d0,Workcop		
+
+		MOVE.L	Showcop,$dff080
+		RTS
+
+FillC1C2Palettes:
+		LEA	C1Palette,a0
+		LEA	C2Palette,a1
+		LEA	Palette,a2
+		MOVE.W	#$0180,d0
+		MOVE.W	#31,d1
+	pl:
+		MOVE.W	d0,(a0)+
+		MOVE.W	d0,(a1)+		
+		MOVE.W	(a2),(a0)+
+		MOVE.W	(a2)+,(a1)+
+		ADD.W	#2,d0
+		DBF	d1,pl
+		RTS
+FillC1Planes:
+		LEA	C1Planes,a0
+		MOVE.L	Showplane,d0
+		MOVE.W	#$00e2,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00e0,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00e6,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00e4,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00ea,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00e8,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00ee,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00ec,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00f2,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00f0,(a0)+
+		MOVE.W	d0,(a0)
+		RTS
+
+FillC2Planes:
+		LEA	C2Planes,a0
+		MOVE.L	Workplane,d0
+		MOVE.W	#$00e2,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00e0,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00e6,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00e4,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00ea,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00e8,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00ee,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00ec,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00f2,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00f0,(a0)+
+		MOVE.W	d0,(a0)
+
+		RTS
+
+StoreCopper:
+		MOVE.L	4.w,a6
+		JSR	-132(a6)
+		MOVE.L	156(a6),a1
+		MOVE.L	38(a1),OldCop
+		RTS
+
+RestoreCopper:
+		MOVE.L	4.w,a6
+		JSR	-138(a6)
+		MOVE.L	OldCop,$dff080
+		RTS
+
+WMB:
+	mbl:	BTST.B	#6,$bfe001
+		BNE.W	mbl
+		RTS
+
+WaitVBL:
+		MOVE.L	$dff004,d0
+		LSR.L	#8,d0
+		ANDI.W	#$1ff,d0
+		CMP.W	#$12d,d0
+		BNE	WaitVBL
+		RTS
+
+
+
+;----------------------------------------------
+	SECTION Dane,DATA_P
+
+OldCop:		DC.L	$00000000
+
+Showplane:	DC.L	$00000000
+Workplane:	DC.L	$00000000
+Showcop:	DC.L	$00000000
+Workcop:	DC.L	$00000000
+
+DeltaX:		DC.L	0
+DeltaY:		DC.L	0
+DX:		DC.L	0
+DY:		DC.L	0
+DDX:		DC.L	0
+DDY:		DC.L	0
+		even
+
+Sign:		DC.B	0
+		even
+
+HalfOctant:	DC.B	0
+		even
+
+HalfOctant2:	DC.B	0
+		even
+
+Octant:		DC.B	0
+		even
+
+	SECTION	Copper,DATA_C
+
+Copper1:	
+		DC.L	$008e2c81,$00902cc1
+		DC.L	$00920038,$009400d0
+		DC.L	$00960020
+		DC.L	$01020000,$01040000
+		DC.L	$01080000,$010a0000
+C1Palette:	DS.L	32
+C1Planes:	DS.L	10
+		DC.L	$01005000
+		DC.L	$01fc0000
+		DC.L	$fffffffe
+
+Copper2:	
+		DC.L	$008e2c81,$00902cc1
+		DC.L	$00920038,$009400d0
+		DC.L	$00960020
+		DC.L	$01020000,$01040000
+		DC.L	$01080000,$010a0000
+C2Palette:	DS.L	32
+C2Planes:	DS.L	10
+		DC.L	$01005000
+		DC.L	$01fc0000
+		DC.L	$fffffffe
+
+	SECTION	Paleta,DATA_P
+
+Palette:	DC.W	$0040,$0140,$0250,$0350,$0460,$0560,$0670,$0770
+		DC.W	$0870,$0980,$0a80,$0b80,$0c90,$0d90,$0ea0,$0fa0
+		DC.W	$0fb1,$0fb2,$0fb3,$0fb4,$0fc5,$0fc6,$0fc7,$0fc8
+		DC.W	$0fd9,$0fda,$0fdb,$0fec,$0fed,$0fee,$0fef,$0fff
+
+
+	SECTION Screeny,DATA_C
+
+Plane1:
+	P11:	DCB.B	$2800,$0
+	P12:	DCB.B	$2800,$0
+	P13:	DCB.B	$2800,$0
+	P14:	DCB.B	$2800,$0	
+	P15:	DCB.B	$2800,$0	
+
+Plane2:
+	P21:	DCB.B	$2800,$0
+	P22:	DCB.B	$2800,$0
+	P23:	DCB.B	$2800,$0
+	P24:	DCB.B	$2800,$0
+	P25:	DCB.B	$2800,$0
+
+DrawPlane:
+	DP1:	DCB.B	$2800,$0
+		DCB.B	$2800,$0
+		DCB.B	$2800,$0
+		DCB.B	$2800,$0
+		DCB.B	$2800,$0
+
+	DP2:	DCB.B	$2800,$0
+		DCB.B	$2800,$0
+		DCB.B	$2800,$0
+		DCB.B	$2800,$0
+		DCB.B	$2800,$0
+
+	DP3:	DCB.B	$2800,$0
+		DCB.B	$2800,$0
+		DCB.B	$2800,$0
+		DCB.B	$2800,$0
+		DCB.B	$2800,$0
+
+AD:	DS.B	4
+
+AddSub:	DC.W	$ffff
+
+CoordsOffset:
+	DC.L	0
+
+PolygonCoords:
+	DC.L	0,0,0,0,0,0,0,0
+	DC.L	0,0,0,0,0,0,0,0
+	DC.L	0,0,0,0,0,0,0,0
+	DC.L	0,0,0,0,0,0,0,0
+
+Kolorro:
+	DC.L	0
+
+Shifter:
+	DC.L	0
+
+Shifter2:
+	DC.L	0
+
+MinY:	DC.L	0
+MaxY:	DC.L	0
+MinX:	DC.L	0
+MaxX:	DC.L	0
+
+MaxYTimes:
+	DC.L	0
+
+MinYTimes:
+	DC.L	0
+
+Sequence:
+	INCBIN	"Sources:spheroid proppa.seq"
+
+Function:
+	DC.B	0,16,4,24,8,20,12,28

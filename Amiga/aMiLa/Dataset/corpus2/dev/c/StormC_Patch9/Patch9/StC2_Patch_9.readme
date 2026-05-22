@@ -1,0 +1,78 @@
+HAAGE&PARTNER Computer GmbH
+Mainzer  Straße 10A
+61191 Rosbach
+Germany
+
+Tel: +49 (0) 6007 - 93 00 50
+FAX: +49 (0) 6007 - 75 43
+
+Internet: storm-support@haage-partner.com
+
+Homepage: http://www.haage-partner.com
+
+
+Dear StormC customer,
+
+enclosed you will find a patch program to update
+StormC version 2.00.08 (28.01.97) to the current release
+2.00.14 (03.05.97).
+
+The process is started by a double click on the icon
+
+StormC2.0-9.Patch.BAT
+
+
+Please take note that the old version of StormC must be in the drawer
+
+StormC:StormSYS
+
+
+Best wishes
+
+HAAGE&PARTNER Support Team
+
+
+
+History of StormC
+============================
+
+07.02.97 (V 2.00.09)
+
+* Deleting of dynamic arrays:
+  Classes with virtual destructors were used to calculate the number of
+  destructing objects with contant size as refering types and not those of
+  a possibly deduces class.
+
+19.04.97 (V 2.00.11)
+
+* "switch" did not work fine with "ULONG".
+
+* With difficult casts it could happen that an AND with address register
+  was generated as the first operand.
+
+29.04.97 (V 2.00.12)
+
+* Integer type conversion of "const X" to "const Y" sometimes did not work.
+
+30.04.97
+
+* Some hard to explain problems with temporary objects when they used a
+  constructor for a certain type conversion.
+
+01.05.97 (V 2.00.13)
+
+* In "catch" instructions the optimizer removed to much of the code.
+
+* Problems when register parameters were pushed to the stack for no reason.
+
+03.05.97
+
+* Sometimes the 68K code generator changed the sequence of the operators of
+  a comparison, so "a >= b" became "b < a" instead of "b <= a".
+
+03.05.97 (V 2.00.14)
+
+* Another problem with register paramters on calculating address offsets
+  outside the 16-Bit area, especially on access to big structures.
+
+

@@ -1,0 +1,103 @@
+
+  3D Navigator V0.3  di Giuseppe Perniola
+
+  E-Mail: perniolapa@bccsanteramo.it
+
+----------------------------------------------------------------------------
+QUESTO SOFTWARE E' DI TIPO PUBBLICO DOMINIO, CIOE' SI PUO' LIBERAMENTE
+DISTRIBUIRE, COMPLETAMENTE O PARZIALMENTE.
+----------------------------------------------------------------------------
+
+Sommario:
+  A) Informazioni generali
+  B) Uso dell'interfaccia
+  C) Difetti conosciuti e versioni future
+  D) Notizie sull'autore
+
+----------------------------------------------------------------------------
+  A) Informazioni Generali
+
+3D Navigator V0.3 e' stato scritto nel 1997, completamente in
+Blitz Basic V2.1, tranne la routine ChunkyToPlanar, che e' stata scritta
+in Assembler. Questo software e' un semplice esempio di grafica
+3D in Texture Mapping, in stile Breathless.
+Questo programma richiede Kickstart 2.0 o superiore, 1 Mb di
+memoria Ram libera, e consiglio CALDAMENTE un 68020 o superiore e
+memoria Fast.
+Il programma e' stato scritto e testato su:
+  _A1200 68020  14 Mhz  2 Mb di Ram   Kickstart 3.0
+  _A1200 68020  14 Mhz  4 Mb di Ram   Kickstart 3.0
+  _A1200 68020  28 Mhz  6 Mb di Ram   Kickstart 3.0
+  _A1200 68030  50 Mhz  6 Mb di Ram   Kickstart 3.0
+----------------------------------------------------------------------------
+  B) Uso dell'interfaccia
+
+Dopo aver caricato il programma, su una piccola finestra, verranno
+visualizzati alcuni pulsanti:
+  _Inizia
+          Premendo questo tasto si puo' cominciare la simulazione
+          dell'ambiente 3D; per muoversi nello spazio, bisogna
+          usare i tasti cursori: per ruotare lo sguardo verso
+          sinistra o verso destra si usano i rispettivi tasti,
+          mentre dicasi lo stesso per andare avanti o indietro.
+          Per ritornare nella finestra principale bisogna
+          premere la barra spaziatrice.
+  _Info
+          Premendo questo gadget si possono far visualizzare
+          alcune informazioni riguardo al programma.
+  _Esci
+          Questo pulsante serve per uscire da 3D Navigator.
+  _Dettaglio
+          Cliccando sugli spazi a destra di X e di Y, si puo'
+          digitare il dettaglio; puo' variare da 1 a 2. Se si
+          mette un dettaglio di X=1 e di Y=1 la grafica sara'
+          definita, ma piu' lenta; invece, se X=2 e Y=2 la grafica
+          sara' meno definita, ma piu' veloce.
+  _Finestra
+          Cliccando sugli spazi a destra di X e di Y, si puo'
+          digitare il lunghezza e la larghezza della finestra
+          dove verra' visualizzato l'ambiente 3D; piu' e' grande
+          la finestra, piu' sara' lento; invece, piu' e' piccola
+          la finestra, piu' veloce sara'. I valori X vanno
+          da 64 a 320 Pixel, mentre i valori Y vanno da
+          48 a 256 Pixel.
+          ATTENZIONE!!!!
+          Il valore di X della finestra deve essere un multiplo
+          di 32 (ad es. 64,96,128,...), mentre il valore di Y
+          puo' essere un qualsiasi valore.
+  _Mappa
+          Premendo il tasto a sinistra di Mappa si puo'
+          scegliere se visualizzare o no la mappa.
+----------------------------------------------------------------------------
+  C) Difetti conosciuti e versioni future
+
+Rispetto alla versione precedente, il programma e' stato migliorato:
+infatti, al codice in Basic ho incluso una routine in Assembler,
+chiamata ChunkyToPlanar; il guadagno, in velocita', e' notevole.
+Comunque rimangono dei difetti e delle mancanze:
+  _Mancano le Texture sui pavimenti e sui soffitti;
+  _Mancano i passaggi sopraelevati, come ascensori e scale;
+  _Le Texture non vengono visualizzati bene.
+Attualmente lo sviluppo di questo programma e' bloccato, perche'
+non so come fare per migliorare questo software (IO HO SOLO 15 ANNI!!!);
+quindi qualsiasi suggerimento e' benvenuto.
+----------------------------------------------------------------------------
+  D) Notizie sull'autore
+
+Per suggerimenti, telefonare o scrivere a:
+
+  Giuseppe Perniola
+  via Laterza n.40
+  70029  Santeramo in Colle (Bari)
+  TEL. 080/8826487
+
+  E-Mail: perniolapa@bccsanteramo.it
+----------------------------------------------------------------------------
+
+
+
+
+
+
+
+

@@ -1,0 +1,104 @@
+Short:        ANAIIS USB printer goodies release 1.08
+Author:       Gilles Pelletier
+Uploader:     gilles.pelletier@voila.fr (Gilles Pelletier)
+Type:         dev/c
+Version:      1.08 (25-Feb-2012)
+Requires:     ANAIIS or Sirion stack, and also a printer
+Architecture: m68k-amigaos
+
+Program descriptions
+~~~~~~~~~~~~~~~~~~~~
+
+RasterDump:
+~~~~~~~~~~~
+Source code included (SASC 6.0).
+Tool to test the printer output.
+It prints some information about the driver, like the following:
+
+Printer: 'printer.device' 39.06
+Port   : 'parallel.device' 40.01
+Driver : 'HP_DeskJet560C KCMY' 35.02
+PrinterClass=3, ColorClass=4
+MaxColumns=80, NumCharSets=3, NumRows=1
+MaxXDots=2400, MaxYDots=3000
+XDotsInch=300, YDotsInch=300
+
+During the printout, it shows the progression of the work.
+This is a tip never documented... A stop button can cancel the work
+with AbortIO() function.
+
+Known bugs: under AmigaOS 3.1, the palette is limited to 12 bits.
+(printer.device use GetRGB4 internally to render)
+
+DirectDump:
+~~~~~~~~~~~
+Source code included (SASC 6.0)
+Prints QRT files, with 24 bit printing, even with classic printer.device
+and classic printer drivers. QRT files are used in early versions of povray.
+
+You can build some calibration files from existing ones on internet and
+convert them in QRT file.
+These files are too huge to be present in this archive (up to 25MBytes 
+for 2400x3600pixels) 
+DirectDump is done for that: printing very huge RGB files, via classic
+printer.device, but without any intermediate rastport.
+
+colorwheel (and colorwheel2) prints... a color wheel to test your
+printer output.
+Without file specified, DirectDump draw the same picture as RasterDump,
+certainly with wrong size, but with a 8x8 matrix instead 4x4.
+You can magnify the output using the ZOOM attribute.
+
+
+usbprint:
+~~~~~~~~~
+Source code included (SASC 6.0)
+This tool send a file to the first usb (7,1,x) printer interface found.
+Perhaps it's buggy, the source code is included (SASC 6.0 + OS4.0 includes).
+usbprint <filename> check debug
+The file must be specific to the printer, no conversion are done.
+usbprint list
+List the usb printers present.
+
+ieee1284.device:
+~~~~~~~~~~~~~~~~
+Source code included (SASC 6.0 + 3.1 includes + usb 4.x includes)
+It is a device used to send data via the first usb (7,1,x) printer interface
+found.
+Perhaps it's buggy, the source code is included (SASC 6.0 + OS4.0 includes).
+First you must have a compatible driver, process like for a parallel printer.
+ANAIIS stack can redirect parallel.device to ieee1284.device.
+Should work with (7,1,1) and (7,1,2) interfaces.
+Surely not compatible with (7,1,3) (aka DOT4)
+To see such interfaces, check for usbstat in ANAIIS package, or usblist on aminet.
+
+
+HP_DeskJet560C:
+~~~~~~~~~~~~~~~
+It's a 1.3 and higher printer driver able to separate K and CMY
+values, to preserve color ink cardridge and make cute graphics (sorry not
+pictures :) ).
+Works with Hewlett Packard HP DeskJet 560C but also on most PCL3 compatible
+printers (the list is too long to be there)
+Tested with success with DeluxePaint, PPaint and Brillance.
+Able to compress data with
+byterun1 (compression mode 2) algorithm.
+samebyte (compression mode 1) algorithm.
+raw (mode 0)
+copy HP_DeskJet560C in devs:printers and select this printer in the preferences.
+
+
+Future
+~~~~~~
+pfff...
+
+
+Contact address
+~~~~~~~~~~~~~~~
+Any mail, comments, suggestions, documentations are welcome!
+
+Please send a mail with the title "ANAIIS" at the following mail address
+gilles dot pelletier at voila dot fr
+
+Enjoy USB and 24 bit printing on old classic Amiga.
+And remember: Only Amiga makes it possible!

@@ -1,0 +1,76 @@
+About cxref
+===========
+Wait a minute. This is not the standard simplistic `C' source code
+cross reference tool you are probably already familiar with. Quite
+on the contrary, Andrew M. Bishop's `cxref' program is among the
+most powerful and useful tools I have ever found. Not only does it
+perform the usual cross-referencing, it also takes note of where
+each global or local variable is used, which routine calls what
+other routines and what routines and variables are not used at all.
+Very useful if you are cleaning up older code or source code you
+have taken over from someone else. Another neat feature of the
+cxref program is that you can actually embed documentation in your
+programs and have cxref extract and pretty print it, yielding
+LaTeX or even html output.
+
+Requirements
+============
+You need Kickstart 2.04 or higher and it definitely helps to have
+lots of memory installed in your machine. Scanning and analysis of
+the source code is performed by the modified GNU `C' preprocessor.
+Its output is piped through to the cxref program, which is why you
+need to have a working pipe-handler installed. Heinz Wrobel's pipe
+handler, as found on Aminet, will do nicely.
+
+Installation
+============
+There are three programs which you will want to install. Just copy
+them from the "bin" drawer to whereever you keep your development
+tools. Make sure that all tools are in the shell search path,
+otherwise the cxref program will have trouble launching the cxref-cpp
+program.
+
+Invocation
+==========
+Simple. While this is described in the cxref documentation, it's still
+a good idea to mention that the cross-referencing is actually a two-step
+process. You have to build the initial database before you can create
+the index and the html files. Thus, in order to create a browsable
+cross-reference, you should enter the following:
+
+   cxref -xref #?.c
+   cxref -xref -index -html #?.c
+
+Later, if you make changes to the source code, just use the second
+command again:
+
+   cxref -xref -index -html #?.c
+
+This will automatically update all the cross reference information.
+As you can see, the cxref Amiga port will expand all wildcard
+patterns given on the command line.
+
+About the Amiga port
+====================
+This port is functionally almost identical to the regular 1.4a with
+a bug fixed in the scanner that collects documentation comments.
+This bug fix was sent to me by Andrew M. Bishop, so I expect that
+it will also show up in the regular release any time now.
+
+The code uses quite a number of Unix'isms, such as in the file path
+parsing or piping the output of a child process into the scanner.
+In order to allow for the program to work on the Amiga I made small
+modifications to the code and even the flex and bison source code
+generated for the preprocessor and the main program.
+
+While I hope that the resulting program works as it should, one
+can never be certain. If you find bugs or other nuisances, feel
+free to contact me:
+
+   Olaf Barthel
+   Brabeckstrasse 35
+   D-30559 Hannover
+
+   Federal Republic of Germany
+
+   <olsen@sourcery.han.de>

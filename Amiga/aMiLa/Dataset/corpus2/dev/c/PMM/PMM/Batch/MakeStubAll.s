@@ -1,0 +1,358 @@
+FailAt 9999999 
+
+Cd G5Lib:
+
+Echo "*NTeste Stubs (vorhanden und aktuell?)*N"
+
+If Not Exists Libstubs
+	MakeDir LibStubs
+EndIf
+
+Execute Pmm:Batch/_Gateway_Fd_Script
+
+Execute Pmm:Batch/MakeStubLib.s accounts FD:accounts_lib.fd
+Execute Pmm:Batch/MakeStubLib.s agl FD:agl_lib.fd
+Execute Pmm:Batch/MakeStubLib.s agle FD:agle_lib.fd
+Execute Pmm:Batch/MakeStubLib.s agleppc FD:agleppc_lib.fd
+Execute Pmm:Batch/MakeStubLib.s aglppc FD:aglppc_lib.fd
+Execute Pmm:Batch/MakeStubLib.s aglsmap FD:aglsmap_lib.fd
+Execute Pmm:Batch/MakeStubLib.s aglsmapppc FD:aglsmapppc_lib.fd
+Execute Pmm:Batch/MakeStubLib.s aglu FD:aglu_lib.fd
+Execute Pmm:Batch/MakeStubLib.s agluppc FD:agluppc_lib.fd
+Execute Pmm:Batch/MakeStubLib.s aglut FD:aglut_lib.fd
+Execute Pmm:Batch/MakeStubLib.s aglutppc FD:aglutppc_lib.fd
+Execute Pmm:Batch/MakeStubLib.s AEDoor FD:AEDoor.FD
+Execute Pmm:Batch/MakeStubLib.s akccplus FD:akccplus.fd
+Execute Pmm:Batch/MakeStubLib.s amarquee FD:amarquee.fd
+Execute Pmm:Batch/MakeStubLib.s AMarqueelib FD:AMarquee_lib.fd
+Execute Pmm:Batch/MakeStubLib.s amigaguide FD:amigaguide_lib.fd
+Execute Pmm:Batch/MakeStubLib.s amigametaformat FD:amigametaformat.fd
+Execute Pmm:Batch/MakeStubLib.s amipx FD:amipx.fd
+Execute Pmm:Batch/MakeStubLib.s amirc_plugin FD:amirc_plugin.fd
+Execute Pmm:Batch/MakeStubLib.s aml FD:aml_lib.fd
+Execute Pmm:Batch/MakeStubLib.s amplifierplugin FD:amplifierplugin.fd
+Execute Pmm:Batch/MakeStubLib.s apilib FD:apilib.fd
+Execute Pmm:Batch/MakeStubLib.s arexx_cl FD:arexx_cl.fd
+Execute Pmm:Batch/MakeStubLib.s arexx FD:arexx_lib.fd
+Execute Pmm:Batch/MakeStubLib.s arp FD:arp_lib.fd
+Execute Pmm:Batch/MakeStubLib.s asl FD:asl_lib.fd
+Execute Pmm:Batch/MakeStubLib.s atari2600 FD:atari2600_lib.fd
+Execute Pmm:Batch/MakeStubLib.s awebplugin FD:awebplugin.fd
+Execute Pmm:Batch/MakeStubLib.s battclock FD:battclock_lib.fd
+Execute Pmm:Batch/MakeStubLib.s battmem FD:battmem_lib.fd
+Execute Pmm:Batch/MakeStubLib.s bevel_ic FD:bevel_ic.fd
+Execute Pmm:Batch/MakeStubLib.s bevel FD:bevel_lib.fd
+Execute Pmm:Batch/MakeStubLib.s bfbplay FD:bfbplay_lib.fd
+Execute Pmm:Batch/MakeStubLib.s Bignum FD:Bignum_lib.fd
+Execute Pmm:Batch/MakeStubLib.s bitmap_ic FD:bitmap_ic.fd
+Execute Pmm:Batch/MakeStubLib.s bitmap FD:bitmap_lib.fd
+Execute Pmm:Batch/MakeStubLib.s blitter_emod FD:blitter_emod.fd
+Execute Pmm:Batch/MakeStubLib.s blitter FD:blitter_lib.fd
+Execute Pmm:Batch/MakeStubLib.s boards FD:boards_lib.fd
+Execute Pmm:Batch/MakeStubLib.s brokermodule FD:brokermodule_lib.fd
+Execute Pmm:Batch/MakeStubLib.s bullet FD:bullet_lib.fd
+Execute Pmm:Batch/MakeStubLib.s button_gc FD:button_gc.fd
+Execute Pmm:Batch/MakeStubLib.s button FD:button_lib.fd
+Execute Pmm:Batch/MakeStubLib.s cardres FD:cardres_lib.fd
+Execute Pmm:Batch/MakeStubLib.s cards FD:cards_lib.fd
+Execute Pmm:Batch/MakeStubLib.s cclib FD:cclib_lib.fd
+Execute Pmm:Batch/MakeStubLib.s cgx3dvirgin FD:cgx3dvirgin_lib.fd
+Execute Pmm:Batch/MakeStubLib.s cgxvideo FD:cgxvideo_lib.fd
+Execute Pmm:Batch/MakeStubLib.s checkbox_gc FD:checkbox_gc.fd
+Execute Pmm:Batch/MakeStubLib.s checkbox FD:checkbox_lib.fd
+Execute Pmm:Batch/MakeStubLib.s chooser_gc FD:chooser_gc.fd
+Execute Pmm:Batch/MakeStubLib.s chooser FD:chooser_lib.fd
+Execute Pmm:Batch/MakeStubLib.s chunky FD:chunky.fd
+Execute Pmm:Batch/MakeStubLib.s chunkyppc FD:chunkyppc.fd
+Execute Pmm:Batch/MakeStubLib.s cia FD:cia_lib.fd
+Execute Pmm:Batch/MakeStubLib.s class FD:class.fd
+Execute Pmm:Batch/MakeStubLib.s clicktab_gc FD:clicktab_gc.fd
+Execute Pmm:Batch/MakeStubLib.s clicktab FD:clicktab_lib.fd
+Execute Pmm:Batch/MakeStubLib.s CManager FD:CManager_lib.fd
+Execute Pmm:Batch/MakeStubLib.s cnet FD:cnet.fd
+Execute Pmm:Batch/MakeStubLib.s cnet4 FD:cnet4.fd
+Execute Pmm:Batch/MakeStubLib.s cnetclibrary FD:cnetclibrary.fd
+Execute Pmm:Batch/MakeStubLib.s cnetgui FD:cnetgui.fd
+Execute Pmm:Batch/MakeStubLib.s cnetmail FD:cnetmail.fd
+Execute Pmm:Batch/MakeStubLib.s colorwheel FD:colorwheel_lib.fd
+Execute Pmm:Batch/MakeStubLib.s colours FD:colours_lib.fd
+Execute Pmm:Batch/MakeStubLib.s commodities FD:commodities_lib.fd
+Execute Pmm:Batch/MakeStubLib.s compressor FD:compressor_lib.fd
+Execute Pmm:Batch/MakeStubLib.s config FD:config_lib.fd
+Execute Pmm:Batch/MakeStubLib.s console FD:console_lib.fd
+Execute Pmm:Batch/MakeStubLib.s CrM FD:CrM_lib.fd
+Execute Pmm:Batch/MakeStubLib.s cybergraphics FD:cybergraphics_lib.fd
+Execute Pmm:Batch/MakeStubLib.s datatypes FD:datatypes_lib.fd
+Execute Pmm:Batch/MakeStubLib.s date FD:date.fd
+Execute Pmm:Batch/MakeStubLib.s datebrowser FD:datebrowser_lib.fd
+Execute Pmm:Batch/MakeStubLib.s dbplayer FD:dbplayer.fd
+Execute Pmm:Batch/MakeStubLib.s dicecache FD:dicecache_lib.fd
+Execute Pmm:Batch/MakeStubLib.s diskfont FD:diskfont_lib.fd
+Execute Pmm:Batch/MakeStubLib.s disk FD:disk_lib.fd
+Execute Pmm:Batch/MakeStubLib.s displaymodule FD:displaymodule_lib.fd
+Execute Pmm:Batch/MakeStubLib.s ditoext FD:ditoext_lib.fd
+Execute Pmm:Batch/MakeStubLib.s dito FD:dito_lib.fd
+Execute Pmm:Batch/MakeStubLib.s dmxemul FD:dmxemul_lib.fd
+Execute Pmm:Batch/MakeStubLib.s dos FD:dos_lib.fd
+Execute Pmm:Batch/MakeStubLib.s dpkernel FD:dpkernel_lib.fd
+Execute Pmm:Batch/MakeStubLib.s dragndrop FD:dragndrop_lib.fd
+Execute Pmm:Batch/MakeStubLib.s drawlist_ic FD:drawlist_ic.fd
+Execute Pmm:Batch/MakeStubLib.s drawlist FD:drawlist_lib.fd
+Execute Pmm:Batch/MakeStubLib.s drawmodule FD:drawmodule_lib.fd
+Execute Pmm:Batch/MakeStubLib.s dtclass FD:dtclass_lib.fd
+Execute Pmm:Batch/MakeStubLib.s EasyGadgets FD:EasyGadgets.fd
+Execute Pmm:Batch/MakeStubLib.s emulation FD:emulation_lib.fd
+Execute Pmm:Batch/MakeStubLib.s envoy FD:envoy_lib.fd
+Execute Pmm:Batch/MakeStubLib.s example FD:example.fd
+Execute Pmm:Batch/MakeStubLib.s examplelib FD:examplelib.fd
+Execute Pmm:Batch/MakeStubLib.s example_lib FD:example_lib.fd
+Execute Pmm:Batch/MakeStubLib.s exec FD:exec_lib.fd
+Execute Pmm:Batch/MakeStubLib.s expansion FD:expansion_lib.fd
+Execute Pmm:Batch/MakeStubLib.s fifo FD:fifo_lib.fd
+Execute Pmm:Batch/MakeStubLib.s files FD:files_lib.fd
+Execute Pmm:Batch/MakeStubLib.s fuelgauge_gc FD:fuelgauge_gc.fd
+Execute Pmm:Batch/MakeStubLib.s fuelgauge FD:fuelgauge_lib.fd
+Execute Pmm:Batch/MakeStubLib.s gadtools FD:gadtools_lib.fd
+Execute Pmm:Batch/MakeStubLib.s getfile FD:getfile_lib.fd
+Execute Pmm:Batch/MakeStubLib.s getfont FD:getfont_lib.fd
+Execute Pmm:Batch/MakeStubLib.s getscreenmode FD:getscreenmode_lib.fd
+Execute Pmm:Batch/MakeStubLib.s gfx3d FD:gfx3d_lib.fd
+Execute Pmm:Batch/MakeStubLib.s ggdebug FD:ggdebug.fd
+Execute Pmm:Batch/MakeStubLib.s giraffe FD:giraffe.fd
+Execute Pmm:Batch/MakeStubLib.s gl FD:gl.fd
+Execute Pmm:Batch/MakeStubLib.s glut FD:glut.fd
+Execute Pmm:Batch/MakeStubLib.s glyph_ic FD:glyph_ic.fd
+Execute Pmm:Batch/MakeStubLib.s glyph FD:glyph_lib.fd
+Execute Pmm:Batch/MakeStubLib.s graphics3D FD:graphics3D.fd
+Execute Pmm:Batch/MakeStubLib.s graphics FD:graphics_lib.fd
+Execute Pmm:Batch/MakeStubLib.s gtdrag FD:gtdrag_lib.fd
+Execute Pmm:Batch/MakeStubLib.s gtx FD:gtx_lib.fd
+Execute Pmm:Batch/MakeStubLib.s guigfx FD:guigfx_lib.fd
+Execute Pmm:Batch/MakeStubLib.s HBBSCommon FD:HBBSCommon_lib.fd
+Execute Pmm:Batch/MakeStubLib.s HBBSNode FD:HBBSNode_lib.fd
+Execute Pmm:Batch/MakeStubLib.s hdwrench FD:hdwrench_lib.fd
+Execute Pmm:Batch/MakeStubLib.s i2c FD:i2c_lib.fd
+Execute Pmm:Batch/MakeStubLib.s icon FD:icon_lib.fd
+Execute Pmm:Batch/MakeStubLib.s icqsocket FD:icqsocket.fd
+Execute Pmm:Batch/MakeStubLib.s identify FD:identify_lib.fd
+Execute Pmm:Batch/MakeStubLib.s Idm FD:Idm_lib.fd
+Execute Pmm:Batch/MakeStubLib.s iec FD:iec.fd
+Execute Pmm:Batch/MakeStubLib.s iffparse FD:iffparse_lib.fd
+Execute Pmm:Batch/MakeStubLib.s ImageManager FD:ImageManager.fd
+Execute Pmm:Batch/MakeStubLib.s ImagePool FD:ImagePool.fd
+Execute Pmm:Batch/MakeStubLib.s image FD:image_lib.fd
+Execute Pmm:Batch/MakeStubLib.s ini FD:ini_lib.fd
+Execute Pmm:Batch/MakeStubLib.s input FD:input_lib.fd
+Execute Pmm:Batch/MakeStubLib.s installergui FD:installergui.fd
+Execute Pmm:Batch/MakeStubLib.s integer_gc FD:integer_gc.fd
+Execute Pmm:Batch/MakeStubLib.s integer FD:integer_lib.fd
+Execute Pmm:Batch/MakeStubLib.s intuition FD:intuition_lib.fd
+Execute Pmm:Batch/MakeStubLib.s ioblix_dev FD:ioblix_dev_lib.fd
+Execute Pmm:Batch/MakeStubLib.s ioblix FD:ioblix_lib.fd
+Execute Pmm:Batch/MakeStubLib.s jpeg FD:jpeg.fd
+Execute Pmm:Batch/MakeStubLib.s JS_Tools FD:JS_Tools.fd
+Execute Pmm:Batch/MakeStubLib.s keyboard FD:keyboard_lib.fd
+Execute Pmm:Batch/MakeStubLib.s keymap FD:keymap_lib.fd
+Execute Pmm:Batch/MakeStubLib.s label_ic FD:label_ic.fd
+Execute Pmm:Batch/MakeStubLib.s label FD:label_lib.fd
+Execute Pmm:Batch/MakeStubLib.s layers FD:layers_lib.fd
+Execute Pmm:Batch/MakeStubLib.s layout_gc FD:layout_gc.fd
+Execute Pmm:Batch/MakeStubLib.s layout FD:layout_lib.fd
+Execute Pmm:Batch/MakeStubLib.s lib FD:lib.fd
+Execute Pmm:Batch/MakeStubLib.s lightmodule FD:lightmodule_lib.fd
+Execute Pmm:Batch/MakeStubLib.s listbrowser FD:listbrowser_lib.fd
+Execute Pmm:Batch/MakeStubLib.s loadermodule FD:loadermodule_lib.fd
+Execute Pmm:Batch/MakeStubLib.s locale FD:locale_lib.fd
+Execute Pmm:Batch/MakeStubLib.s lowlevel FD:lowlevel_lib.fd
+Execute Pmm:Batch/MakeStubLib.s madblankersupport FD:madblankersupport.fd
+Execute Pmm:Batch/MakeStubLib.s magic FD:magic.fd
+Execute Pmm:Batch/MakeStubLib.s mailpro FD:mailpro.fd
+Execute Pmm:Batch/MakeStubLib.s mathffp FD:mathffp_lib.fd
+Execute Pmm:Batch/MakeStubLib.s mathieeedoubbas FD:mathieeedoubbas_lib.fd
+Execute Pmm:Batch/MakeStubLib.s mathieeedoubtrans FD:mathieeedoubtrans_lib.fd
+Execute Pmm:Batch/MakeStubLib.s mathieeesingbas FD:mathieeesingbas_lib.fd
+Execute Pmm:Batch/MakeStubLib.s mathieeesingtrans FD:mathieeesingtrans_lib.fd
+Execute Pmm:Batch/MakeStubLib.s mathtrans FD:mathtrans_lib.fd
+Execute Pmm:Batch/MakeStubLib.s medplayer FD:medplayer_lib.fd
+Execute Pmm:Batch/MakeStubLib.s mesadriver FD:mesadriver.fd
+Execute Pmm:Batch/MakeStubLib.s metaxpr FD:metaxpr_lib.fd
+Execute Pmm:Batch/MakeStubLib.s miamibpf FD:miamibpf_lib.fd
+Execute Pmm:Batch/MakeStubLib.s miamipcap FD:miamipcap_lib.fd
+Execute Pmm:Batch/MakeStubLib.s miami FD:miami_lib.fd
+Execute Pmm:Batch/MakeStubLib.s misc FD:misc_lib.fd
+Execute Pmm:Batch/MakeStubLib.s module FD:module_lib.fd
+Execute Pmm:Batch/MakeStubLib.s monitors FD:monitors_lib.fd
+Execute Pmm:Batch/MakeStubLib.s MOREREQ FD:MOREREQ.FD
+Execute Pmm:Batch/MakeStubLib.s mpega FD:mpega.fd
+Execute Pmm:Batch/MakeStubLib.s MPImage FD:MPImage.fd
+Execute Pmm:Batch/MakeStubLib.s msql FD:msql.fd
+Execute Pmm:Batch/MakeStubLib.s msqllib FD:msql_lib.fd
+Execute Pmm:Batch/MakeStubLib.s MUIBuilder FD:MUIBuilder.fd
+Execute Pmm:Batch/MakeStubLib.s muiclass FD:muiclass_lib.fd
+Execute Pmm:Batch/MakeStubLib.s muiextend FD:muiextend_lib.fd
+Execute Pmm:Batch/MakeStubLib.s muimaster FD:muimaster_lib.fd
+Execute Pmm:Batch/MakeStubLib.s multiuser FD:multiuser_lib.fd
+Execute Pmm:Batch/MakeStubLib.s music FD:music_lib.fd
+Execute Pmm:Batch/MakeStubLib.s mylib FD:mylib.fd
+Execute Pmm:Batch/MakeStubLib.s ncp FD:ncp_lib.fd
+Execute Pmm:Batch/MakeStubLib.s neuralnet FD:neuralnet_lib.fd
+Execute Pmm:Batch/MakeStubLib.s newfmt FD:newfmt.fd
+Execute Pmm:Batch/MakeStubLib.s newicon FD:newicon_lib.fd
+Execute Pmm:Batch/MakeStubLib.s NewListTree FD:NewListTree.fd
+Execute Pmm:Batch/MakeStubLib.s NewMirror.api FD:NewMirror.api.fd
+Execute Pmm:Batch/MakeStubLib.s nipc FD:nipc_lib.fd
+Execute Pmm:Batch/MakeStubLib.s nl FD:nl.fd
+Execute Pmm:Batch/MakeStubLib.s nofrag FD:nofrag_lib.fd
+Execute Pmm:Batch/MakeStubLib.s nonvolatile FD:nonvolatile_lib.fd
+Execute Pmm:Batch/MakeStubLib.s objects FD:objects_lib.fd
+Execute Pmm:Batch/MakeStubLib.s openurl FD:openurl_lib.fd
+Execute Pmm:Batch/MakeStubLib.s OpenUtil FD:OpenUtil_lib.fd
+Execute Pmm:Batch/MakeStubLib.s output FD:output.fd
+Execute Pmm:Batch/MakeStubLib.s outputhandler FD:outputhandler.fd
+Execute Pmm:Batch/MakeStubLib.s palette_gc FD:palette_gc.fd
+Execute Pmm:Batch/MakeStubLib.s palette FD:palette_lib.fd
+Execute Pmm:Batch/MakeStubLib.s palmlink FD:palmlink_lib.fd
+Execute Pmm:Batch/MakeStubLib.s penmap_ic FD:penmap_ic.fd
+Execute Pmm:Batch/MakeStubLib.s penmap FD:penmap_lib.fd
+Execute Pmm:Batch/MakeStubLib.s Personal_IO FD:Personal_IO.fd
+Execute Pmm:Batch/MakeStubLib.s pgp FD:pgp_lib.fd
+Execute Pmm:Batch/MakeStubLib.s playsid FD:playsid_lib.fd
+Execute Pmm:Batch/MakeStubLib.s pmbsonline FD:pmbsonline_lib.fd
+Execute Pmm:Batch/MakeStubLib.s popcycle FD:popcycle_lib.fd
+Execute Pmm:Batch/MakeStubLib.s popupmenu FD:popupmenu.fd
+Execute Pmm:Batch/MakeStubLib.s potgo FD:potgo_lib.fd
+Execute Pmm:Batch/MakeStubLib.s powerpc FD:powerpc_lib.fd
+Execute Pmm:Batch/MakeStubLib.s ppclib FD:ppc.fd
+Execute Pmm:Batch/MakeStubLib.s ppctppc FD:ppctppc_lib.fd
+Execute Pmm:Batch/MakeStubLib.s ppct FD:ppct_lib.fd
+Execute Pmm:Batch/MakeStubLib.s producer FD:producer_lib.fd
+Execute Pmm:Batch/MakeStubLib.s proof FD:proof.fd
+Execute Pmm:Batch/MakeStubLib.s psxamiga FD:psxamiga.fd
+Execute Pmm:Batch/MakeStubLib.s pv FD:pv_lib.fd
+Execute Pmm:Batch/MakeStubLib.s queue FD:queue.fd
+Execute Pmm:Batch/MakeStubLib.s quickhelp FD:quickhelp_lib.fd
+Execute Pmm:Batch/MakeStubLib.s radiobutton_gc FD:radiobutton_gc.fd
+Execute Pmm:Batch/MakeStubLib.s radiobutton FD:radiobutton_lib.fd
+Execute Pmm:Batch/MakeStubLib.s radiodiallib FD:radiodiallib.fd
+Execute Pmm:Batch/MakeStubLib.s ramdrive FD:ramdrive_lib.fd
+Execute Pmm:Batch/MakeStubLib.s realtime FD:realtime_lib.fd
+Execute Pmm:Batch/MakeStubLib.s regex FD:regex_lib.fd
+Execute Pmm:Batch/MakeStubLib.s registry FD:registry.fd
+Execute Pmm:Batch/MakeStubLib.s remote FD:remote.fd
+Execute Pmm:Batch/MakeStubLib.s render FD:render_lib.fd
+Execute Pmm:Batch/MakeStubLib.s ReqMenuitem FD:ReqMenuitem.fd
+Execute Pmm:Batch/MakeStubLib.s requester FD:requester_lib.fd
+Execute Pmm:Batch/MakeStubLib.s resource FD:resource_lib.fd
+Execute Pmm:Batch/MakeStubLib.s rexxsyslib FD:rexxsyslib_lib.fd
+Execute Pmm:Batch/MakeStubLib.s rtgextra FD:rtgextra.fd
+Execute Pmm:Batch/MakeStubLib.s rtggadtools FD:rtggadtools.fd
+Execute Pmm:Batch/MakeStubLib.s rtgmaster FD:rtgmaster.fd
+Execute Pmm:Batch/MakeStubLib.s rtracker FD:rtracker.fd
+Execute Pmm:Batch/MakeStubLib.s sample FD:sample_lib.fd
+Execute Pmm:Batch/MakeStubLib.s savermodule FD:savermodule_lib.fd
+Execute Pmm:Batch/MakeStubLib.s scanlib FD:scanlib.fd
+Execute Pmm:Batch/MakeStubLib.s screens FD:screens_lib.fd
+Execute Pmm:Batch/MakeStubLib.s scroller_gc FD:scroller_gc.fd
+Execute Pmm:Batch/MakeStubLib.s scroller FD:scroller_lib.fd
+Execute Pmm:Batch/MakeStubLib.s selectgadget_cl FD:selectgadget_cl.fd
+Execute Pmm:Batch/MakeStubLib.s services FD:services_lib.fd
+Execute Pmm:Batch/MakeStubLib.s shutdown FD:shutdown_lib.fd
+Execute Pmm:Batch/MakeStubLib.s slider_gc FD:slider_gc.fd
+Execute Pmm:Batch/MakeStubLib.s slider FD:slider_lib.fd
+Execute Pmm:Batch/MakeStubLib.s socket FD:socket_lib.fd
+Execute Pmm:Batch/MakeStubLib.s sound FD:sound_lib.fd
+Execute Pmm:Batch/MakeStubLib.s space_gc FD:space_gc.fd
+Execute Pmm:Batch/MakeStubLib.s space FD:space_lib.fd
+Execute Pmm:Batch/MakeStubLib.s speedbar_gc FD:speedbar_gc.fd
+Execute Pmm:Batch/MakeStubLib.s speedbar FD:speedbar_lib.fd
+Execute Pmm:Batch/MakeStubLib.s strings FD:strings_lib.fd
+Execute Pmm:Batch/MakeStubLib.s string_gc FD:string_gc.fd
+Execute Pmm:Batch/MakeStubLib.s string FD:string_lib.fd
+Execute Pmm:Batch/MakeStubLib.s svc FD:svc_lib.fd
+Execute Pmm:Batch/MakeStubLib.s swazblanker FD:swazblanker.fd
+Execute Pmm:Batch/MakeStubLib.s swazconfig FD:swazconfig.fd
+Execute Pmm:Batch/MakeStubLib.s SysInfo FD:SysInfo_lib.fd
+Execute Pmm:Batch/MakeStubLib.s Tandem FD:Tandem.FD
+Execute Pmm:Batch/MakeStubLib.s tdcoremodule FD:tdcoremodule_lib.fd
+Execute Pmm:Batch/MakeStubLib.s test FD:test.fd
+Execute Pmm:Batch/MakeStubLib.s texteditor FD:texteditor_lib.fd
+Execute Pmm:Batch/MakeStubLib.s textfield FD:textfield_lib.fd
+Execute Pmm:Batch/MakeStubLib.s thread FD:thread_lib.fd
+Execute Pmm:Batch/MakeStubLib.s timer FD:timer_lib.fd
+Execute Pmm:Batch/MakeStubLib.s titlebarimage_cl FD:titlebarimage_cl.fd
+Execute Pmm:Batch/MakeStubLib.s toolmanager FD:toolmanager_lib.fd
+Execute Pmm:Batch/MakeStubLib.s translator FD:translator_lib.fd
+Execute Pmm:Batch/MakeStubLib.s type1 FD:type1_lib.fd
+Execute Pmm:Batch/MakeStubLib.s uae_library FD:uae_library.fd
+Execute Pmm:Batch/MakeStubLib.s usergroup FD:usergroup_lib.fd
+Execute Pmm:Batch/MakeStubLib.s utility FD:utility_lib.fd
+Execute Pmm:Batch/MakeStubLib.s vektorial FD:vektorial_lib.fd
+Execute Pmm:Batch/MakeStubLib.s vmm FD:vmm_lib.fd
+Execute Pmm:Batch/MakeStubLib.s vnc FD:vnc_lib.fd
+Execute Pmm:Batch/MakeStubLib.s voice FD:voice_lib.fd
+Execute Pmm:Batch/MakeStubLib.s v_plugin FD:v_plugin.fd
+Execute Pmm:Batch/MakeStubLib.s wangi FD:wangi.fd
+Execute Pmm:Batch/MakeStubLib.s Warp3D FD:Warp3D.fd
+Execute Pmm:Batch/MakeStubLib.s Warp3DPPC FD:Warp3DPPC.fd
+Execute Pmm:Batch/MakeStubLib.s WarpHW FD:WarpHW_lib.fd
+Execute Pmm:Batch/MakeStubLib.s wb FD:wb_lib.fd
+Execute Pmm:Batch/MakeStubLib.s wildengineer FD:wildengineer_lib.fd
+Execute Pmm:Batch/MakeStubLib.s wildprefs FD:wildprefs_lib.fd
+Execute Pmm:Batch/MakeStubLib.s wild FD:wild_lib.fd
+Execute Pmm:Batch/MakeStubLib.s window_cl FD:window_cl.fd
+Execute Pmm:Batch/MakeStubLib.s window FD:window_lib.fd
+Execute Pmm:Batch/MakeStubLib.s wizard FD:wizard_lib.fd
+Execute Pmm:Batch/MakeStubLib.s wwbbs FD:wwbbs.fd
+Execute Pmm:Batch/MakeStubLib.s xadmaster FD:xadmaster_lib.fd
+Execute Pmm:Batch/MakeStubLib.s xfdmaster FD:xfdmaster_lib.fd
+Execute Pmm:Batch/MakeStubLib.s xout FD:xout.fd
+Execute Pmm:Batch/MakeStubLib.s xpkmaster FD:xpkmaster_lib.fd
+Execute Pmm:Batch/MakeStubLib.s xpksub FD:xpksub_lib.fd
+Execute Pmm:Batch/MakeStubLib.s xprxmodem FD:xprxmodem.fd
+Execute Pmm:Batch/MakeStubLib.s xpr FD:xpr_lib.fd
+Execute Pmm:Batch/MakeStubLib.s xvs FD:xvs_lib.fd
+Execute Pmm:Batch/MakeStubLib.s zconnect FD:zconnect_lib.fd
+
+Execute Pmm:Batch/MakeStubLib.s Gateway Proj:Library/Fd/Gateway_lib.FD
+Execute Pmm:Batch/MakeStubLib.s GateXpr Proj:Library/Fd/GateXpr_lib.FD
+Execute Pmm:Batch/MakeStubLib.s IntuiSup FD:IntuiSup.FD
+Execute Pmm:Batch/MakeStubLib.s ReqTools FD:ReqTools_lib.FD
+Execute Pmm:Batch/MakeStubLib.s PPC FD:PPC_lib.FD
+Execute Pmm:Batch/MakeStubLib.s MMU FD:MMU_lib.FD
+Execute Pmm:Batch/MakeStubLib.s 68040 FD:68040_lib.fd
+Execute Pmm:Batch/MakeStubLib.s 680x0 FD:680x0_lib.fd
+Execute Pmm:Batch/MakeStubLib.s Disassembler FD:Disassembler_lib.fd
+
+If Not Exists G5Lib:All.lib
+	Delete All_ppc.a
+EndIf
+If Not Exists G5Lib:All_040.lib
+	Delete All_ppc.a
+EndIf
+If Not Exists G5Lib:All_wos.lib
+	Delete All_ppc.a
+EndIf
+If Not Exists G5Lib:AllMu.lib
+	Delete AllMu_ppc.a
+EndIf
+If Not Exists G5Lib:AllMu_040.lib
+	Delete AllMu_ppc.a
+EndIf
+If Not Exists G5Lib:AllMu_wos.lib
+	Delete AllMu_ppc.a
+EndIf
+
+If Not Exists G5Lib:All_ppc.a
+	Execute Pmm:Batch/MakeStubLibAll.s Gateway Proj:Library/Fd/Gateway_lib.FD
+	Execute Pmm:Batch/MakeStubLibAll.s GateXpr Proj:Library/Fd/GateXpr_lib.FD
+	Execute Pmm:Batch/MakeStubLibAll.s IntuiSup FD:IntuiSup.FD
+	Execute Pmm:Batch/MakeStubLibAll.s ReqTools FD:ReqTools_lib.FD
+	Execute Pmm:Batch/MakeStubLibAll.s PPC FD:PPC_lib.FD
+EndIf
+If Not Exists G5Lib:AllMu_ppc.a
+	Execute Pmm:Batch/MakeStubLibAllMu.s MMU FD:MMU_lib.FD
+	Execute Pmm:Batch/MakeStubLibAllMu.s 68040 FD:68040_lib.fd
+	Execute Pmm:Batch/MakeStubLibAllMu.s 680x0 FD:680x0_lib.fd
+	Execute Pmm:Batch/MakeStubLibAllMu.s Disassembler FD:Disassembler_lib.fd
+EndIf
+	

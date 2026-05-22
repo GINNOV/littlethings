@@ -1,0 +1,105 @@
+Short:        Alternative compiler front-end for Lattice/C Version 5
+Author:       thor@math.tu-berlin.de (Thomas Richter)
+Uploader:     thor@math.tu-berlin.de (Thomas Richter)
+Type:         dev/c
+Version:      1.00
+Requires:     AmigaOs 2.04 or better, Lattice/C Version 5
+Architecture: m68k-amigaos >= 2.0.4
+
+-----------------------------------------------------------------------------
+
+This is a tiny C program that (partially) replaces the "lc" command line
+front end that came with the Lattice/C compiler in version 5. It supports
+many (but not all) of the command line switches of the original "lc"
+command.
+
+"lcfront" does currently not support calling the linker ("BLink") or the
+object module librarian ("oml") tool.
+
+The sole purpose of this implementation, in case you wonder, is to replace
+the original "lc" front-end on emulators that do not fully implement all
+AmigaOs calls. In specific, the original "lc" requires CreateProc() and
+hence multitasking, whereas the "vamos" virtual AmigaOs emulation does
+not allow multitasking, and hence does not cover CreateProc().
+
+Luckily, "lc" does not really depend on multitasking in any way, and just
+starts the parser ("lc1"), the optimizer ("go") and the code generator ("lc2")
+one after another. The very same can be done by simpler means and by functions
+that are implemented by vamos.
+
+vamos is part of the "amitools" project by Christian Vogelgsang, and
+can be downloaded here:
+
+https://github.com/cnvogelg/amitools
+
+Alternatively, if you prefer my version, you find it here:
+
+https://github.com/thorfdbg/amitools
+
+Both versions are typically in sync, with minor bugfixes here
+and there apart. Christian typically picks up my fixes, and vice
+versa.
+
+Thus, "lcfront" allows you to use the Lattice compiler under "vamos",
+simply by replacing the "lc" front-end.
+
+"lcfront" may also be interesting because it also supports some of the
+internal (undocumented) command line switches of "lc1" and "lc2" you
+don't find in the original Lattice manual. They are (partially)
+documented in Ralph Babel's Guru Book, which is also highly recommended.
+
+-----------------------------------------------------------------------------
+
+lcfront is under "TPL" (THOR Public License) which you find included
+in full text in README.licence. As required by this license, here is
+exhibit-A:
+
+EXHIBIT A - THOR Public License.
+
+The contents of this file are subject to the THOR Public License
+Version 1.0 (the "License"); you may not use this file except in
+compliance with the License. 
+
+Software distributed under the License is distributed on an "AS IS"
+basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+the License for the specificlanguage governing rights and limitations
+under the License.
+
+The Original Code is ______lcfront_________________________.
+
+The Initial Developer of the Original Code is _Thomas Richter. 
+
+Portions created by  ______________________ are 
+Copyright (C) ______ _______________________. 
+
+All Rights Reserved.
+
+Contributor(s): ____(none)_______________________________.
+
+Alternatively, the contents of this file may be used under the terms
+of the _____ license (the [___] License), in which case the provisions
+of [______] License are applicable instead of those above.  If you
+wish to allow use of your version of this file only under the terms of
+the [____] License and not to allow others to use your version of this
+file under the TPL, indicate your decision by deleting the provisions
+above and replace them with the notice and other provisions required
+by the [___] License.  If you do not delete the provisions above, a
+recipient may use your version of this file under either the TPL or
+the [___] License."
+
+[NOTE: The text of this Exhibit A may differ slightly from the text of
+the notices in the Source Code files of the Original Code. You should
+use the text of this Exhibit A rather than the text found in the
+Original Code Source Code for Your Modifications.]
+
+-----------------------------------------------------------------------------
+
+History:
+
+This is version 1.00, which is the first version of lcfront.
+
+-----------------------------------------------------------------------------
+
+Thomas Richter,
+
+       July 2016

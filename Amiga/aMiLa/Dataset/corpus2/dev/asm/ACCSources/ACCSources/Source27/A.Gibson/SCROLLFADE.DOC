@@ -1,0 +1,117 @@
+                PIC SCROLL AND FADE
+                -------------------
+
+    Pheew! This was a bit of a tricky  one!!(for  me  anyway) what the program
+does is it scrolls a bit map RAW  picture  down  the screen and when the mouse
+button is pressed, the screen fades out.  The fade idea is used a lot and here
+is the way I coded it. First though the scroll routine.
+
+    What the program does is copy, using  the  68000 (I haven't got to program
+ming the BLITTER yet!!), portions  of  the  picture  on the screen. There is a
+counter which holds the amount of lines to be shown. This is D0 although D0 is
+used for other things in the  main  loop.  The  bit  plane sizes are 320 X 256
+pixels which has (320/8)*256 = 10240 BYTES  per plane as there is 2 bit planes
+this is a total of 20480 BYTES.
+
+    At the start of the copy, one  register  points  to the top of the display
+bitplane and another points  to  the  picture  bitplane  where  the copy is to
+start. This value is calculated by finding the address of the end of the plane
+which is STARTADDRESS+#10240. From  this,  the number of bytes to be copied is
+taken off the value. The number of bytes to be copied is calculated by
+
+                        Num of lines to copy * 40
+
+    This then points to the address of the picture  bit plane where to copy is
+to start.
+
+
+  FADE
+  ----
+
+    The fade routine is my own and there may  be routines which are simpler or
+better floating around.
+
+    The colours of all the registers are  held  in memory as $0RGB values. The
+values are retrieved from memory  in  a  loop  which  repeats for every colour
+used.
+
+   For beginners,the colour word is held in binary as
+
+                not used        R       G       B
+                 / \           / \     / \     / \
+                0000          0000    0000    0000      16 bit word.
+
+
+    The program test the contents of the RGB value held in d0.
+    For example,if we wanted to test the green section of the colour word
+
+                D0=$039c
+
+    To test the green section of the word,we have to AND the word with
+#%0000000011110000
+
+                d0= % 0000 0011 1001 1100 = $039c
+                AND % 0000 0000 1111 0000 
+
+                =     0000 0000 1001 0000
+
+    What has happened is we have singled out the green section of the word
+
+    If the green value of the word is 0000, then the AND result is 0
+
+    If the green value of the word is not 0000, then the AND result is not 0
+
+    The result of the AND is checked and if  it was non zero then $10 is taken
+off the colour word which is  held  elsewhere  since  d0 has been corrupted by
+the AND logic function. D1 was used  to  store  the colour word and the $10 is
+taken off D1 and D0 is restored from D1.
+
+        This process is repeated for each section of the colour word.
+
+        When the colour word is updated,it  is  placed  back  into memory. The
+colour value is then put into the copperlist for the screen.
+
+    The program then checks to see if the  fade  has finished. This is done by
+adding up all of the colour values. If the result is zero then all the colours
+must be 0 and the fade has finished.  If  the result is non zero then the fade
+is repeated.
+
+
+    Both the scroll routine and the fade  routine  have pause loops giving you
+time to see the change.  These  are  easily  recognisable  and  can  easily be
+altered to your suiting by altering  the  value  placed in D0 or whatever data
+register is used.
+
+    Only 2 bitplane, 4 colour RAW! data  pictures  can be used and to use your
+own pictures, alter the line near the end of the code which reads
+
+        incbin DK.bm            to              incbin YOURPICNAME
+
+        Draw a picture in DPaint in 4 colour mode  and then convert to raw (or
+binary) format using a converter. I  used  GFXConvert on Amiga Computing cover
+disk (It's a GOOD program CHEERZ whoever wrote it).
+
+    To use the correct colours,alter the  colour  values  at the very start of
+the code the ones which read:
+
+        COLOURx=$0zzz           Where x=0,1,2 or 3 and zzz=the RGB values.
+
+        Put your own RGB values in instead. The first section of code puts the
+RGB values in the correct places in memory.
+
+    I wrote the code on Devpac II on a A500 I don't know whatelse it will  run
+on.
+
+    Thanks to Mark Meany whose short  Startfield  program  helped me to get to
+grips with forming my own playfields.
+
+        Any comments,questions critisisms etc... to
+
+
+                        A.GIBSON
+                        28 WARREN DRIVE
+                        SWINTON
+                        MANCHESTER
+                        M27 3EA
+
+ ************************************************************************

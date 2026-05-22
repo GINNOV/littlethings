@@ -1,0 +1,23 @@
+Short:    generic utilities source code library
+Uploader: cbloom@mail.utexas.edu (Charles Bloom)
+Author:   cbloom@mail.utexas.edu (Charles Bloom)
+Type:     dev/c
+
+GenLib 6-25-96 (changes frequently)
+
+C source code library
+
+also available from my web site:
+	http://wwwvms.utexas.edu/~cbloom/index.html
+
+Contains:
+
+bdiff,btail,bhead : raw-byte based versions of utilities
+calc : a superb scientific and programmers calculator
+cformat : excellent C formatter
+cpptoc : cut c++ comments
+crlf : toggle crlf
+list : like Amiga list, but ANSI C
+spawnm : run a program on all files, plus recursion
+ts : textsearch, like grep
+untab : convert tabs to spaces

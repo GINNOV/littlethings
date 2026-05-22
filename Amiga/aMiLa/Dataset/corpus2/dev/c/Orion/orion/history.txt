@@ -1,0 +1,35 @@
+
+History:
+
+Version 0.6
+   -Implemented 'Clean' option in OrionTool
+   -Implemented 'Interactive' flag
+   -Implemented 'Trash' flag
+   -Fixed some low memory problems(potential crashes)
+   -OrionTool checks for FILE validity
+   -Added Total memory allocated for each memory type to List output
+   -Made output slightly easier on the eyes
+
+Version 0.5
+   -Can selectively turn off which resources are tracked (at compile time)
+   -Added a Verbose logging option
+   -Fixed a Mungwall hit
+   -Fixed a bug listing bitmaps
+
+Version 0.4
+   -Watches for freeing NULL pointers.
+   -Watches for freeing the wrong sizes (FreeMem(2) on a 5 byte allocation)
+   -Watches for allocations of size 0.
+   -More verbose reporting
+   -Added version string to OrionTool and Orion.lib
+
+Version 0.3
+   -Added line and file tracking for each allocation
+
+Version 0.2
+   -Added tracking for AllocBitMap/FreeBitMap
+   -Added tracking for CreatePool/DeletePool
+   -Added tracking for AllocPooled/FreePooled
+   -Added tracking for malloc/free
+
+Version 0.1 - First Beta Release.

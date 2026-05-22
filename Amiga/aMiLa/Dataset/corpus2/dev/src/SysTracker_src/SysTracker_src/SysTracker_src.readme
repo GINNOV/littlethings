@@ -1,0 +1,50 @@
+Short: Full source code to SysTracker v0.1
+Author: andrew.ab2000@bigfoot.com (Andrew Bell)
+Uploader: andrew.ab2000@bigfoot.com (Andrew Bell)
+Type: dev/src
+Requires: AmigaOS 3.0+, MC68020 (MC68040+ recommended), Lots of spare RAM.
+          util/libs/mui38usr.lha    - version 3.8+
+          dev/mui/MCC_NList0_89.lha - version 0.89+
+
+ Introduction
+ ------------
+
+ Full C source to to SysTracker. For more information on the program itself,
+ please download the util/moni/SysTracker.lha package.
+
+ This source code is provided for educational and personal use only. Full
+ copyright of this source code remains with the author, Andrew Bell. You
+ are not allowed to distribute modified versions of this source or the
+ program itself.
+ 
+ SysTracker and it's source code is Copyright © 1999-2000 Andrew Bell.
+ All rights reserved.
+
+ If you discover any bugs with this source or have any suggestions on
+ improving it, please let me know! Thanks.
+
+ DISCLAIMER
+ ----------
+
+ FOR THE PURPOSE OF THIS DISCLAIMER, "SOFTWARE" REFERS TO ALL THE FILES
+ PROVIDED IN THE ORIGINAL ARCHIVE DISTRIBUTED BY THE AUTHOR.
+
+ THIS DISCLAIMER APPLIES TO ALL WHO USE THIS SOFTWARE.
+
+ THE AUTHOR HAS DONE HIS BEST TO ENSURE THAT THIS SOFTWARE IS FREE FROM
+ DEFECTS, ALTHOUGH THE AUTHOR CANNOT GUARANTEE THIS. THE AUTHOR HEREBY
+ REJECTS ANY LIABILITY OR RESPONSIBILITY FOR THESE OR OTHER CONSEQUENCES
+ FROM THE USE OF THIS SOFTWARE. THIS INCLUDES, BUT IS NOT LIMITED TO, DAMAGE
+ TO YOUR EQUIPMENT, TO YOUR DATA, TO OTHER COMPUTERS / DEVICES YOUR COMPUTER
+ IS CONNECTED TO, PERSONNAL INJURY, FINANCIAL LOSS OR OTHER EFFECTS.
+
+ THIS SOFTWARE IS PROVIDED AS-IS. THIS MEANS THE AUTHOR CANNOT GUARANTEE THAT
+ IT IS FIT FOR ANY SPECIFIC PURPOSE AND THE AUTHOR DOES NOT GUARANTEE BUG
+ FIXES, UPDATES OR HELP DURING ERROR RECOVERY.
+
+ Copyright
+ ---------
+
+ SysTracker and it's source code is Copyright © 1999-2000 Andrew Bell.
+ All rights reserved. SysTracker v0.x is FREEWARE and is provided "AS IS".
+

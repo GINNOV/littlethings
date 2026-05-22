@@ -1,0 +1,61 @@
+Short:    PDF Writer Linker-Lib for StormC (68k+PPC)
+Uploader: MagicSN@Birdland.es.bawue.de
+Author:   FastIO,MagicSN@Birdland.es.bawue.de (Porter)
+Type:     dev/c
+
+This is a Amiga Port of FastIO's (www.fastio.com) clibpdf
+library. It supports writing PDF, but not reading. This
+library is NOT Public Domain. It still complies to FastIO's
+license !!! (If you do commercial software with it - for
+example - you have to pay money to FastIO. Read the enclosed
+license for more details.
+
+Currently this lib neither supports vbcc-WarpUP nor EGCS WarpUP,
+sorry. Will be fixed in the next release, hopefully... i still
+have to install EGCS WarpUP also... (who needs it: It is on
+http://cs.tu-berlin.de/~paladin).
+
+There are versions of the lib for 68k and WarpUP. Currently 68k
+versions needs Far Code/Far Data, PPC Version needs indirect data.
+(As i did not bother compiling near-versions...).
+
+The linker libs also include the Functions of the "Unix.lib" which
+provides libnix-similar features for StormC. I included a vbcc-WarpUP
+version of unix.lib to the archive, also. In case of bugreports
+concerning Unixlib, contact me.
+
+For people who want to use unixlib without paying money to FastIO
+i also included "plain" versions of unixlib. vbcc version might also
+work with StormC, but i never checked this, so i provided also
+a StormC Version. Unixlib also needs Far Data/Code on 68k, and
+Indirect Data on PPC.
+
+Unixlib emulates "Not ANSI" calls which are often used, like
+fstat, open, close, fdopen,...
+
+To use this package you still need some sorts of Unix-Includes, like
+for example modified AmiTCP-Includes. I cannot provide them in
+this archive, due to copyright matters.
+
+To repeat it:
+
+CLIBPDF IS * N O T * PUBLIC DOMAIN (see enclosed license for details).
+UNIXLIB IS PUBLIC DOMAIN.
+
+If you do not want to pay money to FastIO you should NOT link with
+clibpdf, even if you do not use the
+PDF Calls... link with unixlib instead, then !!!
+
+Included Files:
+
+clibpdf.lib:    PDF and Unix Lib for StormC PPC
+clibpdf68k.lib: PDF and Unix Lib for StormC 68k
+unix.lib:       Unix Lib for vbcc-WarpUP
+ppcunix.lib:    Unix Lib without PDF for StormC PPC
+unix68k.lib:    Unix Lib without PDF for StormC 68k
+license.txt:    License for the PDF Thing
+license.pdf:    Also the license
+arcs.c:         An example
+
+Steffen Haeuser
+

@@ -1,0 +1,7 @@
+Short:        AmiVOGL link-lib and examples
+Author:       Vogl-E.Echidna, Amiga-Driver-C.Campbell
+Uploader:     digulla fh-konstanz de
+Type:         dev/c
+Architecture: m68k-amigaos
+
+Library and all examples that come with AmiVOGL for 020+ and FPU.

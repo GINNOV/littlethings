@@ -1,0 +1,15 @@
+VERSION		EQU	43
+REVISION	EQU	5
+DATE	MACRO
+		dc.b	'17.2.97'
+	ENDM
+VERS	MACRO
+		dc.b	'fillbar 43.5'
+	ENDM
+VSTRING	MACRO
+		dc.b	'fillbar 43.5 (17.2.97)',13,10,0
+	ENDM
+VERSTAG	MACRO
+		dc.b	0,'$VER: fillbar 43.5 (17.2.97)',0
+	ENDM
+	

@@ -1,0 +1,70 @@
+
+
+		Sprite-X-Flip Subroutine Doc
+		   by Paul Douglas, 1992
+
+In this text I've used word Sprite to mean any graphics image, be it
+used in sprite hardware, blitter or whatever display format.
+This is a small subroutine I developed for use in a game with lots
+of graphics. This allows you to just store the frames for any
+graphic character ( hardware sprite or bob) in just one direction.
+This saves you half the memory of storing frames for both left
+and right directions. 
+
+For example if you store all your frames pointing left, then to
+get the frame pointing right just call this nifty little subroutine.
+
+Once you've flipped the image you can then use the blitter or the Sprite 
+hardware to whack it onto the screen! Obviously flipping your frames
+will take longer than storing all left and right frames but you do save
+half the memory, as long as you dont mind the left and right frames
+being exact mirror images of each other. If you need every extra
+microsecond of speed, you could just store one direction of frames
+on disk and then flip them all before you start the game going.
+
+You'll need a small amount of free memory into which the flipped
+frame will be stored, of the same size as the original frame.
+I've assumed all Bobs/sprites are stored as a multiple of words
+(ie 16 pixels) wide, which is the usual practice. Also assumed
+is that each image is stored in a contiguous lump of memory. It
+doesn't matter if you store the mask before or after the normal
+bitplanes.
+
+
+How to use  Sprite_X_flip
+~~~~~~~~~~~~~~~~~~~~~~~~~
+  point A0 to the original image you want flipped
+  point A1 to the buffer where you want the flipped image
+
+  load D0 with the width of the image in Words
+
+  load D1 with the height of the image, in pixels, multiplied by the 
+    number of bitplanes used for the image (including mask bitplane)
+
+  then call Sprite_X_Flip
+
+Eg1  Want to flip a Bob 32 pixels wide by 32 pixels high
+     in 32 colours with a mask
+
+therefore load A0 and A1 as appropriate
+
+load D0 with 2  (because image is 2 words wide!)
+load D1 with 192 (that is 32 {pixels high} multiplied by 6 {number
+                  of bitplanes including mask ie 5+1 in this case})
+
+
+Eg2  Want to flip a background tile of 16 pixels by 16 pixels
+     in 16 colors with no mask
+
+load A0 and A1 appropriately
+load D0 with 1 (image is one word wide)
+load D1 with 64 (that is 16 {pixels high} multiplied by 4 {number
+		 of bitplanes used})
+
+
+The subroutine is fairly easy to understand and is documented.
+Feel free to use, abuse or alter to your own needs.
+
+			Paul.
+
+

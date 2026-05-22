@@ -1,0 +1,308 @@
+                           æ2±3VERY ADVANCED COPPER±1æ0
+
+
+In  questo  articolo  si parlera` di tecniche avanzate di programmazione del
+copper.  Lo spunto per questo articolo l'ho avuto quando mi sono accorto che
+nella  lezione  11  del Corso di Asm di ±2Randy±1, si dice che l'istruzione ±3SKIP±1
+del  copper  non  serve a nulla.  Io non sono di questo parere, e durante la
+scrittura  del  Corso (al quale io ho collaborato scrivendo gran parte delle
+lezioni  7,9, e 10), lo feci presente a Randy mediante alcuni esempi che gli
+inviai affinche` li includesse nella lezione 11.  Purtroppo Randy, non lo ha
+fatto,  forse  per  mancanza  di  tempo  o forse perche` ha perso nell'HD il
+materiale  che  gli  avevo  inviato.   A  me  pero` non va giu` l'idea che i
+giovani  coders che hanno letto il Corso (quanti sono ?) credano che la ±3SKIP±1
+sia  inutile,  perche`  cio`  contrasta  con  uno degli Oscuri Assiomi della
+filosofia ±2Morbid Visions±1:
+
+ ±2Amiga RULEZ => Hardware Amiga perfetto => HW privo di cose inutili.±1
+
+L'±3AGA±1  ha  anche  dei  difetti,  ma l'±3OCS±1 no.  Quindi ho pensato di scrivere
+questo  articolo  per  parlare  della  ±3SKIP±1  e anche del mascheramento delle
+coordinate  del  copper,  argomento  che  nel  corso  e` trattato in maniera
+piuttosto  sommaria.   Vedremo, infatti che la SKIP si rivela molto utile in
+alcuni  casi,  e  che  le possibilita` di mascheramanto delle coordinate del
+copper  sono  molto piu` ampie di quanto spiegato, ad esempio vedremo che e`
+possibile mascherare anche le posizioni orizzontali.
+Le  tecniche che tratteremo in questo articolo, non vi permetteranno di fare
+Ray  Tracing  in tempo reale, (altrimenti se ne sarebbe accorto anche Randy)
+pero`  in  qualche  circostanza  possono  farvi risparmiare qualche preziosa
+linea di raster.  E siccome nei ±2Testi Oscuri Del Coding Mortale±1 si asserisce
+che  uno  degli  obiettivi  di  un coder e` sfruttare al ±2massimo±1 l'hardware,
+bisogna saper sfruttare anche queste tecniche.
+Iniziamo dando una descrizione piu` dettagliata del formato usato dal copper
+per  le  istruzioni WAIT e SKIP.  Queste 2 istruzioni hanno un formato molto
+simile, per questo faremo un'unica descrizione per entrambe.  La descrizione
+del  funzionamento  della  SKIP la vedremo successivamente.  Come ben sapete
+ogni istruzione copper si compone di 2 WORD.  Il formato della prima word e`
+descritto nella tabella seguente:
+
+   ±3PRIMA WORD ISTRUZIONI WAIT E SKIP±1
+     ---------------------------------
+   ±3Bit 0           ±2Sempre settato a 1.
+
+   ±3Bits 7 - 1      ±2Posizione orizzontale pennello elettronico (HP).
+
+   ±3Bits 15 - 8     ±2Posizione verticale pennello elettronico (VP).
+±1
+Entrambe  queste  due istruzioni basano il loro comportamento sulla verifica
+di  una  certa  condizione,  che normalmente e` il superamento, da parte del
+pennello  elettronico della posizione specificata dai campi di bits VP e HP.
+Come  vedremo tra un attimo, e` possibile modificare tale condizione tenendo
+conto   anche   dello   stato  del  blitter.   In  seguito  descriveremo  il
+comportamento della SKIP.  Vediamo la seconda WORD:
+
+
+   ±3SECONDA WORD ISTRUZIONI WAIT E SKIP±1
+     -----------------------------------
+   ±3Bit 0           ±2Settato a 0 per la WAIT, settato a 1 per la SKIP.
+
+   ±3Bits 7 - 1      ±2Bit maschera posizione orizzontale (HE).
+
+   ±3Bits 14 - 8     ±2Bit maschera posizione verticale (VE).
+
+   ±3Bit 15          ±2Blitter-finished-disable bit. Normalmente settato a 1.
+±1
+Il bit 0 serve al copper per capire se l'istruzione in questione e` una WAIT
+o  una SKIP.  I campi di bits HE e VE servono per mascherare rispettivamente
+le  posizioni  orizzonate e verticale.  Il funzionamento e` il seguente:  il
+copper  effettua  il  confronto tra la posizione specificata da HP e VP e la
+posizione  del  pennello  elettronico  utilizzando  solo quei bit tali che i
+corrispondenti  bit  di HE e VE sono settati a 1.  Se ad esempio in una WAIT
+poniamo i bit di HE tutti a 1, mentre i bit 8-12 di VE a 0 e i bit 13 e 14 a
+1,  il  copper  rimarra`  in attesa che il pennello elettronico raggiunga la
+posizione  orizzontale  HP  (perche`  tutti  i  bit  di  HE  sono a 1) e una
+posizione verticale tale che i bit 13 e 14 siano uguali ai bit 13 e 14 di VP
+(perche`  essi  sono  i  soli  bit  di VE settati a 1).  Vediamo alcuni casi
+notevoli.  Se vogliamo utilizzare TUTTI i bit di HP e VP (cio` non usiamo il
+mascheramento),  dobbiamo  settare  a  1  tutti i bit di HE e VE.  In questo
+caso,  se  abbiamo  una WAIT, otteniamo che la seconda WORD assume il valore
+che   ben   conoscete  $FFFE.   Se  invece  vogliamo  una  WAIT  che  ignori
+completamente  la  posizione  verticale  ma  consideri  tutti  i  bit  della
+orizzontale   otteniamo   che  la  seconda  WORD  vale  $80FE,  come  accade
+nell'esempio  presente  nella  lezione  11  del  corso  di Randy.  Il bit 15
+permette  di  modificare  la  condizione che le 2 istruzioni verificano:  se
+tale  bit  e`  settato a 1, si comporteranno normalmente, in caso contrario,
+dovranno  anche  verificare  che  il  blitter  abbia terminato una eventuale
+blittata  (cioe` BLTBUSY, il bit 14 di DMACONR deve valere 0).  Per esempio,
+nel caso della WAIT, con il bit in questione a 0, essa oltre ad attendere il
+raggiungimento  della  posizione video indicata dai bits VP e HP, attendera`
+anche  la fine di un'eventuale blittata.  Cio` puo` essere utile nel caso si
+vogliano  effettuare  blittate  sincronizzate  con la posizione del pennello
+elettronico.
+
+Ai  piu`  attenti non sara` sfuggito il fatto che a causa della presenza del
+Blitter  Finished  Disable  bit, i bit di VE sono uno in meno dei bit di VP.
+Piu`  precisamente  non  esiste  in  VE  un  bit  corrispondente al bit piu`
+significativo  di  VP.   Questo  vuol  dire  che  tale  bit  (il bit 8 della
+posizione verticale dello schermo) NON puo` essere mascherato.  Questo fatto
+ha   delle   importanti   conseguenze.    Nelle   applicazioni,  infatti  il
+mascheramento  viene utilizzato per avere delle istruzioni che si comportano
+allo  stesso  modo  in  diverse posizioni di schermo.  Il fatto di non poter
+mascherare  il  bit  8 della posizione verticale impedisce pertanto di avere
+istruzioni  che  si comportano allo stesso modo in zone dello schermo aventi
+il  bit  8  della  posizione  verticale diverso.  L'esempio tipico, mostrato
+anche  da  Randy,  e`  quello  della  WAIT  che  attende una certa posizione
+orizzontale indipendentemente dalla riga in cui si trova.  Se noi tentassimo
+di  realizzare  una tale WAIT ponendo DC.W $00xx,$80FE otterremmo in realta`
+una  WAIT  che  attende  una posizione dello schermo tale che il bit 8 della
+posizione  verticale  vale  0  e  la posizione orizzontale vale xx.  Se tale
+istruzione viene eseguita quando la posizione del pennello elettronico ha il
+bit  8  uguale  a  0,  essa attende che il pennello elettronico raggiunga la
+posizione  orizzontale  xx, come voluto.  In caso contrario, invece, poiche`
+il  bit 8 della posizione verticale del pennello elettronico vale 1 e il bit
+8  di  VP vale 0, la condizione della WAIT e` subito verificata, quindi tale
+istruzione  NON  blocca il copper.  A causa di questo fenomeno Randy afferma
+nel suo corso che il mascheramento non funziona nelle righe comprese tra $80
+e  $FF.   Si tratta di una conclusione decisamente frettolosa.  Infatti, per
+ottenere  l`effetto  voluto,  basta  utilizzare  una WAIT che mascheri i bit
+bassi  di VP, come nel caso precedente, ma che abbia il bit non mascherabile
+di  VP  posto  a  1,  ovvero  una  DC.W  $80xx,$80FE.  Tale WAIT nelle righe
+comprese  tra  $80  e  $FF,  avra` il bit non mascherabile di VP allo stesso
+valore  del  bit  8  della  posizione  verticale del pennello elettronico, e
+pertanto  attendera` ad ogni riga la posizione orizzontale xx.  Come esempio
+di  applicazione vi proponiamo nel sorgente MV_Code/Copper/mask1.s l'effetto
+usato  da  Randy  per illustrare il mascheramento delle posizioni verticali,
+realizzato  (diversamente  da  Randy)  nelle  righe  comprese tra $80 e $FF.
+Consentiteci  a  questo  punto, rispettabili lettori di parafrasare l'inizio
+dello  scrolltext  della  celeberrima INTRO ±2KickReset±1 di ±3Razor 1911±1:  ±2"Randy
+told us that this couldn't be done...nevertheless here it is!!"±1 :))
+
+Bisogna  comunque  sottlineare  che  una  WAIT mascherata con il bit 8 di VP
+settato  ad  1,  se  eseguita  in  una  riga avente il bit 8 della posizione
+verticale  pari  a 0, blocchera` SEMPRE il copper, in quanto il numero della
+riga  e`  considerato  sempre minore della posizione specificata nella WAIT.
+Cio`  significa  che  la  WAIT  del  nostro esempio ottiene l'effetto voluto
+(aspettare  la  posizione orizzontale xx SOLO nelle righe comprese tra $80 e
+$FF.   E se noi volessimo utilizzare le WAIT mascherate in tutto lo schermo?
+Beh`,  con  un po` di lavoro in piu` e` possibile anche questo.  Il sorgente
+±2MV_Code/Copper/mask2.s±1  e` appunto un implementazione dell'effetto visto nel
+sorgente  precedente  che  funziona  in  tutto lo schermo.  Vi rimandiamo al
+commento del sorgente per una descrizione delle tecniche adottate.
+
+Veniamo  dunque  all'istruzione  ±3SKIP±1.  Come detto, essa ha un formato molto
+simile  a  quello  della  WAIT.  Il comportamento della SKIP e` il seguente:
+essa  fa  saltare al copper l'istruzione seguente se il pennello elettronico
+ha  superato la posizione specificata.  Per esempio consideriamo le seguenti
+istruzioni:
+
+	dc.w	$4037,$ffff	; SKIP (salta) se si supera la linea $40
+ISTR1:	dc.w	$182,$0456	; istruzione move del copper
+ISTR2:	dc.w	$182,$0fff	; istruzione move del copper
+
+Quando  il  copper  esegue  l'istruzione  SKIP  controlla  dove  si trova il
+pennello  elettronico.  Se esso ha superato la posizione specificata dai bit
+VP  e  HP  della  SKIP  (nell'esempio  HP=$36  e  VP=$40),  il  copper salta
+l'istruzione   seguente   (all'indirizzo   ISTR1)   ed  esegue  l'istruzione
+successiva  ad  essa (cioe` l'istruzione all'indirizzo ISTR2).  Se invece il
+pennello  elettronico  non  ha  ancora raggiunto la posizione indicata viene
+eseguita  nomalmente  l'istruzione  successiva come se la SKIP non ci fosse.
+Come   abbiamo   gia`  detto  anche  alla  SKIP  puo`  essere  applicato  il
+mascheramento  delle  posizioni mediante i bit VE e HE della seconda WORD in
+maniera analoga a quanto avviene per la WAIT; inoltre anche per la SKIP puo`
+essere  azzerato  il  Blitter  Finished Disable bit, facendo si che il salto
+venga  effettuato  o  meno  tenendo  conto  ANCHE  dello  stato del Blitter.
+Mediante  la  ±3SKIP±1 si possono realizzare dei loop nella copperlist.  Un loop
+nella  copperlist e` un insieme di istruzioni copper che viene ripetuto fino
+a  che il pennello elettronico non raggiunge una determinata posizione.  Per
+realizzare  il  loop  si  usa  anche  il  registro COP2LC.  Il meccanismo e`
+illustrato dal seguente esempio:
+
+nel programma principale si esegue una
+
+	move.l	#Copperloop,COP2LC(A5)	; scrive l'indirizzo del loop
+					; nel registro COP2LC
+
+e nella copperlist si mettono le seguenti istruzioni:
+
+	dc.w	$2007,$FFFE	; WAIT linea $20
+Copperloop:
+	dc.w	$180,$F00	; istruzioni copper del loop
+	dc.w	$180,$0F0
+	dc.w	$180,$00F
+
+	.
+	.
+
+	dc.w	$180,$F0F	; ultima istruzione del loop
+	dc.w	$4007,$ffff	; SKIP (salta) se si supera la linea $40
+	dc.w	$8a,0		; COPJMP2 salta all'inizio del loop
+
+	dc.w	$182,$00F	; istruzione fuori dal loop
+
+Il  funzionamento  e` molto semplice.  Dopo la linea $20,il copper entra nel
+loop Dopo aver eseguito tutte le istruzioni del loop arrivera` alla SKIP.  A
+questo  punto se il pennello elettronico NON ha ancora superato la linea $40
+(cioe`   si  trova  piu`  in  alto  sullo  schermo)il  copper  NON  saltera`
+l'istruzione  seguente.   L'istruzione  seguente,  pero`  scrive  in COPJMP2
+provocando  un  salto  del  copper  all'indirizzo  scritto in COP2LC, ovvero
+all'indirizzo della prima istruzione del loop.  In questo modo il loop viene
+ripetuto.   Dopo  un  certo  numero  di ripetizioni, il pennello elettronico
+raggiungera` la linea $40.  A questo punto quando viene eseguita di nuovo la
+SKIP,  essa  fara`  saltare al copper l'istruzione che scrive in COPJMP2; in
+questo  modo  esso  non  fa  piu`  il  salto all'inizio del loop ma passa ad
+eseguire la prima istruzione esterna al loop.
+
+A  cosa  servono  i  loop  nella copperlist?  E` chiaro, che possiamo sempre
+farne  a  meno:   invece  di  fare  il  loop scriviamo tante volte quante ci
+servono  la  parte di copperlist da ripetere.  In questo modo ci risparmiamo
+la  SKIP  e l'istruzione che scrive in COPJMP2, che rallentano un pochettino
+il  copper.   L'uso  dei  loop  presenta pero` dei vantaggi:  in primo luogo
+risparmiamo   memoria,   perche`  scriviamo  una  volta  sola  il  pezzo  di
+copperlist.   In  secondo  luogo,  se  il  pezzo di copperlist ripetuto deve
+essere   modificato   dal   processore   per   realizzare  qualche  effetto,
+naturalmente facendo il loop il pezzo di copperlist dovra` essere modificato
+una sola volta, velocizzando moltissimo il lavoro del processore.
+
+L'utilizzo di istruzioni WAIT all'interno dei loop presenta alcuni problemi.
+Supponiamo  di  avere  un loop che si ripete dalla riga $20 alla riga $70, e
+che  all'interno  del  loop ci sia una WAIT alla riga $38.  Che succede?  La
+prima  volta  che il loop viene eseguito, la WAIT blocca il copper.  Dopo la
+linea  $38  il  copper si sblocca, arriva alla fine del loop e lo ripete.  A
+questo  punto,  siccome  il pennello elettronico ha superato la riga $38, la
+WAIT  non  blocca  piu` il copper.  Come risultato, l'esecuzione della prima
+iterazione  del  loop  produrra`  risultati  molto  diversi dalle iterazioni
+successive.   Di  solito  questo  non e` cio` che si vuole.  Nei loop con il
+copper sarebbe desiderabile poter aspettare una determinata riga del loop ad
+ogni iterazione.  Per esempio si potrebbe volere qualcosa del genere:
+
+CopperLoop:
+		; istruzioni varie
+
+		aspetta 4 righe dall'inizio dell'iterazione
+
+		; istruzioni varie
+
+		ripeti il loop fino ad una certa riga.
+
+Come  si puo` realizzare un meccanismo del genere?  E` necessario utilizzare
+delle WAIT con mascherati alcuni bit della posizione verticale.
+
+Per  esempio  supponiamo  di  avere  un  loop che si estende per 16 righe di
+raster  e  che vogliamo ripetere dalla riga $10 alla riga $70, ovvero per 96
+righe.   Poiche` 96/16=6 il copper eseguira` 6 iterazioni.  Notate che 96 e`
+divisibile  per  16  (non  c'e`  resto),  il  che  vuol dire che il pennello
+elettronico raggiungera` la riga 96 esattamente nel momento in cui il copper
+finisce  la  sesta  iterazione.  Vogliamo che in ogni iterazione del loop il
+copper  si  blocchi  alla quarta riga a partire dall'inizio dell'iterazione.
+Per   ottenere   cio`  usiamo  una  WAIT  in  cui  mascheriamo  i  bit  piu`
+significativi  della posizione verticale.  In questo caso poiche` il loop si
+ripete  ogni  16  righe, la WAIT si deve comportare allo stesso modo ogni 16
+righe, e non deve considerare le differenze di posizione tra un gruppo di 16
+righe  e  l'altro.   Quindi  e`  necessario  considerare  solo  i 4 bit meno
+significativi (che formano appunto un gruppo di 16 linee).  Per mascherare i
+bit  della  posizione verticale, come e` spiegato nel corso, si utilizzano i
+bits  da  8  a  14  della seconda word della WAIT.  Se uno di tali bit viene
+settato  a  1  (come accade di solito) il bit corrispondente della posizione
+verticale  viene utilizzato; se invece uno di tali bit viene azzerato il bit
+ad  esso  corrispondente e` mascherato.  Consideriamo ad esempio la seguente
+istruzione WAIT:
+
+	dc.w	$0301,$8FFE
+
+questa  istruzione aspetta la quarta riga di un gruppo di 16 linee.  Vediamo
+cosa  accade  nel  nostro esempio.  Il loop inizia alla riga $20.  Il copper
+esegue  le prime istruzioni e incontra la WAIT.  Essa considera solo i 4 bit
+meno  significativi  della  posizione per cui si mette ad aspettare una riga
+che abbia tali 4 bit al valore $3 (infatti nella seconda WORD i bit 12,13,14
+che  corrispondono ai bit 5,6 e 7 della posizione verticale sono a 0).  Cio`
+accade  alla  riga  $23.   A  questo punto il copper si sblocca.  La seconda
+iterazione  del  loop inizia alla riga $30.  Anche qui il copper arriva alla
+WAIT  e  aspetta una riga che abbia i 4 bit meno significativi al valore $3,
+cosa  che  accade  alla  riga  $33, ovvero ancora alla quarta riga del loop.
+Questo  comportamento si ripete ad ogni successiva iterazione.  Se volessimo
+delle  iterazioni  lunghe  8  righe  con  delle WAIT di questo tipo dovremmo
+lasciare  abilitati solo i 3 bit meno significativi della posizione.  Notate
+che  questa  tecnica  si  implementa  facilmente  solo se la lunghezza di un
+iterazione  e`  una  potenza di 2.  Un esempio di copper loop e` il ±2sorgente
+MV_Code/Copper/skip1.s±1.
+
+Una  limitazione  all'uso  delle  WAIT nella maniera che abbiamo mostrato e`
+dovuta  al fatto che il bit piu` significativo della posizione verticale non
+e`  mascherabile.   Cio`  ci  impedisce di realizzare loop che si comportino
+nella  stessa  maniera  sia  al  di  sopra  della riga $80, dove il bit piu`
+significativo  vale  0, sia al di sotto, dove il bit piu` significativo vale
+1,  proprio  perche`  non possiamo ignorare questa differenza mascherando il
+bit.  L'unica soluzione e` di utilizzare 2 loop, uno da eseguire al di sopra
+di $80 e uno al di sotto, come mostrato in ±2MV_Code/Copper/skip2.s±1.
+
+Un  esempio  un po' piu` sofisticato e` nel sorgente ±2MV_Code/Copper/skip3.s±1.
+In  tale  sorgente le copperlist sono scritte utilizzando delle ±3MACRO±1 invece
+che  mediante  delle ±2DC.W±1.  Le ±3MACRO±1 permettono ad esempio di scrivere ±2CMOVE
+$0f0,COLOR00±1  invece che ±2DC.W $180,$0f0±1 e, nel caso delle ±2WAIT±1, ±2WAIT $07,$60±1
+invece  che  ±2DC.W $6007,$FFFE±1.  Si tratta di una scelta stilistica che a mio
+avviso  rende  molto  piu`  puliti e ordinati i sorgenti.  Inoltre in questo
+modo   si   evitano  molti  errori  di  "distrazione",  nella  scrittura  di
+copperlist,  come  ad  esempio dimenticarsi che il bit 0 della prima word di
+una ±2WAIT±1 DEVE essere settato a 1.  Nella prima parte dell'articolo non le ho
+usate perche` volevo confondere ulteriormente le idee durante la spiegazione
+della  SKIP.   Consiglio  pertanto  a tutti di utilizzarle.  Nel sorgente ci
+sono delle versioni ridotte delle mie macro, che potete prendere, migliorare
+e includere nei vostri sorgenti.
+
+Naturalmente  mediante  le  SKIP  si  possono costruire loop che si ripetono
+anche  all'interno  della stessa riga dello schermo.  A causa della lentezza
+del  copper,  (1  istruzione=8  Pixel)  il  numero di iterazioni per riga di
+solito  e`  piuttoto  ridotto.   Potete  vederne  un  esempio  nel  sorgente
+±2MV_Code/Copper/skip4.s±1.
+
+                                       ±2The Dark Coder±1 / ±3Morbid Visions±1

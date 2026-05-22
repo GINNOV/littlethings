@@ -1,0 +1,46 @@
+Short: OpenGL C Source: Mandelbrot and Julia fractal generator
+Autor: walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Uploader: walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Type: dev/c
+Requires: C Compiler (e.g. gcc), StormMesa
+
+
+Mandelbrot and Julia fractal generator.
+
+The executable included in this archive requires 68030 cpu and 68881 fpu or better.
+
+The source is highly portable. It shold work with all major operating systems,
+as far as OpenGL and GLUT (GL Utilities) are available.
+
+Testet on Amiga 4000/30 with AmigaOS 3.5 and Intel Pentium III PC running 
+Red Hat Linux.
+
+
+Literature:
+
+Brian W. Kernighan, Dennis M. Ritchie: The C Programming Language
+
+Andrew Koenig: 
+C Traps and Pitfalls
+
+Mason Woo, Jackie Neider, Tom David, Dave Shriner, Tom Davis: 
+OpenGL 1.2 Programming Guide
+
+Mark Kilgar: 
+The OpenGL Utility Toolkit (GLUT) Programming Interface API
+
+
+World Wide Web:
+
+http://www.norman-interactive.com (my Homepage)
+
+http://www.informatik.uni-stuttgart.de (University Stuttgart, Dept. of Computer Science)
+
+http://www.OpenGL.org (Official OpenGL Homepage)
+
+http://www.ninemoons.com (GeekGadgets)
+
+http://www.haage-partner.com (Haage & Partner Homepage, 3D World)
+
+http://www.sgi.com (Silicon Graphics - Inventor of OpenGL)
+

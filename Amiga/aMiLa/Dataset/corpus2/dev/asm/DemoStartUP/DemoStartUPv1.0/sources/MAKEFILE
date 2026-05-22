@@ -1,0 +1,11 @@
+
+NAME    = TestUP
+
+OBJS    = start.o c2p.o init.o softirq.o aslscrmodereq.o 610.4.o main.o
+
+
+$(NAME): $(OBJS)
+	slink $(OBJS) to $(NAME) NOICONS
+
+.asm.o:
+	phxass	$*.asm NOEXE M 68060 ; DS DL

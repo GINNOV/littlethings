@@ -77,8 +77,10 @@ graph TD
   * `BoingBallView.swift`: 3D checkered grid render canvas using vector trigonometry and radial gloss shading.
   * `OllamaService.swift`: Network SSE event-driven streaming delegator compatible with Ollama and MLX-LM.
 * **`fine_tuning/`**: MLX-LM local LoRA model training harness.
+  * `README.md`: Retraining checklist for rebuilding the model after adding new source content.
   * `prepare_dataset.py`: Crawls sources, performs heuristic cleaning, executes compilation verifications, and exports ChatML JSONL formatting.
   * `finetune.sh`: Activates python environment, executes MLX training loop (400 iterations), and runs weight fusion.
+  * `fused_model/README.md`: Model card for the fine-tuned Antigravity Amiga 68k model.
 * **`amiga_sources/`**: Collection of vintage Amiga ASM, C, and target NDK headers.
 
 ---
@@ -98,40 +100,43 @@ Ensure you have the following installed on your Apple Silicon Mac:
    /usr/local/bin/vasmm68k_mot
    ```
 3. **Python 3.10+**: Standard Python interpreter.
+4. **UV**: Install Astral's Python package and environment manager:
+   ```bash
+   brew install uv
+   ```
 
 ---
 
 ### Step-by-Step Environment Installation
 
-#### 1. Setup the Python Virtual Environment
+#### 1. Sync the Python Environment
 Navigate to the `fine_tuning/` directory and build the workspace environment:
 ```bash
-cd fine_tuning
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+cd aMiLa/fine_tuning
+uv sync
 ```
 
 #### 2. Install the ADF Formatting Utilities
-We leverage `amitools` to handle sectors, file headers, and bootblock injection programmatically. Install it inside your virtual environment:
-```bash
-.venv/bin/python -m pip install amitools
-```
-This adds the `xdftool` command-line formatting utility inside `.venv/bin/xdftool`, which is used natively by the SwiftUI application.
+We leverage `amitools` to handle sectors, file headers, and bootblock injection programmatically. `amitools` is declared in `fine_tuning/pyproject.toml`, so `uv sync` installs the `xdftool` command-line utility into `.venv/bin/xdftool` for the SwiftUI application.
 
 ---
 
 ### Model Fine-Tuning Pipeline
 
-If you want to re-run the LoRA adapter fine-tuning sequence on your custom ASM/C corpus:
+If you want to re-run the LoRA adapter fine-tuning sequence on your custom ASM/C corpus, follow the full checklist in [`fine_tuning/README.md`](fine_tuning/README.md).
 
-1. **Verify Your Corpus**: Place your raw Amiga files under `/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/amiga_sources/`.
+1. **Verify Your Corpus**: Place your raw Amiga files under `aMiLa/amiga_sources/`.
 2. **Build the Dataset**:
    ```bash
-   python prepare_dataset.py
+   uv run python prepare_dataset.py
    ```
    This crawler runs the `vasm` compiler against **every extracted code block**. Only files that assemble successfully with zero relocation or syntax errors are added to the final output, establishing a **100% stable compilable training corpus**.
-3. **Execute LoRA GPU Training**:
+3. **Split the Dataset**:
+   ```bash
+   uv run python split_dataset.py
+   ```
+   This writes the `data/train.jsonl` and `data/valid.jsonl` files used by MLX-LM.
+4. **Execute LoRA GPU Training**:
    Run the MLX-LM LoRA training loop:
    ```bash
    ./finetune.sh
@@ -139,14 +144,16 @@ If you want to re-run the LoRA adapter fine-tuning sequence on your custom ASM/C
    MLX-LM utilizes Apple Silicon unified memory GPUs to perform LoRA training.
    * **Base Model**: `mlx-community/Huihui-gemma-3-270m-it-abliterated-6bit`
    * **Final Fused Weights**: Saved inside `fine_tuning/fused_model/`.
+   * **Model Card**: [`fine_tuning/fused_model/README.md`](fine_tuning/fused_model/README.md)
 
 #### 3. Host the Fused Model Locally
 To prompt the model via the playground, host the MLX server:
 ```bash
-source .venv/bin/activate
-mlx_lm.server --model fused_model/ --port 1234
+uv run mlx_lm.server --model fused_model/ --port 1234
 ```
 This starts an OpenAI-compatible endpoint at `http://localhost:1234/v1/chat/completions`.
+
+The fused MLX model lives at `fine_tuning/fused_model/`. For LM Studio or Ollama-style local loading, use the optional GGUF export at `fine_tuning/antigravity-amiga-68k.gguf` if `./finetune.sh` produced it. See [`fine_tuning/README.md`](fine_tuning/README.md) for the exact model paths and loading notes.
 
 ---
 

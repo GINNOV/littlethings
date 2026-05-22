@@ -1,0 +1,21 @@
+#################################################
+# Pretty printing rules generated automagically
+# on Thu Dec  5 15:58:03 MET 1991 by heitkoet
+# using joke's *mkpt* csh script...
+# Now just type in: *make pretty*
+#################################################
+DVIS = \
+	../getopt.h.dvi	\
+	../demo.c.dvi	\
+	../getopt.c.dvi	\
+	../getopt1.c.dvi	\
+	../main.c.dvi	\
+	../version.c.dvi
+
+SimpleDviTarget(pretty)
+MakeDviFromSrc(../getopt.h)
+MakeDviFromSrc(../demo.c)
+MakeDviFromSrc(../getopt.c)
+MakeDviFromSrc(../getopt1.c)
+MakeDviFromSrc(../main.c)
+MakeDviFromSrc(../version.c)

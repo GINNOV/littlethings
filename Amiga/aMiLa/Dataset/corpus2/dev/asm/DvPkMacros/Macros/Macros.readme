@@ -1,0 +1,173 @@
+Short:    Lots of useful macros 4 the DevPac
+Uploader: thor@math.tu-berlin.de (Thomas Richter)
+Author:   thor@math.tu-berlin.de (Thomas Richter)
+Type:     dev/asm
+
+This is a set of extremly useful macros for the DevPac assembler. It contains
+macros for:
+
+-automatic stack management that nest
+-for/next do/repeat/loop loops with break/cont instructions that nest
+-support for stack based (C-style) functions
+-support for auto variables that are kept on the stack
+-support for longword bitfields
+-string support
+-register saving/loading that nests
+-support for tag based functions
+
+_____________________________________________________________________________
+
+Here's an example code that uses these macros, unbelieveable, but
+that's assembly language, too!
+
+ShrinkPool:
+        saveregs a2
+	defvar
+	 auto.l sp_name,40
+	endvar
+        
+        move.l mn_SysBase(a5),a6
+        jsr Forbid(a6)          ;do not disturb
+        
+.startover:
+        move.l mn_SysBase(a5),a6
+        move.l $142(a6),a0      ;get Head
+        do
+         tst.l (a0)             ;really ? 
+         break.s eq
+
+         btst #4,1+$0e(a0)      
+         beq.s .nextouter       
+
+         cmp.l #$3000,$1c(a0)   
+         blo.s .nextouter
+
+         move.l $a(a0),a2
+	 lea sp_name(a7),a1
+	 smove a2,a1		;copy name for later usage
+	  
+         move.l $142(a6),a1     ;*2nd
+         do
+          tst.l (a1)            ;really ?
+          break.s eq
+
+          move.l $14(a1),d0
+          moveq #$20,d1
+          sub.l d1,d0
+          cmp.l $18(a0),d0      
+          bne.s .nextinner
+
+                                
+          move.l $10(a0),d0     
+          beq.s .alert          
+          do
+           move.l d0,a2
+           move.l (a2),d0       
+          while.s ne            
+          cmp.l #$3000,4(a2)
+          blo.s .nextinner
+          add.l 4(a2),a2        
+          cmp.l $18(a0),a2      
+          bne.s .nextinner
+          
+          bsr ShrinkHeaders
+          bra.s .startover
+
+.nextinner:
+          move.l (a1),a1        ;*next
+         loop.s
+.nextouter:      
+         move.l (a0),a0
+        loop.s
+        bra.s .exit
+.alert: 
+	lea sp_Name(a7),a0
+	saveregs d1-d3
+
+	move.l mn_DOSBase(a5),a6
+	move.l a0,d2
+	strlen a0,d3		;get length of the string
+	jsr Write(a6)
+
+	loadregs
+.exit:
+	move.l mn_SysBase(a5),a6
+	jsr Permit(a6)
+	
+	freevar
+	loadregs
+	rts
+
+_____________________________________________________________________________
+
+More on the macros, together with examples is in the "macros.asm" file itself
+
+It should propably be stripped before you use it, some of the comments are
+rather long.
+
+It shows also "creative" usage of some of the DevPac features.
+_____________________________________________________________________________
+
+                        The THOR-Software Licence
+
+
+This License applies to the computer programs known as "Macros.asm".
+The "Program", below, refers to such program.
+
+
+The programs and files in this distribution are freely distributable
+under the restrictions stated below, but are also Copyright (c)
+Thomas Richter.
+
+
+Distribution of the Program by a commercial organization without written
+permission from the author to any third party is prohibited if any payment
+is made in connection with such distribution, whether directly
+(as in payment for a copy of the Program) or indirectly (as in payment
+for some service related to the Program, or payment for some product
+or service that includes a copy of the Program "without charge";
+these are only examples, and not an exhaustive enumeration of prohibited
+activities). However, the following methods of distribution involving
+payment shall not in and of themselves be a violation of this restriction:
+
+
+(i) Posting the Program on a public access information storage and
+retrieval service for which a fee is received for retrieving information
+(such as an on-line service), provided that the fee is not
+content-dependent (i.e., the fee would be the same for retrieving the same
+volume of information consisting of random data).
+
+
+
+(ii) Distributing the Program on a CD-ROM, provided that the files
+containing the Program are reproduced entirely and verbatim on such
+CD-ROM, and provided further that all information on such CD-ROM be
+redistributable for non-commercial purposes without charge.
+
+
+
+Everything in this distribution must be kept together, in original
+and unmodified form.
+
+
+
+
+Limitations.
+
+THE PROGRAM IS PROVIDED TO YOU "AS IS," WITHOUT WARRANTY. THERE IS NO
+WARRANTY FOR THE PROGRAM, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY RIGHTS. THE ENTIRE
+RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD
+THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY
+SERVICING, REPAIR OR CORRECTION.
+
+
+
+IF YOU DO NOT ACCEPT THIS LICENCE, YOU MUST DELETE ALL FILES CONTAINED IN
+THIS ARCHIVE.
+
+_____________________________________________________________________________
+
+Greetings,
+	Thomas

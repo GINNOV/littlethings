@@ -1,0 +1,46 @@
+Short:     A GUI (V1.8) for various text editing & formatting tools (C).
+Uploader:  jimbot@rconnect.com (Jim Steichen)
+Author:    jimbot@rconnect.com (Jim Steichen)
+Type:      dev/c
+Requires:  68000+, V3.1+ Amiga OS & indent program (included)
+Version:   1.8
+
+ProgrammerAssist (c) 1999-2001 by J. T. Steichen is a program that allows
+a programmer to modify & edit source code (developed for C).
+The indent program is included in this distribution, since finding the
+right version might not be easy.  CPU-specific versions will be compiled
+if there is any interest.
+
+Un-archive PgmAsst.lha where ever you want it located.  Everything is in
+a directory called ProgrammerAssist.  You can move AdjustText & Indent
+to your C: directory if you like, but be sure to update the ToolTypes
+in the ProgrammerAssist icon to reflect where AdjustText & Indent are
+located.  ProgrammerAssist is a commodity, so it can be place in your
+WBStartup drawer (if you use it a lot).  The default hot key is 'Alt-p'.
+ 
+   HISTORY
+   
+       1.0 ProgrammerAssist is now working correctly!
+
+       1.1 Added Commodity capability to the program so that it
+           can be placed in the WBStartup drawer.
+
+       1.2 Changed the method in which the Indent program is invoked,
+           since the Indent program uses -o OutputFile for specifying
+           that an output file is to be used.
+
+       1.3 Added the TabLength ToolType & removed some unnecessary 
+           Delay() calls.  First Release onto the world!
+
+       1.4 Added the ability to open at the same directory to the 
+           ASL button Gadget.
+
+       1.5 Added the PathValid() function to the ASL button Gadget &
+           ActivateProgram(), in order to make sure that garbage is not
+           in the ASL FileRequester Drawer String Gadget when it opens.
+
+       1.6 Added code to open on the Active Screen.
+
+       1.7 Changed some vanilla keys for button gadgets.
+
+       1.8 Added the Adjust Text Button.

@@ -1,0 +1,213 @@
+ABOUT
+~~~~~
+
+    These are some simple programs that demonstrate how to program
+    using SDL_net.
+
+
+COMPILATION
+~~~~~~~~~~~
+
+    run "make"
+
+THE PROGRAMS
+~~~~~~~~~~~~
+
+dnr.c
+    demonstrates:
+        Host Name and IP lookup, and initialization of the IPaddress struct
+        SDLNet_ResolveHost
+        SDLNet_ResolveIP
+
+    try:
+        ./dnr 24.8.116.27
+        ./dnr jonatkins.org
+
+tcpserver.c
+    demonstrates:
+        A TCP message server
+        SDLNet_ResolveHost (for a server)
+        SDLNet_TCP_Open
+        SDLNet_TCP_Accept
+        SDLNet_TCP_GetPeerAddress
+        SDLNet_TCP_Recv
+        SDLNet_TCP_Close
+
+    try:
+        ./tcpserver 9999
+
+    usage:
+        Run as above...
+        Then run tcpclient as shown below.
+        The tcpclient entered string should show up here when received.
+        This server will accept multiple sucessive connections, until it quits.
+
+tcpclient.c
+    demonstrates:
+        A TCP client for tcpserver
+        SDLNet_ResolveHost (for a client)
+        SDLNet_TCP_Open
+        SDLNet_TCP_Send
+        SDLNet_TCP_Close
+    
+    try:
+        ./tcpclient localhost 9999
+
+    usage:  
+        Enter a string, or Q to make the tcpserver quit.
+        You may call this from another host using the servers hostname
+            instead of localhost.
+        This should be able to be called multiple times until you make
+            the server quit.
+
+tcpmultiserver.c
+    demonstrates:
+        A TCP chat server that allows multiple clients to connect
+            This is actually a feature full server, supporting some /commands
+        SDLNet_SocketSet (all functions, except SDLNet_DelSocket's)
+    
+    try:
+        ./tcpmultiserver 9999
+    
+    usage:
+        Run as above...
+        Then run tcpmulticlient as shown below.
+        The tcpclient entered string should show up here when received.
+        The client's strings should also be forwarded to all connected clients.
+        Joins and disconnects will be reported to all clients,
+            as well as on the server.
+        This server will accept multiple connections in parallel,
+            until it is killed.
+
+tcpmulticlient.c
+    demonstrates:
+        A TCP client for the tcpmultiserver
+            Also a suitable system for text input while reading a socket.
+        SDLNet_SocketSet (just for one socket)
+        select (for keyboard input)
+
+    try:
+        ./tcpmulticlient localhost 9999 Klonkus
+        ./tcpmulticlient localhost 9999 Frumpy
+
+    usage:
+        Run the tcpmultiserver as shown above...
+        Then run both the above command lines.
+        You should see both clients connect to the server.
+        Now you can enter messages in each window (press enter)
+        The messages will be distributed to the server,
+            and then back to the clients.
+        Type /help for the commands the server supports...
+        Type /quit and an optional message to quit
+        Press Control-C (or EOF[Control-D] if you want) to quit harder
+
+tcpmulticlientthreaded.c
+    demonstrates:
+        same as tcpmulticlient.c
+        plus: SDL_Threads are used for all I/O
+
+    try:
+    usage:
+        (See the tcpmulticlient.c stuff above!)
+
+tcptimesync.c
+    demonstrates:
+        simple TCP reading and writing
+        time syncronization in 5 packets
+
+    try:
+        ./tcptimesync 0 7777 &
+        ./tcptimesync 500 7777 localhost
+
+    usage:
+        tcptimesync lag port [hostname]
+            if hostname is not given, the server is started
+            lag is the desired simulated lag time in milliseconds
+            the lag argument is ignored in server mode
+        run the first line above to start the server
+        run the second line above to connect and do a time syncronization
+        it should settle on a lag close to 500
+        but the important thing is that the client time is close to the 
+            time the server has...and this is hard to show across the internet.
+        (note: more info will be provided on this if you prod me :)
+
+tcptimesyncserver.c
+    demonstrates:
+        a seemingly more flexible implementation of tcptimesync.c's server half
+        it also loops until the server decides that the client is in sync enough
+    
+    try:
+        ./tcptimesyncserver 7777
+        (in separate terminal run tcptimesyncclient as shown below)
+
+    usage:
+        tcptimesyncserver port [minoff]
+            port is the server port number
+            minoff is the minimum allowed millisecond error before sync is
+                decided to be achieved
+        run the client below as many times as you want
+        only one client can be synced at any one time
+        the server only dies on control-C (or kill)
+    
+tcptimesyncclient.c
+    demonstrates:
+        the client side of tcptimesyncserver
+    
+    try:
+        ./tcptimesyncclient localhost 7777 100
+    
+    usage:
+        tcptimesyncclient hostname port [lag]
+            hostname and port of a running tcptimesyncserver
+            lag is milliseconds of simulated lag desired (1000 = 1 second)
+        run the server above then you can run this however many times you like.
+
+udptftpserver.c
+    demonstrates:
+        an advanced UDP demo
+        UDP (and only UDP) file transfer server
+        server for udptftpclient
+        does not use SDLNet_SocketSet
+    
+    try:
+        ./udptftpserver 7777 6000
+
+    usage:
+        udptftpserver port [packet-length]
+            port is the server port number
+            packet-length is the size of each packet sent for the file transfer
+                it must be greater than 6 to work at all...
+                I dunno that max size...but 65535 is too big! (it seems)
+        this is an insecure server,
+            adding security would be an exercise for you.
+        this server can only handle one transfer at a time,
+            make it do more yourself.
+        use with udptftpclient as shown below...
+
+udptftpclient.c
+    demonstrates:
+        an advanced UDP demo
+        UDP (and only UDP) file transfer client
+        client for udptftpserver
+        does not use SDLNet_SocketSet
+    
+    try:
+        ./udptftpclient localhost 7777 /bin/sh
+    
+    usage:
+        udptftpclient hostname port filename
+            hostname and port of a running udptftpserver
+            filename is a file available to udptftpserver to read
+        this is an insecure client, adding security would be an
+            exercise for you.
+        filename may have an absolute path to access anything on the
+            server's filesystem.
+        I achieved a rate of 3.13 MB/s on my 100base local network...
+            (1472 bytes/packet udptftpserver)
+        I achieved a rate of 4.80 MB/s on local loopback.
+            (1797 bytes/packet udptftpserver)
+        So I arrived at a safe 1400 bytes/packet in the program.
+        A better server may dynamically send more or less packets per group
+            to help the network not be overloaded.
+        I have transfered files up to almost 192MB in size.
+        it could be tweaked along with the server for more performance.

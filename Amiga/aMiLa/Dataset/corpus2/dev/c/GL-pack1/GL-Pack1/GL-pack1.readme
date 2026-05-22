@@ -1,0 +1,15 @@
+Short   : Examples to start programming with TinyGL
+Uploader: mathias.p@wanadoo.fr (Mathias 'Corto' Parnaudeau)
+Author  : mathias.p@wanadoo.fr (Mathias 'Corto' Parnaudeau)
+Type    : dev/c
+Version : 0.1
+
+						
+Date    : 08/06/03
+
+Given examples have a increasing difficulty, so it's perfect for
+learning OpenGL with this nice TinyGL library.
+
+You need a C compiler (GCC, SAS/C). The GCC TinyGL lib doesn't seem
+to work with VBCC however.
+ 

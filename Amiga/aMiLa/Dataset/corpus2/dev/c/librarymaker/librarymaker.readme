@@ -1,0 +1,40 @@
+Short: Create shared libraries with SAS-C
+Author:    Jim Steichen (jimbot@frontiernet.net)
+Uploader:  Jim Steichen (jimbot@frontiernet.net)
+Type:      dev/c
+Version:   1.0
+Requires:  SAS-C Compiler (V6.57+), 68040+
+
+Program has complete amigaguide file for documentation,
+as well as an Installer script.
+
+WHAT YOU GET:
+~~~~~~~~~~~~~
+
+Original  Packed Ratio    Date     Time    Name
+-------- ------- ----- --------- --------  -------------
+    4222    1436 65.9% 31-Dec-01 23:41:40  AmigaDOSErrs.h
+     305     207 32.1% 21-Jan-04 01:14:00  librarymaker.readme
+   74552   35762 52.0% 20-Jan-04 19:02:28  LibraryMaker
+    2164    1357 37.2% 20-Jan-04 02:03:16  LibraryMaker.info
+   25072    8447 66.3% 21-Jan-04 01:07:22  LibraryMaker.guide
+    1382     950 31.2% 11-Sep-00 05:25:18  LibraryMaker.guide.info
+    2095    1296 38.1% 12-Dec-03 22:36:44  LibraryMakerDrawer.info
+    6608    1721 73.9% 20-Jan-04 02:26:04  LibraryMaker.install
+    3347    1848 44.7% 12-Dec-03 22:36:44  LibraryMaker.install.info
+    3089    1303 57.8% 20-Jan-04 02:01:40  LibraryMaker.ct
+    5084    2049 59.6% 20-Jan-04 02:01:40  LibraryMaker.cd
+     537     248 53.8% 17-Jan-04 15:20:42  TestLGFile.ini
+     366     191 47.8% 20-Jan-04 01:46:58 +fd.template
+     797     399 49.9% 20-Jan-04 00:51:50 +FunctionsC.template
+    1283     515 59.8% 20-Jan-04 02:01:18 +MakeFile.template
+    1124     577 48.6% 20-Jan-04 00:50:58 +TestSystemLib.template
+    1262     519 58.8% 20-Jan-04 02:07:48 +SMakeFile
+   18608   10207 45.1% 20-Jan-04 02:08:32 +Test
+    1392     682 51.0% 20-Jan-04 02:07:48 +Test.c
+     821     344 58.0% 20-Jan-04 02:07:48 +Test.fd
+    4088    1896 53.6% 20-Jan-04 02:08:30 +Test.o
+    3300     755 77.1% 20-Jan-04 02:07:48 +TestC.c
+     839     285 66.0% 20-Jan-04 02:08:30 +TestH.h
+-------- ------- ----- --------- --------
+  162337   72994 55.0% 21-Jan-104 01:14:16   23 files

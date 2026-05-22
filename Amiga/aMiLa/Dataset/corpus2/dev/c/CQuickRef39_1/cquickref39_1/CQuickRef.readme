@@ -1,0 +1,20 @@
+short: quick reference guide for C language
+uploader: bsimpson@touchdwn.demon.co.uk (Bruce Simpson)
+author: bsimpson@touchdwn.demon.co.uk (Bruce Simpson)
+Type: dev/c
+
+   This AmigaGuide (tm) file is merely a collection of nuggets of useful
+information it's handy to have with you when you're developing in C for any
+platform.  There are some bits of interest for the Mac and the Amiga
+though, and you're welcome to add to what has been built up here (but
+please mail the changes to me first).  It often saves you having to look up
+a C reference book, thus keeping your attention on the screen...  ;-)
+
+   Remember, you can contribute to this AmigaGuide.  If you want a summary
+of types contained in the <exec/types.h> header file, then say so.  If you
+want more information on translating special storage classes and keywords
+from compiler to compiler, then tell me.
+
+      _        __
+  // |_)      (_           * PGP PUBLIC KEY AVAILABLE *
+\X/  |_)ruce  __)impson... Internet: BSimpson@touchdwn.demon.co.uk

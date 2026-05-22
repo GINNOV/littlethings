@@ -1,0 +1,57 @@
+Short:        ToolTypes Editor 2.1 spanish catalog
+Author:       Dámaso D. Estévez, AmiSpaTra
+Uploader:     miast@esteson.eu (Dámaso D. Estévez)
+Version:      2.1.0
+Type:         dev/c
+Requires:     OS4Depot:dev/c/tooltypeseditorppc.lha
+Architecture: generic
+
+ Catálogo en español del editor
+ de tipos de herramienta "ToolTypes Editor" de Jim Steichen
+ ----------------------------------------------------------
+
+ ToolTypeEditor.catalog               Rev. 09.07.2012 /  1.120 octetos
+
+ ---------------------------------------------------------------------
+
+ [Spanish - Español]
+
+           Instale el catálogo en "LOCALE:Catalogs/spanish".
+
+         El guión AutoIntall, de incluirse, es únicamente para
+       usuarios de AmigaOS 4 que utilicen el paquete AmiUpdate.
+            NUNCA los instale en el directorio del programa
+       ("PROGDIR:Catalogs/spanish" o "PROGDIR:Catalogs/spanish),
+        porque aunque funcionarían, AmiUpdate nunca detectaría
+                         las actualizaciones.
+
+        Traducción sin garantías: ¡úsela por su cuenta y riesgo!
+     Todos los ficheros relevantes del paquete incluyen firma PGP.
+                     Todos los derechos reservados.
+            Las condiciones de distribución son exactamente
+       las mismas que los paquetes Aminet:misc/misc/SpaTraXX.lha
+
+                       --------------------------
+
+        Traducción sin garantías: ¡úsela por su cuenta y riesgo!
+     Todos los ficheros relevantes del paquete incluyen firma PGP.
+                     Todos los derechos reservados.
+            Las condiciones de distribución son exactamente
+       las mismas que los paquetes Aminet:misc/misc/SpaTraXX.lha
+
+                    Para más traducciones al español
+       visite AmiSpaTra - http://www.xente.mundo-r.com/amispatra/
+
+ ---------------------------------------------------------------------
+
+ [English - Inglés]
+
+   Spanish translation without warranty: Use it under your own risk!
+               All relevant files include PGP signature.
+                          All rights reserved.
+                  The distribution rules are the same
+             what the Aminet:misc/misc/SpaTraXX.lha files.
+
+                    See more spanish translations at
+                http://www.xente.mundo-r.com/amispatra/
+

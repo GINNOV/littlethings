@@ -1,0 +1,15 @@
+Short:        MUI tutorial with progressive examples and lessons (in french)
+Author:       mathias.p wanadoo fr (Corto)
+Uploader:     mathias.p wanadoo fr (Corto)
+Type:         dev/src
+Version:      1.0
+Requires:     MCC_Busy, SDI_header
+Architecture: m68k-amigaos; ppc-morphos; ppc-amigaos
+
+
+This tutorial teaches MUI programming with 7 examples.
+The articles are written in french.
+
+Dedicated makefiles are purchased for SAS/C, GCC and VBCC. The examples
+compile under AmigaOS, MorphOS and OS4 thanks to the macros from SDI_header.
+

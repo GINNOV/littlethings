@@ -1,0 +1,47 @@
+#
+#	Makefile for FFT small model
+#
+#	Version 2.6, Public Domain by Steve Sampson, November 1988
+#
+#	See readme.doc file
+#
+
+MOD = s
+LIB = \turboc\lib
+INC = \turboc\include
+
+all:
+	make fft
+	make sine
+	make pulse
+	make clean
+
+fft:	fft.obj
+	tcc -c -f -m$(MOD) -L$(LIB) -I$(INC) fft.c
+	\turboc\bgiobj \turboc\examples\cga
+	\turboc\bgiobj \turboc\examples\egavga
+	tlink /x /c $(LIB)\C0$(MOD) fft cga egavga, fft,, \
+	$(LIB)\emu $(LIB)\math$(MOD) $(LIB)\C$(MOD) $(LIB)\graphics
+
+sine:	sine.obj
+	tcc -c -f -m$(MOD) -L$(LIB) -I$(INC) sine.c
+	tlink /x /c $(LIB)\C0$(MOD) sine, sine,, \
+	$(LIB)\emu $(LIB)\math$(MOD) $(LIB)\C$(MOD)
+
+pulse:	pulse.obj
+	tcc -c -f -m$(MOD) -L$(LIB) -I$(INC) pulse.c
+	tlink /x /c $(LIB)\C0$(MOD) pulse, pulse,, \
+	$(LIB)\emu $(LIB)\math$(MOD) $(LIB)\C$(MOD)
+
+clean:
+	del *.obj
+
+#
+#	Dependancies
+#
+
+fft.obj: fft.c
+sine.obj: sine.c
+pulse.obj: pulse.c
+
+# EOF

@@ -1,0 +1,50 @@
+Short:        Amiga Game Studio
+Author:       cordierfr@wanadoo.fr
+Uploader:     cordierfr wanadoo fr
+Type:         dev/asm
+Version:      BETA0.1c
+Architecture: m68k-amigaos
+
+That archive contain the project " AmigaGS " .
+This is a libraries system that should allow someone to create
+game more easily and 100% assembler 680x0.
+The advantage of that system is that it will ( in future versions )
+AUTOMATICALLY select best libraries depending on what configuration
+you have .
+Only 680x0 version for the moment.
+( PPC Version later ? I don't know . )
+
+Availables libraries on ver 0.1c :
+----------------------------------
+  AmigaGSMain.library   ( MAIN SYSTEM LIB§RARY )
+    DisplayAGA.library  ( low resolution only for the moment )
+    ScreensAGA.library  ( and ECS version )
+    Chunky020.library   ( and 68040+ version )
+    FileIO.library      ( Load and save files from disk/ram )
+    Memorycopy.library  ( Blitter , 680x0 and 68040+ versions )
+    MemoryBanks.library ( Use banks for datas )
+    AGAIcons.library    ( Use 16x16 icons from 2 up to 256 colors )
+    FXIlbm.library      ( Display ilbm/iff images on screens. )
+
+Now there are examples :
+------------------------
+    - Scrollings Vertical & horizontal
+    - Aga icons
+    - Ilbm show(s)
+    - Castle 3D beta engine
+
+News from 1.0a to 1.0c :
+------------------------
+    - I fixed a bug in Memorybanks.library
+    - I have added AmigaGSMain.Library that initialize environment.
+    - I have added 2 libraries : FileIO.library & AgaIcons.library
+    - I have added examples for libraries use and docs.
+    - News MACROS availables .
+
+Latest news on that project at :
+--------------------------------
+    Http://perso.wanadoo.fr/frederic.cordier/index.html
+
+Bugs and asks at :
+------------------
+      amigaprojects@wanadoo.fr or

@@ -1,0 +1,51 @@
+*******************************************************************************
+*OPENSCREEN AND MENU ROUTINE
+*******************************************************************************
+OPENNEWSCREEN:
+	MOVE.L  INTBASE,A6		* INTUITION LIBRARY BASE ADRESS
+	LEA	SCREEN,A0		* SCREEN START ADRESS
+	JSR	OPENSCREEN(A6)		* LIBRARY CALL TO OPEN SCREEN
+	MOVE.L	D0,SCREENADRESS		* STORE SCREEN START ADRESS
+	BEQ	CLEARMEM        	* WAS THERE A ERROR IF SO CLOSE DOWN
+	MOVE.L	D0,SCREENA		* SCREEN ADRESS FOR MENU WINDOW
+	;MOVE.L  D0,SCREENPOINTER        * SCREEN ADRESS FOR ABOUT WINDOW
+	MOVE.L	D0,SADRESS		* STRING WINDOW POINTER FOR SCREEN
+	RTS	
+CLEARMEM:
+	JSR	DEALLOCATEMEM
+	RTS		
+
+*******************************************************************************
+CLOSENEWSCREEN:
+	MOVE.L  INTBASE,A6	* CLOSE SCREEN DOWN
+	MOVE.L  SCREENADRESS,A0	* CLOSESCREEN LIBRARY CALL
+	JSR	CLOSESCREEN(A6)
+	RTS
+
+*******************************************************************************
+*SCREEN DEFINICION AND SCREEN POINTERS
+*******************************************************************************
+SCREENADRESS:  DC.L 0					* SCREEN BASE POINTER
+TEST	       DC.B "MENU BOOT V1.0 BY PIROSOFT",0	* SCREEN NAME
+	       EVEN
+
+*******************************************************************************
+SCREEN:
+X_POSITION: 	DC.W 0		*X STARTING POSITION
+Y_POSITION:  	DC.W 0		*Y STARTING POSITION
+SCWIDTH:	DC.W 320	*SCREEN WIDTH
+SCHEIGHT:	DC.W 256	*DCREEN HEIGHT
+DEPTH:		DC.W 2		*NUMBER OF PLANES
+DETAIL_PEN:	DC.B 1		*FOREGROUND PEN COLOR
+BLOCKPEN:	DC.B 3		*BACKGROUND PEN COLOR
+VIEW_MODES:	DC.W 2		*VIEWING MODES (NORMAL)
+SCREEN_TYPE:    DC.W CUSTOMSCREEN!CUSTOMBITMAP *SCREENTYPE
+FONT:		DC.L 0		*POINTER TO FONT
+TITLE:		DC.L TEST	*POINTER TO TITLE
+GADGETS:	DC.L 0		*CUSTOM GADGETS
+SBITMAP:	DC.L BITMAP	*POINTER TO BITMAP
+		EVEN
+ 
+*******************************************************************************
+
+

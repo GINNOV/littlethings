@@ -1,0 +1,12 @@
+   This example demos the use of DOS packets, finding the Window ptr
+and ConUnit ptr of the CLI window, toggling Raw mode, getting
+cursor position and limits from the ConUnit, and ESC-seq cursor
+positioning.
+
+   The ConUnit structure (see devices/conunit.h or .i) has some
+very useful information such as current and max cursor positions.
+If you need similar info in an Intuition window / console.device
+environment, you should be able to get your ConUnit ptr from
+YourConsoleRequest->io_Unit.
+
+     carolyn --- cats

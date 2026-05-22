@@ -1,0 +1,9 @@
+Short:    Yet Another Chunky To Planar converter.
+Uploader: vihelin@netlife.fi (Ville Helin)
+Author:   vihelin@netlife.fi (Ville Helin)
+Type:     dev/asm
+Requires: mc68020 or better and AGA.
+Version:  1.0
+
+Yet Another Chunky To Planar source codes and examples. Supported
+modes are 1x1, 2x1 and 2x2 with 16, 32, 64, 128 or 256 colours.

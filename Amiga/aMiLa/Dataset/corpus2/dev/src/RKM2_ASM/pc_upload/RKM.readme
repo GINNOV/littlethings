@@ -1,0 +1,68 @@
+Short:    R.K.M codes - Translated into Assembly.
+Version:  1.1
+Author:   John White <yoingco@hotmail.com>
+Uploader: John White <yoingco@hotmail.com>
+Type:     dev/src
+Date:     June 2001
+
+Last month I only uploaded a portion of these codes as I was a first time
+user of the Internet/Aminet. This archive now contains approximately two
+disks of code.
+
+The codes are my own translations of the R.K.M `C' codes, aswell as my own
+assembly codes. These codes are NOT examples. Simple read each code, from
+top-to-bottom, and digest what you see! The main reason for writing these
+codes was my frustration of "everything-is-written-in-C" syndrome. Each code
+has been tested. My main aims were to get the right pointers and offsets to
+objects via lea and move.l - When I was a beginner I found getting pointers
+and offsets a challenge.
+
+Most of the important codes are here - see list below. I.e I did not bother
+with codes that you can find in any Amiga book. Also not here are Hardware
+codes, CopperList codes, etc as I view these as not standard to most
+programmer and/or not system function oriented.
+
+Here is a breif outline of the main codes in this archive:
+
+        ASL - Font, Pattern, Multi-Select, ScreenMode.
+
+    Devices - Audio, Change_Mouse_Position, Clipboard, Console, DiskDrive,
+              GamePort, Input, JoyStick, Keyboard, Printer, SCSI_Query.
+
+        DOS - Examine, Exall, Match.
+
+       Exec - List/Nodes, Ports, Messages, Task, Trap/Exception, Signal,
+              Wait, Interrupts, Semaphore.
+
+   Graphics - Bitmaps, Bobs, Sprites, View, Dual Playfield, Scroll, Monitor.
+
+    Handler - An Handler that emulates missing (broken) keys using the
+              numeric keypad as replacement keys.
+
+  Intuition - Guru, Prop Gadgets, Menu, String Hook.
+
+  Libraries - GadTools, HotKey_Commodity, IFFParse Clip Chunks Prefs,
+              Utility_Tags, Locale_Catalog, SetFunction.
+
+      Misc. - Arexx, BitField, DateTime, Potgo_Resource, Sound, Rnd, XREF.
+
+ Requesters - WB and Custom Requesters.
+
+  Workbench - AppWindow.s, Icon.s, AppMenuItem.s
+
+     Speech - My own speech program (check out STM.LHA in Aminet/misc).
+
+    CSG/DSG - Create System GEVs (creates system Global Env Variables
+              about your system).
+
+        MKE - Missing Keys Emulator (allows you to emulate Missing (Broken)
+              Keys or send key messages to a window).
+
+ I am currently doing Boopsi (New to this archive: Select_Gadget.s which
+ is my assembly version of SelGadgetTest.c). I also looking into the
+ possibility of an Animation.s code).
+
+ Finally. A BIG THANK YOU to Frank Wille for his general help/guidance in
+ my annoying?! persistant with my assembly questions.
+
+ ENJOY!!

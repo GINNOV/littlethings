@@ -1,0 +1,293 @@
+
+
+
+
+
+
+
+
+
+
+                                 DOCUMENTATION
+
+
+                      StripIt  VERSION  1.3 FREEWARE VERSION
+
+
+                             written 1992 by H.P.G.
+
+
+
+INDEX:
+
+            INDEX
+            General Description
+            Features
+            Using StripIt
+            System Requirements
+            Legal Stuff
+            Installation
+            Cli-Syntax
+            Configuration File
+            Technical
+            Last
+            Address
+            List of files
+
+General Description
+
+    StripIt is a programmers tool.
+    StripIt simply strips all  kinds  of  comments  from  Source  Codes.
+    StripIt can handle all kinds of programming languages.
+    StripIt needs OS 2.xx to run. It is not able to run under
+    Kickstart 1.2 and 1.3.
+
+Features
+
+    StripIt  [SI]  is  configurable  for  all   kinds   of   programming
+    languages through its configuration file.
+
+    SI is relatively fast und easy to use.
+    ( Not like stripc of Manx etc.).
+
+    SI can be stopped at each time simply by ^C. No loosing data.
+
+    You can specify multiples Source Codes at  once.  In  this  case  SI
+    first strips then and then copies it to the Destination.
+
+    StripIt is a OS 2.xx only Tool, that means it is much  shorter  than
+    tools which supports OS 1.3 and 2.xx.
+
+
+Using StripIt
+
+    You need StripIt if you want to strip all  comments  e.g.  from  the
+    Include-Files. This results in a much more shorter  compiling  time.
+
+    Or you want to strip comments from old sources. Then you could strip
+    the comments manually, which could be work for a live,  or  you  can
+    alternatively  use  StripIt  which  takes  only   a   few   seconds.
+
+System Requirements
+
+    You need at least OS 2.xx Version  37.  Version  36  may  have  some
+    problems because some functions which SI uses, was in  this  version
+    not fully implemented.
+
+
+Legal Stuff:
+
+
+        This  program  and  all files come with it, also the docfiles,
+        are released as FREEWARE.
+
+        this means:
+
+            everybody may use StripIt,
+
+            everybody may copy StripIt, if:
+
+                1. You copy all included files, see list at the end of the
+                   doc file.
+                2. No changes are made,  this  means  the  program and all
+                   included files must stay in the original form.
+                   Exception: you  may  archieve  it; but in this case you
+                              must also archieve the whole package.
+                3. If  you  recompile  it, you have to include a notice to
+                   the original author. If you also want to (re)distribute
+                   in any new form you have to send me a copy.
+                4. You may not sell StripIt.
+                   Execption: you`re  allowed  to  take  a  small copy fee
+                              which should not extend 5US$.
+                5. If you want to include StripIt
+                   or one of the  included files as a part of a commercial
+                   package,  you  must  have  written  permission  of  the
+                   author (address see below).
+
+
+        I take no warranty or garanty for the function of this program.
+        The whole risk of using StripIt stays only by the user.
+
+
+
+Installation
+
+    The best is to copy StripIt to the directory where you have put your
+    compiler, linker, etc.
+
+    In each case it should be located in the AmigaDOS searchpath.
+
+
+Cli-Syntax
+
+    StripIt can only be called via CLI. It has the following options:
+
+
+SYNTAX: Stripit [SRC/M/A][TO/A][Cfg/K][C/S]
+
+with
+
+        SRC/M/A         SRC is the name of your Source  Codes(s),  which
+                        should  be   stripped   from   their   comments.
+                        You can specify multiples Sources but  you  must
+                        at least specify one.
+                        Therefor you must take care  bot  to  forget  to
+                        specify  also  a  destination.  Else  the   last
+                        Source-File is taken as  destination  und  would
+                        be overwritten. BE CAREFUL
+
+
+        TO/A            TO is the name  of  the  destenation.  You  must
+                        specify TO. If you specify multiple Source-Files,
+                        the comments from all files will be deleted  and
+                        append  to  TO.  Much  equal  the  Join-command.
+                        You cannot specify the same file for SRC and TO.
+                        In this case  the  file  could  be  overwritten.
+
+        CFG/K           If you type CFG  following  by  the  name  of  a
+                        configuration file  StripIt  use  this  file  as
+                        configuration. About syntax  of  this  file  see
+                        below. This  file  contains  all  comment  chars
+                        which should be deleted from SRC(s).
+
+        C/S             Is c is given StriPIt uses an intern configuration
+                        which knows all C-comments like
+                        /* , */ , // . The `//` are supported for  ANSI-
+                        compatibility. All chars after a // are  handled
+                        as comment until an `EndOfLine' appears.
+
+
+Configuration File
+
+    StripIt knows two different kinds of comments.
+
+1.  The first is a comment that startet with  a  string  and  ends  with
+    another different string. All between this two strings are  comment.
+
+    e.g.:
+
+                  /* : Is a start of a C-comment
+                  */ : Is the end of a C-comment
+
+                  /* And this too */ This not
+
+    equal exists in other programming languages too
+
+TAKE CARE: StripIt doesn`t support comments in comments
+
+         e.g.
+                 '/* Hello /* Comment 2 */    */'
+
+       will get an error, because StripIt only waits for the end of the
+       comment. You will get something like:
+
+                 '                            */'
+
+
+2.  The scond kind of comment starts  with  a  string  and  ends  by  an
+    EndOfLine.
+
+    e.g.
+
+                   ;   : All behind this char is a comment
+                   *   : This could be a comment in Assembler
+                   ;   : there are comments in AmigaDOS-scripts too
+                   REM : Also in BASIC are comments allowed
+
+I didn`t want to handle all kinds of comments of all kinds of languages.
+So I take the advantage of a full user-configurable config file.
+
+So you can still use StripIt with new languages.
+
+To differ the two kinds of comments the config file has the following
+syntax:
+
+.sta ##
+.end ##
+.lin ##
+
+Instead of ## you must specify the comment keys
+
+.sta means: The string behind .sta represents the  start  of  a  comment
+
+.end means: The string behind .end  represents  the  end  of  a  comment
+
+that means: .sta ## must always be followed by  an  .end  ##  statement,
+            else you can lose datas.
+
+.lin means: The string behind .lin  represents  a  ToEndOfLine  comment.
+            If StripIt finds this statement in a source code  all  chars
+            until EndOfLine wil be deleted.
+
+You can use upto 10 (!) different comment statements.
+
+This should be enough for all kinds of sources.
+
+I have a few (most simply) example config files included in the examples
+directory. There are examples  for  Batch-,Csh-,Dme-,ASM-  etc  comments
+included.
+
+
+Technical
+
+               StripIt  uses  a  lot  of  new  OS  2.xx  features,   for
+               commandline parsing and outputs etc.
+               Besides StripIt has get rather  big.  This  is  a  result
+               at the on hand of the complexibility ( full  configurable
+               interal C-comments-support etc.)
+               on the other hand of secuity functions (  Break  Handling
+               etc.). So StripIt can be stopped at any  time  simply  by
+               typing a ^C. Before SI ends it first  closes  all  opened
+               files and gives back all allocated resources.
+               The more comment statements are used the more  time  will
+               be used to strip the comments. If using all 10 statements
+               and very large source files it can take a  lot  of  time.
+               In this case you should run StripIT as a  backgound  task
+               and sets its priority to something like -1.
+
+
+Last
+
+               I hope StripIt will be used by a lot of people.
+               If you find some bugs please let me know.
+               Also seriously critic and/or ideas are wellcomed.
+
+               Send all messages to the address below
+
+
+Adresse
+
+
+                Hans-Peter Guenther
+                Gruener Weg 5
+                3501 Fuldatal 2
+                Germany
+
+List of files
+
+(If you miss any of the following files your release is incomplete)
+
+StripIt           : the binary
+StripIt.info
+StripIt.doc       : english manual
+StripIt.doc.info
+StripIt.dok       : german manual
+StripIt.dok.info
+CfgFiles          : directory with some example configurations
+    csh.cfg       : for csh
+    dme.cfg       : for dme
+    asm.cfg       : for assembler
+    dos.cfg       : for batch files
+CfgFiles.info
+ExampleSrc        : directory with some example source files
+    ex.c          : in C
+    ex.s          : in assembler
+    ex.sh         : in csh script language
+    ex.dme        : in dme script language
+    ex.bat        : in dos script language
+ExampleSrc.info
+
+
+
+-------- END
+

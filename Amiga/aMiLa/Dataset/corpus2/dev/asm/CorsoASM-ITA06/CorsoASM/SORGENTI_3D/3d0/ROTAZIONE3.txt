@@ -1,0 +1,114 @@
+
+
+	ROTAZIONE DI VECTORBALLS
+
+*****************************************************************************
+;		This Routine Rotates The Vector Bobs
+*****************************************************************************
+Rotate
+	move.l	StructP,a0		; A0=Pointer to structure
+	lea	NewPoints,a1		; A1=Pointer to new structure space
+	lea	Angles,a2		; A2=Ptr to angles of rotation
+	lea	SineTable,a3		; A3=Ptr to sine table
+	move.l	#25,d0			; D0=Number of balls to rotate
+; D1=a  D2=b  D3=a  D4=b  D6=sin  D7=cos
+; First find X1 Y1
+RotLoop	move.w	(a0),d1			; D1=X
+	move.w	2(a0),d2		; D2=Y
+	move.w	d1,d3			; D3=X
+	move.w	d2,d4			; D4=Y
+	move.w	(a2),d6			; D6=Z angle of rotation
+	move.w	d6,d7			; D7=Z angle of rotation
+	add.w	#90,d7			; Add 90 for cos
+	cmpi.w	#360,d7			; Exceeded 360 range?
+	blt	.Nope
+	sub.w	#360,d7			; Bring back into 360 range
+.Nope	add.l	d6,d6			; Sine table in words
+	add.l	d7,d7			; Sine table in words
+	move.w	(a3,d6),d6		; D6=Sine value
+	move.w	(a3,d7),d7		; D7=cos value
+	
+	muls	d7,d1			; D1=X.cos(0)
+	muls	d6,d2			; D2=Y.sin(0)
+	sub.l	d2,d1			; D1=X.cos(0) - Y.sin(0)
+	asr.l	#7,d1			
+	asr.l	#7,d1			; D1=X1
+	muls	d7,d4			; D4=Y.cos(0)
+	muls	d6,d3			; D3=X.sin(0)
+	add.l	d4,d3			; D3=Y.cos(0) + X.sin(0)
+	asr.l	#7,d3
+	asr.l	#7,d3			; D3=Y1
+	move.w	d3,2(a1)		; Save Y1
+FindX2Z1
+; Find X2 Z1
+	move.w	4(a0),d2		; D2=Z
+	move.w	d1,d3			; D3=X1
+	move.w	d2,d4			; D4=Z
+	move.w	2(a2),d6		; D6=Y angle of rotation
+	move.w	d6,d7			; D7=Y angle of rotation
+	add.w	#90,d7			; Add 90 for cos
+	cmpi.w	#360,d7			; Exceeded 360 range?
+	blt	.Nope
+	sub.w	#360,d7			; Bring back into 360 range
+.Nope	add.l	d6,d6			; Sine table in words
+	add.l	d7,d7			; Sine table in words
+	move.w	(a3,d6),d6		; D6=Sine value
+	move.w	(a3,d7),d7		; D7=cos value
+	
+	muls	d7,d1			; D1=X1.cos(0)
+	muls	d6,d2			; D2=Z.sin(0)
+	sub.l	d2,d1			; D1=X1.cos(0) - Z.sin(0)
+	asr.l	#7,d1			
+	asr.l	#7,d1			; D1=X2
+	muls	d7,d4			; D4=Z.cos(0)
+	muls	d6,d3			; D3=X1.sin(0)
+	add.l	d4,d3			; D3=Z.cos(0) + X1.sin(0)
+	asr.l	#7,d3
+	asr.l	#7,d3			; D3=Z1
+	move.w	d1,(a1)			; Save X2
+FindZ2Y2
+; Find Y2 Z2
+	move.w	2(a1),d2		; D2=Y1
+	move.w	d3,d1			; D1=Z1
+	move.w	d2,d4			; D4=Y1
+	move.w	4(a2),d6		; D6=X angle of rotation
+	move.w	d6,d7			; D7=X angle of rotation
+	add.w	#90,d7			; Add 90 for cos
+	cmpi.w	#360,d7			; Exceeded 360 range?
+	blt	.Nope
+	sub.w	#360,d7			; Bring back into 360 range
+.Nope	add.l	d6,d6			; Sine table in words
+	add.l	d7,d7			; Sine table in words
+	move.w	(a3,d6),d6		; D6=Sine value
+	move.w	(a3,d7),d7		; D7=cos value
+	
+	muls	d7,d1			; D1=Z1.cos(0)
+	muls	d6,d2			; D2=Y1.sin(0)
+	sub.l	d2,d1			; D1=Z1.cos(0) - Y1.sin(0)
+	asr.l	#7,d1			
+	asr.l	#7,d1			; D1=Z2
+	muls	d7,d4			; D4=Y1.cos(0)
+	muls	d6,d3			; D3=Z1.sin(0)
+	add.l	d4,d3			; D3=Z1.cos(0) + Y1.sin(0)
+	asr.l	#7,d3
+	asr.l	#7,d3			; D3=Y2
+	move.w	d1,4(a1)		; Save Z2
+	move.w	d3,2(a1)		; Save Y2
+
+	addq.w	#8,a0			; Get to next ball point
+	addq.w	#8,a1			; Get to next ball point
+	dbra	d0,RotLoop		; Rotate all balls
+
+	addq.w	#2,(a2)			; Increment Z angle by 1
+	cmpi.w	#360,(a2)		; Still in 360 range?
+	blt	.DoY
+	sub.w	#360,(a2)		; Bring back into 360 range
+.DoY	addq.w	#4,2(a2)		; Increment Y angle by 3
+	cmpi.w	#360,2(a2)		; Still in 360 range?
+	blt	.DoX
+	sub.w	#360,2(a2)		; Bring back into 360 range
+.DoX	addq.w	#3,4(a2)		; Increment X angle by 2
+	cmpi.w	#360,4(a2)		; Still in 360 range?
+	blt	SortBalls
+	sub.w	#360,4(a2)		; Bring back into 360 range
+

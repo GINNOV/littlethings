@@ -1,0 +1,19 @@
+Short:        Most of the old ClassACT examples converted to OS4
+Author:       Simon Archer
+Uploader:     Nicolas Mendoza <mendoza pvv ntnu no>
+Type:         dev/c
+Version:      1.0
+Architecture: generic
+
+Here is a collection of the ClassACT examples that have been converted to OS4.
+
+All examples compile and run by executing the source file, and should work with
+a standard OS4 SDK install.
+
+Copyrights are still to the original authors, and they have been 'updated' for
+ReAction.
+
+Feel free to use these example sources to assist you in creating yet more good
+software for our newest incarnation of AmigaOS
+
+Simon

@@ -1,0 +1,98 @@
+
+			       Debugging
+			       ~~~~~~~~~
+
+ Okay, three nights non stop coding and it's ready! You pass it through your
+friendly assembler, jump to the CLI and run it. Awestruck, you watch as
+absolutely nothing happens. Nothing!
+
+ Suicide? Too drastic!
+
+ Get Drunk? Too expensive!
+
+ Debug? Oh no, not again. Just when you thought it was safe to return to
+your assembler, it made its presence known. Skulking around in the dark,
+seldom accessed, recess of your creation it waits. The Bug!
+
+ Bain of all programmers, especially assembly programmers. Horrible little
+bugs that are so devious they would pose a challenge to Sherlock Holmes
+himself. So elusive they shame the Scarlet Pimpernel. So annoying, you must
+terminate them to retain any sembelence of sanity.
+
+ At this point most programmers reach for a debugger, such as Monam, and
+start single stepping. Debugging is as much an art as programming itself,
+so much so I am amazed it is not a recognised profession.
+
+ "Hey, what do you do for a living?"
+ "I remove infestations from computer programs."
+
+ After you have debugged a few thousand routines, you become familiar with
+certain types of mistakes. Some common errors are:
+
+	1. Attempting to open a library, but omitting it from the boot disk.
+	2. Allocating memory, trashing the pointer and releasing some
+	   totaly innocent block.
+	3. Calling a system routine with the wrong arguments.
+
+ In the public domain there is a program called 'Mungwall'. It patches
+itself to AllocMem() and FreeMem() and reports any suspect deallocations.
+Not only does it report suspect deallocations, it traps them and prevents a
+probable visit from ye olde Guru. This utility is great for testing
+programs prior to release, as the bug may lead to a Guru on rare occassions,
+but Mungwall will still tell you its there.
+
+ While using Mungwall to test a program I launched a PowerPacked application.
+This was quite interesting as Mungwall reported a deallocation of memory.
+It would appear that the decrunch header frees itself once the application
+has been launched.
+
+ Mungwall inspired me to try out a few ideas in a similar vain, patching
+system routines in order to report on all calls. Most system library
+functions can be patched using the SetFunction() routine in exec.library,
+this is not true of dos.library functions however. Dont you just hate it
+when you run a program and it gives up without telling you why! Chances are
+it could not find a disk library, configuration file or font on the boot
+disk. What is needed is a patch on the DOS function Open() that prints the
+name of any file passed to it, along with the result of the call.
+
+ That is where this utility comes in. It patches Open() so that when it is
+called, the file name passed is printed as well the result of the call.
+Launch Monitor, as I have named it, from the CLI and then run PowerPacker
+from an enviroment in which powerpacker.library is not available. Or simply
+Loadwb to se what happens. You are informed of all file activity! This could
+even be used to monitor a link-virus.
+
+ How does it work? The LVO for Open() is replaced with a pointer to a
+custom routine that prints the name of the file and access mode. The actual
+routine is then called to open the file and on return the result is printed
+before the return value is passed back to the calling program.
+
+ To replace a vector is the DOS library, follow these steps:
+
+ 1. Stop multitasking, Forbid().
+ 2. Save a copy of the vector ( pointer ) you are replacing.
+ 3. Replace vector with a pointer to your subroutine.
+ 4. Set the LIBF_CHANGED flag in the library flags field of _DOSBase. This
+    signals that the library has been modified in some way.
+ 5. Call SumLibrary()
+ 6. Restart multi-tasking, Permit().
+
+ To remove the patch, simply repeat the above procedure and reset the vector
+at step 3.
+
+ A patch routine should take the following form:
+
+ 1. Push contents of all registers onto the stack.
+ 2. Operate on calling parameters.
+ 3. Pull contents of registers from stack.
+ 4. Call routine proper.
+ 5. Push contents of all registers onto the stack.
+ 6. Operate on return value.
+ 7. Pull contents of registers from stack.
+ 8. Return to calling program.
+
+ The source for the monitor program is supplied so that you can have a
+tinker. One modification would be to allow output to be sent to a printer
+or disk file for later examination. Also consider making the program
+Workbench friendly.
+

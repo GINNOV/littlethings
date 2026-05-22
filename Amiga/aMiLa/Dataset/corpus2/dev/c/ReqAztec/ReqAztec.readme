@@ -1,0 +1,6 @@
+Short:        Interface to req.library for Aztec C 5.0
+Author:       Pierre Carrette
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+An enhanced version of the interface to req.library for Aztec C 5.0.  

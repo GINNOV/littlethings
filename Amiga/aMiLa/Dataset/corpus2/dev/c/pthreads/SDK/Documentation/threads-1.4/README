@@ -1,0 +1,183 @@
+This is threads.library, an AmigaOS4 shared library that implements the POSIX
+thread API. 
+
+
+
+Installation and usage:
+-----------------------
+
+To install the library, just copy threads.library to "libs:". 
+Using the library requires linking with libpthread.a. The linker library 
+automatically opens the threads.library and obtains the appropriate interface,
+so no separate initialisation in your program code is required.
+
+Here's a simple example:
+
+-------------- test.c ------------
+#include <pthread.h>
+#include <stdio.h>
+
+#define NUM_THREADS 10
+
+void *Hello(void *threadID)
+{
+    printf("Hello world from thread %lx\n", threadID);
+
+    pthread_exit(NULL);
+    
+    return 0;
+}
+
+int main(int argc, char **argv)
+{
+    int i;
+    pthread_t thread_id[NUM_THREADS];
+    
+    for (i = 0; i < NUM_THREADS; i++)
+    {
+        if (pthread_create(&thread_id[i], NULL, Hello, (void *)i))
+        {
+            perror("Error creating thread");
+            return 20;
+        }
+    }
+
+    pthread_exit(NULL);
+
+    return 0;
+}
+---------------------------------
+
+To compile this, use
+
+gcc -o test -O test.c -lpthread						(clib2)
+gcc -o test -O test.c -lpthread -newlib				(newlib)
+
+Note that neither clib2 nor newlib on OS4 are really thread safe, so be careful
+with using c library functions in threads. If in doubt, use a mutex. A 
+thread-safe newlib should become available sometime soon.
+
+
+
+Limitations of the implementation:
+----------------------------------
+
+For a list of functions implemented by the library, see the appendix.
+
+The library is currently pretty unoptimized. Threads are kept in a list, which
+adds a certain overhead to finding a specific thread (via pthread_self, etc).
+These will be replaced in a later version by hash tables.
+
+The library does not use the task's UserData field.
+
+Mutexes are not implemented via system seamphores, but via atomic locks, which
+makes them work without using Forbid/Permit calls (like system semaphores). To 
+avoid deadlock situation, a thread holding a mutex will be raised in priority.
+
+
+Reporting bugs:
+---------------
+
+No software is without bugs. If you find something that might be a bug, please
+write an email to ThomasF@hyperion-entertainment.biz. If possible provide a
+detailed description of the bug, including a source code fragment that exhibits
+it if possible.
+
+
+
+Copyright:
+----------
+
+threads.library for AmigaOS4 
+Copyright (c) 2004-2005 by Thomas and Hans-Jörg Frieden
+						<ThomasF@hyperion-entertainment.biz>
+						<Hans-JoergF@hyperion-entertainment.biz>
+All rights reserved.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+You may distribute the binary ("threads.library") with your own program
+provided the above copyright notice is included within the documentation
+of your program.
+
+Apendix:
+--------
+
+The library implements the following functions of the POSIX threads API:
+
+int   pthread_attr_destroy(pthread_attr_t *);
+int   pthread_attr_getdetachstate(const pthread_attr_t *, int *);
+int   pthread_attr_getguardsize(const pthread_attr_t *, size_t *);
+int   pthread_attr_getinheritsched(const pthread_attr_t *, int *);
+int   pthread_attr_getschedparam(const pthread_attr_t *, struct sched_param *);
+int   pthread_attr_getschedpolicy(const pthread_attr_t *, int *);
+int   pthread_attr_getscope(const pthread_attr_t *, int *);
+int   pthread_attr_getstackaddr(const pthread_attr_t *, void );
+int   pthread_attr_getstacksize(const pthread_attr_t *, size_t *);
+int   pthread_attr_init(pthread_attr_t *);
+int   pthread_attr_setdetachstate(pthread_attr_t *, int);
+int   pthread_attr_setguardsize(pthread_attr_t *, size_t);
+int   pthread_attr_setinheritsched(pthread_attr_t *, int);
+int   pthread_attr_setschedparam(pthread_attr_t *, const struct sched_param *);
+int   pthread_attr_setschedpolicy(pthread_attr_t *, int);
+int   pthread_attr_setscope(pthread_attr_t *, int);
+int   pthread_attr_setstackaddr(pthread_attr_t *, void *);
+int   pthread_attr_setstacksize(pthread_attr_t *, size_t);
+int   pthread_cancel(pthread_t);
+void  pthread_cleanup_push(void*), void *);
+void  pthread_cleanup_pop(int);
+int   pthread_cond_broadcast(pthread_cond_t *);
+int   pthread_cond_destroy(pthread_cond_t *);
+int   pthread_cond_init(pthread_cond_t *, const pthread_condattr_t *);
+int   pthread_cond_signal(pthread_cond_t *);
+int   pthread_cond_timedwait(pthread_cond_t *, pthread_mutex_t *, const struct timespec *);
+int   pthread_cond_wait(pthread_cond_t *, pthread_mutex_t *);
+int   pthread_condattr_destroy(pthread_condattr_t *);
+int   pthread_condattr_getpshared(const pthread_condattr_t *, int *);
+int   pthread_condattr_init(pthread_condattr_t *);
+int   pthread_condattr_setpshared(pthread_condattr_t *, int);
+int   pthread_create(pthread_t *, const pthread_attr_t *, void *(*)(void *), void *);
+int   pthread_detach(pthread_t);
+int   pthread_equal(pthread_t, pthread_t);
+void  pthread_exit(void *);
+int   pthread_getconcurrency(void);
+int   pthread_getschedparam(pthread_t, int *, struct sched_param *);
+void *pthread_getspecific(pthread_key_t);
+int   pthread_join(pthread_t, void );
+int   pthread_key_create(pthread_key_t *, void (*)(void *));
+int   pthread_key_delete(pthread_key_t);
+int   pthread_mutex_destroy(pthread_mutex_t *);
+int   pthread_mutex_getprioceiling(const pthread_mutex_t *, int *);
+int   pthread_mutex_init(pthread_mutex_t *, const pthread_mutexattr_t *);
+int   pthread_mutex_lock(pthread_mutex_t *);
+int   pthread_mutex_setprioceiling(pthread_mutex_t *, int, int *);
+int   pthread_mutex_trylock(pthread_mutex_t *);
+int   pthread_mutex_unlock(pthread_mutex_t *);
+int   pthread_mutexattr_destroy(pthread_mutexattr_t *);
+int   pthread_mutexattr_getprioceiling(const pthread_mutexattr_t *, int *);
+int   pthread_mutexattr_getprotocol(const pthread_mutexattr_t *, int *);
+int   pthread_mutexattr_getpshared(const pthread_mutexattr_t *, int *);
+int   pthread_mutexattr_gettype(const pthread_mutexattr_t *, int *);
+int   pthread_mutexattr_init(pthread_mutexattr_t *);
+int   pthread_mutexattr_setprioceiling(pthread_mutexattr_t *, int);
+int   pthread_mutexattr_setprotocol(pthread_mutexattr_t *, int);
+int   pthread_mutexattr_setpshared(pthread_mutexattr_t *, int);
+int   pthread_mutexattr_settype(pthread_mutexattr_t *, int);
+int   pthread_once(pthread_once_t *, void (*)(void));
+pthread_t pthread_self(void);
+int   pthread_setcancelstate(int, int *);
+int   pthread_setcanceltype(int, int *);
+int   pthread_setconcurrency(int);
+int   pthread_setschedparam(pthread_t, int , const struct sched_param *);
+int   pthread_setspecific(pthread_key_t, const void *);
+void  pthread_testcancel(void);

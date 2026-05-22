@@ -1,0 +1,27 @@
+This program is copyright 1993 Stephen Norris.
+
+It may be freely distributed - however if you find it useful, please
+let me know (via email) at the address below.
+
+Modem is intended to be used to configure modems etc. without
+having to load a terminal program; it can be used on any 
+device/unit which acts like a serial.device.  I also use it for
+dialing up to my slip account...
+
+To use, simply type modem <devicename> <unit> <BAUD>.  It defaults
+to serial.device 0 and your preferences setting.
+
+I added the BAUD option because I needed 38400 and serial prefs
+don't allow that!?!
+
+To exit, type control-c.
+
+	Stephen
+
+srn@cs.su.oz.au
+
+HISTORY
+
+1.1 Fixed bug with extraneous characters being left behind after a ^C.
+1.0 Initial release.
+

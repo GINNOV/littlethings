@@ -1,0 +1,35 @@
+//////////////////////////////////////////////////////////////////////////////
+// border.hpp
+//
+// Jeffry A Worth
+// March 2, 1996
+//////////////////////////////////////////////////////////////////////////////
+
+#ifndef __BORDER_HPP__
+#define __BORDER_HPP__
+
+//////////////////////////////////////////////////////////////////////////////
+// INCLUDES
+#include "aframe:include/aframe.hpp"
+#include "aframe:include/object.hpp"
+#include "aframe:include/rect.hpp"
+
+//////////////////////////////////////////////////////////////////////////////
+// Border Class
+
+class AFBorder : public AFObject
+{
+	public:
+		AFBorder(); //AFRect rect,bevel type=bevelDown,WORD pShine=2,WORD pShadow=1);
+		void SetBorder(AFRect rect,WORD pShine,WORD pShadow);
+		WORD *shineData();
+		WORD *shadowData();
+		LPBorder border();
+	private:
+		WORD xyShine[6];
+		WORD xyShadow[6];
+		struct Border shineBorder,shadowBorder;
+};
+
+//////////////////////////////////////////////////////////////////////////////
+#endif // __BORDER_HPP__

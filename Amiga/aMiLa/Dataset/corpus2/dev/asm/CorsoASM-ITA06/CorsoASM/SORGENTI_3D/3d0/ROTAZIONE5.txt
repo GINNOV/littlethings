@@ -1,0 +1,181 @@
+
+transform:			; TRANSFORMATION
+; lea objpd(pc),a2		; 3D-Eckpunkt-Daten
+; lea ttab(pc),a3		; Tabelle für 2D-Ergebnis-Daten
+ lea sintab(pc),a0		; Zeiger auf Sinus-Tabelle
+ lea costab(pc),a1		; Zeiger auf Cosinus-Tabelle
+; lea z2tab(pc),a4		; Zwischen-Tabelle für 3D-Z-Koords der
+ moveq #15,d6			; einzelnen Punkte
+ move.w (a2)+,d5
+ subq.w #1,d5			; Eckenzahl - 1
+translp:
+ movem.w (a2)+,d0-d2		; 3D-Koordinaten holen
+ asl.w #4,d0			; Zwecks höherer Genauigkeit der
+ asl.w #4,d1			; Rechnungen, Multiplikation mit 16
+ asl.w #4,d2
+ move.w rx(pc),d3		; Rotation um x-Achse
+ move.w d1,d4
+ move.w d2,d7
+ muls 0(a1,d3.w),d1
+ muls 0(a0,d3.w),d2
+ sub.l d2,d1
+ asr.l d6,d1
+ muls 0(a0,d3.w),d4
+ muls 0(a1,d3.w),d7
+ add.l d7,d4
+ asr.l d6,d4
+ move.w d4,d2
+ move.w ry(pc),d3		; Rotation um y-Achse
+ move.w d0,d4
+ move.w d2,d7
+ muls 0(a1,d3.w),d0
+ muls 0(a0,d3.w),d2
+ add.l d2,d0
+ asr.l d6,d0
+ neg.w d4
+ muls 0(a0,d3.w),d4
+ muls 0(a1,d3.w),d7
+ add.l d7,d4
+ asr.l d6,d4
+ move.w d4,d2
+ move.w rz(pc),d3		; Rotation um z-Achse
+ move.w d0,d4
+ move.w d1,d7
+ muls 0(a1,d3.w),d0
+ muls 0(a0,d3.w),d1
+ sub.l d1,d0
+ asr.l d6,d0
+ muls 0(a0,d3.w),d4
+ muls 0(a1,d3.w),d7
+ add.l d7,d4
+ asr.l d6,d4
+ move.w d4,d1
+ move.w d2,(a4)+		; z-Koordinate jedes einzelnen Echpunktes
+ ext.l d0			; nach Zwischentabelle
+ ext.l d1
+ ext.l d2
+ add.l addx(pc),d0		; Verschiebung addieren
+ add.l addy(pc),d1
+ add.l addz(pc),d2
+ beq.s ptjend
+ moveq #10,d3			; Strahlensatz:
+ asl.l d3,d0			;      f*x
+ asl.l d3,d1			; x' = -
+ asr.l #3,d2			;       z
+ divs d2,d0
+ divs d2,d1			;        f*y
+ neg.w d0			; y' = - -
+ add.w #160*16,d0		;         z
+ add.w #74*16,d1		; Zentrieren
+ptjend:
+ movem.w d0-d1,(a3)		; und nach 2D-Tabelle speichern
+ addq.l #4,a3
+ dbf d5,translp
+ rts
+	CNOP	0,4
+
+dorot:				; ermittelte Kontur des
+ lea sintab(pc),a0		; Körpers dreidimensionalisieren
+ lea costab(pc),a1
+; lea objpd(pc),a2
+ moveq #5,d6			; sechs Einschnitte
+ moveq #15,d7
+ addq.l #2,a2
+roto:
+ moveq #7,d5			; Kreis in acht Abschnitte a 45°
+ moveq #0,d4			; zerteilen
+ move.w (a2),d3			; x-Koordinate
+ move.w 2(a2),d1		; und y-Koordinate des Kontur-
+roti:				; Einschnittes holen (y nur für movem)
+ move.w d3,d0
+ move.w d3,d2
+ muls 0(a1,d4.w),d0		; x mit cos multiplizieren -> neu_x
+ muls 0(a0,d4.w),d2		; x mit sin multiplizieren -> neu_z
+ asr.l d7,d0
+ asr.l d7,d2
+ movem d0-d2,(a2)		; als 3D-Koords in "objpd" speichern
+ addq.l #6,a2
+ add.w #90,d4
+ dbf d5,roti
+ dbf d6,roto
+ rts
+	CNOP	0,4
+
+
+sintab DC.W 0,$23B,$477,$6B2,$8ED,$B27,$D61,$F99
+       DC.W $11D0,$1405,$1639,$186C,$1A9C,$1CCA,$1EF7,$2120
+       DC.W $2347,$256C,$278D,$29AB,$2BC6,$2DDE,$2FF2,$3203
+       DC.W $340F,$3617,$381C,$3A1B,$3C17,$3E0D,$3FFF,$41EC
+       DC.W $43D3,$45B6,$4793,$496A,$4B3B,$4D07,$4ECD,$508C
+       DC.W $5246,$53F9,$55A5,$574B,$58E9,$5A81,$5C12,$5D9C
+       DC.W $5F1E,$6099,$620C,$6378,$64DC,$6638,$678D,$68D9
+       DC.W $6A1D,$6B58,$6C8C,$6DB6,$6ED9,$6FF2,$7103,$720B
+       DC.W $730A,$7400,$74EE,$75D2,$76AD,$777E,$7846,$7905
+       DC.W $79BB,$7A67,$7B09,$7BA2,$7C31,$7CB7,$7D32,$7DA4
+       DC.W $7E0D,$7E6B,$7EC0,$7F0A,$7F4B,$7F82,$7FAF,$7FD2
+       DC.W $7FEB,$7FFA
+costab DC.W $7FFF,$7FFA,$7FEB,$7FD2,$7FAF,$7F82
+       DC.W $7F4B,$7F0A,$7EC0,$7E6B,$7E0D,$7DA4,$7D32,$7CB7
+       DC.W $7C31,$7BA2,$7B09,$7A67,$79BB,$7905,$7846,$777E
+       DC.W $76AD,$75D2,$74EE,$7400,$730A,$720B,$7103,$6FF2
+       DC.W $6ED9,$6DB6,$6C8B,$6B58,$6A1D,$68D9,$678D,$6638
+       DC.W $64DC,$6378,$620C,$6099,$5F1E,$5D9C,$5C12,$5A81
+       DC.W $58E9,$574B,$55A5,$5EF9,$5246,$508C,$4ECD,$4D07
+       DC.W $4B3B,$496A,$4793,$45B6,$43D3,$41EC,$3FFF,$3E0D
+       DC.W $3C17,$3A1B,$381C,$3618,$340F,$3203,$2FF2,$2DDE
+       DC.W $2BC7,$29AB,$278D,$256C,$2347,$2120,$1EF7,$1CCB
+       DC.W $1A9C,$186C,$163A,$1406,$11D0,$F99,$D61,$B27
+       DC.W $8ED,$6B3,$477,$23C,0,$FDC5,$FB89,$F94E
+       DC.W $F713,$F4D9,$F2A0,$F067,$EE30,$EBFB,$E9C7,$E794
+       DC.W $E564,$E336,$E10A,$DEE0,$DCB9,$DA95,$D873,$D655
+       DC.W $D43A,$D222,$D00E,$CDFE,$CBF1,$C9E9,$C7E5,$C5E5
+       DC.W $C3EA,$C1F3,$C001,$BE14,$BC2D,$BA4B,$B86E,$B696
+       DC.W $B4C5,$B2F9,$B133,$AF74,$ADBB,$AC08,$AA5B,$A8B6
+       DC.W $A717,$A57F,$A3EE,$A264,$A0E2,$9F67,$9DF4,$9C88
+       DC.W $9B24,$99C8,$9874,$9728,$95E4,$94A8,$9375,$924A
+       DC.W $9128,$900E,$8EFD,$8DF5,$8CF6,$8C00,$8B13,$8A2E
+       DC.W $8954,$8882,$87BA,$86FB,$8645,$8599,$84F7,$845E
+       DC.W $83CF,$8349,$82CE,$825C,$81FE,$8195,$8140,$80F6
+       DC.W $80B5,$807E,$8051,$802E,$8015,$8006,$8001,$8006
+       DC.W $8015,$802E,$8051,$807E,$80B5,$80F6,$8140,$8195
+       DC.W $81F3,$825B,$82CD,$8349,$83CF,$845E,$84F7,$8599
+       DC.W $8645,$86FB,$87B9,$8882,$8953,$8A2E,$8B12,$8BFF
+       DC.W $8CF5,$8DF5,$8EFD,$900E,$9127,$9249,$9374,$94A7
+       DC.W $95E3,$9727,$9873,$99C7,$9B23,$9C87,$9DF3,$9F67
+       DC.W $A0E1,$A264,$A3ED,$A57E,$A716,$A8B5,$AA5B,$AC07
+       DC.W $ADBA,$AF73,$B133,$B2F8,$B4C4,$B696,$B86D,$BA4A
+       DC.W $BC2C,$BE14,$C000,$C1F2,$C3E9,$C5E4,$C7E4,$C9E8
+       DC.W $CBF0,$CDFD,$D00D,$D221,$D439,$D654,$D872,$DA94
+       DC.W $DCB8,$DEDF,$E109,$E335,$E563,$E794,$E9C6,$EBFA
+       DC.W $EE30,$F066,$F29F,$F4D8,$F712,$F49D,$FB88,$FDC4
+sinend DC.W 0,$23B,$477,$6B2,$8ED,$B27,$D61,$F99
+       DC.W $11D0,$1405,$1639,$186C,$1A9C,$1CCA,$1EF7,$2120
+       DC.W $2347,$256C,$278D,$29AB,$2BC6,$2DDE,$2FF2,$3203
+       DC.W $340F,$3617,$381C,$3A1B,$3C17,$3E0D,$3FFF,$41EC
+       DC.W $43D3,$45B6,$4793,$496A,$4B3B,$4D07,$4ECD,$508C
+       DC.W $5246,$53F9,$55A5,$574B,$58E9,$5A81,$5C12,$5D9C
+       DC.W $5F1E,$6099,$620C,$6378,$64DC,$6638,$678D,$68D9
+       DC.W $6A1D,$6B58,$6C8C,$6DB6,$6ED9,$6FF2,$7103,$720B
+       DC.W $730A,$7400,$74EE,$75D2,$76AD,$777E,$7846,$7905
+       DC.W $79BB,$7A67,$7B09,$7BA2,$7C31,$7CB7,$7D32,$7DA4
+       DC.W $7E0D,$7E6B,$7EC0,$7F0A,$7F4B,$7F82,$7FAF,$7FD2
+       DC.W $7FEB,$7FFA
+cosend
+
+
+
+rx dc.w 0
+	CNOP	0,4
+ry dc.w 0			; Konstellation
+	CNOP	0,4
+rz dc.w 0
+	CNOP	0,4
+   dc.w 0			; darf
+	CNOP	0,4
+
+
+
+addx dc.l 0			; WICHTIG!!
+addy dc.l 0
+addz dc.l 0			; Diese
+

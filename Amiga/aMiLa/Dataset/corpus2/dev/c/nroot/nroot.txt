@@ -1,0 +1,22 @@
+
+Extracts n-th root from x.
+
+result = nroot( n , x );
+
+double   result;
+long int n;
+double   x;
+
+If n is less than 1 result is 0 and global integer errno contains value EDOM.
+If n is even and x is negative, result is 0 and global integer errno 
+contains value EDOM (domain error).
+
+If you use it in your application or if you find a bug, contact me.
+
+        rgoran@eunet.yu
+
+        Goran Radovic
+        Bratstva 64
+        24323 Feketic
+        Serbia
+

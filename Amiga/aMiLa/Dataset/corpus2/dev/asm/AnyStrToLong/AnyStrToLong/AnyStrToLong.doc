@@ -1,0 +1,137 @@
+
+
+                            AnyStrToLong.asm
+                            AnyLongToStr.asm
+
+                         © 1996 by Tadek Knapik
+
+
+	For changes look at AnyLongToStr part!
+
+	This is a short documentation for two assembly language routines
+of mine. I wrote them because I needed it, and uploaded it because you
+may need it.
+	It is second Aminet relase. Changes only in AnyLongToStr.
+	This is placed in Public Domain. If you like it and use it in
+your progs, I just want you to send me an e-mail. I would also
+appreciate mentioning my name in your program's docs, but you don't have
+to do this (it is not a big thing, those routines :-).
+	Use it on your own risk! I didn't use any sources and made it by
+myself, so it may be faulty. If you find a bug (or want to make a
+suggestion) send me an e-mail (or snail-mail).
+	The routines are commented a little bit, so the docs are just
+a short explanation.
+
+
+                            AnyStrToLong.asm
+
+	AnyStrToLong converts an ASCII string to a longword value. It is
+simalar to dos.library/StrToLong(), but it can handle not only decimal
+strings, but also binary and hex. You can pass in such strings:
+
+	'145'                normal decimal
+        '-732'               negative
+        '$badC0DED'          hexadecimal
+        '0xdeadF00D'         hex as well
+	'%1001101110110001'  binary
+
+	You pass in a string pointer in a0. The value is returned in
+d0. Register d1 is boolean success (if null, an error has occured and d0
+contains $FFFFFFFF).
+	As you can see, case of a-f (or A-F :-) hex letters doesn't
+matter.
+
+
+
+                            AnyLongToStr.asm
+
+	This one converts given longword to an ASCII string. You can
+choose between decimal, signed decimal, hex and bin.
+	Decimal mode should be clear - you get normal output, eg:
+
+	'5932'
+
+	Signed decimal means that if the highest bit is set, the value
+will be treated as negative, and will have minus sing. So the output can
+be:
+
+	'823456'             if highest bit not set, or
+        '-9843'              if highest bit set.
+
+	'The highest bit' is bit 31 in SIGN_LONG mode, bit 15 in
+SIGN_WORD mode and bit 7 in SIGN_BYTE mode. This way you can print out
+e.g priorities (copy ln_Pri byte to cleared d0 and specify
+LTS_SIGN_BYTE).
+
+
+	Binary output looks (surprise!) like that:
+
+	'100010101111'
+
+
+	Hexadecimal output looks like that:
+
+	'DEAFC0DE'           but it may also look like that:
+	'badd00de'           read below how to choose.
+
+
+	As you can see, the routine writes no prefixes! If you want it,
+write it yourself (not a difficult thing to do :-). That's how you
+choose between '$'/'0x'!
+
+	You pass in the longword in d0, and the buffer pointer in a0.
+Register d1 is a flag register. The flags are:
+
+   LTS_DECIMAL   - normal decimal conversion
+   LTS_SIGN_LONG - decimal signed mode (longword
+   LTS_SIGN_WORD - signed mode (word)
+   LTS_SIGN_BYTE - signed mode (byte)
+   LTS_BINARY    - convert to binary
+   LTS_HEX_UPPER - convert to hex (A-F uppercased)
+   LTS_HEX_LOWER - convert to hex (a-f lowercased)
+   LTS_HEX	 - default hex (just set an equate, I set LTS_HEX_UPPER)
+   LTS_NEGATIVE  - default signed (I set LTS_SIGN_LONG)
+
+	The routine returns in d0 number of charcters written (or null
+for an error). The string is null termineted (the null is included in
+character count). If succeded, a0 is the pointer to the last null (so
+you can insert here something else if you need).
+
+	WARNING! Inn the previuos Aminet relase the routine had a bug,
+causing bad handling of 10, 100, 1000 etc. in decimal mode. Sorry, my
+mistake - it was 'bhi' instead of 'bpl'. The comment in this line was
+good, but the instruction was wrong. Blame me, not Motorola :-)
+
+	Now the 68000 dividing-by-ten routine is really dividing by ten,
+and not comparing. Thanks for Simon N Goodwin for submitting this (and
+for his feedback, of course).
+
+
+
+	That's all! Hope you like it.
+	Write to me if you're interested in StrToLong() patch using my
+AnyStrToLong (may help you in some special cases, or if you just want to
+set program priority in hex :-) - I wrote it for fun, but..
+	For bug reports, questions, suggestions, flames etc:
+
+
+	tadek@student.uci.agh.edu.pl (Tadek Knapik)
+
+
+	or:
+
+	Tadek Knapik
+	ul. Duza Gora 35/88
+	30-857 Cracow
+	Poland
+
+
+----------
+
+	If you like mottos, here's mine:
+
+ "Be yourself, no matter what they say" - Sting
+
+----------
+
+

@@ -1,0 +1,58 @@
+Short:    Safely?! remove sytem patches (sample code)
+Version:  1.2
+Uploader: llucius@millcomm.com (L.Lucius)
+Author:   llucius@millcomm.com (L.Lucius)
+Type:     dev/src
+
+                             Safe?! Patch Removal
+                               By Leland Lucius
+                                     v1.2
+
+IMPORTANT!!!!
+=============
+The code contained in this archive is only an example.  It is not complete and
+has never been executed (it does compile though).  Additional error checking
+should be added and customized to fit an individual's needs.
+
+WHAT IS THIS?
+=============
+If you frequent the c.s.a.p newsgroup, you have probably noticed that the
+subject of safely removing AND freeing memory occupied by a system patch comes
+up quite a bit.  And that there are some that believe it to be impossible,
+while others (like me) keep thinking that there just has to be a way to do it.
+
+Well, I THINK I've found THAT way (actually two).
+
+The first, found in files "remove1.c" and "patch1.asm", is an implementation
+that is suitable for frequently called routines since it does not use any
+additional CPU to track callers.  It however CAN'T call any other routines
+outside of the patch (see code).
+
+The second, found in files "remove2.c" and "patch2.asm", is only slightly
+different than the first.  It keeps track of the callers of the routine and
+thus uses slightly more CPU, but it CAN call any other routines.
+
+Both implementations SHOULD be callable from interrupts.
+
+Both implementations allow for memory deallocation.
+
+Both implementations are position independent.
+
+NOTICE
+======
+This code is released to the public domain.  Hell, I'm not even sure if it'll
+work!  B-)
+
+DISCUSSION?
+===========
+If you find that the code isn't safe (or is), let's discuss it on c.s.a.p so
+that everyone interested can remark.  Besides another thread about patch removal
+is inevitable anyway, right?  B-)
+
+Leland
+
+CHANGES
+=======
+Corrected the vector checks.
+Changed to just free the patch if there are no current users.
+Corrected patch exit during removal.

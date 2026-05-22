@@ -1,0 +1,52 @@
+Short:        Converts IFF-pics to C-code (MorphOS)
+Author:       Gauthier Groult & Jm Forgeas & Alfred Faust(MOS-porting)
+Uploader:     alfred j faust gmx de (Alfred Faust)
+Type:         dev/c
+Version:      0.41
+Requires:     MorphOS1.3 or higher (maybe it runs also at lower versions)
+Architecture: ppc-morphos
+
+This small tool converts iff-pictures into C-sourcecode.
+It's very easy to handle.
+Does batch-converting of multiple files.
+It's also able to create C-source for sprites.
+Can print the bitpattern of each plane as comments.
+
+The program bases on the iff2c from Gauthier Groult & Jm Forgeas v.0.30.
+The author enhanced it with a useful GUI and reworked it for MorphOS.
+
+It comes with source.
+Freeware & Public Domain
+
+======================== Archive Contents ==============================
+
+
+Original  Packed Ratio    Date     Time    Name
+-------- ------- ----- --------- --------  -------------
+    4349    1828 57.9% 15-Mar-04 15:28:58  IFFtoC/iff2c.doc
+    7293    7156  1.8% 26-Feb-04 21:04:00  IFFtoC/iff2c.doc.info
+    2955     728 75.3% 26-Feb-04 21:04:04  IFFtoC/IFFtoC.info
+    1058     457 56.8% 13-Dec-88 19:31:52  IFFtoC/src/iff/compiler.h
+   21167    7048 66.7% 25-Feb-04 14:55:50  IFFtoC/src/iff/iff.h
+   12062    4191 65.2% 25-Feb-04 15:04:54  IFFtoC/src/iff/ilbm.h
+     211     109 48.3% 13-Dec-88 19:31:50  IFFtoC/src/iff/intuall.h
+    1706     784 54.0% 13-Dec-88 19:31:56  IFFtoC/src/iff/packer.h
+    2110     697 66.9% 13-Dec-88 19:32:32  IFFtoC/src/iff/putpict.h
+    2668    1067 60.0% 25-Feb-04 14:57:06  IFFtoC/src/iff/readpict.h
+    3380    1185 64.9% 25-Feb-04 14:57:30  IFFtoC/src/iff/remalloc.h
+    2890     944 67.3% 15-Mar-04 15:13:12  IFFtoC/src/iff2c.c
+     428     226 47.1% 15-Mar-04 15:04:14  IFFtoC/src/iff2c.h
+    5702    2068 63.7% 25-Feb-04 15:36:32  IFFtoC/src/ilbmr.c
+    4938    1679 65.9% 13-Dec-88 19:31:00  IFFtoC/src/libmw.c
+   19896    4736 76.1% 15-Mar-04 15:21:52  IFFtoC/src/main.c
+   10694    3731 65.1% 13-Dec-88 19:31:10  IFFtoC/src/readpict.c
+    2734     733 73.1% 25-Feb-04 15:13:18  IFFtoC/src/remalloc.c
+    1895     795 58.0% 13-Dec-88 19:31:34  IFFtoC/src/unpacker.c
+    5561    5467  1.6% 26-Feb-04 21:04:08  IFFtoC.info
+   29700   13150 55.7% 15-Mar-04 18:10:44  IFFtoC/IFF2C
+      28      28  0.0% 15-Mar-04 18:11:52  IFFtoC/IFFtoC
+   10494    2977 71.6% 13-Dec-88 19:30:50  IFFtoC/src/iffr.c
+    7573    2158 71.5% 13-Dec-88 19:31:04  IFFtoC/src/iffw.c
+     488     258 47.1% 15-Mar-04 18:10:38  IFFtoC/src/Makefile
+-------- ------- ----- --------- --------
+  161980   64200 60.3% 15-Mar-04 18:20:12   25 files

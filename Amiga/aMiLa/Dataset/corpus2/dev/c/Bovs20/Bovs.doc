@@ -1,0 +1,553 @@
+                                   Bovs
+                                Version 2.0
+                        Bryan's Overlay Supervisor
+                         Copyright 1992 Bryan Ford
+
+
+                                Disclaimer
+                                ~~~~~~~~~~
+
+    This program is provided "as is" without warranty of any kind, either
+expressed or implied, including, but not limited to, the implied warranty
+of fitness for a particular purpose.  The entire risk as to the results,
+reliability and performance of this program is assumed by you.
+
+
+
+                               Distribution
+                               ~~~~~~~~~~~~
+
+    Bovs may be freely distributed as long as it is complete (none of the
+files listed below are left out), all of the files are unmodified, and no
+charge is made for such distribution other than a small fee to cover the
+cost of copying.  (In effect, no profit may be made through distribution of
+this program).  You may modify this code for your own personal use, but you
+may not distribute modified versions.  (If you improve Bovs, send your
+modifications back to me and I'll incorporate them into the master, giving
+credit to you of course.  This way we won't have hundreds of different
+versions of Bovs floating around.)
+
+    You may use the object code derived from this source code, or your own
+modified version of this source code, in your own public domain, freeware,
+shareware, or otherwise freely distributable programs, as long as you
+visibly state that you used Bovs and mention the name of its author (Bryan
+Ford) somewhere in your documentation.  You do not need to obtain any kind
+of license or special permission to use it in freely distributable software.
+
+    If you want to distribute Bovs or any modified version of it, in either
+source or object form, with a commercial package, you must send me a copy
+of that commercial package as soon as it is released, as well as any major
+updates to the program released in the future.  (This only applies for as
+long as the program uses Bovs.)  Other than that, there is no cost for
+using Bovs in a commercial program.
+
+    The Bovs distribution must contain the following files, complete and
+unmodified:
+
+        Bovs.doc        Bovs documentation (this file)
+        Bovs.o          Linkable version of Bovs (assembled with OVERLAY=1)
+        Bst.o           Same, without overlay support (assembled with OVERLAY=0)
+        Bovs.h          Header file for SAS/C programs
+        Bovs.asm        Source code for Bovs (A68k)
+
+        MemMan/MemMan.doc       MemMan documentation
+        MemMan/memman.library   MemMan runtime library
+        MemMan/MemMan.o         Linkable version of MemMan
+        MemMan/MemMan.fd        Entrypoints for memman.library
+        MemMan/MemMan.h         Header for C programs using MemMan
+        MemMan/MemMan.i         Same, for assembly language
+        MemMan/MemMan.asm       Source to MemMan (A68k)
+        MemMan/MemManLib.asm    Source to memman.library interface (A68k)
+        MemMan/Macros.i         Macros you'll need for the above two files
+        MemMan/LMKfile          SAS/C makefile for MemMan
+        MemMan/test             Program to test memman.library
+        MemMan/test.c           Source for MemMan test program
+
+
+
+                               Introduction
+                               ~~~~~~~~~~~~
+
+    Bovs (pronounced "boffs") is an overlay system designed to replace the
+standard overlay system supplied with SAS/C.  It acts as both overlay
+supervisor and startup code.  It provides many powerful features that the
+standard SAS/C startup code and overlay supervisor don't provide.  It is
+intended especially for large and medium-size applications which need
+flexible and efficient use of memory.  It is used in my Shareware music
+player, MultiPlayer.  For smaller programs, there is an alternative form of
+Bovs without the overlay system, but with all of Bovs's other features.
+
+    Bovs currently requires SAS/C's linker, BLink (or a very compatible
+linker, if there is such), to create overlaid files.  However, other than
+that, SAS/C is not necessarily needed: you can write programs that use Bovs
+in assembly language or any other language that supports register arguments
+and the standard Amiga object file format.
+
+    Programs that use Bovs can be started from Workbench or the CLI.  Both
+1.3 and 2.0 are supported, but when run under 2.0 Bovs supports automatic
+command-line parsing with ReadArgs().  If started from the CLI, Bovs
+detaches and runs your program in a separate process, freeing up the
+original CLI.
+
+    Instead of the standard, rigidly-structured, hierarchially-organized
+overlay system that standard Amiga overlay systems use, Bovs uses a very
+flexible overlay method based on dynamic memory caching.  When overlaid
+code is called, the overlay node in which it is contained is loaded in if
+necessary, and the function is called.  However, overlay nodes are not
+flushed from memory when other overlay nodes at the same level are called.
+(In fact, Bovs doesn't even use overlay "levels".)  Instead, they remain in
+memory and immediately available until the memory they occupy is needed for
+something else.
+
+    This is where MemMan comes in.  The Bovs distribution includes MemMan,
+a low-memory manager also written by myself, which allows programs to be
+called when any call to AllocMem() is about to fail, so they can free
+memory they don't need.  (Note that while Bovs currently only supports the
+BLink that comes with SAS/C, MemMan can be used by many compilers.  See
+MemMan's documentation for details.)  Bovs uses MemMan to unload overlay
+nodes that aren't currently in use when the system is about to run out of
+memory.  Your program can also use MemMan alongside Bovs.
+
+    If the user of a Bovs program has lots of memory, Bovs ends up acting
+as a "delayed-loading" system, to speed up initial loading and load other
+parts of the program only when necessary.  After all parts of the program
+are loaded, if the user never runs out of memory, no more loading is done
+and calls to overlaid functions are instantaneous.  However, if the user
+does run out of memory, Bovs can immediately free inactive overlay nodes,
+which gives the system some extra "padding" and helps prevent
+memory-shortage problems.
+
+    To keep track of which overlay nodes are in use and which may be freed
+on demand, Bovs uses a system of nestable locks associated with each
+overlay node.  When an overlaid function is called, locking is handled
+automatically: Bovs locks the overlay node before calling the function,
+and unlocks it after the function returns.  However, your program may also
+specifically lock and unlock overlay nodes to ensure that they remain in
+memory at certain times.
+
+
+
+                               Startup Code
+                               ~~~~~~~~~~~~
+
+    Before getting into Bovs's overlay management, I'll describe how Bovs
+handles startup and exit.  First of all, Bovs may not be used along with
+"c.o" or any of the other standard startup code files.  Bovs does not
+support SAS's standard C-style memory allocation or file handling
+functions, or any other non-trivial standard library functions.  (You can
+still use string functions and such.)  Bovs is, therefore, "Amiga-only."
+
+    Bovs supports auto-detaching.  When your program is run from the CLI, a
+separate process is started for your program and the original CLI is given
+back to the user.  Unlike typical auto-detaching startup code, however,
+Bovs lets the program decide whether or not to detach before actually
+splitting off into a separate process.  For example, MultiPlayer (which
+uses Bovs) provides a "NODETACH" command-line switch which will cause it to
+keep running in the normal CLI.  If for some reason you don't even want the
+option to detach, you can reassemble Bovs or Bst with the DETACH flag set
+to 0.
+
+    Somewhere in the non-overlaid part of your program (probably your main
+module), you'll have to define several variables containing various pieces
+of information Bovs needs during startup.  I'll give the C definitions for
+these variables; for assembly language, just add an underscore ('_') before
+the variable names.
+
+    First, you need to define a longword variable called "stack" which
+contains the stack size required for your program.  Note that this value is
+only used if the program was loaded from the CLI and thus was detached from
+the original CLI process.  If you want a larger-than-normal stack, make
+sure you set this variable AND the stack size specified in the Workbench
+icon for your program.
+
+    Second, you must define a pointer variable called "progname" which is a
+pointer to a string containing the name for the process created when
+auto-detaching from the CLI.  This string is also used as the program name
+when Bovs encounters a serious error and must display a message and
+terminate before ever calling your program.  Like the "stack" variable,
+this is not used when the program is run from Workbench.
+
+    Third, you need to define a longword variable called "priority" which
+contains the Exec priority level at which your program is to run.  Unlike
+the above variables, this is used when your program is started from either
+the Workbench or the CLI.  This priority will be in effect through both
+PreStart() and Main().  If run from the CLI without detaching, Bovs will
+automatically switch back to the CLI's original priority before exiting.
+
+    Finally, you must define three variables which Bovs passes to AmigaDOS
+2.0's ReadArgs() function if your program is run under 2.0.  The variable
+"argtemplate" must be a pointer to a string containing the standard
+argument template.  For example, part of MultiPlayer's template is
+"DIRECTORY,PLAY=MODULES/M,PROG=PROGRAM/K".  The variable "argarray" must be
+an array of longwords (it's often convenient to define it as a structure in
+C) which AmigaDOS 2.0 will fill in with the parameters from the parsed
+argument template.  The variable "argexthelp" must contain a pointer to an
+extended help string which will be displayed to the user as a prompt if '?'
+is entered as an argument on the command line.  (If this pointer is NULL,
+the argtemplate will be used for this purpose.)  I won't go into the
+details of argument parsing; Commodore's documentation should suffice.
+
+    In addition to these six variables, you must define two functions in
+your main program.  First, the PreStart() function ("@PreStart" in assembly
+language) must be defined like this:
+
+    void __regargs PreStart(int arglen,char *argstr)
+                                  D0           A0
+
+    (You may omit the "__regargs" keyword if you are compiling with
+register arguments as the default.)  This function will always be called
+before Main().  If your program was run from the CLI, PreStart() will be
+called before detaching, while Main() will be called after detaching.  At
+this point, all other variables have been set up and the command line has
+been parsed (if your program was run under 2.0).  You may call BExit() and
+BRExit() from this routine; if you do this, and your program was called
+from the CLI, you will never detach from the original CLI.  Otherwise, if
+you return from this function normally, Bovs will detach if necessary and
+then call Main().
+
+    Take MultiPlayer as an example of the use of PreStart().  It contains a
+"NODETACH/K" entry in its argument template.  MultiPlayer's PreStart()
+function checks for this switch, and if the user specified it on the
+command line, PreStart() simply calls Main() immediately, and when it
+returns, it calls BExit() or BRExit().  Note that if Bovs calls PreStart(),
+unless you call BExit() or BRExit() from within that function, Bovs will
+AlWAYS also call Main() at a later point, even if it runs into a fatal
+error between the two calls.  If it can't detach for some reason, it simply
+remains attached and calls Main() directly.  That way, you can set things
+up (allocate memory, etc.) in PreStart() without having to worry that
+Main() will never get called for some reason.
+
+    The Main() function ("@Main" in assembly language) is the normal
+entrypoint of your program.  It must be defined like this:
+
+    void __regargs Main(int arglen,char *argstr)
+                              D0           A0
+
+    When either PreStart() or Main() is called, "arglen" contains the
+length of the unparsed command line received directly from AmigaDOS, and
+"argstr" is a pointer to that command line.  (Bovs doesn't separate the
+command line into separate arguments like the standard startup code does;
+the name change from "main" to "Main" is intended to emphasize this
+difference.)  If your program is called from the Workbench, "arglen" will
+contain zero and "argstr" will contain the Workbench startup message.
+
+    Note that the raw command line is available on entry even if the
+command line was also parsed with 2.0's ReadArgs() function.  Under 1.3,
+your "argarray" variable will remain unmodified and unused; under 2.0,
+you'll get both the parsed and the unparsed arguments.  Bovs defines the
+long integer symbol "argsparsed" ("_argsparsed" in assembly language),
+which it sets to nonzero if the arguments were successfully parsed with
+2.0's ReadArgs().  If you want compatibility with both 1.3 and 2.0, you
+should use the parameters in "argargarray" if "argsparsed" is nonzero;
+otherwise parse the raw command line yourself.
+
+    When Main() is called, you don't have any standard input or output
+streams, so don't be printing error messages to nonexistant file handles.
+(You may use standard I/O from PreStart() if your program was called from
+the CLI.)  However, your current directory will be whatever the current
+directory was in the CLI your program started from, or if you started from
+Workbench, the directory containing your program icon.  You don't have to
+return to this directory before exiting your program, although you must not
+UnLock() it (Bovs will do that if necessary).
+
+    When the Main() function returns, Bovs frees all resources, closes the
+executable file if it was using overlays, and ends the program with a
+return code of zero.  You can also do this from anywhere in your program
+(as long as you're running from the original process Bovs started you in)
+by calling BExit() or BRExit(), described later.  Remember, Bovs provides
+NO resource tracking like standard C startup code does: you must free
+anything you allocate.  (Of course, Bovs will free anything it allocates.)
+
+
+
+                                 Overlays
+                                 ~~~~~~~~
+
+    First of all, be warned that the use of Bovs overlays is not completely
+transparent.  Even if you're already using overlays in your program,
+converting it to use Bovs will require a little work.  How much it requires
+depends on your program.  In this document, I'll assume that you are trying
+to convert a non-overlaid program into an overlaid program that uses Bovs.
+If you have already written an overlaid program, you shouldn't have too
+much trouble figuring out what you need to change.
+
+    Your program will have to have at least one non-overlaid object file,
+as well as one or more overlaid files.  You don't have to work out any
+complicated overlay call tree or anything: all the overlay nodes are on the
+same overlay "level", and any combination of them may be loaded at one
+time.  Overlay nodes may even call other overlay nodes, although you will
+have to fudge a little to get around some of BLink's error checking.
+
+    You'll have to set up a WITH file that you pass to BLink to link your
+program.  In it, along with whatever other BLink options you want, supply
+an OVERLAY construct that looks something like this:
+
+OVERLAY
+window.o windowspec.o
+progwin.o progwinspec.o
+prefswin.o prefswinspec.o
+flashy.o flash.o flashyspec.o
+rexx.o
+#
+
+    (This is part of MultiPlayer's WITH file.)  All the object files on one
+line are linked into the same overlay node: they are loaded and unloaded
+together, and they may share data, make no-overhead calls to each other,
+and so on.  Each line specifies a separate overlay node.  Note that you
+should never use asterisks ('*') before the filenames, which normally
+denote overlay sublevels, as Bovs neither needs nor supports hierarchial
+overlays.
+
+    There are certain limitations to what you can do when programming with
+overlays.  First, you can't directly reference data in one overlay node
+from another overlay node, or from the root.  The only exception to this
+is if you name the overlay node's data hunks "__MERGED", in which case
+BLink will merge the data into the root node's global data segment.  In
+effect, the data is no longer associated with the overlay node it was
+defined in, but rather in the permanently resident root node.  Compiling
+with SAS/C using the small data model will cause this to happen.  You
+should avoid putting too much overlay-node-specific data into the __MERGED
+hunk, because that data will be loaded all the time the program runs, even
+when the actual overlay node isn't loaded.  (To keep certain variables out
+of the __MERGED hunk under SAS/C while still using the small data model,
+just define your overlay-node-private variables as __far.)
+
+    Bovs imposes very few restrictions on calling functions in overlay
+nodes.  Any time an overlaid function is called, BLink reroutes the call
+through an entrypoint in Bovs, which loads the required overlay node if it
+isn't already loaded, locks it in memory, calls the function, and unlocks
+it when the function returns.  Theoretically, functions within overlay
+nodes could call functions in other overlay nodes with no problem.
+However, BLink has some very inconvenient error checking code that won't
+let you link a program in which one overlay node calls another.  (This is
+based on the assumption that loading one overlay node causes all other
+overlay nodes on the same level to be unloaded - which, with Bovs, is not
+the case.)  For now, unless you find a way to hack BLink to disable this
+code (if you do, tell me how!), you'll have to create "stub" functions in
+some non-overlaid module to bounce calls back into other overlay nodes.
+
+    Function calling conventions in Bovs are quite different from those
+used with the standard overlay manager.  In particular, no stack parameters
+are allowed when calling an overlaid function from outside the function's
+overlay node (when BLink has to route the function through Bovs).  This is
+because Bovs has to keep some information on the stack during the call so
+it can unlock the overlay node on returning.  (It can't just "load and
+jump" like the standard overlay supervisor can.)  The only parameters that
+are guaranteed to get to the called function are register parameters passed
+in A0 and A1.  (In SAS/C, with register arguments active, this amounts to
+two pointer-type parameters; if you want to pass value parameters, just
+convert them them to void pointers.)  In addition, the register A4 is
+passed through to allow easy use of the small data model.
+
+    If you pass register parameters to overlay functions when using Bovs,
+you'll get a bunch of annoying but meaningless warning messages from BLink
+telling you that the register parameters will get destroyed, because it
+thinks that overlay functions are supposed to be called with stack
+parameters.  For now, just let the warnings roll up your screen; I'm trying
+to get SAS to put an option in BLink to disable this checking, but so far
+I've had no luck.
+
+    Now we get into the really unconventional bit.  When an overlaid Bovs
+function is called, it actually receives one extra parameter that the
+caller never passed to it.  This parameter is passed in D0 (just define it
+as a 'long' in a SAS/C function prototype), and contains a "handle" on the
+overlay node in which the function resides.  This handle is only valid
+throughout that function call, unless the function locks the overlay node
+into memory with LockOverlay(), described later, before returning.  A valid
+handle passed to you will never be zero (unless you are using "Bst" instead
+of "Bovs" and thus have overlays disabled - this is described later), but
+other than that you can't assume anything about what it actually is.
+
+    At this point, you should be able to implement overlaid programs using
+Bovs.  Bovs also has some extra features to make your programs sleek and
+efficient, which are described in the following sections.
+
+
+
+                                 Functions
+                                 ~~~~~~~~~
+
+    Bovs defines a few extra functions which you may call during your
+program for various purposes.  Besides these, since MemMan must also be
+linked into any program that uses Bovs, you may also call MemMan's memory
+management functions.  Do not call MMInit() or MMFinish() from your program
+- Bovs does that for you.  However, if you use MemMan directly, you must be
+sure to remove all MMNodes before terminating your program.  (See
+MemMan.doc for details on using MemMan.)
+
+
+    void BExit(void)
+    void BRExit(long retcode,long retcode2)
+                       D0            D1
+
+    Call one of these functions to terminate your program.  BExit() returns
+with a returncode of zero; BRExit() allows you to set the return codes
+before exiting.  "retcode" should be RETURN_OK, RETURN_WARN, RETURN_ERROR,
+or RETURN_FAIL (defined in dos/dos.h). if you are returning an error,
+"retcode2" should contain the secondary return code - one of the ERROR_xxx
+definitions in dos/dos.h.  Note that these return codes will normally be
+"seen" only if you call BRExit() from within your PreStart() routine.  If
+you call it from Main(), your program will have already been detached and
+no one will be paying attention to whatever return code you terminate with.
+(Of course, if you have reassembled Bovs with the DETACH flag set to zero,
+then the return code will always be seen by the CLI.) Calling BExit() is
+effectively the same as returning from your Main() function.
+
+    Of course, since Bovs does no resource tracking, you must be sure to
+free all resources before calling BExit() or BRExit().  Also, they may only
+be called from the original process that Bovs gave you.
+
+
+    void LockOverlay(long ovhan)
+                           D0
+    void UnlockOverlay(long ovhan)
+                              D0
+
+    Given an overlay handle passed by Bovs to one of your overlaid
+functions, LockOverlay() will lock the overlay node containing that
+function in memory.  It will not be unloaded until you unlock the overlay
+node.  LockOverlay() calls may be nested, and every call to LockOverlay()
+must be paired with exactly one call to UnlockOverlay().  The only
+exception to this rule is that you don't have to unlock every locked
+overlay node before your program exits: Bovs will unload all loaded overlay
+nodes before exiting, locked or unlocked.  In any case, you must never try
+to unlock an overlay node that you haven't already locked.
+
+    You may only call LockOverlay() on a given overlay handle from within
+the function that was passed the handle, or from within a sub-function that
+it calls.  You MAY NOT pass an overlay handle back from an overlay function
+to the function that calls it, unless you lock it first.  In other words,
+the overlay handle is only valid during the call to the overlaid function,
+unless you lock it within that function.
+
+    When using LockOverlay() and UnlockOverlay() to ensure that a certain
+overlay node stays in memory at certain times, it is permissible for the
+main module or other overlay nodes to access the overlay node's data
+(indirectly through pointers, since direct references are not allowed), or
+to call functions in the overlay node through function pointers.  This can
+be desirable, for example, if you have some function that is very
+frequently called and you don't want the slight extra overhead of running
+through the overlay supervisor every time the function is called.  However,
+any time "outsiders" access a node's data or functions this way, you must
+be sure that the overlay node is always locked at the time, so it can't
+disappear on you.
+
+    You may call UnlockOverlay() from anywhere in your program, as long as
+you are sure the overlay handle you're passing to it is valid and locked,
+and you're sure that the call will not pull out the carpet from under you
+in some way.  To put it in simpler terms, an overlay node may be unlocked
+by (a) an "outsider" who has been given the overlay handle to unlock, or
+(b) a function within the overlay node which was called normally through
+the overlay supervisor (not directly through a function pointer).  Since
+functions called through function pointers are not automatically locked by
+Bovs throughout the call, if such a function were to unlock the last lock
+on its own overlay node, it could be unloaded while the function is still
+running.  The only time when you may unlock the last lock on an overlay
+node from within such a function is in assembly language: if the call to
+UnlockOverlay() is done with a JMP instruction, and the return address
+points to some other overlay node (or the root), the call to
+UnlockOverlay() will return directly to whatever "outsider" called the
+function in the first place, so there is no problem.
+
+    If this all sounds a little complicated at this point, don't panic: you
+only need to worry about this if you're using function pointers called by
+external modules.  If you stick to normal functions, there is not much you
+need to worry about.
+
+
+    long ResCall(void *routine,void *arg1,void *arg2)
+     D0                   A2          A0         A1
+
+    This function is a little gimmick that you might find useful for
+creating sleek, fast programs.  It is used to call overlaid functions in a
+way slightly different than normal.  If some part of the program wants to
+call a function in another overlay node, normally it makes a call normally,
+and BLink reroutes the call to go through Bovs.  However, instead of
+calling the function directly, you can pass a pointer to it (which BLink
+turns into a pointer to one of its dynamically created rerouter routines)
+to ResCall, along with the parameters "arg1" and "arg2" which you would
+normally pass to the real function in A0 and A1.  ResCall then calls the
+function normally, with the parameters that you specify.
+
+    If the overlay node containing the needed function is already loaded,
+then the function is called normally, and its return value (whatever it may
+be) is passed back in D0, as usual.  However, if the overlaid function is
+NOT resident, the function is not called at all, and Bovs returns with zero
+in D0 immediately, without loading the overlay node.
+
+    Thus, ResCall provides a simple and convenient way to call an overlaid
+function only if that overlay node is already resident.  I have found this
+useful in many cases, but I'll let you figure them out yourself.  In any
+case, if the overlay node is resident and the function is called, all
+standard overlay function calling and locking conventions still apply.
+
+
+
+                                   Bst.o
+                                   ~~~~~
+
+    The alternate object file "Bst.o" (pronounced "beast") can be used in
+place of "Bovs.o" if you want Bovs's startup features without its overlay
+system, or if you want to create a non-overlaid version of a program that
+is normally overlaid.  Your normally overlaid functions may end up be
+called with anything (including zero) as the overlay handle parameter in
+D0, since they are not called through the overlay supervisor at all.  While
+the LockOverlay() and UnlockOverlay() functions still exist in Bst, they do
+absolutely nothing.  Therefore, as long as you're somewhat careful, you
+should be able to link your program in both overlaid and non-overlaid
+versions, and have it perform exactly the same either way.  MultiPlayer's
+registered distribution, for example, contains both overlaid and
+non-overlaid versions of the MultiPlayer program, to best suit the user's
+preferences.
+
+
+
+                                  History
+                                  ~~~~~~~
+
+2.0 (10-Apr-92)
+        Removed the commercial license fee.  (All I require now for commercial use is a copy
+            of the commercial program when it is completed.)
+        Added PreStart call to allow program to avoid auto-detachment.
+        Added conditional assembly to allow Bovs to be assembled without auto-detach capability.
+        Changed 'argtemplate' to be a _pointer_ to a string, not an actual string.
+        Argument parsing on 2.0 now allows a client-defined extended help string ('argexthelp').
+        Renamed 'procname' to 'progname'.
+        Fixed a bug in setting priority when starting from Workbench.
+        Added 'argsparsed' flag which is set if the arguments were parsed with 2.0's ReadArgs().
+        Fixed a memory deallocation bug that could cause problems with programs linked in a
+            certain (unusual) way.
+
+1.0 (18-Feb-92)
+        First public release.
+
+
+
+                              Contact Address
+                              ~~~~~~~~~~~~~~~
+
+    I tend to move around a great deal, so mail sent directly to me
+sometimes has a hard time catching up.  If you want mail to reach me (it
+may take a while, but it WILL reach me), send it to this address:
+
+        Bryan Ford
+        8749 Alta Hills Circle
+        Sandy, UT 84093
+
+    I can be reached more quickly (for the time being anyway) on the phone
+or through one of the electronic mail addresses below:
+
+        (801) 585-4619
+        bryan.ford@m.cc.utah.edu
+        baf0863@cc.utah.edu
+        baf0863@utahcca.bitnet
+
+    If you want to get something to me through the mail more quickly, FIRST
+call or E-mail me to make sure I'm still here, then send it to this address:
+
+        Bryan Ford
+        27104 Ballif Hall
+        University of Utah
+        Salt Lake City, UT 84112
+
+    Enjoy!

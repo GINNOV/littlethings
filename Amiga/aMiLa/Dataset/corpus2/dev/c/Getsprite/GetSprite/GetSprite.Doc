@@ -1,0 +1,13 @@
+
+This is a little utility I put together to convert DPaint brushes to C data,
+which I needed for another project. It works in the same way as brush-to-
+image converters: give it the filename of a DPaint brush and out comes the
+same file (with .c on the end) containing the brush's palette and data,
+organised in sprite format. Note that the sprite data "frame" words are
+included.
+
+If the brush is too wide (16 max) or deep (2 planes max) an error message
+is given.
+
+                                               M.Warner, Dec. 1987
+                                               

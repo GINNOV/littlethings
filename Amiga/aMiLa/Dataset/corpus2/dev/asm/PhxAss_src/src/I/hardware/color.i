@@ -1,0 +1,43 @@
+ ifnd HARDWARE_COLOR_I
+HARDWARE_COLOR_I set 1
+*
+*  hardware/color.i
+*  for PhxAss
+*
+*  © copyright by F.Wille in 1993
+*
+
+COLOR00  = $180
+COLOR01  = $182
+COLOR02  = $184
+COLOR03  = $186
+COLOR04  = $188
+COLOR05  = $18a
+COLOR06  = $18c
+COLOR07  = $18e
+COLOR08  = $190
+COLOR09  = $192
+COLOR10  = $194
+COLOR11  = $196
+COLOR12  = $198
+COLOR13  = $19a
+COLOR14  = $19c
+COLOR15  = $19e
+COLOR16  = $1a0
+COLOR17  = $1a2
+COLOR18  = $1a4
+COLOR19  = $1a6
+COLOR20  = $1a8
+COLOR21  = $1aa
+COLOR22  = $1ac
+COLOR23  = $1ae
+COLOR24  = $1b0
+COLOR25  = $1b2
+COLOR26  = $1b4
+COLOR27  = $1b6
+COLOR28  = $1b8
+COLOR29  = $1ba
+COLOR30  = $1bc
+COLOR31  = $1be
+
+ endc

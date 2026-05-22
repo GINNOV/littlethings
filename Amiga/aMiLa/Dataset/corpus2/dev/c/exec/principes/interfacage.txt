@@ -1,0 +1,18 @@
+
+Samedi 13 et Dimanche 15 mars, j'ai rencontré des difficultés à simplifier
+les méthodes des objets d'EXEC que j'ai défini. En effet, si les appels
+système effectués par "stub" sont remplacés par des "pragma", comment faire
+pour passer les paramètres ? Ce n'est pas réalisable car le traducteur
+de C++ en C (CFront d'AT&T) que j'utilise ne permet pas de spécifier les
+numéros des registres qui sont nécessaires pour faire les appels systèmes
+par pragma. Comme toutefois, il est nécessaire de simplifier les objets,
+(qui héritent d'autres objets) j'ai pensé que seules les classes de haut
+niveau auraient des méthodes membres(avec des noms en francais). Et que
+les classes de bases comme ListeMin, NoeudMin, Liste, Noeud, en général,
+pas utiles à l'utilisateur auront à l'avenir simplement les fontions
+du système, sous forme de fonctions amies.
+De plus, les destructeurs sont définies symétriquement par rapport aux
+constructeurs par le compilateur. Alors, il n'est pas nécessaire de les
+définir quand ils n'ont pas de fonctions.
+
+

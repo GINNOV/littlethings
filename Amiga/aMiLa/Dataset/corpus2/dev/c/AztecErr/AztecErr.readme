@@ -1,0 +1,12 @@
+Short:        Tool for Manx programming environment
+Architecture: m68k-amigaos
+Source:       Fred Fish
+
+AztecErr	A Manx quickfix support program.  If you use the quickfix op-
+		tion of AztecC version 5.xx, you can set CCEDIT to this pro-
+		gram.  It opens a window which displays all errors one after
+		another.  It also has an ARexx port and a gadtools user inter-
+		face.  This is version 1.25 an update to version 1.0 on disk
+		761.  Removed some enforcer hits and is now font independent.
+		Requires AmigaDOS 2.04 or higher.  Freeware, binary only.
+		Author:  Hans-Peter Guenther

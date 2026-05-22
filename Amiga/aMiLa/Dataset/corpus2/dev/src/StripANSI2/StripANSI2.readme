@@ -1,0 +1,16 @@
+Short:        Strip ANSI Sequences from a file (src)
+Author:       jma@lpa.com (Jon Armstrong)
+Uploader:     jma lpa com (Jon Armstrong)
+Type:         dev/src
+Architecture: m68k-amigaos
+
+This huge utility strips a few ANSI-ish sequences from any file.
+It does not try to replace the escape sequences, just strip them.
+
+I've tried a number of existing utilities, but most don't seem
+to catch standard sequences.
+
+The (flex) source is included in the archive with instructions
+for making the executable with GNU-C.
+
+Have fun... Jon

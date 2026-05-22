@@ -1,0 +1,11 @@
+ Short:    AutoBump project version and dates.  V1.0
+ Version:  1.0
+ Type:     dev/c
+ Requires: OS3.0+
+ Author:   mritter@netexpress.net (Mark Ritter)
+ Uploader: mritter@netexpress.net (Mark Ritter)
+
+ Version Handler will keep track of all your projects
+ and allow you to easily bump versions and dates.
+
+ Part of the `Swiss Army Knife Utility' package.

@@ -1,0 +1,12 @@
+Short:    pitch shifter source in ansi c
+Uploader: PeterC@nym.alias.net
+Author:   Peter Capasso
+Type:     dev/src
+
+This is source in C for a working pitch shifter which uses the
+overlap add (doppler) method of shifting.  I could not find
+source anywhere for doing this.  Here it is.  Short, simple,
+and free.
+
+Now there is no excuse for not putting a pitch shifter in all
+audio software.  :-)

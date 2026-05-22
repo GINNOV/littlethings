@@ -1,0 +1,1656 @@
+*Premessa*
+
+Nello sviluppo di una applicazione che richiede una complessa interfaccia utente
+si fa un largo uso di oggetti chiamati gadget.  Questi oggetti sono di tipo
+diverso e servono a scopi differenti.  Per questo Intuition permette, dalla
+versione 2.0 del Sistema Operativo, la possibilità di creare dei gadget
+personalizzati detti "custom gadget".  Il metodo che usa Intuition per operare
+su questi gadget è quello di chiamare una funzione utente.  In questo modo è
+possibile implementare qualsiasi tipo di gadget.
+
+Oltre a questa novità è stata distribuita, sempre con il 2.0, la
+gadtools.library:  una libreria dei gadget più usati dagli applicativi utente e
+di sistema.  Questa libreria è però ritenuta insufficiente per molte
+applicazioni e quindi ne viene proposta un'altra in queste pagine.
+
+
+*Descrizione Della Libreria*
+
+La libreria si chiama ObjectiveGadTools (da ora in avanti OGT) ed è stata
+scritta sfruttando il meccanismo dei BOOPSI di Intuition; ogni gadget (oggetto)
+appartiene ad una classe e ha dei dati propri.  L'applicativo non può modificare
+nè leggere i dati locali all'oggetto se non tramite i metodi generali dei BOOPSI
+ed in particolare i metodi OM_SET ed OM_GET.  A differenza dalla GadTools, nella
+quale l'uso dei tag era limitato solo alla comunicazione dall'applicativo al
+sistema, nella OGT tutto si attua per mezzo di liste di TagItem, in quanto non
+fa alcuna differenza per un oggetto il comunicare con un altro oggetto o con
+l'applicativo.
+
+Le novità principali della OGT rispetto alla GadTools sono:
+
+ + posizionamento relativo degli oggetti rispetto ad altri oggetti e rispetto alla
+   finestra.
+ + ridimensionamento degli oggetti a tempo d'esecuzione.
+ + adattamento automatico al font usato o alle dimensioni della finestra.
+ + gestione dell'Help contestuale all'oggetto.
+ + gestione trasparente delle abbreviazioni da tastiera (short-cut).
+ + sensibilità al rilascio delle icone sugli oggetti.
+ + creazione di oggetti più potenti quali gadget con immagini vettoriali o
+   gadget file-request.
+
+La mancanza di queste basilari particolarità fa della GadTools uno strumento
+limitato che male si presta alla programmazione orientata agli oggetti.  Questo
+è dovuto ad una impostazione differente di progetto, sarà molto difficile fare
+in modo che la GadTools evolva nel senso che noi speriamo restando compatibile
+con le applicazioni attuali.
+
+Inoltre si è cercato di rendere il più semplice possibile anche l'allocazione e
+la gestione degli oggetti messi a disposizione dalla libreria, con un occhio di
+riguardo ai programmi costruttori di applicativi:  è possibile definire tutta
+un'applicazione (per quanto riguarda l'aspetto grafico) con solo strutture
+statiche, in modo che il codice da aggiungere sia minimo, giusto:
+
+--------------------------------------------------------------------------------
+ APTR            VInfo;
+ struct Window  *Win;
+ struct Gadget **Gads;
+
+ VInfo = OGT_GetVisualInfoA( NULL,
+                             WindowDescTags );
+
+ OGT_BuildObjects( VInfo,
+                   ArrayOfObjects,
+                   ArrayOfLinks,
+                   &Gads );
+
+ Win = OGT_GetWindowPtr( VInfo );
+
+ ...
+
+ Gestione applicazione
+
+ ...
+
+ OGT_FreeVisualInfo( VInfo );
+--------------------------------------------------------------------------------
+
+Il significato delle funzioni è precisato più avanti.
+
+
+*Descrizione degli oggetti*
+
+Gli oggetti definiti dalla OGT sono al momento questi:
+
+ + GROUP_OGT_CLASS
+ + BUTTON_OGT_CLASS
+ + STRING_OGT_CLASS
+ + PROP_OGT_CLASS
+ + SCROLLER_OGT_CLASS
+ + MULTIWAY_OGT_CLASS
+ + LISTVIEW_OGT_CLASS
+ + ASLREQ_OGT_CLASS
+ + SHOWTEXT_OGT_CLASS
+ + SHOWLIST_OGT_CLASS
+ + MENU_OGT_CLASS
+
+In realtà alcuni oggetti hanno un comportamento multiplo, per esempio gli
+oggetti della classe BUTTON_OGT_CLASS inglobano le funzionalità dei gadget
+BUTTON_KIND e CYCLE_KIND della GadTools, quelli della classe MULTIWAY_OGT_CLASS
+le funzionalità dei gadget MX_KIND e CHECKBOX_KIND e quelli della classe
+SHOWTEXT_OGT_CLASS le funzionalità delle controparti NUMBER_KIND e TEXT_KIND,
+solitamente anche con miglioramenti.
+
+Tutti le classi rispondono in maniera uguale ad un insieme ben definito di tag
+(in quanto sono tutte derivate da due classi private, che si occupano
+dell'immagine, delle caratteristiche geometriche e della comunicazione fra gli
+oggetti).
+
+
+**Tag comuni**
+
+- GA_Disabled        USHORT
+
+Abilita o meno l'input da utente.  Se TRUE l'oggetto si porrà in uno stato di
+inibizione dell'input, mostrando un aspetto "ghosted", accettando però eventuali
+comunicazioni da parte di altri oggetti o dell'applicazione.
+
+
+- GA_ID              USHORT
+
+Il numero con cui viene identificato un oggetto:  quando un oggetto deve
+notificare un qualche evento, lo fa con questo valore, per mezzo del tag OGT_ID.
+
+
+- OGT_Object         Object *
+
+E' il puntatore ad un oggetto.  Viene inserito in tutti i messaggi generati
+dagli oggetti, per rendere molto semplice l'identificazione del mittente del
+messaggio.
+
+
+- ICA_TARGET         Object *
+
+E' il puntatore all'oggetto a cui bisogna mandare i messaggi di tipo OM_UPDATE.
+Contrariamente agli oggetti messi a disposizione da Intuition, gli oggetti della
+OGT di default comunicano con l'applicazione.  Nel caso ciò non fosse
+desiderabile, basta passare un NULL con questo tag.
+
+
+- ICA_MAP            struct TagItem *
+
+Si tratta di una lista di TagItem, che serve per tradurre i tag dal dominio
+dell'oggetto mittente al dominio dell'oggetto destinatario.  Ad esempio, se si
+devono connettere A e B, con A che emette PGA_Top e B che capisce
+STRINGA_LongVal, bisogna inserire un'applicazione che trasformi PGA_Top in
+STRINGA_LongVal, cioè:
+
+--------------------------------------------------------------------------------
+ struct TagItem MapAtoB[] =
+ {
+    { PGA_Top , STRINGA_LongVal },
+    { TAG_DONE                  }
+ };
+--------------------------------------------------------------------------------
+
+- OGT_VisualInfo     APTR
+
+E' assolutamente necessario, senza di esso l'oggetto non si alloca neanche.  Il
+dato da passare è il puntatore ritornato da OGT_GetVisualInfoA().
+
+
+- OGT_LinkToAnchor   BOOL  default: TRUE
+
+Serve per specificare se la classe deve tener traccia dell'allocazione
+dell'oggetto, in modo che questo venga liberato da una successiva chiamata a
+OGT_FreeVisualInfo().  Praticamente attacca o meno l'oggetto alla GadgetList
+della finestra e quindi non c'è più bisogno di tag come GA_Previous o GA_Next.
+Se non viene specificato altrimenti l'allocazione viene ricordata (oggetto
+aggiunto alla lista).  Ma se un oggetto deve essere agganciato ad un gruppo,
+dato che la responsabilità della liberazione delle risorse degli oggetti
+attaccati ad un gruppo è del gruppo stesso, bisognerà specificare FALSE, per
+evitare una liberazione di risorse già liberate, cosa che porta ad un sicuro
+blocco del sistema.
+
+
+- OGT_Parent         Object *
+
+Indica che l'oggetto deve essere agganciato ad un certo gruppo.  Ciò determina
+anche una modificazione nel modo in cui l'oggetto è disegnato, cioè sarà
+disegnato relativamente all'oggetto a cui è agganciato, non alla finestra.  Dato
+che per un oggetto essere riferito alla finestra o ad un altro oggetto è la
+stessa cosa, in futuro si farà riferimento al generico dominio in cui giace un
+oggetto.  Per esempio, con alcuni settaggi un oggetto può essere riferito al
+bordo destro di una finestra (con GA_RightBorder = TRUE) e quindi in questo caso
+dire che si vuole un oggetto grande come il dominio è equivalente a dire che si
+vuole un oggetto grande come il bordo destro della finestra.  Naturalmente ci
+sono casi in cui è desiderabile che l'oggetto faccia distinzione fra essere
+all'interno di una finestra o "nella" finestra, per ragioni estetiche o
+funzionali, ma sarà sempre cura della classe dell'oggetto operare una
+differenziazione, come ad esempio la SCROLLER_OGT_CLASS.
+
+
+- GA_Left
+- GA_Top
+- GA_Width
+- GA_Height          WORD
+
+Indicano la posizione e le dimensioni dell'oggetto.  Il loro significato reale
+varia in funzione di ulteriori precisazioni delle caratteristiche geometriche
+degli oggetti.
+
+
+- GA_RelRight
+- GA_RelBottom       WORD
+
+Servono per riferire la posizione dell'oggetto rispetto ai bordi destro e
+inferiore, contrariamente a quanto accade di solito, con la posizione riferita
+ai bordi sinistro e superiore.
+
+
+- GA_RelWidth
+- GA_RelHeight       WORD
+
+Anzichè assolute, le dimensioni di un oggetto vengono specificate come relative
+rispetto alle dimensioni del dominio in cui giace.
+
+
+- OGT_Right
+- OGT_Bottom         WORD
+
+Questi due tag introducono uno dei tanti nuovi modi per definire un oggetto.
+Normalmente si definisce un oggetto per mezzo della coordinata di un suo punto e
+le sue dimensioni.  Con questi tag si può definire un oggetto mediante due
+coordinate, quella dell'angolo superiore sinistro e quella dell'angolo inferiore
+destro.
+
+
+- OGT_SetPosHandle
+- OGT_SetPosReference
+- OGT_SetDimReference   USHORT
+
+Controllo fine della posizione e delle dimensioni di un oggetto.  Il loro uso
+interferisce con il significato da dare ai dati immessi con molti altri tag e
+quindi una spiegazione esclusivamente a parole risulterebbe troppo complicata e
+poco esplicativa.  Per essi si rimanda al programma demoPosition, che permette
+di comprendere in modo interattivo i concetti che stanno dietro a questi ed
+altri tag.
+
+
+- OGT_ScaleLeft
+- OGT_ScaleTop
+- OGT_ScaleWidth
+- OGT_ScaleHeight    UBYTE
+
+Di default la posizione e le dimensioni di un oggetto si indicano come quantità
+assolute o comunque come quantità assolute da aggiungere ad altre quantità (vedi
+il caso di un oggetto relativo alle dimensioni del dominio).  Per permettere un
+maggior livello di libertà, si possono definire queste quantità come relative al
+font usato (OGT_FontRelative) o al dominio (OGT_DomainRelative).  Per esempio,
+un oggetto progettato per essere alto 14 con un font alto 8, verrà disegnato
+alto 28 con un font da 16.  Similmente un oggetto progettato per trovarsi a x=20
+in un dominio largo 100, in un dominio largo 300 si troverà a x=60.
+
+
+- OGT_FontXscale            default: 8
+- OGT_FontYscale            default: 8
+- OGT_DomainXscale          default: 100
+- OGT_DomainYscale   USHORT default: 100
+
+Indicano i parametri con cui sono stati progettati gli oggetti.  C'è una caso
+particolare:  quando si pone Domain* = ~0, si indica che il loro valore è uguale
+a quello che si è specificato per le dimensioni della finestra.  Invece di
+scrivere:
+
+--------------------------------------------------------------------------------
+   WA_InnerWidth   , 306,
+   WA_InnerHeight  , 120,
+   OGT_DomainXscale, 306,
+   OGT_DomainYscale, 120,
+--------------------------------------------------------------------------------
+
+si può usare:
+
+--------------------------------------------------------------------------------
+   WA_InnerWidth   , 306,
+   WA_InnerHeight  , 120,
+   OGT_DomainXscale, ~0 ,
+   OGT_DomainYscale, ~0 ,
+--------------------------------------------------------------------------------
+
+Stessa cosa con WA_Width e WA_Height.
+
+
+- OGT_ResetAspect    void
+
+Se un oggetto viene agganciato ad un gruppo, eredita da questo i parametri di
+progetto e le varie informazioni di scala.  Con questo tag si riportano ai
+valori di default tutti i campi, uno modo sintetico per dire:
+
+--------------------------------------------------------------------------------
+  OGT_SetPosHandle   =OGT_X_Left     |OGT_Y_Top
+  OGT_SetPosReference=OGT_X_Left     |OGT_Y_Top
+  OGT_SetDimReference=OGT_X_Dim_Fixed|OGT_Y_Dim_Fixed
+  OGT_SetScaleLeft   =OGT_Fixed
+  OGT_SetScaleTop    =OGT_Fixed
+  OGT_SetScaleWidth  =OGT_Fixed
+  OGT_SetScaleHeight =OGT_Fixed
+  OGT_SetFontXscale  =8
+  OGT_SetFontYscale  =8
+  OGT_SetDomainXscale=100
+  OGT_SetDomainYscale=100
+--------------------------------------------------------------------------------
+
+
+- OGT_AlignToObject  Object *
+
+Normalmente quando si indica un oggetto come allineato (Il concetto di
+allineamento è esplicitato nella documentazione del programma demoPosition) ad
+un altro oggetto ci si riferisce all'oggetto immediatamente precedente.  Con
+questo tag si può riferire l'allineamento a qualunque oggetto (naturalmente
+entrambe gli oggetti devono stare nello stesso dominio).
+
+
+- GA_Text            STRPTR
+
+E' il testo che deve essere disegnato accanto ad un oggetto.  Viene copiato, non
+riferito.  Mettere un "_" nel testo indica che la lettera successiva deve essere
+risultare sottolineata e deve venir usata come short-cut per l'attivazione
+dell'oggetto.
+
+
+- OGT_TextFont       struct TextFont *
+
+Font per GA_Text.
+
+
+- OGT_TextColor      SHORT
+
+Colore per GA_Text.
+
+
+- OGT_TextPlacement  SHORT
+
+Posizione del testo rispetto all'oggetto.  Può essere:
+
+  OGT_Text_IN              dentro, centrato.
+  OGT_Text_IN_LEFTMOST     dentro, giustificato a sinistra.
+  OGT_Text_IN_RIGHTMOST    dentro, giustificato a destra.
+  OGT_Text_LEFT            a sinistra.
+  OGT_Text_RIGHT           a destra.
+  OGT_Text_ABOVE           sopra.
+  OGT_Text_BELOW           sotto.
+  OGT_Text_HIDE            invisibile, nel caso lo si voglia usare solo come
+                           abbreviazione da tastiera.
+
+Il default dipende dall'oggetto.
+
+
+- OGT_DrawFrame
+- IA_Recessed
+- IA_DoubleEmboss
+- IA_EdgesOnly       BOOL
+
+Modificano l'aspetto del bordo di un oggetto.
+
+
+- GA_Immediate
+- GA_FollowMouse
+- GA_RelVerify
+- OGT_ClickRepeat    BOOL
+
+Servono per controllare la notifica di attivazione/disattivazione di un oggetto.
+Quando l'utente o l'applicazione attiva un oggetto, se GA_Immediate è TRUE,
+viene mandato fuori un messaggio di tipo OM_UPDATE contenente il tag
+OGT_GadgetDown, seguito ad emissioni di messaggi con tag OGT_GadgetRepeat ad
+intervalli di tempo regolari, nel caso in cui OGT_ClickRepeat sia TRUE.  I
+movimenti del mouse vengono seguiti attraverso l'uso del tag OGT_GadgetMove,
+filtrato da GA_FollowMouse.  Infine la disattivazione di un oggetto è comunicata
+per mezzo di OGT_GadgetUp, con filtro GA_RelVerify.  Tutti i vari OGT_Gadget*
+hanno in comune che viaggiano sempre in compagnia di altri due tag, OGT_ID e
+OGT_Object, in modo che sia sempre possibile identificare la sorgente del
+messaggio.  Per gli oggetti per cui ha senso un controllo sulla posizione del
+mouse vengono mandati fuori anche OGT_MouseX e OGT_MouseY, coordinate del mouse
+relative all'angolo dell'oggetto in alto a sinistra
+
+
+- OGT_Activation     ULONG
+
+Serve per specificare i filtri precedenti in un solo colpo, per mezzo dei flag:
+
+ + OGT_Act_ReportGadgetDown
+ + OGT_Act_ReportGadgetMove
+ + OGT_Act_ReportGadgetUp
+ + OGT_Act_ReportGadgetRepeat
+ + OGT_Act_ToggleType
+
+L'ultimo serve solo per oggetti di classe BUTTON_OGT_CLASS, per indicare un
+funzionamento bistabile (modo attivabile anche per mezzo di GA_Selected).
+
+
+- OGT_AppGadget      BOOL
+
+Se TRUE, indica che l'oggetto può ricevere notizia del rilascio di un'icona al
+suo interno, per mezzo del tag OGT_DroppedIcon.  Alcune classi lo mettono TRUE
+di default, altre capiscono direttamente un OGT_DroppedIcon e agiscono di
+conseguenza, altre ancora semplicemente passano oltre tutti i OGT_DroppedIcon
+ricevuti (questo è il comportamento di default).
+
+
+- OGT_DroppedIcon    STRPTR
+
+E' un tag che viene mandato dalla libreria all'oggetto, nel caso che l'utente
+rilasci un'icona dentro il corpo dello stesso.  E' il nome completo di path
+dell'icona.  Se non c'è nessun oggetto sotto al mouse al momento del rilascio,
+tale tag è mandato direttamente all'applicazione.
+
+
+- OGT_AskedHelp      BOOL
+
+Viene emesso da un oggetto, insieme agli altri tag esplicativi, quando viene
+richiesta una spiegazione del funzionamento dell'oggetto (l'utente ha premuto il
+tasto HELP sopra l'oggetto).
+
+
+
+**GROUP_OGT_CLASS**
+
+E' l'oggetto fondamentale di tutto il complesso.  Serve come raggruppatore di
+altri oggetti.  Può essere dotato di immagine (un bordo semplice o doppio) e di
+nome, oppure essere invisibile.  Altri oggetti possono essere aggregati ad esso
+per mezzo del metodo OM_ADDMEMBER e riferiranno poi la loro posizione e le loro
+dimensioni da esso.  Questo oggetto si occupa pure di liberare gli oggetti
+legati ad esso.  Se si manda un metodo OM_SET ad un gruppo, gli oggetti da esso
+legato riceveranno solo alcuni tag, gli altri, quelli che controllano posizione,
+dimensioni, in generale l'aspetto di un oggetto, verranno fermati.  Se si
+vogliono invece comunicare proprio quei cambiamenti di aspetto di un oggetto, si
+può operare in due modi:  o mandandoli direttamente ad esso, o mandandoli al
+gruppo a cui appartiene, con l'aggiunta di un tag GA_ID, con l'ID dell'oggetto
+che si vuole raggiungere.
+
+
+
+**BUTTON_OGT_CLASS**
+
+Classico button gadget, con la differenza che è possibile attivarlo anche per
+mezzo della funzione ActivateGadget.
+
+- GA_Selected        BOOL
+
+Rende il bottone bistabile, ne specifica il valore iniziale e, quando l'oggetto
+viene attivato, viene usato per comunicare il nuovo stato.  Se non viene
+specificato al momento della creazione dell'oggetto, viene usato nei messaggi
+emessi dal bottone, per indicare che il mouse è dentro (TRUE) o fuori (FALSE)
+dal corpo dell'oggetto.
+
+
+- OGTBU_Labels       STRPTR *
+
+Un array di puntatori a stringa, terminato da NULL.  Questo tag modifica il
+funzionamento dell'oggetto da semplice bottone astabile a bottone ciclico.
+L'array è copiato, non referenziato.
+
+
+- OGTBU_ActiveLabel  SHORT
+
+Nel caso di un bottone ciclico, è l'elemento che deve risultare attivo
+all'inizio.  Tale tag viene anche emesso dall'oggetto per indicare un
+cambiamento di stato (l'utente ha selezionato un altra stringa o l'applicazione
+ha aggiornato l'oggetto).  Se OGT_ClickRepeat è TRUE, attivando il bottone si
+possono scorrere tutte le stringhe senza doverle selezionare a una a una.  In
+ogni caso il resto del sistema non viene informato del cambiamento di stato se
+non al rilascio del bottone, sempre che il mouse sia ancora sull'oggetto.
+Premere il tasto destro del mouse ha la funzione di un UNDO.
+
+- OGTBU_VectorImageDef  SHORT
+- OGTBU_VectorImage     struct OGT_VectorImage *
+
+
+
+**STRING_OGT_CLASS**
+
+Le istanze di questa classe sono i classici "string gadget", con il vantaggio
+che tutti i buffer sono gestiti dall'oggetto, cioè non è necessaria alcuna
+allocazione di buffer da parte dell'applicazione.  Essendo una sottoclasse della
+classe STRGCLASS (in realtà è figlia sia di quella classe che di una classe
+privata della libreria, costituendo così un esempio di ereditarietà multipla),
+ne eredita tutti i settaggi, con alcune differenze di funzionamento.  Con
+STRINGA_EXITHELP, se l'utente preme il tasto HELP, l'oggetto emette un
+OGT_AskedHelp e rimette a posto il valore dell'oggetto.  Questa è la differenza
+più importante rispetto a tutti gli altri string gadget:  l'oggetto non rimane
+mai in uno stato inconsistente con il resto del sistema, cioè il dato immesso
+dall'utente non è accettato se non è completo.  Se l'oggetto si disattiva,
+perchè un'altra finestra è divenuta attiva, perchè l'utente ha premuto il tasto
+destro del mouse, perchè ha attivato un'altro oggetto o infine perchè ha chiesto
+un aiuto per mezzo del tasto HELP, l'oggetto effettua un UNDO, in modo che vi
+sia sempre coerenza fra quello che è visualizzato dall'oggetto e quello che il
+resto del sistema crede vi sia visualizzato.  Come tutti gli string gadget, può
+essere sia di tipo TEXT che di tipo LONG.  Nel primo caso, specificando il tag
+OGT_AppGadget, accetta come input pure il rilascio di un'icona.
+
+
+
+**PROP_OGT_CLASS**
+
+- PGA_Pos
+- PGA_Total
+- PGA_Visible        ULONG
+
+Sono rispettivamente il livello iniziale, il numero totale di livelli e il
+numero di livelli visibili.  Contrariamente a tutti gli altri gadget
+proporzionali, gli oggetti di questa classe hanno 32 bit di risoluzione.  Tutti
+questi tag vengono emessi dall'oggetto, se modificato.  Se è presente uno
+short-cut, senza SHIFT aumenta il valore di PGA_Top, con SHIFT lo diminuisce.
+
+
+- PGA_Freedom        FREEVERT o FREEHORIZ
+
+Il tipo di movimento, verticale od orizzontale.
+
+
+- PGA_NewLook        BOOL
+
+Se TRUE assume un aspetto diverso, uguale a quello dei gadget usati dal
+Workbench.
+
+
+
+**SCROLLER_OGT_CLASS**
+
+Questa è una classe derivata dalla classe PROP_OGT_CLASS, ne condivide quindi
+tutte le funzionalità, con l'unica differenza della presenza di due bottoni, per
+andare avanti o indietro di un livello.  Se tenuti premuti, i bottoni continuano
+a muovere di un livello.
+
+- OGTSR_ArrowSize    USHORT default: 16
+
+Larghezza (se FREEHORIZ) o altezza (se FREEVERT) dei bottoni.
+
+
+
+**MULTIWAY_OGT_CLASS**
+
+Le istanze di questa classe permettono di scegliere una voce fra tante o un
+insieme di voci.  A seconda del tipo di funzionamento, che può essere modificato
+per mezzo dei tag OGTMW_ActiveLabel e OGTMW_ActiveMask, cambia automaticamente
+l'aspetto con cui viene reso.  Il modo di default è quello inclusivo (un insieme
+di voci).  Se non vengono specificate le dimensioni dell'oggetto, esse si
+adatteranno al numero di voci e al tipo di funzionamento.  Se invece si
+specifica la larghezza e/o l'altezza dell'oggetto, saranno gli elementi di
+selezione delle voci a ridimensionarsi.
+
+- OGTMW_Labels       STRPTR *
+
+Un array di puntatori a stringa, terminato da NULL.  E' l'insieme delle scelte
+possibili, dove ogni stringa corrisponde ad un bottone e può essere dotata di
+short-cut.  Nel caso questo tag non fosse specificato o il suo valore fosse
+NULL, il funzionamento dell'oggetto è quello di un bottone bistabile, reso
+graficamente con un Check Mark e il cui testo è specificato da GA_Text.  In
+tutti gli altri casi GA_Text è semplicemente il titolo da dare all'insieme delle
+scelte.  L'array è copiato, non referenziato.
+
+
+- OGTMW_ActiveLabel  SHORT
+
+Attiva il modo esclusivo (una voce fra tante), ed indica l'elemento attivo.  Lo
+stesso tag viene emesso nel caso di una modificazione dello stato dell'oggetto.
+
+
+- OGTMW_ActiveMask   ULONG
+
+Attiva il modo inclusivo, ed ogni suo bit indica lo stato della corrispondente
+voce (bit 0 per la 1^ voce, etc.  etc.  ).  Lo stesso tag viene emesso nel caso
+di una modificazione dello stato dell'oggetto.
+
+
+
+**LISTVIEW_OGT_CLASS**
+
+Oggetto simile alla LISTVIEW_KIND della GadTools, serve per mostrare liste di
+nomi, contrariamente ad esso si crea una copia privata dei nomi, permettendo
+così anche l'uso di array di nomi, oltre che di liste.  La lista rimane di
+proprietà dell'oggetto, che può cederla ad altri solo in lettura.  Per
+modificare la lista ci sono degli appositi tag, che effettuano le normali
+operazioni possibile su una lista (inserimento, rimozione, modifica).  Sempre
+l'oggetto può gestire un campo per l'evidenziazione del valore selezionato o per
+il suo editing, con uno string gadget.  In quest'ultimo caso è gestito pure
+dall'oggetto l'aggiornamento della lista con il nuovo nome.  Se è necessario un
+editing particolare, è possibile installare una propria routine di editing, con
+il tag STRINGA_EditHook.
+
+Se dotato di short-cut, risponde spostandosi di una posizione in alto o in
+basso, a seconda che sia con o senza SHIFT.
+
+- OGTLV_Labels       STRPTR *
+- OGTLV_ListOfLabels struct MinList *
+
+Sono i due tag usati per immettere la lista dei nomi.  Il primo caso è il più
+semplice, un array di puntatori a stringa.  Il secondo consiste in una lista di
+strutture di tipo Node, con il nome nel campo ln_Name.  In entrambi i casi i
+nomi sono copiati, non referenziati.
+
+
+- OGTLV_ActiveLabel  LONG
+
+E' la posizione del nome attivo.  Oltre a fornire lo stato iniziale, viene
+emesso dall'oggetto stesso quando l'utente o l'applicazione seleziona un nome.
+
+
+- OGTLV_FontOfLabels struct TextFont *
+
+Il font da usare per i nomi.
+
+
+- OGTLV_ReadOnly
+- OGTLV_ShowSelected BOOL
+
+Attivano rispettivamente il campo di visualizzazione o quello di editing.  Il
+primo ha la priorità sul secondo.
+
+
+- OGTLV_ToggleSelect BOOL
+
+Normalmente quando l'utente seleziona una voce, l'oggetto emette un
+OGTLV_ActiveLabel al rilascio del bottone del mouse, con il numero della voce
+selezionata.  Se questo tag è TRUE invece l'oggetto cambia subito di stato la
+voce selezionata ed emette sia ActiveLabel che GA_Selected, il nuovo stato della
+voce (Se si legge direttamente la lista delle voci, una voce selezionata è
+marcata con il flag ReverseColors).
+
+
+- OGTLV_Top             LONG
+- OGTLV_FollowSelected  BOOL
+
+Controllano la posizione della finestra di visibilità dei nomi.  Con OGTLV_Top
+si comunica una posizione precisa, da mostrare adesso, mentre con l'altro si
+chiede di operare in modo da rendere visibile il nome selezionato, ogni
+qualvolta questo venga cambiato per mezzo di OGTLV_ActiveLabel.
+
+
+- OGTLV_Spacing      ULONG
+
+Spazio extra fra un nome e l'altro, normalmente 0.
+
+
+- OGTLV_ScrollWidth  ULONG
+
+Larghezza dell'elemento di scroll di destra, normalmente 16.
+
+
+- OGTLV_ShowHeight   ULONG
+
+Altezza del campo di visualizzazione/editing.  Normalmente 6 pixel più alto del
+font usato.
+
+
+- OGTLV_LockList     BOOL
+
+Serve per bloccare ogni visualizzazione della lista, nel caso si vogliano fare
+modifiche e non si desideri mostrare il risultato intermedio.
+
+
+- OGTLV_WorkLabelPos LONG
+
+Indica la posizione nella lista del nome da manipolare (vedi sotto).  Se non
+viene specificato, il default è la posizione del nome attivo.
+
+
+- OGTLV_InsertLabelBefore
+- OGTLV_InsertLabelAfter
+- OGTLV_DeleteLabel
+- OGTLV_ChangeLabel        STRPTR
+
+Metodi per manipolare la lista dei nomi.  InsertLabelBefore e InsertLabelAfter
+aggiungono un nome, rispettivamente prima e dopo quello indicato, DeleteLabel lo
+cancella e ChangeLabel lo modifica.  Quest'ultimo, congiuntamente a
+OGTLV_ActiveLabel, viene emesso dall'oggetto per comunicare che l'utente ha
+modificato un nome della lista.
+
+
+
+**ASLREQ_OGT_CLASS**
+
+E' un oggetto di tipo nuovo:  un ASL requester.  Il suo aspetto può essere
+quello di un bottone, con disegnata una cartelletta, nel caso più elementare, a
+cui si possono affiancare uno o due string gadget.  Accetta tutti i tag della
+"asl.library".  Di default è anche un AppGadget, cioè accetta come input il
+rilascio di un'icona.
+
+- OGTAR_Type         SHORT
+
+Specifica se si tratta di un file requester (dato = ASL_FileRequest) o un font
+requester (dato = ASL_FontRequest).
+
+
+- OGTAR_ShowSelected BOOL
+
+Se TRUE aggiunge uno (nel caso del file requester) o due string gadget (nel caso
+del font requester).  Se invece il file requester è del tipo a selezione
+multipla, questo tag è ignorato.
+
+
+- ASL_File
+- ASL_Dir
+- OGTAR_FullFileName STRPTR
+
+Indicano la situazione iniziale del requester e vengono anche usati per
+comunicare le scelte fatte.
+
+
+- OGTAR_FilesSelected   STRPTR *
+
+Un array, terminato da un NULL, di puntatori a stringa.  Viene comunicato solo
+nel caso di un file requester a scelta multipla.
+
+
+- ASL_FontName       STRPTR
+- ASL_FontHeight     SHORT
+- OGTAR_FontData     struct TextAttr *
+
+Sono gli equivalenti di ASL_File, ASL_Dir e OGTAR_FullFileName per il font
+requester.
+
+
+
+**SHOWTEXT_OGT_CLASS**
+
+Questo oggetto serve solo per mostrare dei risultati, non consente alcun input
+da utente e non emette alcun output.
+
+- OGTST_Number       LONG
+- OGTST_Label        STRPTR
+- OGTST_Labels       STRPTR *
+- OGTST_Format       STRPTR
+- OGTST_Arguments    void **
+
+Sono i vari tipi di dato che l'oggetto può visualizzare:  semplice numero
+(Number), semplice stringa (Label), array di stringhe (Labels) e testo
+formattato (Format e Arguments).  Comunque tutti i tipi di dato vengono
+trasformati in un'unica stringa prima di disegnarli.  Il testo può essere anche
+su più linee, basta aggiungere un newline ('\n'), tenendo presente che nel caso
+di Labels tale newline è già inserito fra le varie linee.  Inoltre l'oggetto
+riconosce altre sequenze di controllo, per modificare l'aspetto del testo:
+'\x01\x<n>' cambia il colore usato in <n>, '\x02' attiva il modo sottolineato,
+'\x03' il neretto e '\x04' l'italico.  Tali modifiche hanno valore sono su una
+linea e interessano tutta la linea.  Il default è OGTST_Number.
+
+
+- OGTST_Placement    SHORT
+
+Specifica il tipo di giustificazione orizzontale e verticale da usare.  Quella
+orizzontale è controllata tramite:
+
+  OGT_X_Left
+  OGT_X_Center
+  OGT_X_Right
+
+mentre quella verticale da:
+
+  OGT_Y_Top
+  OGT_Y_Center
+  OGT_Y_Bottom
+
+Normalmente il testo viene centrato rispetto all'oggetto (OGT_X_Center +
+OGT_Y_Center).
+
+
+
+**SHOWLIST_OGT_CLASS**
+
+E' un nuovo oggetto, che serve come versatile visualizzatore di testi (e volendo
+anche grafica:  un esempio di lista mista di testo e grafica si ha nel programma
+demoGfx).  Viene presentato dopo LISTVIEW_OGT_CLASS ma solo perchè è più
+complesso.  Infatti un oggetto della classe LISTVIEW_OGT_CLASS è un gruppo di
+oggetti, formato mettendo insieme oggetti delle classi SCROLLER_OGT_CLASS,
+SHOWLIST_OGT_CLASS, SHOWTEXT_OGT_CLASS o STRING_OGT_CLASS, solo che le
+applicazioni non se ne rendono conto.
+
+- OGTSL_Labels             STRPTR *
+- OGTSL_ListOfLabels       struct MinList *
+- OGTSL_FileToLoadByFH     BPTR
+- OGTSL_FileToLoadByName   STRPTR
+
+Sono i tag usati per immettere il testo.  Il primo caso è il più semplice, un
+array di puntatori a stringa.  Il secondo consiste in una lista di strutture di
+tipo Node, con la stringa nel campo ln_Name.  Gli ultimi due tag indicano che il
+testo è contenuto in un file, di cui si passa o l'handle o il nome.  Sarà cura
+dell'oggetto leggersi il file per trasformarlo in una lista di linee di testo.
+Ci sono volte in cui è desiderabile mostrare qualcosa che non sia già in forma
+di testo.  Ciò si può fare usando il tag ListOfLabels in combinazione del tag
+OGTSL_TranslateLabel:  i campi ln_Name non vengono più considerati stringhe ma
+semplici puntatori a dati, che sarà cura dell'applicazione trasformare in testo
+al momento della visualizzazione, con il meccanismo del call-back attraverso
+TranslateLabel.  Salvo nel caso precedente, tutte le stringhe vengono copiate,
+non referenziate.
+
+
+- OGTSL_TranslateLabel  struct Hook *
+
+Come già accennato, viene usato per trasformare in testo i dati puntati dal
+campo ln_Name dei nodi della lista dell'oggetto.  L'Hook viene chiamato con un
+messaggio che ha questa struttura:
+
+--------------------------------------------------------------------------------
+struct ogmsl_Translate
+{
+   struct ogmsl_Node *ogmsl_Node;
+   STRPTR             ogmsl_Text;
+   LONG               ogmsl_TextLength;
+};
+--------------------------------------------------------------------------------
+
+con i campo Text e TextLength inizializzati con NULL e -1.  L'applicazione deve
+ritornare il messaggio con il testo puntato da Text e se necessario la sua
+lunghezza in TextLength (se si lascia un valore negativo in questo campo, sarà
+l'oggetto a calcolare la lunghezza della stringa).
+
+All'interno  dell'Hook  si  possono  anche  cambiare  gli attributi della linea,
+manipolando alcuni campi della struttura ogmsl_Node:
+
+--------------------------------------------------------------------------------
+struct ogmsl_Node
+{
+   struct Node ogmsl_Data;
+   SHORT       ogmsl_Flags;
+};
+
+#define ogmsl_Flags_ReverseColors ...
+#define ogmsl_Flags_UsePriAsColor ...
+--------------------------------------------------------------------------------
+
+"ReverseColors" inverte il colore del testo e dello sfondo, in modo da rendere
+l'effetto della selezione.
+"UsePriAsColor" invece indica che il colore per il testo è contenuto nel campo
+ln_Pri del nodo.
+
+E' importante ricordare che l'oggetto, non appena incontra questo tag, libera
+ogni testo precedente.  Questo comporta che una lista di tag del tipo:
+
+--------------------------------------------------------------------------------
+   { OGTSL_ListOfLabels  , .... }
+   { OGTSL_TranslateLabel, ...  }
+--------------------------------------------------------------------------------
+
+ha come risultato finale una cosa diversa da:
+
+--------------------------------------------------------------------------------
+   { OGTSL_TranslateLabel, ...  }
+   { OGTSL_ListOfLabels  , .... }
+--------------------------------------------------------------------------------
+
+Naturalmente la seconda è quella corretta.
+
+
+- OGTSL_FontOfLabels struct TextFont *
+
+Il font da usare per i nomi.
+
+
+- OGTSL_LockList           BOOL
+- OGTSL_WorkLabelPos       LONG
+- OGTSL_InsertLabelBefore  STRPTR
+- OGTSL_InsertLabelAfter   STRPTR
+- OGTSL_DeleteLabel        STRPTR
+- OGTSL_ChangeLabel        STRPTR
+
+Svolgono le stesse funzioni dei loro quasi-omonimi della classe
+LISTVIEW_OGT_CLASS.
+
+
+- OGTSL_Freedom      ULONG
+
+Specifica il grado di libertà dei movimenti del testo.  Si può scorrere il testo
+sia orizzontalmente che verticalmente che in entrambe i modi.  Usa gli stessi
+dati di PGA_Freedom.  Il default è per un movimento bidimensionale.
+
+- OGTSL_VertPos
+- OGTSL_VertTotal
+- OGTSL_VertVisible  LONG
+
+Posizione, dimensione e visibilità verticale del testo.  Total e Visible vengono
+calcolati in modo automatico dall'oggetto, ma si può sempre modificare il valore
+di Total (non ha senso invece modificare il valore di Visible).  Questi tag sono
+pure emessi dall'oggetto per indicare un cambiamento nello stato dell'oggetto.
+
+
+- OGTSL_HoriPos
+- OGTSL_HoriTotal
+- OGTSL_HoriVisible  LONG
+
+Lo controparti orizzontali del tag precedenti.
+
+
+- OGTSL_UseNumPad    BOOL
+
+Se TRUE, oltre allo short-cut usuale, l'oggetto fa uso del tastierino numerico,
+secondo il significato dei tasti ("Home", "Page Up", etc.  etc.  ).
+
+
+- OGTSL_Spacing      ULONG
+
+Spazio extra fra le linee (default 0).
+
+
+- OGTSL_HitX                  LONG
+- OGTSL_HitY                  LONG
+- OGTSL_HitLabelNumFromList   LONG
+- OGTSL_HitLabelFromList      struct ogmsl_Node *
+
+Sono tag emessi dall'oggetto quando l'utente lo attiva.  HitX e HitY sono le
+coordinate del mouse relative all'oggetto, ma espresse in termini di caratteri,
+non di pixel, in pratica HitX = MouseX / FontXsize.  Gli altri sono un puntatore
+alla struttura ogmsl_Node della linea di testo selezionata e la sua posizione
+nella lista delle linee di testo.  Altro tag significativo è GA_Selected, che
+indica se il mouse è dentro TRUE o fuori FALSE dell'oggetto.  In risposta ad
+un'attivazione da parte dell'utente, l'oggetto emette sempre un messaggio, anche
+se il mouse non si trova sopra una linea di testo, ponendo però HitLabelFromList
+= NULL.
+
+
+
+- OGTSL_ExtraRendering  struct Hook *
+
+E' un Hook usato per aggiungere altro rendering oltre al semplice testo.  Se
+presente, viene chiamato due volte, prima di disegnare il testo (AfterText =
+FALSE) e dopo (AfterText = TRUE).  Il messaggio che gli viene passato è:
+
+--------------------------------------------------------------------------------
+struct ogmsl_ExtraRendering
+{
+   struct MinList    *ogmsl_Nodes;
+   struct ogmsl_Node *ogmsl_FirstNode;
+   struct RastPort   *ogmsl_RPort;
+   struct IBox        ogmsl_Domain;
+   ULONG              ogmsl_TextScrollLeft;
+   ULONG              ogmsl_TextScrollTop;
+   ULONG              ogmsl_TextSpacing;
+   BOOL               ogmsl_AfterText;
+};
+--------------------------------------------------------------------------------
+
+La finestra "fisica" dove effettuare il rendering è specificata per mezzo del
+rettangolo Domain, mentra la finestra "virtuale", con le stesse dimensioni, è
+invece posizionata a (TextScrollLeft, TextScrollTop).  E' quindi necessario fare
+una traslazione del sistema di coordinate prima di disegnare, mediante la
+trasformazione:
+
+--------------------------------------------------------------------------------
+X = x + ogmsl_Domain.Left - ogmsl_TextScrollLeft
+Y = y + ogmsl_Domain.Top  - ogmsl_TextScrollTop
+--------------------------------------------------------------------------------
+
+Non è necessario invece preoccuparsi del clipping, l'oggetto ha già installato
+una ClipRegion.  FirstNode è un puntatore alla prima linea di testo che si vede
+tramite Domain e TextSpacing è l'altezza in pixel di ogni linea.
+
+
+
+**MENU_OGT_CLASS**
+
+E siamo arrivati all'ultima classe, la classe dei menus.  Per rendere più
+agevole la sua gestione si è pensato di differenziarla dalle altre.  Gli oggetti
+istanziati da una classe normale sono del tutto indipendenti gli uni dagli
+altri, soprattutto nei dati, mentre qui creare un oggetto menu equivale a
+richiedere un handle per l'accesso alla struttura dei menu di una finestra,
+cosicchè è possibile creare più di un oggetto ma tutti si riferiscono agli
+stessi dati.  Anche il modo di definire un oggetto menu è differente:  i menu
+non sono altro che un albero e quindi è conveniente seguire questa topologia.
+Allora i nodi al primo livello saranno i menu, quelli al secondo gli item ed
+infine al terzo livello si troveranno gli eventuali subitem.  Per poi modificare
+un elemento non si farà altro che specificare il percorso per raggiungerlo lungo
+l'albero e poi i dati da modificare.
+
+- OGTMN_Menu         STRPTR
+- OGTMN_Item         STRPTR
+- OGTMN_ImageItem    struct Image *
+- OGTMN_SubItem      STRPTR
+- OGTMN_ImageSubItem struct Image *
+- OGTMN_BarLabel     void
+
+Permettono sia la creazione che la manutenzione della struttura dei menu.
+All'inizio ci si trova sulla radice dell'albero.  Specificando Menu, ci si
+sposta sul menu specificato, dopo averlo creato nel caso questo non esista.
+Stessa cosa per Item e SubItem.  Con BarLabel si aggiunge un semplice
+separatore, mentre gli Image dicono di usare immagini al posto di nomi.  Ad
+esempio, per creare una struttura come:
+
+--------------------------------------------------------------------------------
+Project        Edit
+ Load           Mark
+ Save           Copy
+ Save as        Cut
+ Export         Paste
+  ASCII
+  IFF
+ About
+ Quit
+--------------------------------------------------------------------------------
+
+si fornirà una taglist del tipo:
+
+--------------------------------------------------------------------------------
+ OGTMN_Menu   , "Project",
+ OGTMN_Item   , "Load"   ,
+ OGTMN_Item   , "Save"   ,
+ OGTMN_Item   , "Save as",
+ OGTMN_Item   , "Export" ,
+ OGTMN_SubItem, "ASCII"  ,
+ OGTMN_SubItem, "IFF"    ,
+ OGTMN_Item   , "About"  ,
+ OGTMN_Item   , "Quit"   ,
+ OGTMN_Menu   , "Edit"   ,
+ OGTMN_Item   , "Mark"   ,
+ OGTMN_Item   , "Copy"   ,
+ OGTMN_Item   , "Cut"    ,
+ OGTMN_Item   , "Paste"  ,
+ TAG_DONE
+--------------------------------------------------------------------------------
+
+
+- OGTMN_NewName      STRPTR
+
+Cambia il nome del nodo corrente. Ad esempio:
+
+--------------------------------------------------------------------------------
+ OGTMN_Menu   , "Project",
+ OGTMN_Item   , "Load"   ,
+ OGTMN_NewName, "Carica"
+ TAG_DONE
+--------------------------------------------------------------------------------
+
+cambia in "Carica" il nome dell'item "Load" nel menu "Project".
+
+
+- OGTMN_ShortCut     SHORT
+
+Short-cut per il nodo corrente.
+
+
+- GA_Selected           BOOL
+- OGTMN_MutualExclude   ULONG
+
+Controllano gli item di tipo bistabile.  Il primo indica lo stato, mentre il
+secondo indica quali sono gli item da resettare se l'item corrente viene
+selezionato.
+
+- OGTMN_ClearMenus   BOOL
+
+Se FALSE cancella tutti gli elementi attaccati al nodo corrente, mentre TRUE
+cancella pure il nodo corrente, spostandosi sul nodo padre.  Usato come primo
+tag cancella tutta la struttura dei menu.
+
+
+- OGTMN_MenuStrip    struct Menu *
+
+Ritorna il puntatore alla struttura dei menu.
+
+
+- OGTMN_MenuUp
+- OGTMN_MenuItemUp
+- OGTMN_MenuSubItemUp   ULONG
+
+Vengono emessi quando un elemento è stato selezionato.  Possono essere emessi
+tutti per indicare che è stato selezionato un subitem, solo i primi due per un
+item, o solo MenuUp per la selezione di un menu (possibile quando si preme HELP,
+per avere un aiuto).  Come per gli altri oggetti, se è presente anche il tag
+OGT_AskedHelp, si tratta di una richiesta di aiuto, non un'azione vera e
+propria.  Per gli item bistabile è emesso pure lo stato, per mezzo di
+GA_Selected.
+
+
+- OGTMN_Hook         struct Hook *
+
+Se l'item viene selezionato, oltre ad emettere il solito messaggio di tipo
+OM_UPDATE, l'oggetto chiama la funzione specificata con la stessa taglist come
+messaggio.
+
+
+
+*Descrizione delle funzioni*
+
+Come per la GadTools, le classi hanno bisogno di avere informazioni circa
+l'ambiente in cui devono disegnare gli oggetti.  Tutti questi dati sono
+contenuti in una struttura privata, che viene allocata tramite la chiamata alla
+funzione OGT_GetVisualInfoA (esiste anche una OGT_GetVisualInfo, con argomenti
+sullo stack).  Come già detto nella descrizione dei tag, la funzione ritorna un
+puntatore, che dovrà essere ripassato alla libreria per la creazione degli
+oggetti, per mezzo del tag OGT_VisualInfo.  Diversamente dalla GadTools, è la
+libreria che si occupa di aprire e chiudere la finestra.  I settaggi per la
+finestra sono passati proprio alla OGT_GetVisualInfoA, che li copierà e adatterà
+alle proprio esigenze.  Abbiamo detto "adatterà" e vediamo perchè.  Oltre ai tag
+per definire le caratteristiche della finestra, alla funzione si passano pure
+altri tag, alcuni già visti, come:
+
+--------------------------------------------------------------------------------
+     OGT_TextFont
+     OGT_ScaleLeft
+     OGT_ScaleTop
+     OGT_ScaleWidth
+     OGT_ScaleHeight
+     OGT_FontXscale
+     OGT_FontYscale
+     OGT_DomainXscale
+     OGT_DomainYscale
+--------------------------------------------------------------------------------
+
+che definiscono i parametri di progetto comuni a tutti gli oggetti.  Alla
+creazione un oggetto eredita da suo padre i parametri di progetto e se l'oggetto
+non ha per padre un altro oggetto, eredita quelli definiti per mezzo di questa
+funzione.  Ci sono altri tre tag, specifici di questa funzione:
+
+- OVI_GimmeZeroZero  BOOL
+
+Definisce la finestra come GimmeZeroZero, però la gestisce in modo diverso
+rispetto ad una normale finestra di questo tipo:  nessuna seconda RastPort, sono
+gli oggetti che si adattano.
+
+
+- OVI_AdaptWidthToFont
+- OVI_AdaptHeightToFont BOOL
+
+Questi tag giustificano l' "adatterà" usato prima.  Indicano che le dimensioni e
+eventualmente la posizione della finestra devono essere adattate al font usato,
+che può essere quello di default o uno specificato dall'applicazione, per mezzo
+di OGT_TextFont.  L'algoritmo è abbastanza "smart" per gestire situazioni in cui
+il font specificato sia troppo grande per permette alla finestra di stare nei
+limiti dello schermo, adottando, fra le altezze disponibili, la più grande che
+permetta di rispettare tali limiti, riconoscendo inoltre i font scalabili e
+creandoli della dimensione necessaria.  Se proprio non riesce a trovare niente
+con il font specificato, effettua un ultimo tentativo con il font topaz e poi
+esce con un errore.  Per adattarsi alle dimensioni del font usa i valori del
+font di progetto, specificati per mezzo di Font*Scale, o il default (vedi
+OGT_ResetAspect).
+
+L'adattamento funziona sia con finestre definite per mezzo delle dimensioni
+esterne che per mezzo delle dimensioni interne.  Da ultimo adatta pure i valori
+per le dimensioni massime e minime della finestra e quelli di un eventuale tag
+WA_Zoom, copiando la struttura, non modificando quella originale.
+
+
+Un'ultima cosa su questa funzione:  oltre ai tag si può passare un puntatore ad
+una MsgPort definita dall'applicazione, cosa utile se si usano molte finestre.
+La libreria non ha problemi se la MsgPort è usata per più finestre o anche per
+altri usi, l'importante è che si usi la funzione Wait per aspettare messaggi,
+non WaitPort.  Il motivo di questa stranezza è dovuto all'implementazione della
+libreria.  Ogni finestra gestita dalla libreria è anche una AppWindow, che
+necessita di una porta messaggi separata dove ricevere i dati dal Workbench,
+quindi i messaggi per la finestra arrivano da due sorgenti, l'input.device e il
+Workbench, su due MsgPort distinte.  Con WaitPort si aspetta solo su una porta
+per volta, di cui la necessità di aspettare un segnale piuttosto che un
+messaggio.
+
+Per creare gli oggetti non è necessaria una funzione speciale, come la
+CreateGadget della GadTools, basta la NewObject di Intuition.  Per motivi di
+praticità è conveniente però usare la OGT_BuildObjects della OGT.  E' poco più
+di una versione multipla di NewObject, in quanto crea più oggetti in una sola
+volta, il "poco più" è che apre anche la finestra, dopo aver creato gli oggetti.
+Può sembrare poco utile, ma creando più oggetti insieme permette una maggior
+semplicità nel definirli, evitando i problemi descritti nel seguito.
+
+Abbiamo già parlato del fatto che gli oggetti comunicano fra loro per mezzo di
+messaggi, che possono essere raggruppati dentro un altro oggetto, che possono
+essere allineati gli uni agli altri.  Tutto chiaro, fino al momento in cui si
+devono costruire gli oggetti, perchè quelle relazioni sono definite per mezzo di
+puntatori ad oggetti ed è quindi necessario costruire l'oggetto riferito prima
+di quello riferente.  Nella costruzione di una rete di oggetti i cicli sono
+molto frequenti e quindi il caso in cui A e B siano allo stesso tempo riferito e
+riferente l'uno dell'altro non permette di costruire la rete con solo chiamate a
+NewObject.
+
+Come si è visto non basta costruire gli oggetti, bisogna pure costruirli in una
+certa sequenza, che varia da caso a caso.  La OGT_BuildObjects permette di
+dimenticare totalmente tutti questi problemi.  Anzitutto divide nettamente la
+definizione dei rapporti geometrici fra gli oggetti da quella dei rapporti di
+comunicazione fra gli stessi.  Poi i rapporti, di ogni tipo, li descrive per
+mezzo di numeri e non di puntatori ("oggetto 1 allineato con oggetto 2",
+"oggetto 5 comunica con oggetto 3").  Vediamo nei dettagli come funziona.  Il
+prototype è:
+
+--------------------------------------------------------------------------------
+BOOL OGT_BuildObjects(
+      APTR                         vinfo       ,
+      struct OGT_ObjectSettings   *objectsarray,
+      struct OGT_ObjectLink       *linksarray  ,
+      Object                    ***storage     
+                     );
+
+struct OGT_ObjectSettings
+{
+   STRPTR          Class;
+   struct TagItem *Settings;
+   struct TagItem *PostSettings;
+   ULONG           Parent;
+   ULONG           Align;
+};
+
+struct OGT_ObjectLink
+{
+   ULONG           From;
+   ULONG           To;
+   struct TagItem *Map;
+   Tag            *Filter;
+};
+--------------------------------------------------------------------------------
+
+vinfo è il valore ritornato da OGT_GetVisualInfoA.
+
+objectsarray definisce i rapporti geometrici fra gli oggetti, e termina con
+Class = NULL.  Settings è un array di tag per NewObject, ma senza OGT_VisualInfo
+(Anche OGT_Parent) e OGT_AlignToObject non sono più necessari, anzi, proprio non
+sarebbero possibili}, che viene inserito dalla funzione.  PostSettings è invece
+un array di tag da mandare all'oggetto, per mezzo del metodo OM_SET, quando
+tutti gli oggetti e la rete di comunicazione sono attivi.  Parent è il numero
+dell'oggetto che è padre di questo oggetto, come Align indica l'oggetto da usare
+per l'allineamento (da specificare solo nel caso in cui l'oggetto da usare per
+l'allineamento non sia l'oggetto che precede quello corrente).  Usando come
+numero OGT_NOOBJECT si indica di non usare il campo.
+
+linksarray invece definisce la rete di comunicazione tra gli oggetti.  From e To
+sono i numeri degli oggetti da porre in comunicazione, Filter indica quali tag,
+nel dominio di From, devono andare a To e infine Map è la classica applicazione
+dal dominio di From a quello di To.  L'array finisce con From = OGT_NOOBJECT.
+Le liste di tag sono copiate, non referenziate.  Si ricorda infine che tutti gli
+oggetti comunicano di default con l'applicazione, cosa non sempre desiderabile,
+a cui si può ovviare con il seguente tagitem nella taglist Settings:
+
+--------------------------------------------------------------------------------
+  ...
+  { ICA_TARGET, NULL },
+  ...
+--------------------------------------------------------------------------------
+
+storage è un puntatore ad un puntatore ad oggetti.  In pratica la funzione
+alloca un array di puntatori ad oggetti e lo riempe con i puntatori agli oggetti
+allocati.  Sarà cura dell'applicazione liberare tale array con FreeVec.
+
+Per capire meglio la OGT_BuildObjects, è conveniente pensare al nostro problema
+come ad un grafo, in cui objectsarray definisce i nodi e linksarray definisce
+gli archi.
+
+Nel caso non si voglia usare OGT_BuildObjects per creare gli oggetti, per aprire
+la finestra o per aggiornarla, nel caso che si siano aggiunti degli oggetti a
+finestra già aperta, è necessario chiamare la funzione OGT_RefreshWindow.  Se
+invece si cancellano degli oggetti non c'è bisogno di alcun refresh, sono gli
+oggetti stessi che si cancellano.  Una volta attiva la finestra bisogna gestire
+i messaggi che arrivano da essa, per mezzo delle due funzioni OGT_GetMsg e
+OGT_ReplyMsg.  Gli unici messaggi IDCMP di interesse sono di tipo *CLOSEWINDOW e
+*IDCMPUPDATE.  Non è necessario specificare anche altri IDCMP nella definizione
+della finestra, per permettere alla libreria di funzionare.  A questo ci pensa
+essa stessa, aggiungendo i flag mancanti, ma comunicando all'applicazione solo
+quelli specificati.
+
+La funzione OGT_GetWindowPtr, come pare ovvio dal nome, ritorna il puntatore
+alla finestra relativa all'applicazione.  E' infatti cura della libreria
+l'apertura, la gestione e la chiusura della finestra.
+
+Infine la funzione OGT_FreeVisualInfo chiude tutto, oggetti e finestra,
+liberando le risorse.
+
+
+
+*Implementazione*
+
+Nel discutere degli oggetti, dei loro tag e delle funzioni che li controllano si
+sono già fatte delle digressioni su come le varie cose sono state implementate.
+Naturalmente non è possibile descrivere qui tutte le tecniche adottate, si
+farebbe molto prima a riportare il codice.  Si sono scelte così quelle ritenute
+più interessanti.
+
+
+**La struttura GadgetInfo**
+
+Tale struttura è di basilare importanza per tutti i BOOPSI di tipo gadget, in
+quanto viene usata in quasi tutti i metodi relativi ad essi.  E' a sola lettura
+e viene creata da Intuition.  Il problema è proprio questo, viene creata solo da
+Intuition e non esiste alcuna chiamata pubblica per crearla.  La OGT possiede
+tutta una serie di nuove funzioni per il controllo trasparente degli short-cut,
+dell'HELP, per la cancellazione degli oggetti, funzioni che, nello spirito di
+una programmazione orientata agli oggetti, sono state inglobate nelle classi
+stesse e a cui si accede per mezzo di nuovi metodi, alcuni dei quali pubblici.
+
+Il problema davanti al quale ci si è trovati consiste proprio nell'allocare in
+maniera legale una struttura GadgetInfo, e l'unico modo è per mezzo della
+funzione SetGadgetAttrs.  Tale funzione manda un metodo OM_SET ad un oggetto, ma
+a noi interessa mandare un generico metodo ad un oggetto.  La soluzione che si è
+adottata consiste nel creare una classe privata, a cui mandare un metodo OM_SET,
+con le indicazioni sul metodo reale che si vuole eseguire e il suo target.  In
+questo modo si sono potute sviluppare le classi senza il bisogno di strani
+kludge.
+
+
+
+**Accesso condiviso agli oggetti**
+
+Gli oggetti della OGT possono essere usati da più task contemporaneamente, senza
+problemi di coerenza, i BOOPSI no.  La questione potrebbe non apparire
+importante, dato che ben difficilmente qualcuno disegnerà un'applicazione che
+faccia uso di più task per controllare una stessa finestra, ma si dimentica che
+tutte le finestre sono sempre sotto il controllo di due task, quello
+dell'applicazione e l'input.device.  E come in tutte le situazioni con risorse
+condivise è necessario un qualche meccanismo di protezione contro accessi
+contemporanei.  Sotto 2.0 tale meccanismo non c'è e questo rende i normali
+BOOPSI non totalmente affidabili.  Se altri si sono cimentati nell'uso dei
+BOOPSI e non hanno riscontrato questi problemi, è solo per ragioni
+probabilistiche:  finchè si usano solo degli oggetti di tipo BUTTONGCLASS o
+STRGCLASS, molto semplici e quindi veloci, la probabilità che l'utente modifichi
+lo stato di un oggetto (cioè applichi un qualche metodo all'oggetto tramite la
+input.device) nello stesso istante in cui l'applicazione aggiorni lo stato dello
+stesso oggetto è quasi zero.  Noi ad esempio ce ne siamo accorti solo creando
+uno oggetto di tipo SHOWLIST_OGT_CLASS per mostrare un testo, con attaccati
+altri due oggetti di tipo SCROLLER_OGT_CLASS per permettere all'utente lo scroll
+e facendo in modo che l'applicazione muovesse continuamente il testo in
+orizzontale, con l'utente che cercava di interferire con il movimento agendo
+sugli scroller.  Con un tale sistema era molto facile provocare un blocco della
+macchina.
+
+La soluzione trovata consiste in un semaforo per ogni finestra, in modo che solo
+un task alla volta possa accedere agli oggetti attaccati ad essa.
+
+Purtroppo anche in Commodore se ne sono accorti e nella nuova revisione del
+sistema operativo, la 3.0, hanno adottato un meccanismo di protezione.
+Purtroppo, perchè la soluzione è peggiore del male:  il problema era impedire
+all'input.device e all'applicazione di accedere contemporaneamente agli oggetti
+e la soluzione trovata consiste nel bloccare l'input.device tutte le volte che
+un altro task accede ad un oggetto.  Bloccare l'input.device significa bloccare
+anche i movimenti del mouse ed impedire l'input da tastiera.  Non è affatto
+gradevole esteticamente, ancor meno dal punto di vista funzionale, dato che
+hanno impedito l'accesso contemporaneo ma hanno permesso situazioni di deadlock:
+se un oggetto, per qualche motivo, apre un classico requester 'Ok/Cancel',
+l'utente non potrà mai rispondere e la macchina rimarrà bloccata.  Per noi
+questo è inaccettabile e pregheremmo tutti di far presente la situazione alla
+Commodore.
+
+
+
+**Uso del DOS**
+
+Ci sono classi, come la SHOWLIST_OGT_CLASS, che devono usare il DOS per alcune
+loro funzioni.  Tutto è tranquillo se le istanze di quelle classi girano nel
+contesto di un processo, al quale è permesso l'uso del DOS, mentre ci sarà un
+sicuro crash se le stesse girano nel contesto dell'input.device, un task.  Per
+ovviare a questo inconveniente, le classi controllano in che contesto stanno
+operando e nel caso si tratti di un task lanciano un processo parallelo,
+sincrono o asincrono, e lasciando che sia esso a gestire il compito prescritto.
+C'è anche il caso della classe ASLREQ_OGT_CLASS, che crea un processo asincrono
+in ogni caso.  Questo permette lo svolgersi di altri compiti nel frattempo, uno
+dei quali potrebbe essere il ridimensionamento della finestra stessa (cosa non
+possibile se l'oggetto restasse in attesa, per il problema della condivisione
+delle risorse).  Se poi l'utente decide di cancellare il requester, non
+succederà assolutamente niente:  il processo si chiuderà senza generare alcun
+messaggio.
+
+
+
+**Lo stack**
+
+Questo è un problema molto importante in quanto i BOOPSI, per loro natura,
+consumano molto stack.  Mandare un metodo ad un oggetto si trasforma in realtà
+in una chiamata di funzione e se si pensa che gli oggetti possono reagire ad un
+metodo mandando a vari oggetti altri metodi, che gli oggetti possono essere
+raccolti in catene di lunghezza arbitraria, si capisce che il numero di funzioni
+chiamate può essere molto alto:  da prove fatte con il programma ViewFile
+(commentato nel seguito), che riunisce 4 oggetti complessi insieme, si è trovato
+che si possono avere anche 50 chiamate nidificate.  Imporre una dimensione
+minima per lo stack dell'applicazione in base alla configurazione
+dell'interfaccia non ha senso, perchè la stessa interfaccia deve anche girare
+sotto input.device, con uno stack di 4K.  Per fortuna il 2.0 ci è venuto
+incontro, per mezzo della funzione SwapStack.  Dato che i BOOPSI funzionano
+mandando tutti i metodi ad un'unica funzione (Dispatcher) per ogni classe, che
+poi si occupa di smistare i vari metodi alle funzioni di competenza, si è posto
+all'entrata di quella funzione un controllo su quanto stack sia ancora
+disponibile.  Se scende sotto i 2K, si alloca un nuovo stack di 10K e con
+SwapStack lo si installa.  Al ritorno dalla funzione si ripristina la situazione
+precedente e si libera ciò che si era eventualmente preso.  Uno stack dinamico,
+che risolve tutti i problemi, in qualunque contesto.
+
+
+
+*Esempio di utilizzo della libreria*
+
+Fino ad ora si è parlato in modo teorico dei singoli aspetti della OGT e ci
+sembra giunto il momento di raggruppare il tutto in un esempio pratico.
+
+Nell'esempio vogliamo far vedere:
+
+ + come si definiscono le caratteristiche geometriche degli oggetti.
+ + come si definisce la rete delle comunicazioni fra gli oggetti.
+ + cosa si deve fare per avere l'adattamento ai font.
+ + un oggetto che mostri testo.
+ + un oggetto che selezioni un file.
+ + un oggetto che risponda al rilascio delle icone.
+
+Si può vedere il risultato nella Fig.1.  Dalla figura si vede che servono anche
+due SCROLLER, inseriti nel bordo e iniziamo a definire proprio quelli:
+
+--------------------------------------------------------------------------------
+  struct TagItem Object1[] =
+  {
+     { GA_Immediate       , TRUE                },
+     { GA_FollowMouse     , TRUE                },
+     { GA_RelVerify       , TRUE                },
+     { ICA_TARGET         , NULL                },
+     { OGT_SetDimReference, OGT_X_Dim_Relative|
+                            OGT_Y_Dim_Relative  },
+     { GA_RightBorder     , TRUE                },
+     { PGA_Freedom        , FREEVERT            },
+     { TAG_DONE                                 },
+  };
+
+  struct TagItem Object2[] =
+  {
+     { GA_Immediate       , TRUE                },
+     { GA_FollowMouse     , TRUE                },
+     { GA_RelVerify       , TRUE                },
+     { ICA_TARGET         , NULL                },
+     { OGT_SetDimReference, OGT_X_Dim_Relative|
+                            OGT_Y_Dim_Relative  },
+     { GA_BottomBorder    , TRUE                },
+     { PGA_Freedom        , FREEHORIZ           },
+     { TAG_DONE                                 },
+  };
+--------------------------------------------------------------------------------
+
+Così si sono definite le loro caratteristiche geometriche:  devono essere nel
+bordo (*Border) e devono essere grandi come tutto il dominio in cui risiedono
+(OGT_SetDimReference).  Questi oggetti servono per spostare il testo e allora
+definiamo subito l'oggetto che mostra questo testo:
+
+--------------------------------------------------------------------------------
+  struct TagItem Object3[] =
+  {
+     { GA_Immediate       , TRUE                },
+     { GA_FollowMouse     , TRUE                },
+     { GA_RelVerify       , TRUE                },
+     { ICA_TARGET         , NULL                },
+     { OGT_SetDimReference, OGT_X_Dim_Relative|
+                            OGT_Y_Dim_Relative  },
+     { GA_Height          , -14                 },
+     { OGTSL_UseNumPad    , TRUE                },
+     { TAG_DONE                                 },
+  };
+--------------------------------------------------------------------------------
+
+Quest'oggetto è all'interno della finestra (nessun *Border) e dato che vogliamo
+anche un po' di spazio per un oggetto che seleziona il nome del file da
+visualizzare, lo facciamo grande come il dominio meno l'altezza dell'altro
+oggetto.  OGTSL_UseNumPad indica che vogliamo usare il tastierino numerico per
+lo scroll.  Manca un solo oggetto che definiamo con:
+
+--------------------------------------------------------------------------------
+  struct TagItem Object4[] =
+  {
+     { OGT_SetDimReference, OGT_X_Dim_Relative },
+     { OGT_SetPosHandle   , OGT_Y_Bottom       },
+     { GA_RelBottom       , 0                  },
+     { GA_Height          , 14                 },
+     { GA_Text            , "_F"               },
+     { OGT_TextPlacement  , OGT_Text_HIDE      },
+     { OGTAR_Type         , ASL_FileRequest    },
+     { OGTAR_ShowSelected , TRUE               },
+     { TAG_DONE                                }
+  };
+--------------------------------------------------------------------------------
+
+L'oggetto deve essere posizionato nella parte bassa della finestra e questo ci
+permette di mostrare un nuovo modo di gestire la posizione degli oggetti:  per
+mezzo del tag OGT_SetPosHandle si cambia il punto dell'oggetto che viene usato
+per posizionarlo.  Normalmente è l'angolo in alto a sinistra ma a noi conviene
+definire la sua posizione per mezzo di quello in basso a sinistra
+(OGT_Y_Bottom).  Poi abbiamo specificato GA_RelBottom per porre quell'angolo
+come relativo al bordo inferiore del dominio.  Tale combinazione ci consente di
+cambiare l'altezza dell'oggetto senza doverci preoccupare anche di ridefinire la
+sua posizione, come invece sarebbe necessario con i gadget normali.
+
+Di nuovo c'è pure il controllo dell'oggetto per mezzo di short-cut (GA_Text),
+che però è invisibile (OGT_TextPlacement).  Seguono due tag specifici per gli
+oggetti di questa classe, OGTAR_Type e OGTAR_ShowSelected, che creano un file
+requester con visualizzato il file selezionato.  Gli oggetti di questa classe
+sono di default sensibili al rilascio delle icone, quindi anche un'altra delle
+nostre specifiche è soddisfatta.
+
+Abbiamo definito le caratteristiche geometriche degli oggetti, ora rimango due
+punti, l'adattamento al font e la rete di comunicazioni, e riprendiamo proprio
+dalla rete, che viene schematizzata in Fig.2.
+
+Gli oggetti 1 e 2 emettono PGA_Top, mentre 3 capisce OGTSL_VertPort e
+OGTSL_HoriPos, quindi:
+
+--------------------------------------------------------------------------------
+  struct TagItem Map1to3[] =
+  {
+     { PGA_Top , OGTSL_VertPos },
+     { TAG_DONE                },
+  };
+
+  struct TagItem Map2to3[] =
+  {
+     { PGA_Top , OGTSL_HoriPos },
+     { TAG_DONE                },
+  };
+--------------------------------------------------------------------------------
+
+Il reciproco, dal 3 a 1-2, è un poco più complesso, in quanto non solo si deve
+riferire la posizione, ma anche le dimensioni totali e visibili:
+
+--------------------------------------------------------------------------------
+  struct TagItem Map3to1[] =
+  {
+     { OGTSL_VertPos    , PGA_Top     },
+     { OGTSL_VertTotal  , PGA_Total   },
+     { OGTSL_VertVisible, PGA_Visible },
+     { TAG_DONE                       },
+  };
+
+  Tag Filter3to1[] =
+  {
+     OGTSL_VertPos    ,
+     OGTSL_VertTotal  ,
+     OGTSL_VertVisible,
+     TAG_DONE
+  };
+
+
+  struct TagItem Map3to2[] =
+  {
+     { OGTSL_HoriPos    , PGA_Top     },
+     { OGTSL_HoriTotal  , PGA_Total   },
+     { OGTSL_HoriVisible, PGA_Visible },
+     { TAG_DONE                       },
+  };
+
+  Tag Filter3to2[] =
+  {
+     OGTSL_HoriPos    ,
+     OGTSL_HoriTotal  ,
+     OGTSL_HoriVisible,
+     TAG_DONE
+  };
+--------------------------------------------------------------------------------
+
+Qui si sono anche specificati dei filtri, cosa utile per diminuire il numero di
+messaggi da mandare fra i vari oggetti, in quanto l'oggetto 3 emette molti
+messaggi, che possono non interessare gli altri oggetti e per mezzo dei filtri
+solo i messaggi significativi per un oggetto verranno mandati ad esso.
+
+
+Ora gli oggetti 1,2 e 3 sono legati, qualunque cosa si faccia ad uno si riflette
+sugli altri.  Infine attacchiamo anche 4 a 3:
+
+--------------------------------------------------------------------------------
+  struct TagItem Map4to3[] =
+  {
+     { OGTAR_FullFileName, OGTSL_FileToLoadByName },
+     { TAG_DONE                                   },
+  };
+
+  Tag Filter4to3[] =
+  {
+     OGTAR_FullFileName,
+     TAG_DONE
+  };
+--------------------------------------------------------------------------------
+
+e con questo la definizione dell'interfaccia è completa, ma per costruire
+realmente l'interfaccia bisogna unire insieme tutte queste strutture:
+
+--------------------------------------------------------------------------------
+   struct OGT_ObjectSettings ListOfObjects[] =
+   {
+      { SCROLLER_OGT_CLASS, Object1,
+                            NULL   ,
+                            OGT_NOOBJECT,
+                            OGT_NOOBJECT },
+      { SCROLLER_OGT_CLASS, Object2,
+                            NULL   ,
+                            OGT_NOOBJECT,
+                            OGT_NOOBJECT },
+      { SHOWLIST_OGT_CLASS, Object3,
+                            NULL   ,
+                            OGT_NOOBJECT,
+                            OGT_NOOBJECT },
+      {   ASLREQ_OGT_CLASS, Object4,
+                            NULL   ,
+                            OGT_NOOBJECT,
+                            OGT_NOOBJECT },
+      { NULL                             },
+   };
+
+   struct OGT_ObjectLink ListOfLinks[] =
+   {
+      { 0, 2, Map1to3             },
+      { 1, 2, Map2to3             },
+      { 2, 0, Map3to1, Filter3to1 },
+      { 2, 1, Map3to2, Filter3to2 },
+      { 3, 2, Map4to3, Filter4to3 },
+      { OGT_NOOBJECT              },
+   };
+--------------------------------------------------------------------------------
+
+L'adattamento ai font è una cosa che si può definire indipendentemente dalla
+definizione dell'interfaccia:  al momento della chiamata a OGT_GetVisualInfo,
+oltre i tag per definire la finestra si passano i seguenti tag:
+
+--------------------------------------------------------------------------------
+  { OGT_TextFont         , myfont           },
+  { OVI_GimmeZeroZero    , TRUE             },
+  { OVI_AdaptWidthToFont , TRUE             },
+  { OVI_AdaptHeightToFont, TRUE             },
+  { OGT_ScaleLeft        , OGT_FontRelative },
+  { OGT_ScaleTop         , OGT_FontRelative },
+  { OGT_ScaleWidth       , OGT_FontRelative },
+  { OGT_ScaleHeight      , OGT_FontRelative },
+  { OGT_DomainXscale     , ~0               },
+  { OGT_DomainYscale     , ~0               },
+--------------------------------------------------------------------------------
+
+con cui si definiscono tutti gli oggetti come dimensionati relativamente al font
+usato e si chiede di ridimensionare la finestra, sempre in proporzione al font
+usato.
+
+Così come la si è definita l'interfaccia funziona, infatti specificando un file
+per mezzo della tastiera, del file-requester o di un'icona si provoca la sua
+lettura e la sua visualizzazione, e il tutto non richiede il minimo intervento
+da parte dell'applicazione, che deve solo attendere il messaggio CLOSEWINDOW!
+
+Ora però il rilascio di un'icona è riconosciuto solo dall'oggetto 4, molto
+piccolo rispetto al resto della finesta, e quindi sarebbe interessante fare in
+modo che anche rilasciando un'icona sull'oggetto 3 il file venga caricato.
+Vediamo come.
+
+La prima cosa è comandare l'oggetto 3 di riconoscere il rilascio, per mezzo di
+OGT_AppGadget = TRUE.  Poi bisogna mettere in comunicazione 3 con 4:
+
+--------------------------------------------------------------------------------
+  struct TagItem Map3to4[] =
+  {
+     { OGT_DroppedIcon, OGTAR_FullFileName },
+     { TAG_DONE                            }
+  };
+
+  Tag Filter3to4[] =
+  {
+     OGT_DroppedIcon,
+     TAG_DONE
+  };
+--------------------------------------------------------------------------------
+
+ma se lo proviamo ci accorgiamo che funziona a metà:  l'icona viene ricevuta da
+3, che la manda a 4 (ne siamo sicuri perchè viene aggiornato lo string gadget),
+ma poi non viene caricato il file.  Il motivo dell'insuccesso è semplice:  ci
+siamo imbattuti in un meccanismo di protezione automatica dei BOOPSI.  Se si
+guarda bene la Fig.2, fra 1 e 3, fra 2 e 3, fra 3 e 4, la rete di comunicazione
+forma dei cicli.  Per capire bene cosa significa, poniamoci nel caso in cui
+l'utente dia un "Page Down" da tastiera.  Allora 3 scrolla verso il basso e
+comunica ad 1 la nuova posizione, il quale, per tutta risposta, rimanda a 3 il
+messaggio di modifica della posizione.  Ora 3 riceve il messaggio, lo processa e
+lo rimanda a 1, così all'infinito.  Per fortuna i BOOPSI hanno un dispositivo
+automatico di riconoscimento dei cicli e se arriva un messaggio che chiude un
+ciclo, semplicemente lo rifiutano.  E' proprio quello che è successo a noi:  3
+manda a 4 un messaggio, 4 lo processa e ne manda un altro a 3, il quale
+individua un ciclo e lo scarta.
+
+Se vogliamo che l'interfaccia funzioni a dovere, bisogna far intervenire
+l'applicazione, rompendo il ciclo fra 3 e 4.  Invece di far comunicare 3 con 4,
+lo si fa comunicare con l'applicazione, togliendo il tag ICA_TARGET dalla sua
+definizione.  Quando arriva un messaggio, l'applicazione lo identifica come da 3
+e lo rimanda a 4, che poi lo rimbalza a 3, che questa volta lo processa
+correttamente.

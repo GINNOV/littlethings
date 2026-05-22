@@ -1,0 +1,4808 @@
+|**************************************************************************|
+|****************	   Shareware		 **************************|
+|**************** $50 registration fee requested **************************|
+|****************      (from authors only)       **************************|
+|**************************************************************************|
+
+		 Documentation for CClib.library V3.0
+
+    Copyright (C) 1989,1990 by Robert W. Albrecht, All Rights Reserved.
+
+       Software and Documentation written and distributed by:
+
+		       Robert W. Albrecht
+		       1457 Zion Way
+		       Ventura, CA 93003, USA
+
+
+  Special thanks to Paul Gittings for his contributions to the library.
+
+-------------------------------------------------------------------------
+
+   INTRODUCTION
+
+   This is an implementation of the standard C library, with a few extra
+   goodies thrown in, that is done as an Amiga loadable library. This
+   allows many applications to share the same library code, saving disk
+   space, and probably RAM if more than one application is running at a
+   time. The other advantage of the library is that as improvements are
+   made to it improvements are made to the programs that use it, and the
+   programmer doesn't even have to know about it. From the very early Amiga
+   days I have thought that this should have been done by CBM, but it
+   wasn't, and I was a little suprised that no one else had either. Well,
+   after I started I found out why it hadn't been done; It is real tricky
+   to make the C library re-entrant. Also it turns out that there are over
+   one hundred and forty functions in the library.
+
+
+-------------------------------------------------------------------------
+
+			CONTENTS
+
+   I) LICENSE
+      Transfer
+      Term
+      Robert W. Albrecht's rights
+      Disclaimer of other Warranties, and Liabilities
+
+   II) RUN-TIME IMPLEMENTATION OF CCLIB.LIBRARY
+
+   III) FUNCTION DOCUMENTATION
+
+      1) SUPPORT FUNCTIONS
+	    ClearSTDIO	      closeall	     cli_parse	    GetSTDIO
+	    offsetof	      scdir	     scdir_clean    SetSTDIO
+	    SetupSTDIO	      wb_parse
+
+      2) STREAM I/O FUNCTIONS
+	    agetc	       aputc	     clearerr	    fclose
+	    fdopen	       feof	     ferror	    fflush
+	    fgetc	       fgetpos	     fgets	    fopen
+	    fprintf	       fputc	     fputs	    fread
+	    freopen	       fscanf	     fseek	    fsetpos
+	    ftell	       fwrite	     getbuff	    getc
+	    getchar	       getchar	     gets	    getw
+	    mktemp	       printf	     putc	    putchar
+	    putchar	       puterr	     puts	    putw
+	    remove	       rename	     rewind	    scanf
+	    setbuf	       setvbuf	     sprintf	    sscanf
+	    stat	       stat_	     tmpfile	    tmpnam
+	    ungetc	       vfprintf      vprintf	    vsprintf
+
+      3) NON-STANDARD AND LOW-LEVEL I/O FUNCTIONS
+	    access	       close	     creat	    fileno
+	    isatty	       lseek	     open	    read
+	    unlink	       write
+
+      4) CHARACTER TEST MACROS
+	    isalpha	       isupper	     islower	    isdigit
+	    isxdigit	       isalnum	     isspace	    ispunct
+	    iscntrl	       isprint	     isgraph	    isascii
+	    toascii	       tolower	     _tolower	    toupper
+	    _toupper
+
+       5) STRING FUNCTIONS
+	    bcpl_strcpy        index	     rindex	    stpcrlf
+	    strcat	       strchr	     strcmp	    strcmpa
+	    strcpy	       strcspn	     strerror	    strlen
+	    strncat	       strncmp	     strncpy	    strnrv
+	    strpbrk	       strrchr	     strrv	    strspn
+	    strstr	       strtok	     strupr
+
+      6) MEMORY OPERATION FUNCTIONS
+	    bcpm	       bcopy	     bzero	    memccpy
+	    memchr	       memcpy	     memmove	    memset
+	    memswap
+
+	  7) FORMAT CONVERSION FUNCTIONS
+	    atof	       atoi	     atol	    ltoa
+	    stoa
+
+	  8) MEMORY ALLOCATION FUNCTIONS
+	    be_free	       calloc	     free freeall
+	    heap_alloc	       heap_free     malloc malloc_size
+	    realloc	       sbrk _alloc   _fre
+	    _freall
+
+	  9) LINKED LIST FUNCTIONS
+	    add_head	       add_tail      inst_node	    put_head
+	    put_tail	       remv_head     remv_list	    remv_node
+	    remv_tail	       r_node
+
+	  10) SORTING FUNCTIONS
+	    qsort	       quicksort     vquicksort
+
+	  11) TIME FUNCTIONS
+	    asctime	       clock	     ctime	    difftime
+	    gmtime	       localtime     mktime	    strftime
+	    time
+
+	  12) PROCESS CONTROL FUNCTIONS
+	    abort	       atexit	     ClearAbortFunc cliexec
+	    exec	       exit	     _exit getenv   kill
+	    kill_children      longjmp	     perror	    SetAbortFunc
+	    setenv	       setjmp	     signal_child   system
+	    wait_child	       wait_children wb_exec	    wbAexec
+
+   IV) STRUCTURE DOCUMENTATION
+      Child		 clock_t       FILE FileDesc
+      fpos_t		 union	       header (alias HEADER) LastFree
+      _list		 MemBlk        _node ptrdiff_t size_t
+      stat		 task_UserData time_t	      struct tm
+      va_list wchar_t
+
+   V) GLOBAL VARIABLES
+      blocksize 	 CCLibBase     DOSBase	      errno
+      exit_fcn		 _math	       MathIeeeDoubBasBase   stderr
+      stdin		 stdout        sys_errlist and sys_nerr SysBase
+      type		 WBenchMsg
+
+   VI) INSTALLATION
+
+   VII) THE NUKELIB PROGRAM
+
+   VIII) RELEASE INFORMATION
+
+   IX) NOTES ON LATTICE C
+
+   X) NOTES FOR PUBLIC DOMAIN COMPILERS
+
+   XI) REVISION HISTORY
+
+   XII) COPYRIGHTS AND TRADEMARKS
+
+   XIII) INDEX
+
+-------------------------------------------------------------------------
+
+``    I) LICENSE
+
+      Robert W. Albrecht is the exclusive owner of the enclosed Software
+      and Documentation. You are granted non-exclusive license to use the
+      Software and Documentation, but you are not the owner of them.
+	 Your right to use the Software and Documentation under this
+      agreement is the "License". "You" means the individual or legal
+      entity whose agent receives this software and accepts this Agreement.
+      "Software" means the computer program recorded on the floppy-disk or
+      other media, any update to them Robert W. Albrecht may later provide
+      you, and any back-up copies made. "Documentation" means the user
+      manual and other materials packaged with this Software.
+
+			    Transfer
+
+      You may transfer this software and documentation to other persons so
+      long as no fee is charged for it. This is "shareware" and a $50
+      registration fee is requested from authors of software that use the
+      library. Registered users will gets free updates of CClib.library as
+      they come out.
+
+			      Term
+
+      The license is effective for twenty (20) years from the time you
+      receive the software. You may terminate the license at any time by
+      returning all software and documentation.
+
+		    Robert W. Albrecht's rights.
+
+      The CClib.library Software and Documentation is protected by copyright,
+      trade secret and trademark laws. You may not disclose the Software or
+      Documentation to others, except as allowed in this license agreement,
+      or remove or alter ownership, trademark and copyright notices on
+      Documentation or Software. YOU MUST MAKE A GOOD FAITH EFFORT TO
+      PREVENT ANY UNAUTHORIZED USE, COPYING, OR DISCLOSURE OF THE SOFTWARE
+      OR DOCUMENTATION. THESE OBLIGATIONS WILL SURVIVE ANY TERMINATION OF
+      THE LICENSE AGREEMENT.
+
+	     Disclaimer of other Warranties, and Liabilities.
+
+      THERE ARE NO WARRANTIES, EITHER EXPRESSED OR IMPLIED, FOR THE
+      SOFTWARE OR DOCUMENTATION, WHICH ARE BOTH LICENSED TO YOU "AS IS".
+      ROBERT W. ALBRECHT EXPRESSLY DISCLAIMS ANY WARRANTY AS TO THE
+      PERFORMANCE OF THE SOFTWARE, OR DOCUMENTATION. HE ALSO DISCLAIMS ALL
+      OTHER WARRANTIES, INCLUDING (WITHOUT LIMITATION) IMPLIED WARRANTIES
+      OF MERCANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT
+      SHALL ANYONE INVOLVED IN THE CREATION, PRODUCTION, OR DISTRIBUTION,
+      OF THE SOFTWARE OR DOCUMENTATION BE LIABLE FOR ANY INDIRECT, SPECIAL,
+      INCEDENTAL, OR CONSEQUENTIAL DAMAGES RESULTING FROM THE USE OF THE
+      SOFTWARE OR DOCUMENTATION OR ARISING FROM ANY BREACH OF ANY WARRANTY.
+      Some states do not allow the exclusion or limitation of implied
+      warranties or liability for incedental or consequential damages so
+      the above exclusion and limitation may not apply to you. IN ADDITON
+      TO THE ABOVE LIMITATION, OUR LIABILITY TO YOU OR TO ANYONE ELSE FOR
+      DAMAGES SHALL NOT EXCEED THE LICENSE FEE PAID BY YOU FOR THE SOFTWARE
+      AND DOCUMENTATION.
+
+-------------------------------------------------------------------------
+
+`` II) RUN-TIME IMPLEMENTATION OF CCLIB.LIBRARY
+
+   The implementation of this library is designed to be as transparent as
+   possible to the C programmer, but is good to be aware of the actions that
+   are taken by the library accomplish this.
+
+   The actual code for most of the standard C library functions is in the
+   file CClib.library. This is a standard Amiga dynamic link library (DLL)
+   and can be shared by many application programs at the same time. For the
+   library to work correctly it must be installed in the LIBS: directory of
+   your system disk.
+
+   DLL's on the Amiga are accessed through the OpenLibrary and CloseLibrary
+   system (Exec) functions. When a library is opened with the OpenLibrary
+   function, and it is not yet loaded into RAM, Amiga DOS will go to the
+   LIBS: directory and load the library specified in the OpenLibrary
+   function. The OpenLibrary function will return the memory location of
+   the Library structure for the requested library, this is called the
+   Library Base Pointer (LBP). A table of jump instructions is located at a
+   negative offset to the LBP and the actual functions in the library are
+   accessed through this table. For each function in CClib.library there is
+   a connection routine in CClib.lib that will allow the application
+   program access to the functions in the library. The connection routines
+   contain two 68000 instructions: move the LBP into address register A6,
+   and jump to an entry in the table of jump instructions in the library.
+   The offset from the LBP that gets jumped to in the DLL depends on the
+   specific function in the library. All of these details are, of course,
+   transparent to the normal user of CClib.library. In order to make the
+   interface to the C language more efficient, the convention of placing
+   arguments to functions in registers was not used. Instead the
+   C calling convention of placing arguments on the stack in reverse
+   order was followed. This greatly simplified the connection routines
+   that get linked into your application.
+
+   To create an implementation of the C library that is as transparent as
+   possible to the application the _main function, or initialization code,
+   and the _exit function, had to be re-written such that the _main
+   function opens the C library and the _exit function closes the C
+   library. For this reason these routines could not be included in the
+   DLL. You must link with the special version of _main and _exit that are
+   contained in the file _main.o. The _main routine must also set up stdin,
+   stdout, and stderr for the application, as well as handle the Amiga
+   Workbench environment. Also if your program needs access to functions in
+   the DLL that use floating point numbers the _main routine must open the
+   IEEE floating point library and give a pointer to this library to
+   CClib.library. As you may know there are a number of different floating
+   point options on the Amiga.
+
+   In order to implement floating point operations in the DLL it was
+   necessacary to choose just one of the possible floating point options of
+   the Amiga. The one that is used by the DLL is the
+   MathIeeeDoubBas.library. The reason for using this one is that it is has
+   standard 64 bit IEEE floating point numbers and there is a version of
+   this library for the 68881 and 68882 MPUs. This means that users of
+   Aztec C will have to link with ma32.lib if there are any floating point
+   operations in the application. For users of the DLL who will have no
+   need for floating point numbers in their application the global short
+   integer _math can be declared with a value of zero and
+   MathIeeeDoubBas.library will not be loaded by the _main function. The
+   whole reason for the Ieee floating point number requirement comes from the
+   fact that the code for the DLL can be shared by many applications. There
+   are other restrictions as well that arise from this fact.
+
+   The C data type 'int' is a 32 bit quantity. The reason that ints are 32
+   bits instead of 16 bits is that the 68000 is a 32 bit processor and ints
+   are 32 bits in Lattice C. Aztec C has compiler switches that make ints
+   32 bits. The DLL really doesn't care what an int is inside your program
+   but it does care what the arguments passed to it's functions are. When
+   an argument is passed to a CClib function it must be promoted to an int
+   before being put on the stack, if it is smaller that an int. In Aztec C
+   the easest way to ensure this is to use the +L compiler switch. Another
+   way to handle this is to cast 8 and 16 bit arguments to a 32 bit
+   quantity.
+
+   Another issue that arises from the fact that the DLL code is shared, is
+   the problem of re-entrancy. CClib must not modify it's own data in such
+   a way it can't be re-used by another application, but some functions in
+   any C library implementation must, by nature, use global data. For
+   instance the heap memory manager must keep track of a list of free
+   memory blocks, and must do so in a way that is transparent to the
+   application. It would not due for all of the users of the DLL to share
+   the same free memory list. This means that the DLL must allocate a block
+   of memory for each of it's users and somehow know which block to use. It
+   turns out that there is a very simple way to implement this on the
+   Amiga. Every Amiga task must have a Task structure associated with it so
+   that Exec can keep track of it. To obtain a pointer to the currently
+   running task you call the Exec function FindTask with an argument of
+   zero. Also there is an unused member of the Task structure called
+   tc_UserData. When the DLL initializes your task it allocates some memory
+   from Exec and makes tc_UserData point to that memory. Whenever you call
+   a CClib function that requires the use of global data it acceses the
+   memory block attached to your task's tc_UserData field. For this reason
+   you had better not mess around with your task's tc_UserData member and
+   expect CClib to work.
+
+   The implementation of file handles and FILE pointers is quite different
+   than the implementation in other C libraries. Most C libraries keep a
+   static array of FILE structures and a static array of file handles. This
+   method is just fine for systems which have a built-in limit as to the
+   number of open files a single task can have, but it doesn't make any
+   sense for a computer that has no such limitation. For this reason the
+   FILE structures and file handles are implemented as linked lists in
+   the DLL. This improvement does have one side effect though, there are
+   no pre-opened file handles, for example 1 is not the low-level file handle
+   for stdio. Instead of hard-coding the low-level file handles you will
+   have to use the fileno() macro defined in stdio.h, for example:
+   write(fileno(stdin),"Hello World",11L);
+
+   Despite these restrictions due to the implementation of the library
+   it is hoped that you will find this library useful. Be sure to look at
+   the example programs for more information.
+
+-------------------------------------------------------------------------
+
+`` III) FUNCTION DOCUMENTATION
+
+   The documentation of the functions in the library follows this format:
+
+-------------------------------------------------------------------------
+Name:	       The name of the C function or macro    [MACRO] =
+						      this is a macro
+
+Synopsis:      The outline of the function with the type of the argumets
+	       and the return value.
+
+Function:      What actions are taken by this function.
+
+Arguments:     An explanation of the arguments to this function.
+
+Return:        The return value of the function, and what indicates an
+	       error condition. It is also indicated if any global variables
+	       are set by this function.
+
+See Also:      Other documentation that will lead to a further understanding
+	       of the function.
+-------------------------------------------------------------------------
+
+`` 1) SUPPORT FUNCTIONS
+
+   Some of these functions are not a normal part of a C library but are
+   used to support this implementation. Other functions are here because
+   they don't fit into another category.
+
+-------------------------------------------------------------------------
+Name:	    ClearSTDIO
+
+Synopsis:   void ClearSTDIO()
+
+Function:   Returns resources to the system that were used by a process
+	    using CClib.library. All files are closed and all allocated
+	    memory is freed. The task's tc_UserData field is re-set to
+	    it's original condition.
+
+See Also:   SetSTDIO, SetupSTDIO
+-------------------------------------------------------------------------
+Name:	    closeall
+
+Synopsis:   void closeall()
+
+Function:   Closes all opened stream files and low-level files.
+
+See Also:   ClearSTDIO
+-------------------------------------------------------------------------
+Name:	    cli_parse
+
+Synopsis:   void cli_parse(ud,alen,aptr)
+	    task_UserData *ud;
+	    long alen;
+	    char *aptr;
+
+Function:   Parses the command line arguments into argc and argv for
+	    the main routine. Called only when the program is executed
+	    from the CLI.
+
+Arguments:  ud - a pointer to the task's user data structure.
+	    alen - the length of the command string passed to the program
+	    from AmigaDOS.
+	    aptr - a pointer to the command string passed to the program from
+	    AmigaDOS.
+
+See Also:   wb_parse
+-------------------------------------------------------------------------
+Name:	    GetSTDIO
+
+Synopsis    task_UserData *GetSTDIO()
+
+Function:   Gets a pointer to the block of memory used for global data
+	    for this task. This function is written in assembly language
+	    because it is used quite frequently by the library. The
+	    task_UserData structure is defined in iolib.h.
+
+Return:     A pointer to the task's user data block, or NULL if it isn't
+	    initialized yet.
+
+See Also:   SetSTDIO
+-------------------------------------------------------------------------
+Name:	    offsetof				      MACRO
+
+Synopsis:   #include "stddef.h"
+	    size_t offsetof(Structure, Member)
+
+
+Function:   returns the offset in bytes of a member of a structure from
+	    the beginning of the structure.
+
+Arguments:  Structure - the name of a C data structure, for example
+	       "struct stat".
+	    Member - the name of a member of "Structure".
+
+Return:     the offset in bytes of the beginning of the member from the
+	    beginning of the structure.
+-------------------------------------------------------------------------
+Name:	    scdir
+
+Synopsis:   char *scdir(pattern)
+	    char *pattern;
+
+Function:   This function is used to support wild card file names using
+	    '*' and '?' where '*' matches any number of characters and
+	    '?' matches any single character. To use the function simply
+	    pass the pattern to the function and keep calling it until
+	    NULL is returned. For example:
+	    while( name = scdir("*.c") ) do_something(name);
+
+Warning:    This function allocates memory from the system that is not
+	    freed until it returns NULL. So that the memory gets returned
+	    to the system be sure keep calling it until NULL is returned,
+	    if you don't the memory will remain allocated until the program
+	    exits. Also the file pattern is irrelavent after the first call
+	    to scdir because it remembers the pattern in it's own memory.
+	    The memory used by scdir is pointed to by
+	    task_UserData.scdir_mem and if you wish to scan another directory
+	    before the current one is finished you can save this pointer,
+	    set it to NULL, scan the other directory, restore the pointer
+	    and then keep calling scdir until NULL is returned.
+
+Arguments:  pattern - the file name pattern.
+
+Return:     A pointer to a file name that matches the pattern or NULL.
+
+See Also:   scdir_clean
+-------------------------------------------------------------------------
+Name:	    scdir_clean
+
+Synopsis:   void scdir_clean(void)
+
+Function:   cleans up any mess made by scdir, allocted memory, open locks
+	    etc. It only needs to be called if scdir has never returned
+	    NULL and you want to use scdir again.
+
+See Also:   scdir
+-------------------------------------------------------------------------
+Name:	    SetSTDIO
+
+Synopsis:   long SetSTDIO()
+
+Function:   Allocates memory for a task_UserData structure and attaches
+	    it to the tc_UserData field of the task structure.
+
+Return:     Zero is returned if the operation was a success, otherwise
+	    one is returned.
+
+See Also:   SetupSTDIO
+-------------------------------------------------------------------------
+Name:	    SetupSTDIO
+
+Synopsis:   long SetupSTDIO(in, out, err, errno, bsize, ctyp, mathbase,
+			    alen, aptr, wbm, _xit)
+	    FILE **in, **out, **err;
+	    long *errno, *bsize;
+	    char **ctyp;
+	    void *mathbase;
+	    long alen;
+	    char *aptr;
+	    struct WBStartup *wbm;
+	    void (*_xit)();
+
+Function:   Gives the library access to global variables that reside in the
+	    application program and opens standard input, output and error
+	    streams and allocates the SetSTDIO to allocate the memory that
+	    is pointed to by task->tc_UserData. Standard I/O will not be
+	    opened for programs run from the workbench that have no
+	    "WINDOW" tooltype in their tool icon, or for programs run
+	    from the workbench by projects.
+
+Arguments:  in, out, err - memory locations where pointers to the standard
+	    stream files are stored in the application program.
+	    errno - the memory location where the global variable errno
+	    is stored.
+	    bsize - the memory location where the global variable blocksize
+	    is stored. blocksize is used by the heap manager to determine the
+	    minimum size of the memory blocks to be allocated from AmigaDOS.
+	    ctyp - this is the 'type' array that is used by the macros in
+	    ctype.h. The array is actually in the library and the
+	    application just gets a pointer to it.
+	    mathbase - The address of the MathIeeDoubBas library base pointer
+	    to be used for programs that use floating point numbers.
+	    alen - the length of the command line passed to the program by
+	    the CLI process, if run from the CLI.
+	    aptr - a pointer to the command line passed to the program by the
+	    CLI process, if run form the CLI.
+	    wbm - a pointer to the workbench startup message sent by the
+	    workbench program. This will be used by wb_parse to open a
+	    standard I/O window for the application if the Tooltype
+	    "WINDOW" is set.
+	    _xit - a pointer to the applications exit routine. This is set
+	    to be exit() by the _main routine.
+
+Return:     One is returned if all of the initialization was successful,
+	    otherwise zero is returned.
+-------------------------------------------------------------------------
+Name:	    wb_parse
+
+	    long wb_parse(ud, wbmsg)
+	    task_UserData *ud;
+	    struct WBStartup **wbmsg;
+
+Function:   Checks the Tool Types of the icon associated with this program.
+	    If the Tool Type WINDOW is found a window is opened using the
+	    Tool Type's value. This window is used for standard input and
+	    output. If the WINDOW tool type is not found then a program
+	    run from the workbench will have NO standard input, output, and
+	    error, and any attempt to write to these non-existant devices
+	    will almost certainly cause a system crash. A good example of
+	    a valid tool type would be:
+	    WINDOW=CON:20/10/300/100/WindowTitle
+
+Arguments:  ud - a pointer to the task's task_UserData structure.
+	    wbmsg - a pointer to the workbench startup message for this
+	    program.
+
+Return:     Non-zero is returned if a window was opened for standard
+	    input and output.
+
+See Also:   cli_parse
+-------------------------------------------------------------------------
+
+`` 2) STREAM I/O FUNCTIONS
+
+   These functions send and receive bytes from "streams". A stream is the
+   data type FILE that is defined in stdio.h. Some of the functions
+   are implemented as macros that are defined in stdio.h. Other functions
+   read and write to the standard pre-opened stream files "stdin", "stdout"
+   and "stderr". When an error occurs with one of these functions the
+   global variable errno will contain further information.
+
+-------------------------------------------------------------------------
+Name:	    agetc
+
+Synopsis:   short agetc(fp)
+	    FILE *fp;
+
+Function:   Gets one character from the designated stream. This function
+	    is here to support existing implementations of the C library
+	    and should not be used in new code.
+
+Arguments:  fp - a pointer to the stream file to receive input from.
+
+Return:     The character received as input, of EOF if the end of the
+	    file has been reached, or if an error has occured.
+
+See Also:   getc
+-------------------------------------------------------------------------
+Name:	    aputc
+
+Synopsis:   short aputc(c,fp)
+	    short c;
+	    FILE *fp;
+
+Function:   Writes one character to the specified stream. This function is
+	    here to support existing implementations of the C library and
+	    should not be used in new code.
+
+Arguments:  c - the character to write
+	    fp - the stream to write to.
+
+Return:     EOF is returned on error.
+
+See Also:   putc
+-------------------------------------------------------------------------
+Name:	    clearerr			     MACRO
+
+Synopsis:   #include "stdio.h"
+	    int clearerr(fp)
+	    FILE *fp;
+
+Function:   Clears end of file and error indicators in a stream.
+
+Arguments:  fp - pointer to a stream file
+
+See Also:   feof, ferror
+-------------------------------------------------------------------------
+Name:	    fclose
+
+Synopsis:   long fclose(fp)
+	    FILE *fp;
+
+Function:   Closes a stream file.
+
+Arguments:  fp - stream file to close
+
+Return:     Zero is returned if the operation was successful, otherwise
+	    non-zero is returned.
+
+See Also:   fopen
+-------------------------------------------------------------------------
+Name:	    fdopen
+
+Synopsis:   FILE *fdopen(fh,fmode)
+	    long fh;
+	    char *fmode;
+
+Function:   Creates a stream file from a low-level file handle.
+	    This function is here to support existing C library
+	    implementations and should not be used in new code.
+
+Arguments:  fh - the low-level file handle
+	    fmode - not used in this implementation, but used to contain the
+	    file open modes.
+
+Return:     A pointer to the new stream file is returned, otherwise NULL.
+
+See Also:   fopen
+-------------------------------------------------------------------------
+Name:	    feof			     MACRO
+
+Synopsis:   #include "stdio.h"
+	    int feof(fp)
+	    FILE *fp;
+
+Function:   Tests for end of file.
+
+Arguments:  fp - pointer to a stream file
+
+Return:     Retuns non-zero if the end of file bit is set in the stream.
+-------------------------------------------------------------------------
+Name:	    ferror			     MACRO
+
+Synopsis:   #include "stdio.h"
+	    int ferror(fp)
+	    FILE *fp;
+
+Function:   Tests for file error.
+
+Arguments:  fp - pointer to a stream file
+
+Return:     Returns non-zero if the error bit is set in the stream.
+-------------------------------------------------------------------------
+Name:	    fflush
+
+Synopsis:   long fflush(fp)
+	    FILE *fp;
+
+Function:   Causes buffered but unwritten data to be written on an output
+	    file. The operation is undefined for input streams.
+
+Arguments:  fp - the stream file to flush
+
+Return:     EOF is returned on a write error, otherwise zero is returned.
+-------------------------------------------------------------------------
+Name:	    fgetc			     MACRO
+
+Synopsis:   #include "stdio.h"
+	    int fgetc(fp)
+	    FILE *fp;
+
+Function:   Gets one character from the designated stream.
+
+Arguments:  fp - a pointer to the stream file to receive input from.
+
+Return:     The character received as input, of EOF if the end of the
+	    file has been reached, or if an error has occured.
+
+See Also:   getc
+
+-------------------------------------------------------------------------
+Name:	    fgetpos
+
+Synopsis:   #inlude "stdio.h"
+	    long fgetpos(fp,pos)
+	    FILE *fp;
+	    fpos_t *pos;
+
+Function:   Saves the current position in a stream file into a variable
+	    that is suitable for a call to fsetpos.
+
+Arguments:  fp - stream to get the current position of
+	    pos - current position is saved to this address. The data
+	    type fpos_t is defined in stdio.h.
+
+Return:     Non-zero is returned on an error.
+
+See Also:   fsetpos
+-------------------------------------------------------------------------
+Name:	    fgets
+
+Synopsis:   char *fgets(buf,n,fp)
+	    char *buf;
+	    long n;
+	    FILE *fp;
+
+Function:   Reads at most n-1 bytes from a stream file into an array,
+	    if a '\n' character is encountered it is included
+	    in the array which is then NULL terminated.
+
+Arguments:  buf - pointer to the array of bytes to store the input.
+	    n - maximum number of bytes to read.
+	    fp - pointer to the stream file to read from.
+
+Return:     buf is returned unless the end of file is reached or an error
+	    occurs in which case NULL is returned.
+
+See Also:   fputs
+-------------------------------------------------------------------------
+Name:	    fopen
+
+Synopsis:   FILE *fopen(fname,fmode)
+	    char *fname;
+	    char *fmode;
+
+Function:   Opens a sream file.
+
+Arguments:  fname - the name of the file to open. The file name may be up
+	    to FILENAME_MAX characters long.
+	    fmode - the mode to open the file in. Legal values include:
+	    "r"   open a file for reading
+	    "w"   create a file for writing, discard contents if any.
+	    "a"   append; open or create a file for writing at the end.
+	    "r+"  open a file for update, reading and writing)
+	    "w+"  create a file for update, discard previous contents
+	    "a+"  append; open or create a file for update, write at end
+	    Optionally a 'b' may be added to the open mode, but this is not
+	    needed for the Amiga system because there is no distinction
+	    between text files and binary files.
+
+Return:     A pointer to a stream file is returned, if an error occurs NULL
+	    is returned.
+
+See Also:   fclose
+-------------------------------------------------------------------------
+Name:	    fprintf
+
+Synopsis:   long fprintf(fp,fmt,...)
+	    FILE *fp;
+	    char *fmt;
+
+Function:   Sends formatted output to a stream file. For a more detailed
+	    description of formatted output please see printf.
+
+Arguments:  fp - pointer to the stream file
+	    fmt - format to print the arguments with.
+	    ... - a variable number of arguments that is specified in fmt.
+
+
+Return:     The number of characters written is returned.
+
+See Also:   printf
+-------------------------------------------------------------------------
+Name:	    fputc			     MACRO
+
+Synopsis:   #include "stdio.h"
+	    int fputc(c,fp)
+	    short c;
+	    FILE *fp;
+
+Function:   Writes one character to the specified stream.
+
+Arguments:  c - character to write
+	    fp - stream to write to
+
+Return:     EOF is returned on error
+
+See Also:   putc
+-------------------------------------------------------------------------
+Name:	    fputs
+
+Synopsis:   long fputs(string,fp)
+	    char *string;
+	    FILE *fp;
+
+Function:   Sends a string to the specified stream file.
+
+Arguments:  string - NULL terminated string to send.
+	    fp - stream to send the string to.
+
+Return:     EOF is returned on error, otherwise > 0.
+
+See Also:   fgets
+-------------------------------------------------------------------------
+Name:	    fread
+
+Synopsis:   #include "stdio.h"
+	    size_t fread(buf,size,nobj,fp)
+	    void *buf;
+	    size_t size;
+	    size_t nobj;
+	    FILE *fp;
+
+Function:   Reads from a stream into an array at most nobj elements of
+	    size. (number of bytes = size*nobj).
+
+Arguments:  buf - buffer to store the data
+	    size - size of each element to read
+	    nobj - number of elements to read
+	    fp - stream to read from
+
+Return:     The number of elements read, which may be less than nobj due
+	    to an end of file or error condition.
+
+See Also:   fwrite
+-------------------------------------------------------------------------
+Name:	    freopen
+
+Synopsis:   FILE *freopen(fname, fmode, oldfp)
+	    char *fname;
+	    char *fmode;
+	    FILE *oldfp;
+
+Function:   Re-opens a stream file with a different name and possibly a
+	    different file mode. It is most commonly used to re-direct
+	    stdin, stdout, and stderr.
+
+Arguments:  fname - name of the stream to open
+	    fmode - mode to open the stream in. See the description of
+	    fopen for the legal file modes.
+	    oldfp - the stream to re-open.
+
+Return:     A pointer to the new stream is returned if the operation was
+	    successful, otherwise NULL is returned.
+
+See Also:   fopen
+-------------------------------------------------------------------------
+Name:	    fscanf
+
+Synopsis:   long fscanf(fp,fmt,...);
+	    FILE *fp;
+	    char *fmt;
+
+Function:   Reads formatted input from a stream. For a further explanation
+	    of formatted input please see scanf.
+
+Arguments:  fp - stream to read the formatted input from.
+	    fmt - format of the arguments to be read.
+	    ... - a variable number of arguments that are specified in fmt.
+	    Each of the arguments to fscanf must be a pointer.
+
+Return:     The number of items converted and assigned is returned.
+
+See Also:   scanf
+-------------------------------------------------------------------------
+Name:	    fseek
+
+Synopsis:   #include "stdio.h"
+	    long fseek(fp,offset,origin)
+	    FILE *fp;
+	    long offset;
+	    long origin;
+
+Function:   Sets the position in a stream relative to "origin".
+
+Arguments:  fp - stream to set the position of.
+	    offset - offset in bytes to set the position to.
+	    origin - position realtive to which the new position will
+	    be set. The values for origin may be SEEK_SET (beginning),
+	    SEEK_CUR, (current position), SEEK_END (end of file).
+
+Return:     Non-zero is returned when an error occurs.
+
+See Also:   ftell, fsetpos
+-------------------------------------------------------------------------
+Name:	    fsetpos
+
+Synopsis:   long fsetpos(fp,pos)
+	    FILE *fp;
+	    fpos_t *pos;
+
+Function:   Positions a stream to a position saved by fgetpos.
+
+Arguments:  fp - stream to set the position of.
+	    pos - pointer to the position saved by fgetpos.
+
+Return:     Non-zero is returned when an error occurs.
+
+See Also:   fseek
+-------------------------------------------------------------------------
+Name:	    ftell
+
+Synopsis:   long ftell(fp)
+	    FILE *fp;
+
+Arguments:  fp - a stream file.
+
+Return:     Returns the current file position, of -1 if an error occurs.
+
+See Also:   fgetpos
+-------------------------------------------------------------------------
+Name:	    fwrite
+
+Synopsis:   #include "stdio.h"
+	    size_t fwrite(buf,size,nobj,fp)
+	    void *buf;
+	    size_t size, nobj;
+	    FILE *fp;
+
+Function:   Writes from an array to a stream, at most nobj elements of size
+	    size are written.
+
+Arguments:  buf -  array to write from.
+	    size - size of the elements to write.
+	    nobj - number of elements to write.
+	    fp - stream to write to.
+
+Return:     The number of element written is returned, which is less than
+	    nobj on error.
+
+See Also:   fread
+-------------------------------------------------------------------------
+Name:	    getbuff
+
+Synopsis:   void getbuff(fp)
+	    FILE *fp;
+
+Function:   Allocates the standard sized buffer for buffered input and
+	    output. The function must be called before any reading or
+	    writing is done. It will be called for you otherwise.
+
+Arguments:  fp - stream to attach the buffer to.
+
+See Also:   setvbuf
+-------------------------------------------------------------------------
+Name:	    getc
+
+Synopsis:   short getc(fp)
+	    FILE *fp;
+
+Function:   Gets one character from the designated stream.
+
+Arguments:  stream - a pointer to the stream file to receive input from.
+
+Return:     The character received as input, or EOF if the end of the
+	    file has been reached, or if an error has occured.
+
+See Also:   fgetc
+-------------------------------------------------------------------------
+Name:	    getchar			     MACRO
+
+Synopsis:   #include "stdio.h"
+	    short getchar();
+
+Function:   Reads one character from the standard input.
+
+Return:     The character received as input, of EOF if the end of the
+	    file has been reached, or if an error has occured.
+
+See Also:   getc
+-------------------------------------------------------------------------
+Name:	    getchar
+
+Synopsis:   #define NOMACROS
+	    #include stdio.h	 or	 short getchar();
+	    short getchar();
+
+Function:   Reads one character from the standard input.
+
+Return:     The character received as input, of EOF if the end of the
+	    file has been reached, or if an error has occured.
+
+See Also:   getc
+-------------------------------------------------------------------------
+Name:	    gets
+
+Synopsis:   char *gets(buf)
+	    char *buf;
+
+Function:   Reads a line from the standard input. The newline '\n' is
+	    replaced by a '\0'.
+
+Arguments:  buf - array of characters where the input line is stored.
+
+Return:     Returns buf unless end of file or an error occurs in which
+	    case NULL is returned.
+
+See Also:   puts,fputs
+-------------------------------------------------------------------------
+Name:	    getw
+
+Synopsis:   short getw(fp)
+	    FILE *fp;
+
+Function:   Reads a 16 bit word from the specified stream.
+
+Arguments:  fp - stream to read the word from.
+
+Return:     EOF is returned on error, otherwise the data read from the
+	    stream is returned.
+
+See Also:   putw
+-------------------------------------------------------------------------
+Name:	    mktemp
+
+Synopsis:   char *mktemp(buf)
+
+Function:   Creates a temporary file name from a template whose last few
+	    characters are 'X'. For example "BOBXXXX.XX".
+
+Arguments:  buf - template to create the file name from.
+
+Return:     buf is returned.
+
+See Also:   tmpnam
+-------------------------------------------------------------------------
+Name:	    printf
+
+Synopsis:   long printf(fmt,...)
+	    char *fmt;
+
+Function:   Writes formatted output to stdout under control of a
+	    format string.
+
+Arguments:  fmt - format of the following arguments.
+	    fmt contains two things, regular characters which are copied
+	    to stdout, and conversion specifications, each of which causes
+	    conversion and printing of the next argument in the variable
+	    argument list. Every conversion specification begins with a
+	    '%' character and ends with a converson character. Before the
+	    conversion character there may be one or more modifiers. Below
+	    is a list of the modifiers in the order that they must appear.
+
+	    1) Flags (in any order) [-+0 ]
+	       '-'   specifies left justification within the field
+	       '+'   specifies that the number will be printed with a sign
+	       ' '   space is printed if the first character isn't a sign
+	       '0'   for numeric conversions leading zeros will be printed
+		     instead of spaces
+	       '#'   is NOT supported yet
+	    2) Field Width [0123456789]
+	       The minimum field width that the converted argument will
+	       be printed in. The argument may be printed in a wider field
+	       if it would overflow the field. If the converted argument
+	       has fewer characters it will be padded with spaces, unless
+	       zeros are specified.
+	    3) A period, [.]
+	       seperating the field width from the precision.
+	    4) Precision number [0123456789]
+	       o  For character strings; specifies the maximum number of
+		  characters to be printed.
+	       o  For floating point numbers in e, E, or f formats the number
+		  of digits to be printed after the decimal point.
+	       o  For floating point numbers in the G or g formats the number
+		  of significant digits to be printed.
+	       o  For integral numbers the minimum number of digits to be
+		  printed, leading zeros will be added if the number isn't
+		  big enough to be prited.
+	    5) Argument length specifier [lh]
+	       If the length specifier is not present then the argument
+	       is taken to be the short ('h') form.
+		  For integral values:
+	       The length specifier is completly optional for integral values
+	       because all 16 bit arguments must be promoted to a 32 bit
+	       quantity before passing them to a CClib.library function.
+	       o  'l' prints the argument as long or unsigned long.
+	       o  'h' prints the argument as short or unsigned short.
+		  For floating point values:
+	       o  'h' prints the argument as a float.
+	       o  'l' prints the argument as a double.
+	       o  'L' is NOT supported due to the lack of the long double
+		  data type on the Amiga.
+
+			 Printf conversion characters.
+
+	       d, i	signed decimal number
+	       o	unsigned octal number
+	       x, X	unsigned hexadecimal number using lowercase letters
+			for 'x' and upper case letters for 'X'
+	       u	unsigned decimal number
+	       c	a single character
+	       s	a NULL terminated string
+	       f	float or double depending on the length specifier to
+			be printed with a fixed decimal point
+	       e, E	float or double depending on the length specifier to
+			be printed in exponential notation
+	       g, G	float or double depending on the length specifier to
+			be printed with whatever is shorter, 'e' of 'f'
+			format
+	       p	print as a pointer (this is really the same as
+			'x' format on the Amiga).
+	       n	this is NOT supported yet, but should put the
+			number of characters printed so far into the
+			argument.
+	       %	prints the '%' character
+
+Return:        The number of characters printed is returned or negative
+	       if an error occurs.
+
+See Also:      fprintf, vprintf, vfprintf
+-------------------------------------------------------------------------
+Name:	    putc
+
+Synopsis:   short putc(c,fp)
+	    short c;
+	    FILE *fp;
+
+Function:   Writes one byte to the specified stream.
+
+Arguments:  c - character to write
+	    fp - stream to write to
+
+Return:     EOF is returned on error
+
+See Also:   getc
+-------------------------------------------------------------------------
+Name:	    putchar			     MACRO
+
+Synopsis:   #include "stdio.h"
+	    short putchar(c)
+	    short c;
+
+Function:   Writes one character to the standard output.
+
+Arguments:  c - the character to write
+
+Return:     EOF is returned on error.
+
+See Also:   putc
+-------------------------------------------------------------------------
+Name:	    putchar
+
+Synopsis:   #defile NOMACROS 1
+	    #include "stdio.h"         or    short putchar(c)
+	    short putchar(c)                 short c;
+	    short c;
+
+Function:   Writes one character to the standard output.
+
+Arguments:  c - the character to write
+
+Return:     EOF is returned on error.
+
+See Also:   putc
+-------------------------------------------------------------------------
+Name:	    puterr
+
+Synopsis:   short puterr(c)
+	    short c;
+
+Function:   Writes one character to stderr.
+
+Arguments:  c - character to write
+
+Return:     EOF is returned on error
+
+See Also:   perror
+-------------------------------------------------------------------------
+Name:	    puts
+
+Synopsis:   short puts(str)
+	    char *str;
+
+Function:   Writes a NULL terminated string and a newline ('\n') character
+	    to stdout.
+
+Arguments:  str - string to write
+
+Return:     EOF is returned on error
+
+See Also:   gets
+-------------------------------------------------------------------------
+Name:	    putw
+
+Synopsis:   unsigned short putw(w,fp)
+	    unsigned short w;
+	    FILE *fp;
+
+Function:   Writes a 16 bit word to the specified stream.
+
+Arguments:  w - word to write
+	    fp - stream to write to
+
+Return:     w is returned when no error occurs, otherwise EOF.
+
+See Also:   putc
+-------------------------------------------------------------------------
+Name:	    remove			     MACRO
+
+Synopsis:   #include "stdio.h"
+	    long remove(fname)
+	    char *fname;
+
+Function:   Deletes a file.
+
+Arguments:  fname - name of the file to delete
+
+Return:     Non-zero is returned on error.
+
+See Also:   unlink
+-------------------------------------------------------------------------
+Name:	    rename
+
+Synopsis:   long rename(oldfname,newfname)
+	    char *oldfname;
+	    char *newfname;
+
+Function:   Renames a file. In AmigaDOS files may be renamed across
+	    directories but not across volumes. For example
+	    rename("RAM:t/junk","RAM:t/stuff/junk); would be legal but
+	    rename("RAM:t/junk","DF0:junk"); would not be.
+
+Arguments:  oldfname - name of the file to rename
+	    newfname - new name of the file
+
+Return:     Non-zero is returned on error.
+-------------------------------------------------------------------------
+Name:	    rewind			     MACRO
+
+Synopsis:   #include "stdio.h"
+	    void rewind(fp)
+	    FILE *fp;
+
+Function:   Sets the position of a stream file to the beginning of the file.
+
+Arguments:  fp - stream file pointer
+
+See Also:   fseek
+-------------------------------------------------------------------------
+Name:	    scanf
+
+Synopsis:   long scanf(fmt,...)
+	    char *fmt;
+
+Function:   Reads formatted input from stdin under control of a format
+	    string.
+
+Arguments:  fmt - format conversion string. The format sring is used to
+	    direct the interpretation of input. The format string may
+	    contain;
+	    1) whitespace (blanks and tabs) which is ignored.
+	    2) Characters other than '%' which are expected to match
+	       the next non-whitespace character of input.
+	    3) All conversion specifications are preceeded with a '%'
+	       character.
+	    4) Field Width [0123456789]
+	       Specifies the maximum width of a field.
+	    5) Argument length specifier [lh]
+	       The argument length specifier determines the size of the
+	       variable pointed to by the corresponding argument.
+	       If the length specifier is not present then the argument
+	       is taken to be the short ('h') form.
+		  For integral values:
+	       o  'l' converts the input as long or unsigned long.
+	       o  'h' converts the input as short or unsigned short.
+		  For floating point values:
+	       o  'h' converts the argument as a float.
+	       o  'l' converts the argument as a double.
+	       o  'L' is NOT supported due to the lack of the long double
+		  data type on the Amiga.
+	    6) Conversion specifications. Each conversion specification
+	       determines the conversion of the next field of input. Unless
+	       the suppression character '*' is used the input is stored in
+	       the next variable corresponding to the next argument. For
+	       each variable conversion continues until a whitespace
+	       character is encountered, or until the number of characters
+	       specified in the maximum field width of the conversion specification
+	       are encountered.
+
+			    Scanf conversion characters.
+
+	       d, i	signed decimal number
+	       o	unsigned octal number
+	       x	unsigned hexadecimal number
+	       u	unsigned decimal number
+	       c	input characters are placed in the indicated array
+			up to the number specified in the field width; the
+			default is 1, No '\0' os added. %c will convert the
+			next character INCLUDING whitespace. To read the
+			next non-whitespace character use %1s.
+	       s	a NULL terminated string
+	       e,f,g	float or double depending on the length specifier
+	       p	pointer (this is really the same as 'x' format
+			on the Amiga).
+	       n	this is NOT supported yet, but should put the
+			number of characters read so far into the
+			argument.
+	       [...]	Null terminated string. Matches the longest
+			non-empty string of input characters from the set
+			of characters between brackets. The string is NULL
+			terminated. []...] includes ']' in the set.
+	       [^...]	Null terminated string. Matches the longest
+			non-empty string of input characters NOT from the
+			set of characters between the brackets. The string
+			in NULL terminated. [^]...] excludes ']' from the
+			set.
+	       %	the '%' character, no assignment is made
+
+
+	    ...   - a variable number of arguments each of which is a pointer
+		  to a variable whose type is determined by the contents of
+		  the format string.
+
+
+Return:     The number of items converted and assigned (stored) is
+	    returned. If an error occurs or if end of file is reached
+	    EOF is returned.
+
+See Also:   fscanf, sscanf, printf
+-------------------------------------------------------------------------
+Name:	    setbuf			     MACRO
+
+Synopsis:   #include "stdio.h"
+	    void setbuf(fp,buf)
+	    FILE *fp;
+	    char *buf;
+
+Function:   If buf is NULL buffering for this stream is eliminated,
+	    otherwise setbuf is the same as setvbuf(fp,buf,_IOFBF,BUFSIZ).
+
+Arguments:  fp - stream file pointer
+	    buf - buffer to set
+
+See Also:   setvbuf
+-------------------------------------------------------------------------
+Name:	    setvbuf
+
+Synopsis:   #include "stdio.h"
+	    long setvbuf(fp,buf,mode,size)
+	    FILE *fp;
+	    char *buf;
+	    long mode;
+	    size_t size;
+
+Function:   Controls buffering for a stream by attaching an application
+	    specific buffer to the stream. If setvbuf is to be used then
+	    it must be called before any reading or writing is done on the
+	    stream.
+
+Arguments:  fp - stream to add the buffer to
+	    buf - buffer to be used, if the buf argument is NULL then a
+	    buffer will be allocated for the stream using malloc that is the
+	    size specified by the size argument.
+	    mode - the mode of buffering, _IOFBF causes full buffering,
+	    _IOLBF should cause the buffering of text lines but is the same
+	    as _IOFBF for this implementation, _IONBF causes no buffering.
+	    size - size of the buffer provided or to be allocated.
+
+Return:     Non-zero is returned for any error.
+
+See Also:   setbuf
+-------------------------------------------------------------------------
+Name:	    sprintf
+
+Synopsis:   long sprintf(buf,fmt,...)
+	    char *buf;
+	    char *fmt;
+
+Function:   Prints formatted output to a NULL terminated string under control
+	    of a format string.
+
+Arguments:  buf - buffer to write the output to
+	    fmt - format string, see the documentation for the printf
+	    function for a description of the format string.
+	    ... - variable number of arguments under control of the
+	    format string.
+
+Return:     The number of characters printed not including the NULL
+	    terminator.
+
+See Also:   printf
+-------------------------------------------------------------------------
+Name:	    sscanf
+
+Synopsis:   long sscanf(str,fmt,...)
+	    char *str, *fmt;
+
+Function:   Identical to scanf except that input characters are taken
+	    from the string str instead of stdin.
+
+Arguments:  str - string to take input from
+	    fmt - format string, see documentation for the scanf function
+	    ... - variable number of arguments each of which is a pointer
+
+Return:        The number of items converted and assigned (stored) is
+	       returned.
+
+See Also:   scanf
+-------------------------------------------------------------------------
+Name:	    stat
+
+Synopsis:   #include "stat.h"
+	    long stat(fname,stat)
+	    char *fname;
+	    struct stat *stat;
+
+Function:   Retrieves information about a file.
+
+Arguments:  fname - name of the file to get the information about
+	    stat - structure to hold the results. The stat structure
+	    is described below;
+
+	    struct stat
+	    {
+	    unsigned short st_attr;
+	    long st_mtime;
+	    long st_size;
+	    };
+
+	    st_attr - file attributes which may be or'd together including:
+	      This Bit On	   Means
+	       ST_DELETE   -  file is NOT deletable
+	       ST_EXECUTE  -  file is NOT executable
+	       ST_WRITE    -  file is NOT writeable
+	       ST_READ	   -  file is NOT readable
+	       ST_ARCHIVE  -  file HAS been archived
+	    A warning about attribute bits; It is unsafe to assume that
+	    the other bits available in the attribute field will be un-used.
+	    This is because they may be used in future implementations of
+	    the Amiga operating system. This has already happened in the
+	    case of the ST_ARCHIVE bit.
+
+	    st_mtime - File modification date, in seconds since Jan, 1 1978
+	    st_size - of file in bytes
+
+Return:     Non-zero is returned on error.
+
+See Also:   stat_
+-------------------------------------------------------------------------
+Name:	    stat_
+
+Synopsis:   #include "stat.h"
+	    long stat(fname,stat)
+	    char *fname;
+	    struct stat *stat;
+
+Function:   Retrieves information about a file. This is the newer version
+	    of the stat function. At version 3.0 of CClib.library the stat
+	    stucture was expanded by popular demand. The old version of
+	    stat() had to be left unchanged so that older programs will
+	    still work with newer versions of CClib.library. If you want
+	    you can modify stat.h by adding a macro that reads:
+	    #define stat(STAT) (_stat(STAT)) This will force the use of
+	    the newer stat function in a more transparent way.
+
+Arguments:  fname - name of the file to get the information about
+	    stat - structure to hold the results. The extended stat
+	    structure is described below;
+
+	    struct stat
+	    {
+	    unsigned short st_attr;
+	    long st_mtime;
+	    long st_size;
+
+	    unsigned short st_mode;
+	    short st_nlink;
+	    time_t st_atime;
+	    time_t st_ctime;
+	    };
+
+	    st_attr -  see stat()
+	    st_mtime - see stat()
+	    st_size -  see stat()
+	    st_mode - file type bits
+	       S_IFMT - all file type bits
+	       S_IFDIR - a directory
+	       S_IFCHR - character special (used for interactive streams)
+	       S_IFBLK - block special (not used yet)
+	       S_IFREG - a reqular file (not interactive)
+	    st_atime - currently the same as st_mtime
+	    st_ctime - currently the same as st_mtime
+
+Return:     Non-zero is returned on error.
+
+See Also:   stat
+-------------------------------------------------------------------------
+Name:	    tmpfile
+
+Synopsis:   FILE *tmpfile()
+
+Function:   Creates a temporary stream file.
+
+Return:     A pointer to the new stream file, or NULL if an error occurs.
+
+See Also:   tmpnam
+-------------------------------------------------------------------------
+Name:	    tmpnam
+
+Synopsis:   #include "stdio.h"
+	    char *tmpnam(buf)
+	    char *buf;
+
+Function:   Creates a string that is not the name of an existing file.
+
+Arguments:  buf - buffer to store the string in. This buffer must be at
+	    least L_tmpnam characters long. If this argument is NULL then
+	    a pointer to a "static" string is returned. This string may be
+	    over-written by other calls to cclib.library functions, so
+	    it is best to make a local copy of the string or immediatly
+	    open a file using this string.
+
+Return:     buf, or a pointer to the "static" area of memory used by tmpnam.
+	    The "static" memory is really located in the task_UserData
+	    structure for your process.
+
+See Also:   tmpfile
+-------------------------------------------------------------------------
+Name:	    ungetc
+
+Synopsis:   short ungetc(c,fp)
+	    short c;
+	    FILE *fp;
+
+Function:   Pushes a single character 'c' back into a stream file where it
+	    will be read as the next character of input. c may not be EOF.
+
+Arguments:  c - character to put
+	    fp - stream to push into
+
+Return:     The character puched back is returned, EOF on error.
+
+See Also:   getc
+-------------------------------------------------------------------------
+Name:	    vfprintf
+
+Synopsis:   long vfprintf(fp,fmt,arg)
+	    FILE *fp;
+	    char *fmt;
+	    va_list arg;
+
+Function:   Works the same as fprintf except that the variable argument
+	    list has been replaced by arg, which is a pointer into the
+	    stack. vfprintf is useful for implementing your own functions
+	    that use variable argument lists. Here is an example of a
+	    function you could write using a variable number of arguments:
+
+	    yourfprintf(fp,ymsg,fmt,arg)
+	    FILE *fp;
+	    char *ymsg, *fmt;
+	    int arg;
+	    {
+	    fprintf(fp,"Your Message: %s ",ymsg);
+	    vfprintf(fp,fmt,(va_list)&arg);
+	    }
+
+	    You could call this function like this:
+
+	    yourfprintf(fp,"Oops","%s %d","The number was",10);
+
+	    And the output would be:
+
+	    Your Message: Oops The number was 10
+
+Arguments:  fp - pointer to stream
+	    fmt - format string, see printf for a complete discription
+	    arg - pointer to the first argument in a variable argument list
+
+Return:     The number of characters written is returned, or negative
+	    if an error occured.
+
+See Also:   printf
+-------------------------------------------------------------------------
+Name:	    vprintf
+
+Synopsis:   long vprintf(fmt,arg)
+	    char *fmt;
+	    va_list arg;
+
+Function:   Works the same as printf except that the variable argument
+	    list has been replaced by arg, which is a pointer into the
+	    stack. See vfprintf to find out how to use arg.
+
+Arguments:  fmt - format string, see printf for a complete discription
+	    arg - pointer to the first argument in a variable argument list
+
+Return:     The number of characters written is returned, or negative
+	    if an error occured.
+
+See Also:   printf, vfprintf
+-------------------------------------------------------------------------
+Name:	    vsprintf
+
+Synopsis:   long vsprintf(buf,fmt,arg)
+	    char *buf, *fmt;
+	    va_list arg;
+
+Function:   Works the same as sprintf except that the variable argument
+	    list has been replaced by arg, which is a pointer into the
+	    stack. See vfprintf to find out how to use arg.
+
+Arguments:  fmt - format string, see printf for a complete discription
+	    arg - pointer to the first argument in a variable argument list
+
+Return:     The number of characters written is returned, or negative
+	    if an error occured.
+
+See Also:   printf, vfprintf
+-------------------------------------------------------------------------
+
+`` 3) NON-STANDARD AND LOW-LEVEL I/O FUNCTIONS
+
+      Many of these functions have become widely used and must be supported
+      even though they are not part of the ANSI standard C library.
+
+-------------------------------------------------------------------------
+Name:	    access
+
+Synopsis:   long access(fname,mode)
+	    char *fname;
+	    long mode;
+
+Function:   Tells if a file or directory can be used for a particular
+	    purpose.
+
+Arguments:  fname - the name of the file or directory.
+	    mode - asks for a certain type of access for the file or
+	    directory. mode = 4 (read access), 2 = write access, 1 =
+	    executable program, 0 = test for existance of the file.
+
+Return:     Zero is returned if the requested accecc rights can be granted,
+	    otherwise -1 is retuned.
+
+See Also:
+-------------------------------------------------------------------------
+Name:	    close
+
+Synopsis:   long close(fd)
+	    long fd;
+
+Function:   Closes the specified low-level file.
+
+Arguments:  fd - the descriptor for the low-level file obtained from
+	    open().
+
+Return:     Zero is returned if the close was successful, -1 is returned if
+	    an error occured.
+
+See Also:   open
+-------------------------------------------------------------------------
+Name:	    creat
+
+Synopsis:   long creat(fname,mode)
+	    char *fname;
+	    long mode;
+
+Function:   creats a new file called 'fname'. This function is equivalent to:
+	    open(fname, O_WRONLY|O_TRUNC|O_CREAT, mode).
+
+Arguments:  fname - the name of the file to create.
+
+Return:     A file descriptor that can be used by the low-level I/O
+	    functions is returned. If an error occurs -1 is returned.
+
+See Also:   open
+-------------------------------------------------------------------------
+Name:	    fileno			     MACRO
+
+Synopsis:   #include "stdio.h"
+	    long fileno(fp)
+	    FILE *fp;
+
+Function:   Gets the low-level file descriptor for a stream file. This is
+	    most commonly used on non-bufferd streams such as stdin, stdout
+	    and stderr.
+
+Arguments:  fp - stream file pointer
+
+Return:     The file descrioptor for the stream file is returned.
+-------------------------------------------------------------------------
+Name:	    isatty
+
+Synopsis:   long isatty(fd)
+	    long fd;
+
+Function:   Determines if a file descriptor is attached to an interactive
+	    device (virtual terminal) such as CON: or RAW:.
+
+Arguments:  fd - file descriptor returned from open etc.
+
+Return:     Non-zero is retuned if the file descriptor is an interactive
+	    device.
+-------------------------------------------------------------------------
+Name:	    lseek
+
+Synopsis:   long lseek(fd,offset,origin)
+	    long fd;
+	    long offset;
+	    unsigned long origin;
+
+Function:   Sets the current position in a file.
+
+Arguments:  fd - file descriptor for the file.
+	    offset - number of bytes to position the file from the origin.
+	    origin - 0 is beginning of the file, 1 is current position,
+	    2 is end of the file.
+
+Return:     The new position in the file, or -1 on error.
+
+See Also:   fseek
+-------------------------------------------------------------------------
+Name:	    open
+
+Synopsis:   #include "fcntl.h"
+	    long open(fname,flag,mode)
+	    char *fname;
+	    long flag;
+	    long mode;
+
+Function:   Opens a file for low-level I/O.
+
+Arguments:  fname - name of the file to open, may include path name as well.
+	    flag - specifies how the file is to be opened. The acceptable
+	    values (listed in fcntl.h) are listed below:
+
+	    O_RDONLY	-  open for reading only
+	    O_WRONLY	-  open for writing only
+	    O_RDWR	-  open for reading and writing
+	    O_CREAT	-  open the file after creating it
+	    O_TRUNC	-  remove contents then open the file
+	    O_EXCL	-  open fails if the file exists or'd with O_CREAT
+	    O_APPEND	-  open for appending only
+
+	    These flags may be or'd together to giver further meanings,
+	    for example:
+
+	    O_WRONLY|O_TRUNC - open for writing, nuke existing files
+	    O_RDWR|O_APPEND - open for reading and appending
+
+Return:     fd - descriptor for the open file. This file descriptor is
+	    really a pointer to a FileDesc structure that is defined in
+	    iolib.h. The FileDesc structure is linked into the OpenFiles
+	    list attached to the task_UserData structure for your process.
+	    This is so that the library can close all of your open files
+	    before your process is terminated.
+
+See Also:   close
+-------------------------------------------------------------------------
+Name:	    read
+
+Synopsis:   long read(fd,buf,size)
+	    long fd;
+	    char *buf;
+	    long size;
+
+Function:   Reads bytes from a low-level file.
+
+Arguments:  fd - file descriptor for the low-level file
+	    buf - buffer to store the data read from the file
+	    size - number of bytes to read
+
+Return:     The number of bytes read is returned, -1L is returned on error
+	    or end of file. errno will be set on an error.
+
+See Also:   open, write
+-------------------------------------------------------------------------
+Name:	    unlink
+
+Synopsis:   long unlink(fname)
+	    char *fname;
+
+Function:   Deletes a file.
+
+Arguments:  fname - name of the file to delete
+
+Return:     Non-zero is returned on error.
+
+See Also:   remove
+-------------------------------------------------------------------------
+Name:	    write
+
+Synopsis:   long write(fd,buf,n)
+	    long fd;
+	    char *buf;
+	    long n;
+
+Function:   Low-level write to a file.
+
+Arguments:  fd - low-level file descriptor obtained from open.
+	    buf - buffer to write
+	    n - number bytes to write
+
+Return:     The number of bytes actually written, which may be less than n,
+	    is returned. -1 is returned on error.
+
+See Also:   open, read
+-------------------------------------------------------------------------
+
+`` 4) CHARACTER TEST MACROS
+
+      All of these macros are defined in the file "ctype.h". They access a
+      static array that is located in cclib.library. At initialization time
+      a pointer is taken to this static array and that pointer is used for
+      the characher test macros. Because the array is located in shared
+      memory it would be unwise to change it's contents.
+
+-------------------------------------------------------------------------
+   #include "ctype.h"
+
+   All of the macros take a character or integral value as an argument and
+   "return" an int that is non-zero if the test passes.
+
+    isalpha(c)  -  a letter a-z or A-Z
+    isupper(c)  -  upper case letter A-Z
+    islower(c)  -  lower case letter a-z
+    isdigit(c)  -  decimal digit 0-9
+    isxdigit(c) -  hexadecimal digit 0-9 or a-f or A-F
+    isalnum(c)  -  alphanumeric 0-9 or a-z or A-Z
+    isspace(c)  -  space, formfeed, newline, carrige return, tab, v-tab
+    ispunct(c)  -  printing character except space letter or digit
+    iscntrl(c)  -  control character
+    isprint(c)  -  printable character spece included
+    isgraph(c)  -  printing character except space
+    isascii(c)  -  member of the ASCII character set
+
+    The following macros don't do character tests but character conversions
+    and are commonly found in ctype.h. The "return" values are the converted
+    character.
+
+    toascii(c)  -  converts a character to ASCII
+    tolower(c)  -  Function converts upper case letters to lower case.
+    _tolower(c) -  Macro converts upper case letters to lower case. The
+		   letter must be upper case to start with or the conversion
+		   will be incorrect. This is faster than tolower().
+    toupper(c)  -  Function converts lower case letters to upper case
+    _toupper(c) -  Macro converts lower case letters to upper case The
+		   letter must be lower case to start with of the conversion
+		   will be incorrect. This is faster than touooer().
+
+    NOTE: For versions 2.7 and above the toupper and tolower macros have
+	  been converted to functions.
+
+-------------------------------------------------------------------------
+
+`` 5) STRING FUNCTIONS
+
+      These functions operate on NULL terminated strings. A NULL terminated
+      string is an array of type char whose last element is '\0' (zero).
+
+-------------------------------------------------------------------------
+Name:	    bcpl_strcpy
+
+Synopsis:   char *bcpl_strcpy(str,bstr)
+	    char *str;
+	    BSTR *bstr;
+
+Function:   Copies a BCPL string into a C string. BCPL is the language that
+	    much of Amiga DOS was written in, and strings are different.
+	    First BCPL adresses only point to long words so... ptr =
+	    bcpl_ptr << 2 and BCPL strings start with a character count and
+	    then the number of characters in the string. This function is
+	    provided so that you can access strings in Amiga DOS data
+	    structures.
+
+Arguments:  str - pointer to the character array where the BCPL string is
+	    to be placed.
+	    bstr - BCPL pointer to a BCPL string.
+
+Return:     str is returned.
+-------------------------------------------------------------------------
+Name:	    index
+
+Synopsis:   char *index(str,c)
+	    char *str;
+	    short c;
+
+Function:   Finds the first occurence of a character in a string.
+
+Arguments:  str - string to search
+	    c - character to search for
+
+Return:     A pointer to the found character or NULL if the character
+	    was not found.
+
+See Also:   strchr
+-------------------------------------------------------------------------
+Name:	    rindex
+
+Synopsis:   char *rindex(str,c)
+	    char *str;
+	    short c;
+
+
+Function:   Finds the last occurence of a character in a string.
+
+Arguments:  str - string to search
+	    c - character to search for
+
+Return:     A pointer to the found character of NULL if the character
+	    was not found.
+
+See Also:   strrchr
+-------------------------------------------------------------------------
+Name:	    stpcrlf
+
+Synopsis:   char *stpcrlf(str)
+	    char *str;
+
+Function:   Strips carriage return of linefeed characters from a string.
+	    At the first encounter of a '\r' or '\n' character that
+	    character is replaced by a '\0' (NULL terminator.
+
+Arguments:  str - string to strip
+
+Return:     str is returned
+-------------------------------------------------------------------------
+Name:	    strcat
+
+Synopsis:   char *strcat(dest,source)
+	    char *dest;
+	    char *source;
+
+Function:   Concatenates two strings. The destination string is assumed to
+	    be long enough to hold the concatenation.
+
+Arguments:  dest - string to concatenate onto
+	    source - string to concatenate from
+
+Return:     dest, the result, is returned
+
+See Also:   strcpy
+-------------------------------------------------------------------------
+Name:	    strchr
+
+Synopsis:   char *strchr(str,c)
+	    char *str;
+	    short c;
+
+Function:   Finds the first occurence of a character in a string.
+
+Arguments:  str - string to search
+	    c - character to search for
+
+Return:     A pointer to the found character or NULL if the character
+	    was not found.
+-------------------------------------------------------------------------
+Name:	    strcmp
+
+Synopsis:   short strcmp(str1,str2)
+	    char *str1, *str2;
+
+Function:   Compares two strings.
+
+Arguments:  str1, str2 - strings to compare
+
+Return:     Negative is returned if str1 < str2, zero is returned if
+	    str1 == str2, positive is returned if str1 > str2.
+
+See Also:   strncmp, strcmpa
+-------------------------------------------------------------------------
+Name:	    strcmpa
+
+Synopsis:   short strcmpa(str1,str2)
+	    char *str1, *str2;
+
+Function:   Compares two strings, ignoring the case of the letters. For
+	    example: 0 == strcmpa("BOB","bob");
+
+Arguments:  str1, str2 - strings to compare
+
+Return:     Negative is returned if str1 < str2, zero is returned if
+	    str1 == str2, positive is returned if str1 > str2.
+
+See Also:   strncmp, strcmp
+-------------------------------------------------------------------------
+Name:	    strcpy
+
+Synopsis:   char *strcpy(dest,source)
+	    char *dest, *source;
+
+Function:   Copies one string onto another, the NULL terminator is copied.
+
+Arguments:  dest - destination string
+	    source - source string
+
+Return:     dest is returned
+
+See Also:   strncpy
+-------------------------------------------------------------------------
+Name:	    strcspn
+
+Synopsis:   long strcspn(str,reject)
+	    char *str, *reject;
+
+Function:   Finds the length of a string not consisting of characters
+	    in another string.
+
+Arguments:  str - string to search
+	    reject - string of characters that str is searched for
+
+Return:     Length of prefix of str consisting of characters NOT in reject.
+
+See Also:   strspn
+-------------------------------------------------------------------------
+Name:	    strerror
+
+Synopsis:   char *strerror(err)
+	    long err;
+
+Arguments:  err - an error code, usually the global variable errno
+
+Return:     Returns a string corresponding to an error number.
+-------------------------------------------------------------------------
+Name:	    strlen
+
+Synopsis:   long strlen(str)
+	    char *str;
+
+Function:   Computes the length of string.
+
+Arguments:  str - string to compute the length of
+
+Return:     Length of the string
+-------------------------------------------------------------------------
+Name:	    strncat
+
+Synopsis:   char *strncat(dest,source,n)
+	    char *dest, *source;
+	    long n;
+
+Function:   Concatenates up to n characters onto dest from source.
+
+Arguments:  dest - destination string
+	    source - source string
+	    n - maximum number of characters to concatenate
+
+Return:     dest is returned.
+
+See Also:   strcat
+-------------------------------------------------------------------------
+Name:	    strncmp
+
+Synopsis:   short strncmp(str1,str2,n)
+	    char *str1, *str2;
+	    long n;
+
+Function:   Compare at most n characters of two strings.
+
+Arguments:  str1, str2 - strings to compare
+	    n - maximum number of characters to copy
+
+Return:     Negative is returned if str1 < str2, zero is returned if
+	    str1 == str2, positive is returned if str1 > str2.
+
+See Also:   strcmpa, strcmp
+-------------------------------------------------------------------------
+Name:	    strncpy
+
+Synopsis:   char *strncpy(dest,source,n)
+	    char *dest, *source;
+	    long n;
+
+Function:   Copies at most n characters from source to dest. The string is
+	    NULL terminated.
+
+Arguments:  dest - destination string
+	    source - source string
+	    n - maximum number of characters to copy
+
+Return:     dest is returned
+
+See Also:   strcpy
+-------------------------------------------------------------------------
+Name:	    strnrv
+
+Synopsis:   char *strnrv(str,n)
+	    char *str;
+	    long n;
+
+Function:   Reverses at most n characters of a string. For example
+	    strnrv("Hello World",5) => "olleH World".
+
+Arguments:  str - string to reverse
+	    n - maximum length of the string to reverse
+
+Return:     str is returned
+
+See Also:   strrv
+-------------------------------------------------------------------------
+Name:	    strpbrk
+
+Synopsis:   char *strpbrk(str,search)
+	    char *str, *search;
+
+Function:   Searches for one of a string of characters in a string.
+
+Arguments:  str - string to search
+	    search - string of characters to search for
+
+Return:     A pointer to the first character of str belonging to search is
+	    returned, if no match is found NULL is returned.
+
+See Also:   strspn
+-------------------------------------------------------------------------
+Name:	    strrchr
+
+Synopsis:   char *strrchr(str,c)
+	    char *str;
+	    short c;
+
+Function:   Finds the last occurence of a character in a string.
+
+Arguments:  str - string to search
+	    c - string to search for
+
+Return:     A pointer to the last occurence of c in str is returned, if
+	    no match is found NULL is returned.
+
+See Also:   strchr
+-------------------------------------------------------------------------
+Name:	    strrv
+
+Synopsis:   char *strrv(str)
+	    char *str;
+
+Function:   Reverses the characters in a string. For example:
+	    strrv("Kasak") => "kasaK"
+
+Arguments:  str - string to reverse
+
+Return:     str is returned
+
+See Also:   strnrv
+-------------------------------------------------------------------------
+Name:	    strspn
+
+Synopsis:   long strspn(str,search)
+	    char *str, *search;
+
+Function:   Finds the length of a string consisting of characters
+	    in another string.
+
+Arguments:  str - string to search
+	    search - string of characters that str is searched for
+
+Return:     Length of prefix of str consisting of characters in search.
+
+See Also:   strcspn
+-------------------------------------------------------------------------
+Name:	    strstr
+
+Synopsis:   char *strstr(str,search)
+	    char *str;
+	    char *search;
+
+Function:   Finds a string in another string.
+
+Arguments:  str - string to search
+	    search - string to search for
+
+Return:     Returns a pointer to the string in str that matches search,
+	    if the string is not found NULL is returned.
+-------------------------------------------------------------------------
+Name:	    strtok
+
+Synopsis:   char *strtok(str,delim)
+	    char *str;
+	    char *delim;
+
+Function:   A sequence of calls splits the string str into tokens, each
+	    delimited by a character in delim. The first call to strtok
+	    must be with a non-NULL str argument. The argument is remembered
+	    by strtok for subsequent calls. The first token is found by
+	    searching for characters not in delim. When a token is found
+	    the character just after the token is over-written with a NULL
+	    and a pointer to the token is returned. Each subsequent call to
+	    strtok, indicated by a NULL str argument, will return the next
+	    token in str. NULL is returned when there are no further tokens
+	    in str.
+
+Arguments:  str - string to split tokens out of
+	    delim - string consisting of legal delimiters
+
+Return:     Tokens split out from the string are returned, or NULL when
+	    there are no more tokens in the string.
+-------------------------------------------------------------------------
+Name:	    strupr
+
+Synopsis:   char *strupr(str)
+	    char *str;
+
+Function:   Converts a string to all upper case letters.
+
+Arguments:  str - string to convert
+
+Return:     str is returned
+-------------------------------------------------------------------------
+
+``    6) MEMORY OPERATION FUNCTIONS
+
+	 These functiuons have become common for most implementations of
+	 the C library. They all operate on blocks of memory of a certain
+	 size instead of null terminated strings as with the string
+	 functions.
+
+-------------------------------------------------------------------------
+Name:	    bcpm
+
+Synopsis:   short bcmp(ptr1,ptr2,size)
+	    void *ptr1, *ptr2;
+	    long size;
+
+Function:   Compares two blocks of memory.
+
+Arguments:  ptr1, ptr2 - pointers to two blocks of memory to compare
+	    size - maximum number of bytes to compare
+
+Return:     Negative is returned if ptr1 > ptr2, zero is returned if
+	    ptr1 == ptr2, positive is returned if ptr1 < ptr2.
+
+See Also:   memcmp
+-------------------------------------------------------------------------
+Name:	    bcopy
+
+Synopsis:   void bcopy(source,dest,size)
+	    void *source, *dest;
+	    long size;
+
+Function:   Copies a block of memory making sure that overlapping blocks
+	    are copied correctly.
+
+Arguments:  source - pointer to source block of memory
+	    dest - pointer to destination block of memory
+	    size - number of bytes to copy
+
+See Also:   memcpy
+-------------------------------------------------------------------------
+Name:	    bzero
+
+Synopsis:   void bzero(ptr,size)
+	    void *ptr;
+	    long size;
+
+Function:   Sets a block of memory to all zeros.
+
+Arguments:  ptr - pointer to block of memory
+	    size - number of bytes to set to zero
+
+See Also:   memset
+-------------------------------------------------------------------------
+Name:	    memccpy
+
+Synopsis:   void *memccpy(dest,source,stop,size)
+	    void *dest, *source;
+	    unsigned short stop;
+	    long size;
+
+Function:   Copies a block of memory until a certain byte is reached or
+	    until the maximum number of bytes is reached.
+
+Arguments:  dest - pointer to block of memory to copy to
+	    source - pointer to block of memory to copy from
+	    stop - if the stop character is encoutered then the copy
+	    operation is stopped after the stop character is copied to
+	    the destination block.
+	    size - maximum number of bytes to copy
+
+Return:     If the stop character is encountered then a pointer to the
+	    next byte after the stop character is returned, if the stop
+	    character is never encounterd then NULL is returned.
+-------------------------------------------------------------------------
+Name:	    memchr
+
+Synopsis:   void *memchr(ptr,chr,size)
+	    void *ptr;
+	    unsigned short chr;
+	    long size;
+
+Function:   Finds a character in a block of memory.
+
+Arguments:  ptr - block of memory to search
+	    chr - character to search for
+	    size - maximum number of bytes to search
+
+Return:     If the character is found then a pointer to it is returned.
+	    NULL is returned if the character is not found.
+-------------------------------------------------------------------------
+Synopsis:   short memcmp(ptr1,ptr2,size)
+	    void *ptr1, *ptr2;
+	    long size;
+
+Function:   Compares two blocks of memory.
+
+Arguments:  ptr1, ptr2 - pointers to two blocks of memory to compare
+	    size - maximum number of bytes to compare
+
+Return:     Negative is returned if ptr1 < ptr2, zero is returned if
+	    ptr1 == ptr2, positive is returned if ptr1 > ptr2.
+-------------------------------------------------------------------------
+Name:	    memcpy
+
+Synopsis:   void *memcpy(dest,source,size)
+	    void *dest, *source;
+	    long size;
+
+Function:   Copies a block of memory making sure that overlapping blocks
+	    are copied correctly.
+
+Arguments:  dest - pointer to destination block of memory
+	    source - pointer to source block of memory
+	    size - number of bytes to copy
+
+Return:     dest is returned
+-------------------------------------------------------------------------
+Name:	    memmove			     MACRO
+
+Synopsis:   #include "string.h"
+	    void *memmove(dest,source,size)
+	    void *dest, *source;
+	    long size;
+
+Function:   Copies a block of memory making sure that overlapping blocks
+	    are copied correctly.
+
+Arguments:  dest - pointer to destination block of memory
+	    source - pointer to source block of memory
+	    size - number of bytes to copy
+
+Return:     dest is returned
+-------------------------------------------------------------------------
+Name:	    memset
+
+Synopsis:   void *memset(ptr,chr,long)
+	    void *ptr;
+	    unsigned short chr;
+	    long size;
+
+Function:   Sets all bytes in a block of memory to a single value.
+
+Arguments:  ptr - pointer to a block of memory
+	    chr - value to set each byte to
+	    size - number of bytes to set
+
+Return:     ptr is returned
+-------------------------------------------------------------------------
+Name:	    memswap
+
+Synopsis:   void memswap(ptr1,ptr2,size)
+	    void *ptr1, *ptr2;
+	    long size;
+
+Function:   Swaps the contents of two blocks of memory.
+
+Arguments:  ptr1, ptr2 - blocks of memory to swap
+	    size - number of bytes to swap
+-------------------------------------------------------------------------
+
+``    7) FORMAT CONVERSION FUNCTIONS
+
+	 Conversions from numbers to ASCII characters and back.
+
+-------------------------------------------------------------------------
+Name:	    atof
+
+Synopsis:   double atof(str)
+	    char *str;
+
+Function:   Converts a character string representing a floating point number
+	    into an IEEE format double precision floating pointer number.
+
+Arguments:  str - string to convert
+
+Return:     A floating point number, zero is returned if no conversion can
+	    be made.
+-------------------------------------------------------------------------
+Name:	    atoi
+
+Synopsis:   short atoi(str)
+	    char *str;
+
+Function:   Converts a string representing an integer into a short integer.
+
+Arguments:  str - string to convert
+
+Return:     A short integer, zero is returned if no conversion can be made.
+
+See Also:   stoa
+-------------------------------------------------------------------------
+Name:	    atol
+
+Synopsis:   long atol(str)
+	    char *str;
+
+Function:   Converts a string representing an integer into a long integer.
+
+Arguments:  str - string to convert
+
+Return:     A long integer, zero is returned if no conversion can be made.
+
+See Also:   ltoa
+-------------------------------------------------------------------------
+Name:	    ltoa
+
+Synopsis:   void ltoa(n,str)
+	    long n;
+	    char *str;
+
+Function:   Converts a long integer into a string.
+
+Arguments:  n - number to convert
+	    str - string to store the result in
+
+See Also:   atol
+-------------------------------------------------------------------------
+Name:	    stoa
+
+Synopsis:   void stoa(n,str)
+	    short n;
+	    char *str;
+
+Function:   Converts a short integer into a string.
+
+Arguments:  n - number to convert
+	    str - string to store the result in
+
+See Also:   atoi
+-------------------------------------------------------------------------
+
+``    8) MEMORY ALLOCATION FUNCTIONS
+
+      These functions include the standard heap managment functions as well
+      as lower level functions that were used to implement the heap
+      managment system. When the program that has allocated memory through
+      the functions in this section terminates execution through the exit
+      function all memory allocated from Amiga DOS is returned to the
+      system. All of the heap managment functions will try to allocate
+      memory first from FAST memory and then from CHIP RAM. To allocate
+      memory that is guaranteed to be CHIP RAM (accesable by the Amiga
+      custom chips) you can use the _alloc() function. The heap manager
+      operates by allocating blocks of memory from Amiga DOS in large
+      chunks, then it breaks these blocks up into the sizes that are
+      requested through heap memory allocation functions. The minimum size
+      of the blocks allocated from Amiga DOS can be controlled directly by
+      declaring a global long integer called blocksize and setting it to
+      some value. The default value for blocksize is 256 blocks (2K bytes),
+      in increments of 8 bytes. Each time the heap manager allocates memory
+      from Amiga DOS the blocksize variable is checked, which makes it
+      possible to change the variable on the fly.
+
+-------------------------------------------------------------------------
+Name:	    be_free
+
+Synopsis:   void be_free(ptr,size)
+	    void *ptr;
+	    long size;
+
+Function:   Makes static memory available to malloc and calloc. If you have
+	    static data structures that will NEVER be used as such again
+	    then you can add them to the free memory list with this
+	    function. If you write into the data pointed to by ptr after
+	    you have added that block to the free memory list then you
+	    stand a good chance of corrupting the free memory list. When the
+	    free memory list for your task is corrupt the system will
+	    when you try to access it with calloc, malloc, or free.
+
+
+Arguments:  ptr - pointer to the block of memory to give to the heap
+	    manager.
+	    size - size of the block of memory
+-------------------------------------------------------------------------
+Name:	    calloc
+
+Synopsis:   void *calloc(nobj,size)
+	    unsigned long nobj, size;
+
+Function:   Allocates and sets to zero an area of memory that is at least
+	    nobj * size bytes. This is a standard C function.
+
+Arguments:  nobj - number of objects to allocate
+	    size - size of each object to allocate
+
+Return:     A pointer to the newly allocated block of memory. NULL is
+	    returned when the block of memory can't be provided.
+
+See Also:   malloc
+-------------------------------------------------------------------------
+Name:	    free
+
+Synopsis:   free(ptr)
+	    void *ptr;
+
+Function:   Returns a block of memory allocated through malloc, calloc or
+	    realloc to the heap manager for future use. This is a
+	    standard C function.
+
+Arguments:  ptr - pointer to the block of memory obtained from malloc, calloc
+	    or realloc.
+
+See Also:   be_free
+-------------------------------------------------------------------------
+Name:	    freeall
+
+Synopsis:   freeall()
+
+Function:   Returns ALL of the memory allocated by any of the functions
+	    in this section to the system and re-initializes the free
+	    memory list for the heap manager. This will also free all of
+	    the memory used by any files that may be open. Normally this
+	    function is only called when the program has called the exit
+	    function.
+-------------------------------------------------------------------------
+Name:	    heap_alloc
+
+Synopsis:   void *heap_alloc(size)
+	    long size;
+
+Function:   Allocates memory from the heap manager. This function is
+	    used internally to implement malloc and calloc.
+
+Arguments:  size - size in bytes of the requested block of memory
+
+Return:     A pointer to the newly allocated block of memory. NULL is
+	    returned when the block of memory can't be provided.
+
+See Also:   malloc, calloc
+-------------------------------------------------------------------------
+Name:	    heap_free
+
+Synopsis:   void heap_free(ptr)
+	    void *ptr;
+
+Function:   Returns memory to the free list of the heap manager. This
+	    function is used internally to implement free().
+
+Arguments:  ptr - pointer to a block of memory obtained from heap_alloc.
+
+See Also:   free
+-------------------------------------------------------------------------
+Name:	    malloc
+
+Synopsis:   void *malloc(size)
+	    unsigned long size;
+
+Function:   Allocates memory from the heap manager that is at least
+	    "size" bytes. This is a standard C function.
+
+Arguments:  size - size of the requested block of memory
+
+Return:     A pointer to the newly allocated block of memory. NULL is
+	    returned when the block of memory can't be provided.
+
+See Also:   free
+-------------------------------------------------------------------------
+Name:	    malloc_size
+
+Synopsis:   unsigned long malloc_size(ptr)
+	    void *ptr;
+
+Function:   Computes the number of bytes in an allocated block of memory
+	    that was obtained from malloc, calloc, realloc, or heap_alloc.
+	    The size is rounded up to the nearest eight bytes.
+
+Arguments:  ptr - a pointer to the allocated block of memory.
+
+Return:     The size of the allocated block is returned.
+-------------------------------------------------------------------------
+Name:	    realloc
+
+Synopsis:   void *realloc(ptr,newsize)
+	    void *ptr;
+	    unsigned long newsize;
+
+Function:   Changes the size of a block block of memory. The contents will
+	    be un-changed up to the minimum of the old and new sizes. The
+	    block of memory can be freed using free() prior to a call to
+	    realloc so long as no intervening calls to any of the heap
+	    managment functions is made. In order to make enough space
+	    for a larger block of memory is may be necessary to move the
+	    block. This is a standard C function.
+
+Arguments:  ptr - pointer to the block of memory to change the size of
+
+Return:     A pointer to the new block of memory is returned or NULL if the
+	    request can't be satisfied.
+
+See Also:   free
+-------------------------------------------------------------------------
+Name:	    sbrk
+
+Synopsis:   void *sbrk(size)
+	    unsigned long size;
+
+Function:   Allocates memory through Amiga DOS and attaches the block
+	    of memory to the allocated memory list for the current task.
+	    This is a lower level function than the heap managment
+	    functions. The sbrk function has become a standard part of many
+	    C libraries.
+
+Arguments:  size - size in bytes of the requested block of memory
+
+Return:     A pointer to the newly allocated block of memory is returned, or
+	    -1L if the request can't be satisfied.
+-------------------------------------------------------------------------
+Name:	    _alloc
+
+Synopsis:   void _alloc(ud,size,requirements)
+	    task_UserData *ud;
+	    long size;
+	    long requirements;
+
+Function:   Allocates memory from Amiga DOS and links it into the allocated
+	    memory list for your task. This is the lowest level of memory
+	    allocation available through this library and is used to
+	    implement all of the other memory allocation functions. The
+	    task_UserData pointer can be obtained by a call to GetSTDIO.
+
+Arguments:  ud - pointer to the task_UserData structure for your task
+	    size - size in bytes of the memory to be allocated
+	    requirements - memory requirements as described in
+	    exec/memory.h, 0L being just any old block of memory.
+	    The requirements are used directly in a call to the Amiga
+	    AllocMem function.
+
+Return:     A pointer to the new block of memory is returned or NULL if the
+	    request can't be satisfied.
+
+See Also:   _fre
+-------------------------------------------------------------------------
+Name:	    _fre
+
+Synopsis:   void _fre(ud,ptr)
+	    task_UserData *ud;
+	    void *ptr;
+
+Function:   Frees a block of memory allocated by _alloc or sbrk.
+	    The task_UserData pointer can be obtained by a call to GetSTDIO.
+
+Arguments:  ud - pointer to the task_UserData structure for your task
+	    ptr - pointer to a block of memory obtained from _alloc or sbrk.
+-------------------------------------------------------------------------
+Name:	    _freall
+
+Synopsis:   void _freall(ud)
+	    task_UserData *ud;
+
+Function:   Returns all memory allocated by through any of the functions
+	    in this section to Amiga DOS, but does NOT re-initialize the
+	    free list used by the heap manager. The task_UserData pointer
+	    can be obtained by a call to GetSTDIO.
+
+Arguments:  ud - pointer to the task_UserData structure for your task
+-------------------------------------------------------------------------
+
+``    9) LINKED LIST FUNCTIONS
+
+      Linked lists are used internally in CClib.library and since the
+      linked list functions are already in the library they were made
+      public. The structure definitions for linked lists and nodes are in
+      stdlist.h.
+
+-------------------------------------------------------------------------
+Name:	    add_head
+
+Synopsis:   void *add_head(l,size)
+	    _list *l;
+	    long size;
+
+Function:   Allocates and clears to zero memory from the heap manager for
+	    a _node structure plus "size" bytes. The node is then added
+	    to the beginning of the linked list.
+
+Arguments:  l - linked list to add to
+	    size - size in bytes of the data for this node
+
+Return:     A pointer to the data for this node is returned, or NULL if
+	    there is not enough memory.
+
+See Also:   remv_node
+-------------------------------------------------------------------------
+Name:	    add_tail
+
+Synopsis:   void *add_tail(l,size)
+	    _list *l;
+	    long size;
+
+Function:   Allocates and clears to zero memory from the heap manager for
+	    a _node structure plus "size" bytes. The node is then added
+	    to the end of the linked list.
+
+Arguments:  l - linked list to add to
+	    size - size in bytes of the data for this node
+
+Return:     A pointer to the data for this node is returned, or NULL if
+	    there is not enough memory.
+
+See Also:   remv_node
+-------------------------------------------------------------------------
+Name:	    inst_node
+
+Synopsis:   _node *inst_node(size)
+	    long size;
+
+Function:   Allocates and clears to zero memory from the heap manager for
+	    a _node structure plus "size" bytes. This function is used
+	    by all of the functions that create a new node.
+
+Arguments:  size - size in bytes of the data for this node
+
+Return:     A pointer to the new node is returned, or NULL if there isn't
+	    enough memory.
+-------------------------------------------------------------------------
+Name:	    put_head
+
+Synopsis:   void put_head(l,n)
+	    _list *l;
+	    _node *n;
+
+Function:   Adds a node at the beginning of a linked list.
+
+Arguments:  l - linked list to add to
+	    n - node to add to the linked list
+
+See Also:   remv_head
+-------------------------------------------------------------------------
+Name:	    put_tail
+
+Synopsis:   void put_tail(l,n)
+	    _list *l;
+	    _node *n;
+
+Function:   Adds a node at the end of a linked list.
+
+Arguments:  l - linked list to add to
+	    n - node to add to the linked list
+
+See Also:   remv_tail
+-------------------------------------------------------------------------
+Name:	    remv_head
+
+Synopsis:   void *remv_head(l,data)
+	    _list *l;
+	    void **data;
+
+Function:   Removes a node from the beginning of a linked list and gives
+	    a pointer to the data for that node. The memory for the
+	    node is not freed.
+
+Arguments:  l - linked list to remove from
+	    data - pointer to a memory location where a pointer to the
+	    data for the node will be stored after removing the node
+	    from the beginning of the list
+
+Return:     A pointer to the block of memory that was allocated for the
+	    node and its data is returned, or NULL if there are no more
+	    nodes on the list. This memory should be freed using the
+	    free function. For example:
+	    _list *l;
+	    char *data, *ptr;
+	    .
+	    .
+	    .
+	    if( ptr = remv_head(l,&data) )
+	       free(ptr)
+
+See Also:   add_head
+-------------------------------------------------------------------------
+Name:	    remv_list
+
+Synopsis:   void remv_list(l)
+	    _list *l;
+
+Function:   Frees all memory associated with a linked list by calling
+	    free for every node in the list and then for the list
+	    header.
+
+Arguments:  l - linked list to free, it is assumed that all of the nodes
+	    on the list and the list header itself are allocated using
+	    heap_alloc, malloc, calloc, or realloc.
+-------------------------------------------------------------------------
+Name:	    remv_node
+
+Synopsis:   void *remv_node(l,data)
+	    _list *l;
+	    void *data;
+
+Function:   Removes a node from a list by first scanning the list for the
+	    data associated with the node and then removing the node from
+	    the list.
+
+Arguments:  l - pointer to the list to remove the node from.
+	    data - pointer to the data associated with the node to be
+	    removed
+
+Return:     A pointer to the memory allocated for the node and it's data
+	    is returned, NULL is returned if the node with the specified
+	    data can't be found on the list. The pointer can then be used
+	    to free the node and it's data, for example:
+	    if( ptr = remv_node(l,data) )
+	       free(ptr);
+-------------------------------------------------------------------------
+Name:	    remv_tail
+
+Synopsis:   void *remv_tail(l,data)
+	    _list *l;
+	    void **data;
+
+Function:   Removes a node from the end of a linked list and gives
+	    a pointer to the data for that node. The memory for the
+	    node is not freed.
+
+Arguments:  l - linked list to remove from
+	    data - pointer to a memory location where a pointer to the
+	    data for the node will be stored after removing the node
+	    from the end of the list
+
+Return:     A pointer to the block of memory that was allocated for the
+	    node and its data is returned, or NULL if there are no more
+	    nodes on the list. This memory should be freed using the
+	    free function.
+
+See Also:   add_tail
+-------------------------------------------------------------------------
+Name:	    r_node
+
+Synopsis:   void *r_node(l,n,data)
+	    _list *l;
+	    _node *n;
+	    void **data;
+
+Function:   Removes a specific node from a linked list and gives a pointer
+	    to the data for the node. Memory for the node is not freed.
+
+Arguments:  l - linked list to remove the node from
+	    n - node to remove from the list
+	    data - a pointer to the data for this node is stored here
+
+Return:     n is returned, or NULL if the list is empty
+
+See Also:   remv_node
+-------------------------------------------------------------------------
+
+``    10) SORTING FUNCTIONS
+
+      These are all modifications of C. A. R. Hoare's quicksort algorithm.
+      Two of the functions are written in C and a third is written in 68000
+      assembler for speed.
+
+-------------------------------------------------------------------------
+Name:	    qsort
+
+Synopsis:   void qsort(base,n,size,cmp)
+	    void *base;
+	    unsigned long n, size;
+	    short (*cmp)();
+
+Function:   Sorts into ascending order an array base[0]...base[n-1] of
+	    objects of size "size".
+
+Arguments:  base - pointer to the first element in the array of elements
+	    tp sort.
+	    n - number of elements to sort
+	    size - size of each element of the array
+	    cmp - pointer to comparison function. The comparison function
+	    is passed a pointer to two elements of the array and returns
+	    zero if the two elements are equivalent, negative must be
+	    returned if the first element is less than the second and
+	    and positive must be returned if the first element is greater
+	    than the second. To sort in the opposite order negative is
+	    returned if the first element is greater than the second and
+	    positive is returned if the first element is less than the
+	    second. Here is an example of a comparison function that
+	    will sort strings in descending order:
+
+	    short cmp(str1,str2)
+	    char *str1, *str2;
+	    {
+	    return( strcmp(str2,str1) );
+	    }
+
+-------------------------------------------------------------------------
+Name:	    quicksort
+
+Synopsis:   void quicksort(n,comp,swap,ptr)
+	    unsigned long n;
+	    short (*comp)();
+	    void (*swap)();
+	    void *ptr;
+
+Function:   The quicksort function uses the same sorting algorithm as
+	    qsort but it is designed to sort anything, not just arrays
+	    in memory.
+
+Arguments:  n - number of elements to sort.
+	    comp - comparison function. The comparison function is passed
+	    the index of the two elements to compare and an auxilery
+	    pointer that you provide. It returns zero if the two elements
+	    are equivalent, negative must be returned if the first element
+	    is less than the second and and positive must be returned if
+	    the first element is greater than the second. To sort in the
+	    opposite order negative is returned if the first element is
+	    greater than the second and positive is returned if the first
+	    element is less than the second.
+	    swap - swaps two elements. The swap function is passed the
+	    index of the two elements to swap and an auxilery pointer you
+	    provide.
+	    ptr - auxilery pointer, can point to anything. This variable
+	    is passed to the comp and swap functions in order to facilitate
+	    the writing of re-entrant code.
+
+-------------------------------------------------------------------------
+Name:	    vquicksort
+
+Synopsis:   void vquicksort(n,comp,swap)
+	    unsigned short n;
+	    short (*comp();
+	    void (*swap)();
+
+Function:   The vquicksort function is much the same as the quicksort
+	    function except that only up to 64K elements can be sorted
+	    and there is no auxilery argument pointer. Vquicksort is
+	    written in 100% hand optomized assembly language, hence it's
+	    name, very quicksort.
+
+Arguments:  n - number of elements to sort.
+	    comp - comparison function. The comparison function is passed
+	    the index of the two elements to compare. It returns zero if
+	    the two elements are equivalent, negative must be returned if
+	    the first element is less than the second and positive must be
+	    returned if the first element is greater than the second. To
+	    sort in the opposite order negative is returned if the first
+	    element is greater than the second and positive is returned if
+	    the first element is less than the second. swap - swaps two
+	    elements. The swap function is passed the index of the two
+	    elements to swap.
+
+See Also:   quicksort
+-------------------------------------------------------------------------
+
+``    11) TIME FUNCTIONS
+
+      These are the standard time functions as
+      described in K&R edition II. Most of these functions use typedefs
+      and structure definitions that are found in time.h. The tm structure
+      is explained here.
+
+      struct tm
+      {
+      short tm_sec;	seconds after the minute
+      short tm_min;	minutes after the hour
+      short tm_hour;	hours since midnight
+      short tm_mday;	day of the month
+      short tm_mon;	months since January
+      short tm_year;	years since 1900
+      short tm_wday;	days since sunday
+      short tm_yday;	days since January, 1
+      short tm_isdst;	Not Used
+      };
+
+-------------------------------------------------------------------------
+Name:	    asctime
+
+Synopsis:   char *asctime(tm)
+	    struct tm *tm;
+
+Function:   Converts the time in the structure tm to a string of the
+	    form: Sun Jan 1 12:00:00 1989
+
+Arguments:  tm - structure obtained from localtime
+
+Return:     A pointer to a string is returned. The string is in "static"
+	    memory and may be overwritten by other calls.
+
+See Also:   localtime
+-------------------------------------------------------------------------
+Name:	    clock
+
+Synopsis:   clock_t clock()
+
+Function:   Obtains the number of ticks since program execution.
+
+Return:     The number of ticks that have passed since the program was
+	    first executed is returned. clock()/CLOCK_TCK gives the time
+	    in seconds.
+-------------------------------------------------------------------------
+Name:	    ctime
+
+Synopsis:   char *ctime(t)
+	    time_t *t;
+
+Function:   Equivalent to asctime(localtime(t)).
+
+Arguments:  t - pointer to a time_t obtained from time().
+
+Return:     A pointer to a string is returned. The string is in "static"
+	    memory and may be overwritten by other calls.
+
+See Also:   asctime, localtime, time
+-------------------------------------------------------------------------
+Name:	    difftime
+
+Synopsis:   long difftime(t1,t2)
+	    time_t t1, t2;
+
+Function:   Obtains the difference between two times in seconds.
+	    t2 - t1.
+
+Arguments:  t1, t2 - times to take the difference of
+
+Return:     Time difference in seconds.
+
+See Also:   time
+-------------------------------------------------------------------------
+Name:	    gmtime
+
+Synopsis:   struct tm *gmtime(t)
+	    time_t *t;
+
+Function:   Same as localtime because Coordinated Universal Time is not
+	    readily available on the amiga.
+
+Arguments:  t - pointer to a time_t obtained from time().
+
+Return:     Same as localtime.
+-------------------------------------------------------------------------
+Name:	    localtime
+
+Synopsis:   struct tm *localtime(t)
+	    time_t *t;
+
+Function:   Fills out a tm structure from the time obtained from time().
+
+Arguments:  t - pointer to a time_t obtained from time().
+
+Return:     A tm structure is returned. This structure is located in
+	    "static" memory and will be overwritten by later calls. For
+	    an explanation of the tm structure see the heading for this
+	    section.
+
+See Also:   time
+-------------------------------------------------------------------------
+Name:	    mktime
+
+Synopsis:   time_t mktime(tm)
+	    struct tm *tm;
+
+Function:   This function is the opposite of localtime, it converts a
+	    tm structure into a time_t.
+
+Arguments:  tm - pointer to a tm structure
+
+Return:     A time_t that can be used by the other time functions is
+	    returned.
+
+Note:	    The members of the tm structure that are used to make the
+	    time_t are: tm_year, tm_yday, tm_hour, tm_min, and tm_sec.
+	    This is certainly library dependant.
+-------------------------------------------------------------------------
+Name:	    strftime
+
+Synopsis:   size_t strftime(s,smax,fmt,tm)
+	    char *s;
+	    size_t smax;
+	    char *fmt;
+	    struct tm *tm;
+
+Function:   Formats date and time information into a string according to
+	    a format string.
+
+Arguments:  s - string to store the result
+	    smax - maximum number of characters to place in the string
+	    fmt - format string, ordinary characters including the NULL
+	    terminator are copied to the result string. Format specifiers
+	    have the the following possible values:
+
+	       %a    abbreviated weekday name
+	       %A    full weekday name
+	       %b    abbreviated month name
+	       %B    full month name
+	       %c    local date and time representation
+	       %d    day of the month
+	       %H    hour, 24 hour clock
+	       %I    hour, 12 hour clock
+	       %j    day of the year, 1-366
+	       %m    month, 1-12
+	       %M    minute, 00-59
+	       %p    AM or PM
+	       %S    second 00-59
+	       %U    week number of year 00-53
+	       %w    weekday, 0-6
+	       %W    same as U
+	       %x    local date representation
+	       %X    local time representation
+	       %y    year without century
+	       %Y    year with century
+	       %Z    "Local"
+	       %%    '%'
+
+Return:     The number of characters written excluding the NULL terminator
+	    is returned, zero is returned if the result string would be
+	    overflowed.
+-------------------------------------------------------------------------
+Name:	    time
+
+Synopsis:   time_t time(t)
+	    time_t *t;
+
+Function:   Obtains the current time, if the t argument is not NULL then
+	    the time is also assigned to *t.
+
+Arguments:  t - pointer to variable to store the current time, or NULL.
+
+Return:     The current time is returned.
+-------------------------------------------------------------------------
+``    12) PROCESS CONTROL FUNCTIONS
+
+      Any self respecting C library should include a set of functions for
+      controlling processes. The process control functions outlined here
+      fall into two categories, one for controlling your own process and
+      the other for controlling processes that are spawned.
+
+      Since the Amiga is somewhat unique in the way it handles spawned
+      processes the process spawning functions are non standard. The reason
+      this route was chosen was the fact that there appeared to be no
+      _safe_ way to implement the standard spawn type functions, and have
+      them work for both workbench and CLI programs. Just the fact that
+      programs can be spawned in two entirely different ways poses some
+      significant problems. I have opted for an approach that solves the
+      problem in Amiga specific way and is very safe.
+
+-------------------------------------------------------------------------
+Name:	    abort			     MACRO
+
+Synopsis:   #include "stdlib.h"
+	    void abort()
+
+Function:   This is a macro that causes abnormal program termination. It
+	    is equivalent to exit(EXIT_FAILURE).
+
+See Also:   exit
+-------------------------------------------------------------------------
+Name:	    atexit			     MACRO
+
+Synopsis:   #include "stdlib.h"
+	    void atexit( func )
+	    void (*func)();
+
+Function:   Sets the atexit function that is executed when the program
+	    terminates through a call to exit or _exit. Any existing
+	    atexit function is over-written. This is defined as a macro
+	    in stdlib.h.
+
+Arguments:  func - a pointer to your atexit function
+
+See Also:   exit
+-------------------------------------------------------------------------
+Name:	    ClearAbortFunc
+
+Synopsis:   void ClearAbortFunc()
+
+Function:   Clears the break signal abort function. A call to this function
+	    will disable program termination when a ^C or a break is sent
+	    to it with the AmigaDOS break command.
+
+See Also:   SetAbortFunc
+-------------------------------------------------------------------------
+Name:	    cliexec
+
+Synopsis:   long cliexec()
+	    char *cmd;
+
+Function:   Spawns a cli command. An error will occur if this function is
+	    called from a workbench program.
+
+Arguments:  cmd - A null-terminated string containing the cli command to
+		  execute. The string must contain the name of the program
+		  followed by the command line arguments delimited by
+		  spaces. If you wish to execute the new process in parallel
+		  with the current one then place the "run" command in front
+		  of the command string.
+
+Return:     Zero is retured on failure.
+
+See Also: system, wbexec
+-------------------------------------------------------------------------
+Name:	    exec
+
+Synopsis:   long exec()
+	    char *command;
+
+Function:   runs another (child) program, waiting for the child program to
+	    finish running before continuing execution. The mode that the
+	    child program is exected in depends on the mode of the current
+	    program. If the current program has been executed using the CLI
+	    then the child program will be executed as a CLI process. If
+	    the current program is a Workbench process then the child will
+	    be executed as a Workbench process and all command line
+	    arguments will be ignored. For CLI processes the standard
+	    search path as specified by the Amiga DOS path command will be
+	    searched after the current directory. For Workbench processes
+	    the C: directory will be searched after the current directory.
+
+Arguments:  command - The command to execute, including any command line
+	    arguments. For Workbench programs the command line arguments
+	    will be striped off befor an attempt is made to execute the
+	    child process. CLI programs can be executed asyncronously by
+	    prefixing the command with the Amiga DOS "RUN" command.
+
+Return:     FALSE ( 0 ) is returned on failure.
+
+See Also:   cliexec, wbexec
+-------------------------------------------------------------------------
+Name:	    exit and _exit()
+
+Synopsis:   void exit(code)     void _exit(code)
+	    long code;		long code;
+
+Function:   Causes normal program termination. The atexit() function is
+	    executed  Open files and streams are closed and flushed, memory
+	    is de-allocated and returned to the system. Exit may also be
+	    called when a break signal is received from Amiga DOS.
+
+Arguments:  code - the return code of the program. The values EXIT_SUCCESS
+	    and EXIT_FAILURE may also be used.
+
+See Also:   abort, atexit
+-------------------------------------------------------------------------
+Name:	    getenv
+
+Synopsis:   char *getenv(name)
+	    char *name;
+
+Function:   retrieves an environment variable. On the Amiga environment
+	    variables are stored as files in the ENV: directory. The getenv
+	    function is designed to be compatible with the Amiga DOS
+	    GETENV command.
+
+Arguments:  name - the name of the environment variable to retreive
+
+Return:     a pointer to a null-terminated string that contains the
+	    value of the environment variable. NULL is returned if
+	    the environment variable could not be found or if an error
+	    occured. An error can be detected by inspecting the value
+	    of the global variable errno, which will be set to ENOMEM
+	    if not enough memory is available. The string pointer returned
+	    by getenv points to allocated memory, which will be freed
+	    by another call to getenv.
+
+See Also:   setenv
+-------------------------------------------------------------------------
+Name:	    kill
+
+Synopsis:   long kill(child)
+	    Child *child;
+
+Function:   attempts to remove a child process. On the Amiga it is not
+	    possible to forcibly remove a child process and free all of
+	    it's resources the way it is on UNIX for example. What this
+	    function does is signal the process with all of the break
+	    signals (^C, ^D, ^E, and ^F) then wait for the process to reply
+	    to it's workbench message. CClib.library IO functions will
+	    always check for the break signals and attempt to abort the
+	    program if any of them are detected. All programs should
+	    check for break signals returned from the Wait() function,
+	    but many don't. When the child process has finished execution
+	    it's code is unloaded.
+
+Arguments:  child - a pointer to a Child structure, as returned from the
+	    wbAexec function.
+
+Return:     FALSE is returned if an error occured. TRUE is returned if the
+	    child process was killed or if it has already terminated itself.
+
+See Also:   wbAexec
+-------------------------------------------------------------------------
+Name:	    kill_children
+
+Synopsis:   long kill_children
+
+Function:   terminates all child processes as if they had each been killed
+	    with the kill function.
+
+Arguments:  NONE
+
+Return:     FALSE is returned if an error occured.
+
+See Also:   kill
+-------------------------------------------------------------------------
+Name:	    longjmp
+
+Synopsis:   void longjmp(env, return_code )
+	    jmp_buf env;
+	    int return_code;
+
+Function:   Provides a way to avoid the normal call and return sequence.
+	    longjmp restores the state retained in env by a call to setjmp.
+	    Execution continues as if setjmp had just returned the non-zero
+	    value return_code. The function containing setjmp must not have
+	    terminated when this call is made. setjmp/longjmp are similar
+	    to a "super goto" and except for rare necessary circumstances
+	    should be avoided.
+
+Arguments:  return_code - a non-zero return code that is used as tht faux
+	    return code from setjmp.
+
+Return:     doesn't
+
+See Also:   setjmp
+
+Note:	 The setjmp and longjmp routines have been donted by Paul Gittings.
+	 He writes:
+	 "the setjmp and longjmp routines do not fully comply with ANSI C.
+	 To do so would require saving the state of all local variables
+	 (ok not to save register variables) at the time of the call to
+	 setjmp and restore them when longjmp is called. This is left as an
+	 exercise for the gentle reader..."
+-------------------------------------------------------------------------
+Name:	    perror
+
+Synopsis:   long perror(msg)
+	    char *msg;
+
+Function:   Prints an error message corresponding to the number in errno
+	    along with a message you provide to stderr.
+
+Arguments:  msg - supplimental error message, or NULL if you don't have one.
+
+Return:     Zero is returned on success, -1 is returned if the error number
+	    in errno has no corresponding error message or if an error
+	    error occurs with the execution of perror.
+
+See Also:   puterr
+Name:	    SetAbortFunc
+
+Synopsis:   void SetAbortFunc(func)
+	    long (*func)();
+
+Function:   Sets the break signal abort function. Whenever a break signal
+	    is detected from AmigaDOS, sent either by a ^C from the console
+	    or from an AmigaDOS break command, the library will see if there
+	    is an abort function, and if there is it will be executed with
+	    the signals that caused it to be executed as an argument. The
+	    signals will be in a 32 bit integer. During normal operation
+	    the function _exit is the abort function, however you may wish
+	    to set it to something else so that you can clean up whatever
+	    your application is doing at the time. If you intend to exit
+	    from the program call the exit or _exit functions, not the
+	    AmigaDOS Exit function,  or else resources allocated by
+	    the library will not be de-allocated.
+
+Arguments:  func - a pointer to the abort function to be used when a
+	    break signal is received.
+
+See Also:   ClearAbortFunc
+-------------------------------------------------------------------------
+Name:	    setenv
+
+Synopsis:   long setenv(name,value)
+	    char *name;
+	    char *value;
+
+Function:   Sets the value of an environment variable. On the Amiga this
+	    means that a file is created in the ENV: directory with the
+	    name "name" and the contents of the file is the the string
+	    pointed to by "value". The setenv function is designed to
+	    have the same effect as the Amiga DOS SETENV command.
+
+Arguments:  name - a pointer to a null-terminated string that contains
+	    the name of the environment variable to set.
+	    value - a pointer to a null-terminated string that contains
+	    the value of the environment variable to set. If a NULL value
+	    or a null string (one of zero length) is passed here the
+	    environment variable is removed from the system.
+
+Return:     Non-zero is returned on error. If setenv failed due to an
+	    out of memory condition the global variable "errno" will be
+	    set to ENOMEM.
+
+See Also:   getenv
+-------------------------------------------------------------------------
+Name:	    setjmp
+
+Synopsis:   #include "setjmp.h"
+	    int setjmp(env)
+	    jmp_buf env;
+
+Function:   Provides a way to avoid the normal call and return sequence.
+	    setjmp saves state information in env for use by longjmp.
+
+Arguments:  env - environment buffer for setjmp and longjmp
+
+Return:     Zero from a direct call to setjmp, non-zero from an indirect
+	    call through longjmp.
+
+See Also:   longjmp
+
+Note:	 The setjmp and longjmp routines have been donted by Paul Gittings.
+	 He writes:
+	 "the setjmp and longjmp routines do not fully comply with ANSI C.
+	 To do so would require saving the state of all local variables
+	 (ok not to save register variables) at the time of the call to
+	 setjmp and restore them when longjmp is called. This is left as an
+	 exercise for the gentle reader..."
+-------------------------------------------------------------------------
+Name:	    signal_child
+
+Synopsis:   long signal_child(child,signals)
+	    Child *child;
+	    long signals;
+
+Function:   signals a child process with any set of signals. Signals are
+	    used by the Amiga OS as the lowest level of inter-process
+	    communication. When Amiga tasks are suspended they are
+	    generally waiting for some signal to arrive. This function
+	    is used by the kill functions.
+
+Arguments:  child - a pointer to the child process as returned by the
+	    wbAexec function.
+
+Return:     FALSE is returned if an error occured.
+
+See Also:   wbAexec
+-------------------------------------------------------------------------
+Name:	    system			     MACRO
+
+Synopsis:   #include "stdlib.h"
+	    system(command)
+	    char *command;
+
+Function:   Executes a command as if it was typed in on the CLI command
+	    line. The RUN command must be in the path or in the C: directory
+	    for this function to work.
+
+Arguments:  command - The command to execute, for example:
+	    system("FORMAT DRIVE DH0: NAME TRASHED") will format
+	    your hard drive immediatly without asking.
+
+Return:     Zero is returned on failure.
+-------------------------------------------------------------------------
+Name:	    wait_child
+
+Synopsis:   long wait_child(child)
+	    Child *child;
+
+Function:   waits for a child process that was spawned by the wbAexec
+	    function to complete execution. After the child process has
+	    terminated the code for the process unloaded.
+
+Arguments:  child - a pointer to a child process as returned by wbAexec.
+	    If child is set to NULL then the wait_child function will
+	    wait for all child processes to complete.
+
+Return:     TRUE is returned if the operation was successful, FALSE is
+	    returned on error.
+
+See Also:   wbAexec
+-------------------------------------------------------------------------
+Name:	    wait_children
+
+Synopsis:   long wait_children(void)
+
+Function:   waits for all child processes to terminate. This function is
+	    called by exit because the process that starts a program on the
+	    Amiga is the one that must unload the code. If all processes
+	    are finished executing, or if no child processes have been
+	    spawned then this function will return immediatly.
+
+Arguments:  NONE
+
+Return:     FALSE is returned on error
+
+See Also:   wbAexec
+-------------------------------------------------------------------------
+Name:	    wb_exec
+
+Synopsis:   long wb_exec(filename, procname, toolname, toolwindow,
+			 curdir, rport, stk, pri, child)
+	    char *filename;
+	    char *procname;
+	    char *toolname;
+	    char *toolwindow;
+	    BPTR curdir;
+	    struct MsgPort *rport;
+	    long stk;
+	    long pri;
+	    REGS Child *child;
+
+
+Function:   This is the lowest level process spawning function that is used
+	    to spawn a process as if it were a workbench program. It is
+	    used by both wbAexec and wbexec. The interface to this function
+	    is somewhat complicated but it allows greater flexibility than
+	    either wbexec or wbAexec.
+
+Arguments:  filename - the name of the Amiga DOS program to execute. If the
+	    program file is not found in the current directory then the
+	    C: directory is searched.
+
+	    procname - the name the process will be given in the process
+	    list. If you don't care what goes here use filename.
+
+	    toolname - the name of the "tool" for this program. Tool is
+	    another name for Icon. If you want an Icon to be assocated with
+	    the program specify the name of it here, otherwise use a null
+	    string here ("").
+
+	    toolwindow - this is a description of the window. I don't
+	    exactly know what this is for but it gets attached to the
+	    workbench startup message at the sm_ToolWindow member. If you
+	    set it to NULL everything will work fine.
+
+	    curdir - is a pointer to a lock (obtained by Lock()) to the
+	    current directory for this program. A value of NULL here means
+	    the root directory of the current volume. If a value of -1L is
+	    used wb_exec will use the current directory of the calling
+	    program.
+
+	    rport - a pointer to a valid message port. The message port is
+	    used so that the child process can reply to the workbench
+	    startup message. Child processes only reply to the startup
+	    message after they have finished execution and expect their
+	    code to be unloaded. The code for a child process must be
+	    unloaded by the parent process.
+
+	    stk - the size of the stack to use for the new process. If a
+	    value of 0 or less is used here then the stack size of the
+	    parent process will be used.
+
+	    pri - the priority that the child task will run at. A normal
+	    process would have a priority of 0. Values of -128 to +127 are
+	    possible but values from -5 to 5 are more typical.
+
+	    child - a pointer to the Child structure that is to be used for
+	    this process. Here is the definition of the Child structure
+	    as found in iolib.h
+
+	       typedef struct
+	       {
+	       struct WBStartup startup;
+	       struct WBArg arg;
+	       struct Process *pid;
+	       } Child;
+
+	       startup - the workbench startup message that is sent to the
+	       child process.
+	       arg - the first argument for the workbench startup message
+	       pid - a pointer to the Process structure  for the child
+		     process.
+
+	    All of the members of the child structure are filled by wb_exec.
+
+Return:     zero is returned on failure.
+
+See Also:   wbexe, wbAexec
+-------------------------------------------------------------------------
+Name:	    wbAexec
+
+Synopsis:   #include "iolib.h"
+	    Child *wbAexec(name, stack, priority)
+	    char *name;
+	    long stack;
+	    long priority;
+
+Function:   Executes a program as a workbench process asynchronously with
+	    the parent process. The "Child" structure is attached to the
+	    task_UserData structure of the parent process (the caller).
+
+Arguments:  name - the name of the program to execute. If the executable
+	    file is not found in the current directory then the C: directory
+	    is searched.
+
+	    stack - the size of the stack to use for the new process. If a
+	    value of 0 or less is used here then the stack size of the
+	    parent process will be used.
+
+	    priority - the priority that the child task will run at. A
+	    normal process would have a priority of 0. Values of -128 to
+	    +127 are possible but values from -5 to +5 are more typical.
+
+Return:     A pointer to a Child structure is returned, or NULL if an error
+	    occured.
+
+See Also:   wait_chldren, kill_children
+-------------------------------------------------------------------------
+``    IV) STRUCTURE DOCUMENTATION
+
+   Here is the explantion of all of the data structures that are associated
+   with CClib.library and are accessible to the application program. Some
+   of the structures are also defined in other sections of the manual as
+   well as in this section.
+-------------------------------------------------------------------------
+Name:	    Child
+
+Location:   iolib.h
+
+Definition:
+	 typedef struct
+	 {
+	 struct WBStartup startup;
+	 struct WBArg arg;
+	 struct Process *pid;
+	 } Child;
+
+Purpose:    This is what the Chidren _list in the task_UserData structure
+	    consists of. It is a list of the child processes that were
+	    spawned asynchronously, and that need to have their code
+	    unloaded before the parent can terminate itself. A pointer to
+	    this structure is returned by the wbAexec() function.
+
+Members:    startup - the workbench startup message sent to the child
+	       process.
+	    arg - the first argument for the workbench startup message.
+	    pid - a pointer to the actual process structure for the
+	       child.
+
+See Also: task_UserData
+-------------------------------------------------------------------------
+Name:	    clock_t
+
+Location:   stddef.h
+
+Definition:
+	 typedef long clock_t;
+
+Purpose:    contains the clock "ticks" since a program started execution
+-------------------------------------------------------------------------
+Name:	    FILE				   PRIVATE
+
+Location:   stdio.h
+
+Definition:
+	 typedef struct
+	 {
+	 long _unit;		 /* token returned by open -> FileDesc */
+	 char *_bp;		 /* position in character buffer */
+	 char *_bend;		 /* end of buffer */
+	 char *_buff;		 /* start */
+	 char _flags;		 /* open mode  */
+	 char _bytbuf;		 /* single character buffer (non-bufered files) */
+	 short _buflen; 	 /* # characters in buffer */
+	 char *_tmpname;	 /* temporary file name */
+	 } FILE;
+
+Purpose:    The structure used for Stream file access, used with all of the
+	    ANSI standard IO functions. This structure should be considered
+	    PRIVATE and must not be tampered with directly by applications.
+	    The documentation is provided here for informative purposes
+	    only.
+
+Members:    _unit - file descriptor, as returned by open()
+	    _bp - current position in character buffer
+	    _bend - end of character buffer
+	    _buff - start of character buffer
+	    _flags - saved open() mode
+	    _bytbuf - a single charecter buffer for non-buffered files, or
+	       for when the library cannot allocate a buffer
+	    _buflen - number of characters currently in the buffer
+	    _tmpname - the name of a temporary file that may or may not
+	       be associated with this stream
+
+See Also:   fopen() function
+-------------------------------------------------------------------------
+Name:	    FileDesc				   PRIVATE
+
+Location:   iolib.h
+
+Definition:
+	 typedef struct
+	 {
+	 BPTR fh;
+	 short mode;
+	 } FileDesc;
+
+Purpose:    A FileDesc is what a file descriptor returned by open() actually
+	    points to. It should not be accessed by the application and
+	    is described here only for informative purposes.
+
+Members:    fh - a pointer to the Amiga DOS file handle returned by the
+	       Amiga Open() function.
+	    mode - the mode the file was opened under, as specified by the
+	       mode argunent to the open() function.
+-------------------------------------------------------------------------
+Name:	    fpos_t
+
+Location:   stddef.h
+
+Definition:
+	 typedef long fpos_t;
+
+Purpose:    used by the fgetpos and fsetpos functions to store the position
+	    within a file
+-------------------------------------------------------------------------
+Name:	    union header (alias HEADER)            PRIVATE
+
+Location:   heapmem.h
+
+Definition:
+
+      typedef long ALIGN;
+
+      union header
+      {
+      struct
+	 {
+	 union header *ptr;
+	 unsigned long size;
+	 } s;
+      ALIGN x;
+      };
+
+Purpose:    Used internally to keep track of free heap memory. It sould not
+	    be accessed by the application but is documented for
+	    informative purposes. The free memory blocks can be examined
+	    from the task_UserData structure.
+
+Members:    ptr - pointer to the next header in the chain
+	    size - the size of the free memory block in multiples of
+		    sizeof(union header)
+	    x - forces longword alignment
+
+See Also:   task_UserData
+-------------------------------------------------------------------------
+Name:	    LastFree				   PRIVATE
+
+Location:   heapmem.h
+
+Definition:
+
+	 typedef struct
+	 {
+	 void *ptr;
+	 unsigned long size;
+	 } LastFree;
+
+Purpose:    used internally to support the realloc function. It holds a
+	    pointer to and the size of the last freed block of memory and
+	    is part of the task_UserData structure.
+
+
+Members:    ptr - pointer to the last freed block of memory
+	    size - size of the last block of memory to be freed
+
+See Also:   task_UserData
+-------------------------------------------------------------------------
+Name:	    _list
+
+Location:   stdlist.h
+
+Definition:
+	 typedef struct
+	 {
+	 _node *first, *last;
+	 long length;
+	 } _list;
+
+Purpose:    CClib.library uses simple linked lists internally and the the
+	    linked list functions are available for application use. This
+	    is the structure that is used to maintain one of these linked
+	    lists.
+
+Members:    first - pointer to the first node in the linked list or
+	       NULL if the list is empty.
+	    last - pointer to the last node in the linked list of
+	       NULL if the list is empty.
+	    length - a count of the number of nodes that are currently
+	       in the linked list.
+
+See Also:   _node
+-------------------------------------------------------------------------
+Name:	    MemBlk				   PRIVATE
+
+Location:   iolib.h
+
+Definition:
+
+      typedef struct
+      {
+      _node n;
+      long size;
+      } MemBlk;
+
+
+Purpose:    This structure is used to keep track of all of the memory that
+	    has been allocated from the operating system using the low-level
+	    memory allocation functions. The heap memory allocation functions
+	    use the lower level functions to get larger blocks of memory.
+	    These structures are attached to two lists in the task_UserData
+	    structure and are freed before the program terminates.
+
+Members:    n - a node that is used to link toghther the list of allocated
+		memory blocks.
+	    size - the total size of the allocated memory block in bytes
+		including the additional size of the MemBlk itself.
+
+See Also: _node, task_UserData
+-------------------------------------------------------------------------
+Name:	    _node
+
+Location:   stdlist.h
+
+Definition:
+	 typedef struct _node
+	 {
+	 struct _node *prev, *next;
+	 } _node;
+
+Purpose:    CClib.library uses simple linked lists internally and the the
+	    linked list functions are available for application use. This
+	    is the structure of the header of a node in a doubly linked
+	    list. The entire node usually consists of the node structure
+	    followed immediatly by the data associated with the node.
+
+Members:    prev - pointer to the previous node in a list or NULL if this
+	       is the first node.
+	    next - pointer to the next node in a list or NULL if this is
+	       the last node.
+
+See Also: _list
+-------------------------------------------------------------------------
+Name:	    ptrdiff_t
+
+Location:   stddef.h
+
+Definition:
+	 typedef long ptrdiff_t;
+
+Purpose:    ptrdiff_t is a data type that can hold the difference between
+	    two pointers
+-------------------------------------------------------------------------
+Name:	    size_t
+
+Location:   stddef.h
+
+Definition:
+	 typedef unsigned long size_t;
+
+Purpose:    size_t is what is returned by the sizeof() operator
+-------------------------------------------------------------------------
+Name:	    stat
+
+Location:   stat.h
+
+Definition:
+	 struct stat
+	 {
+	 unsigned short st_attr;
+	 time_t st_mtime;
+	 long st_size;
+
+	 /* THESE ARE ONLY FILLED OUT BY THE stat_() FUNCTION!
+	  * (in order to maintain compatibility with the older
+	  * versions of CClib.library)			      */
+
+	 unsigned short st_mode;
+	 short st_nlink;
+	 time_t st_atime;
+	 time_t st_ctime;
+	 };
+
+Purpose:    The stat structure is returned by the stat functions so as to
+	    retrieve some inofrmation about a file, directory, or device.
+
+Members:    st_attr - file attributes which may be or'd together including:
+	      This Bit On	   Means
+	       ST_DELETE   -  file is NOT deletable
+	       ST_EXECUTE  -  file is NOT executable
+	       ST_WRITE    -  file is NOT writeable
+	       ST_READ	   -  file is NOT readable
+	       ST_ARCHIVE  -  file HAS been archived
+	    A warning about attribute bits; It is unsafe to assume that
+	    the other bits available in the attribute field will be un-used.
+	    This is because they may be used in future implementations of
+	    the Amiga operating system. This has already happened in the
+	    case of the ST_ARCHIVE bit.
+
+	    st_mtime - File modification date, in seconds since Jan, 1 1978
+	    st_size - of file in bytes
+	    st_mode - file type bits
+	       S_IFMT - all file type bits
+	       S_IFDIR - a directory
+	       S_IFCHR - character special (used for interactive streams)
+	       S_IFBLK - block special (not used yet)
+	       S_IFREG - a reqular file (not interactive)
+	    st_atime - currently the same as st_mtime
+	    st_ctime - currently the same as st_mtime
+
+See Also:   stat_, stat (functions)
+-------------------------------------------------------------------------
+Name:	    task_UserData			   PRIVATE
+
+Location:   iolib.h
+
+Definition:
+
+	 typedef void (*ABORT_FUNC)(long);
+
+	 typedef struct
+	 {
+	 void *old_ud;
+	 struct Task *parent;
+	 _list RAM;
+	 HEADER base, *allocp;
+	 long *blocksize;
+	 LastFree lastfree;
+	 _list OpenFiles;
+	 _list StreamFiles;
+	 FILE **stdout, **stdin, **stderr;
+	 void *scnfp;
+	 long *errno;
+	 ABORT_FUNC abort_func;
+	 void *wbmsg;
+	 short _argc, _arg_len;
+	 char **_argv, *_arg_lin;
+	 char *scanpoint;
+	 char *tempname;
+	 short scnlast;
+	 struct tm tm;
+	 clock_t start;
+	 char buffer[80];
+	 void *scdir_mem;
+	 void *getenv_mem;
+	 struct MsgPort *exeport;
+	 _list Children;
+	 } task_UserData;
+
+Purpose:    the structure used by CClib.library client programs that is
+	    pointed to by the its task.tc_UserData member. It is used to
+	    keep track of all "global" variables that are used by the
+	    library. The structure is allocated and initialized in the
+	    startup code and should probably not be modified manually. Its
+	    documentation is provided for informative purposes.
+
+Members:    old_ud - the previous value of task.tc_UserData, restored in the
+		     exit code.
+	    parent - pointer to your Task.
+	    RAM - list of allocated memory. The nodes in the list are of
+		     type MemBlk.
+	    base - the initial memory header used for the the heap manager.
+	    allocp - a marker for the circular free memory list.
+	    blocksize - a pointer to a long integer that specifies the
+		     minimum size of a block of memory that is allocated
+		     from the operating system for the heap manager. The
+		     units are 8 bytes in size.
+	    lastfree - a structure that contains information
+		     about the last freed block of memory.
+	    OpenFiles - a list
+		     of AmigaDOS files that need be closed before program
+		     termination. The nodes in the list are of type
+		     FileDesc.
+	    StreamFiles - a list of stream files that need to be closed
+		     before the program terminated. The data for the list
+		     nodes is the FILE data type (stdio.h).
+	    stdout - a pointer to the global FILE pointer by the same name
+		     in the application program. It is used to support
+		     console output.
+	    stdin - a pointer to the global FILE pointer by the same name
+		     in the application porgram. It is used to support
+		     console input.
+	    stderr - a pointer to the global FILE pointer by the same name
+		     in the application program. It is used to support
+		     console output for error messages.
+	    scnfp - used internally by formatted input and output functions.
+	    errno - pointer to global variable in application by the same
+		     name.
+	    abort_func - function called during an exit, abort, or ^C
+		     termination.
+	    wbmsg - pointer to the workbench startup message for the
+		     application. NULL if started from the CLI. This
+		     message needs to be replied to before the program
+		     terminates.
+	    _argc - the number of commnad line arguments for CLI startup.
+	    _arg_len - sum of the lengths of all command line arguments.
+	    _argv - array of pointers to parsed argument strings.
+	    _arg_lin - pointer to the memory allocated for arguments.
+	    scanpoint - used internally by strtok to remember last place.
+	    tempname - used internally by tmpnam to remember the name of
+		     a temporary file.
+	    scnlast - used internally by gchar.
+	    tm - used internally by time the routines to return a pointer
+		     to a tm structure.
+	    start - time at the start of program execution.
+	    buffer - character buffer for general internal use.
+	    scdir_mem - memory allocated and used internally by scdir.
+	    getenv_mem - memory allocated and used internally be getenv.
+	    exeport - pointer to a message port used for spawning
+		     asynchronous processes.
+	    Children - a linked list of asynchronous child processes, the
+		     node data of the list consists of Child structures.
+
+See Also: _list, header, LastFree, FILE, tm, FileDesc
+-------------------------------------------------------------------------
+Name:	    time_t
+
+Location:   stdef.h
+
+Definition:
+	 typedef long time_t;
+
+Purpose:    contains a time value in a system dependent manner
+-------------------------------------------------------------------------
+Name:	    struct tm
+
+Location:   time.h
+
+Definition:
+	 struct tm
+	 {
+	 short tm_sec;
+	 short tm_min;
+	 short tm_hour;
+	 short tm_mday;
+	 short tm_mon;
+	 short tm_year;
+	 short tm_wday;
+	 short tm_yday;
+	 short tm_isdst;
+	 short tm_hsec;
+	 };
+
+Purpose:    Used by the time routines to return a time value that is
+	    more palettable to human beings.
+
+Members:
+	    tm_sec - seconds after the minute
+	    tm_min - minutes after the hour
+	    tm_hour - hours since midnight
+	    tm_mday - day of the month
+	    tm_mon - months since January
+	    tm_year - years since 1900
+	    tm_wday - days since sunday
+	    tm_yday - days since January, 1
+	    tm_isdst - Not Used
+	    tm_hsec - Not Used
+
+See Also:   time_t
+-------------------------------------------------------------------------
+Name:	    va_list
+
+Location:   stdarg.h
+
+Definition:
+	 typedef unsigned char *va_list;
+
+Purpose:    used to keep track of variable length argument lists. The
+	    va_start, va_arg, and va_end macros all use it.
+
+See Also:   va_start, va_arg, va_end
+-------------------------------------------------------------------------
+Name:	    wchar_t
+
+Location:   stddef.h
+
+Definition:
+	 typedef char wchar_t;
+
+Purpose:    holds a "wide character", same as a regular character here
+
+-------------------------------------------------------------------------
+``    V) GLOBAL VARIABLES
+
+      Most of the global variables are defined in the CClib startup code
+      and declared external in header files so that they can be easily
+      accessed.
+
+-------------------------------------------------------------------------
+Name:	    blocksize
+
+Declared:   in your program
+
+Definition: in blocksize.c (cclib.lib)
+	    long blocksize = 0L;
+
+Purpose:    blocksize controls the size of memory blocks that will be
+	    allocated from the operating system for use by the heap memory
+	    manager. Blocksize is in units of 8 bytes. If blocksize is 0
+	    a default size of 256 is used (2048 bytes).
+-------------------------------------------------------------------------
+Name:	    CCLibBase				PRIVATE
+
+Declared:   _main.c
+
+Definition: void *CCLibBase;
+
+Purpose:    library base pointer for CClib.library
+-------------------------------------------------------------------------
+Name:	    DOSBase				PRIVATE
+
+Declared:   _main.c
+
+Definition: void *DOSBase;
+
+Purpose:    library base pointer for dos.library
+-------------------------------------------------------------------------
+Name:	    errno
+
+Declared:   errno.h
+
+Definition: in _main.c
+	    long errno;
+
+Purpose:    used to contain the value of an IO error number. If the CClib
+	    IO functions fail one can usually check the value of errno for
+	    a further explanation of the problem. The possible values are
+	    defined below.
+
+	   Values		   Meaning
+
+	    ENOENT	Amiga DOS Open() can't open the file
+	    EBADF	invalid file handle passed to close()
+	    ENOMEM	not enough memory to allocate another file handle
+	    EEXIST	file already exists
+	    EINVAL	invalid function number
+	    EMFILE	no file handles left (should never occur)
+	    ENOTTY	not a console device (should never occur)
+	    EACCES	invalid mode used in open()
+-------------------------------------------------------------------------
+Name:	    exit_fcn
+
+Declared:   in _main.c
+
+Definition: void (*exit_fcn)();
+
+Purpose:    points to the atexit function, or is NULL if no atexit
+	    function has been specified.
+
+See Also:   atexit
+-------------------------------------------------------------------------
+Name:	    _math
+
+Declared:   in your program
+
+Definition: in math.c (cclib.lib)
+	    short _math = 1;
+
+Purpose:    if the gloabal variable _math is not defined to be 0 somewhere
+	    in your program then the IEEE math library
+	    "mathieeedoubbas.library" is opened for use by your program and
+	    by CClib.library. The default is a value of 1, which can be
+	    overridden by defining _math in your program.
+-------------------------------------------------------------------------
+Name:	    MathIeeeDoubBasBase
+
+Declared:   _main.c
+
+Definition: void *MathIeeeDoubBasBase;
+
+Purpose:    library base pointer for mathieeedoubbas.library
+---------------------------------------------------------------------
+Name:	    stderr
+
+Declared:   stdio.h
+
+Definition: in _main.c
+	    FILE *stderr;
+
+Purpose:    a pointer to the stream used for standard error message output
+
+See Also:   stdout
+-------------------------------------------------------------------------
+Name:	    stdin
+
+Declared:   stdio.h
+
+Definition: in _main.c
+	    FILE *stdin;
+
+Purpose:    a pointer to the stream used for standard input
+
+See Also:   stdout, stderr
+-------------------------------------------------------------------------
+Name:	    stdout
+
+Declared:   stdio.h
+
+Definition: in _main.c
+	    FILE *stdout;
+
+Purpose:    a pointer to the stream used for standard output
+
+See Also:   stdin
+-------------------------------------------------------------------------
+Name:	    sys_errlist and sys_nerr
+
+Declared:   stdio.h
+
+Definition: syserr.c (cclib.lib)
+	    char *sys_errlist[] =
+	    {
+	    "No Error",
+	    "File Not Found",
+	    "Bad File Handle",
+	    "Not Enough Memory",
+	    "File Exists",
+	    "Invalid Function Number",
+	    "Too Many Files Opened",
+	    "Not A Console Device",
+	    "Invalid Access Code",
+	    };
+	    #define sys_nerr 9	 /* the size of sys_errlist */
+
+Purpose:    a listing of the error messages that correspond to the error
+	    codes returned in errno
+
+See Also:   errno
+-------------------------------------------------------------------------
+Name:	    SysBase				PRIVATE
+
+Declared:   _main.c
+
+Definition: void *SysBase;
+
+Purpose:    library base pointer for exec.library
+-------------------------------------------------------------------------
+Name:	    type				   PRIVATE
+
+Declared:   ctype.h
+
+Definition: in _main.c
+	    extern char *type;
+
+Purpose:    points to the type array inside CClib.library that is used
+	    with the character test macros. ( islower() etc )
+-------------------------------------------------------------------------
+Name:	    WBenchMsg
+
+Declared:   _main.c
+	    struct WBStartup	is declared in workbench/startup.h
+
+Definition: in _main.c
+	    struct WBStartup *WBenchMsg;
+
+Purpose:    WBenchMsg is a pointer to the workbench startup message for
+	    your program, or NULL if the program was not started in the
+	    workbench environment.
+-------------------------------------------------------------------------
+
+``    VI) INSTALLATION
+
+   In order to use CClib.library you will first have to install the
+   provided header files in a directory. Some of these header files
+   have the same name as the ones used by your C and you will have to
+   make sure that the CClib.library header files are found first. The
+   best way to assure this is to use the -I or -i option of the compiler.
+   When using floating point you will have to use the +FI or -fi options
+   to ensure that IEEE floating point numbers are used, and you will
+   have to link with the appropriate IEEE floating point library, ma.lib
+   or lcmieee.lib. Before a prorgam that is linked with the CCLib.library
+   can execute properly you must copy the file CCLib.library into the
+   libs: directory on your system disk.
+
+			 For Aztec C
+   When you link your program you will have to make sure that it gets
+   linked in this order: _main.o yourstuff.o ... cclib.lib.... It would
+   also be a good idea to look at the makefile for the test program;
+   test.mke.
+
+			For Lattice C
+   When you link your program you will have to make sure that it gets
+   linked in this order: cc.o lcmain.o yourstuff.o ... lcclib.lib.... It
+   would also be a good idea to look at the makefile for the test program;
+   test.lmk.
+
+
+-------------------------------------------------------------------------
+
+``    VII) THE NUKELIB PROGRAM
+
+      The nukelib program is used to remove a library from memory. The
+      syntax of the program is very simple;
+
+      NukeLib <library name>
+
+      for example:
+
+      NukeLib CClib.library
+
+      This will clear CClib.library from memory if no applications are using
+      it at the time.
+
+-------------------------------------------------------------------------
+
+``    VIII) RELEASE INFORMATION
+
+      This release contains:
+
+      cclib.doc 	this Documentation
+      CClib.library	the loadable Amiga C library
+      test		test program, (written in Aztec)
+      install		installation script
+
+      utils (dir)    Utilities directory
+	 utils.doc	   utility program documentation
+	 bites		   shows disk useage
+	 exec		   shows Exec lists
+	 IFFCheck	   checks IFF files
+	 noibm		   changes \r\n to \n in files
+	 now		   shows date in english
+	 setpri 	   sets tasks priorities
+	 nukelib	   deletes libraries from memory
+	 loc		   counts lines of C code
+	 xwait		   waits for a specified time
+
+      lib (dir)      Libraries directory
+	 cclib.lib	   Aztec 5.0 library of connection routines
+			   (small code and data )
+	 cclibl.lib	   (large code and data )
+	 lcclib.lib	   Lattice library of connection routines
+			   (please see Lattice Notes)
+
+      obj (dir)         Object code directory
+	 _main.o	   Aztec 5.0  _main replacement
+	 lcmain.o	   Lattice _main replacement
+	 cc.o		   Modified Lattice startup routine
+
+      source (dir)      Source code directory
+	 test.c 	   test program
+	 test.mke	   Aztec 5.0 makefile
+	 test.lmk	   Lattice makefile
+	 loc.c		   utility counts lines of C
+	 loc.mke	   Aztec 5.0 makefile
+	 _main.c	   Aztec 5.0 _main routine
+	 lcmain.c	   Lattice _main routine
+	 xwait.c	   utility waits for a specified time
+	 xwait.mke	   Azetec 5.0 makefile
+
+      include (dir)     Include files required for CClib.library
+	assert.h ccfunc.h ctype.h errno.h fcntl.h heapmem.h iolib.h
+	limits.h process.h setjmp.h stat.h stdarg.h stddef.h stdio.h
+	stdlib.h stdlist.h string.h time.h
+
+      lharc (dir) Archiving program, use with con.lzh
+	 lharc		   archiving program
+	 lharc.doc	   archiving program documentation
+	 changes.txt	   more documentation
+
+      c (dir)
+	 muchmore	   A text file viewer
+
+      gcc (dir) PD compiler support
+	 CClib.lib	   GCC compatible library (old)
+	 crt0.asm	   regular startup code source
+	 crt0.o 	   regular startup code object
+	 crt0_no_fp.asm    no floating point startup code source
+	 crt0_no_fp.o	   no floating point startup code source
+
+      con (dir) Source to connection routine libraries
+
+      con.lzh		Archived source for connection routine library
+
+	       Contents of con.lzh (Actual Connection routines)
+	  102.con 108.con 114.con 120.con  126.con 132.con 138.con 144.con
+	  150.con 156.con 162.con 168.con 174.con 180.con 186.con 192.con
+	  198.con 204.con 210.con 216.con 222.con 228.con 234.con 240.con
+	  246.con 252.con 258.con 264.con 270.con 276.con 282.con 288.con
+	  294.con  30.con 300.con 306.con 312.con 318.con 324.con 330.con
+	  336.con 342.con 348.con 354.con  36.con 360.con 366.con 372.con
+	  378.con 384.con 390.con 396.con 402.con 408.con 414.con  42.con
+	  420.con 426.con 432.con 438.con 444.con 450.con 456.con 462.con
+	  468.con 474.con  48.con 480.con 486.con 492.con 498.con 504.con
+	  510.con 516.con 522.con 528.con 534.con  54.con 540.con 546.con
+	  552.con 558.con 564.con 570.con 576.con 582.con 588.con 594.con
+	   60.con 600.con 606.con 612.con 618.con 624.con 630.con 636.con
+	  642.con 648.con 654.co   66.con 660.con 666.con 672.con 678.con
+	  684.con 690.con 696.con 702.con 708.con 714.con  72.con 720.con
+	  726.con 732.con 738.con 744.con 750.con 756.con 762.con 768.con
+	  774.con  78.con 780.con 786.con 792.con 798.con 804.con 810.con
+	  816.con 822.con 828.con 834.con  84.con 840.con 846.con 852.con
+	  858.con 864.con 870.con 876.con 882.con 888.con 894.con  90.con
+	  900.con 906.con 912.con  96.con
+
+	   all.con	   Concatenation of connection routines
+	   blocksize.c	   Contains blocksize global variable
+	   syserr.c	   Contains sys_errlist[]
+	   cclib.mke	   Aztec makefile for library (small code and data)
+	   cclibl.mke	   Aztec makefile for library (large code and data)
+	   cclib.lmk	   Lattice makefile for library
+	   libfile	   Command file for Lattice librarian
+	   mclibcon.i	   Metacomco Assembler include file
+	   aclibcon.i	   Aztec Assembler include file
+	   lclibcon.i	   Lattice Assembler include file
+	   cclibcon.i	   Aztec Assembler include file
+	   math.c	   Contains _math global variable
+	   setjmp.asm	   Assembly source for setjmp & longjmp
+
+-------------------------------------------------------------------------
+``    IX) NOTES ON LATTICE C
+
+      There is now full support for the Lattice compiler. However due to
+      some unforseen complications the Lattice startup code had to be
+      changed in order for this to work. There is an object module called
+      cc.o that should be used as the replacement for the standard Lattice
+      startup routine (c.o).
+
+      The specific problem with the startup code was this: For programs
+      that were executed from the CLI the Lattice startup code would place
+      the name of the program into the commnad string that was passed to
+      _main and since CCLib.library already does this for you it was
+      unnecessary to do this in the startup code. The symptoms of the
+      problem were that argv[0] and argv[1] were both set to the name of
+      the program. The problem with Workbench programs was far more
+      serious, the Lattice startup code would reply to the workbench
+      message after CClib.library had already done so, causing a system
+      crash.
+
+      Because of copyright problems the source for the modified c.a (cc.a)
+      can't be included here, but since the only changes are commented out
+      lines, I will list which lines were commented out. If you wish you
+      may want to do this to c.a so that you have the source to the startup
+      code. The lines commented out of c.a are: 189-198, 201-206, 227-229,
+      247-283, and 323-336. In addition the label 'main' on line 283 was
+      moved to line 284.
+
+      If you are doing any floating point in your program it is best to use
+      IEEE floating point numbers. This is supported by the -fi compiler
+      switch and lcmieee.lib. This will give you the advantage of extra
+      speed if you run on a machine with a math coprocessor. IEEE is the
+      only type used by CCLib.library.
+
+      There are new makefiles used for the Lattice compiler. All of the
+      Lattice makefiles end with .lmk, where the Aztec makefiles end
+      with .mke.
+
+      Lattice 5 supports function prototypes where Aztec 3.6a does not.
+      The CCLib.library include files can use function prototypes if the
+      symbol ANSIC is defined. Be sure to include the CCLib.Library
+      include files ahead of the standard Lattice and Amiga include files.
+
+      Thanks to Kevin Kenny for help in creating the Lattice version of
+      the connection routines and startup code.
+
+      NOTE: Due to a lack of availability of a Lattic C compiler the
+      Lattice version of the 3.0 connection routine library wasn't built,
+      the 2.4 version was included. The makefile cclib.lmk will easily
+      build the library.
+
+-------------------------------------------------------------------------
+``    X) NOTES FOR PUBLIC DOMAIN COMPILERS
+
+      A set of startup routines has been provided that works for GCC from
+      Paul Gittings. They sould work for other public domain C compilers as
+      well. The libraries of connection routines will have to be rebuilt
+      using your public domain assembler and compiler. The startup code and
+      a GCC compatible library is in the "gcc" directory.
+
+-------------------------------------------------------------------------
+
+``    XI) REVISION HISTORY
+
+	   Version numbers only change when the file CClib.library
+	   changes.
+
+    8/89 - V2.0 Initial release, beta testing.
+
+    9/89 - V2.1 Major bug fixes, documentation released, extensive testing,
+	   time functions added, nukelib program added.
+
+   10/89 - V2.1 Release 2 Support for Lattice C added,
+	   doumentation improvements.
+
+   10/89 - V2.2 A bug was fixed where programs that were executed from the
+	   workbench with no tooltype of the form
+	   WINDOW=CON:10/10/100/100/Title would fail because the startup
+	   code had required that standard I/O be opened. Now for workbench
+	   programs with no CON: window the standard I/O will not be opened.
+
+   10/89 - V2.3 A bug in the quicksort function was fixed. The auxilery
+	   argument is now passed correctly to the swap function as well
+	   as the comp function. CClibl.lib was added to support large
+	   code and data in Aztec C. LOC a C code line counting program
+	   was added.
+
+   11/89 - V2.4 A bug in the scdir function was fixed where the a path
+	   that contained only a volume name would not be searched.
+
+   2/90  - V2.5  Conversion to Aztec C 5.0
+
+   4/90  - V2.6 The scdir_clean function was added.
+
+   6/90  - V2.7 toupper and tolower were converted to functions and added
+		to the library, changes made in ctype.h. The macros
+		_toupper and _tolower now do the same thing as the old
+		macros; not check for isupper or islower first. The same
+		bug would have caused problems with the strcmpa() function
+		in the string library.
+
+		Connection routine vector 172 was incorrect and was changed
+		to 174, it is the vector for setvbuf.
+
+		Thanks to Detlef Wurkner for pointing out some serious bugs
+		with toupper, tolower and library entry number 172.
+
+   9/90  - V3.0 Major Revision includes:
+
+		Support for GCC from Paul Gittings
+
+		The following new functions with documentation:
+		stat_ getenv setenv wb_exec wbexec wbAexec wait_child
+		wait_children signal_child kill kill_children cliexec
+		exec offsetof setjmp longjmp
+
+		A reorganization of the documentation to include the
+		new section for process control functions.
+
+		A new section of the documentation for the documentation
+		of data structures used by and with the library.
+
+		A new section of the documentation describing the global
+		variables that are accessible to the application program.
+
+		Improved table of contents
+
+		New Index section of the manual
+
+-------------------------------------------------------------------------
+
+``    XII) COPYRIGHTS AND TRADEMARKS
+
+      Aztec C is a trademark of Manx Software Systems.
+      Lattice C is a trademark of Lattice Inc.
+      Amiga is a trademark of Commodore Business Machines Inc.
+
+-------------------------------------------------------------------------
+
+``    XIII)  INDEX
+
+		     A
+
+	   Name 	     Section	  Header
+
+	 abort		      III-12	  stdlib.h
+	 access 	      III-3	  ccfunc.h
+	 add_head	      III-9	  stdlist.h
+	 add_tail	      III-9	  stdlist.h
+	 agetc		      III-2	  stdio.h
+	 _alloc 	      III-8	  ccfunc.h
+	 aputc		      III-2	  stdio.h
+	 asctime	      III-11	  time.h
+	 atexit 	      III-12	  stdlib.h
+	 atof		      III-7	  stdlib.h
+	 atoi		      III-7	  stdlib.h
+	 atol		      III-7	  stdlib.h
+
+		     B
+
+	 bcopy		      III-6	  string.h
+	 bcpl_strcpy	      III-5	  string.h
+	 bcpm		      III-6	  string.h
+	 be_free	      III-8	  ccfunc.h
+	 blocksize	      V 	  ---
+	 bzero		      III-6	  string.h
+
+		     C
+
+	 calloc 	      III-8	  stdlib.h
+	 CCLibBase	      V 	  ---
+	 Child		      IV	  iolib.h
+	 ClearAbortFunc       III-12	  ccfunc.h
+	 clearerr	      III-2	  stdio.h
+	 ClearSTDIO	      III-1	  ccfunc.h
+	 cliexec	      III-12	  process.h
+	 cli_parse	      III-1	  ccfunc.h
+	 clock		      III-11	  time.h
+	 clock_t	      IV	  time.h
+	 close		      III-3	  ccfunc.h
+	 closeall	      III-1	  ccfunc.h
+	 creat		      III-3	  ccfunc.h
+	 ctime		      III-11	  time.h
+
+		     D
+
+	 difftime	      III-11	  time.h
+	 DOSBase	      V 	  ---
+
+		     E
+
+	 errno		      V 	  errno.h
+	 exec		      III-12	  process.h
+	 exit and _exit()     III-12      stdlib.h
+	 exit_fcn	      V 	  stdlib.h
+
+		     F
+
+	 fclose 	      III-2	  stdio.h
+	 fdopen 	      III-2	  ccfunc.h
+	 feof		      III-2	  stdio.h
+	 ferror 	      III-2	  stdio.h
+	 fflush 	      III-2	  stdio.h
+	 fgetc		      III-2	  stdio.h
+	 fgetpos	      III-2	  stdio.h
+	 fgets		      III-2	  stdio.h
+	 FILE		      IV	  stdio.h
+	 FileDesc	      IV	  iolib.h
+	 fileno 	      III-3	  stdio.h
+	 fopen		      III-2	  stdio.h
+	 fpos_t 	      IV	  stddef.h
+	 fprintf	      III-2	  stdio.h
+	 fputc		      III-2	  stdio.h
+	 fputs		      III-2	  stdio.h
+	 fread		      III-2	  stdio.h
+	 _fre		      III-8	  ccfunc.h
+	 _freall	      III-8	  ccfunc.h
+	 free		      III-8	  stdlib.h
+	 freeall	      III-8	  ccfunc.h
+	 freopen	      III-2	  stdio.h
+	 fscanf 	      III-2	  stdio.h
+	 fseek		      III-2	  stdio.h
+	 fsetpos	      III-2	  stdio.h
+	 ftell		      III-2	  stdio.h
+	 fwrite 	      III-2	  stdio.h
+
+		     G
+
+	 getbuff	      III-2	  ccfunc.h
+	 getc		      III-2	  stdio.h
+	 getchar	      III-2	  stdio.h
+	 getchar	      III-2	  stdio.h
+	 getenv 	      III-12	  stdlib.h
+	 gets		      III-2	  stdio.h
+	 GetSTDIO	      III-1	  ccfunc.h
+	 getw		      III-2	  stdio.h
+	 gmtime 	      III-11	  time.h
+
+		     H
+
+	 HEADER 	      IV	  heapmem.h
+	 heap_alloc	      III-8	  ccfunc.h
+	 heap_free	      III-8	  ccfunc.h
+
+		     I
+
+	 index		      III-5	  string.h
+	 inst_node	      III-9	  stdlist.h
+	 isalnum	      III-4	  ctype.h
+	 isalpha	      III-4	  ctype.h
+	 isascii	      III-4	  ctype.h
+	 isatty 	      III-3	  ccfunc.h
+	 iscntrl	      III-4	  ctype.h
+	 isdigit	      III-4	  ctype.h
+	 isgraph	      III-4	  ctype.h
+	 islower	      III-4	  ctype.h
+	 isprint	      III-4	  ctype.h
+	 ispunct	      III-4	  ctype.h
+	 isspace	      III-4	  ctype.h
+	 isupper	      III-4	  ctype.h
+	 isxdigit	      III-4	  ctype.h
+
+		     K
+
+	 kill		      III-12	  process.h
+	 kill_children	      III-12	  process.h
+
+		     L
+
+	 LastFree	      IV	  heapmem.h
+	 _list		      IV	  stdlist.h
+	 localtime	      III-11	  time.h
+	 longjmp	      III-12	  setjmp.h
+	 lseek		      III-3	  ccfunc.h
+	 ltoa		      III-7	  stdlib.h
+
+		     M
+
+	 malloc 	      III-8	  stdlib.h
+	 malloc_size	      III-8	  ccfunc.h
+	 _math		      V 	  ---
+	 MathIeeeDoubBasBase  V 	  ---
+	 MemBlk 	      IV	  iolib.h
+	 memccpy	      III-6	  string.h
+	 memchr 	      III-6	  string.h
+	 memcpy 	      III-6	  string.h
+	 memmove	      III-6	  string.h
+	 memset 	      III-6	  string.h
+	 memswap	      III-6	  string.h
+	 mktemp 	      III-2	  ccfunc.h
+	 mktime 	      III-11	  time.h
+
+		     N
+
+	 _node		      IV	  stdlist.h
+
+		     O
+
+	 offsetof	      III-1	  stddef.h
+	 open		      III-3	  ccfunc.h
+
+		     P
+
+	 perror 	      III-12	  stdio.h
+	 printf 	      III-2	  stdio.h
+	 ptrdiff_t	      IV	  stddef.h
+	 putc		      III-2	  stdio.h
+	 putchar	      III-2	  stdio.h
+	 putchar	      III-2	  stdio.h
+	 puterr 	      III-2	  ccfunc.h
+	 puts		      III-2	  stdio.h
+	 putw		      III-2	  stdio.h
+	 put_head	      III-9	  stdlist.h
+	 put_tail	      III-9	  stdlist.h
+
+		     Q
+
+	 qsort		      III-10	  stdlib.h
+	 quicksort	      III-10	  ccfunc.h
+
+		     R
+
+	 read		      III-3	  ccfunc.h
+	 realloc	      III-8	  stdlib.h
+	 remove 	      III-2	  stdio.h
+	 remv_head	      III-9	  stdlist.h
+	 remv_list	      III-9	  stdlist.h
+	 remv_node	      III-9	  stdlist.h
+	 remv_tail	      III-9	  stdlist.h
+	 rename 	      III-2	  stdio.h
+	 rewind 	      III-2	  stdio.h
+	 rindex 	      III-5	  string.h
+	 r_node 	      III-9	  stdlist.h
+
+		     S
+
+	 sbrk		      III-8	  ccfunc.h
+	 scanf		      III-2	  stdio.h
+	 scdir		      III-1	  ccfunc.h
+	 scdir_clean	      III-1	  ccfunc.h
+	 SetAbortFunc	      III-12	  ccfunc.h
+	 setbuf 	      III-2	  stdio.h
+	 setenv 	      III-12	  stdlib.h
+	 setjmp 	      III-12	  setjmp.h
+	 SetSTDIO	      III-1	  ccfunc.h
+	 SetupSTDIO	      III-1	  ccfunc.h
+	 setvbuf	      III-2	  stdio.h
+	 signal_child	      III-12	  process.h
+	 size_t 	      IV	  stddef.h
+	 sprintf	      III-2	  stdio.h
+	 sscanf 	      III-2	  stdio.h
+	 stat		      III-2	  stat.h
+	 stat		      IV	  stat.h
+	 stat_		      III-2	  stdio.h
+	 stderr 	      V 	  stdio.h
+	 stdin		      V 	  stdio.h
+	 stdout 	      V 	  stdio.h
+	 stoa		      III-7	  stdlib.h
+	 stpcrlf	      III-5	  string.h
+	 strcat 	      III-5	  string.h
+	 strchr 	      III-5	  string.h
+	 strcmp 	      III-5	  string.h
+	 strcmpa	      III-5	  string.h
+	 strcpy 	      III-5	  string.h
+	 strcspn	      III-5	  string.h
+	 strerror	      III-5	  string.h
+	 strftime	      III-11	  time.h
+	 strlen 	      III-5	  string.h
+	 strncat	      III-5	  string.h
+	 strncmp	      III-5	  string.h
+	 strncpy	      III-5	  string.h
+	 strnrv 	      III-5	  string.h
+	 strpbrk	      III-5	  string.h
+	 strrchr	      III-5	  string.h
+	 strrv		      III-5	  string.h
+	 strspn 	      III-5	  string.h
+	 strstr 	      III-5	  string.h
+	 strtok 	      III-5	  string.h
+	 struct tm	      IV	  time.h
+	 strupr 	      III-5	  string.h
+	 SysBase	      V 	  ---
+	 system 	      III-12	  stdlib.h
+	 sys_errlist/sys_nerr V 	  stdio.h
+
+		     T
+
+	 task_UserData	      IV	  iolib.h
+	 time		      III-11	  time.h
+	 time_t 	      IV	  time.h
+	 tmpfile	      III-2	  stdio.h
+	 tmpnam 	      III-2	  stdio.h
+	 toascii	      III-4	  ctype.h
+	 tolower	      III-4	  ctype.h
+	 _tolower	      III-4	  ctype.h
+	 toupper	      III-4	  ctype.h
+	 _toupper	      III-4	  ctype.h
+	 type		      V 	  ctype.h
+
+		     U
+
+	 ungetc 	      III-2	  stdio.h
+	 unlink 	      III-3	  stdio.h
+
+		     V
+
+	 va_list	      IV	  stdarg.h
+	 vfprintf	      III-2	  stdio.h
+	 vprintf	      III-2	  stdio.h
+	 vquicksort	      III-10	  ccfunc.h
+	 vsprintf	      III-2	  stdio.h
+
+		     W
+
+	 wait_child	      III-12	  process.h
+	 wait_children	      III-12	  process.h
+	 wbAexec	      III-12	  process.h
+	 WBenchMsg	      V 	  ---
+	 wb_exec	      III-12	  process.h
+	 wb_parse	      III-1	  ccfunc.h
+	 wchar_t	      IV	  stddef.h
+	 write		      III-3	  ccfunc.h
+
+-------------------------------------------------------------------------
+

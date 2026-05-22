@@ -1,0 +1,679 @@
+
+
+    -------------------------------------------------------------------
+      ---------------------------------------------------------------  
+        -----------------------------------------------------------    
+          ------------   How to Code with PreAss   -------------       
+            --------------------------------------------------     
+              ------------  Support-Text für  --------------          
+                ------------------------------------------                   
+                  ------------- PreAss 1.33 ------------
+                    ----------------------------------
+                      ------------------------------
+                        --------------------------
+                          ---------  1  --------
+                            ------------------
+                              --------------
+                                 --------
+                                    --
+    
+                                  Vorwort
+                                  -------
+
+     Ich möchte mich bei den Leuten bedanken, die mich in der Weise unter-
+       stützt haben, daß das sowieso nichts wird und niemand braucht.Den
+         Gegenbeweis zuerbringen hat mich doch stark angetrieben. :-))
+
+    Dieser Text ist nicht nur speziell für Preass gedacht, mit der Anleitung
+      kann man auch Assembler oder C lernen , man muß nur wissen wie :-)..
+
+
+
+                             Das Was und Wofür
+                            -------------------
+
+    Dieser kleine Führer zu PreAss soll es erlauben, daß außer mir noch
+    andere Leute mit PreAss programmieren können.Ich hab außerdem grad Zeit
+    für sowas, da ich vor 4 Tagen am Meniskus operiert wurde und daher
+    recht viel Zeit am Rechner verbringen kann :-).
+
+    Ok, wieso muss man ein How-to-code schreiben, scheint eine schwere und
+    kompliezierte Sprache zusein? 
+
+    Nö, eigentlich weniger komplieziert als C , C++ und Pascal, mehr gewöhn-
+    ungsbedürftig.Das kommt vom Grundgedanken, ich wollte eine Sprache haben
+    die mir die lästigen Sachen abnimmt und wo ich mich auf die eigentlichen
+    Problemlösungen in Assembler konzentrieren konnte.
+
+    Und gelungen?
+
+    Ja, kann man sagen, grundsätzlich könnte das Programm auch aus nur Ass-
+    emblercode bestehen ,aber dann bräuchte man ja keinen COmpiler mehr.
+
+    Wo ist der Hacken?
+
+    Hacken? Aehmm, naja, weniger ein Hacken als ein Umstand.Ich hab mir         
+    gedacht, warum soll ich einen neuen Assembler schreiben um mein Executable
+    zu bekommen, da hab ich einfach einen NUR-Compiler geschrieben, daher muß
+    das Compilat erst noch durch einen Assembler gejagt werden bevor das 
+    Programm ausführbar wird.Das hat einen großen Vorteil, man kann sich den
+    besten Assembler suchen und ihn benutzen, ist also nicht auf den mitge-
+    lieferten angewiesen. Ich hab mir da den ASMone rausgesucht, weil er einen
+    Source-Level-Debugger besitzt.
+    Dabei muß ich kurz erwähnen,daß PreAss nicht alle Fehler findet u./o.
+    meldet, weil der Assembler alle Fehler rausfiltert, liegt aber zum Groß-
+    Teil an mir, ich hatte einfach keine Lust , warum auch doppelt machen??
+    Allerdings ist die Fehlersuche nicht problematisch, da der Aufbau des
+    Programms mit (fast) allen Labels & Strukturen erhalten bleibt, was
+    heist es kommen höchstens Labels dazu, aber keine weg, was das auffinden
+    von Programmteilen stark vereinfacht.
+
+    Nochwas?
+
+    Nein, Besonderheiten werde ich im Verlauf des Programmierens hinzufügen.
+
+    Dann gehts jetzt los?
+
+    Ok.. BTW, hier läuft grad Der Berg ruft im 3 - Wege - Verfahren ...
+    Mono von hinten,Stereo von Vorn , kommt geil, aufgrund der Laufzeit-
+    unterschiede gibts Raumklang ...:-)
+
+
+    Ziel dieses Kurses ist es mit der DOS-Library und Preass umgehen zu 
+    lernen.Dazu gibts kleine Sourcecodes mit Erklärungen.
+
+    Erstemal der Umgang mit Preass :
+
+    So simpel : PREASS SOURCE.p 
+
+    Das wars schon.Das File Source.s fällt dabei an und wird dem Assembler
+    übergeben.Ich träum ja noch von einem AREXX-Script das mit CygnusED 
+    zusammen läuft und beim abspeichern preass(komisch, nicht? jedesmal and-
+    ers geschrieben) aufruft.
+
+    Das wichtigste, der Sourcecode, unterteilt sich in den Header, in dem fast
+    alle Anweisungen für den Compiler liegen, und den Body , also den Source
+    ansich. 
+
+    So könnte der Header aussehen, wobei der sich hier schon als ultra sparsam
+    herausstellt.Mehr braucht man allerdings nicht.Die beiden Includedatei,
+    die hier angegeben sind, setzen alle meine Standarteinstellungen und
+    laden die Grundprozeduren ein.
+
+    Prozeduren sind sowas wie Macros, was wiederum was überflüssiges ist,
+    im Gegensatz dazu allerdings echt praktisch ;-)
+
+    Also, Prozeduren sind Funktionen, die vom User selbst definiert werden
+    können und im Source behandelt werden wie Systemausrüfe, mit allen
+    Vor-und-Nachteilen.
+
+;--------------------------HEADER-------------------------------------------
+
+; GrundSource 2 
+; 
+; (c) 1995 Cyborg 
+
+    {* Include sys:coder/preass/Options.p *}
+    {* Include sys:coder/preass/Prozeduren.p *}
+
+    {* String: Version="$VER: (C) CYBORG 95"*}
+
+Start:
+
+;------------------------- Options.p ---------------------------------------
+
+	IncDir 	"Sys:Coder/"
+	Include     "Preass/Konstanten.inc"
+	Include     "Preass/ASL_lib.inc"
+    Include     "Preass/intuition.inc"
+    Include     "Include/Guienv.i"
+    Include     "Include/Libraries/gadtools.i"
+
+	{* Start:START *}
+	{* AutoLiban *}
+	{* Delayaus *}
+    {* AutoLVO *}
+
+;------------------------- Prozeduren.p ------------------------------------
+
+
+    Mode_NoCase= 100
+    Mode_Case=   0
+
+    {* NewProc=CompareString[Source,with,offset,Mode][a0,a1,d0,d1]*}
+    {* NewProc=ConvertZahl[Zahl,Handle][D7,D6]*}
+    {* NewProc=CountString[String][A0]*}
+    {* NewProc=CD[Dirname][A0]*}
+    {* NewProc=CountEOL[String][A0]*}
+    {* NewProc=FillBuffer[Buffer,Inhalt,Laenge][A0,D0,D1]*}
+    {* NewProc=GetFilename[][]*}
+
+FillBuffer:
+    subq.l #1,d1
+.l1:move.b d0,(a0)+
+    dbra  d1,.l1
+    RTS
+
+ConvertZahl:
+    {* IncVar: Zusatz,Zahl*}
+    Movem.l a0-a5,-(sp)
+    Move.l #"    ",Zusatz
+    Move.l #"   0",Zahl
+    Lea Zusatz,a0
+    Move.l d7,d0
+    MoveQ.l #-1,d1
+.l1:AddQ.l #1,d1
+    Subi.l #10000000,d0
+    Bpl .l1
+    Addi.l #10000000,d0
+    addi.l #$30,d1
+    cmpi.b #"0",d1
+    Beq .l11
+    move.b d1,0(a0)
+.l11:MoveQ.l #-1,d1
+.l2:AddQ.l #1,d1
+    Subi.l #1000000,d0
+    Bpl .l2
+    Addi.l #1000000,d0
+    addi.l #$30,d1
+    cmpi.b #" ",0(a0)
+    bne .l22
+    cmpi.b #"0",d1
+    Beq .l21
+.l22:
+    move.b d1,1(a0)
+.l21:MoveQ.l #-1,d1
+.l3:AddQ.l #1,d1
+    Subi.l #100000,d0
+    Bpl .l3
+    Addi.l #100000,d0
+    addi.l #$30,d1
+    cmpi.b #" ",1(a0)
+    bne .l32
+    cmpi.b #"0",d1
+    Beq .l31
+.l32:
+    move.b d1,2(a0)
+.l31:MoveQ.l #-1,d1
+.l4:AddQ.l #1,d1
+    Subi.l #10000,d0
+    Bpl .l4
+    Addi.l #10000,d0
+    addi.l #$30,d1
+    cmpi.b #" ",2(a0)
+    bne .l42
+    cmpi.b #"0",d1
+    Beq .l41
+.l42:
+    move.b d1,3(a0)
+.l41:MoveQ.l #-1,d1
+.l5:AddQ.l #1,d1
+    Subi.l #1000,d0
+    Bpl .l5
+    Addi.l #1000,d0
+    addi.l #$30,d1
+    cmpi.b #" ",3(a0)
+    bne .l52
+    cmpi.b #"0",d1
+    Beq .l51
+.l52:
+    move.b d1,4(a0)
+.l51:MoveQ.l #-1,d1
+.l6:AddQ.l #1,d1
+    Subi.l #100,d0
+    Bpl .l6
+    Addi.l #100,d0
+    addi.l #$30,d1
+    cmpi.b #" ",4(a0)
+    bne .l62
+    cmpi.b #"0",d1
+    Beq .l61
+.l62:
+    move.b d1,5(a0)
+.l61:MoveQ.l #-1,d1
+.l7:AddQ.l #1,d1
+    Subi.l #10,d0
+    Bpl .l7
+    Addi.l #10,d0
+    addi.l #$30,d1
+    cmpi.b #" ",5(a0)
+    bne .l72
+    cmpi.b #"0",d1
+    Beq .l71
+.l72:
+    move.b d1,6(a0)
+.l71:
+    addi.l #$30,d0
+    move.b d0,7(a0)
+    Movem.l (sp)+,a0-a5
+    Checkf D6,.ende   
+    Write(D6,#Zusatz,8)
+.ende:RTS
+
+CompareString:
+    movem.l d0-d1/a0-a1,-(sp)
+    Stringlaenge=CountString(a0)
+    movem.l (sp)+,d0-d1/a0-a1
+    cmpi.l #Mode_Nocase,d1
+    beq .nocase
+    move.l Stringlaenge,d1
+    subq.l #1,d1
+    addi.l d0,a1
+.l1:move.b (a0)+,d0
+    cmp.b (a1)+,d0
+    bne .fehler
+    dbra d1,.l1
+    moveq.l #-1,d0
+    RTS
+.NoCase:
+    move.l Stringlaenge,d1
+    subq.l #1,d1
+    addi.l d0,a1
+.l2:bclr #5,(a0)
+    bclr #5,(a1)
+    move.b (a0)+,d0
+    cmp.b (a1)+,d0
+    bne .fehler
+    dbra d1,.l2
+    moveq.l #-1,d0
+    RTS
+.Fehler:
+    moveq.l #0,d0
+    RTS
+
+CountString:
+        move.l a1,-(Sp)
+        move.l a0,a1
+.l1:    cmpi.b #$00,(a1)+
+        bne .l1
+        lea -1(a1),a1
+        sub.l a0,a1
+        move.l a1,d0
+        move.l (sp)+,a1
+        RTS
+
+CountEOL:
+        move.l a1,-(Sp)
+        move.l a0,a1
+.l1:    cmpi.b #$0a,(a1)
+        beq .l2
+        cmpi.b #$00,(a1)+
+        bne .l1
+        lea -1(a1),a1
+.l2:    sub.l a0,a1
+        move.l a1,d0
+        addq.l #1,d0
+        cmpi.b #$00,(a0)
+        beq .null
+        move.l (sp)+,a1
+        RTS
+.null:  clr.l d0
+        move.l (sp)+,a1
+        RTS
+
+CD:
+        Lock(a0,#Access_read)
+        Checkf d0,.ende
+            Currentdir(d0)
+            Unlock(d0)
+            moveq.l #-1,d0
+.ende:  RTS
+
+GetFilename:
+    {* IncBlock: Filename,256*}
+        Move.l Adresse,a0
+.l1:    cmpi.b #`"`,(a0)
+        beq .l10
+        cmpi.b #` `,(a0)+
+        beq .l1
+        lea -1(a0),a1
+.l2:    cmpi.b #`"`,(a0)
+        beq .l11
+        cmpi.b #$0a,(a0)
+        beq .l12
+        cmpi.b #$00,(a0)
+        beq .l12
+        cmpi.b #` `,(a0)+
+        bne .l2
+        Lea -1(a0),a2
+.l3:    suba.l a1,a2
+        Copymem(a1,#Filename,a2)
+        Move.l a2,d0
+        subq.l #1,d0
+        rts
+.l10:   lea 1(a0),a1
+        bra .l2
+.l11:   lea 1(a0),a1
+        bra .l3
+.l12:   move.l a0,a2
+        bra .l3
+
+;-------------------------- Normaler Text ----------------------------------
+
+    Das Zeug ist nur der Vollständigkeit halber hier.Die Routinen sind alle
+    funktionell, evt. nicht die schnellstens, was euch interessiert sind die
+    Aufrüfe, mehr noch nicht. 
+    Wir können sie ja mal gemeinsam optimieren, na wie wärs?
+
+    Fangen wir doch mal mit was wirlich wichtigem an...D.O.S.
+    Nein , nicht SOS, sondern DOS , genauer dos.library , also die Library-
+    aufrüfe des DISK Operation SYSTEM.Die dos.library ist für alles zuständig,
+    was man mit Files anstellen kann und das ist ne ganze Menge.
+
+    Zuerstmal sollten wir und darauf einigen , daß alle Librarynamen klein
+    geschrieben werden, weil sie sonst von der Mutter aller Librarys , der
+    E X E C - Library nicht gefunden werden.Und damit ist das Thema schon 
+    wieder raus aus dem Kopf, weil wir uns damit gar nicht belasten brauchen,
+    daß macht alles PREASS für uns, wir müssen nur die Namen , der Library-
+    aufrüfe richtig schreiben, groß oder klein ist völlig egal.
+
+    Das erste Programm, das wir uns nun erarbeiten werden, wird, weils sonst
+    langweilig ist, gleich was richtiges tun, mit Ein- und Ausgaben und all
+    dem Quark den son Programm machen muß. :-)
+
+                 TYPE oder Was Commodore kann , kann ich auch.
+                 ---------------------------------------------
+    Aktueller Song: To be with you (Mr.Big in Kooperation mit Amiga 1200)
+                    (19 Khz, 3:17 min , 4,1 MB)
+
+    Die Routinen:       Als Header benutzen wir den Grund2.p 
+
+    GetFileName()       --- Prozedur
+    Open()              --- dos.library ( siehe Autodocs für mehr )
+    Close()             --- dos.library ( Informationen )
+    Read()              --- dos.library
+    Write()             --- dos.library
+    Input()             --- dos.library
+    OutPut()            --- dos.library
+
+    Was wüssen wir für ein Type machen?
+
+    Also erstmal feststellen welches und ob überhaupt ein File ausgewählt
+    wurde, das machen wir mit GetFilename().GetFilename() liefert uns den
+    ersten Parameter , mit dem das Programm gestartet wurde , und dessen
+    Länge.
+
+  ! Wird ein Programm im DEBUGGER gestartet, HAT ES KEINE PARAMETER, jeden-
+  ! falls nicht bei dem Assembler den ich nehme.Daher beim Debuggen Para-
+  ! meter simulieren.
+
+    Wenn wir wissen, das es einen Filename gibt, dann können wir das File
+    öffnen , mit Open().Wenn wir mit dem File fertig sind, dann müssen wir
+    es schliessen, mit Close().
+
+    MERKE: Alles was man öffnet muß man auch selbst wieder schliessen, gilt
+           für alle Arten und Objekte, die sich irgendwie bearbeiten lassen.
+
+    Sollte das öffnen nicht klappen, dann wird das Programm mit einer nichts-
+    sagenden Fehlermeldung abgebrochen ;-).
+
+    Sobald das File offen ist, kann man mit Read() und Write() Daten
+    reinschreiben bzw. rauslesen. Was wir mit den Daten machen ist unsere 
+    Sache.
+
+    Nun hab ich gesagt das Programm wird Ein- und Ausgaben machen , naja
+    also Eingaben haben wir (der Filename), fehlen noch die Ausgaben.
+    
+    Da gibts mehrere Möglichkeiten:
+
+    1. in ein zweites File (Copy)
+    2. in ein Window (schlecht bei NICHT-ASCII-Files)
+    3. jenachdem
+    4. benutzerdefiniert.
+
+    Wir werden Möglichkeit Nr. 2 verwenden und dann mal gelegenlich auf Nr.
+    4 umsteigen.
+
+    Ziemlich konfus , nicht?
+
+    Daher werden wir ein Schema entwerfen, ein Ablaufdiagramm!
+
+    Normalerweise hat ein Programmierer sowas vor bzw. bei Beginn mit den 
+    Programmierarbeiten im Kopf, aber da noch nicht jeder ein erfahrener
+    Programmierer ist , sondern erst einer werden will, machen wir das in
+    Kurzform auf Papier.
+
+
+    1. Filenamen holen
+    2. File öffnen
+    3. Testen ob File geöffnet werden konnte, wenn nicht dann ab zur 
+       Fehlermeldung
+    4. Ausgabewindow  öffnen
+    5. Testen ob Window geöffnet werden konnte, wenn nicht dann ab zur 
+       Fehlermeldung2 und File schliessen
+    6. File auslesen und ins Windowschreiben
+    7. testen ob File ausgelesen, wenn nicht nach 6. springen
+    8. File leer, dann File schliessen, Window schliessen
+    9. Programm beenden
+    
+
+    Das sind also ca. 9 Schritte die erforderlich sind, plus diverses, wie
+    Fehlermeldungen ausgeben usw. . Normalerweise wird sowas als Flußdiagramm
+    oder als Struktugramm erstellt,aber damit möchte ich keinen abschrecken.
+
+    Ich schreib dann mal:
+
+; TYPE2 - Beispielsource für Preass How2Code
+; 
+; (c) 1995 Cyborg 
+
+    {* Include sys:coder/preass/Options.p *}
+    {* Include sys:coder/preass/Prozeduren.p *}
+
+    {* String: Version="$VER: TYPE2 (C) CYBORG 95"*}
+
+    {* IncBlock: Puffer,1000*}
+
+Start:
+    Outputhandle=Output()
+    FNlaenge=GetFilename()
+    Checkf FNLaenge,.error1
+        FileHandle=Open(#Filename,#Mode_old)
+        Checkf Filehandle,.error2
+            Windowhandle=Open("CON:0/0/640/200/Ausgabewindow/AUTO/WAIT",#Mode_old)
+            CheckF WindowHandle,.error3
+.Schleife:
+                AnzahlRead=Read(Filehandle,#Puffer,1000)
+                AnzahlWrite=Write(Windowhandle,#Puffer,AnzahlRead)
+                If AnzahlWrite=#1000 --> .Schleife
+                If AnzahlRead=AnzahlWrite --> .ende
+.Error4:        
+    Write(OutputHandle,"\nREAD/WRITE- Error!\n",?)
+.ende:
+    Close(Windowhandle)
+.ende1:
+    Close(Filehandle)
+    RTS
+
+.error3:
+    Write(OutputHandle,"\nKonnte Window nicht öffnen\n",?)
+    bra .ende1
+
+.error2:
+    Write(OutputHandle,"\nKonnte File nicht öffnen\n",?)
+    RTS    
+
+.error1:
+    {* Flush *}
+    Write(OutputHandle,"\nKeine Argumente übergeben\n",?)
+    RTS    
+
+-----------------------------------ENDE-----------------------------------
+
+    Ganz schön viele Fehlermeldungen für son bisschen Anzeigen?
+    Stimmt, aber das sind alles Möglichkeiten,später lernen wir
+    noch herauszubekommen was es genau war, das nicht funktioniert
+    hat, brauchen wir jetzt aber noch nicht.
+
+    Zeile für Zeile kommt nun der Kommentar, der steht später mitten im
+    Source!
+
+    {* IncBlock: DatenPuffer,1000*}
+
+    Um Daten in größeren Menge zwischenzuspeichern, brauchen wir ein Stück
+    Ram, da gibts 2 Möglichkeiten , eine Elegante und eine einfache.
+    Die Elegante geht über AllocMEM() und FreeMem() der exec.library, sollte
+    bei allen Gelegenheiten angewendet werden, die laengere Stücke Ram
+    brauchen, ich würd mal sagen ab 5 Kb .Dazu kann man noch bestimmen
+    welche Eingenschaften das RAM haben sollte (CHIP , FAST, DMA, oder ob
+    es geleert werden soll usw. ).
+    Die Funktion IncBlock des Compilers besorgt den Speicher etwas anders.
+    Er wird nicht übers System allokiert sondern ist im Executable ent-
+    halten und sofort einsetzbar. Dadurch wird das Executable natürlich 
+    um die angegebene Länge länger.
+
+Start:
+    Outputhandle=Output()
+
+    Output() liefert das Handle,welches der User angegeben hat und wohin
+    alle Ausgaben umgelenkt werden sollen.CLI-user kennen das als 
+    " >NIL: " oder so ähnlich .Das Betriebsystem ist so freundlich das
+    NIL: schon zuöffnen und wir DÜRFEN ES AUF KEINEN FALL SCHLIESSEN.
+
+    FNlaenge=GetFilename()
+
+    FNlaenge enthält die Länge des Filenamen, ist dieser nicht vorhanden
+    so ist die Länge NULL.
+
+    CheckF FNLaenge,.error1
+
+    Prüft ob die Variable FNLaenge NULL (FALSE) ist, wenn ja dann springt
+    das Programm zum Label .error1 .
+
+        FileHandle=Open(#Filename,#Mode_old)
+        Checkf Filehandle,.error2
+
+    Es wird versucht das File zu öffnen, wenn es nicht gelingt, ist Filehandle
+    gleich NULL und CHECKF springt nach .error2 .
+    OPEN(zeiger_auf_den_Filenamen,Öffnungsmodus) 
+
+            Windowhandle=Open("CON:0/0/640/200/Ausgabewindow/AUTO/WAIT",#Mode_old)
+            CheckF WindowHandle,.error3
+    
+    Es gilt praktisch das gleiche wie für das öffnen des Files.
+
+.Schleife:
+                AnzahlRead=Read(Filehandle,#Puffer,1000)
+
+    Einlesen von max. 1000 Bytes in den Speicherbereich aus der Datei,
+    die durch das Filehandle repräsentiert wird.Nach dem Aufruf steht
+    in der Variable AnzahlRead , die Anzahl der tatsächlich gelesenen
+    Bytes.
+    READ(Filehandle,Zeiger auf den Speicherbereich,max.LeseAnzahl)
+
+                AnzahlWrite=Write(Windowhandle,#Puffer,AnzahlRead)
+
+    Schreiben von max. AnzahlRead Bytes aus dem Speicherbereich in die
+    Datei, die durch das Filehandle repräsentiert wird.Nach dem Aufruf
+    steht in der Variable AnzahlWrite, die Anzahl der tatsächlich gesch-
+    riebenen Bytes.
+    WRITE(Filehandle,Zeiger auf den Speicherbereich,max.SchreibAnzahl)
+
+                If AnzahlWrite=#1000 --> .Schleife
+   
+    Abfrage ob 1000Bytes geschrieben wurden, wenn ja, müssen auch 1000
+    Bytes gelesen worden sein, also iss in dem File noch was zuholen.
+    Wenn ja, dann wieder lesen und schreiben usw.
+
+                If AnzahlRead=AnzahlWrite --> .ende
+
+    Wenn AnzahlWrite ungleich 1000 aber AnzahlRead=AnzahlWrite ist,dann
+    konnte aus dem File nichts mehr gelesen werden und es ist zuende,es 
+    wird normal beendet.
+
+.Error4:        
+    Write(OutputHandle,"\nREAD/WRITE- Error!\n",?)
+
+    Wenn Read- ungleich Writeanzahl dann gabs einen Schreibfehler und es 
+    wird die Fehlermeldung ausgegeben.
+
+-->>So nun wären wir bei einer Besonderheit:
+-->>1. Die Fehlermeldung wird nicht ins Windowgeschrieben,sondern in die
+-->>   Standartausgabe , welche mit OUTPUT() ermittelt wurde.
+-->>2. Das Fragezeichen als Writelaenge.  siehe --> Preass Dokfile
+
+.ende:
+    Close(Windowhandle)
+
+    Das Window wird geschlossen, jedenfalls ordnen wir das an, wenn in der
+    Bezeichnung des CLI-Windows ein WAIT auftaucht, und das ist hier der Fall,
+    dann schliessen wird das Window zwar, aber es bleibt solange auf bis
+    der Benutzer es mit dem CloseGadget selbst schliesst.
+    --> IDEAL für NERVREQUESTER !!! <--    
+
+.ende1:
+    Close(Filehandle)
+
+    Schliessen des Files, das Filehandle (und auch ein Windowhandle) dürfen
+    nach einem Close() nicht mehr verwendet werden.Es kommt sonst zu einem
+    Absturz des OS.Folgendes geht aber selbstverständlich:
+
+        FH=Open(#Filename,#Mode_old)
+        ...
+        Close(FH)
+        FH=Open(#Filename2,#Mode_old)
+        ...
+        Close(FH)
+
+    RTS
+
+    RTS ist ein Assemblerbefehl: ReTurn from Subroutine 
+    Das Label START: wird als SUBROUTINE von der HAUPTRoutine des Compiler-
+    sources (das ist der Teil , den Preass selbst erzeugt) angesprungen und
+    muss folglich mit RTS verlassen werden. Das gilt auch für Prozeduren.
+
+.error3:
+    Write(OutputHandle,"\nKonnte Window nicht öffnen\n",?)
+    bra .ende1
+
+    BRA ist ein Assemblerbefehl: BRANCH
+    Verzweige unbedingt, will sagen auf jeden fall wegspringen, dorthin was
+    das Label repräsentiert.
+
+.error2:
+    Write(OutputHandle,"\nKonnte File nicht öffnen\n",?)
+    RTS    
+
+.error1:
+    {* Flush *}
+    
+    Flush muß hier deshalb stehen, weil!, wenn dieser Teil des Programms
+    aktiv wird, steht im Adressregister A6 die Basisadresse der EXEC drin.
+    Da im Ablauf vor dem folgenden WRITE(output...)(unten) AUCH ein DOS-
+    Kommando , nämlich auch WRITE() steht, sieht Preass keinen Grund die
+    Dosbase in A6 zuschreiben.Wenn das Label Error1 ein GLOBALES Label
+    wäre statt eines LOKALEN , würde es automatisch gemacht,so besteht
+    kein Grund.
+    Das ist bedingt durch den Aufbau und die Abarbeitung von Preass.
+    Preass ist ein ONE-PASS-Compiler (evtl. nicht mehr  UP2DATE,aber auch
+    gar nicht so schlecht) ohne Durchlauftest.
+    
+    Write(OutputHandle,"\nKeine Argumente übergeben\n",?)
+    RTS    
+
+    Wieso steht in .error1: und .error2: 2x RTS statt bra .ende1 ? Ganz
+    einfach, weil das, was bei .ende1: steht nicht abgearbeitet werden soll.
+    Es ist nichts zu schliessen da,weil es nicht geöffnet werden konnte.
+
+    Ich hab den Source grade durch Preass geschickt und durch den Assembler,
+    keine Fehler.
+    Das Executable funktioniert auch ganz toll.
+    
+    Ich finde das reicht für den ersten Versuch.
+
+    Eins sollte ich noch erwähnen, die Sache mit der Windowbezeichnung:
+
+    CON:0/0/640/200/Ausgabe/Auto/Wait
+
+    also CON: ist das Device, das dafür zuständig ist, es ermöglicht Ein- und
+    Ausgaben; 0/0 ist die LINKE/OBERE Ecke in Pixeln relativ zum Screen.
+    640/200 sind Länge und Höhe in Pixeln, dann folgt der Name und die 
+    Optionen.
+
+    Als Device würde ich mal PAR: , PRN: order RAM: eingeben!
+
+    Im nächsten Teil, sodenn es einen geben wird, wird Type2 soweit umgebaut,
+    das es ASCII von BINAER unterscheiden lernt und dementsprechend die 
+    Ausgabe in ein File oder ein Window umlenkt (ggf. mit FileRequester!)
+
+                                                        Cyborg

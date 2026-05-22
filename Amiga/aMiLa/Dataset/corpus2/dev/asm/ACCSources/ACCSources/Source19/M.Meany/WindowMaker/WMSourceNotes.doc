@@ -1,0 +1,255 @@
+
+                         WindowMaker Source Notes 
+                         ~~~~~~~~~~~~~~~~~~~~~~~~ 
+ 
+    My original intention had been to  write  a tutorial as I programmed this 
+utility, but it got so complex I gave up! 
+ 
+    The basic principal  behind  the  program  is  very  simple. It opens two 
+windows, and then falls into an Intuition event loop. If an event occurs that 
+is going to affect the User window, a New  Window structure is saved first in 
+a block of memory in case the operation is canceled. 
+ 
+    The New Window structure  is  filled  with  information  from  the actual 
+windows structure being used by  Intuition.  The pointer to this structure is 
+supplied by Intuition when OpenWindow is called. 
+ 
+    Whenever a menu selection is  selected,  such  as load, save or edit, the 
+program copies all the  windows  charecteristics  into  the  buffer. For Save 
+Source in particular,  the  buffer  has  a  dual  purpose.  It also acts as a 
+DataStream for RawDoFmt(). Pointers to the labels are written into the buffer 
+prior to saving and removed again afterwards. 
+ 
+    The edit subroutine is the most complex.  When first entered, the routine 
+sets the SELECT flag in all the  gadgets  representing  the windows IDCMP and 
+ordinary flags. This is done by testing each bit of the flags in question and 
+setting the appropriate gadgets SELECT flag if the bit is set. 
+ 
+    The Integer gadgets also require some  setting  up. Details such as Width 
+and Height are extracted from the Intuition structure, they must be converted 
+into ASCII text strings for  the  gadgets  to  display  them. I wrote a small 
+subroutine to do this using RawDoFmt() again. 
+ 
+    When the user has finished editing a windows characteristics and selected 
+OK, the program  builds  a  NewWindow  structure  in  the  buffer  and  calls 
+OpenWindow. This ensures the  window  displayed  is  always what the user has 
+requested. 
+ 
+    The Load and Save raw data modes simply load and save the contents of the 
+buffer. Well, almost. The program attaches a long word header to the start of 
+a file saved so it can recognise a  data  file  when loading. This also saves 
+wasting time loading the wrong file. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

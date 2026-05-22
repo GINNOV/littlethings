@@ -1,0 +1,55 @@
+JOIN Replacement Doc    by TreeBeard '91
+====================
+
+I wrote this after spending about quarter of an hour just joining a few files
+together into one big one, and deleting the originals using the Join and
+delete commands.  I thought it would be a good idea to replace the Join
+command with one which enabled the user to join them and delete them in one
+go.
+
+The syntax is:
+
+Join <input files> to <output file> [del] [addlet <start><finish>]
+
+There must be a space between the TO and the output files
+All files are seperate by spaces
+Character case does not matter except in addlet
+
+Join ?
+will print the syntax
+
+DEL deletes all input files after joining them
+ADDLET uses the first input file and adds letters to it,
+       eg. ADDLET AD will add an A, then a B, then a C, then D.
+       The two letters MUST be in the same case as each other (though
+       they don't need to be in the same case as the actual files are)
+
+If DEL is selected and an error occurs on, say, the third file, the
+second and first will have been deleted and joined into the master
+file, so you should keep the master file, sort out the error, and
+then use continue the join by using the master file instead of using
+the first two (deleted) files.
+
+If an error occurs during joining, you will be given the option of
+deleting the output file or keeping it.  
+
+- It can be used just like the original Join command is
+   eg. to join Circle, Square and Triangle into Shapes, keeping the
+       originals, it would be
+
+	join circle square triangle to Shapes
+
+- It can do the above and delete the circle square and triangle files
+  after it has joined them by adding DEL to the end
+
+- If you save some files by lettering them, eg. blocka, blockb, blockc
+  blockd, etc. you can join them by using ADDLET
+   eg. to join Castlea, Castleb, Castlec, etc... up to Castlej into
+       CastleBlocks
+
+	join castle to CastleBlocks addlet aj
+
+   Do not use addlet Aj, or an error will occur, but if it was CastleA
+   CastleB, etc. the example would still work.
+
+   DEL and ADDLET can be used together

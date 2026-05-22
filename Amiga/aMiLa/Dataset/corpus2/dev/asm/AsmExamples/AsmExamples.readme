@@ -1,0 +1,8 @@
+Short:        Two assembly code examples.
+Author:       Henrik Clausen
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+A couple of assembly code examples.  Executables are not extremely useful
+but the code might be of considerable benefit to beginning assembly
+language programmers.  

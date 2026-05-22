@@ -1,0 +1,263 @@
+
+
+            *****************************************************
+
+              SASalloca -- an alloca() implementation for SAS/C
+
+            *****************************************************
+
+
+Background
+~~~~~~~~~~
+  Many UNIX programs like to use alloca() for allocating memory for temporary
+  data-structures. For those who don't know: alloca() is supposed to allocate
+  memory from the program's stack frame; everything alloca()ted within a
+  function f() is automatically freed when f() returns.
+
+  Usually alloca() must be implemented as "build-in" function, i.e. must be
+  supplied by the compiler. SAS/C however does not support it. Therefore
+  porting UNIX programs using alloca() is usually quite a pain as you have to
+  eliminate all alloca()s manually. Note that there is a public domain
+  implementation of alloca() which claims to be "mostly portable". Also this
+  implementation compiles fine using SAS/C it does NOT work! Why? There is a
+  separate section on that topic below for those who are interested.
+
+  Ok, so how does my implementation do it? First of all, it's not really my
+  idea but has been proposed by Doug Walker and Michael van Elst. (Thanks!)
+  It's done by (ab)using the compiler's PROFILEing facility. If you compile
+  with the PROFILE switch turned on the compiler calls _PROLOG() whenever a
+  function is entered and _EPILOG() when the function returns respectively.
+  Refer to your SAS/C manuals for details.
+
+  This alloca() implementation uses those hooks to track alloca()ted memory.
+  Whenever a function returns all memory alloca()ted by that function will be
+  freed. If you take a look at the included source you'll notice that
+  _PROLOG() and _EPILOG() are very simple, efficient, functions; thus you
+  don't have to worry about speed. Due to the use of memory-pools they are
+  even more efficient. If for you _do_ worry about speed for some reason you
+  can compile amazing-fast-low-level-called-all-the-time functions which do
+  not (or at least not often) use alloca() without PROFILE enabled. That way
+  whatever alloca()ted within a function not compiled with PROFILE will
+  "belong" to the last calling function which has been compiled with PROFILE
+  enabled, i.e. will be freed when that function returns.
+
+
+Usage
+~~~~~
+  Well, actually most things you need to know have already been said above.
+  Just compile your files with the PROFILE option and link the whole thing
+  with "alloca.o". alloca.o contains autoinitialization and autotermination
+  functions for setting up and killing the alloca memory pool. Thus, nothing
+  else is required.
+
+  You might want to recompile alloca.c in some cases. (I know that you'll do
+  that anyway 'cause you don't trust me :-)
+  Especially you might want to change alloca()'s behavior if the machine runs
+  out of memory. The docs to the original alloca() say that it'll return NULL
+  in that case -- just like any other memory allocation function. However,
+  show me _one_ _single_ UNIX program which cares about that :( On a typical
+  UNIX system the amount of memory us unlimited, you know... That's why I
+  preferred to abort() the program if alloca() fails to allocate memory. This
+  might not be appropriate for your application, or you might want to do
+  something like
+
+    fprintf(stderr, "Not enough memory\n");
+    exit(20);
+
+  instead of simply abort(); adjust alloca() to fit your needs in that case.
+
+
+  If your program uses setjmp() and longjmp() some addition work is required.
+  Instead of (directly) using the setjmp() and longjmp() functions provided by
+  the SAS/C libraries you should use the macros supplied with this package. To
+  do so you must NOT #include <setjmp.h> but <alloca.h> instead. alloca.h is
+  included in this package. To minimize changes in your sources you do not
+  have to delete all "#include <setjmp.h>"s. Instead you should simply
+  #include <alloca.h> as the very first header-file in your program. This will
+  prevent subsequent <setjmp.h>s from being included.
+
+  Actually it's not really required to use these setjmp()s and longjmp()s,
+  i.e. your program will also run if you use SAS/C's originals. However it
+  might not just run but also run out of memory as no alloca()ted memory will
+  be freed by SAS/C's longjmp(). alloca() would still think it's in the
+  function which called longjmp().
+
+  While it is ok to compile parts of your program with PROFILE enabled and
+  other parts with PROFILE disable it is NOT, I mean ***NOT***, ok to compile
+  part of your program with SAS/C's <setjmp.h> and others with <alloca.h>.
+  I.e. you must NEVER intermix the original setjmp()s and longjmp()s with my
+  implementations. Do NOT think everything's gonna be alright 'cause you're
+  linking with alloca.o. You need the right definition of jmp_buf which is
+  #included from <alloca.h>.
+
+  Usually there is no problem with this: Simply #include <alloca.h> at to top
+  of your sources. If you're trying to do something weird the compiler will
+  usually flame you.
+
+
+Abstract
+~~~~~~~~
+  Ahm, ok, the docs are getting too long to wr^H^H read ;-)
+  Here is a brief description of how to use this package:
+
+  * #include <alloca.h> as the very first header in all parts
+    of your program.
+
+    This is not really required if your program does not use
+    setjmp() and longjmp(). However, you still might want to do
+    so to get the prototype for alloca().
+
+  * Compile your sources with the PROFILE option.
+
+    It is safe to compile parts of your project without the PROFILE
+    option, for example if you want maximum speed for some simple
+    functions.
+
+  * Link your program with alloca.o
+
+
+Just a note...
+~~~~~~~~~~~~~~
+  The following is not really important for people who just want to use the
+  package. It's just a warning for people who think about other options to
+  implement alloca() for SAS/C.
+
+  An easy way to implement alloca() could work as follows:
+
+  | The general concept of this implementation is to keep
+  | track of all alloca-allocated blocks, and reclaim any
+  | that are found to be deeper in the stack than the current
+  | invocation.  This heuristic does not reclaim storage as
+  | soon as it becomes invalid, but it will do so eventually.
+
+  This is taken from the docs of another PD implemention of alloca() which
+  claims to be "mostly portable" and has already been used for gcc | cc ->
+  SAS/C ports. However, THIS DOES NOT WORK!
+
+  Why? Well, SAS/C does not keep the SP constant in a function. E.g. the
+  following source:
+
+  -------------------------------
+  void g(int x);
+
+  void f(void)
+  {
+    g(1);
+    g(2);
+    g(3);
+    g(4);
+  }
+  -------------------------------
+
+  becomes:
+
+  -------------------------------
+  f:
+  ___f__1:
+                PEA            ($1).w
+                BSR.W          g
+                PEA            ($2).w
+                BSR.W          g
+                PEA            ($3).w
+                BSR.W          g
+                PEA            ($4).w
+                BSR.W          g
+                LEA            $10(A7),A7
+  ___f__2:
+                RTS
+  -------------------------------
+
+  I.e. arguments for multiple function calls in a sequence are pushed on the
+  stack and the SP is not adjusted before the end of the sequence. Now
+  consider a program like this:
+
+  -------------------------------
+  void g(int x);
+
+  void f(int x)
+  {
+    char *foo, *bar;
+
+    /* ... */
+    g(1);
+    g(2);
+    g(3);
+    /* ... */
+    foo = alloca(42);
+    /* ... */
+    if (x)
+      return;
+    bar = alloca(42);
+    /* ... */
+  }
+  -------------------------------
+
+  Which becomes:
+
+  -------------------------------
+  f:
+                MOVEM.L        D7/A3/A5,-(A7)
+  ___f__1:
+                MOVE.L         $10(A7),D7
+                PEA            ($1).w
+                BSR.W          g
+                PEA            ($2).w
+                BSR.W          g
+                PEA            ($3).w
+                BSR.W          g
+                PEA            ($2a).w
+                BSR.W          alloca
+                LEA            $10(A7),A7
+                MOVE.L         D0,A5
+                TST.L          D7
+                BNE.B          ___f__4
+  ___f__2:
+  ___f__3:
+                PEA            ($2a).w
+                BSR.W          alloca
+                MOVE.L         D0,A3
+                ADDQ.W         #$4,A7
+  ___f__4:
+                MOVEM.L        (A7)+,D7/A3/A5
+                RTS
+  -------------------------------
+
+  And *woom* alloca()ting bar will free foo as foo has been alloca()ted at a
+  lower stack level!
+
+  You might think of using register arguments to solve the problem. While this
+  would prevent the compiler from pushing function arguments of the stack it
+  would NOT solve the problem in general. In fact it's quite likely that the
+  compiler will modify the SP. There simply is no way to implement alloca()
+  without direct compiler support. The PD implementation I mentioned might
+  work with some compilers in most cases but it is not safe and it doesn't
+  work with SAS/C for sure.
+
+  Why do I mention this? Well, I've spent some nights to track down this
+  problem (this kind of bugs are hard to find -- sometimes your machine will
+  crash, sometimes you'll simply get wrong results, sometimes it'll not show
+  up at all) just to wake up the next morning and find out that other people
+  already made exactly the same mistake.
+
+
+Legal stuff
+~~~~~~~~~~~
+  The whole package is PUBLIC DOMAIN. Do with it whatever you can take the
+  responsibility for.
+
+
+Author
+~~~~~~
+  Send comments, questions, etc., to
+
+      Internet: proels@fmi.uni-passau.de
+      Fidonet:  Stefan Proels,2:2494/22.13
+
+  You may also contact me via snailmail:
+
+      Stefan Pröls
+      Rudolf-Guby-Str. 1
+      94032 Passau
+      Germany
+
+

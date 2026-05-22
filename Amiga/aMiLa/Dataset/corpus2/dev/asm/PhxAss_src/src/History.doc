@@ -1,0 +1,1861 @@
+HISTORY:	  PhxAss MC68000 Macro Assembler
+ab V3.00:	  PhxAss MC680x0/68851/6888x Macro Assembler
+
+
+Datum	 Version
+
+28.01.92  V1.00   Ich glaube, dass ich nun lange genug mit dem Assembler
+		  gearbeitet habe ohne groessere Fehler zu bemerken. Diese
+		  Version muesste so weit sein, dass ein Programmierer keine
+		  unueberwindlichen Schwierigkeiten beim assemblieren seiner
+		  Programme haben sollte.
+		  Bekannte Bugs und Erweiterungsmoeglichkeiten:
+		  o Mit der derzeitigen -p Option scheint es nicht moeglich
+		    unendlich lange Seiten zu erzeugen.
+		  o NEAR und FAR lassen sich im Sourcecode momentan nur
+		    einmal deklarieren.
+		  o Es waere nicht schlecht, wenn man den Assembler waehrend
+		    er laeuft, mit CTRL-C abbrechen koennte.
+		  o Der Assembler schluckt immer noch keinen vom AZTEC C-
+		    Compiler erzeugten Sourcecode. Er haelt ein  jsr .mulu#
+		    fuer eine unerlaubte Adressierung.
+
+04.02.92  V1.10   o Der Near-Mode lief immer noch nicht korrekt (obwohl ich
+		    tagelang ohne Probleme damit gearbeitet habe). Wenn die
+		    NEAR-Directive vor der ersten SECTION benutzt wird, setzt
+		    MakeSection den PC um 6 Bytes herauf, so dass die Ver-
+		    schiebung aller Symbole in Pass 2 um 6 Bytes gar nicht mehr
+		    noetig waere.
+		  o Der Assembler lief bei END in Pass 1 trotzdem noch durch
+		    den gesamten Rest des Source-Codes.
+		  Neuer Switch:  -s  zur Deklaration eines SET-Symbols
+
+07.02.92  V1.12   o -[Expression] konnte noch nicht ausgewertet werden.
+
+08.02.92  V1.13   o Division by Zero!! Falls Assembly-Time kleiner 0.1 sec war.
+
+02.03.92  V1.50   In dieser Version ist endlich der erste Schritt getan um in
+		  spaeteren Versionen die MC68881/882 Befehle zu implemen-
+		  tieren.
+		  Neben Byte, Word und Long werden jetzt noch die Fliesskomma-
+		  typen FastFloatingPoint, IEEESinglePrecision, IEEEDouble-
+		  Precision, IEEEExtendedPrecision und PackedBCD unterstuetzt.
+		  Die verwendeten Abkuerzungen sind:
+		  .f (FFP), .s (IEEESP), .d (IEEEDP), .x (IEEEExtP),
+		  .p (PackedBCD).
+		  Bis jetzt duerfen diese neuen Typen allerdings nur an den
+		  Befehlen EQU, =, DC, DCB, DS und BLK verwendet werden (z.B.
+		  PI equ.d 3.14159  oder  dc.f 1.05E+08,-0.009,1e10,35.25e-3).
+		  Die Typen '.s' und '.f', die nur 32 Bit gross sind, koennen
+		  auch mit normalen M68000-Befehlen als Immediate benutzt
+		  werden. Z.B.:    move.l   #PI,d0   (wobei  PI =.f 3.14 )
+		  Im Gegensatz zu den Integer-Symbolen koennen mit den Float-
+		  Symbolen (bisher) keine komplexen Ausdruecke gebildet werden.
+		  A =.x 5.678-2E+8*B  ist also unmoeglich. Erlaubt ist nur:
+		  <SymName> =.x <FloatZahl>  und  <SymName> =.x <SymName> .
+		  Bekannte Bugs hierzu:
+		  o Wenn man mit M68000-Befehlen auf Float-Symbole, die groes-
+		    ser als 32 Bit sind, zugreift, wird keine Fehlermeldung
+		    erzeugt. Der Assembler setzt dann die Adresse des Symbol-
+		    Wertes ein.
+		  o Eine Fehlermeldung bleibt ebenfalls aus, wenn man die neuen
+		    Abkuerzungen an M68000-Befehle haengt (z.B. move.d d0,d1).
+		    Dadurch wird dann meist ein illegaler Befehl erzeugt.
+
+		  Eine weitere Neuerung besteht darin, dass der Assembler jetzt
+		  jederzeit mit CTRL-C abgebrochen werden kann.
+		  Das Beste aber ist, dass alle Erweiterungen den Assembler
+		  nur um 1% verlangsamen.
+
+03.03.92  V1.60   ** Fehlerkorrekturen:
+		  o Durch die Einfuehrung der Fliesskomma-Typen in V1.5 hatte
+		    sich ein Fehler in die Befehle DS/BLK/DCB eingeschlichen.
+		    ds.b x / blk.b x / dcb.b x	belegten den 8-fachen Speicher.
+		  o Lokale Symbole, deren Wert erst in Pass 2 bestimmt werden
+		    konnte (z.B. bedingt durch Forward-Reference auf ein
+		    anderes Symbol), wurden unter einer falschen Zeilennummer
+		    in die Liste eingetragen und waren somit fuer den Rest
+		    des Codes unbekannt.
+		  o Wenn in absolutem Code XREF oder PUBLIC benutzt wurde, kam
+		    zwar am Ende von Pass 1 noch die Fehlermeldung, danach
+		    stuertzte er aber auch schon ab.
+		  ** Neuerungen:
+		  o Mit der -p Option kann man jetzt unendlich lange Seiten
+		    erzeugen. Dazu wird der Parameter einfach auf Null gesetzt
+		    oder ganz weggelassen (-p0 oder -p).
+		  o Das Near-Data Model funktioniert jetzt auch bei Absolutem
+		    Code.
+		  o NEAR und FAR koennen sich im Source-Code beliebig oft
+		    abwechseln. Die Parameter werden nur beim ersten NEAR
+		    beachtet, und bei allen anderen ignoriert.
+		  ** Bekannte Fehler:
+		  o Der Wert eines Fliesskomma-Symbols kann bei Ausdruck einer
+		    Referenz-Liste noch nicht ausgegben werden. Alle Fliess-
+		    komma-Symbole werden dort fuer SET-Symbole gehalten.
+		  o Man sollte momentan auf keinen Fall ein Symbol definieren,
+		    das vorher durch eine IF-Anweisung abgefragt wurde.
+		    In Pass 2 ist dieses IF dann naemlich erfuellt, und das
+		    Harmloseste was dann passieren kann, ist dass die Ausgabe
+		    eines eventuellen Listing-Files total durcheinander geraet.
+		    Folgendes ist z.B. NICHT erlaubt:	 ifnd Symbol
+							Symbol set 1
+							 endc
+
+04.03.92  V1.62   ** Fehlerkorrekturen:
+		  o Die IF-Anweisung, die in V1.60 noch fehlerhaft war,
+		    arbeitet nun voellig korrekt.
+		  o Die Werte der Fliesskomma-Symbole werden jetzt als Hexade-
+		    zimal Zahlen ausgegeben. Bei 64 und 96-Bit Zahlen werden
+		    dazu aber zwei Zeilen benoetigt.
+		  ** Neuerungen:
+		  Bisher war es so, dass alle Referenz-Zeilen im Reference-
+		  Listing hintereinander ausgegeben wurden, egal wie lang die
+		  Zeile dadurch wurde.
+		  Jetzt werden immer sechs Zeilennummern in einer Zeile ausge-
+		  geben und dann eine neue Zeile begonnen.
+
+17.03.92  V1.70   ** Fehlerkorrekturen:
+		  o DS.W 0  (oder DS.L 0)  haben die Adresse nicht begradigt.
+		  o XDEF auf Symbole im BSS-Bereich war bisher wirkungslos.
+		  o Bisher wurde bei CSEG,DSEG,BSS als Section-Name " "
+		    gesetzt. Dies fuehrte aber irgendwie zu Problemen, falls
+		    man mit .lib-Files linken wollte (Kann allerdings auch am
+		    verwendeten Linker liegen). Jetzt bekommen Code-Sections
+		    den Namen "CODE", Data-Sections den Namen "DATA" und BSS-
+		    Sections den Namen "BSS".
+		  ** Neuerungen:
+		  Der Assembler schluckt nun auch Aztec-Code (soweit ich es
+		  uebersehen kann).
+		  Um dies zu bewerkstelligen ist mit GLOBAL eine neue Anwei-
+		  sung dazugekommen. Im Gegensatz zum Aztec-Linker kann bei
+		  Standard Amiga-DOS Linkern die GLOBAL-Anweisung jedoch nur
+		  in einem der Object-Module verwendet werden. Die globalen
+		  Variablen in den anderen C-Sources muessen mit 'extern'
+		  deklariert werden.
+		  Ein '#' hinter einem Symbolnamen wird nun erkannt, und das
+		  Symbol extern sichtbar gemacht (XDEF).
+		  Dies funktioniert mit Sicherheit aber nur bei Befehlen die
+		  ausschliesslich den Symbolnamen als Operand haben.
+		  z.B.:  bra  test#    jsr  .muls#   etc.
+		  Neuer Schalter:  -a
+		   aktiviert das auto-align fuer DC.? - Directiven (bei DS.?
+		   wurde es ja sowieso schon gemacht).
+		   Aztec Source Codes sollten immer mit -a assembliert werden.
+		  ** Bekannte Fehler:
+		  Die Fliesskomma-Symbole werden im Equates-File nicht mit
+		  ausgegeben.
+
+30.03.92  V1.72   ** Neuerungen:
+		  Ein vom Aztec-Compiler erzeugtes  JMP (PC,D0.w)  wird jetzt
+		  akzeptiert. Der Assembler setzt dann Null fuer das displace-
+		  ment ein. Bei JMP (PC) klappt dies allerdings noch nicht.
+
+01.04.92  V1.75   ** Fehlerkorrekturen:
+		  Falls den Mnemonics BTST, BCLR, BSET, BCHG ein '.L' ange-
+		  haengt wurde, verschob sich der Code um 2 Bytes, die Labels
+		  aber leider nicht. Dies erzeugte boese Abstuerze bei Aztec-C
+		  Code, der z.B. immer BTST.L anstatt nur BTST erzeugte.
+		  Bei Anhaengen eines '.L' hinter DIVU, DIVS, MULU oder MULS
+		  waren zwar die Labels noch korrekt, allerdings wurde ein
+		  Immediate-Operand dann, wie angegeben, als Longword in den
+		  Object-Code geschrieben.
+		  ** Bekannte Fehler:
+		  Wenn durch Optimierung Programmcode-Differenzen in einer
+		  Tabelle, nachtraeglich veraendert werden muessen, kann es
+		  vorkommen, dass die geaenderten Differenzen im Listing-File
+		  ueber die Adresse geschrieben werden anstatt 7 Zeichen
+		  weiter rechts.
+
+13.04.92  V1.76   ** Fehlerkorrekturen:
+		  Bisher hielt der Assembler Adressen von $0000.w bis $ffff.w
+		  fuer eine Absolute Short Adressierung. Richtig ist aber:
+		  -$8000.w bis $7fff.w
+
+05.05.92  V1.77   ** Fehlerkorrekturen:
+		  Die Fehlpositionierung der Differenzen aus V1.75 ist nun
+		  behoben (Schreibfehler: BNE statt BEQ !).
+
+02.07.92  V1.80   ** Neuerungen:
+		  Ab dieser Version ist es endlich moeglich die ORG-Anweisung
+		  mehrmals zu verwenden. Der zu erzeugende Code kann beliebig
+		  ueber den Speicher verteilt werden.
+		  Eine Einschraenkung existiert dabei jedoch:
+		  Falls man sich in einer ORG-Section fuer die LOAD, FILE oder
+		  TRACKDISK -Anweisung entschieden hat, muss diese auch in
+		  allen anderen ORG-Sections angewendet werden.
+		  Es ist also NICHT moeglich eine Section in den Speicher, und
+		  eine auf die Diskette zu schreiben o.ae. .
+		  Die NEAR-Anweisung wurde ebenfalls ueberarbeitet. Der Befehl
+		  LEA SecOrigin+$8000,An  wird jetzt nicht mehr automatisch als
+		  erstes Kommando in Section 0 eingesetzt. Von nun an wird das
+		  Near-Register in der Section initialisiert, in der die NEAR-
+		  Anweisung steht ( besonders wichtig bei mehreren ORG -
+		  Sections ).
+		  ** Bekannte Fehler:
+		  TTL wird bei V1.80 nicht mehr richtig akzeptiert.
+		  Bei Aztec kann die BSS-Directive noch zwei Operanden haben.
+		  Diese werden bisher einfach ignoriert.
+
+22.07.92  V2.00   ** Fehlerkorrekturen:
+		  Die bekannten Fehler aus V1.80 sind berichtigt.
+		  Bisher wurde, falls in irgendeiner Section ein XREF vorkam,
+		  allen anderen Sections ebenfalls ein EXT_REF-Block ange-
+		  haengt, obwohl er moeglicherweise gar nicht noetig waere
+		  (Laenge Null). Das waren immerhin acht verlorene Bytes pro
+		  Section. Jetzt werden EXT_REF-Bloecke nur dann angehaengt,
+		  wenn sie auch wirklich noetig sind.
+		  ** Neuerungen:
+		  Diese Version ist zum erstenmal, in bestimmten Bereichen,
+		  inkompatibel zu ihrem Vorgaenger (daher auch der Versions-
+		  nummernsprung von 1 auf 2).
+		  Der Near-Data Mode unterstuetzt naemlich endlich den Near-
+		  Reloc Block $000003f8, sowie EXT_NEARREF $86 in EXT_REF-
+		  Bloecken. Somit ist es moeglich in mehreren Object-Files
+		  den Near-Data Mode zu nutzen und alles nachher zusammen-
+		  zulinken. Dies wurde erst durch den neuen Linker "PhxLnk"
+		  moeglich, der im Gegensatz zum Public-Domain Linker BLink
+		  V6.7, den ich bisher benutzte, den Near-Data Mode unter-
+		  stuetzt. Fuer Code der an eine absolute Adresse assembliert
+		  wird, funktioniert der Near-Mode noch wie frueher.
+		  Da Near-Mode Files nun beliebig gelinkt werden koennen,
+		  setzt der Assembler die Initialisierungroutine fuer das
+		  Basis-Register nicht mehr automatisch an den Programmanfang.
+		  Dazu muss der Programmierer in seinem Startup-Modul die neue
+		  Directive 'INITNEAR' verwenden.
+		  Die zweite neue Directive heisst 'NREF' und funktioniert wie
+		  'XREF', nur dass der Assembler somit vorher weiss wo er
+		  Address Register Indirect verwenden muss, wenn der hinter
+		  NREF genannte Symbolname auftritt. Z.B.:
+		     near a4,1
+		     nref symbol
+		     move.l  symbol,d0
+		  wird uebersetzt als:	  move.l  0(a4),d0
+		  und die Adresse der '0' im EXT_REF-Block als Near-Reference
+		  ($86xxxxxx) vermerkt.
+		  Weiter erlaubt die NEAR-Directive als Section-Nummer nun
+		  auch -1 oder S (SD,SmallData,etc.). Dies sagt dem Assembler
+		  das ALLE Data- und Bss-Sections als eine grosse Near-Data
+		  Section behandelt werden.
+		  Die Assembler-Symbole PHXASS, MC680x0, MC6888x, haben jetzt
+		  vorne und hinten einen Unterstrich. Also: '_PHXASS_'.
+		  Ein neu hinzugekommendes SET-Symbol heisst _VERSION_, und
+		  beinhaltet im MSW die Version- und im LSW die Revision-Nummer
+		  des Assemblers (wenn _VERSION_ unbekannt ist, handelt es
+		  sich um PhxAss V1.xx).
+
+23.07.92  V2.02   ** Neuerungen
+		  Neue Directive:  Man darf nun NEAR CODE schreiben
+		  um den Near-Code Modus zu aktivieren. In diesem Modus
+		  werden alle JMP- und JSR-Befehle deren Operand vom
+		  Typ XREF ist, in BRA bzw. BSR-Befehle umgewandelt.
+		  Um den Near-Code Modus von aussen zu aktivieren kann man
+		  den -mc Schalter setzen.
+		  Der Near-Code Mode laesst sich allerdings nicht, wie der
+		  Near-Data Mode, mehrere Male an- und ausschalten. Ist er
+		  einmal aktiviert bleibt er's fuer's ganze Programm.
+		  Als zweite Neuerung bleiben leere Sections von nun ab auch
+		  leer. Bisher wurde in einer voellig leere Section ein JMP-
+		  Befehl auf die naechste Section eingesetzt.
+
+26.07.92  V2.03   ** Fehlerkorrekturen
+		  Wenn z.B. eine DATA-Section definiert wurde, bevor auch nur
+		  eine CODE-Section vorhanden war, war der Name der DATA-Sect.
+		  nicht "DATA" sondern "". Diese Fehlerkorrektur hat zur Folge
+		  dass es nun erlaubt ist, in einer Zeile mit Section-Defini-
+		  tion auch ein Label zu haben (bisher wurde dies ignoriert).
+
+27.07.92  V2.04   ** Neuerungen
+		  Falls beim Assemblieren ein Fehler auftritt wird als Return-
+		  Code 1 zurueckgeliefert. Bisher war der Return-Code immer 0.
+
+07.09.92  V2.10   ** Fehlerkorrekturen
+		  Es gab immer noch grosse Probleme bei Macro-Aufrufen inner-
+		  halb eines Bedingt-Assemblierten Blocks. Dadurch dass nun
+		  alle Ergebnisse der IF-Directiven in Pass 1 gespeichert, und
+		  somit in Pass 2 nur noch aus einer Liste ausgelesen werden
+		  muessen, duerften sich jetzt aber die Probleme durch Ver-
+		  aenderung von SET-Symbolen eruebrigt haben.
+
+08.09.92  V2.11   ** Fehlerkorrekturen
+		  Absoluter Code, der den Near-Mode benutzte, setzte immer noch
+		  einen Near-Pointer bei Base+32768 voraus. Jetzt benutzt
+		  PhxAss hier ebenfalls Base+32766 wie schon bei reloc. Code.
+
+04.11.92  V2.20   ** Fehlerkorrekturen
+		  Einige Befehle gaben falsche Fehlermeldungen aus, z.B.
+		  'Assembly aborted!' statt 'Out of range!' bei TRAP und STOP.
+		  ** Neuerungen
+		  Von dieser Version an, werden auch alle MC68010-Instruktionen
+		  unterstuetzt (z.B.: MOVEC, MOVES, RTD, BKPT).
+		  Ausserdem gibt es mit MACHINE eine neue Directive.
+
+16.01.93  V2.21   ** Fehlerkorrekturen
+		  'move.l  #xxxx,-(a0)' wurde nicht korrekt uebersetzt!!!
+
+19.01.93  V2.25   ** Fehlerkorrekturen
+		  Wenn man ein Programm schreibt ohne erst ein Label zu dekla-
+		  rieren oder wenigstens mit CODE eine Section beginnt, dann
+		  bekommen alle Labels falsche Werte, da der Programmstart in
+		  Pass 1 beim ersten Label und in Pass 2 beim ersten erzeugten
+		  Code angenommen wird.
+		  Durch eine neue Abfrage waehrend Pass 1 ist das Problem nun
+		  behoben. Zusaetzlich konnten noch an die 100 Bytes ueber-
+		  fluessiger Code entfernt werden, wodurch die Geschwindigkeit
+		  des Assemblers sogar um 1% zunimmt. (Hoffentlich habe ich
+		  nicht zuviel entfernt!!)
+		  Ein weiterer Fehler war beim Ausgeben eines Equates-File.
+		  In bestimmten Faellen wurden zufaellige Symbole erzeugt oder
+		  es kam sogar zu Abstuerzen.
+
+22.01.93  V2.30   ** Fehlerkorrekturen
+		  o Falls bei XDEF ein Symbol bereits bekannt war, wurde es
+		    in die augenblicklich aktive Section eingetragen anstatt
+		    in die Section in der es definiert wurde.
+		  o Beim Optimieren von JMP/JSR wurde bisher nicht geprueft
+		    ob es sich um eine Absolute-Long Adressierung handelt.
+		  o Long-Branch auf die naechste Instruktion wurde faelsch-
+		    licherweise zu $6x00 optimiert.
+		  ** Neuerungen
+		  Bcc.B wird nun fuer Short-Branch gehalten.
+
+Feb. 93   V2.99   Beta(Arbeits)-Version
+		  o Alle Register-Symole MUESSEN von nun an VOR der ersten
+		    Referenz definiert werden!
+		  o Mehrmaliger Gebrauch des Adress-Symbols '*' kann beim
+		    Optimieren zu Schwierigekeiten fuehren. z.B.:
+			move.w	*,*+10
+		    Falls das '*' im Quelloperanden zu PC-Indirekt optimiert
+		    wird, zeigt '*+10' natuerlich auf eine falsche Adresse.
+		  o move.l #xxxx,-(sp) kann jetzt auch nach pea xxxx.w
+		    optimiert  werden.
+		  o Im Near-Code Modus werden JMP/JSR in JMP/JSR PC-Displace
+		    umgewandelt statt in Long-Branch.
+		  o Bei CNOP gibt es keine Einschraenkungen (wie Optimierungs-
+		    ausfaelle) mehr!!
+		  o Vorsicht bei nachtraeglicher Short-Branch Optimierung!!
+		     Bcc.s  label
+		     xxxx
+		    label:
+		    Falls die Instruktion xxxx wegoptimiert wird, erzeugt der
+		    Assembler einen illegalen Short-Branch (displacement 0)!
+		  o Voellig neue Optimierungs-Flags eingefuehrt!
+		  o Durch Binaerbaum-Suchalgorithmen wurde eine Geschwindig-
+		    keitssteigerungs von 10-45!% erreicht!!!
+		  o FPCP- und PMMU-Befehle werden durch die neuen Directiven
+		    "FPU [id]" und "PMMU" aktiviert.
+		  o Durch Druckfehler im Reference-Manual von Motorola musste
+		    ich einige Opcodes raten: z.B: FSABS und FDABS!
+		  o Bei FMOVEM.L FPcr,<ea>/<ea>,FPcr muss unbedingt size=LONG
+		    gewaehlt werden, ansonsten wird dieser Modus nicht erkannt!
+		  o Die Binaerbaum-Strategie fuer alle Symbole musste ich
+		    leider verwerfen. Nach drei langen Arbeitstagen musste ich
+		    feststellen, dass PhxAss mit sortierten Symbolen sogar
+		    noch etwas langsamer ist! Dadurch sind die Symbolnamen im
+		    Cross-Ref Listing leider immer noch unsortiert.
+		  o Absturz nach 'Word at odd address' dadurch dass die
+		    Adresse begradigt wurde ohne den folgenden Code ebenfalls
+		    um 1 Byte zu verschieben.
+		  o INITNEAR war fuer absoluten Code mit Small-Data Model
+		    voellig unbrauchbar (lieferte immer nur LEA $000000,An).
+
+01.03.93  V3.00   Heute wage ich den mutigen Schritt die bisherige Beta-Version
+		  V2.99 als PhxAss V3.00 zu veroeffentlichen. Als weitere
+		  Neuerung versteht der Assembler nun auch noch sechs weitere
+		  Devpac-spezifische Directiven: CODE_C,CODE_F,DATA_C,DATA_F,
+		  BSS_C und BSS_F.
+
+03.03.93  V3.01   ** Fehlerkorrekturen
+		  Das war wohl zu frueh gewagt. Der 68020-Mode ([Rn]) ver-
+		  brauchte in Pass 1 4 Bytes mehr als in Pass 2 - dadurch
+		  verschieben sich die Symbole.
+		  ** Erweiterungsmoeglichkeiten
+		  o Es scheint Standard zu sein ein, die Zeichen ' und " in
+		    Texten folgendermassen einzubetten:
+		    "Zeichen ""=Anfuehrungszeichen"
+		  o Einige Devpac-Directiven wie INCDIR, REPT, etc. koennten
+		    noch hinzugefuegt werden.
+		  o 68050/68060 oder sogar Copper oder DSP Unterstuetzung.
+		  o ARexx-Schnittstelle?
+		  ** Bekannte Fehler
+		  Die TRACKDISK-Directive scheint nicht zu funktionieren.
+
+20.04.93  V3.02   ** Fehlerkorrekturen
+		  TRACKDISK funktioniert jetzt (hoffentlich).
+		  ** Neuerungen
+		  INCDIR zum definieren von Include-Pfaden.
+
+30.05.93  V3.05   ** Fehlerkorrekturen
+		  o Falls ein Fehler waehrend des Verschieben der Distanzen
+		    auftritt, hatte die bei der Fehlermeldung ausgegebene
+		    Zeile kein Ende mehr (hoechstens zufaellig).
+		  o In Objectfiles konnten Near-Data Bereiche wegen eines
+		    Fehlers nur 32k anstatt 64k gross sein.
+		  o Die Befehle 'MOVE USP,An' und 'MOVEP d(An),Dn' wurden
+		    falsch uebersetzt.
+		  o Leider scheint es nun doch so, das entweder OS2.xx oder
+		    OS3.xx bei RawDoFmt() das Register D7 benutzt. Dadurch
+		    wurden die Textausgaben dort unbrauchbar.
+		  o An einigen Stellen wurde der Filepointer auch dann
+		    weitergesetzt, wenn kein Listing-File erzeugt wird.
+		    Dadurch wuerde dann bei naechster Gelegenheit in ein
+		    ungeoffnetes (FileHandle 0) File geschrieben - Absturz.
+		  o Bei GLOBAL und BSS (und einigen anderen Gelegenheiten)
+		    wurde im BSS-Hunktype $fxxx03eb die reservierten Bits
+		    f und x zerstoert.
+
+04.06.93  V3.10   ** Fehlerkorrekturen
+		  Oktalzahlen '@xxxx' wurden bisher noch nicht verarbeitet.
+		  ** Neuerungen
+		  Durch die T-Option bei den Optimize-Flags ist es nun
+		  moeglich alle 32/16-Bit Branches zu 16/8-Bit Branches,
+		  auch nachtraeglich, zu optimieren.
+		  ** Bekannte Fehler
+		  Wird die T-Option zusammen mit der Ausgabe eines Listings
+		  gewaehlt, so kann es vorkommen, dass die Zeilenadressen
+		  im Listing falsch sind (da die Branches ja erst nachtraeg-
+		  lich korrigiert worden sind).
+
+06.06.93  V3.11   ** Fehlerkorrekturen
+		  o In unguenstigen Faellen wurde das Symbol hinter CNOP nicht
+		    mitverschoben.
+		  o CMPI #x,(PC) wurde selbst fuer >=68020 nicht akzeptiert.
+		  o Bei MOVEQ wurde nicht getestet ob das '#' auch wirklich
+		    vorhanden ist.
+		  ** Neuerungen
+		  o '$VER:'-Text am Anfang des Codes.
+		  o MACHINE akzeptiert jetzt auch wahlweise ein 'MC' vor dem
+		    Prozessor-Typ (z.B. mc68020).
+		  o Die wichtigsten Routinen wurden auf 32-Bit-Grenzen aus-
+		    gerichtet. Dies erhoeht die Geschwindigkeit von PhxAss
+		    unter 32-Bit Prozessoren.
+		  o Falls OS2/3 vorhanden ist, kann PhxAss auch die Symbole
+		    _MC68882_, _MC68030_ und _MC68040_ erzeugen.
+
+08.06.93  V3.12   ** Fehlerkorrekturen
+		  Die Bitfield-Befehle erlaubten kein Width=32, 0 hingegen
+		  schon.
+		  ** Bekannte Fehler
+		  ARGH! CNOP scheint immer noch einen dicken Fehler zu haben.
+		  Die 32-Bit Ausrichtung aus 3.11 vorlaeufig wieder rueck-
+		  gaengig gemacht.
+
+11.06.93  V3.14   ** Fehlerkorrekturen
+		  CNOP scheint nun (hoffentlich) endlich vollstaendig zu
+		  funktionieren.
+		  ** Neuerungen
+		  o Die 32-Bit Ausrichtung der wichtigsten Funktionen aus
+		    V3.11 ist wieder eingebaut.
+		  o -n* aktiviert die Optimize-Flags NQRBT.
+
+12.06.93  V3.15   ** Fehlerkorrekturen
+		  Bei einigen Optimierungen (z.B. MOVEM) wurde das Label
+		  in der Zeile direkt davor faelschlicherweise mitverschoben.
+		  Dies resultierte wohl noch aus der CNOP-Korrektur.
+		  (Damit sind die Version 3.10 bis 3.14 wohl voellig unbrauch-
+		  bar - und wurden zum Glueck auch nicht verbreitet.)
+
+15.06.93  V3.16   ** Fehlerkorrekturen
+		  Au Weiah! - Immer noch ein Fehler in der Forward-Branch
+		  Optimierung!! Zum Optimierungszeitpunkt wurden eventuell
+		  bereits vorhandene XREF-Referenzen nicht mitverschoben.
+
+03.07.93  V3.20   ** Fehlerkorrekturen
+		  Das \@-Symbol besass nach einer weiteren Macro-Verschach-
+		  telung innerhalb eines Macros einen falschen Wert.
+		  Spruenge innerhalb des Macros ueber einen weiteren Macro
+		  -Aufruf waren somit unmoeglich.
+		  ** Bekannte Fehler
+		  Folgende Zeile im Original-Commodore Include-file
+		  "exec/types.i" kann immer noch nicht uebersetzt werden:
+		  \@BITDEF  SET  1<<\3
+		  Labels duerfen nuneinmal nicht mit Ziffern beginnen!
+
+05.07.93  V3.21   ** Fehlerkorrekturen
+		  Wenn man das \@-Symbol benutzte, waren nur 999 Macro-
+		  Aufrufe moeglich, danach kam immer ein 'Illegal characters
+		  in label' Error. Jetzt beginnt \@ wieder bei "000".
+
+06.07.93  V3.22   ** Fehlerkorrekturen
+		  Fehler in zwei 68020 Adressierungsmodi:
+		  o ([BaseDisp], ...)  konnte nicht uebersetzt werden
+		  o (bd,An/PC,Xn) fuehrte zum Absturz des Assemblers, falls
+		    bd nicht im 8-Bit Rahmen blieb.
+
+17.07.93  V3.25   ** Fehlerkorrekturen
+		  o MOVES wurde teilweise falsch uebersetzt
+		  o Die Instruktion FETOXM1 hatte ich leider vergessen
+		    (Motorola in ihrem Reference-Manual aber auch!)
+
+18.07.93  V3.26   ** Fehlerkorrekturen
+		  Die meisten Editoren erlauben es, innerhalb von String-
+		  begrenzern TAB-Codes mit abzuspeichern. Nun hat auch PhxAss
+		  die Faehigkeit diese TABs zu expandieren!
+		  ** Erweiterungsmoeglichkeiten
+		  Das String-Handling koennte noch auf die kompletten ANSI-
+		  Codes ausgedehnt werden.
+
+25.07.93  V3.30   ** Fehlerkorrekturen
+		  o Fehler in 68020 Adressierungsmodi:
+		    ([..],Rn.x/*y,od), ([pc],.. und ([pc,Rn],..
+		    berechneten in Pass 1 einen falschen Speicherbedarf.
+		    (adr1-adr2,An,Rn)  fuehrte zum Absturz (falls Dist. >127).
+		  o Falls ein Listing-File nicht geoeffnet werden konnte, wurde
+		    trotzdem versucht mit dem erhalten Null-FileHandle Ausgaben
+		    zu taetigen -> Absturz.
+		  ** Neuerungen
+		  o Es scheint doch weit verbreitet zu sein, Symbole der Form
+		    '.xxx' als Local-Symbols zu behandeln (DevPac-Standard).
+		    Von nun an werden diese Symbole, wie bisher auch schon die
+		    'xxx$'-Symbole als Local angenommen.
+		    Das macht die Uebersetzung von Aztec-C Code allerdings
+		    unmoeglich!
+		  o Aufgrund mehrerer Anfragen gibt es ab V3.30 auch auf
+		    Wunsch eine Spezial-Version von PhxAss, die statt der
+		    normalen 65535 Zeilen bis zu 4 Milliarden Zeilen auf
+		    einmal uebersetzen kann (wenn der Speicher reicht).
+
+28.07.93  V3.31   ** Fehlerkorrekturen
+		  Im Small-Data Modus (Data und BSS bilden eine Section)
+		  funktionierte INITNEAR nicht.
+
+30.07.93  V3.32   ** Fehlerkorrekturen
+		  Durch das Einfuehren der Local-Symbols der Form '.symbol'
+		  in V3.30 war es nicht mehr moeglich Aztec-C Sources zu
+		  uebersetzen (wegen .mulu#, .divs#, .mods#, etc.). Diese
+		  Symbole werden aber nun an ihrem nachfolgenden '#' erkannt
+		  und als externe Global-Symbols behandelt.
+
+07.08.93  V3.40   ** Fehlerkorrekturen
+		  o INCDIR "volname:" bei Pfaden mit abschliessendem ':'
+		    klappte es nicht. PhxAss versuchte immer an den Pfad-Namen
+		    ein '/' anzuhaengen.
+		  o FMOVEM.L Dn,<FPcr>	belegte in Pass 1 vier Bytes zuviel.
+		  o Ab der 100. Seite geriet das Listing-File durcheinander.
+		  o Die "Out of Memory"-Meldung war praktisch ueberfluessig, da
+		    es meistens sowieso zu einem Absturz bei Programmende kam.
+		  o CPUSHL/CINVL(P) erwarteten Adr.Reg. direkt statt indirekt.
+		  o PTEST liess als vierten Parameter alles moegliche zu.
+		  o BTST Dn,#Imm  wurde vergessen!!
+		  o Ext.Adr.Mode (Rn,disp) wurde nicht verstanden.
+		  o MOVE.L #Imm,SR  war bisher ohne Fehlermeldung moeglich.
+		  o TABs innerhalb eines Strings brachten den Parser bisher
+		    noch durcheinander, so dass er das File-Ende verpasste.
+		  ** Neuerungen
+		  o Macro-Parameter koennen nun statt 31 bis zu 63 Zeichen
+		    beinhalten.
+		  o Extended Addressing Modes nocheinmal kraeftig ueberar-
+		    beitet. Jetzt versteht die Adr.Mode-Erkennung auch die
+		    Zero-Register ZD0-ZD7 sowie ZA0-ZA7, falls ein Register
+		    unterdrueckt, aber trotzdem seine Reg.Nummer im Code ver-
+		    merkt werden soll.
+		  o PhxAss versteht zwei neue Escape-Code:
+		    \e	steht fuer ESC ($1b) und
+		    \c	steht fuer CSI (Control Sequence Introducer, $9b).
+		  o Innerhalb eines Strings stehende ESC- oder CSI-Codes werden
+		    nun mitverarbeitet.
+		  ** Bekannte Fehler
+		  NEEEEEIIIIIN! Ich kann machen was ich will, Aztec-C Sources
+		  lassen sich wohl seit der Einfuehrung der '.xxx'-Locals nicht
+		  mehr uebersetzen. Abhilfe koennte hoechstens ein Konvertie-
+		  rungsprogramm schaffen das die ".nnn" Labels in Labels der
+		  Form "_nnn" umwandelt.
+
+24.08.93  V3.42   ** Fehlerkorrekturen
+		  o Bcc.B/Bcc.W Befehle die auf externe Symbole verweisen, und
+		    dabei weiter als 128/32768 Bytes vom Section-Anfang ent-
+		    fernt sind produzierten einen 'Out of Range' Fehler.
+		  o Die seit V3.10 implementierte Forward-Branch Optimierung
+		    zerstoerte CNOP-Alignments!
+		  ** Neuerungen
+		  o Bcc.B *+128 sowie Bcc.W *+32768 werden nun ebenfalls durch
+		    Forward-Branch Optimierung beruecksichtigt, da sie durch
+		    die durch Optimierung gewonnenen 2 Bytes in den erlaubten
+		    Bereich rutschen.
+		  o Bei eingeschalteter Branch-Optimierung wird die Extension
+		    bei einer Branch-Instruktion von nun eigentlich gar nicht
+		    mehr beruecksichtigt. Wenn ein Bcc.B nicht ausreicht,
+		    setzt PhxAss einfach ein Bcc.W dafuer ein. Durch Forward-
+		    Branch-Optimierung kann dies dann wieder, wenn moeglich, in
+		    ein Bcc.B zurueckgewandelt werden.
+		  o Float Konstanten und Symbole koennen jetzt auch, neben der
+		    ueblichen Fliesskomma-Darstellung, durch Hexadezimal-
+		    Konstanten repraesentiert werden. Fuer 8-Byte Konstanten
+		    steht die neue Extension '.q' zur Verfuegung (mit '.d'
+		    klappt's allerdings genauso gut).
+
+26.08.93  V3.44   ** Fehlerkorrekturen
+		  Waehrend des Versuches leere Sections beim Erzeugen des
+		  Object-Codes zu unterdruecken, stellte ich einen neuen
+		  Fehler fest: symbol equ 0
+				xdef symbol
+				section ...  fuerte zum Absturz!!
+		  In dieser Version werden leere Section nicht mehr beachtet,
+		  ausser sie enthalten Extern-Symbole. Es ist nun sogar moeg-
+		  lich ein File das nur aus XDEF-Equates besteht zu assemblie-
+		  ren. Dazu wird dann eine leere Code-Section kuenstlich
+		  erzeugt.
+
+27.08.93  V3.45   ** Fehlerkorrekturen
+		  Aaargh! V3.44 sollte man lieber ganz schnell vergessen!
+		  Wenn eine leere Section ignoriert wurde, hatten alle nach-
+		  folgenden Section falsche Hunk-Nummern in ihren Reloc-
+		  Hunks. Durch Einfuehren einer Hunk-Nummern Tabelle ist dieser
+		  Bug nun behoben.
+
+02.09.93  V3.46   ** Fehlerkorrekturen
+		  Bei MOVEP wurde die Addressierungsart (d16,An) bei d16=0
+		  versucht zu (An) zu optimieren - leider unterstuetzt MOVEP
+		  dies nicht!
+
+10.09.93  V3.47   ** Neuerungen
+		  Das neue Optimize-Flag 'I' verhindert die Erzeungung von
+		  'Too large Distance'-Errors, falls man sich sicher ist das
+		  die Distanz im weiteren Verlauf noch in Reichweite kommt
+		  (z.B. bei Reassembler-Outputs).
+
+15.09.93  V3.50   ** Fehlerkorrekturen
+		  o Das current address Symbol '*' wurde in V3.00 falsch imple-
+		    mentiert. Es bezieht sich nicht auf die Instruction-Adr.
+		    sondern auf die Adresse auf der es steht. Weiter sind die
+		    Bugs bei z.B. MOVE *,*+10 o.ae. ebenfalls entfernt.
+		  o .Local war bei Float-Symbolen nicht moeglich
+		  ** Neuerungen
+		  o '@' darf nun am Anfang von Symbolen benutzt werden, wenn
+		    keine Ziffer folgt (ansonsten ist's Oktal). Dice und Lattice
+		    C scheinen ohne diese Symbole nicht auszukommen.
+		  o RORG Direktive ist implementiert (aehnlich wie CNOP)
+		  o Neue Direktiven (von DevPac): RSRESET und RS.x
+		  o Neue Option: -c schaltet die Case-Sensitivity aus. Dadruch
+		    ergibt sich allerdings ein Geschwindigkeitsverlust von 5%.
+
+16.09.93  V3.51   ** Neuerungen
+		  Wenn ich schon mal dabei bin - hier sind noch ein paar
+		  Devpac Direktiven:
+		  o IDNT - verhaelt sich genauso wie TTL (scheint aber ge-
+		    braeuchlicher zu sein)
+		  o RSSET - habe ich in V3.50 vergessen
+		  o COMMENT - tut nix, beliebige Kommentare duerfen folgen
+		  o SUBTTL - tut auch nix (wie in Devpac), wird aber wegen
+		    der Kompatibilitaet zu anderen Assemlern wenigstens schon
+		    verstanden
+
+19.09.93  V3.55   ** Neuerungen
+		  o OFFSET Direktive oeffnet eine virtuelle Section in der alle
+		    Labels als Offsets anstatt als Adressen behandelt werden.
+		  o TTL,IDNT nehmen nun als default-Namen den Namen der Source-
+		    Codes ohne die Endung an.
+		  o ENDLICH!!
+		    Near-Data Symbole koennen statt ueber die absolute Adres-
+		    sierung nun auch ueber Adress-Register Indirekt angespro-
+		    chen werden. Dabei muss das Symbol natuerlich aus einer
+		    Near-Section stammen und das Adressregister muss das Near
+		    Base-Register sein: z.B: NearSymbol(a4)
+		  ** Bekannte Fehler
+		  Innerhalb von Macros kann es zu Schwierigkeiten kommen, wenn
+		  der Programmierer die ENDC-Direktive bei einer bedingten
+		  Assemblierung vergessen hat.
+
+20.09.93  V3.56   ** Neuerungen
+		  o CODE_C, DATA_C, BSS_C sind jetzt auch als Argumente fuer
+		    die SECTION Direktive moeglich (Devpac-Standard).
+		  o Registerlisten koennen ein wenig flexibler spezifiziert
+		    werden. Jetzt auch moeglich: d0-2/d4-7/a1-3/a5-6 (Devpac)
+		  o INCDIR stoert sich nicht mehr an einem '/' am Ende des
+		    Include-Pfades. Beide Varianten sind jetzt moeglich.
+
+22.09.93  V3.57   ** Fehlerkorrekturen
+		  PTESTR/PTESTW (68030) erkannten den vierten Operanden bei
+		  einigen Adressierungsarten immer noch nicht.
+
+23.09.93  V3.58   ** Neuerungen
+		  o NARG konnte nie 0 werden. Bei Macros ohne Argumente, war
+		    NARG = 1.
+		  o INCLUDE/INCBIN funktionierten nicht ohne Anfuehrungszeichen
+		  o GetValue() verbessert. Zusaetzliche Zeichen in einem Aus-
+		    druck weden jetzt als Fehler erkannt.
+		    z.B: MOVE.L  #7D,D0   erzeugte bisher keinen Fehler
+
+01.10.93  V3.60   ** Neuerungen
+		  PhxAss ist jetzt PURE und steht durch den RESIDENT-Befehl
+		  mehreren Tasks im Speicher zur Verfuegung.
+		  ** Fehlerkorrekturen
+		  Ich glaube, so ungefaehr ab V3.40 wurden Kommentare im
+		  Operand-Field nicht mehr erkannt. Dies ist nun behoben.
+
+02.10.93  V3.61   ** Fehlerkorrekturen
+		  IFC '\1','' o.ae. funktioniert nur, wenn \1 vorher noch nicht
+		  benutzt wurde. Jetzt werden alle Macro-Parameter, die nicht
+		  benoetigt werden geloescht!
+		  ** Neuerungen
+		  Alle Struktur- und Varialblenbereich-Offsets so ausgerichtet
+		  das 32-Bit Prozessoren Longword-Eintraege in einem Buszyklus
+		  lesen koennen.
+
+09.11.93  V3.62   ** Fehlerkorrekturen
+		  Bei (disp.W/L,An,Dn) mit -128 > disp < 127 wurde disp immer
+		  zu einem 8-Bit Displacement optimiert, ohne Ruecksicht auf
+		  eventuelle .W oder .L Extension. Jetzt wird nur noch bei feh-
+		  lender Extension optimiert.
+
+24.11.93  V3.64   ** Fehlerkorrekturen
+		  In den 68020+ Extended Addressing Modes wurde die PC-Relative
+		  Addressierung auf das zweite anstatt das erste Extension Word
+		  bezogen.
+
+10.12.93  V3.65   ** Fehlerkorrekturen
+		  Bei AbsLong - AbsShort oder bei LSL - ADD Optimierungen waren
+		  Referenzen, die direkt auf die optimierte Instruktion ziel-
+		  ten, um zwei Bytes verschoben.
+
+15.12.93  V3.70   ** Fehlerkorrekturen
+		  o Der Instruction Size von (d16,An,ZRn) wurde in Pass 2
+		    falsch berechnet.
+		  o CMPI #x,RelocAddr wurde selbst beim 68000/010 versucht nach
+		    PC-Relative zu optimieren, erzeugte dadurch einen Fehler.
+		  o Die Statistik-Anzeige 'lines/min' funktionierte nur bis
+		    65535 lines/min (auf dem A4000 koennten's mehr sein).
+		  o Bei (bd,PC) wurde die PC-Relative Distanz immer noch falsch
+		    berechnet. Bisher klappte es nur bei (bd,PC,Rn)
+		  ** Neuerungen
+		  Nachdem die Displacement-Extensions .W und .L unter V3.62 be-
+		  reits rudimentaer eingefuehrt waren, sind sie jetzt in allen
+		  Addressierungsarten anwendbar (auch Outer-Disp., etc.).
+		  Einige weitere Routinen wurden auf 32-Bit ausgerichtet.
+		  ** Erweiterungsmoeglichkeiten
+		  o PhxAss als AREXX-faehigen Hintergrund-Task starten.
+		  o Option zum automatischen Ausrichten saemtlicher Funktionen
+		    auf 32-Bit Grenzen.
+		  o Copper/DSP Unterstuetzung.
+		  ** Bekannte Fehler
+		  B<cc>.B +0 wird zwar richtigerweise in B<cc>.W umgewandelt,
+		  die angesprungene Adresse bleibt aber dieselbe (B<cc>.W -2 !)
+
+14.01.94  V3.71   ** Neuerungen
+		  Die DICE-C spezifischen Direktiven PROCSTART/PROCEND werden
+		  verstanden, bewirken allerdings noch nichts.
+
+03.03.94  V3.75   ** Neuerungen
+		  #-Immediate Values werden jetzt auf Byte- oder Word-Grenzen
+		  gestestet.
+		  ** Bekannte Fehler
+		  (T)otal Branch Optimization zerstört Code-References im
+		  Data Segment (zumindest manchmal?).
+
+07.04.94  V3.76   ** Fehlerkorrekturen
+		  Zwei bekannte Fehler wurden beseitigt:
+		  o Bcc.B *+2 wird jetzt endlich in Bcc.W *+4 (statt *+2)
+		    umgewandelt
+		  o Die Total-Branch Optimization sollte jetzt endlich
+		    völlig fehlerlos sein
+
+21.04.94  V3.77   ** Fehlerkorrekturen
+		  Absturz bei mehr als 13 Sections beseitigt.
+		  ** Bekannte Fehler
+		  Manchmal Absturz bei DC.x "Word at odd address"
+
+27.04.94  V3.78   ** Fehlerkorrekturen
+		  Beim normalen PhxAss (mit max. 65535 Zeilen) wurde bei
+		  Fehlern ab Zeile 32768 die fehlerhafte Zeile, sowie die
+		  Zeilennummer nicht mehr mit ausgegeben.
+
+01.05.94  V3.79   ** Fehlerkorrekturen
+		  Probleme mit runden Klammern bei absoluter Addressierung:
+		   Label+(x+y)*z    konnte z.B. nicht übersetzt werden.
+		  ** Bekannte Fehler
+		  Wenn man die extended Addressing Modes im 68000er-Stil
+		  schreibt, kann es in einigen Fällen mit Outer-Displacement
+		  zu Fehlern kommen:
+		   label([An,Dn],(x+y)*z)   erzeugt einen Syntax Error
+		   (label,[An,Dn],(x+y)*z)  ist die korrekte 68020er -
+		  Schreibweise und erzeugt natürlich keinen Fehler.
+
+13.05.94  V3.80   ** Neuerungen
+		  o Die Adressierungsarten werden jetzt syntaktisch strenger
+		    geprüft, so daß (SP)- oder MOVE (A0),D0/D1 jetzt
+		    Fehlermeldungen hervorrufen.
+		  o GetExpression() an einigen Stellen verbessert, um die
+		    Geschwindigkeitseinbußen von Punkt 1 abzufangen.
+		  o Neue Option: -W[n]
+		    Legt die maximale Anzahl der Fehlermeldungen fest, die
+		    nacheinander ohne Abfrage erscheinen.
+		  o Bildschirm- und Listingfile-Ausgabe findet jetzt OHNE
+		    character #13 (CR) statt.
+		  o Ein paar Textänderungen.
+		  o Noch'n paar CNOP 0,4s.
+
+26.05.94  V3.81   ** Neuerungen
+		  o DC.W und DC.L Strings müssen nicht mehr genausoviele
+		    Character enthalten, wie in ein Word/Longword hereinpasst.
+		    DC.L "x" erzeugt jetzt ein $00000078 statt Error 63.
+
+04.08.94  V3.90   ** Neuerungen
+		  o PhxAss vollkommen lokalisiert!
+		    Bisher existieren deutsche und polnische Kataloge.
+		  ** Erweiterungsmöglichkeiten
+		  o CLI-Parameter und Optionen sollten dem OS2-ReadArgs()-Style
+		    angepaßt werden.
+		  o Erzeugen von lauffähigen Executables ohne den Linker.
+		  o Benutzen von SetProtection() um das E-flag bei Object Files
+		    zu löschen.
+		  o Nach neuen Möglichkeiten zur Beschleunigung suchen.
+
+16.09.94  V3.92   ** Fehlerkorrekturen
+		  o Geklammerte Macro-Paramter, die Kommas enthalten, wie
+		    z.B. (2,a3,d4.l) wurdem in mehrere Parameter zerlegt.
+		  o Wenn die Zeile mitten in einem Macro-String-Parameter
+		    aufhört, bekam der String eine zufällige Länge (manchmal
+		    einige kB).
+		  ** Neuerungen
+		  o Neue Option: -V zum Anzeigen der Verschachtelung von
+		    Include-Files und Macros während des Übersetzens.
+		  o Neue Direktive ELSEIF (identisch mit ELSE) wegen
+		    Kompatibilität zu DevPac.
+		  o Beim Object-, Absolute-, Listing- und Equates-File werden
+		    jetzt die Protection-Flags auf "rw-d" gesetzt.
+
+25.09.94  V3.93   ** Fehlerkorrekturen
+		  o Argh! Peinlicher Fehler mit BRA.L. Im 020+ Modus wurde die
+		    Distanz 2 Bytes zu kurz, ansonsten zwei Bytes zu lang
+		    berechnet (BHS statt BLO im Code).
+
+09.10.94  V3.94   ** Fehlerkorrekturen
+		  o (cmp/and/or/eor/move/...).b  #-1,d0  erz. $FFFF statt $00FF
+		  o (d,PC,ZRn) wurde fälschlicherweise wie (d,ZPC,ZRn) behandelt
+		  ** Neuerungen
+		  o btst.b #0..7 / btst.l #0..31 achten jetzt auf Einhaltung
+		    des korrekten Bit-Bereichs
+		  o Ein Zero-Index-Register, z.B. bei (label,A6,ZD7) wird jetzt
+		    nicht mehr schon bei (N)ormal optimizing, sondern erst
+		    bei (S)pecial optimizing wegoptimiert.
+
+12.10.94  V3.95   ** Neuerungen
+		  o Das Links- und das Rechts-Shiften von DISTANZEN ist nun
+		    möglich! Dazu wurden nur 6 unbenutzte Bits in der
+		    Distance-structure verwendet. Außerdem wurde das Short-
+		    Branch-Flag aus dem StaticSub-Eintrag entfernt (hat seit
+		    einiger Zeit schon keine Bedeutung mehr - hoffentlich).
+
+23.10.94  V3.96   ** Fehlerkorrekturen
+		   o Absturz bei Macroverschachtelungstiefe >= 8 (vergessen
+		     neue Nesting-Chunks zu besorgen)
+		   o Mögliche Abstürze dadurch, daß die Länge der Macro-
+		     parameter nicht überall geprüft wurde.
+		   ** Neuerungen
+		   o Programm ist ein paar Bytes kürzer und bis zu 5% schneller.
+
+01.11.94  V3.97   ** Fehlerkorrekturen
+		  o Distanzbildungen mit Symbolen direkt hinter einer CNOP-
+		    Anweisung waren teilweise fehlerhaft. Das erste Symbol
+		    hinter CNOP wurde in einer Distanz nicht richtig mit-
+		    verschoben.
+		  o Durch Verbesserungen in 3.96 oder 3.95 sind keine
+		    Macro-Parameter im Opcode mehr zu benutzen gewesen
+		    (z.B. \0 für Extensions).
+		  ** Bekannte Fehler
+		  Wenn JMP oder JSR zu BRA/BSR optimiert werden, wird noch
+		  keine TotalBranch-Optimization unterstützt.
+
+Nov/Dez94 V3.99   Arbeitsversion für V4.00
+		  ** Fehlerkorrekturen
+		  o Wenn genausoviele Includefiles gelesen wurden, wie in
+		    einen IncludeList-Chunk passen, stürzte PhxAss aufgrund
+		    eines Fehlers im IncludeList-Cleanup ab.
+		  o Wenn man aus Section 1 ein Symbol aus Section 3
+		    referenziert und die Section 2 dazwischen leer ist,
+		    und somit entfernt wird, war die Bezugs-Hunk Nummer im
+		    Reloc32-Hunkblock von Section 1 natürlich FALSCH!
+		  o Bei Benutzung von SmallData wurde die maximale Anzahl
+		    Sections auf 127 heruntergefahren. Jetzt können es, wie
+		    es normal seien sollte, auch dann 255 sein.
+		  o ELSEIF wurde nicht erkannt! (weil nicht geprüft)
+		  o Das 128ste MOVE CCR/SR im Sourcetext und die folgenden
+		    128 bekamen ein 0-Longword angehängt.
+		  ** Neuerungen
+		  o Umstellung auf OS2 - PhxAss läuft nicht mehr mit Kick 1.x!
+		  o Code der ab OS2.04 im Betriebssystem vorhanden war, wurde
+		    gestrichen und durch Library-Calls ersetzt.
+		  o Neues (OS2 typisches) Commandline-Parsing mittels
+		    ReadArgs().
+		  o Neue Short-Instruction und Änderung einiger Fehlermeldungen
+		    (viele sind unter OS2 gar nicht mehr nötig).
+		  o Wenn nicht mittels des Switches NOEXE verboten, erzeugt
+		    PhxAss selbstständig ausführbare LoadFiles (ohne Linker).
+		    Dies ist immer dann möglich wenn:
+		    1. keine externen Referenzen (XDEF, XREF) im Code
+		       vorkommen
+		    2. Small Code nicht mehr als eine Code Section hat
+		    3. Small Data nicht mehr als eine Data und/oder eine
+		       Bss Section hat und außerdem LINEDEBUG nicht aktiv war.
+		  o Neue Direktiven: "REPT <expression>" und "ENDR"
+		    Funktionieren, wie auch bei DevPac üblich, außer das im
+		    Gegensatz zu Devpac bei negativer <expression> ein
+		    Fehler gemeldet wird.
+		  o Neues Debugging Feature: SOURCE LEVEL DEBUGGING SUPPORT
+		    durch LINE-Debug Blöcke. Die alte Option DEBUG wurde in
+		    SYMDEBUG umbenannt, die neue Option heißt LINEDEBUG.
+		    Zu jeder Instruktion im Sourcecode wird die zugehörige
+		    Zeilennummer, sowie dessen Adresse gespeichert.
+		    Der Source Name wird mit VOLLSTÄNDIGEM Pfad gespeichert
+		    (NameFromFH()), so daß das Source Level Debugging auch in
+		    anderen Verzeichnissen funktioniert.
+		  o FLOAT-EXPRESSIONS sind möglich! Wie bei Integer können
+		    beliebig komplizierte Fließkommaausdrücke verwandt werden.
+		    Mögliche Operatoren: +(plus), -(minus), *(mult.), /(div.)
+		      und ^(potenzierung).
+		    Außerdem werden auch die folgenden Funktionen unterstützt:
+		      SIN(sinus), COS(cosinus), TAN(tangens), EXP(exponential),
+		      LOG(nat.logarithmus), SQR(quadratwurzel)
+		    Die Funktionen sind NICHT case-sensitiv und können auch
+		    ohne geklammerten Term wie folgt benutzt werden:
+		      SIN:angle
+		  o SET ist jetzt auch mit Float Expressions zu benutzen! Dazu
+		    wird wie bei EQU dem SET die nötige Extension angehängt.
+		    SET-Symbole können zwar laufend ihren Wert ändern, aber
+		    nicht ihren Typ! (z.B. von Single nach Extended Precision)
+		  o Neue Direktive: symbol INT <float expression>
+		    Wandelt den Fließkommaausdruck nach Integer und weist
+		    ihn einem Integer-SET Symbol zu. Mit SET.x, INT und
+		    REPT/ENDR lassen sich somit leicht während der Übersetzung
+		    Sinus-Tabellen oder ähnliches erzeugen.
+		  o Float-Symbole werden im Cross Reference Listing als
+		    normalisierte Fließkommazahl mit max. 8 Nachkommastellen
+		    angezeigt, statt in Hexadezimalschreibweise.
+		  o Float EQU erscheinen nun ebenfalls als normalisierte Fließ-
+		    kommazahl mit 16 Nachkommastellen im Equates File.
+		  o Buffer für Operanden, Label, etc. von 80 auf 128 Zeichen
+		    erhöht. Bei Benutzung von mehreren, z.B. veroderten,
+		    Symbolen kann ein Operand leicht diese Länge erreichen.
+		    Besser wäre natürlich ein noch größerer Buffer, aber da
+		    machen leider meine unzähligen MOVEQs nicht mit :-)
+		  o Total Branch Optimizing funktioniert jetzt auch für
+		    BRA.W/BSR.W, die durch Optimierung von JMP/JSR entstanden
+		    sind.
+		  o Während (N)ormal Optimizing werden jetzt folgende Optimie-
+		    rungen ebenfalls vorgenommen:
+		      MOVE.L  #0,An	->  SUB.L   An,An
+		      MOVE.L  #xxxx,An	->  MOVE.W  #xxxx,An
+		  o Es gibt jetzt auch eine Freeware-Version von PhxAss, die
+		    z.B. von PD-Compiler Entwicklern genutzt, und ihren
+		    Programmen beigelegt werden darf (bei der Shareware-Version
+		    ein wenig kompliziert). SmallPhxAss hat natürlich enorme
+		    Einschränkung, es reicht aber völlig für einen modernen
+		    68020-Compiler. Einschränkungen:
+		    Parameter: LIST,XREFS,PAGE,EQU,INCPATH,HEADINC,
+		      VERBOSE,CASE
+		    Direktiven: rsreset,rsset,rs,echo,list,nolist,incdir,
+		      include,incbin,macro,endm,mexit,rorg,offset,org,file,load,
+		      trackdisk,comment,subttl,if<cc>,else,elseif,endif,endc,
+		      fpu,pmmu,rept,endr,int
+		    Instruktionen: Alle 68030 und 68040 spezifischen, sowie
+		      alle FPU und MMU Instruktionen.
+		    Sonstiges: Lokalisierung, Includes, Macros, Fließkomma,
+		      Quadwords
+		  o Eine weitere Spezialversion ist die 68000-Only Version,
+		    die ansonsten genau dieselben Features wie die normale hat.
+		    Fließkomma wird allerdings auch hier nicht unterstützt.
+		  o Fehlermeldung "MACHINE not supported" wenn ein nicht
+		    unterstützter Prozesser hinter MACHINE angegeben wurde.
+		    Normal ist 68000, 68010, 68020, 68030 und 68040 erlaubt.
+		    Bei der Freeware-Version hingegen, nur die ersten drei.
+		  o __MERGED - Small Data wie bei SAS/C-BLink wird jetzt
+		    unterstützt!
+		    Diese Variante hat den Vorteil, daß trotz Small Data
+		    noch andere Data- oder Bss-Sections definiert werden
+		    dürfen, die dann nicht mit den Small Data Sections
+		    vereinigt werden. Die 'echten' Small Data Sections müssen
+		    natürlich dann durch den Namen "__MERGED" gekennzeichnet
+		    sein!
+		  o Include-Path, der durch Environment-Variable PHXASSINC
+		    definiert ist, wird als letzte Möglichkeit genutzt
+		    anstatt gleich als erste. Dadurch haben z.B. INCDIRs im
+		    Sourcetext endlich höhere Priorität.
+		  o 68060 SUPPORT! Probleme gibt es noch mit PLPA, da ich den
+		    zugehörigen Code immer noch nicht kenne. LPSTOP und die
+		    neuen MOVEC-Register funktionieren aber.
+
+28.12.94  V4.00   ** Released!
+
+05.01.95  V4.01   ** Neuerungen
+		  o Ein Label das in derselben Zeile wie eine INCLUDE-Direktive
+		    steht, wird nun nicht mehr ignoriert.
+		  o INCPATH läßt sich jetzt durch 'I' und HEADINC durch 'H'
+		    abkürzen.
+		  o "1991-95" ab jetzt in der Titelzeile
+
+25.01.95  V4.05   ** Fehlerkorrekturen
+		  o Unschönes "Opt '' ignored..." korrigiert
+		  o FreePhxAss FUNKTIONIERTE NICHT!!! (erzeugte keine Objects)
+		  o NOT-Operator (~) beachtet jetzt die Wortbreite (b/w/l) beim
+		    invertieren, dadurch ist z.B. "move.b #~$80,d0" ohne
+		    Fehlermeldung möglich.
+		  o Wenn eine leere Section gelöscht wurde, z.B. dann wenn ein
+		    Programm nicht mit einer Code Section beginnt und die
+		    Dummy-Code gelöscht wurde, konnten XREFs nicht mehr der
+		    richtigen Section zugeordnet werden und verschwanden.
+		  o \" und \' innerhalb von Strings funktionierten nicht rich-
+		    tig. Beispiel: dc.b "Er sagte: \"Blah, fasel\"." ergab
+		    <Er sagte: "Blah,>
+		  o Macro-Parameter funktionierten bisher nur im Opcode-Feld,
+		    wenn sie großgeschrieben wurden
+		  o Seit V4.00 fehlte die Hälfte des PhxAss-Textes im Kopf
+		    eines Listing Files.
+		  ** Neuerungen
+		  o Code-Hunk Padding mit NOPs statt mit 0-Words.
+		  o Versteht DevPac Options C, D, L, O
+		  o DS.L 0 richtet auf Longword aus, DS.Q 0 auf Quadword, etc.
+		  ** Erweiterungsmöglichkeiten
+		  o DEBUG n Direktive für Hochsprachen
+		  o Code für 68060 PLPA!
+		  o Neue Expression-Evaluation wegen der Probleme mit '*'- und
+		    '/'-Prioritäten.
+
+08.02.95  V4.10   ** Fehlerkorrekturen
+		  o INCLUDE "file name" mit Blanks im Namen funktionierte nicht!
+		  ** Neuerungen
+		  o +,- sowie *,/,// sowie |,&,^ haben jetzt gleiche Priori-
+		    täten. Die Ausdrücke werden dann ganz normal von links
+		    nach rechts abgearbeitet. Uff! Das war wichtig!
+		  o Operanden dürfen Leerzeichen enthalten.
+		  o Trackdisk-Buffer nicht mehr im Chip-RAM
+		  o Neue Parsing-Routinen beschleunigen die Übersetzung
+		    um 5% - 25% !
+		  o INCDIR "" liefert keine Fehlermeldung mehr. Wird einfach
+		    ignoriert.
+		  o Alle Operanden-Puffer sind von 128 auf 512 Zeichen erwei-
+		    tert worden!
+
+21.02.95  V4.11   ** Fehlerkorrekturen
+		  o Wenn in der CommandLine Zahlenangaben gemacht werden
+		    müssen, z.B. bei "SMALLDATA bas,mod" führte das zu einem
+		    Absturz!!!!
+		  ** Erweiterungsmöglichkeiten
+		  o DX Direktive (verhält sich wie DS).
+		  o RELOC32SHORT Hunks optional erzeugen.
+		  o 68060 PLPA/R/W einbauen!
+		  o Bei Fehler muß PhxAss mindestens Error=20 zurückliefern.
+
+25.02.95  V4.12   ** Neuerungen
+		  o DX Direktive eingebaut (wie DS)
+		  o Endlich die fehlende 68060 Instruktion PLPA funktionsfähig!
+		  o Bei Übersetzungsfehlern liefert PhxAss jetzt einen Return-
+		    Code 20 statt 1 zurück
+		  o Neue schwedische Catalogs
+		  ** Erweiterungsmöglichkeiten
+		  o Autosymbol "__RS" sollte den Wert des RS-Zählers liefern
+		  o Namenskonflikte mit Direkt. prüfen (besonders bei Macros)!
+		  o '' sollte als ' und "" als " in Strings erkannt werden
+
+19.03.95  V4.14   ** Fehlerkorrekturen
+		  o Ab Fehler 89 waren die Catalogs alle falsch!
+		  ** Neuerungen
+		  o "__RS" Symbol eingebaut
+		  o Namenskonflikte zwischen Direktiven und Macros werden
+		    streng geprüft
+		  o '' und "" werden als Einzelzeichen in Strings erkannt
+		  o Den Stack an mehreren Stellen Longword-aligned
+		  o Wenn eine Code-Section auf mindestens 8 Nullbytes endet,
+		    wird von einem NOP-padding abgesehen
+		  o Neue Titelzeile "Phoenix/Phantasm" !
+		  o Italienischer Catalog für PhxAss - für PhxLnk fehlt noch...
+		  ** Bekannte Fehler
+		  o Auf die Adresse eines Labels direkt vor einer CNOP
+		    Direktive ist leider kein Verlaß
+		  o  Absturz, wenn Source nur aus "x equ 1" besteht.
+		  ** Erweiterungsmöglichkeiten
+		  o Lokale Labels im SymDebug-Hunk - durch Anhängen der Namen
+		    an den letzten globale Label
+		  o Punkte innerhalb von Labels
+		  o S-Records
+		  o symbol=value (ohne Leerzeichen) ermöglichen
+
+30.04.95  V4.15   ** Fehlerkorrekturen
+		  o Absturz, wenn Source keinen Code enthält, beseitigt.
+		  ** Neuerungen
+		  o label=value  sowie	label:opcode  ist möglich, um Kopati-
+		    bilität zu uralten Seka-Sources zu verbessern
+		  o Punkte innerhalb von Symbolen sind erlaubt - es wird
+		    allerdings davor gewarnt, Symbole mit "xxxx.w" oder
+		    "xxxx.l" enden zu lassen!
+		  o UpperCase-Konvertierungen, sowie Checks auf gültige
+		    Zeichen gehen jetzt immer über Tabellen: Kaum merk-
+		    licher Geschwindigkeitszuwachs trotz "x.x"-Symbolen.
+		  o PhxAss erzeugt mittels der neuen Direktive SFORM
+		    Motorola S0,S2,S8 Records. Die Ausgabegeschwindig-
+		    keit ist vielleicht noch verbesserungswürdig...
+		  o Italienischer PhxLnk-Catalog und Dänische PhxAss/PhxLnk-
+		    Catalogs.
+		  ** Erweiterungsmöglichkeiten
+		  o Anzahl der möglichen Macro-Parameter erhöhen. Zusätzlich
+		    zu \0 - \9 auch \a - \f (\z) erlauben.
+		  o tec-sources (dev/asm) Kompatibilität?
+
+13.05.95  V4.16   ** Fehlerkorrekturen
+		  o Durch Einführung der UpperCase-Conversion Tables ist
+		    ein Fehler beim OPT-Parameter aufgetreten.
+		  ** Neuerungen
+		  o Jetzt sind maximal 15 statt 9 Macro-Parameter möglich.
+		    Die neuen Paramter werden durch \a - \f referenziert.
+		  o Neuer CLI-Parameter RC=ERRCODE läßt den User den im
+		    Fehlerfall zurückgegebenen Return-Code bestimmen.
+
+18.05.95  V4.17   ** Fehlerkorrekturen
+		  o MOVE16 hatte mit absoluten Adressen < $8000 Probleme.
+		  ** Erweiterungsmöglichkeiten
+		  o Aufrufen von Makros mit spitzen Klammern: MACRO <...>
+		  o Warnings für MOVEQ #128..255,Dn
+
+07.06.95  V4.18   ** Fehlerkorrekturen
+		  o #'"' bzw. #"'" funktionierte seit V4.15 nicht mehr!
+		  ** Neuerungen
+		  o Warning wird für MOVEQ #128..255 ausgegeben
+		  o Zahl der möglichen Macro-Parameter weiter erhöht. Jetzt
+		    sind es 36! \0 - \9 sowie \a - \z.
+		  o Buffergröße von 512 auf 1024 erhöht.
+		  o Französische PhxAss/PhxLnk Catalogs
+		  ** Bekannte Fehler
+		  o TST.L label,D0 wird ohne Fehlermeldung akzeptiert.
+		  o Enforcer Hits? Byte Write nach $000000xy ??
+		  o Distance-Shifts funktionieren nicht mit Equates:
+		    label equ (*-x)>>2	-> label equ *-x
+		  ** Erweiterungsmöglichkeiten
+		  o section name,data,$40000000 (als chip-Ersatz) erlauben.
+		  o Division durch Null bei divu/divs testen
+		  o Wortzugriffe auf ungerade Adressen im 68000er Modus testen
+		  o Assembler-Variablem, die z.B. das Datum, etc. enthalten
+		  o Im Listing-File die Werte von relokativen Symbole von den
+		    anderen durch ein nachgestelltes Hochkomma abheben.
+		  o Spitze Klammern für Macros!! -> STRING <This is a Test!>
+		  o Die Freeware-Version für Compiler-Entwickler sollte ruhig
+		    Unterstützung für 68030-060, FPU und MMU bieten.
+		  o SUBTTL, PAGE implementieren.
+
+27.06.95  V4.19   ** Fehlerkorrekturen
+		  o Long-Range Branches, die der User explizit als Byte-
+		    Branches definiert, wurden nur zu Word anstatt Long
+		    gemacht. Der Fehler zeigte sich dann erst bei der
+		    folgenden Branch-Optimierung durch ShiftRelocs().
+		  o Distance-Shifts funktionieren nun auch mit Equaten.
+		  o Distance-Shift Symbole werden nun auch im Listing
+		    File korrekt ausgegeben.
+		  o Zwei Mathe-Libraries wurden im CleanUp nicht
+		    wieder geschlossen.
+		  ** Neuerungen
+		  o Relocatible Symbolwerte bekommen im Listing File
+		    ein Hochkomma (') nachgestellt.
+		  o SECTION erlaubt als dritten Parameter, neben chip und
+		    fast, auch einen numerischen Parameter (der natürlich
+		    entweder $40000000 oder $80000000 sein sollte!).
+		  o Freeware-PhxAss für Compilerbauer übesetzt jetzt auch
+		    68030-68060, sowie FPU und MMU Code!
+		  ** Erweiterungsmöglichkeiten
+		  o SAVE-Direktive um die aktuelle Section zu speichern und
+		    durch eine RESTORE-Direktive wiederherstellen
+		  o Mit EQUR sollte man auch bereits vorhandene EQUR-Symbole
+		    zuweisen können.
+		  o Wenn \@ statt 000 _000 erzeugt, würden die Commodore-
+		    Includes ohne Änderung funktionieren.
+		  o Format %xxxx.xxxx.xxxx.xxxx für Binärzahlen erlauben.
+		  o Autor der NL-Catalogs vermerken:
+		    Leon Woestenberg <leon@stack.urc.tue.nl>
+		  o Unterstützung von Option-Files, die durch PhxOpts
+		    generiert wurden.
+		  o FREG für Float-Register Symbole. Man könnte dazu den nicht
+		    mehr benötigten T_EQUR Symboltyp verwenden...
+		  ** Bekannte Fehler
+		  o ASL sollte zu ADD optimiert werden NICHT LSL! LSL-Opti-
+		    mierung kann weiter optional angeboten werden.
+		  o Seit V4.00 kann man keine Object-Files mehr erzeugen,
+		    die nur aus XDEF-Symbolen bestehen.
+		  o xdef symbol kann mehrmals im Code definiert werden?
+		  o Eine Fehlermeldung wenn man Symbole definiert, die schon
+		    in einem Commodore-Include definiert wurde, wäre wohl
+		    nicht von Nachteil.
+
+21.08.95  V4.20   ** Fehlerkorrekturen
+		  o Addressierungsarten mit Scaling führen jetzt im 68000/010
+		    Modus zu einer Fehlermeldung.
+		  o ASL wird jetzt bei Normaler Optimierung zu ADD optimiert.
+		    LSL wird weiterhin nur bei LogShifts Optimierung optimiert.
+		  o \@ erzeugt '_000' Labels anstatt '000', dadurch gibt es
+		    keine Probleme mehr mit exec/types.i.
+		  o Es ist wieder möglich, ein Object zu erzeugen, welches nur
+		    aus absoluten XDEFs besteht.
+		  o Symbole, die innerhalb von Macros mehrfach definiert wur-
+		    den, erzeugten keine Fehlermeldung.
+		  o Wenn im SmallData Mode die Data und Bss Sections leer sind,
+		    schrieb PhxAss 65535 Hunklängen in den Header.
+		  ** Neuerungen
+		  o Niederländischer Catalog.
+		  o EQUR kann nun auch das Register aus einem bereits vorhan-
+		    denem EQUR Symbol zugewiesen bekommen.
+		  o FREG Direktive. Wie REG, aber für die Fließkommaregister
+		    FP0-FP8 gedacht. Durch MOVEM-Optimierung werden FMOVEMs,
+		    die FREG-Symbole ohne Register verwenden, wegoptimiert.
+		  o Ein '+' vor einem numerischen Ausdruck wird nun ignoriert
+		    und erzeugt keine Fehlermeldung mehr. Z.b. bei {#+3}.
+		  o Unterstützung der PHXOPTIONS Files von Johan Johanssens
+		    'PhxOpts'. PhxAss schaut zuerst im aktuellen Directory
+		    nach und dann in ENV:PhxAss/PHXOPTIONS.
+		    Diese Optionen haben niedrigere Priorität als die Optionen,
+		    die direkt über die Kommandozeile mitgegeben werden.
+		  o PHXASSINC ist ebenfalls nach ENV:PhxAss gewandert und wird
+		    von nun an nur noch dort gesucht.
+		  o Zwei neue Direktiven: SAVE und RESTORE. SAVE merkt sich die
+		    aktuelle Section und RESTORE stellt die letze, mit SAVE
+		    gemerkte, wieder her. Dazwischen kann dann beliebig in
+		    andere Sections gewechselt werden. Praktisch in Macros.
+		  ** Erweiterungsmöglichkeiten
+		  o Labels vor allen Assembler-Direktiven erlauben.
+		  o Auch bei Fehlermeldungen in Macro-Verschachtelungen versu-
+		    chen die Zeilennummer innerhalb des Ausgangs-Sourcetextes
+		    zu bestimmen.
+		  o Direktiven DONTCOUNTSYMBOLS, COUNTSYMBOLS, zwischen denen
+		    die Symbole nicht gezählt werden.
+		  o ([label,a4... Adressierungsarten für Small-Data verfügbar
+		    machen.
+		  o Commandline option um die Startadresse eines Sourcetexts
+		    im Speicher anzugeben.
+		  o Zeilen, die optimiert wurden, im Listingfile markieren
+		    oder als Warnung ausgeben.
+		  o MACHINE in Commandline bzw. PhxOpts aufnehmen?
+		  ** Bekannte Fehler
+		  o	    XREF    symbol1
+		    symbol2 EQU     symbol1
+		    funktioniert nicht! Ist aber wahrscheinlich auch auf-
+		    grund des Linkers nicht möglich.
+
+20.09.95  V4.21   ** Fehlerkorrekturen
+(Cuxhaven Release)o Bei d(xxx) oder (d,xxx) wurde xxx, wenn es kein Adress-
+		    register ist, einfach ignoriert. Jetzt erzeugt dies einen
+		    Syntax Error!
+		  o Byte/Word-Range Check bei DC, DCB und BLK eingebaut.
+		  o Statt 'Out of memory' wurde fälschlicherweise 'Shift error'
+		    erzeugt.
+		  ** Neuerungen
+		  o Wenn ein Fehler innerhalb eines Makros auftritt, wird immer
+		    Zeilennummer und Name des übergeordneten Quelltextes ausge-
+		    geben. Die Zeilennummer innerhalb des Makros wird dann in
+		    einer Extra-Zeile ausgegeben.
+
+22.09.95  V4.22   ** Fehlerkorrekturen
+		  o Seit v4.20 ist ein '+' vor einem Ausdruck erlaubt. Leider
+		    galt dies aber noch nicht für Fließkommaausdrücke.
+		  ** Bekannte Fehler
+		  o Illegale Extensions werden nich geprüft. Z.B. MOVE.S !
+		  o SWAP Dn,Dm wird immer noch akzeptiert...
+
+03.10.95  V4.23   ** Fehlerkorrekturen
+		  o Illegale Extensions werden, zumindest dort wo es zu Fehlern
+		    fuehren wuerde (z.B. MOVE), als Fehler erkannt.
+		  o SWAP Dn... wird strenger geprüft.
+		  o Durch den neuen Syntax-Error bei d(xxx), mit xxx != An,
+		    waren ea{x:y}, ea{#n}, ea{Dn} Addressierungsarten nicht
+		    mehr möglich.
+		  ** Neuerungen
+		  o Zwei 68060 Debugging-Instruktionen implementiert:
+		    HALT und PULSE
+
+08.10.95   V4.24  ** Fehlerkorrekturen
+		  o Wenn zwei FwdBranch-Optimierungen nahe zusammenliegen
+		    und durch die zweite weitere FwdBranch-Optimierungen
+		    möglich wurden, konnte es durch diese Rekursion zu
+		    Fehlern in der ersten der beiden Optimierungen
+		    kommen. Das Sprungziel des ersten Branchs ist dann
+		    z.B. um 2 Bytes nach vorne verschoben.
+		  ** Bekannte Fehler
+		  o Ungenaues Prüfen der Operanden bei:
+		    dcb blk cnop even near equ equ.? equr freg reg set
+		  o rorg erlaubt negatives Argument
+		  o idnt, ttl, file, sform erlauben nur Argumente in "
+		  o Definition von Symbolen mit den Namen
+		    a0-a7, d0-d7, fp0-fp7, ccr, sr, sp, cacr, tt0, etc...
+		    werden nicht abgefangen.
+		  o Bad register list bei fmovem.x bla,fp0 (bla = label)
+		  o No address allowed bei bfextu offset(a6){2:2},d0
+		  o DC.L "DOS\0"<<8  gibt Syntax Error! (DevPac macht's,
+		    wenn String in Long bzw. Word paßt)
+		  o ADD/SUBQ.? #distance,Dn  funktioniert nicht! (macht DevPac
+		    aber auch nicht...)
+		  o move.l #'abcd,d0  stürzt mit Guru #3 ab!
+		  o OPT P hat Priorität gegenüber OPT N, d.h.
+		    move.l #0,a0  wird zu  lea 0,a0  statt  suba.l a0,a0
+		    optimiert.
+		  o OPT S  move.w #0,a0  erzeugt illegales  clr.w a0
+		  o Fehler in AssCode.asm/CheckSize - "LABEL.2" -
+		    undefined symbol!
+		  ** Erweiterungsmöglichkeiten
+		  o Lokale Symbole auch von außerhalb ansprechbar machen:
+		       move.w  GlobalSymbol\.LocalSymbol,d0
+		       move.w  GlobalSymbol\LocalSymbol$,d0
+		    wie in AsmOne.
+		  o IF == IFNE
+		  o Option um Optimierungen während der Assemblierung anzuzeigen
+		  o Extension bei FTST FPn, FSIN FPn, etc. prüfen.
+		  o Ungarischen Catalog einbinden
+		  o Environmentvariablen im Operanden auswerten - z.B. \author
+		  o Neue Machine Direktiven - M680x0, MC680x0
+
+15.11.95   V4.25  ** Fehlerkorrekturen
+		  o Symbole mit anderen Endungen als xxx.L oder xxx.W sorgten
+		    seit V4.21 für 'Undefined Symbol'-Fehlermeldungen.
+		  o Negative RORG-Offsets sind jetzt verboten.
+		  o Special-Optimierung  MOVE.x #0,An -> CLR.x An  ist jetzt
+		    nicht mehr möglich.
+		  o Fehler bei Special Opt. PEA 0.L -> CLR.L -(SP) : Labels
+		    waren um zwei Bytes verschoben.
+		  o OPT N hat Priorität über OPT P. Dadurch wird MOVE.L #0,An
+		    trotz P-Opt. zu SUBA.L An,An optimiert, statt LEA 0.w,An
+		  o #'abcd,<ea>  führte zum Absturz!
+		  o BF??? (offset,An){x:y}  funktionierte seit v4.21 nicht mehr.
+		  o Bad register list Error bei FMOVEM.X label,<freglist>
+		  o DC.? "xxx" wird als Expression, statt als String behandelt,
+		    wenn die "xxx" in ein Byte, Word oder Longword paßt. Dadurch
+		    wird z.B. DC.L "DOS"<<8 wieder möglich.
+		  o DC.? ("xxx")  gab Syntax Error in Pass 1.
+		  o FILE, TTL, SFORM, FILE erlauben auch Argumente ohne " oder '
+		    wie es INCLUDE und INCBIN schon seit langem taten.
+		  ** Neuerungen
+		  o Neue Direktive IF, verhält sich wie IFNE.
+
+19.12.95   V4.26  ** Neuerungen
+		  o DEBUG und DSOURCE Direktiven um Source Level Debugging
+		    für einen aufsetzenden Compiler zu ermöglichen.
+		  o Automatische Generierung einer B!cc.b,JMP - Folge, wenn
+		    Bcc.w bei 68000/010 weiter als 32k geht. BRA/BSR werden
+		    dabei in JMP/JSR konvertiert. Dazu muß die Branch-Opt.
+		    eingeschaltet sein.
+		  ** Bekannte Fehler
+		  o '\' bringt den Source unbemerkt durcheinander
+		  o (addr.w) wird nicht unterstützt?
+		  o cmp.b #1,#1 erzeugt keine Fehlermeldung, sondern
+		    uebel falschen Code im 68020 Modus
+		  o 68060 hat kein MSP/ISP, kein PTEST, etc...
+		  o siehe bugs/yapb.asm - cnop 0,4 out of range!
+		  o AAARGL.... FB<cc> funktioniert nicht! Berechnet 
+	 	    falsche Distanzen.
+		  o CODE_F,DATA_F,BSS_F sind überhaupt nicht implementiert.
+		  o Fehler in TotalBranchOpt - siehe bugs/mc68030.s
+		  o XREF sym  mit anschließendem
+		    move ((sym).w/l,B,Rn) - erz. falschen Object Code
+		    move (sym.w/l,pc,Rn) - gibt Relocatability Error
+		    move (sym.l,pc) - erz. falschen Object Code    
+		    move ([sym.l,An]) - gibt Relocatability Error
+		  ** Erweiterungsmöglichkeiten
+		  o Operationen mit unbekannten Symbolen wie "x+y" erzeugt
+		    einen Syntax Error statt Undefined Symbol.
+		  o Warnung ausgeben, wenn Bcc.w zu einer B!cc/Jmp-Kombi-
+		    nation optimiert wird - da es in einer Sprungtabelle
+		    stehen könnte.
+		  o Differenzen außerhalb der Code-Section sollten end-
+		    lich als Konstanten gesehen werden und sofort auf-
+		    gelöst werden.
+		  o OUTPUT Direktive, wie bei DevPac - bewirkt dasselbe
+		    wie die TO Option.
+		  o CNOP sollte NOPs einfügen, statt 0-Words.
+		  o SET-Option sollte mehrfach anwendbar sein.
+		  o OPT * ist eine schlechte Lösung das es Makefiles zu
+		    Konflikten kommen kann.
+		  o MoveM-Optierung MOVEM->MOVE verändert das CCR! 
+
+13.03.96   V4.30  ** Fehlerkorrekturen
+		  o FMOVEM.L FPControlRegs wurde in Pass 1 als vier Bytes
+		    zu groß bestimmt. Dadurch verschoben sich alle Labels...
+		  o DC.x '\' verschob in Pass 1 alle folgenden Labels um
+		    eine zufällige Anzahl von Bytes.
+		  o cmp #x,#y gibt jetzt eine Fehlermeldung.
+		  o MOVEC MSP, ISP, MMUSR existiert für 68060 nicht.
+		  o SET-Option funktionierte nur dann mehrfach, wenn allen
+		    Symbolen mit '=' ein Wert zugewiesen wurde.
+		  o Nach einer Termauswertung war eine etwaige XREF-Infor-
+		    mation verloren. Daher Probleme mit ((<xrefsym>),...).
+		  o PC-Relative 68020+ Adressierungsarten, d.h. mit Format-
+		    Word nach dem Opcode, dürfen *keine* XREFs enthalten,
+		    da dieses von keinem Linker unterstützt wird. Jetzt
+		    gibt's in all diesen Fällen Fehlermeldungen.
+		  o 020+ Adressierungsart  (<xrefsym>.L,An)  erzeugte 
+		    fälschlicherweise eine Fehlermeldung.
+		  o Forward-Branch-Optimierung B<cc>.L -> B<cc>.W funktio-
+		    nierte nicht richtig.
+		  ** Neuerungen
+		  o MACHINE 68000 deaktiviert PMMU-Direktive.
+		  o REPT erlaubt gleichzeitige Definition eines Labels.
+		  o INCDIR 'xxx' funktioniert jetzt auch (Symmetrie zur
+		    INCLUDE-Direktive).
+		  o CNOP verwendet in einer Code-Section NOP-Instruktionen
+		    wenn eine gerade Anzahl Bytes zu füllen ist.
+		  o Da OPT ein wenig unübersichtlich war und da es mit
+	 	    OPT * auch Probleme in Makefiles gibt, existieren jetzt
+		    die vier gebräuchlichsten Optimierungsstufen als:
+		    OPT 0  =  OPT 0
+		    OPT 1  =  <default>
+		    OPT 2  =  OPT *
+		    OPT 3  =  OPT !
+		  o SECTION versteht jetzt neben CODE_C, DATA_C, BSS_C auch
+		    CODE_F, DATA_F und BSS_F (nur aus Symmetriegründen...).
+		  o MAJOR ENHANCEMENT: Eine Differenz zwischen zwei Addres-
+		    sen, die *nicht* aus der Code-Section stammen, ist 
+		    von nun an *absolut*, und kann beliebig maltretiert 
+		    werden. :)
+		  o Die Optimierung von MOVEM Dn nach MOVE Dn beinflußt die
+		    Condition-Codes. Daher gibt es ein neues Optimierungs-
+		    flag 'D', um diese Optimierung zusätzlich zur normalen
+		    MOVEM-Optimierung dazuschalten zu können. Für MOVEM An
+		    existiert dieses Problem nicht.
+		  o Neue Kommadozeilen-Parameter: 
+		    M=MACHINE/K/N : 0,1,2,3,4,6 (oder 68000...68060)
+		    FPU/K/N : 0..7
+		    PMMU/S
+		    Diese werden natürlich von den entsprechenden Direktiven
+		    im Source überschrieben.
+		  o Neue Direktive OUTPUT mit der man im Quelltext den
+		    Namen des Output-Files setzen kann (äquivalent zum
+		    CLI-Parameter 'TO', hat aber höhere Priorität).
+		  o Symbole dürfen von nun an auch die ASCII-Zeichen $c0-
+		    $d6, $d8-$f6 sowie $f8-$fe enthalten, also z.B. auch
+		    die deutschen Umlaute.
+
+27.03.96   V4.31  ** Fehlerkorrekturen
+		  o ASCII-Zeichen von $c0-$fe, wie z.B. die deutschen Um-
+		    laute, in Symbolen funktionierte noch nicht perfekt.
+		    Es gab z.B. Probleme, wenn Symbole mit solch einem
+		    Zeichen beginnen.
+		  o ([xrefsym,PC],od) erzeugte falsche Informationen im
+		    HUNK_EXT-Block.
+		  o MOVEM (SP)+Rn-Rm  erzeugte keine Fehlermeldung.
+		  ** Neuerungen
+		  o Support für den XREF-Subtyp RELREF32 ($88)! Dadurch sind
+		    all die Probleme mit PC-relativen XREFs aus der vorigen
+		    Version beseitigt. 32-Bit Branchs mit XREF-Symbolen
+		    stellen ebenfalls kein Problem mehr da (wurde bisher
+		    immer in 16-Bit gezwungen).
+		  o PhxAss benutzt Buffered I/O (FWrite) beim Erzeugen
+		    des Objectfiles.
+		  ** Erweiterungsmöglichkeiten
+		  o EQUSTR, SETSTR zum Zuweisen von Strings!
+		  o FEQUR
+		  o FO.x Direktive für Frame-Offsets.
+		  o S-Format für 32-Bit Adressen existiert und sollte
+		    ebenfalls angeboten werden. Statt S2-Format auch
+		    S1 und S3 anbieten.
+		  o Eine Warnung, wenn die Near-Adressierung im 020-Mode
+		    versagt, wäre nicht schlecht.
+		  o V40-Includes von: ftp.rz.uni-wuerzburg.de:/pub/amiga
+		    /frozenfish/bbs/com
+
+24.05.96   V4.32  ** Fehlerkorrekturen
+		  o Im CrossReference-Listing wurde nach exakt 6 Referenzen
+		    eine unnötige Leerzeile ausgegeben.
+		  o Beim automatischen DC-Align (ALIGN-Option) wurde ein in
+		    derselben Zeile vorhandener Label nicht mitverschoben!
+		  o Hex-, Binär- und Oktalkonstanten ware ohne Angabe
+                    einer Ziffer erlaubt. Z.B. move.w $(a0),d0 = 0(a0)
+		  ** Neuerungen
+		  o PhxAss ist von nun an  F R E E W A R E !
+		  o Innerhalb von Symbolen sind die Zeichen '%' und '$'
+		    ebenfalls erlaubt.
+		    18.04. - Mußte '$' wieder zurücknehmen, da es sonst
+		    Probleme mit lokalen Labels gibt.
+		  o Statt Buffered I/O via dos.library kommen jetzt eigene,
+		    noch mindestens fünfmal schnellere, I/O-Routinen zum
+		    Einsatz. Die Größe des Buffers läßt sich über den
+		    neuen CLI-Parameter BUFSIZE einstellen und ist nor-
+		    malerweise 8k. 
+		  o Macro-Parameter dürfen jetzt 127 statt 63 Zeichen haben.
+		  o IDNT/TTL verstehen jetzt auch die Syntax mit Unit-Namen
+		    als Label, wie z.B.:
+		    unitname	idnt 	2,1 Mein Testprogramm
+		  o Bei Immediate-Bittest-Instruktionen mit #n > 7 bzw. 31
+		    kommt nur noch eine Warnung statt einer Fehlermeldung.
+		  o GetFloatExpression() versteht auch #:xxxxxxxx statt
+		    #$xxxxxxxx, wie man es z.B. in Motorola-Sourcen findet.
+		  o Neue Structure-Offset Direktiven:
+		    SO=RS, CLRSO=RSRESET, SETSO=RSSET
+		  o Frame-Offset Direktiven FO, CLRFO, SETFO
+		  o Neue CPU-Direktiven: MC68000, ... , MC68060, MC68881,
+		    MC68882, MC68851.
+		  o PhxAss kann jetzt, gesteuert über die neue Direktive
+		    STYPE, Motorola S-Records variabler Länge der Typen
+		    S1 (16-Bit Adressen), S2 (24-Bit) und S3 (32-Bit)
+		    erzeugen. Außerdem wird der FileName im S0-Header
+		    vermerkt.
+		  o Eine Warnung wird erzeugt, falls eine Near-Adressierung
+		    im 020-Modus außerhalb der erlaubten 64k ist (im 000-
+		    010-Modus gibt's ohnehin eine Fehlermeldung).
+		  ** Bekannte Fehler
+		  o Redefinition eines SET-Symbols mit EQU, z.B.
+		    NARG equ 10
+		    Sorgt für ziemliche Konfusion und Probleme. Es wird
+		    *keine* Fehlermeldung erzeugt, dafür werden Referenzen
+		    auf dieses Symbol plötzlich als XREFs betrachtet.
+		  o NARG/CARG sollten bei Makroverschachtelungen mit
+		    gerettet werden.
+		  o Abschneiden einer ".xxx"-Extension (meistens .o), wenn
+		    als Object-Name explizit angegeben, ist nicht immer
+		    günstig. Z.B. könnte man eine .library erzeugen wollen. 
+
+17.10.96   V4.33  ** Fehlerkorrekturen
+		  o Negation der Fließkommafunktionen war nicht möglich
+		    (z.B. -sin(x)).
+		  o Endlosschleife bei SECTION BSS_F oder unbekanntem Typ.
+		  o "section blah,code,chip" und "section blah,code,fast"
+		    wurden nicht unterschieden, sondern verschmolzen zu
+		    einer Section mit den MemFlags der ersten Definition.
+		  o __RS bekam fälschlicherweise immer den Wert des
+		    letzten Offsets, statt den des Counters.
+		  o Generierung eines absoluten Files (FILE-Direktive)
+		    funktionierte nicht mehr - Absturz! AbsFile war noch
+		    nicht komplett auf Buffered I/O umgestellt.
+		  o Setzen neuen Optimierungs-Flags im Source mittels der
+		    OPT-Direktiven, bewirkte nur ein Hinzufügen der Flags
+		    statt ein völliges Neusetzen.
+		  o CNOP-Probleme behoben durch reservieren von <align>-
+		    Bytes in Pass 1 falls Adresse bereits ausgerichtet ist.
+		    Weiter mußte sec_LastCNOP bereits *vor* einer Verschie-
+		    bung gesetzt sein.
+		  o Leere Sections, auf deren Anfangsadresse eine Referenz 
+		    existiert, werden nun nicht mehr entfernt, sondern mit
+		    Länge 0 im Object- bzw. Load-File behalten.
+		  o Laut 6888x User's Manual sind nur .b, .w, .l und .s
+		    für FMOVE.? Dm,FPn bzw. FMOVE.? FPm,Dn erlaubt.
+		  o IFD funktionierte nicht, wenn ein Symbol den Wert
+                    0 hatte.
+		  ** Neuerungen
+		  o CARG Set-Symbol selektiert einen Makro-Parameter, der
+		    dann über \-, \+ oder \. indirekt angesprochen werden
+		    kann. Eine anschließende Inkrementierung bzw. Dekremen-
+		    tierung von CARG ist mit \+ bzw. \- möglich.
+		  o __CPU enthält die mit MACHINE eingestellte CPU, __FPU
+		    enhält die mit MACHINE/FPU eingestellte FPU-Id und
+		    __MMU zeigt an, ob PMMU-Codeerzeugung erlaubt ist.
+		  o Mit dem CLI-Parameter 'TO' kann jetzt auch ein Directory
+		    als Ziel angegeben werden. Ein File mit dem Namen des
+		    Quelltextes + ".o"-Endung wird dann dort erzeugt.
+		  o Neue Option SHOWOPT/S listet alle Zeilen, mit der
+		    Anzahl der durch Optimierung gewonnen Bytes, auf.
+		  o A0 und A1 sind auch als Near-Data Basisregister erlaubt.
+		  o Das Basisregister kann durch NEAR An im Verlauf des
+		    Quelltextes beliebig oft gewechselt werden.
+		  o \0 MacroParameter kann jetzt auch in Strings eingesetzt
+                    werden. Änderung im Guide nötig, da \0 auch für String-
+		    termination steht.
+		  o Neue HashTables für globale und lokale Symbole sowie
+		    für alle Mnemonics verkürzen die Assemblierungsdauer
+		    um durchschnittlich 10-30%. Größe der HashTables läßt
+		    sich durch die Optionen GLOBHASHTAB/K/N, LOCHASHTAB/K/N
+		    und MNEMOHASHTAB/K/N verändern.
+		  o FEQUR-Direktive (EQUR für FPn) implementiert. Außer-
+		    dem Ausgabe der FP-Registersymbole im Ref.Listing.
+		  o Macro-Parameter dürfen mit spitzen Klammern zusammen-
+		    gefaßt werden, z.B. <Hello World!> oder <"Test",0>.
+		  o Alle undefinierten XDEF-Symbol werden am Ende der
+		    Übersetzung aufgeführt.
+
+22.10.96   V4.34  ** Fehlerkorrekturen
+		  o Konstante Distanzen der Form label2-label1 in DATA
+		    und BSS Sectionen funktionierten nicht mehr, wenn
+		    mindestens ein CNOP dazwischenlag.
+		  o Fehlermeldung "Symbol can't be made external" bei
+		    Zuweisung einer Distanz im Makro mit EQU, z.B.
+		    \1 equ *-label
+		  ** Neuerungen
+		  o (PhxAss-Sourcetext neu formatiert :))
+		  o Neue Direktiven SYMDEBUG und LINEDEBUG um die gleiche
+		    Funktion wie die Shell-Parameter desselben Namens
+		    im Quelltext erreichen zu können.
+
+11.02.97   V4.35  ** Fehlerkorrekturen
+		  o <...> funktionierte noch nicht richtig.
+		  o bra.b *+0 Problem ist gelöst!!! Sobald ein Short-Branch
+		    eine 0-Distanz erreicht, wird stattdessen ein NOP
+		    eingefügt und der Distanzeintrag aus der Liste entfernt.
+		  o __CPU, __FPU, __MMU Symbole funktionierten erst nach
+		    der ersten MACHINE, FPU, PMMU Direktive.
+		  o Float-Instruktionen, deren Operand mit "FP..." begann,
+		    wurden in Pass 1 immer als Fxxx FPm[,FPn] behandelt,
+		    was eine falsche Berechnung aller nachfolgenden Symbole
+	  	    mit sich führte, wenn "FP..." ein Symbol war!
+		    FEQUR-Symbole im Quelloperanden machten daher ebenfalls 
+		    Probleme.
+		  o Nur die Opcode-Extensions .X und .L sind noch für
+		    FMOVEM erlaubt. Alles andere gibt jetzt eine Fehler-
+		    meldung (illegal opcode extension).
+		  o Wenn als Zieldatei "name.extension" gewählt wurde, hatte
+		    PhxAss grundsätzlich die ".extension" abgeschnitten,
+		    wenn er ein Executable erzeugte. Er macht es jetzt nur
+		    noch bei ".o".
+		  o Seit v4.33 wurden bei jedem Start von PhxAss 48kBytes
+		    verschwendet, wenn eine PHXOPTIONS-Datei vorhanden war.
+		  o Lokale Labels mit den Namen ".W" und ".L" werden nun
+		    erkannt.
+		  o Der (hoffentlich letzte) große CNOP-Bug ist behoben!
+		    label1: cnop 0,4
+		    label2:
+		    ... macht jetzt keine Probleme mehr! Bisher wurde
+		    label1 immer mitverschoben und war somit falsch.
+		  o symbol EQU xrefsym  gibt jetzt endlich eine Fehler-
+		    meldung, statt dem Symbol eine 0 zuzuweisen.
+		  ** Neuerungen
+		  o Continue-Abfrage funktioniert jetzt im RAW-Modus,
+		    d.h. funktioniert ohne Return-Betätigung.
+		  o Norwegischer Catalog.
+		  o Neuer Commandline-Parameter PRI/K/N, um die Task-
+		    Priorität von PhxAss während des Assemblierens setzen
+		    zu können.
+		  o Mit dem neuen Schalter EXE/S werden auch dann Executables
+		    erzeugt, wenn XDEFs im Source vorhanden sind. Diese
+		    fallen dann einfach unter den Tisch.
+		  o Small Data Adressierung ist jetzt auch in der 020+ Full
+		    Format Adressierungsart erlaubt. Z.B. ([neardata,a4]).
+
+
+01.06.97   v4.36  ** Fehlerkorrekturen
+		  o "00 No Errors" scheint grammatikalisch richtiger zu sein,
+		    als "No Error".
+		  o PUBLIC innerhalb von Macros wurde mit einer Fehler-
+		    meldung quittiert.
+		  o IFND <external symbol> hatte den Nebeneffekt die
+		    Optimierung innerhalb aller im Anschluß definierten
+		    Section zu verbieten.
+		  o Definition eines globalen Symbols mit EQU hatte den-
+		    selben Effekt wie ein globales Label und beginnt
+		    einen neuen lokalen Label-Block. Z.B.
+		    start   bra     .l1
+		    symbol  equ     start
+		    .l1     rts
+		  o Branch-Optimierung machte aus JMP *+6 ein BRA.W *+6
+		    statt BRA.W *+4
+		  o Bei Quelltexten die keinen Code erzeugen, wurde kein
+		    Object-File generiert. Jetzt wird eins mit einer
+		    leeren Code-Section erzeugt.
+		  ** Neuerungen
+		  o DS.? <n>, DCB.? <n>,0  etc. benutzten jetzt AddCount
+		    und benötigen somit bei großem <n> keine Zeit mehr.
+		  o Wenn ReadArgs() beim PHXOPTIONS File nicht klappt,
+		    gibt es eine PhxAss-Fehlermeldung: Illegal PHXOPTIONS
+		    file.
+		  o ZEROPADDING-Schalter erzwingt das Verwendung von Nullen
+	   	    als Füllbytes, statt NOP-Instruktionen.
+		  o Direktive IMAGE für AsmOne-Kompatibilität. Verhält sich
+		    genau so wie INCBIN.
+		  o CMPI #0 und SUBI #0 werden von nun an als Bestandteil
+		    (n)ormaler Optimierung zu TST optimiert, wenn möglich.
+		  o (od,[...]) wird automatisch als ([...],od) erkannt.
+		  o Neue Kompatibilitäts-Direktiven (OMA 3.x):
+		    EQURL <=> REG  und  FEQURL <=> FREG
+
+01.12.97   v4.37  ** Fehlerkorrekturen
+		  o SHOWOPT zeigte bei Optimierungen in Makros immer
+		    "-56 bytes optimized" an.
+		  o Optimierung von CMPI.L #0,d(PC) -> TST.L d(PC)
+		    generierte falsches Displacement.
+		  o Sporadischer Syntax Error bei Fließkommaausdrücken
+		    mit Exponent.
+		  o Automatisches Einfügen von Aligment-Bytes bei
+		    "Word at odd address" verminderte die Chunk-Größe
+		    nicht -> Abstürze.
+		  o \+, \-, \. funktionierten innerhalb von Strings
+		    nicht.
+		  o Mit EQU definierte, relocatible Symbole, wurden fälsch-
+		    licherweise anhand der Section relociert, in der
+		    die EQU-Definition stattfand. Die Definitionssection
+		    des Symbols auf der rechten Seite der EQU-Direktive
+		    ist aber Ausschlaggebend!
+		  o Mit EQU definierte Adressdistanzen konnten einen
+		    falschen Wert bekommen, wenn sie das EQU nicht in
+		    derselben Section wie die Distanz-Symbole befanden.
+		  o Bei fast allen Instruktionen wird nun geprüft, ob
+		    sich illegale Zeichen oder weitere Operanden nach
+		    dem letzten legalen Operand befinden.
+		  o EXT.B Dn  wurde ohne Fehlermeldung akzeptiert.
+		  ** Neuerungen
+		  o Durch (S)pecial Optimization lassen sich unnötige
+		    Branches wie
+			bcc	label
+		    label:
+                    wegoptimieren.
+		  o ADD/SUB #x,Dn wird nun nicht mehr nach ADDI/SUBI
+		    konvertiert. Weniger Probleme mit Reassemblern.
+		  o ADDI #0 wird auch zu TST optimiert.
+		  o Neue Direktive SHOWOFFSET [text] gibt den
+		    aktuellen Section-Offset auf stdout aus.
+		  o Leere Quell-Dateien sind zugelassen.
+		  o CMPA #0,An wird bei N-Opt. und 020+ zu TST An
+		    optimiert.
+		  o Fehlermeldungen bei Immediate Werten die außer-
+		    halb des gültigen Bereichs sind von 68 Out of Range
+		    in 97 Immediate operand size error geändert.
+		  o ENDASM/ASM Direktive um ganze Blöcke auszukommentieren
+		    (ähnlich IF 0/ENDIF).
+		  o INITNEAR erzeugt LEA base(PC),An, wenn die SmallData
+		    Section identisch mit der aktuellen ist.
+		  o SF wird bei (N)ormal Optimization in CLR.B umge-
+		    wandelt.
+
+07.06.98   v4.38  ** Fehlerkorrekturen
+		  o Registersymbole wurden bei IFD/IFND nicht beachtet
+		    und waren daher immer undefiniert.
+		  o Bei "LSd,ASd,ROd <ea>" wird geprüft, ob wirklich
+		    kein Operand vorhanden ist. Wenn doch: Syntax Error.
+		  o (d.W,Rn...) / (d.L,Rn...) wird bereits in Pass 1
+		    gecheckt. Dadurch sind keine Code-Verschiebungen in
+                    Pass 2 mehr nötig.
+		  o Das Drücken von Funktions- und Cursor-Tasten bei
+		    "do you want to continue" lies ein Zeichen im Buffer
+		    zurück.
+		  o Einige Extensions, z.B. 'ÿ' erzeugten Abstürze.
+		  o Negative Blockgrößen für DS, BLK, DCB sind verboten.
+		  ** Neuerungen
+		  o EQUR erlaubt auch lokale Symbole (max. 16 pro
+		    Register).
+		  o REM/EREM entspricht ENDASM/ASM zur AsmOne-Kompatibilität.
+		  o Neue Direktive OPTC um die Opt-Flags als numerischen
+		    Ausdruck setzen zu können.
+		  o Das Assembler-Symbol __OPTC enthält den aktuellen
+		    Zustand der Opt-Flags.
+		  o \@ erlaubt jetzt 10000 Makroaufrufe, statt 1000.
+
+17.11.98   v4.39  ** Fehlerkorrekturen
+		  o Enforcer Hit bei lokalen Symbolen beseitigt.
+		  o Bug in (Rn.s) Adressierungsarten (020+) behoben
+		    (V4.38 Bug).
+		  o .x(Rn) und (.x,Rn) erzeugten im 020+ Modus einen
+		    Syntax Error. Die lokalen Symbole/Register wurden
+		    fälschlicherweise für Extensions gehalten (V4.38 Bug).
+		  ** Neuerungen
+		  o Unterstützt Global/.Local Symbolzugriff wie bei AsmOne.
+		  o movem erlaubt numerische Konstanten (z.B. :$7fff)
+		    als Registerliste.
+
+03.04.01   v4.40  ** Fehlerkorrekturen
+                  o (d.W,PC...) / (d.L,PC...) Adressierungsarten wurden
+		    in v4.38/39 vergessen -> falsche Displacements in Pass2.
+		  o Esc-Code \e war $27 statt $1b.
+		  o Es kam keine Fehlermeldung bei nicht existierenden
+		    Include-Files, wenn PhxAss/PHXASSINC gesetzt ist.
+		  o OR/AND Dn,CR/SR erzeugen nun eine Fehlermeldung.
+----removed--->
+		  o *-Symbol zeigt nun auf Zeilenadresse und nicht
+		    Zeilenadresse+2.
+		  o Bra *+2 wird nicht mehr zu $6000 optimiert.
+<---removed----
+		  o B<cc> currentaddr+2 wird nicht mehr zu $6000 optimiert.
+		  o Mehr als 271 LocalParts führten zum Crash, da ein
+		    zweiter Chunk nicht richtig freigegeben wurde.
+		  o Falsche Referenzen bei absolutem Code mit
+		    ORG >= $80000000.
+		  o 020+ Adressierungsart (relocsym,An,Dn.x*s) wurde
+		    immer als (relocsym,An,D0.w) assembliert.
+		  o CALLM konnte seit V4.38(?) nicht mehr übersetzt werden.
+		  o (bd.x,An...) hat bei Programmadressen >= $80000000
+		    (z.B. durch ORG) einen Syntax Error erzeugt.
+		  ** Neuerungen
+		  o Define DOTNOTLOCAL kann gesetzt werden, um eine
+		    Version zu erzeugen, bei der '.label' keine lokalen
+		    Symbole sind.
+		  o AsmOne-Kompatibilität: BASEREG und ENDB.
+		    BASEREG definiert ein Basisregister zu einem belie-
+		    bigen Label. Bis ENDB wird bei d16(An) Addressierungs-
+		    arten immer das Base-Label automatisch subtrahiert.
+		    Im Gegensatz zu NEAR werden keine DREL16 Relocations
+		    erzeugt. Ein NEAR-Mode an derselben Stelle hat Priorität!
+		  o Neue Option REL=RELOCATABLE/S erzeugt Fehlermeldung,
+		    sobald eine Instruktion relociert werden muß.
+		  o Directive PALMRES definiert eine Resource-Section für
+		    PalmOS (3Com).
+		  o Copyright-String 2000.
+
+20.07.01   v4.41  ** Fehlerkorrekturen
+		  o SET Argument innerhalb einer PHXOPTIONS Datei er-
+		    zeugte Enforcer-Hits. Deaktiviert.
+
+29.10.03   V4.42  ** Fehlerkorrekturen
+		  o Optionen RELOCATABLE, PMMU, ZEROPADDING und CASE
+		    funktionierten über das PHXOPTIONS nicht richtig.
+		  o DS Directive meldet von nun an "word at odd address",
+		    anstatt ein automatisches Alignment durchzuführen.
+		  o CMP #x,Dn wird nicht mehr in CMPI umgewandelt.
+		  o Warnung falls BASEREG-Adressierung außerhalb des
+		    erlaubten 64K-Bereichs ist.
+
+13.02.04   V4.43  ** Fehlerkorrekturen
+		  o Fehler in AddCount führte dazu daß CNOP, DS, DCB, RORG
+		    in bestimmten Situationen ganz oder teilweise ignoriert
+		    werden. Nämliche genau dann wenn der aktuelle Daten-
+		    Chunk bis auf das letzte Byte perfekt gefüllt ist.
+		  o CMP-Änderungen aus V4.42 erzeugte einen Optimizer-Bug,
+		    der jedes CMP als Immediate Adressierungsart ansah.
+		  o Einige externe Referenzen, die nachträglich geändert
+		    werden (z.B. EXT_RELREF32 bei BD-Adressierungen)
+		    funktionierten in der GIGALINES-Version nicht (und
+		    die ist seit V4.40 Standard!).
+		  o (bd,PC,ZRn) mit externem Base-Displacement hatte das
+		    Displacement nicht automatisch mit einem Offset 2
+		    versehen (der wegen des Format-Words für EXT_RELREFx
+		    nötig ist).
+		  o Optimierung ASL/LSL #2,Dn -> ADD Dn,Dn + ADD Dn,Dn
+		    wird nicht mehr durchgeführt! Erstens bringt sie auf
+		    auf größeren 68k-CPUs nichts, und zweitens ist das
+		    Overflow-Flag nach dieser Operation nicht identisch.
+
+06.04.05   V4.44  ** Fehlerkorrekturen
+		  o DS in BSS-Sections erzeugte Enforcer-Hits.
+		  o 'ZAn' Base-Suppress Adressierungsarten mit Displacement
+		    ohne .w/.l Extension, führte zu einer Verschiebung der
+		    nachfolgenden Labels um 4 Bytes.
+		  o (An,outerDispl.x) führte zu einer Verschiebung von 4
+		    Bytes, weil sie in Pass 1 nicht richtig erkannt wurde.
+		    Wird dann in Pass 2 konvertiert zu (bd.x,An).
+		  o Adressdifferenzen werden jetzt auch im Equates-File
+		    mit ausgegeben.
+
+01.12.06   V4.45  ** Fehlerkorrekturen
+		  o MULx/DIVx.L <ea>,Dl setzten das Dh-Register im Opcode
+		    auf Dl, obwohl es undefiniert ist. Sollte 0 bleiben.
+
+30.12.14   V4.46  ** Fehlerkorrekturen
+		  o CMP.W #0,An darf nicht in TST.W An optimiert werden,
+		    sondern TST.L An.
+		  o SF <ea> wird nicht mehr zu CLR.B <ea> optimiert.
+		  o Kein Error 56 bei Mulitplikationsüberläufen.
+		  o Änderung von V4.45 wieder rückgängig gemacht. Bei
+		    MULx/DIVx.L <ea>,Dl MUSS Dh==Dl sein, sonst wird
+		    die Instruktion als <ea>,Dh:Dl erkannt.
+
+
+Known Bugs:
+- siehe Bugs/CNOPBug_4.40beta.asm
+- Thomas Richter wegen 020+ Addr.Mode Bug nach Beispiel-Source fragen!
+- moveq #~(1<<5),d0  darf keine Warning erzeugen!
+- (sym32bit,Dn) verschiebt Labels um 4 Bytes! -> ";*** addq.l #4,d6" ???
+  Zumindest muß ein Hinweis ins Doc, daß (sym32bit.L,Dn) verwendet
+  werden sollte!
+- "...''.." wird fälschlicherweise zu "...'.." umgewandelt.
+- (label.w,zpc) darf kein relocatibles Symbol für Label zulassen (wird
+  bisher zu (label.l,zpc) konvertiert.
+- Overflows bei "fmove.x #ext_prec,FPn", da die Konstanten erst nach
+  Double ungewandelt werden müssen.
+- Wenn alle Relocs wegoptimiert wurde, wird trotzdem ein HUNK_RELOC erzeugt.
+- dc.b RelocLabel  wird ohne Fehlermeldung akzeptiert, ein Byte wird
+  belegt und eine HUNK_RELOC32 erzeugt!
+- Innerhalb einer unwahren IF-Bedingung wird das überschreiten der
+  65535 maximal Zeilen nicht geprüft.
+
+Possible Enhancements:
+- LSR Dn -> LSR #1,Dn (etc.) für Seka/AsmOne-Kompatibilität
+- STRING CONSTANTS!
+- DATE Direktive, setzt das Datum ein
+- Bei (xrefsym.w,An) sollte immer EXT_DEXT16 ($86) und bei  move.w #xrefsym
+  sollte von den EXT_ABSREF16 ($8a) Gebrauch gemacht werden. Bisher wird
+  in beiden Fällen EXT_REF16 ($83) verwendet, was doch eher für PC-Relative
+  XREFs reserviert ist.
+- 32 Bit Small Data?
+- Wäre nett, wenn <symbol> innerhalb des Sources mit seinem Inhalt
+  expandiert werden könnte. (thor@math.tu-berlin.de, Thomas)
+- Precompiled Includes?
+- Buffered I/O für Listing File?
+- Weitere Optimierungen: moveq und swap kombinationen.
+  Oder divu/mulu lsr/lsl kombinationen. Da man ja meistens
+  nicht sieht wie die Zahl aussieht. z.b. bei MEMF_CLEAR. 
+  roxl.s #1-> addx.s
+  and.w|l #$FFFF|FF00 -> clr.b
+  and.l #$FFFF0000 -> clr.w

@@ -1,0 +1,76 @@
+
+"EnforcerFreeze.lha"
+
+
+Description:
+
+    This archive contains one more or less useful small
+    CLI program with complete source.
+
+    It is an _experimental_ program to halt 'EnforcerHitting'
+    Processes.
+
+    It has one bad limitation, that it can (currently)
+    not immediatley halt a hitting proocess, but instead
+    has to wait up to the next process switch 8-(((
+
+
+Notes:
+
+    * please note that it is possible to get the commandtemplate
+    of each of the commands by calling something like
+	> strings <cmdname> | search "*$ARG:"
+    without invoking it w/ '?' (but that is also possible)
+    (pipe is part of '2.04hacks' or builtin for some shells;
+    strings is part of the archive (or again part of some
+    shells))
+
+
+History:
+
+    Please have a look into ".History"
+
+
+Compilation:
+
+    * The .c sources do compile with SAS/C v6.51 (SCOptions &
+    SMakefile are part of the archive). The files may also
+    compile w/ DICE, but I won't guarantee for that.
+
+
+Author's Address:
+
+    My address for bugreports, flames, donations, questions,
+    suggestions etc.:
+
+    SnailMail:	Bernd "0" Noll
+		Brunnenstrasse 55	 or	Zu den Eichen 8
+		67661 Kaiserslautern		56567 Neuwied
+		Germany 			Germany
+
+    EMail:	b_noll@informatik.uni-kl.de
+		noll@alma.student.uni-kl.de
+
+    IRC:	`0` (on channel #AmigaGER and #PerryRhodan)
+
+
+Legal Stuff:
+
+    Oh, the Legal stuff ...
+    The files in that archive are released "AS IS", and You
+    do use them on Your own risk. I do not give any guarantees
+    for proper function. Nobody may make me responsible for
+    any damage arising from the use of one of the programs in
+    that archive or parts of its source. I keep the copyright
+    for all the files in the archive, and commercial
+    redistribution of any of these files must be permitted by
+    me ... (this is hereby done for AmiNET CD 6)
+
+    just the std crap, that U can expect for some small
+    Freeware utilities ... (sorry, have no stdt disclaimer
+    on the hd ... but one day, I'll write a complete one 8>)
+
+
+greetings, `0`
+
+

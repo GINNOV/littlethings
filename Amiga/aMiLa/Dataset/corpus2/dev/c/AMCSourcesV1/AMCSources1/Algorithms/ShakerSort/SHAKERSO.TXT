@@ -1,0 +1,12 @@
+INTRODUCI IL VETTORE:
+   44  55   12   42   94   18    6   67     
+CICLO UP 1 7:
+   6   44   55   12   42   94   18   67 
+CICLO DOWN 2 7:
+   6   44   12   42   55   18   67   94 
+CICLO UP 2 6:
+   6   12   44   18   42   55   67   94 
+CICLO DOWN 3 6:
+   6   12   18   42   44   55   67   94 
+CICLO UP 3 3:
+   6   12   18   42   44   55   67   94 

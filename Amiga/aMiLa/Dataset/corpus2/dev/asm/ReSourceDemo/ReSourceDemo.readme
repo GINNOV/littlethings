@@ -1,0 +1,15 @@
+Short:        Demo of a disassembler/reassembler. V5.12
+Architecture: m68k-amigaos
+Source:       Fred Fish
+
+ReSourceDemo	Demo version of the commercial disassembler.  Very fast,
+		intelligent, interactive.  Over 900 menu functions. Most of
+		the Amiga structure names are available at the touch of a
+		key (user-defined structures also supported).  Base-relative
+		addressing, using any address register, is supported for
+		disassembling C programs.  Choice of traditional 68K syntax
+		or the new M68000 Family syntax.  Online hypertext help.
+		Requires minimum 1 MB of ram, OS V1.3 or greater, and
+		arp.library.  Version 5.12, an update to version 3.06 on disk
+		number 232, binary only.
+		Author:  Glen McDiarmid

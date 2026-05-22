@@ -1,0 +1,41 @@
+Install V1.0 - Documentation
+----------------------------
+
+Author
+------
+
+Frédéric BASSALER	fbas@club-internet.fr
+La Serre
+19500 COLLONGES
+FRANCE
+
+
+What is this?
+-------------
+
+This is just another CLI only Bootblock Installer.
+It is similiar to the standard AmigaDOS 'Install' command, but it allows you
+to specify a bootblock file to install on a disk.
+
+
+How to use
+----------
+
+install [-s] DRIVE [file]
+
+e.g. install DF0: ram:mycustombootblock
+
+Will install the bootblock file ram:mycustombootblock onto disk in drive DF0:
+
+Option -s only prints an ascii dump of the bootblock of the specified disk,
+Nothing is written on the disk.
+
+e.g. install -s DF0:
+
+
+See also
+--------
+
+PicRestore.doc
+SearchILBM.doc
+The standard AmigaDOS 'install' command's documentation.

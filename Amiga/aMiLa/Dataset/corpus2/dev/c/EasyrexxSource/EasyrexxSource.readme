@@ -1,0 +1,88 @@
+Short:        Source code for EasyRexx V3.2
+Author:       Ketil Hunn (ketil@sis.pitt.edu)
+Uploader:     Ketil Hunn (ketil sis pitt edu)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+
+TITLE
+
+   EasyRexx Source Code
+
+VERSION
+
+   3.2   (04.Oct.96)
+
+AUTHOR
+
+   Ketil Hunn
+   Nabbetorpveien 35B
+   N-1632 Gamle Fredrikstad
+   Norway
+
+   E-Mail: ketil@sis.pitt.edu
+
+   http://www.sis.pitt.edu/~ketil
+
+DESCRIPTION
+
+  Source code for the EasyRexx. EasyRexx is a small and very fast
+  shared runtime library that allows you to add an AREXX port and
+  AREXX commands to your application without the need of programming.
+
+  o Define your ARexx interface using the included GUI-based
+    ARexx Interface Designer.  The Designer can generate code
+    directly.
+
+  o Completely new ARexx Interface Designer:
+    - Font adaptable windows
+    - Resizable windows
+    - Localization.  Translations for English, Deutsch, Nederlands
+      and Norsk are included.
+    - Asynchronous on-line help
+    - Recordable macros
+    - User defined graphic interface
+    - More ARexx commands.
+
+  o The ARexx Interface Designer generates code for these languages:
+    - C/C++
+    - E
+    - Modula-2
+    - Oberon
+
+  o Makes the parsing of AREXX messages easier than parsing DOS
+    prompt arguments!  Uses standard DOS templates for arguments.
+
+  o Easy to use tag-based functions.
+
+  o Send AREXX messages to any named port.
+
+  o Create ARexx stems with one function call.
+
+  o The library also includes functions which makes it very easy to
+    add ARexx macro ability to your application.  Macros can be
+    created, recorded and executed directly using functions in the
+    library.
+
+  o Autodoc describing all functions in the library.
+
+  o Amigaguide documentation describing programming techniques and
+    how to use the library.
+
+  o Complete with example sources.
+
+SPECIAL REQUIREMENTS
+
+  OS 2.04 or higher.
+
+AVAILABILITY
+
+  ftp://ftp.wustl.edu/pub/aminet/dev/c/EasyrexxSource.lha (516.125)
+
+PRICE
+
+  Free.
+
+DISTRIBUTABILITY
+
+  Freeware.

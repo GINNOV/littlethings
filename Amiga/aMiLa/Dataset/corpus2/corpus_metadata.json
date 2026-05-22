@@ -1,0 +1,5087 @@
+{
+    "generation_timestamp": "2026-05-21 13:47:53",
+    "source_mirror": "ftp.aminet.net",
+    "configuration": {
+        "categories": [
+            "dev/src",
+            "dev/c",
+            "dev/asm"
+        ],
+        "retained_extensions": [
+            ".S",
+            ".src",
+            ".i",
+            ".h",
+            ".cpp",
+            ".hpp",
+            ".inc",
+            ".c",
+            ".hh",
+            ".cc",
+            ".s68",
+            ".asm",
+            ".s",
+            ".info",
+            ".doc",
+            ".me",
+            "makefile",
+            "README",
+            ".readme",
+            "readme",
+            ".txt",
+            "imakefile",
+            "obp",
+            "Makefile"
+        ]
+    },
+    "statistics": {
+        "c_files": 12646,
+        "c_lines": 3345013,
+        "c_bytes": 101795572,
+        "assembly_files": 3658,
+        "assembly_lines": 1659007,
+        "assembly_bytes": 37411698,
+        "doc_files": 7125,
+        "doc_bytes": 35631654,
+        "total_packages_processed": 958,
+        "failed_packages": [
+            {
+                "package": "ASCIITable.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "BadReaction.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "BListView.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "bresenham24.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "bresenham.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "CdBS_KQSrc0.5.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "How2UseGfxV39.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "HowToReAction.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "Mandelbrot_tutorial.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "PIPWin.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "RafikSrcDos.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "so-installer.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "stefanb_src.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "VectorGlyph.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "ViewDiz_src.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "Viewperf5.1src.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "wangisrc.lha",
+                "category": "dev/src",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "amiga-c-jun99.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "CLib37x.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "CLib-SDI.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "crcWOS.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "ElfCheckWos.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "Emperor.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "GED_Scripts.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "GfxSndSystemSr.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "GSys.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "makecat.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "millibar.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "Oui.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "PluginDemo.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "PMManager.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "qtools0.3-src.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "RecallSource.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "REQUESTLib.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "RoboticsDP.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "SetMousePort.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "SScreenManager.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "StormC2_0.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "StormC_CyberGL.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "StormC_Demo1_1.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "StormC_FastLib.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "StormC_TWiMUIL.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "StormWizard2_0.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "StormWizard2_3.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "StormWizard_EG.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "Vperf5.1-src.lha",
+                "category": "dev/c",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "ofl_12.lha",
+                "category": "dev/asm",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "PhxAss439.lha",
+                "category": "dev/asm",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "PhxLnk432.lha",
+                "category": "dev/asm",
+                "reason": "Extraction failed"
+            },
+            {
+                "package": "TBSource.lha",
+                "category": "dev/asm",
+                "reason": "Extraction failed"
+            }
+        ],
+        "processed_packages": {
+            "3d-fraktal": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 29245
+            },
+            "3DNav": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 112391
+            },
+            "adasort": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 47991
+            },
+            "adasrc1": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 6749
+            },
+            "adasrc2": {
+                "category": "dev/src",
+                "retained_files": 8,
+                "original_size": 33618
+            },
+            "afexampl": {
+                "category": "dev/src",
+                "retained_files": 466,
+                "original_size": 1411477
+            },
+            "AGACopper": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 9069
+            },
+            "aliens-morphos": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 226627
+            },
+            "AllegroSources": {
+                "category": "dev/src",
+                "retained_files": 815,
+                "original_size": 4321005
+            },
+            "allsprites": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 2448
+            },
+            "alspro": {
+                "category": "dev/src",
+                "retained_files": 8,
+                "original_size": 154489
+            },
+            "amilock": {
+                "category": "dev/src",
+                "retained_files": 15,
+                "original_size": 40418
+            },
+            "AmiPhoneSrc192": {
+                "category": "dev/src",
+                "retained_files": 57,
+                "original_size": 242446
+            },
+            "apathysource": {
+                "category": "dev/src",
+                "retained_files": 26,
+                "original_size": 235207
+            },
+            "Apfelberge": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 10829
+            },
+            "Arduino_ARexx": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 4365
+            },
+            "Arduino_Python": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 12589
+            },
+            "areaExample": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 12653
+            },
+            "ArpRequest": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 23012
+            },
+            "ASendPacket": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 5853
+            },
+            "avd_template": {
+                "category": "dev/src",
+                "retained_files": 47,
+                "original_size": 199008
+            },
+            "ballgame": {
+                "category": "dev/src",
+                "retained_files": 12,
+                "original_size": 161391
+            },
+            "beamcon0": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 769
+            },
+            "BernieHeaders": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 10494
+            },
+            "bezier_3d": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 1916
+            },
+            "Beziery_Beizera": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 156350
+            },
+            "blitscreen": {
+                "category": "dev/src",
+                "retained_files": 11,
+                "original_size": 72508
+            },
+            "bogogui_098": {
+                "category": "dev/src",
+                "retained_files": 11,
+                "original_size": 47418
+            },
+            "boot": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 2410
+            },
+            "Bouncing_Cube": {
+                "category": "dev/src",
+                "retained_files": 12,
+                "original_size": 187496
+            },
+            "BrainF_ck_Interpreter": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 5871
+            },
+            "BtoC_v32": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 97087
+            },
+            "BulletExamples": {
+                "category": "dev/src",
+                "retained_files": 34,
+                "original_size": 81338
+            },
+            "c2p4": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 31831
+            },
+            "candy1": {
+                "category": "dev/src",
+                "retained_files": 13,
+                "original_size": 73937
+            },
+            "cantstop_src": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 27886
+            },
+            "Carmichael": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 2835
+            },
+            "cexcept": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 22214
+            },
+            "CharConvSrc": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 7356
+            },
+            "chnky2plnr": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 14676
+            },
+            "chunkyiclass": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 6472
+            },
+            "chunky": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 54990
+            },
+            "ChunkyStartup2": {
+                "category": "dev/src",
+                "retained_files": 13,
+                "original_size": 91399
+            },
+            "CIATimer": {
+                "category": "dev/src",
+                "retained_files": 12,
+                "original_size": 23703
+            },
+            "ClipBoard": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 1460
+            },
+            "ClipIt": {
+                "category": "dev/src",
+                "retained_files": 10,
+                "original_size": 95183
+            },
+            "clip": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 5341
+            },
+            "CloneWindow": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 27711
+            },
+            "CmdListSrc": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 29981
+            },
+            "cobol2000": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 1725
+            },
+            "CollidingStars": {
+                "category": "dev/src",
+                "retained_files": 10,
+                "original_size": 185069
+            },
+            "CollStars": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 185069
+            },
+            "color_chooser": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 762
+            },
+            "CommonFuncsPPC": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 157114
+            },
+            "CompositePOC": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 367499
+            },
+            "ConfigFileSrc": {
+                "category": "dev/src",
+                "retained_files": 95,
+                "original_size": 87454
+            },
+            "ConPackets": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 10276
+            },
+            "ConsoleWindow": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 9643
+            },
+            "CopJMP": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 1118
+            },
+            "Cow3D": {
+                "category": "dev/src",
+                "retained_files": 31,
+                "original_size": 739816
+            },
+            "CSquared": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 23707
+            },
+            "curvetest-os4": {
+                "category": "dev/src",
+                "retained_files": 11,
+                "original_size": 481325
+            },
+            "dada": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 6229
+            },
+            "DemoBall": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 37673
+            },
+            "device_info": {
+                "category": "dev/src",
+                "retained_files": 9,
+                "original_size": 12046
+            },
+            "DICE_SharedLib": {
+                "category": "dev/src",
+                "retained_files": 8,
+                "original_size": 11780
+            },
+            "DigConv12": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 9963
+            },
+            "diskhelpers": {
+                "category": "dev/src",
+                "retained_files": 11,
+                "original_size": 282592
+            },
+            "diskimage_src": {
+                "category": "dev/src",
+                "retained_files": 13,
+                "original_size": 20886
+            },
+            "DisKoTutorial": {
+                "category": "dev/src",
+                "retained_files": 19,
+                "original_size": 64612
+            },
+            "DoBoing": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 54264
+            },
+            "DosDev": {
+                "category": "dev/src",
+                "retained_files": 10,
+                "original_size": 26155
+            },
+            "doublbuf": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 7549
+            },
+            "dragclass": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 56686
+            },
+            "DropBox1_1": {
+                "category": "dev/src",
+                "retained_files": 14,
+                "original_size": 42173
+            },
+            "earth": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 182671
+            },
+            "emog": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 24444
+            },
+            "EnforcerFreeze": {
+                "category": "dev/src",
+                "retained_files": 11,
+                "original_size": 25113
+            },
+            "E-ROMATO": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 1890
+            },
+            "EuchreSRC": {
+                "category": "dev/src",
+                "retained_files": 44,
+                "original_size": 195180
+            },
+            "Eversion": {
+                "category": "dev/src",
+                "retained_files": 48,
+                "original_size": 710211
+            },
+            "except": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 3582
+            },
+            "Excption": {
+                "category": "dev/src",
+                "retained_files": 21,
+                "original_size": 49150
+            },
+            "expat-src": {
+                "category": "dev/src",
+                "retained_files": 50,
+                "original_size": 175775
+            },
+            "FaderFunct": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 1649
+            },
+            "fading_tut-os4": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 185495
+            },
+            "fastc2p": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 26087
+            },
+            "FloppyFlux_src": {
+                "category": "dev/src",
+                "retained_files": 32,
+                "original_size": 88090
+            },
+            "fmtstrutil": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 2863
+            },
+            "FReality": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 36982
+            },
+            "freedb_sources": {
+                "category": "dev/src",
+                "retained_files": 97,
+                "original_size": 130411
+            },
+            "FSditheringW3D": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 197126
+            },
+            "GadgetExample": {
+                "category": "dev/src",
+                "retained_files": 9,
+                "original_size": 27412
+            },
+            "Geometric": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 6998
+            },
+            "getmodeinfo20s": {
+                "category": "dev/src",
+                "retained_files": 8,
+                "original_size": 8799
+            },
+            "ggt": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 95419
+            },
+            "GhostRiderSrc": {
+                "category": "dev/src",
+                "retained_files": 27,
+                "original_size": 306195
+            },
+            "giraffe": {
+                "category": "dev/src",
+                "retained_files": 47,
+                "original_size": 238404
+            },
+            "GL_BMP_Load_11": {
+                "category": "dev/src",
+                "retained_files": 26,
+                "original_size": 249755
+            },
+            "GLperf3.12-src": {
+                "category": "dev/src",
+                "retained_files": 140,
+                "original_size": 359264
+            },
+            "gma_assembler": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 2662
+            },
+            "gma_calc": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 373057
+            },
+            "gma_c": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 9731
+            },
+            "gma_e": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 13017
+            },
+            "gma_prolog": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 2554
+            },
+            "GoodDouble": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 11430
+            },
+            "GPrintIFF": {
+                "category": "dev/src",
+                "retained_files": 36,
+                "original_size": 104793
+            },
+            "GurusGuide": {
+                "category": "dev/src",
+                "retained_files": 17,
+                "original_size": 49940
+            },
+            "h2sacsou": {
+                "category": "dev/src",
+                "retained_files": 28,
+                "original_size": 389573
+            },
+            "Handler": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 10013
+            },
+            "HCF": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 1464
+            },
+            "HelloWorld1_0": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 1160
+            },
+            "HexDump": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 9175
+            },
+            "hex": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 3178
+            },
+            "How2UseGfx-P2": {
+                "category": "dev/src",
+                "retained_files": 25,
+                "original_size": 305822
+            },
+            "HW_31KhzModes": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 3658
+            },
+            "HW-Access": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 6043
+            },
+            "hz": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 1696
+            },
+            "input.dev": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 5106
+            },
+            "intuiflake": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 5046
+            },
+            "intuistar": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 4145
+            },
+            "joystick": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 1537
+            },
+            "JustBeeps": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 11325
+            },
+            "laffik-sources-01": {
+                "category": "dev/src",
+                "retained_files": 11,
+                "original_size": 421376
+            },
+            "laffik-sources-02a": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 374305
+            },
+            "laffik-sources-02b": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 422130
+            },
+            "laffik-sources-02c": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 551546
+            },
+            "laffik-sources-02d": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 572762
+            },
+            "laffik-sources-03a": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 407870
+            },
+            "laffik-sources-03b": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 507662
+            },
+            "laffik-sources-04a": {
+                "category": "dev/src",
+                "retained_files": 11,
+                "original_size": 637306
+            },
+            "laffik-sources-04b": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 459403
+            },
+            "laffik-sources_arrays": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 351796
+            },
+            "laffik-sources_blitter": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 2978
+            },
+            "Lgui": {
+                "category": "dev/src",
+                "retained_files": 24,
+                "original_size": 176921
+            },
+            "LibFrame": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 12871
+            },
+            "LibTimerSrc": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 10173
+            },
+            "LightCycleSour": {
+                "category": "dev/src",
+                "retained_files": 8,
+                "original_size": 382767
+            },
+            "listbrowserexa": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 163552
+            },
+            "listbrowserexample": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 163552
+            },
+            "MEM-EDIT_AREXX": {
+                "category": "dev/src",
+                "retained_files": 21,
+                "original_size": 267916
+            },
+            "meshw02_src": {
+                "category": "dev/src",
+                "retained_files": 52,
+                "original_size": 176445
+            },
+            "MiniStat": {
+                "category": "dev/src",
+                "retained_files": 12,
+                "original_size": 21246
+            },
+            "Mklib": {
+                "category": "dev/src",
+                "retained_files": 39,
+                "original_size": 49243
+            },
+            "modem_1.2": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 10666
+            },
+            "morecolors": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 1031
+            },
+            "MorphOS_PPC_HelloWorld": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 17501
+            },
+            "Move16v2": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 8709
+            },
+            "mrq_library": {
+                "category": "dev/src",
+                "retained_files": 16,
+                "original_size": 80759
+            },
+            "mrwcs_c2p": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 12516
+            },
+            "multibaselib": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 8555
+            },
+            "MultiTasking": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 21961
+            },
+            "mwAGDsrc": {
+                "category": "dev/src",
+                "retained_files": 41,
+                "original_size": 206299
+            },
+            "MyCalc": {
+                "category": "dev/src",
+                "retained_files": 8,
+                "original_size": 346532
+            },
+            "mycalcppc": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 162696
+            },
+            "nA_6502": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 4503
+            },
+            "nA_AMIKA10": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 6178
+            },
+            "nA_impulse_src": {
+                "category": "dev/src",
+                "retained_files": 13,
+                "original_size": 2288750
+            },
+            "nA_MALevEdSRC": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 37118
+            },
+            "nA_Z80": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 9282
+            },
+            "NBuff": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 19080
+            },
+            "Nehe-lesson37": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 44381
+            },
+            "NiceMove": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 9398
+            },
+            "ObjDumpFunctions": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 89498
+            },
+            "OcSS_src": {
+                "category": "dev/src",
+                "retained_files": 18,
+                "original_size": 193596
+            },
+            "OctaMED-R": {
+                "category": "dev/src",
+                "retained_files": 12,
+                "original_size": 115229
+            },
+            "Oreilly-cube": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 90597
+            },
+            "OS2Unit": {
+                "category": "dev/src",
+                "retained_files": 12,
+                "original_size": 50533
+            },
+            "OSscroll": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 150034
+            },
+            "P96PipDemo": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 7118
+            },
+            "P96Tests": {
+                "category": "dev/src",
+                "retained_files": 93,
+                "original_size": 105415
+            },
+            "PAR_ARexx": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 6005
+            },
+            "ParOut": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 3751
+            },
+            "PAR_Python": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 7550
+            },
+            "Peek-Mem": {
+                "category": "dev/src",
+                "retained_files": 8,
+                "original_size": 50063
+            },
+            "Pere-et-Fils": {
+                "category": "dev/src",
+                "retained_files": 9,
+                "original_size": 15279
+            },
+            "PicPak": {
+                "category": "dev/src",
+                "retained_files": 11,
+                "original_size": 46772
+            },
+            "pitch_shift": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 2746
+            },
+            "plib_examples": {
+                "category": "dev/src",
+                "retained_files": 40,
+                "original_size": 17696339
+            },
+            "Poke-Mem": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 65379
+            },
+            "PopHelp": {
+                "category": "dev/src",
+                "retained_files": 36,
+                "original_size": 108797
+            },
+            "portraitsrc": {
+                "category": "dev/src",
+                "retained_files": 32,
+                "original_size": 486685
+            },
+            "PPCtbl_lwc": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 202455
+            },
+            "programlauncherppc": {
+                "category": "dev/src",
+                "retained_files": 13,
+                "original_size": 275779
+            },
+            "PropGadget": {
+                "category": "dev/src",
+                "retained_files": 13,
+                "original_size": 22856
+            },
+            "Python_Enhancement": {
+                "category": "dev/src",
+                "retained_files": 76,
+                "original_size": 335425
+            },
+            "rablepaint": {
+                "category": "dev/src",
+                "retained_files": 12,
+                "original_size": 58350
+            },
+            "ramdev": {
+                "category": "dev/src",
+                "retained_files": 10,
+                "original_size": 23249
+            },
+            "RBF_src": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 2661
+            },
+            "reaction_dn": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 540556
+            },
+            "reactionexampl": {
+                "category": "dev/src",
+                "retained_files": 9,
+                "original_size": 33649
+            },
+            "regcom": {
+                "category": "dev/src",
+                "retained_files": 48,
+                "original_size": 1603852
+            },
+            "RetinaSource": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 315512
+            },
+            "RKM2_ASM": {
+                "category": "dev/src",
+                "retained_files": 230,
+                "original_size": 437503
+            },
+            "RKM_ASM2": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 437503
+            },
+            "Rkm_asm": {
+                "category": "dev/src",
+                "retained_files": 12,
+                "original_size": 278140
+            },
+            "RKMCompanion": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 656845
+            },
+            "RKRM_Devs_prgs": {
+                "category": "dev/src",
+                "retained_files": 63,
+                "original_size": 331095
+            },
+            "RKRM_Libs_prgs": {
+                "category": "dev/src",
+                "retained_files": 132,
+                "original_size": 728251
+            },
+            "RLD_source": {
+                "category": "dev/src",
+                "retained_files": 16,
+                "original_size": 19555
+            },
+            "RocketCar12": {
+                "category": "dev/src",
+                "retained_files": 11,
+                "original_size": 44689
+            },
+            "rot3dsrc": {
+                "category": "dev/src",
+                "retained_files": 14,
+                "original_size": 187941
+            },
+            "Scan2": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 171009
+            },
+            "ScrollerWindow": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 11630
+            },
+            "ScrollingTrick": {
+                "category": "dev/src",
+                "retained_files": 123,
+                "original_size": 500516
+            },
+            "sdlisomouse-os3": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 164010
+            },
+            "sdlisomouse-os4": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 297907
+            },
+            "SDL_mix": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 441743
+            },
+            "sdlmousetile-os4": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 297435
+            },
+            "SDL_net_demos-AmigaOS": {
+                "category": "dev/src",
+                "retained_files": 27,
+                "original_size": 1073792
+            },
+            "sdlpathfind-os3": {
+                "category": "dev/src",
+                "retained_files": 10,
+                "original_size": 84330
+            },
+            "sdlpathfind-os4": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 136986
+            },
+            "sdlpngsavesurf-os4": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 351252
+            },
+            "SerialClass1_0": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 7592
+            },
+            "sg_mgsrc": {
+                "category": "dev/src",
+                "retained_files": 11,
+                "original_size": 27888
+            },
+            "ShuttleWheel": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 14956
+            },
+            "SmartWB10": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 10165
+            },
+            "smoothscroll-os4": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 272727
+            },
+            "sort": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 26085
+            },
+            "SoundDT41src": {
+                "category": "dev/src",
+                "retained_files": 9,
+                "original_size": 44184
+            },
+            "Spectrum": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 4456
+            },
+            "sPK_Bump": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 64885
+            },
+            "spr12": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 5432
+            },
+            "StarShip": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 74171
+            },
+            "StarShipW3D": {
+                "category": "dev/src",
+                "retained_files": 8,
+                "original_size": 132682
+            },
+            "stormgcc_binut": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 5467318
+            },
+            "stormgcc_cvs": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 1845941
+            },
+            "stormgcc_gcc": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 11471974
+            },
+            "StripANSI2": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 4874
+            },
+            "SystemIdle10": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 8951
+            },
+            "SysTracker_src": {
+                "category": "dev/src",
+                "retained_files": 15,
+                "original_size": 71593
+            },
+            "TBL-LWC": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 193249
+            },
+            "td01_src": {
+                "category": "dev/src",
+                "retained_files": 43,
+                "original_size": 181544
+            },
+            "TDRenderLib": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 34938
+            },
+            "teddycvs163": {
+                "category": "dev/src",
+                "retained_files": 339,
+                "original_size": 681307
+            },
+            "TextEditorExam": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 11287
+            },
+            "theplayerconsrc": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 27777
+            },
+            "timedserial": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 55625
+            },
+            "tipdrawline": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 1554
+            },
+            "tla_source": {
+                "category": "dev/src",
+                "retained_files": 9,
+                "original_size": 16848
+            },
+            "trackldr1_43": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 5089
+            },
+            "trans42src": {
+                "category": "dev/src",
+                "retained_files": 29,
+                "original_size": 31022
+            },
+            "TreeWalk": {
+                "category": "dev/src",
+                "retained_files": 12,
+                "original_size": 58352
+            },
+            "TSBTrainerMenu": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 10355
+            },
+            "unixlib": {
+                "category": "dev/c",
+                "retained_files": 155,
+                "original_size": 334783
+            },
+            "unsqsh": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 3138
+            },
+            "VAD_ManipulSrc": {
+                "category": "dev/src",
+                "retained_files": 142,
+                "original_size": 2887629
+            },
+            "vbcc-librarytemplate": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 3806
+            },
+            "vistk-os4": {
+                "category": "dev/src",
+                "retained_files": 16,
+                "original_size": 343622
+            },
+            "visual_sort": {
+                "category": "dev/src",
+                "retained_files": 10,
+                "original_size": 78634
+            },
+            "wavetools_dev": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 28618
+            },
+            "WBBump_src": {
+                "category": "dev/src",
+                "retained_files": 8,
+                "original_size": 67858
+            },
+            "wbpath": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 12218
+            },
+            "wfimage_src": {
+                "category": "dev/src",
+                "retained_files": 16,
+                "original_size": 45034
+            },
+            "wif_info": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 8782
+            },
+            "Window": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 9298
+            },
+            "wolf3d-2": {
+                "category": "dev/src",
+                "retained_files": 32,
+                "original_size": 57297
+            },
+            "wwg-crt": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 7604
+            },
+            "xad_AmosSampBa": {
+                "category": "dev/src",
+                "retained_files": 7,
+                "original_size": 11907
+            },
+            "xad_ar": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 15151
+            },
+            "xad_bzip2": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 50832
+            },
+            "xad_bzip": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 23986
+            },
+            "xad_CAB": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 65243
+            },
+            "xad_COP": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 18011
+            },
+            "xad_cpio": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 7007
+            },
+            "xad_DImp": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 16106
+            },
+            "xad_MakeSFX": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 13702
+            },
+            "xad_MSA": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 10589
+            },
+            "xad_MS-TNEF": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 14306
+            },
+            "xad_PackDir": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 24865
+            },
+            "xad_RPM": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 13008
+            },
+            "xad_UCSD": {
+                "category": "dev/src",
+                "retained_files": 0,
+                "original_size": 1319
+            },
+            "xad_Wrapster": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 12917
+            },
+            "xad_ZAP": {
+                "category": "dev/src",
+                "retained_files": 2,
+                "original_size": 14524
+            },
+            "xfd_MMCMP": {
+                "category": "dev/src",
+                "retained_files": 4,
+                "original_size": 5553
+            },
+            "xfd_PacPic": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 7194
+            },
+            "xfd_SZDD": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 15268
+            },
+            "xList_s": {
+                "category": "dev/src",
+                "retained_files": 5,
+                "original_size": 17247
+            },
+            "XModule34_src": {
+                "category": "dev/src",
+                "retained_files": 57,
+                "original_size": 201923
+            },
+            "Xvectors1-3": {
+                "category": "dev/src",
+                "retained_files": 3,
+                "original_size": 12169
+            },
+            "Xvectors4": {
+                "category": "dev/src",
+                "retained_files": 1,
+                "original_size": 5190
+            },
+            "ZipWd": {
+                "category": "dev/src",
+                "retained_files": 6,
+                "original_size": 5175
+            },
+            "ZLibWOS": {
+                "category": "dev/src",
+                "retained_files": 28,
+                "original_size": 114112
+            },
+            "2b_Bin2C": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 4745
+            },
+            "2b_TKAlgebra": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 110859
+            },
+            "2b_TKLsort": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 33405
+            },
+            "ACM": {
+                "category": "dev/c",
+                "retained_files": 136,
+                "original_size": 453715
+            },
+            "ACM_PDF": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 2576595
+            },
+            "ADOSLib": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 29414
+            },
+            "aframv02": {
+                "category": "dev/c",
+                "retained_files": 193,
+                "original_size": 546911
+            },
+            "aga-test": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 17191
+            },
+            "agl103p": {
+                "category": "dev/c",
+                "retained_files": 25,
+                "original_size": 142229
+            },
+            "agl1.04_demo": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 36424
+            },
+            "AHIToolsrc": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 25625
+            },
+            "AlertSource": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 17722
+            },
+            "Alint": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 11200
+            },
+            "AllocSysObject": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 34848
+            },
+            "amake_v1.00": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 23857
+            },
+            "AMCSourcesV1": {
+                "category": "dev/c",
+                "retained_files": 148,
+                "original_size": 133256
+            },
+            "AMCSourcesV2": {
+                "category": "dev/c",
+                "retained_files": 76,
+                "original_size": 222800
+            },
+            "AMesaRTL": {
+                "category": "dev/c",
+                "retained_files": 74,
+                "original_size": 215204
+            },
+            "Amiga-C-Apr00": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 98949
+            },
+            "amiga-c-apr99": {
+                "category": "dev/c",
+                "retained_files": 11,
+                "original_size": 69545
+            },
+            "Amiga-C-Aug00": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 119463
+            },
+            "amiga-c-aug99": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 113105
+            },
+            "AmigaCC68k": {
+                "category": "dev/c",
+                "retained_files": 28,
+                "original_size": 81637
+            },
+            "Amiga-C-Dec00": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 125330
+            },
+            "Amiga-C-Dec99": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 80137
+            },
+            "Amiga-C-Feb00": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 87046
+            },
+            "Amiga-C-Feb01": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 115135
+            },
+            "Amiga-C-Jan00": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 54729
+            },
+            "Amiga-C-Jan01": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 138032
+            },
+            "Amiga-C-Jul00": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 72903
+            },
+            "amiga-c-jul99": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 98707
+            },
+            "Amiga-C-Jun00": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 181241
+            },
+            "Amiga-C-Mar00": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 206607
+            },
+            "amiga-c-may99": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 125375
+            },
+            "Amiga-C-Nov00": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 91569
+            },
+            "amiga-c-Nov99": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 99681
+            },
+            "Amiga-C-Oct00": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 115629
+            },
+            "amiga-c-Oct99": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 68022
+            },
+            "Amiga-C-Sep00": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 115124
+            },
+            "amiga-c-sep99": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 41667
+            },
+            "AmigaDate": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 2098
+            },
+            "amigastlport": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 12957
+            },
+            "amis_c": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 39740
+            },
+            "AmiVoGL-MDEV": {
+                "category": "dev/c",
+                "retained_files": 153,
+                "original_size": 1314306
+            },
+            "AMPlifier_SDK": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 5044
+            },
+            "anaiis_print": {
+                "category": "dev/c",
+                "retained_files": 47,
+                "original_size": 118135
+            },
+            "APPGNU_bin": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 64723
+            },
+            "APPSAS_bin": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 390768
+            },
+            "APPSource": {
+                "category": "dev/c",
+                "retained_files": 201,
+                "original_size": 260845
+            },
+            "apputil": {
+                "category": "dev/c",
+                "retained_files": 10,
+                "original_size": 9550
+            },
+            "argparse": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 18023
+            },
+            "ASAP": {
+                "category": "dev/c",
+                "retained_files": 96,
+                "original_size": 68370
+            },
+            "ASAPUpd": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 4821
+            },
+            "ascii2xxx": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 19667
+            },
+            "AssignP": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 8014
+            },
+            "AsyncIFF": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 2049
+            },
+            "AsyncIO": {
+                "category": "dev/c",
+                "retained_files": 33,
+                "original_size": 53496
+            },
+            "AsyncIOPPCdev": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 4831
+            },
+            "awin": {
+                "category": "dev/c",
+                "retained_files": 31,
+                "original_size": 220833
+            },
+            "AzMake": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 29253
+            },
+            "AztecArp": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 73551
+            },
+            "AztecErr": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 23119
+            },
+            "b64": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 39273
+            },
+            "BasiliskII-src-mos": {
+                "category": "dev/c",
+                "retained_files": 231,
+                "original_size": 1058758
+            },
+            "BCC_IconifyBut": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 7521
+            },
+            "BestRandom": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 28419
+            },
+            "bignum": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 35214
+            },
+            "Bin2C": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 3563
+            },
+            "bindata-os4": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 5390
+            },
+            "bintoc": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 21151
+            },
+            "bison++-1.04": {
+                "category": "dev/c",
+                "retained_files": 33,
+                "original_size": 120441
+            },
+            "Bison125": {
+                "category": "dev/c",
+                "retained_files": 34,
+                "original_size": 290801
+            },
+            "BitMap24": {
+                "category": "dev/c",
+                "retained_files": 21,
+                "original_size": 48637
+            },
+            "BlackborderSou": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 3589
+            },
+            "BOGLsrc": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 9029
+            },
+            "BoopsiWizard": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 105625
+            },
+            "Bovs20": {
+                "category": "dev/c",
+                "retained_files": 10,
+                "original_size": 40908
+            },
+            "BSMustek-src": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 44513
+            },
+            "BumpRev": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 8788
+            },
+            "butclas3": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 68436
+            },
+            "Butterfly2": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 5433146
+            },
+            "Butterfly": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 583064
+            },
+            "byacc-3.0": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 111127
+            },
+            "byteswap": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 504
+            },
+            "c++2latex": {
+                "category": "dev/c",
+                "retained_files": 14,
+                "original_size": 96970
+            },
+            "c2local": {
+                "category": "dev/c",
+                "retained_files": 12,
+                "original_size": 121926
+            },
+            "c2man-2.0pl33": {
+                "category": "dev/c",
+                "retained_files": 62,
+                "original_size": 279373
+            },
+            "CalcStruct10": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 3439
+            },
+            "Calls": {
+                "category": "dev/c",
+                "retained_files": 14,
+                "original_size": 22019
+            },
+            "camd-morphos-dev": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 8688
+            },
+            "CardPkg_1.3": {
+                "category": "dev/c",
+                "retained_files": 26,
+                "original_size": 140768
+            },
+            "cat2h10b": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 5562
+            },
+            "c_ced": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 6893
+            },
+            "cc": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 16179
+            },
+            "CCLib": {
+                "category": "dev/c",
+                "retained_files": 68,
+                "original_size": 164848
+            },
+            "CDecl": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 56948
+            },
+            "CDPlayerSDK": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 3967
+            },
+            "CFilter": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 3890
+            },
+            "cflow": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 47438
+            },
+            "cflow-mos": {
+                "category": "dev/c",
+                "retained_files": 142,
+                "original_size": 1428336
+            },
+            "cformat": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 19144
+            },
+            "C-Functions": {
+                "category": "dev/c",
+                "retained_files": 17,
+                "original_size": 52863
+            },
+            "chipmunk": {
+                "category": "dev/c",
+                "retained_files": 63,
+                "original_size": 389707
+            },
+            "chunky_lib": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 34135
+            },
+            "CInt-0.81": {
+                "category": "dev/c",
+                "retained_files": 45,
+                "original_size": 77821
+            },
+            "cint112": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 19209
+            },
+            "C_Keywords": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 52574
+            },
+            "clibpdf": {
+                "category": "dev/c",
+                "retained_files": 15,
+                "original_size": 196497
+            },
+            "clipit": {
+                "category": "dev/c",
+                "retained_files": 14,
+                "original_size": 270775
+            },
+            "C_Macros39_1": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 1297
+            },
+            "cmacros": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 4501
+            },
+            "c_mem": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 10313
+            },
+            "cmp": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 9779
+            },
+            "codestorage": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 362674
+            },
+            "Codex": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 16460
+            },
+            "Compiler": {
+                "category": "dev/c",
+                "retained_files": 31,
+                "original_size": 85256
+            },
+            "complex": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 5218
+            },
+            "Config101": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 9335
+            },
+            "Config": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 8835
+            },
+            "conman": {
+                "category": "dev/c",
+                "retained_files": 25,
+                "original_size": 14057
+            },
+            "ConvertBS": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 8211
+            },
+            "CopDis": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 12407
+            },
+            "cpost-1.4": {
+                "category": "dev/c",
+                "retained_files": 20,
+                "original_size": 76631
+            },
+            "Cpp": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 103916
+            },
+            "CPRFiX": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 16341
+            },
+            "cprofilerppc": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 203814
+            },
+            "CQuickRef39_1": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 7502
+            },
+            "crblib": {
+                "category": "dev/c",
+                "retained_files": 42,
+                "original_size": 42565
+            },
+            "crc32fj": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 6660
+            },
+            "crc32": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 1683
+            },
+            "crcPPC": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 72831
+            },
+            "Cref": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 15407
+            },
+            "cscope": {
+                "category": "dev/c",
+                "retained_files": 46,
+                "original_size": 1014120
+            },
+            "ctags": {
+                "category": "dev/c",
+                "retained_files": 76,
+                "original_size": 357652
+            },
+            "CTO": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 3379
+            },
+            "c_ucode": {
+                "category": "dev/c",
+                "retained_files": 31,
+                "original_size": 57635
+            },
+            "C_V43-DT": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 16340
+            },
+            "C_V44-DT": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 15980
+            },
+            "cweb33p11a": {
+                "category": "dev/c",
+                "retained_files": 11,
+                "original_size": 421829
+            },
+            "cwebbin-p13": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 351211
+            },
+            "cxref-1.4a": {
+                "category": "dev/c",
+                "retained_files": 45,
+                "original_size": 480296
+            },
+            "cxxc": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 15162
+            },
+            "CyberGL-DevKit": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 42625
+            },
+            "dbt": {
+                "category": "dev/c",
+                "retained_files": 27,
+                "original_size": 43690
+            },
+            "DCBack15": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 9618
+            },
+            "DCCInline07": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 9948
+            },
+            "debugutils": {
+                "category": "dev/c",
+                "retained_files": 12,
+                "original_size": 50146
+            },
+            "DependantScan": {
+                "category": "dev/c",
+                "retained_files": 19,
+                "original_size": 52340
+            },
+            "DepthMenuSDK": {
+                "category": "dev/c",
+                "retained_files": 21,
+                "original_size": 52579
+            },
+            "dice-3.15": {
+                "category": "dev/c",
+                "retained_files": 1282,
+                "original_size": 4907040
+            },
+            "dice-3.16": {
+                "category": "dev/c",
+                "retained_files": 74,
+                "original_size": 3002345
+            },
+            "dicedocs3-html": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 446971
+            },
+            "dice-docs-3-xx": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 345499
+            },
+            "dicepref": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 19097
+            },
+            "DiceScreenshot": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 18656
+            },
+            "Dorkalize": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 185586
+            },
+            "DosList": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 5844
+            },
+            "easyaudiolibra": {
+                "category": "dev/c",
+                "retained_files": 28,
+                "original_size": 181488
+            },
+            "EasygadgetsSou": {
+                "category": "dev/c",
+                "retained_files": 23,
+                "original_size": 93663
+            },
+            "EasyrexxSource": {
+                "category": "dev/c",
+                "retained_files": 95,
+                "original_size": 516125
+            },
+            "EasySound": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 30165
+            },
+            "EGCS-WarpUP-Ad": {
+                "category": "dev/c",
+                "retained_files": 68,
+                "original_size": 110222
+            },
+            "EGCSWOSAlib": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 15553
+            },
+            "emptyhandler": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 4526
+            },
+            "emptyhandler-morphos": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 17653
+            },
+            "etags": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 34874
+            },
+            "exec": {
+                "category": "dev/c",
+                "retained_files": 94,
+                "original_size": 92243
+            },
+            "expat-dev": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 88353
+            },
+            "expsascxx": {
+                "category": "dev/c",
+                "retained_files": 14,
+                "original_size": 517730
+            },
+            "expsascxx_old": {
+                "category": "dev/c",
+                "retained_files": 11,
+                "original_size": 422546
+            },
+            "ExtData-1.00": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 22863
+            },
+            "ExtractBody372": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 4061
+            },
+            "EZPrinter": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 2127
+            },
+            "fd2StormC_11": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 2171
+            },
+            "fedcase": {
+                "category": "dev/c",
+                "retained_files": 28,
+                "original_size": 136208
+            },
+            "fftPPC": {
+                "category": "dev/c",
+                "retained_files": 11,
+                "original_size": 109989
+            },
+            "fhopen": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 2906
+            },
+            "fillbar-ic": {
+                "category": "dev/c",
+                "retained_files": 19,
+                "original_size": 44004
+            },
+            "FindETag": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 7485
+            },
+            "flash-0.4.3": {
+                "category": "dev/c",
+                "retained_files": 105,
+                "original_size": 347541
+            },
+            "flashsort": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 9529
+            },
+            "Flex254": {
+                "category": "dev/c",
+                "retained_files": 26,
+                "original_size": 470300
+            },
+            "flstack": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 11459
+            },
+            "focs": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 25642
+            },
+            "fontconverter": {
+                "category": "dev/c",
+                "retained_files": 16,
+                "original_size": 39706
+            },
+            "fontlib": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 7481
+            },
+            "fortify22": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 31997
+            },
+            "fractal": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 70643
+            },
+            "FreeDice": {
+                "category": "dev/c",
+                "retained_files": 50,
+                "original_size": 435888
+            },
+            "fuzz": {
+                "category": "dev/c",
+                "retained_files": 47,
+                "original_size": 445497
+            },
+            "FW_ACMdev": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 172220
+            },
+            "FW_ACMgfx": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 93725
+            },
+            "FW_ACMint": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 109996
+            },
+            "FW_ACMsys": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 56089
+            },
+            "GameX": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 15370
+            },
+            "GAPLib": {
+                "category": "dev/c",
+                "retained_files": 54,
+                "original_size": 248082
+            },
+            "GCCGUI": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 15610
+            },
+            "GED4DCC": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 4209
+            },
+            "ged4indent": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 6084
+            },
+            "ged6indent": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 7265
+            },
+            "gedcppscn": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 2303
+            },
+            "GEDindent": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 2102
+            },
+            "genlib": {
+                "category": "dev/c",
+                "retained_files": 13,
+                "original_size": 32464
+            },
+            "GenPragma": {
+                "category": "dev/c",
+                "retained_files": 10,
+                "original_size": 20439
+            },
+            "GenProto": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 41787
+            },
+            "GetCRC": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 31216
+            },
+            "GetImage": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 49996
+            },
+            "getopt_long": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 21531
+            },
+            "Getsprite": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 6954
+            },
+            "GetVolume": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 7310
+            },
+            "gfxsys": {
+                "category": "dev/c",
+                "retained_files": 27,
+                "original_size": 22750
+            },
+            "GimmeDir": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 3313
+            },
+            "glib-morphos": {
+                "category": "dev/c",
+                "retained_files": 74,
+                "original_size": 631468
+            },
+            "GL-pack1": {
+                "category": "dev/c",
+                "retained_files": 12,
+                "original_size": 18401
+            },
+            "glpng_os4": {
+                "category": "dev/c",
+                "retained_files": 29,
+                "original_size": 176284
+            },
+            "GolDICE": {
+                "category": "dev/c",
+                "retained_files": 38,
+                "original_size": 67438
+            },
+            "Goo": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 27185
+            },
+            "gperf": {
+                "category": "dev/c",
+                "retained_files": 12,
+                "original_size": 432215
+            },
+            "GroupBorderCla": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 2714
+            },
+            "gscroll": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 56452
+            },
+            "HCC": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 652594
+            },
+            "HCE": {
+                "category": "dev/c",
+                "retained_files": 292,
+                "original_size": 1708223
+            },
+            "hc": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 9523
+            },
+            "HelloWorld": {
+                "category": "dev/c",
+                "retained_files": 19,
+                "original_size": 130463
+            },
+            "hexify": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 13811
+            },
+            "HVC": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 8012
+            },
+            "IBase": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 8043
+            },
+            "IconifyButtonC": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 1680
+            },
+            "iconv-morphos-dev": {
+                "category": "dev/c",
+                "retained_files": 417,
+                "original_size": 6178990
+            },
+            "icu-bin": {
+                "category": "dev/c",
+                "retained_files": 54,
+                "original_size": 3342400
+            },
+            "icu-diffs": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 12537
+            },
+            "icu": {
+                "category": "dev/c",
+                "retained_files": 594,
+                "original_size": 7214419
+            },
+            "IFFConverter": {
+                "category": "dev/c",
+                "retained_files": 47,
+                "original_size": 140673
+            },
+            "IFFtoC": {
+                "category": "dev/c",
+                "retained_files": 23,
+                "original_size": 65310
+            },
+            "ilbm2raw": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 6357
+            },
+            "Indent191": {
+                "category": "dev/c",
+                "retained_files": 15,
+                "original_size": 141831
+            },
+            "indent": {
+                "category": "dev/c",
+                "retained_files": 27,
+                "original_size": 363262
+            },
+            "indent-mos": {
+                "category": "dev/c",
+                "retained_files": 324,
+                "original_size": 1316086
+            },
+            "iniparser": {
+                "category": "dev/c",
+                "retained_files": 15,
+                "original_size": 115802
+            },
+            "ix2nix": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 24985
+            },
+            "ixemul_DiceSas": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 135891
+            },
+            "jam_mos": {
+                "category": "dev/c",
+                "retained_files": 62,
+                "original_size": 340265
+            },
+            "jansson_library": {
+                "category": "dev/c",
+                "retained_files": 46,
+                "original_size": 220491
+            },
+            "KeysPlease": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 10240
+            },
+            "koch": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 18828
+            },
+            "KronosC": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 73963
+            },
+            "LatticeXref": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 34749
+            },
+            "lcfront": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 16223
+            },
+            "lclint": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 527383
+            },
+            "LEDA_GUI": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 40713
+            },
+            "LEDAPrefs": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 9441
+            },
+            "lemon": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 110430
+            },
+            "libiconv_src": {
+                "category": "dev/c",
+                "retained_files": 172,
+                "original_size": 3570206
+            },
+            "libintl-morphos": {
+                "category": "dev/c",
+                "retained_files": 58,
+                "original_size": 260584
+            },
+            "librarymaker": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 74599
+            },
+            "LinkSound": {
+                "category": "dev/c",
+                "retained_files": 13,
+                "original_size": 64858
+            },
+            "llist1.1": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 54949
+            },
+            "LoC": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 9164
+            },
+            "luxcc.i386-aros": {
+                "category": "dev/c",
+                "retained_files": 84,
+                "original_size": 538442
+            },
+            "make-3.75-bin": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 54514
+            },
+            "make-3.75-src": {
+                "category": "dev/c",
+                "retained_files": 42,
+                "original_size": 610844
+            },
+            "make421": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 494369
+            },
+            "make-4.4.1": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 90480
+            },
+            "make-bin": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 363573
+            },
+            "make_bin": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 186592
+            },
+            "makedepend_AmiMod": {
+                "category": "dev/c",
+                "retained_files": 14,
+                "original_size": 56197
+            },
+            "makedepend": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 24890
+            },
+            "MakeDMake": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 13990
+            },
+            "Makefile-Ced": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 577
+            },
+            "make_src": {
+                "category": "dev/c",
+                "retained_files": 54,
+                "original_size": 606507
+            },
+            "math_classes": {
+                "category": "dev/c",
+                "retained_files": 70,
+                "original_size": 78343
+            },
+            "matrix": {
+                "category": "dev/c",
+                "retained_files": 46,
+                "original_size": 49173
+            },
+            "MaxonCPPfix": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 1854
+            },
+            "MBEDeveloper10": {
+                "category": "dev/c",
+                "retained_files": 12,
+                "original_size": 16783
+            },
+            "MCPP2GED": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 13804
+            },
+            "mcs": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 8145
+            },
+            "mCWEB": {
+                "category": "dev/c",
+                "retained_files": 42,
+                "original_size": 1173898
+            },
+            "md5": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 3832
+            },
+            "MD5Random": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 31769
+            },
+            "measureconpup": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 16688
+            },
+            "measureconwos": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 9765
+            },
+            "MEMLib": {
+                "category": "dev/c",
+                "retained_files": 24,
+                "original_size": 110397
+            },
+            "memory_h": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 260
+            },
+            "MemPools": {
+                "category": "dev/c",
+                "retained_files": 15,
+                "original_size": 26205
+            },
+            "Mesa2_2ASrc1_6": {
+                "category": "dev/c",
+                "retained_files": 381,
+                "original_size": 1512115
+            },
+            "metre": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 88998
+            },
+            "minicrc_0.2.2_mos": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 32361
+            },
+            "minigl_data": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 415539
+            },
+            "minigl": {
+                "category": "dev/c",
+                "retained_files": 60,
+                "original_size": 206192
+            },
+            "MiniGL_OS4": {
+                "category": "dev/c",
+                "retained_files": 96,
+                "original_size": 2575767
+            },
+            "mkid": {
+                "category": "dev/c",
+                "retained_files": 34,
+                "original_size": 150343
+            },
+            "mkmk": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 272433
+            },
+            "MMULib": {
+                "category": "dev/c",
+                "retained_files": 23,
+                "original_size": 35277
+            },
+            "MP3rip": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 8186
+            },
+            "MPEGAPPCdev": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 4514
+            },
+            "ms": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 31081
+            },
+            "MultiList": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 7802
+            },
+            "mylist14": {
+                "category": "dev/c",
+                "retained_files": 18,
+                "original_size": 31105
+            },
+            "MyUpdate": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 12788
+            },
+            "n2w": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 43655
+            },
+            "n2w_mos": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 54769
+            },
+            "nc2sdl": {
+                "category": "dev/c",
+                "retained_files": 18,
+                "original_size": 177342
+            },
+            "Ndir": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 9310
+            },
+            "nofraglib": {
+                "category": "dev/c",
+                "retained_files": 18,
+                "original_size": 17227
+            },
+            "northc13": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 638081
+            },
+            "nrdargs": {
+                "category": "dev/c",
+                "retained_files": 10,
+                "original_size": 16443
+            },
+            "nroot": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 1199
+            },
+            "nuqneh": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 133986
+            },
+            "objc": {
+                "category": "dev/c",
+                "retained_files": 390,
+                "original_size": 2769683
+            },
+            "ObjectiveGT1_0": {
+                "category": "dev/c",
+                "retained_files": 17,
+                "original_size": 161802
+            },
+            "OCT-1.99": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 982868
+            },
+            "Orion": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 21707
+            },
+            "PAR_C": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 15922
+            },
+            "parse": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 17312
+            },
+            "parson": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 282470
+            },
+            "pbar11b": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 10126
+            },
+            "pbar11": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 10121
+            },
+            "PDC": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 731370
+            },
+            "PgmAsst1.7": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 87266
+            },
+            "PgmAsst": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 101828
+            },
+            "pgmasstppc": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 293131
+            },
+            "PhoneLogDevKit": {
+                "category": "dev/c",
+                "retained_files": 41,
+                "original_size": 83621
+            },
+            "physfs": {
+                "category": "dev/c",
+                "retained_files": 74,
+                "original_size": 765165
+            },
+            "pj_p2cc01b": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 8610
+            },
+            "PMM": {
+                "category": "dev/c",
+                "retained_files": 86,
+                "original_size": 1299973
+            },
+            "png2cMOS": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 68302
+            },
+            "png2c-os4": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 61975
+            },
+            "Powertools": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 17057
+            },
+            "ppcmathlib": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 47992
+            },
+            "PPC_samples": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 377982
+            },
+            "pqueue": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 1600
+            },
+            "ProcessILBM": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 4998
+            },
+            "prog_bar": {
+                "category": "dev/c",
+                "retained_files": 13,
+                "original_size": 31039
+            },
+            "progress": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 27968
+            },
+            "ProjectMan211": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 24230
+            },
+            "proto2fd": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 25199
+            },
+            "protoman3": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 12647
+            },
+            "pthread": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 28204
+            },
+            "pthreads": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 85352
+            },
+            "qtools0.2-bin": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 344747
+            },
+            "qtools0.2-deb": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 390825
+            },
+            "qtools0.2-tst": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 661237
+            },
+            "random": {
+                "category": "dev/c",
+                "retained_files": 12,
+                "original_size": 54742
+            },
+            "RConfig": {
+                "category": "dev/c",
+                "retained_files": 32,
+                "original_size": 58735
+            },
+            "re2c": {
+                "category": "dev/c",
+                "retained_files": 154,
+                "original_size": 1139939
+            },
+            "reaction_examples": {
+                "category": "dev/c",
+                "retained_files": 105,
+                "original_size": 911918
+            },
+            "remote": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 25456
+            },
+            "ReqAztec": {
+                "category": "dev/c",
+                "retained_files": 48,
+                "original_size": 58809
+            },
+            "REST_API_Handler": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 27038
+            },
+            "ResTrackLib-02": {
+                "category": "dev/c",
+                "retained_files": 20,
+                "original_size": 29393
+            },
+            "RevCo10": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 11806
+            },
+            "rot13": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 566
+            },
+            "RsrcTrackLib": {
+                "category": "dev/c",
+                "retained_files": 14,
+                "original_size": 30092
+            },
+            "rtlibrary": {
+                "category": "dev/c",
+                "retained_files": 14,
+                "original_size": 12251
+            },
+            "sas2ced5": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 10640
+            },
+            "SASalloca": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 5634
+            },
+            "sas-c-emacs-B3": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 23674
+            },
+            "SASCFuncOverview": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 4094
+            },
+            "SASCOptsPlus_s": {
+                "category": "dev/c",
+                "retained_files": 16,
+                "original_size": 131180
+            },
+            "SASCProjMan": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 24023
+            },
+            "SASC_Y2k_patch": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 180
+            },
+            "SAS_Magic": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 6830
+            },
+            "sc6_3": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 456693
+            },
+            "sc655pch": {
+                "category": "dev/c",
+                "retained_files": 61,
+                "original_size": 1067550
+            },
+            "sc656man": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 1410
+            },
+            "sc656pch": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 195996
+            },
+            "sc657man_ged": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 7320
+            },
+            "sc657pch": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 609267
+            },
+            "sc658pch": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 684282
+            },
+            "ScanGuide": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 6871
+            },
+            "sc": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 2572
+            },
+            "scppc_beta22": {
+                "category": "dev/c",
+                "retained_files": 95,
+                "original_size": 1875365
+            },
+            "sc-snprintf": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 4341
+            },
+            "SDI_headers": {
+                "category": "dev/c",
+                "retained_files": 11,
+                "original_size": 32948
+            },
+            "sdl_configs": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 6708
+            },
+            "semver": {
+                "category": "dev/c",
+                "retained_files": 10,
+                "original_size": 101676
+            },
+            "SetCCOPTS": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 36814
+            },
+            "SetmouseSource": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 15096
+            },
+            "Sevgi_Engine": {
+                "category": "dev/c",
+                "retained_files": 100,
+                "original_size": 919940
+            },
+            "SFPatch": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 7989
+            },
+            "sge2d_os4": {
+                "category": "dev/c",
+                "retained_files": 63,
+                "original_size": 15067010
+            },
+            "shellcolors": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 10981
+            },
+            "showlib": {
+                "category": "dev/c",
+                "retained_files": 12,
+                "original_size": 18188
+            },
+            "SimpleCalc": {
+                "category": "dev/c",
+                "retained_files": 10,
+                "original_size": 55236
+            },
+            "simpleguide1": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 5818
+            },
+            "simplestats": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 39510
+            },
+            "SkipListLib": {
+                "category": "dev/c",
+                "retained_files": 12,
+                "original_size": 54853
+            },
+            "SmakeOpts": {
+                "category": "dev/c",
+                "retained_files": 10,
+                "original_size": 95072
+            },
+            "SmallC": {
+                "category": "dev/c",
+                "retained_files": 21,
+                "original_size": 41835
+            },
+            "smartdev": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 11436
+            },
+            "SMc2cweb": {
+                "category": "dev/c",
+                "retained_files": 10,
+                "original_size": 79813
+            },
+            "Sozobon-C": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 466364
+            },
+            "splint_3.1.1_mos": {
+                "category": "dev/c",
+                "retained_files": 10,
+                "original_size": 1689572
+            },
+            "splint_3.1.2_mos": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 1456531
+            },
+            "splint_3.1.2_os4": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 1877781
+            },
+            "sqlitequery": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 594673
+            },
+            "statemachineppc": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 417410
+            },
+            "StormC_CDFiles": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 18019
+            },
+            "StormC_EngGuid": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 28766
+            },
+            "StormC_EngRead": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 3644
+            },
+            "StormC_FD2Prag": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 4270
+            },
+            "StormC_GerGuid": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 54376
+            },
+            "StormC_GerLoca": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 18744
+            },
+            "StormC_GerRead": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 2136
+            },
+            "StormCIncludes": {
+                "category": "dev/c",
+                "retained_files": 1006,
+                "original_size": 1240423
+            },
+            "StormC_ItaGuid": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 11460
+            },
+            "StormC_ItaLoca": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 17779
+            },
+            "StormC_ItaRead": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 5264
+            },
+            "StormC_Patch10": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 111504
+            },
+            "StormC_Patch11": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 102343
+            },
+            "StormC_Patch12": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 107804
+            },
+            "StormC_Patch13": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 105789
+            },
+            "StormC_Patch1": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 50811
+            },
+            "StormC_Patch2": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 167962
+            },
+            "StormC_Patch3": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 211707
+            },
+            "StormC_Patch4": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 296420
+            },
+            "StormC_Patch5": {
+                "category": "dev/c",
+                "retained_files": 7,
+                "original_size": 444348
+            },
+            "StormC_Patch6": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 97638
+            },
+            "StormC_Patch7": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 64016
+            },
+            "StormC_Patch8": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 123239
+            },
+            "StormC_Patch9": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 98581
+            },
+            "StormC_Tools": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 10962
+            },
+            "StormC_WizLib": {
+                "category": "dev/c",
+                "retained_files": 13,
+                "original_size": 150233
+            },
+            "Storm_FlexCat": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 2820
+            },
+            "STRINGLib": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 84950
+            },
+            "stripc": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 9555
+            },
+            "StripIt": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 17879
+            },
+            "SupraLib11": {
+                "category": "dev/c",
+                "retained_files": 30,
+                "original_size": 73001
+            },
+            "SUPRALib": {
+                "category": "dev/c",
+                "retained_files": 20,
+                "original_size": 109473
+            },
+            "Tabulator": {
+                "category": "dev/c",
+                "retained_files": 14,
+                "original_size": 190073
+            },
+            "TimePrefs": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 19926
+            },
+            "TinyGL": {
+                "category": "dev/c",
+                "retained_files": 53,
+                "original_size": 192604
+            },
+            "tooltypeseditorppc": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 81203
+            },
+            "ToolTypesEditorPPC_SP": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 2094
+            },
+            "tox": {
+                "category": "dev/c",
+                "retained_files": 6,
+                "original_size": 21382
+            },
+            "TTEditor": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 62171
+            },
+            "ttengine_dev_cpp": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 9109
+            },
+            "ucdoor10": {
+                "category": "dev/c",
+                "retained_files": 13,
+                "original_size": 72316
+            },
+            "ue2sas10": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 5095
+            },
+            "UnIfdef": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 12357
+            },
+            "UReader": {
+                "category": "dev/c",
+                "retained_files": 40,
+                "original_size": 72259
+            },
+            "usblist": {
+                "category": "dev/c",
+                "retained_files": 27,
+                "original_size": 55269
+            },
+            "ustat": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 2847
+            },
+            "vbcc_bin_amigaos68k": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 2512493
+            },
+            "vbcc_bin_amigaosppc": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 2921081
+            },
+            "vbcc_bin_morphos": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 2827086
+            },
+            "vbcc_bin_powerup": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 1505369
+            },
+            "vbcc_bin_warpos": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 1276650
+            },
+            "vbcc_com": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 11578
+            },
+            "vbcc-grexx": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 4563
+            },
+            "VBCCGUI": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 18576
+            },
+            "VBCC_HTM": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 156179
+            },
+            "vbcc_PosixLib": {
+                "category": "dev/c",
+                "retained_files": 237,
+                "original_size": 375034
+            },
+            "vbcc_target_m68k-amiga": {
+                "category": "dev/c",
+                "retained_files": 221,
+                "original_size": 705685
+            },
+            "vbcc_target_m68k-kick13": {
+                "category": "dev/c",
+                "retained_files": 41,
+                "original_size": 497665
+            },
+            "vbcc_target_ppc-amigaos": {
+                "category": "dev/c",
+                "retained_files": 13,
+                "original_size": 190858
+            },
+            "vbcc_target_ppc-morphos": {
+                "category": "dev/c",
+                "retained_files": 246,
+                "original_size": 962808
+            },
+            "vbcc_target_ppc-powerup": {
+                "category": "dev/c",
+                "retained_files": 99,
+                "original_size": 359259
+            },
+            "vbcc_target_ppc-warpos": {
+                "category": "dev/c",
+                "retained_files": 15,
+                "original_size": 226769
+            },
+            "vbrowse": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 5476
+            },
+            "vcopts": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 154750
+            },
+            "VersionHandler": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 90116
+            },
+            "Versionize": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 36743
+            },
+            "VisualMaker": {
+                "category": "dev/c",
+                "retained_files": 11,
+                "original_size": 83838
+            },
+            "vmwcc-mos": {
+                "category": "dev/c",
+                "retained_files": 108,
+                "original_size": 222778
+            },
+            "vogl020FPU": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 684462
+            },
+            "vogl020": {
+                "category": "dev/c",
+                "retained_files": 0,
+                "original_size": 785533
+            },
+            "Vperf5.1-bin": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 95630
+            },
+            "vstring": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 35466
+            },
+            "warpcollect": {
+                "category": "dev/c",
+                "retained_files": 3,
+                "original_size": 6273
+            },
+            "wb2argv": {
+                "category": "dev/c",
+                "retained_files": 11,
+                "original_size": 25432
+            },
+            "wchar": {
+                "category": "dev/c",
+                "retained_files": 9,
+                "original_size": 6687
+            },
+            "Weaver": {
+                "category": "dev/c",
+                "retained_files": 29,
+                "original_size": 261853
+            },
+            "wild": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 2611
+            },
+            "wind-src": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 6349
+            },
+            "xpm_ic": {
+                "category": "dev/c",
+                "retained_files": 10,
+                "original_size": 37558
+            },
+            "xprintf": {
+                "category": "dev/c",
+                "retained_files": 2,
+                "original_size": 12306
+            },
+            "YAS2C": {
+                "category": "dev/c",
+                "retained_files": 1,
+                "original_size": 2491
+            },
+            "zerodbg": {
+                "category": "dev/c",
+                "retained_files": 5,
+                "original_size": 14588
+            },
+            "zlib_S1212": {
+                "category": "dev/c",
+                "retained_files": 8,
+                "original_size": 1056747
+            },
+            "zlib_S4": {
+                "category": "dev/c",
+                "retained_files": 4,
+                "original_size": 196152
+            },
+            "1Seb_FAST_C2P": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 63341
+            },
+            "2b_Bin2Asm": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 4770
+            },
+            "4PlayerAdapter": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 555
+            },
+            "68000ref": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 3408
+            },
+            "68Koptims": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 11323
+            },
+            "8wayscroller": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 14454
+            },
+            "a68kenh6": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 41101
+            },
+            "a68kenh6_src": {
+                "category": "dev/asm",
+                "retained_files": 15,
+                "original_size": 85793
+            },
+            "A68Kex": {
+                "category": "dev/asm",
+                "retained_files": 38,
+                "original_size": 107812
+            },
+            "A68kGibbs": {
+                "category": "dev/asm",
+                "retained_files": 14,
+                "original_size": 120512
+            },
+            "Abakus": {
+                "category": "dev/asm",
+                "retained_files": 15,
+                "original_size": 93404
+            },
+            "ABM13": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 4864
+            },
+            "acc": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 20505423
+            },
+            "ACCSources": {
+                "category": "dev/asm",
+                "retained_files": 1382,
+                "original_size": 9321831
+            },
+            "acustplay": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 26742
+            },
+            "ADisV1_3": {
+                "category": "dev/asm",
+                "retained_files": 26,
+                "original_size": 102790
+            },
+            "amcc": {
+                "category": "dev/asm",
+                "retained_files": 63,
+                "original_size": 848779
+            },
+            "AmigaAsm": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 134200
+            },
+            "AmigaFlight": {
+                "category": "dev/asm",
+                "retained_files": 39,
+                "original_size": 239556
+            },
+            "AmigaGS-Dev": {
+                "category": "dev/asm",
+                "retained_files": 40,
+                "original_size": 278312
+            },
+            "AMW": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 2463
+            },
+            "AnyStrToLong": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 6479
+            },
+            "asac2p18": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 3320
+            },
+            "AsaC2P2": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 52512
+            },
+            "asm3210": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 156914
+            },
+            "Asm68k": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 48702
+            },
+            "Asm_course": {
+                "category": "dev/asm",
+                "retained_files": 26,
+                "original_size": 237147
+            },
+            "AsmCourseSrc1": {
+                "category": "dev/asm",
+                "retained_files": 15,
+                "original_size": 307893
+            },
+            "AsmExamples": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 7081
+            },
+            "asmkurs": {
+                "category": "dev/asm",
+                "retained_files": 8,
+                "original_size": 22929
+            },
+            "asm-kurs_stashofcode": {
+                "category": "dev/asm",
+                "retained_files": 0,
+                "original_size": 1254472
+            },
+            "ASM-One": {
+                "category": "dev/asm",
+                "retained_files": 11,
+                "original_size": 301598
+            },
+            "ASMPro1.22": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 207461
+            },
+            "ASMPro1.22src": {
+                "category": "dev/asm",
+                "retained_files": 239,
+                "original_size": 811979
+            },
+            "AsmProgs": {
+                "category": "dev/asm",
+                "retained_files": 11,
+                "original_size": 12488
+            },
+            "AsmSort": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 2070
+            },
+            "AsmToolBox": {
+                "category": "dev/asm",
+                "retained_files": 12,
+                "original_size": 19230
+            },
+            "AssemblyDemos": {
+                "category": "dev/asm",
+                "retained_files": 12,
+                "original_size": 65862
+            },
+            "AssemTools": {
+                "category": "dev/asm",
+                "retained_files": 59,
+                "original_size": 166565
+            },
+            "AStripI": {
+                "category": "dev/asm",
+                "retained_files": 9,
+                "original_size": 19774
+            },
+            "BangerKommKurz": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 4035
+            },
+            "BarflyDisk2_00": {
+                "category": "dev/asm",
+                "retained_files": 95,
+                "original_size": 611577
+            },
+            "Basmify_V1.1": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 10490
+            },
+            "Bin2Asm": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 9840
+            },
+            "BlitMask": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 17818
+            },
+            "Bonus": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 9791
+            },
+            "BRevD220": {
+                "category": "dev/asm",
+                "retained_files": 0,
+                "original_size": 10225
+            },
+            "C64P00-P00C64ConvSrc": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 2985
+            },
+            "CadOS_13": {
+                "category": "dev/asm",
+                "retained_files": 28,
+                "original_size": 125671
+            },
+            "CardCheck": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 3026
+            },
+            "ChkTimings": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 4738
+            },
+            "ChunkyFunctions": {
+                "category": "dev/asm",
+                "retained_files": 10,
+                "original_size": 30524
+            },
+            "CLI-Only": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 3483
+            },
+            "convfp": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 23466
+            },
+            "CorsoASM-ITA01": {
+                "category": "dev/asm",
+                "retained_files": 23,
+                "original_size": 519333
+            },
+            "CorsoASM-ITA02": {
+                "category": "dev/asm",
+                "retained_files": 99,
+                "original_size": 347817
+            },
+            "CorsoASM-ITA03": {
+                "category": "dev/asm",
+                "retained_files": 125,
+                "original_size": 476635
+            },
+            "CorsoASM-ITA04": {
+                "category": "dev/asm",
+                "retained_files": 75,
+                "original_size": 516808
+            },
+            "CorsoASM-ITA05": {
+                "category": "dev/asm",
+                "retained_files": 56,
+                "original_size": 290145
+            },
+            "CorsoASM-ITA06": {
+                "category": "dev/asm",
+                "retained_files": 73,
+                "original_size": 597450
+            },
+            "CRC32": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 995
+            },
+            "D68k208": {
+                "category": "dev/asm",
+                "retained_files": 0,
+                "original_size": 48079
+            },
+            "DAsm": {
+                "category": "dev/asm",
+                "retained_files": 27,
+                "original_size": 78812
+            },
+            "democode": {
+                "category": "dev/asm",
+                "retained_files": 35,
+                "original_size": 1300356
+            },
+            "DemoStartUP": {
+                "category": "dev/asm",
+                "retained_files": 15,
+                "original_size": 68478
+            },
+            "Disassem": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 29109
+            },
+            "DmeAsm": {
+                "category": "dev/asm",
+                "retained_files": 6,
+                "original_size": 15064
+            },
+            "dpf": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 5252
+            },
+            "DvPkMacros": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 9056
+            },
+            "E11-Startup27": {
+                "category": "dev/asm",
+                "retained_files": 11,
+                "original_size": 29825
+            },
+            "EasyExpress": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 8364
+            },
+            "Enforce_3Dmapp": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 15419
+            },
+            "Examples": {
+                "category": "dev/asm",
+                "retained_files": 80,
+                "original_size": 189959
+            },
+            "Exceptions": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 10170
+            },
+            "ExecDis": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 91131
+            },
+            "ezasm19": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 143301
+            },
+            "fant-asm": {
+                "category": "dev/asm",
+                "retained_files": 103,
+                "original_size": 672527
+            },
+            "FAsm040": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 9649
+            },
+            "fast_prime": {
+                "category": "dev/asm",
+                "retained_files": 15,
+                "original_size": 17344
+            },
+            "fastsincos": {
+                "category": "dev/asm",
+                "retained_files": 7,
+                "original_size": 7931
+            },
+            "fd2AsmInc": {
+                "category": "dev/asm",
+                "retained_files": 6,
+                "original_size": 30156
+            },
+            "fd2monam": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 6712
+            },
+            "FDConv10": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 14861
+            },
+            "FDI": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 14031
+            },
+            "fileselect": {
+                "category": "dev/asm",
+                "retained_files": 11,
+                "original_size": 30799
+            },
+            "FixFd": {
+                "category": "dev/asm",
+                "retained_files": 6,
+                "original_size": 14116
+            },
+            "fixref": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 3154
+            },
+            "Floater": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 1754
+            },
+            "FredMonReplaySrc": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 7525
+            },
+            "FredoBBUtils": {
+                "category": "dev/asm",
+                "retained_files": 77,
+                "original_size": 207111
+            },
+            "Gauge": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 26068
+            },
+            "gen4asm": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 186328
+            },
+            "GetLVO105": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 10447
+            },
+            "H2I": {
+                "category": "dev/asm",
+                "retained_files": 6,
+                "original_size": 19596
+            },
+            "IanUtils": {
+                "category": "dev/asm",
+                "retained_files": 13,
+                "original_size": 21827
+            },
+            "IncludeGuide": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 3421
+            },
+            "incupd": {
+                "category": "dev/asm",
+                "retained_files": 30,
+                "original_size": 44650
+            },
+            "In_Go": {
+                "category": "dev/asm",
+                "retained_files": 12,
+                "original_size": 255538
+            },
+            "ira102": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 33805
+            },
+            "ira105_src": {
+                "category": "dev/asm",
+                "retained_files": 16,
+                "original_size": 140553
+            },
+            "ira": {
+                "category": "dev/asm",
+                "retained_files": 28,
+                "original_size": 285178
+            },
+            "ira_mos": {
+                "category": "dev/asm",
+                "retained_files": 10,
+                "original_size": 162145
+            },
+            "ISO": {
+                "category": "dev/asm",
+                "retained_files": 6,
+                "original_size": 28985
+            },
+            "Labels": {
+                "category": "dev/asm",
+                "retained_files": 7,
+                "original_size": 61322
+            },
+            "libmacro": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 3689
+            },
+            "listenport": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 3564
+            },
+            "littelv18": {
+                "category": "dev/asm",
+                "retained_files": 12,
+                "original_size": 121574
+            },
+            "LP110": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 3080
+            },
+            "LVOs": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 10328
+            },
+            "madness4": {
+                "category": "dev/asm",
+                "retained_files": 7,
+                "original_size": 36911
+            },
+            "magewars": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 145337
+            },
+            "MaxonASM_Demo": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 170860
+            },
+            "mc680x0": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 59390
+            },
+            "McAsm": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 123666
+            },
+            "MemList": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 3913
+            },
+            "MKD_OstylASM": {
+                "category": "dev/asm",
+                "retained_files": 81,
+                "original_size": 93638
+            },
+            "monampatch2": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 12769
+            },
+            "MONAM_Patcher": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 12671
+            },
+            "NCode": {
+                "category": "dev/asm",
+                "retained_files": 8,
+                "original_size": 60394
+            },
+            "NewStartup39": {
+                "category": "dev/asm",
+                "retained_files": 19,
+                "original_size": 41173
+            },
+            "NGDis": {
+                "category": "dev/asm",
+                "retained_files": 19,
+                "original_size": 75819
+            },
+            "noe_ppc_c2p": {
+                "category": "dev/asm",
+                "retained_files": 6,
+                "original_size": 199744
+            },
+            "Oldstuff": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 566624
+            },
+            "OSCopperlist": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 4310
+            },
+            "OSscroller": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 2601
+            },
+            "PhxAss": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 154187
+            },
+            "PhxAss_src": {
+                "category": "dev/asm",
+                "retained_files": 140,
+                "original_size": 389508
+            },
+            "PhxGUI1.0": {
+                "category": "dev/asm",
+                "retained_files": 6,
+                "original_size": 43173
+            },
+            "phxgui": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 19799
+            },
+            "PhxLnk_src": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 50677
+            },
+            "PhxRexx": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 2636
+            },
+            "Pllbc2pV1.06": {
+                "category": "dev/asm",
+                "retained_files": 7,
+                "original_size": 238714
+            },
+            "popt": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 157072
+            },
+            "powerdis": {
+                "category": "dev/asm",
+                "retained_files": 12,
+                "original_size": 229301
+            },
+            "PPC680x0Final": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 74444
+            },
+            "PPC680x0": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 74334
+            },
+            "PPC680x0V1.10": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 124732
+            },
+            "PPC68k20": {
+                "category": "dev/asm",
+                "retained_files": 21,
+                "original_size": 550297
+            },
+            "ppcasmpk12": {
+                "category": "dev/asm",
+                "retained_files": 7,
+                "original_size": 66269
+            },
+            "ppctut": {
+                "category": "dev/asm",
+                "retained_files": 0,
+                "original_size": 40136
+            },
+            "preass140": {
+                "category": "dev/asm",
+                "retained_files": 67,
+                "original_size": 250952
+            },
+            "Preass145": {
+                "category": "dev/asm",
+                "retained_files": 0,
+                "original_size": 38970
+            },
+            "preass154b": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 43118
+            },
+            "proasm174": {
+                "category": "dev/asm",
+                "retained_files": 48,
+                "original_size": 614245
+            },
+            "proasm192": {
+                "category": "dev/asm",
+                "retained_files": 23,
+                "original_size": 643255
+            },
+            "proasm192_man": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 438401
+            },
+            "ProData": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 3327
+            },
+            "ProgressBar": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 3811
+            },
+            "PtnAsm": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 90566
+            },
+            "PtnAsm-Update": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 79253
+            },
+            "Random250Lib": {
+                "category": "dev/asm",
+                "retained_files": 13,
+                "original_size": 29060
+            },
+            "ReadJoyPad": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 471
+            },
+            "relocate103": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 10889
+            },
+            "RemoveWS1.0": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 6799
+            },
+            "ReSourceDemo": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 161729
+            },
+            "revtimer": {
+                "category": "dev/asm",
+                "retained_files": 6,
+                "original_size": 4458
+            },
+            "rrr-yc2p": {
+                "category": "dev/asm",
+                "retained_files": 19,
+                "original_size": 108050
+            },
+            "SanityOperationSystem": {
+                "category": "dev/asm",
+                "retained_files": 25,
+                "original_size": 1005340
+            },
+            "SEKAconvert": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 6410
+            },
+            "SimpleAudio": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 3495
+            },
+            "SineWriter": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 4671
+            },
+            "snma_2_11": {
+                "category": "dev/asm",
+                "retained_files": 14,
+                "original_size": 134699
+            },
+            "SNMAOptsMUI": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 29718
+            },
+            "SourcOpt": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 12166
+            },
+            "SrcAnalyzer": {
+                "category": "dev/asm",
+                "retained_files": 6,
+                "original_size": 16397
+            },
+            "SSLExamp2": {
+                "category": "dev/asm",
+                "retained_files": 10,
+                "original_size": 43367
+            },
+            "SSU0.15": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 25385
+            },
+            "ssu0_18": {
+                "category": "dev/asm",
+                "retained_files": 6,
+                "original_size": 76364
+            },
+            "SSU_0_19": {
+                "category": "dev/asm",
+                "retained_files": 14,
+                "original_size": 342611
+            },
+            "stars-bootblock": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 1744
+            },
+            "StructureGuide": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 39693
+            },
+            "Sumos": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 1464
+            },
+            "SUMOSPaint": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 866
+            },
+            "superopt-2.3": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 75124
+            },
+            "Tandem2.68": {
+                "category": "dev/asm",
+                "retained_files": 106,
+                "original_size": 738369
+            },
+            "tec-vector-src": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 24340
+            },
+            "tempsource": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 25167
+            },
+            "t-loader": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 3303
+            },
+            "twilite4": {
+                "category": "dev/asm",
+                "retained_files": 5,
+                "original_size": 86091
+            },
+            "v40ChunkyFeatD": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 1492
+            },
+            "vda68k": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 72143
+            },
+            "vdappc-mos": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 37853
+            },
+            "vdappc-os4": {
+                "category": "dev/asm",
+                "retained_files": 4,
+                "original_size": 30146
+            },
+            "Vertical": {
+                "category": "dev/asm",
+                "retained_files": 8,
+                "original_size": 59291
+            },
+            "WaitBOF": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 1997
+            },
+            "xmplay-lib": {
+                "category": "dev/asm",
+                "retained_files": 13,
+                "original_size": 194629
+            },
+            "XZN-BBStro_src": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 32678
+            },
+            "XZN-CaT01_src": {
+                "category": "dev/asm",
+                "retained_files": 1,
+                "original_size": 66288
+            },
+            "XZN-Energie_sr": {
+                "category": "dev/asm",
+                "retained_files": 2,
+                "original_size": 115084
+            },
+            "XZN-Over_src": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 85447
+            },
+            "XZN-ST03IntroS": {
+                "category": "dev/asm",
+                "retained_files": 3,
+                "original_size": 112683
+            },
+            "YobGame": {
+                "category": "dev/asm",
+                "retained_files": 15,
+                "original_size": 271985
+            }
+        }
+    },
+    "deduplication": {
+        "hash_algorithm": "SHA-256",
+        "total_unique_hashes": 22471,
+        "total_duplicates_skipped": 2668
+    }
+}

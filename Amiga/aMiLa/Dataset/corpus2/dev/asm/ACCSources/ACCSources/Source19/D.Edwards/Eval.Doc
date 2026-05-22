@@ -1,0 +1,785 @@
+
+
+
+			  Expression Evaluation
+			  =====================
+
+
+			     By Dave Edwards
+			     ===============
+
+
+
+Regular ACC members are now familiar with my contributions as the manic DOC
+file compiler, and familiar with my tendency to concentrate on subjects that
+have been described as 'head-banging stuff' by Mark and others. Well, having
+worked so hard to secure this reputation, I am not about to spoil it, so for
+your delight and delectation, how about evaluating algebraic expressions?
+
+
+	At this point I can hear the groans from far and wide. Why would an
+average coder want to fry the brain cells over evaluating expressions? Well,
+I'll explain how I came to this, and give some reasons why other coders might
+want to make use of my efforts.
+
+
+	One use of this is in the creation of an assembler for a given pro-
+cessor or a compiler for a given language. It was due to my being suddenly
+fired with enthusiasm for writing an assembler of my own that I came to need
+a set of routines to evaluate algebraic expressions. After all, every DevPac
+user out there has at some time written lines of the form:
+
+
+		SCREEN_MEM	EQU	LINES*BYTES*PLANES*SCRCOUNT
+
+
+or something similar, and the authors of DevPac had to write code to enable
+the GenAm assembler to evaluate this kind of expression (a lot of coders out
+there would be somewhat stuck without it!).
+
+
+Expressions In General
+----------------------
+
+	To make your lives easier, I shall restrict the expressions handled
+by my code to those containing actual numbers, as opposed to those containing
+labels of some kind. However, since labels are simply another way of express-
+ing numbers of some sort, the same principles apply whether or not an expres-
+sion contains labels, except that the labels may not have a predefined value
+set by an equate directive found prior to the encountered expression, and so
+modifications need to be made to take account of this.
+
+
+	The most general type of expression containing constants will contain
+a number of other fundamental building blocks. An example serves here:
+
+
+		      32+(15*11-(6+-32/4)+$8000)+-400
+
+
+The fundamental building blocks are:
+
+
+		1) Operands. These are the values themselves,
+		   the actual numbers (or labels if present)
+		   contained in the expression;
+
+		2) Operators. These are the symbols that de-
+		   scribe the various arithmetic operations
+		   to be performed on the numbers.
+
+
+Of these fundamental building blocks, operators can be further divided into
+two groups. These are:
+
+
+		1) Unary operators. These are operators that
+		   take one parameter upon which to operate,
+		   e.g., the '-' operator in such constructs
+		   as '-32'. The '-' operator is often refer-
+		   red to as 'unary minus' to distinguish it
+		   from subtraction, which unfortunately has
+		   an identical symbol!
+
+		2) Binary operators. These are operators that
+		   take two parameters and combine them in a
+		   predefined way, e.g., '*', the multiplica-
+		   tion operator.
+
+
+Having defined these fundamental building blocks, we can now define yet more
+units, made up of these. First, let's define a quantity that I shall call an
+OValue (short for Operand Value) to distinguish it from an operand:
+
+
+		OValue ::= <Operand>
+
+		OValue ::= <Unary Operator> <Operand>
+
+
+These two lines define an OValue. An OValue can be either a simple operand,
+or an operand preceded by a unary operator. I use the symbol '::=' to rep-
+resent the phrase 'is defined to be', and use the < > symbols as brackets to
+symbolise that there should be ONE AND ONLY ONE of the given enclosed items
+present in that part of the definition. I shall define other symbols as they
+are needed. Furthermore, a line of the form:
+
+
+		Quantity ::= <part1> <part2> .... <partN>
+
+
+is taken to mean that 'Quantity' is a string composed of the components part1
+through partN. Thus, if <Operand> happens to be the string '32', and <Unary
+Operator> happens to be '-', then in this instance, OValue is defined to be
+the string '-32'. Since <Operand> can be any legal number (or label if you
+alter the definition to allow this), and <Unary Operator> can be ANY such op-
+erator that you care to define, the definition of OValue allows OValue to be
+any of a vast number of strings of this type.
+
+
+	Now I wish to define what I mean by a Term. A Term is defined as:
+
+
+		SimpleTerm ::= <OValue> <Binary Operator> <Ovalue>
+
+		Term ::= SimpleTerm
+
+		Term ::= <SimpleTerm> <Binary Operator> <Ovalue>
+
+		Term ::= <SimpleTerm> <Binary Operator> <SimpleTerm>
+
+
+Now the fun begins. The simplest Terms conform to the definition in the first
+line of the above set, an example of a term being '4*5'. However, the remain-
+ing lines make the definition of a Term recursive, so that the string:
+
+
+				4*3+17
+
+
+fits into the third line. The fourth line allows more complex strings such as
+the string:
+
+
+			      15*31+104/8
+
+
+to be Terms too, and indeed strings such as:
+
+
+			   32*104-84/4+15-4*7
+
+
+by recursively applying the definition to create SimpleTerms and then using
+the SimpleTerms to create Terms according to the third and fourth lines of
+the definition.
+
+
+	However, there is more. The definition of Term can be extended to in-
+clude:
+
+
+		Term ::= < (Term) >
+
+
+in other words, a Term as defined in the first part of the definition, enclo-
+sed in brackets. So this extension of Term allows expressions such as:
+
+
+		32+6*(20-15/3+10*6)/2
+
+
+to be Terms too! Also, since Terms contain OValues, expressions such as:
+
+
+		32+6*(20+-15/3+10*(6+-3))/2
+
+
+containing unary operators, are Terms too (with or without parentheses). The
+inclusion of Term inside parentheses allows any level of nesting, due to the
+recursive nature of the definition of Term. And finally, we have:
+
+
+		Expression ::= <Term>
+
+
+So, we how have a means of defining what an Expression is in terms of a re-
+cursive mechanism that can be applied to any string, and which furthermore
+can be coded in a program. The symbolism used above to define the constituent
+parts of an expression and then the whole is known as a Grammar, since it de-
+fines the structure of a small language, the language of algebraic express-
+ions. Better still, this grammar, containing recursive definitions, is an ex-
+ample of a Recursive Descent Grammar.
+
+
+	Why go to this trouble? Well, once a recursive descent grammar exists
+for a given process of language translation (and it can be extended to form a
+complete description of a complex language such as Pascal or Ada!) then it is
+possible to write a computer program to perform the function of analysing any
+language for which such a grammar exists. Those of you who find this a little
+hard to believe take note:the only restriction is the programmer's ability to
+handle the complexity. A mathematical proof exists that all recursive descent
+grammars can be coded, and there even exists, on Unix systems, a program that
+takes a grammar and spits out a partial compiler program as output! For more
+information, ask any Unix guru about the 'YACC' program (the name is an acro-
+nym for 'yet another compiler-compiler'). See the bibliography below for some
+source material on this and other related topics.
+
+
+	Ok. Having worked out how to break up an expression into its compon-
+ent parts, we need some code. The two functions that are used in my code to
+perform the task of locating operands and operators are the GetNumVal() and
+GetOp() functions. These in turn are called by the DoSimpleExp() routine, and
+this in turn is called by DoExp(). Comments are provided in the source, but I
+shall play safe and provide more in-depth explanation later.
+
+
+How Is An Expression Evaluated?
+-------------------------------
+
+	Ok. We can now break up an expression into its constituent parts, and
+begin the task of evaluating an expression thus broken up and analysed. But a
+key question remains. Given a 'simple' expression (no brackets or unary oper-
+ators to worry about), such as:
+
+
+			32+104/8-$30*7+2048
+
+
+how is this expression evaluated? The problem lies in determining the order
+in which the operators are applied. The simplest case, namely perform each of
+the operations as they are encountered in left-to-right order, is WRONG. When
+mathematicians laid down the rules for evaluating an expression, strict rules
+about the order of evaluation were laid down. These rules involved arranging
+all of the possible operators into an ordered table, and assigning to these
+operators a number. This number is called the Precedence of the operator, and
+is used to determine which operator is handled first when two operators are
+encountered in sequence.
+
+
+	The use of this number is quite simple. Let's use three examples:
+
+
+			1) 15+4+7
+
+			2) 15+4*7
+
+			3) 15*4+7
+
+
+In example 1), we encounter a + (addition) operator first. Let's assume that
+the precedence of addition is 1. We then encounter another + operator. This
+also has a precedence of 1. In this case, we do the additions in the order
+in which they are encountered. So we perform 15+4 = 19 first, then 19+7 = 26
+next.
+
+
+	In the case of 1), the order actually doesn't matter, because of the
+properties of addition. Addition is a type of operation called an associative
+operation by mathematicians, because:
+
+
+			(a+b)+c = a+(b+c)
+
+
+Subtraction, on the other hand, is NOT associative. If we have:
+
+
+			    15-4-7
+
+
+the order becomes important, namely:
+
+
+			a) (15-4)-7 = 11-7 = 4
+
+			b) 15-(4-7) = 15-2 = 12
+
+
+Here, the correct order is case a).
+
+
+	Now let us tackle case 2). We first encounter addition (+), which I
+have just given a precedence of 1. We then encounter multiplication (*). Now
+what is its precedence?
+
+
+	By convention, multiplication has a HIGHER precedence than addition.
+Any number higher than 1 will do, but let's keep it simple for now and make
+its precedence 2. Since it has higher precedence, it should be done first. So
+case 2) is evaluated in the order:
+
+
+			4*7 = 28
+
+			15+28 = 43
+
+
+Those ACC members with Casio scientific calculators or Texas Instruments cal-
+culators equipped with the Algebraic Operating System should test these res-
+ults, and enter these expressions directly to check if the results agree. If
+they don't, check if your calculator handles expressions in algebraic order-
+the results should agree if this is so.
+
+
+	Now let's take case 3). Here we encounter multiplication first, then
+addition. Again, multiplication has the higher precedence, so once again it
+should be performed first, giving:
+
+
+			15*4 = 60
+
+			60+7 = 67
+
+
+This can be extended to expressions containing operations other than the ba-
+sic four operations of arithmetic. This has been done in my code, which con-
+tains operations such as bitwise AND and relational comparisons.
+
+
+	Now the actual numbers assigned to rank operators in order of prece-
+dence do not really matter provided that the rankings are preserved. For the
+basic operations of arithmetic, the operators are ranked in decreasing order
+of precedence by the table:
+
+
+			Division (/)
+
+			Multiplication (*)
+
+			Addition (+)
+
+			Subtraction (-)
+
+
+Actually, addition and subtraction are treated as having equal precedence in
+my code, but this has not lead to errors in my code during fairly strenuous
+testing.
+
+
+	What if we want to change the precedence of operations, and force a
+given calculation to be performed first? Welcome to brackets! In any table of
+precedence, quantities enclosed in brackets have the highest precedence of
+all, regardless of their contents. So, if we are presented with an expression
+such as:
+
+
+			15+4*7
+
+
+and we want to perform the 15+4 BEFORE multiplying the result by 7, we indi-
+cate this by writing:
+
+
+			(15+4)*7
+
+
+and evaluating this yields the desired result, namely 133.
+
+
+	Matters become complicated when unary operators are introduced. In my
+code, I assume that ALL unary operators are performed upon their operands BE-
+FORE the results are passed to the connecting binary operators. In my code, I
+force unary operators to have a higher precedence than ALL binary operators.
+This does not strictly conform to the rules laid down by mathematicians, but
+since their rules deal with all manner of weird and wonderful operations such
+as the postfix factorial operator (written using the '!' character, as in 2!)
+and various exotic functions that would be very difficult to implement on any
+computer. In any case, this does not lead to errors, and brackets can be used
+to force a given sequence of evaluation.
+
+
+	Because I solved the parentheses problem before tackling unary opera-
+tors during the coding phase, making unary operators the highest precedence
+operators of all made the resulting debugging far easier, and the comment in
+the above paragraph about use of brackets in such a situation still holds. So
+now to the code itself, and how it works.
+
+
+The Routines
+------------
+
+	Before dealing with the routines themselves, I need to explain how I
+handle operators. These are placed in a table, and each table entry has the
+following structure:
+
+
+		1 byte  : number of characters (N)
+
+		N bytes : N characters for the operator
+
+		1 byte  : precedence of this operator 0-255
+
+
+The table is a continuous array of entries of this form, the end of the array
+being marked with a zero byte. See the label 'CompOps' in the source code for
+the array of binary operators, and the label 'Funcs' for the unary operators,
+for which the precedence entry is provided solely for convenience of use (to
+allow the GetOp() routine to use it without modification).
+
+
+	The GetOp() routine returns in D0 a value constructed as follows:
+
+
+		(operator number * 256) + precedence
+
+
+The precedence values are used for comparisons during evaluation, and the op-
+erator number is shifted to obtain an offset into a jump table for another
+routine, the DoTerm() routine. The input parameter for GetOp() is a pointer
+to the current character of the expression string being processed in A0, and
+the output in D0 consists of an operator number/precedence word constructed
+as above, or -1.W if no legal operator (i.e., one in the table) was found at
+that point. If a legal operator was found, A0 points beyond the operator cha-
+racters after the GetOp() call, and is left undisturbed if no legal operator
+is found.
+
+
+	To obtain the value of an operand, the GetNumVal() routine is used.
+GetNumVal() takes a pointer to the current character of the string in A0, and
+returns the value of the operand in D1.L. At the moment, GetNumVal() will not
+handle labels from an assembler, but will handle decimal numbers, binary num-
+bers prefixed with a '%', hexadecimal numbers prefixed with a '$', and octal
+numbers (base 8) prefixed with a '@'. GetNumVal() ends its number generation
+upon encountering a non-digit character (which requires special handling in
+the case of hexadecimal numbers), returning a pointer to said non-digit cha-
+racter in A0 along with the computed value in D1.
+
+
+	These routines are called, along with the DoTerm() routine (more on
+this later) from within the DoSimpleExp() routine, which in turn is called by
+the top-level routine, the DoExp() routine. DoExp() takes a pointer to the
+expression string in A0, a pointer to the table of binary operators in A1, &
+a pointer to the table of unary operators in A2. When the final version is
+released, which will handle embedded white spaces and treat errors in a more
+consistent fashion, the intention is to return an error code in D0.W, which
+at the moment resides in D5.W where it is temporarily computed from within
+the code. The return value in D1.L is the value of the expression after it
+has been computed, which should be treated with extreme scepticism if D5.W is
+not zero! Oh, the registers D0-D5 and A3 are trashed by DoExp() and its sub-
+routines, so be warned.
+
+
+	DoExp() performs some simple initialisation. It initialises the error
+code in D5 and the parenthesis count in D4. It also saves a -1.W on the stack
+before calling DoSimpleExp(). The reason for this will become apparent in a
+moment.
+
+
+	DoSimpleExp() takes the same parameters as DoExp(). Now, let us re-
+call the three cases of increasing complexity:
+
+
+	1) Expressions such as 32+104/8-$30*7+2048, containing
+	   no brackets or unary operators;
+
+	2) Expressions such as 32*(14+(6*5-3)*2-10), containing
+	   no unary operators;
+
+	3) Expressions such as 32*-5+(14*-(6/3+7)+300), that
+	   contain all of the complicating factors.
+
+
+Taking case 1), the routine DoSimpleExp() gets an operand and an operator in
+that sequence from the string, and then falls through to the SimpleExp() rou-
+tine. This takes a previous operand/operator pair in D0/D1, and moves them to
+D2/D3. Then it gets another operand/operator pair in D0/D1.
+
+
+	Once this has been done, the operators in D0 and D2 are compared for
+precedence. If the operator in D0 is of lower or equal precedence, then the
+operator in D2 is used to combine the values in D1 and D3 via the DoTerm()
+routine. If, on the other hand, the precedence of the operator in D0 (the
+most recently obtained operator) is higher than that in D2, then the values
+in D2/D3 are pushed onto the stack, and SimpleExp() is called on a new level.
+Once SimpleExp() has finished, it returns, the values in D2/D3 are popped off
+the stack, and DoTerm() is called one more time to mop up the remaining term
+from the previous call.
+
+
+	Should there be a following operator still lurking in D0 after all of
+this, the routine branches back to SimpleExp() again (instead of calling it),
+and more terms are fetched until the end of the string is reached. Once the
+end of the string is reached, any remaining pushed operand/operator sets are
+recovered past the RTS, provided that they were pushed. If none remain, then
+the RTS will return to the calling DoExp() routine, which will tidy up all of
+the remaining values.
+
+
+	Case 2), where brackets are introduced, requires extra processing to
+ensure that RTS's are hit only when either closing parentheses are hit or an
+end of string (EOS) is hit. If a "(" is hit, then DoSimpleExp() is called on
+a new level after updating the bracket nest count in D4. This new level is
+signalled by pushing a -1.W onto the stack AFTER any parameters in D2 and D3
+(in the case where such a push is necessary). Then, execution continues in an
+identical fashion to Case 1) until a ")" is hit. When a ")" is hit, the nest
+count in D4 is updated, and any remaining terms computed by calling DoTerm()
+if needed, and then RTS is hit.
+
+
+	Here, a complication arises. When testing for higher precedence, the
+routine checks to see if firstly, an EOS is hit. If so, it returns. Then it
+checks for a pushed operator on the stack. If one exists (signalled by the
+value at 4(SP) being positive) then it also returns to allow that to be han-
+dled upon return. If not, it then checks for a pending operator in D0 and
+branches back to handle it if so.
+
+
+	When within a new level of parentheses, we DO NOT WANT to hit an RTS
+because of a pushed operator on the stack, before the end of the parenthesis
+is hit. We want to evaluate the WHOLE of the contents of the (...) before a
+return is issued. To ensure this, any call that enters a new level of paren-
+theses pushes a -1.W on the stack before calling DoSimpleExp() to ensure that
+a parenthesis is completed before stacked operators are handled. If this is
+not done, then the routine would prematurely RTS before finishing the current
+parenthesis level.
+
+
+	Having dealt with that, we can now turn to Case 3). Case 3) requires
+that the GetOp() routine be called with a pointer to the unary operator table
+in A1. So prior to each call of GetOp() to detect unary operators, the poin-
+ters to the tables are exchanged, and exchanged back afterward to ensure that
+calls to GetOp() for binary operators are correct. Instead of regarding the
+non-existence of an operator as an error in this instance, as is the case for
+any call to GetOp() that searches for a binary operator, a return value of -1
+from a call to GetOp() signals simply that no unary operator exists, and that
+control should return to the paths followed in cases 1) and 2).
+
+
+	Should a unary operator exist, the code then uses GetNumVal() to find
+the following operand and applies the unary operator to it, storing the res-
+ult in D1.L and then resuming normal operations. If the unary operator immed-
+iately precedes a (...), then a call on a new level to DoSimpleExp() is made
+and then the result of THAT call processed using the unary operator, before
+resuming normal expression processing. Due to this handling procedure, it is
+possible to apply unary operators to ANY combination of operands desired by
+the judicious use of parentheses. Note that unary operators ALWAYS precede an
+operand in this routine, the code to allow postfix unary operands such as the
+postfix factorial (e.g., 2!, 3!) does not exist, and those wishing to add the
+required code will have to do so the hard way.
+
+
+	At the moment, DoExp() and its subsidiary routines do NOT handle em-
+bedded spaces in the code. To enable this would be quite simple. The use of a
+routine such as:
+
+
+SkipSpace	tst.b	(a0)		;hit EOS?
+		beq.s	SSP_Done	;exit if so
+		cmp.b	#" ",(a0)	;hit " "?
+		beq.s	SSP_1		;point past it if so
+		cmp.b	#TAB,(a0)	;hit TAB char? (EQU!!!)
+		bne.s	SSP_Done	;exit if not
+SSP_1		addq.l	#1,a0		;next char
+		bra.s	SkipSpace	;and do some more
+SSP_Done	rts
+
+
+or a macro of the same form at the beginning of the GetOp() and GetNumVal()
+routines would have the desired effect, and I plan to use just such a method
+in the final version. Handling errors is a slightly different matter. To make
+the code handle errors more consistently, firstly a MOVE.W D5,D0 is needed in
+the DoExp() routine, and code to force an RTS the moment that the value of D5
+becomes nonzero needs to be inserted at several points in the DoSimpleExp()
+and SimpleExp() routines. Then, the routines that perform the arithmetic must
+be changed to return various error conditions (at the moment, DoDiv() returns
+a value in D5 if a division by zero is attempted, and prevents the division
+by zero trap throwing the Amiga into a Guru).
+
+
+Using These Routines
+--------------------
+
+	To allow the routines to be used in ACC members' own code, I will now
+provide the necessary information. Steps to be taken are:
+
+
+	1) Copy DoExp(), DoSimpleExp(), SimpleExp(), GetNumVal(),
+	   GetOp() and DoTerm() to a file of your choice.
+
+	2) Create a table of binary operators of your choice, using
+	   character sequences of your own choice, within the file
+	   that you have just created. Use the table starting at
+	   the label "CompOps" as an example of how to do it.
+
+		Note that if you wish to use C operators, logical
+	   AND is written && and has lower precedence than bitwise
+	   AND, written &. So arrange the table in precedence order
+	   while designing the table, but re-arrange the table in
+	   descending order of operator string lengths once you have
+	   decided what your operators are to look like. If you do
+	   not do this, Getop() will hit the first '&' in '&&' and
+	   treat it as '&'. Treat similar-looking operators in the
+	   same way.
+
+	3) Create a table of unary operators in the same way. However
+	   the precedence value does not matter, even though it must
+	   be supplied. Use the value 1 for safety.
+
+	4) Create two jump tables of pointers to the various routines
+	   that will perform the arithmetic. MAKE SURE THAT THE POIN-
+	   TERS TO THE ARITHMETIC ROUTINES ARE IN THE SAME ORDER AS
+	   THE OPERATORS THAT REFERENCE THEM! See the code and compare
+	   the jump table for the binary operators with the operator
+	   table itself, and note the correspondence.
+
+	5) If supplying your own arithmetic routines, as opposed to
+	   using my example routines, make sure that a) your division
+	   routine traps division by zero properly; b) any other er-
+	   rors (magnitude overflow etc) are trapped properly.
+
+	6) Make any custom arithmetic routines return a value in D1,
+	   be it a longword integer for direct manipulation or al-
+	   ternatively a pointer to a floating-point value if your
+	   code is re-written to handle floating-point values. If
+	   using floating-point, rewrite GetNumVal() to take account
+	   of this and please make it return pointers to floats, un-
+	   less you wish to rewrite the whole of DoExp() etc!!!
+
+
+Having created a file containing all of this, the DoExp() routines etc., the
+arithmetic support routines and operator tables, you can include it in your
+own code from this point on.
+
+
+Existing Bugs
+-------------
+
+	The main bug that exists thus far is in the DoDiv() support routine.
+I tried to create a division routine that handled 32-bit dividends AND 32-bit
+divisors (difficult without a full 32-bit DIVU instruction), and while I have
+succeeded in making the DoDiv() routine divide small numbers by large numbers
+there is a bug somewhere that causes errors to creep in when dividing a very
+large number by a small number, e.g., 200,000,000 divided by 50 using this
+routine gives an erroneous result.
+
+
+	The remaining bugs concern idiosyncratic error handling (mentioned in
+earlier paragraphs) and lack of white space handling (which I also covered in
+an above paragraph). Both of these can be tidied up with a reasonable level
+of coding effort, and I leave this as an exercise for experienced coders.
+
+
+Using The Demo Program
+----------------------
+
+	Just type 'calc' at the CLI prompt. You will then be prompted for an
+expression. To exit the program, type a '#' and hit ENTER. Otherwise, type in
+an expression. DO NOT TYPE IN AN EXPRESSION CONTAINING MISTAKES! If any ex-
+pression you do type in contains errors, the Amiga may just Guru, although I
+have been lucky so far and all that has happened is that weird numbers mater-
+ialise when the results are printed out. But I won't be stupid enough to gua-
+rantee that this will always be the case!
+
+
+	The full list of binary operators understood by the demo program is:
+
+
+		^^		Exponentiation (e.g., 2^^3 = 8)
+
+		/		Division
+
+		*		Multiplication
+
+		>>		Left Shift (e.g., 256>>2 = 64)
+
+		<<		Right Shift (e.g., 2<<4 = 32)
+
+		+		Addition
+
+		-		Subtraction
+
+		>= <=		Relational comparisons (x>y returns
+		< >		0 if false, -1 if true)
+
+		!=		Returns 0 if x=y, -1 if x<>y
+
+		==		Returns -1 if x=y, 0 if x<>y
+
+		&		Bitwise AND, e.g., %1010 & %0011
+				yields %0010
+
+		^		Bitwise exclusive OR.
+
+		|		Bitwise inclusive OR.
+
+		AND		Logical AND. Returns -1 if x AND y
+				is true, 0 if false
+
+		OR		Logical OR. Returns -1 if x OR y
+				is true, 0 if false.
+
+
+The full list of unary operators is:
+
+
+		-		Unary minus, e.g. -3.
+
+		NOT		Logical NOT. Returns -1 if operand
+				equals zero, 0 otherwise.
+
+
+This list can be extended or amended by the user as desired according to the
+usage instructions above.
+
+
+Other Uses
+----------
+
+	Apart from the use outlined earlier in assembler and compiler writing
+this code lends itself well to spreadsheet writing. To make this code usable
+within a spreadsheet, enhancements to GetNumVal() will be needed to make the
+expression evaluator handle cells in the spreadsheet, and handle individual
+cells within a row or column specifier. For example, if you intend having the
+ability to handle expressions such as:
+
+
+		R6C1 = R5C1 + R4C1*R3C1 + R2C1*12
+
+
+or:
+
+
+		R6 = R5 + R4 * R3 + R2 * 12
+
+
+to perform arithmetic upon a whole row, then extra adjustments are necessary
+to facilitate this.
+
+
+Bibliography
+------------
+
+	Useful sources of information on this topic, and topics such as the
+construction of a compiler or assembler, include:
+
+
+Symbolic Languages In Data Processing
+Edited by the International Computation Centre
+Publisher:Gordon & Breach
+Library of Congress No. 62-22805
+
+Linguistic Analysis And Programming For Mechanical Translation
+Editied by Silvio Ceccato
+Center For Cybernetic And Linguistic Research
+University Of Milan
+Publisher:University Of Milan Press
+
+A Microprogrammed APL Implementation
+By Rodnay Zaks
+Publisher:Sybex
+
+Programming In Pascal
+By Peter Grogono
+Publisher:Addison-Wesley
+ISBN 0 201 02775 5
+
+UNIX:The Book
+By Mike Banahan & Andy Rutter
+Sigma Technical Press
+
+
+Also, consult back issues of Scientific American, Personal Computer World and
+Byte. If that isn't enough, then contact your nearest university library. The
+best sources I have found to date are the libraries of Liverpool and Bradford
+Universities (non-students are required to pay a fee if they wish to register
+and borrow books), and UMIST (University of Manchester Institute of Science &
+Technology) which has source material from the British Computer Society and
+the National Computing Centre, also based in Manchester. Those readers fortu-
+nate enough to live within easy reach of major cities will find their public
+libraries contain material of almost the same high standard (Liverpool public
+library is EXCELLENT in this regard) and may be able to borrow items free.
+
+
+	Now I couldn't finish one of my articles without the usual goodbye,
+could I? So, to all ACC members reading this,
+
+
+		Live fast, code hard & die in a beautiful way,
+
+
+
+				Dave.
+
+
+

@@ -1,0 +1,30 @@
+Welcome to the Oberon-2-interface & demos to Ketil Hunn`s EasyRexx-library !
+
+Both the library and the demos have been ported by *me* ;) [Volker Stolz
+<Vok@TinDrum.tng.oche.de>] between November 3rd & 11th in `95.
+
+Although I had enough things more urgent to do (i.e. spending more time
+studying "Lineare Algebra I" & "Analysis") I still managed to finish
+everything in time...Some parts may look strange at first glance (like
+the work-around for the command-table in "Funcs", but - as stated in the
+sources - I haven`t been able to do it an other way.
+If you have any suggestions, comments or bug-reports, feel free to
+contact me via eMail !
+
+All sources are © 1995 by me but may be distributed freely as long as
+they remain unchanged !
+
+I`d like to thank
+
+  Peter Froehlich
+
+who helped me when I got terribly stuck because of something like a
+compiler-bug (he still has to explain this to me !) and
+
+  Ketil
+
+for his patience !
+
+Bye for now, back to mathematics ;)
+
+  Vok

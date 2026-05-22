@@ -14,10 +14,15 @@ let package = Package(
             path: ".",
             exclude: [
                 ".build",
+                ".codex",
                 "build",
                 "AmigaPlayground.app",
                 "AmigaPlaygroundTests",
-                "AmigaPlayground.xcodeproj"
+                "AmigaPlayground.xcodeproj",
+                "script"
+            ],
+            resources: [
+                .process("Resources")
             ]
         ),
         .testTarget(

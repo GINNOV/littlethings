@@ -1,0 +1,1006 @@
+9    MISCELLANEOUS
+
+9.1  INTRODUCTION
+
+This is the last chapter about Intuition, and we will therefore
+finish of by discussing some special features.
+
+
+
+9.2  MEMORY
+
+If you write C programs you will often need to allocate some
+memory. This process is normally referred as "dynamic memory
+allocation" and is used whenever your program needs some more
+memory while it is running.
+
+When you allocate memory you need to specify how much you want,
+and what type of memory (Fast or Chip). "Exec" will then try to
+allocated the memory, and will return a pointer to the memory,
+or NULL if it could not find a block big enough.
+
+Once you have allocated the memory, you can use it as much as
+you want. You just have to remember that before the program
+terminates it must have deallocated all allocated memory. If
+you forget to deallocate the memory when you leave, it will
+be lost, and the only way to get it back is to reboot.
+
+
+
+9.2.1  ALLOCATE MEMORY
+
+You usually use the function AllocMem() if you want to allocate
+memory. You only need to specify how much memory you need, and
+what type of memory (Chip, Fast etc), and AllocMem() will
+return a pointer to the new memory, or NULL if no memory could
+be allocated.
+
+Synopsis: memory = AllocMem( size, type );
+
+memory:   (void *) Pointer to the new allocated memory, or NULL
+          if no memory could be allocated. Remember! Never use
+          memory which you have not successfully allocated.
+
+size:     (long) The size (in bytes) of the memory you want.
+          (AllocMem() always allocates memory in multiples of
+          eight bytes. So if you only ask for 9 bytes, Exec
+          would actually give you 16 Bytes (2*8).)
+
+type:     (long) You need to choose one of the three following
+          types of memory (see chapter 0 INTRODUCTION for more
+          information about Chip and Fast memory). (The flags
+          are declared in the header file "exec/memory.h".)
+
+          MEMF_CHIP   Chip memory. This memory can be accessed
+                      by both the main processor, as well as
+                      the Chips. Graphics/Sound data MUST 
+                      therefore be placed in Chip memory. If it
+                      does not matter what type of memory you
+                      get (Fast or Chip), you should try to
+                      allocate Fast memory before you allocate
+                      Chip memory. (Chip memory is more valuable
+                      than Fast memory.)
+
+          MEMF_FAST   Fast memory. This memory can only be
+                      accessed by the main processor. (Graphics
+                      and Sound data can NOT be stored in Fast
+                      memory, use Chip memory.) This memory is
+                      normally a little bit faster than Chip
+                      memory, since only the main processor is
+                      working with it, and it is not disturbed
+                      by the Chips.
+
+          MEMF_PUBLIC If it does not matter what type of memory
+                      you get (you do not intend to use the
+                      memory for Graphics/Sound data), you
+                      should use Fast memory. However, all
+                      Amigas do not have Fast memory, since
+                      you need to by a memory expansion in
+                      order to get it. If want to tell Exec
+                      that you would like to use Fast memory if
+                      there is any, else use Chip memory, you
+                      should ask for MEMF_PUBLIC.
+
+          If you want the allocated memory to be cleared
+          (initialized to zeros), you should set the flag
+          MEMF_CLEAR.
+
+If you need to allocate 150 bytes of Chip memory, you would
+write:
+
+/* Declare a pointer to the memory you are going to allocate: */
+CPTR memory; /* CPTR means memory pointer, declared in the    */
+             /* header file "exec/types.h". "exec/types.h" is */
+             /* automatically included when you include the   */
+             /* header file "intuition/intuition.h".          */
+
+/* Allocate 150 bytes of Chip memory: */
+memory = (CPTR) AllocMem( 150, MEMF_CHIP );
+
+/* Have we allocated the memory successfully? */
+if( memory == NULL )
+  /* ERROR! Have not allocated any memory! */
+
+
+
+9.2.2  DEALLOCATE MEMORY
+
+All memory that has been allocated MUST be deallocated before
+your program terminates. If you forget to deallocate memory
+which you have allocated, that memory would be forever lost.
+The only way of freeing such memory is to reboot. (Not to be
+recommended. We are not Demo-writers, are we?)
+
+You free allocated memory by calling the function FreeMem():
+
+Synopsis: FreeMem( memory, size );
+
+memory    (void *) Pointer to some memory which has previously
+          been allocated. Remember! Never deallocate memory,
+          which you have not allocated, and never use memory
+          which has been deallocated.
+
+size      (long) The size (in bytes) of the memory you want to
+          deallocate.
+
+
+To deallocate the 150 bytes of Chip memory we have previously
+allocated, we write:
+
+/* Free 150 bytes of memory: */
+FreeMem( memory, 150 );
+
+
+
+9.2.3  REMEMBER MEMORY
+
+If you allocate memory several times, and in different
+quantities, it can be very hard to remember to deallocate all
+memory correctly. However, do not despair. Intuition have a
+solution for you. You can use the function AllocRemember()
+which calls the function AllocMem(), but will also allocate
+memory for a Remember structure which is automatically
+initialized for you. Every time you allocate memory with the
+AllocRemember() function, the Remember structures are linked
+together, and the information about the memory (size and
+position) is remembered. Once you want to deallocate the
+memory, you only need to call the function FreeRemember(), and
+all memory is deallocated for you automatically.
+
+The Remember structure look like this:
+
+struct Remember
+{
+  struct Remember *NextRemember;
+  ULONG RememberSize;
+  UBYTE *Memory;
+};
+
+
+The AllocRemember() function is called like this: (Very similar
+to the AllocMem() function.)
+
+Synopsis: memory = AllocRemember( remember, size, type );
+
+memory:   (char *) Pointer to the new allocated memory, or NULL
+          if no memory could be allocated. Remember! Never use
+          memory which you have not successfully allocated.
+
+remember: (struct Remember **) Address of a pointer to a
+          Remember structure. Before you call the AllocRemember()
+          function for the first time you should set this
+          pointer to NULL. (Note that it is a pointer to a
+          pointer!)
+
+size:     (long) The size (in bytes) of the memory you want.
+          (AllocMem() always allocates memory in multiples of
+          eight bytes. So if you only ask for 29 bytes, Exec
+          would actually give you 32 Bytes (4*8).)
+
+type:     (long) You need to choose one of the three following
+          types of memory (see chapter 0 INTRODUCTION for more
+          information about Chip and Fast memory):
+
+          MEMF_CHIP   Chip memory. This memory can be accessed
+                      by both the main processor, as well as
+                      the Chips. Graphics/Sound data MUST 
+                      therefore be placed in Chip memory. If it
+                      does not matter what type of memory you
+                      get (Fast or Chip), you should try to
+                      allocate Fast memory before you allocate
+                      Chip memory. (Chip memory is more valuable
+                      than Fast memory.)
+
+          MEMF_FAST   Fast memory. This memory can only be
+                      accessed by the main processor. (Graphics
+                      and Sound data can NOT be stored in Fast
+                      memory, use Chip memory.) This memory is
+                      normally a little bit faster than Chip
+                      memory, since only the main processor is
+                      working with it, and it is not disturbed
+                      by the Chips.
+
+          MEMF_PUBLIC If it does not matter what type of memory
+                      you get (you do not intend to use the
+                      memory for Graphics/Sound data), you
+                      should use Fast memory. However, all
+                      Amigas do not have Fast memory, since
+                      you need to by a memory expansion in
+                      order to get it. If want to tell Exec
+                      that you would like to use Fast memory if
+                      there is any, else use Chip memory, you
+                      should ask for MEMF_PUBLIC.
+
+          If you want the allocated memory to be cleared
+          (initialized to zeros), you should set the flag
+          MEMF_CLEAR.
+
+
+When you want to deallocate the memory you only need to call
+the function FreeRemember() function. You can if you want,
+deallocate only the Remember structures, and take care of the
+deallocation yourself, but be careful. The FreeRemember()
+function is called like this:
+
+Synopsis:   FreeRemember( remember, everything );
+
+remember:   (struct Remember **) Address of a pointer to the
+            first Remember structure (initialized by the
+            AllocRemember() function). (Note that it is a pointer
+            to a pointer!)
+
+everything: (long) A boolean value. If everything is equal to
+            TRUE, all memory (both the allocated memory and the
+            Remember structures) are deallocated. However, if
+            everything is equal to FALSE, only the Remember
+            structures are deallocated, and you have to
+            deallocate the memory yourself.
+
+
+Here is a short example which shows how to use the
+AllocRemember(), and the FreeRemember() functions:
+
+struct Remember *remember = NULL;
+CPTR memory1, memory2, memory3;
+
+/* Allocate 350 bytes of Chip memory, which is cleared: */
+memory1 = AllocRemember( &remember, 350, MEMF_CHIP|MEMF_CLEAR );
+
+if( memory1 == NULL )
+  Clean up and leave;
+
+/* Allocate 900 bytes of memory (any type, Fast if possible): */
+memory2 = AllocRemember( &remember, 900, MEMF_PUBLIC );
+
+if( memory2 == NULL )
+  Clean up and leave;
+
+/* Allocate 100 bytes of Chip memory: *
+memory3 = AllocRemember( &remember, 100, MEMF_CHIP );
+
+if( memory3 == NULL )
+  Clean up and leave;
+
+...
+
+
+/* Deallocate all memory with one single call: */
+FreeRemember( &remember, TRUE );
+
+
+If we wanted, we could have deallocated all Remember
+structures, and then deallocate the memory ourself with help
+of the normal FreeMem() function:
+
+/* Deallocate only the Remember structures: */
+FreeRemember( &remember, FALSE );
+FreeMem( memory1, 350 );
+FreeMem( memory2, 900 );
+FreeMem( memory3, 100 );
+
+
+
+9.3  PREFERENCES
+
+When the system starts up, Intuition is initialized to some
+default values. However, if there exist a file called:
+"system-configuration" in the "devs" directory on the system
+disk, that file is used to set the system values, instead of
+the default values.
+
+The user can with the "Preferences" program change the system
+values, and/or the "system-configuration" file. If the user
+selects the "USE" command, only the system values are changed,
+while if the user selects the "SAVE" command, both the system
+values, as well as the "system-configuration" file are updated.
+
+Your program can get a copy of the system values by calling the
+function GetPrefs(). If you want to get a copy of the default
+values you use the function GetDefPrefs(). When you get a copy
+of the Preferences data, you can decide how much data you want
+copied. You can therefore, if you want, only copy parts of the
+structure, and do not need to allocate memory for the whole
+structure. The most important values are because of that placed
+in the beginning of the structure. The Preferences structure
+look like this: (See file "intuition/preferences.h" for more
+information. It is on the fourth Lattice C disk, in the
+"Compiler_Headers" directory.)
+
+struct Preferences
+{
+  BYTE FontHeight;
+  UBYTE PrinterPort;
+  USHORT BaudRate;
+  struct timeval KeyRptSpeed;
+  struct timeval KeyRptDelay;
+  struct timeval DoubleClick;
+  USHORT PointerMatrix[POINTERSIZE];
+  BYTE XOffset;
+  BYTE YOffset;
+  USHORT color17;
+  USHORT color18;
+  USHORT color19;
+  USHORT PointerTicks;
+  USHORT color0;
+  USHORT color1;
+  USHORT color2;
+  USHORT color3;
+  BYTE ViewXOffset;
+  BYTE ViewYOffset;
+  WORD ViewInitX, ViewInitY;
+  BOOL EnableCLI;
+  USHORT PrinterType;
+  UBYTE PrinterFilename[FILENAME_SIZE];
+  USHORT PrintPitch;
+  USHORT PrintQuality;
+  USHORT PrintSpacing;
+  UWORD PrintLeftMargin;
+  UWORD PrintRightMargin;
+  USHORT PrintImage;
+  USHORT PrintAspect;
+  USHORT PrintShade;
+  WORD PrintThreshold;
+  USHORT PaperSize;
+  UWORD PaperLength;
+  USHORT PaperType;
+  UBYTE SerRWBits;
+  UBYTE SerStopBuf;
+  UBYTE SerParShk;
+  UBYTE LaceWB;
+  UBYTE WorkName[FILENAME_SIZE];
+  BYTE RowSizeChange;
+  BYTE ColumnSizeChange;
+  UWORD PrintFlags;
+  UWORD PrintMaxWidth;
+  UWORD PrintMaxHeight;
+  UBYTE PrintDensity;
+  UBYTE PrintXOffset;
+  UWORD wb_Width;
+  UWORD wb_Height;
+  UBYTE wb_Depth;
+  UBYTE ext_size;
+};
+
+You call the function GetPrefs() like this:
+
+Synopsis: pref = GetPrefs( buffer, size );
+
+pref:     (struct Preferences *) Pointer to your preferences.
+          Same as your memory pointer (buffer), but is returned
+          so you can check if you got a copy or not. If you
+          could not get a copy of the preferences, the function
+          returns NULL.
+
+buffer:   (struct Preferences *) Pointer to the memory buffer
+          which should be used to store a copy of the
+          preferences in.
+
+size:     (long) The number of bytes you want to copy to the
+          buffer. Important, the buffer must be at least as big
+          as the number of bytes you want to copy.
+
+
+You call the function GetDefPrefs() like this:
+
+Synopsis: pref = GetPrefs( buffer, size );
+
+pref:     (struct Preferences *) Pointer to the default
+          preferences. If the function could not make a copy of
+          the preferences, the function returns NULL.
+
+buffer:   (struct Preferences *) Pointer to the memory buffer
+          which should be used to store a copy of the
+          default preferences in.
+
+size:     (long) The number of bytes you want to copy to the
+          buffer. Important, the buffer must be at least as big
+          as the number of bytes you want to copy.
+
+
+Here is an example on how to get a copy of the current
+preferences:
+
+/* Declare a preferences structure: */
+struct Preferences pref;
+
+/* Try to get a copy of the current preferences: */
+if( GetPrefs( &pref, sizeof(pref) ) == NULL )
+  /* Could not get a copy of the preferences! */
+
+
+Once you have got a copy of the current/default preferences we
+can start to check the settings.
+
+
+You can, if you want, change some values, and then save them
+as new preferences. IMPORTANT! You should never mess with the
+settings since it is the user's own preferences, and should
+therefore NOT be changed unless the user really WANT to alter
+them.
+
+You set new preferences by calling the function SetPrefs():
+
+Synopsis: SetPrefs( pref, size, doit );
+
+pref:     (struct Preferences *) Pointer to your modified
+          Preferences structure.
+
+size:     (long) The number of bytes you want to change.
+
+doit:     (long) Boolean value which if FALSE, changes the
+          preferences, but will not send a NEWPREFS message.
+          If doit is equal to TRUE, the settings will be
+          changed, and a NEWPREFS message will be sent.
+          As long as the user is changing the values, doit
+          should be FALSE, but when the user has finished,
+          set it to TRUE, and all programs will get a NEWPREFS
+          message. 
+
+
+
+9.4  WARNINGS
+
+There exist three levels of warnings you can give the user when
+something goes wrong:
+
+1. If you just want to get the users attention about something,
+   but nothing really dangerous has happened, you should call
+   the function DisplayBeep(). It will flash the colours of the
+   screen.
+   
+   Synopsis: DisplayBeep( screen );
+   
+   screen:   (struct Screen *) Pointer to the screen, which
+             colours you want to flash. If you have not opened
+             a screen yourself (you are using the Workbench
+             Screen), you can find a pointer to that screen
+             in the Window structure: (my_window is a pointer
+             to an opened window)
+             DisplayBeep( my_window->WScreen );
+
+
+2. If something important has happened, or if you want the user
+   to take some action (select something) etc, open a Requester.
+   (See chapter 5 REQUESTERS for more information.)
+
+
+3. If something TERRIBLE is happening, the system is breaking
+   down, open an Alert. (See chapter 6 ALERTS for more
+   information.)
+
+
+
+9.5  DOUBLE CLICK
+
+There are five different mouse actions:
+
+1. Press a button         The user can press on a button.
+
+2. Release a button       The user can release a previously
+                          pressed button.
+
+3. Click a button         Quickly pressing and releasing
+                          a button.
+
+4. Double-click a button  Quickly pressing/releasing a button
+                          twice.
+
+5. Drag                   Hold a button pressed, while moving
+                          the mouse.
+
+
+Use the IDCMP flags SELECTDOWN, SELECTUP, MENUDOWN, and MENUUP
+in order to receive mouse-buttons events. (See chapter 8 IDCMP for
+more information.)
+
+If you want to check if the user double-clicked one of the
+mouse buttons, you can use the function DoubleClick(). You give
+the function the current as well as the previous time when the
+button was pressed, and it will check the preferences and
+return TRUE if the two button events happened within the time
+limit. (The user can change the time limit for double-clicking
+events.)
+
+Synopsis: double = DoubleClick( sec1, mic1, sec2, mic2 );
+
+double:   (long) If the two button events happened within the
+          current time limit, the function will return TRUE,
+          else it will return FALSE.
+
+sec1:     (long) Time (seconds) when the button was pressed for
+          the first time.
+
+mic1:     (long) Time (micros) when the button was pressed for
+          the first time.
+
+sec2:     (long) Current time (seconds).
+
+mic2:     (long) Current Time (micros).
+
+
+Here is a short example on how to check double-click events:
+
+struct IntuiMessage *message;
+ULONG sec1, mic1, sec2, mic2; 
+
+... ... ...
+
+if( message->Class == MOUSEBUTTONS )
+{
+  /* A mouse button was pressed/released. */
+  if( message->Code == SELECTDOWN )
+  {
+    /* The left mouse button was pressed. */
+
+    /* Save the old time: */
+    sec2 = sec1;
+    mic2 = mic1;
+    
+    /* Get the new time: */
+    sec1 = message->Seconds;
+    mic1 = message->Micros;
+    
+    /* Check if it was a double-click or not: */
+    if( DoubleClick( sec2, mic2, sec1, mic1 ) )
+    {
+      printf("Double-Click!\n");
+      /* Reset the values: */
+      sec1 = 0;
+      mic1 = 0;
+    }
+  }
+}
+
+
+
+9.6  TIME
+
+You can get the current time by calling the function
+CurrentTime():
+
+Synopsis: CurrentTime( seconds, micros );
+
+seconds:  (long *) Pointer to an ULONG variable which will be
+          initialized with the current seconds stamp.
+
+micros:   (long *) Pointer to an ULONG variable which will be
+          initialized with the current micros stamp.
+
+
+Here is a short example:
+
+ULONG seconds, micros;
+
+CurrentTime( &seconds, &micros );
+
+
+
+9.7  STYLE
+
+Since Intuition is the interface between computer and the user,
+it is important that there are some standards concerning
+gadgets, requesters, menus, mouse, etc. If similar programs
+use the same type of style, the user will much faster learn to
+handle them. You, as the programmer, have therefore to make sure
+that your program is easily understandable and foolproof. Make
+your program easy to learn, and fun to handle!
+
+
+
+9.7.1  GADGETS
+
+Remember to make the gadgets easily recognizable, and
+understandable. Put short words like "CANCEL", "OK" in the
+gadget, or use graphics symbols. Remember to disable (ghosted)
+a gadget when it becomes nonfunctional.
+
+
+
+9.7.2  REQUESTERS
+
+Requesters have two main functions: They can inform the user
+about something, and/or ask the user to take some action. It is
+therefore important that it is easy for the user to understand
+what has or will happen, and what he/she has to do. Use
+colourful graphics if necessary, and remember that if you want
+some action from the user, always give him/her a way out
+without affecting anything (CANCEL).
+
+A requester which is meaningless should be taken away. Use the
+functions EndRequest(), ClearDMRequest().
+
+Place the OK/YES/TRUE gadget (if there exist one) in the bottom
+left corner, and the CANCEL/NO/FALSE gadget in the bottom right
+corner. There should always be an escape (CANCEL) gadget in
+every requester!
+
+---------------------------
+| OK to delete file?      |
+|                         |
+| ----------   ---------- |
+| | DELETE |   | CANCEL | |  
+| ----------   ---------- |
+---------------------------
+
+
+
+9.7.3  MENUS
+
+Menu items/subitems which are nonfunctional should be disabled
+(ghosted). Use the function OffMenu().
+
+There are two menus, project and edit menu, which many program
+will use, and should therefore look something like this:
+
+PROJECT
+
+Item      Function
+---------------------------------------------------------------
+New       Creates a new project.
+Open      Opens an old project.
+Save      Saves current project.
+Save as   Saves current project under a new name.
+Print     Prints the whole project.
+Print as  Prints parts of a project, and/or with new settings.
+Quit      Quits. Remember to ask the user if he/she really
+          wants to quit, and if he/she wants to save the
+          project. 
+
+
+EDIT
+
+Item      Function
+---------------------------------------------------------------
+
+Undo      Undoes the last operation.
+Cut       Cuts a part away, and stores it in the Clipboard. 
+Copy      Copies a part of the project into the Clipboard.
+Paste     Puts a copy of the Clipboard into the project.
+Erase     Deletes a part of the project without putting it into
+          the Clipboard.
+
+
+Remember to enable shortcuts for often used menu-functions.
+Here are some standard command key styles:
+
+Amiga + key  Function
+---------------------------------------------------------------
+
+  N          New
+  O          Open
+  S          Save
+  Q          Quit
+
+  U          Undo
+  X          Cut
+  C          Copy
+  P          Past
+
+
+
+9.7.4  MOUSE
+
+The left mouse button is used for "selection", while the right
+mouse button is used for "information transfer". The left mouse
+button is therefore used for selecting gadgets etc, while menu
+functions and double-menu requesters etc, use the right mouse
+button.
+
+
+
+9.8  FUNCTIONS
+
+AllocMem()
+
+  This function allocates memory. You specifies what type and
+  how much you want, and it returns a pointer to the allocated
+  memory, or NULL if there did not exist enough memory.
+
+  Synopsis: memory = AllocMem( size, type );
+
+  memory:   (void *) Pointer to the new allocated memory, or
+            NULL if no memory could be allocated. Remember!
+            Never use memory which you have not successfully
+            allocated.
+
+  size:     (long) The size (in bytes) of the memory you want.
+            (AllocMem() always allocates memory in multiples of
+            eight bytes. So if you only ask for 9 bytes, Exec
+            would actually give you 16 Bytes (2*8).)
+
+  type:     (long) You need to choose one of the three
+            following types of memory (see chapter 0
+            INTRODUCTION for more information about Chip and
+            Fast memory):
+
+            MEMF_CHIP   Chip memory. This memory can be
+                        accessed by both the main processor, as
+                        well as the Chips. Graphics/Sound data
+                        MUST therefore be placed in Chip memory.
+                        If it does not matter what type of 
+                        memory you get (Fast or Chip), you
+                        should try to allocate Fast memory
+                        before you allocate Chip memory. (Chip
+                        memory is more valuable than Fast
+                        memory.)
+
+            MEMF_FAST   Fast memory. This memory can only be
+                        accessed by the main processor.
+                        (Graphics and Sound data can NOT be
+                        stored in Fast memory, use Chip memory.)
+                        This memory is normally a little bit
+                        faster than Chip memory, since only the
+                        main processor is working with it, and
+                        it is not disturbed by the Chips.
+
+            MEMF_PUBLIC If it does not matter what type of
+                        memory you get (you do not intend to
+                        use the memory for Graphics/Sound data),
+                        you should use Fast memory. However,
+                        all Amigas do not have Fast memory,
+                        since you need to by a memory expansion
+                        in order to get it. If want to tell
+                        Exec that you would like to use Fast
+                        memory if there is any, else use Chip
+                        memory, you should ask for MEMF_PUBLIC.
+
+            If you want the allocated memory to be cleared
+            (initialized to zeros), you should set the flag
+            MEMF_CLEAR.
+
+
+
+FreeMem()
+
+  This function deallocated previously allocated memory.
+  Remember to deallocate all memory you have taken, and never
+  deallocate memory which you have not taken.
+
+  Synopsis: FreeMem( memory, size );
+
+  memory    (void *) Pointer to some memory which has
+            previously been allocated. Remember! never use
+            memory which has been deallocated.
+
+  size      (long) The size (in bytes) of the memory you want
+            to deallocate.
+
+
+
+AllocRemember()
+
+  This function allocates both memory (same as AllocMem), but
+  will also allocate space for a Remember structure which are
+  initialized with the size of the allocated memory, and a
+  pointer to that memory. Each time the program allocates
+  memory with this function, the Remember structures are linked
+  together.
+  
+  Since the Remember structures contains all necessary
+  information about the memory, and are linked together, all
+  memory can be deallocated with one single function call
+  (FreeRemember()).
+
+  Synopsis: memory = AllocRemember( remember, size, type );
+
+  memory:   (char *) Pointer to the new allocated memory, or
+            NULL if no memory could be allocated. Remember!
+            Never use memory which you have not successfully
+            allocated.
+
+  remember: (struct Remember **) Address of a pointer to a
+            Remember structure. Before you call the
+            AllocRemember() function for the first time you
+            should set this pointer to NULL. (Note that it is
+            a pointer to a pointer!)
+
+  size:     (long) The size (in bytes) of the memory you want.
+            (AllocMem() always allocates memory in multiples of
+            eight bytes. So if you only ask for 9 bytes, Exec
+            would actually give you 16 Bytes (2*8).)
+
+  type:     (long) You need to choose one of the three
+            following types of memory (see chapter 0
+            INTRODUCTION for more information about Chip and
+            Fast memory):
+
+            MEMF_CHIP   Chip memory. This memory can be
+                        accessed by both the main processor, as
+                        well as the Chips. Graphics/Sound data
+                        MUST therefore be placed in Chip memory.
+                        If it does not matter what type of 
+                        memory you get (Fast or Chip), you
+                        should try to allocate Fast memory
+                        before you allocate Chip memory. (Chip
+                        memory is more valuable than Fast
+                        memory.)
+
+            MEMF_FAST   Fast memory. This memory can only be
+                        accessed by the main processor.
+                        (Graphics and Sound data can NOT be
+                        stored in Fast memory, use Chip memory.)
+                        This memory is normally a little bit
+                        faster than Chip memory, since only the
+                        main processor is working with it, and
+                        it is not disturbed by the Chips.
+
+            MEMF_PUBLIC If it does not matter what type of
+                        memory you get (you do not intend to
+                        use the memory for Graphics/Sound data),
+                        you should use Fast memory. However,
+                        all Amigas do not have Fast memory,
+                        since you need to by a memory expansion
+                        in order to get it. If want to tell
+                        Exec that you would like to use Fast
+                        memory if there is any, else use Chip
+                        memory, you should ask for MEMF_PUBLIC.
+
+            If you want the allocated memory to be cleared
+            (initialized to zeros), you should set the flag
+            MEMF_CLEAR.
+
+
+
+FreeRemember()
+
+  This function deallocates all memory which has been allocated
+  by the AllocRemember() function. Note, you can deallocate all
+  Remember structures only, and deallocate the memory yourself,
+  if you want to.
+
+  Synopsis:   FreeRemember( remember, everything );
+
+  remember:   (struct Remember **) Address of a pointer to the
+              first Remember structure (initialized by the
+              AllocRemember() function). (Note that it is a
+              pointer to a pointer!)
+
+  everything: (long) A boolean value. If everything is equal
+              to TRUE, all memory (both the allocated memory
+              and the Remember structures) are deallocated.
+              However, if everything is equal to FALSE, only
+              the Remember structures are deallocated, and you
+              have to deallocate the memory yourself.
+
+
+
+GetPrefs()
+
+  This function makes a copy of the Preferences structure.
+
+  Synopsis: pref = GetPrefs( buffer, size );
+
+  pref:     (struct Preferences *) Pointer to your preferences.
+            Same as your memory pointer (buffer), but is
+            returned so you can check if you got a copy or not.
+            If you could not get a copy of the preferences, the
+            function returns NULL.
+
+  buffer:   (struct Preferences *) Pointer to the memory buffer
+            which should be used to store a copy of the
+            preferences in.
+
+  size:     (long) The number of bytes you want to copy to the
+            buffer. Important, the buffer must be at least as
+            big as the number of bytes you want to copy.
+
+
+
+GetDefPrefs()
+
+  This function makes a copy of the default Preferences
+  structure.
+
+  Synopsis: pref = GetPrefs( buffer, size );
+
+  pref:     (struct Preferences *) Pointer to the default
+            preferences. If the function could not make a copy
+            of the preferences, the function returns NULL.
+
+  buffer:   (struct Preferences *) Pointer to the memory buffer
+            which should be used to store a copy of the default
+            preferences in.
+
+  size:     (long) The number of bytes you want to copy to the
+            buffer. Important, the buffer must be at least as
+            big as the number of bytes you want to copy.
+
+
+
+SetPrefs()
+
+  This function saves a modified preferences structure. Do NOT
+  change the preferences unless the user really WANTS to!
+
+  Synopsis: SetPrefs( pref, size, doit );
+
+  pref:     (struct Preferences *) Pointer to your modified
+            Preferences structure.
+
+  size:     (long) The number of bytes you want to change.
+
+  doit:     (long) Boolean value which if FALSE, changes the
+            preferences, but will not send a NEWPREFS message.
+            If doit is equal to TRUE, the settings will be
+            changed, and a NEWPREFS message will be sent.
+            As long as the user is changing the values, doit
+            should be FALSE, but when the user has finished,
+            set it to TRUE, and all programs will get a NEWPREFS
+            message.
+
+
+
+DisplayBeep()
+
+  This function flashes the screen's colours. Can be used
+  whenever you want to catch the user's attention.
+
+  Synopsis: DisplayBeep( screen );
+   
+  screen:   (struct Screen *) Pointer to the screen, which
+            colours you want to flash. If you have not opened
+            a screen yourself (you are using the Workbench
+            Screen), you can find a pointer to that screen
+            in the Window structure: (my_window is a pointer
+            to an opened window)
+            DisplayBeep( my_window->WScreen );
+
+
+
+DoubleClick()
+
+  This function checks if the user double-clicked on one of the
+  mouse buttons. You give the function the current as well as
+  the previous time when the button was pressed, and it will
+  check the preferences and return TRUE if the two button
+  events happened within the time limit.
+
+  Synopsis: double = DoubleClick( sec1, mic1, sec2, mic2 );
+
+  double:   (long) If the two button events happened within the
+            current time limit, the function will return TRUE,
+            else it will return FALSE.
+
+  sec1:     (long) Time (seconds) when the button was pressed
+            for the first time.
+
+  mic1:     (long) Time (micros) when the button was pressed
+            for the first time.
+
+  sec2:     (long) Current time (seconds).
+
+  mic2:     (long) Current Time (micros).
+
+
+
+CurrentTime()
+
+  This function gives the current time.
+
+  Synopsis: CurrentTime( seconds, micros );
+
+  seconds:  (long *) Pointer to an ULONG variable which will be
+            initialized with the current seconds stamp.
+
+  micros:   (long *) Pointer to an ULONG variable which will be
+            initialized with the current micros stamp.
+
+
+
+9.9  EXAMPLES
+
+Example1
+  This example shows how to allocate, and deallocate memory.
+
+Example2
+  This example shows how to allocate and deallocate memory with
+  help of the functions AllocRemember(), and FreeRemember().
+
+Example3
+  This example shows how to get a copy of the preferences.
+
+Example4
+  This example shows how to handle double mouse button events.
+
+Example5
+  This example prints out the current time.

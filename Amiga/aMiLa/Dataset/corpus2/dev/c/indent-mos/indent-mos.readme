@@ -1,0 +1,10 @@
+Short:        ANSI C and C++ source code formatter
+Author:       David Ingamells et al.
+Uploader:     polluks+aminet sdf lonestar org (Stefan Haubenthal)
+Type:         dev/c
+Version:      2.2.12
+Architecture: ppc-morphos
+URL:          http://www.gnu.org/software/indent/
+
+usage: indent file [-o outfile ] [ options ]
+       indent file1 file2 ... fileN [ options ]

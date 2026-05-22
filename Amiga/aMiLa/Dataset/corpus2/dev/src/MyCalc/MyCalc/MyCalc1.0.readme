@@ -1,0 +1,22 @@
+Short:     Commoditized Programmer's Calculator V1.0 Source Included.
+Uploader:  jimbot@frontiernet.net (Jim Steichen)
+Author:    jimbot@frontiernet.net (Jim Steichen)
+Type:      dev/src
+Requires:  68020+, V3.5+ Amiga OS (FLeX, BYACC & SAS-C for compilation)
+Version:   1.0
+
+MyCalc (c) 2002 by J. T. Steichen is a program that allows
+a programmer to calculate using either HexaDecimal or Decimal numbers.
+
+Un-archive MyCalc.lha whereever you want it located.  Everything is in
+a directory called MyCalc.
+
+MyCalc is a commodity, so it can be placed in your WBStartup drawer 
+(if you use it a lot).  The default hot key is 'Alt-c'.
+
+The source code is included to allow others to see how to create a 
+program that uses the commodities system of the AmigaOS.
+
+If you modify/improve the Calculator (for example, adding Floating-point
+support), please inform me & send me your changes so that I can use them
+too!

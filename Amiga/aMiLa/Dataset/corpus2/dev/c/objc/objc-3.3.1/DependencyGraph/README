@@ -1,0 +1,11 @@
+
+Source code from the "DependencyGraph" exercise, chapter six,
+in the Cox&Novobilski book.
+
+Constructs a dependency graph in memory, then prints those nodes that can be reached, and those that cannot, starting from a given initial node.
+
+Run as follows:
+
+ 	make
+	dg main INPUT
+

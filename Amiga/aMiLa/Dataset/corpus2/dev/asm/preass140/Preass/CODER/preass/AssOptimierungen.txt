@@ -1,0 +1,233 @@
+37. 68000 Optimization
+======================
+
+ASSEMBLY CODE OPTIMIZATION (READ: "HOW AS FAST AND SMALL AS POSSIBLE?").
+Written by Irmen de Jong, march '93. (E-mail: ijdjong@cs.vu.nl)
+
+Some notes added by CJ
+
+-----------------------------------------------------------------------------
+Original	Possible optimization	Examples/notes
+-----------------------------------------------------------------------------
+STANDARD WELL-KNOWN OPTIMIZATIONS
+RULE: use Quick-type/Short branch! Use INLINE subroutines if they are small!
+-----------------------------------------------------------------------------
+
+BRA/BSR	xx	BRA.s/BSR.s xx		if xx is close to PC
+
+MOVE.X #0	CLR.X/MOVEQ/SUBA.X	move.l #0,count -> clr.l count
+					move.l #0,d0    -> moveq #0,d0
+					move.l #0,a0    -> sub.l a0,a0
+
+CLR.L Dx	MOVEQ #0,Dx		-
+
+CMP #0		TST			-
+
+MOVE.L #nn,dx	MOVEQ #nn,dx		possible if -128<=nn<=127
+
+ADD.X #nn	ADDQ.X #nn		possible if 1<=nn<=8
+SUB.X #nn	SUBQ.X #nn		same...
+
+JMP/JSR xx	BRA/BSR	xx		possible if xx is close to PC
+					* and in same section!*
+					(what's the use of JMP/JSR nn(PC)?)
+
+JSR xx;RTS	JMP xx			save a RTS
+BSR xx;RTS	BRA xx			same...
+					(assuming routine doesn't rely
+					on anything in the stack)
+
+LSL/ASL #1/2,xx	ADD xx,xx [ADD xx,xx]	lsl #2,d0 -> 2 times add d0,d0
+
+MULU #yy,xx where yy is a power of 2, 2..256
+		LSL/ASL #1-8,xx		mulu #2,d0 -> asl #1,d0 -> add d0,d0
+					BEWARE: STATUS FLAGS ARE "WRONG"
+
+DIVU #yy,xx where yy is a power of 2, 2..256
+		LSR/ASR #.. SWAP	divu #16,d0 -> lsr #4,d0
+					BEWARE: STATUS FLAGS ARE "WRONG",
+					AND HIGHWORD IS NOT THE REMAINDER.
+
+ADDRESS-RELATED OPTIMIZATIONS
+RULE: use short adressing/quick adds!
+----------------------------------------------------------------------------
+
+MOVEA.L #nn	MOVEA.W #nn		Movea is "sign-extending" thus
+					possible if 0<=nn<=$7fff
+
+ADDA.X #nn	LEA nn(			adda.l #800,a0 -> lea 800(a0),a0
+					possible if -$8000<=nn<=$7fff
+
+LEA nn(		ADDQ.W #nn		lea 6(a0),a0 -> addq.w #6,a0
+					possible if 1<=nn<=8
+
+$0000nnnn.l	$nnnn.w			move.l	4,a6 -> move.l 4.w,a6
+					possible if 0<=nnnn<=$7fff
+					(nnnn is SIGN EXTENDED to LONG!)
+
+MOVE.L #xx,Ay	LEA xx,Ay		try xx(PC) with the LEA
+
+MOVE.L Ax,Ay;
+ADD #nnnn,Ay	LEA nnnn(Ax),Ay		copy&add in one
+
+OFFSET-RELATED OPTIMIZATIONS
+RULE: use PC-relative addressing or basereg addressing!
+      put your code&data in ONE segment if possible!
+----------------------------------------------------------------------------
+MOVE.X nnnn	MOVE.X nnnn(pc)		lea copper,a0 -> lea copper(pc),a0..
+LEA nnnn	LEA nnnn(pc)		...possible if nnnn is close to PC
+
+(Ax,Dx.l)	(Ax,Dx.w)		possible if 0<=Dx<=$7fff
+
+If PC-relative doesn't work, use Ax as a pointer to your data block.
+Use indirect addressing to get to your data: move.l Data1-Base(Ax),Dx etc.
+
+TRICKY OPTIMIZATIONS
+----------------------------------------------------------------------------
+BSET #xx,yy	ORI.W	#2^xx,yy	0<=xx<=15
+BCLR #xx,yy	ANDI.W	#~(2^xx),yy	"
+BCHG #xx,yy	EORI.W	#2^xx,yy	"
+BTST #xx,yy	ANDI.W	#2^xx,yy	"
+					Best improvement if yy=a data reg.
+					BEWARE: STATUS FLAGS ARE "WRONG".
+
+SILLY OPTIMIZATIONS (FOR OPTIMIZING COMPILER OUTPUTS ETC)
+RULE: make the routines in assembly yourself!
+----------------------------------------------------------------------------
+MOVEM (one reg.) MOVE			movem.l	d0,-(sp) -> move d0,-(sp)
+
+MOVE xx,-(sp)	PEA xx			possible if xx=(Ax) or constant.
+
+0(Ax)		(Ax)			-
+
+MULU/MULS #0	CLR.L			moveq #0,Dx with data-registers.
+
+MULU #1,xx	SWAP CLR SWAP		high word is cleared with mulu #1
+MULS #1,xx	SWAP CLR SWAP EXT.L	see MULU, and sign exteded.
+					BEWARE: STATUS FLAGS ARE "WRONG"
+
+LOOP OPTIMIZATION.
+----------------------------------------------------------------------------
+Example: imagine you want to eor 4096 bytes beginning at (a0).
+Solution one:
+
+	move	#4096-1,d7
+..1	eori.b	d0,(a0)+
+	dbra	d7,.1
+
+Consider the loop from above. 4096 times a eor.b and a dbra takes time.
+What do you think about this:
+
+	move	#4096/4-1,d7
+..1	eor.l	d0,(a0)+
+	dbra	d7,.1
+
+Eors 4096 bytes too! But only needs 1024 eor.l/dbras.
+Yeah, I hear you smart guys cry: what about 1024 eor.l without any loop?!
+Right, that IS the fastest solution, but is VERY memory consuming (2 Kb).
+Instead, join a loop and a few eor.l:
+
+	move	#4096/4/4-1,d7
+..1	eor.l	d0,(a0)+
+	eor.l	d0,(a0)+
+	eor.l	d0,(a0)+
+	eor.l	d0,(a0)+
+	dbra	d7,.1
+
+This is faster than the loop before. I think about 8 or 16 eor.l's is just
+fine, depending on the size of the mem to be handled (and the wanted
+speed!). Also, mind the cache on 68020+ processors, the loop code must be
+small enough to fit in it for highest speeds.
+Try to do as much as possible within one loop (but considering the text
+above) instead of a few loops after each other.
+
+MEMORY CLEARING/FILLING.
+----------------------------------------------------------------------------
+A common problem is how to clear or fill some mem in a short time.
+If it is CHIP-MEMORY, use the blitter (only D-channel, see below). In this
+case you can still do other things with yer 680x0 while blittie-boy is busy
+erasing. If it is FAST-MEMORY, you can use the method from above, with
+clr.l instead of eor.l, but there is a much faster way:
+
+	move.l	sp,TempSp
+	lea	MemEnd,sp
+	moveq	#0,d0
+	...for all 7 data regs...
+	moveq	#0,d7
+	move.l	d0,a0
+	...for 6 address regs...
+	move.l	d0,a6
+
+After this, ONE instruction can clear 60 bytes of memory (15*4):
+
+	movem.l	d0-d7/a0-a6,-(sp)	;wham!
+
+Now, repeat this instruction as often as required to erase the memory.
+(memsize/60 times). You may need an additional movem.l to erase the last
+few bytes. Get sp(=a7) back at the end with (guess..):
+
+	move.l	TempSp,sp
+
+If you are low on mem, put a few movem.l in a loop. But, now you need a
+loop-counter register, so you'll only clear 56 bytes in one movem.l.
+In the case of CHIP memory, you can use both the blitter and the processor
+simultaneously to clear much CHIP mem in a VERY short time...
+It takes some experimentation to find the best sizes to clear with the
+blitter and with the processor.
+
+BUT, ALWAYS USE A WAITBLIT AFTER CLEARING SIMULTANEOUSLY, even if you know
+that the blitter is finished before your processor is (mind 680x0's)
+
+BLITTER SPEEDS. (from the Hardware Reference Manual)
+----------------------------------------------------------------------------
+Some general notes about blitter speeds. These numbers are for an OCS/ECS
+blitter only, in 16-bit chip ram (who knows the AGA blitter speed???)
+
+		      n * H * W
+	time taken = -----------
+			7.09 		(7.15 for NTSC)
+
+time is in microseconds. H=blitheight,W=blitwidth(#words),n=cycles
+
+n=4+....depends on # DMA-channels used
+
+	A: +0 (this one is free!)
+	B: +2
+	C or D: +0		In line-mode, every pixel takes 8 cycles.
+	C and D: +2
+
+So, use A,D,A&D for the fastest operation.
+Use A&C for 2-source operations (e.g. collision check or so).
+
+
+NOTES (FURTHER NOTES MAY BE ADDED IN FUTURE...)
+----------------------------------------------------------------------------
+- 68020+ processors are particularly fast at using longwords. Byte access
+  is some sort of brake on the memory access. Use at least words.
+
+- 68010 has a loop-cache, it caches 3 word loops like
+	loop	move.l	(a0)+,(a1)+
+		dbra	d7,loop
+
+- When optimizing BIG programs (for instance, compiler outputs...) first
+  try to find the time-critical parts (inner loops, often called procs etc.)
+  In most cases 10% of the code is responsible for 90% of the execution time.
+  I see people using OldOpenLibrary() because it needs one less register
+  set up.. I mean, what's the point? Are people really going to notice if
+  your demo takes two clock cycles less before starting? :-)
+
+- Often it is better not to set BLTPRI in DMACON (#10 in $dff09a) as this
+  can keep your processor from calculating things while the blitter is busy.
+
+- Use as much registers as possible! I.e. store values in registers rather
+  than in memory, this gives one hell of a performance boost.
+  (NOTE: just this is the power of RISC machines. Very much register access
+  instead of memory access. Fill these 16 registers!)
+
+- Related to the last one: unlike many compilers, DONT put your parameters
+  on stack before calling a sub! Instead, put them in well defined registers!
+
+- In case you have enough memory, try to remove as many MULU/S and DIVU/S
+  as possible by pre-calculating a multiplication or division table, and
+  reading values from it, rather than each time MULU #10 or so.
+   * Beware on A1200 though, read Chris's section on 68020 optimization.

@@ -1,0 +1,330 @@
+
+ *=-----------------------------------------------------------------------=*
+
+                 >> Quick 'How to Use' Pllb-C2p V1.06 <<
+
+                       Last updated: 10th-8-1996
+
+
+ *=-----------------------------------------------------------------------=*
+
+
+ ** PLEASE NOTE: For Pllb-C2p to work correctly, (it does actually work :)
+    your display should be setup in a normal bitplane fashion and *NOT* in
+    interleave format.  Plus, Your screen should *NOT* use a modulo.
+
+    Also, if you use my (dodgy ;) blitter routine to transfer (copy/resort) 
+    the bitplanes from the TEMP_IMAGE_BUFFER to YOUR SCREEN, well then, 
+    it expects all the bitplanes to be allocated in a linear fashion.
+
+
+ ** PLEASE NOTE: That if your planning to use the DELTANULLSKIP c2p routine,
+    then you firstly need to allocate it a delta buffer.
+
+    This buffer should be in FASTRAM, and no smaller than 
+    ((ChunkyScreenWidth*ChunkyScreenHeight)/4) = Delta NullSkip buffer
+    size.
+
+    If you don't allocate this buffer, and try to use the DELTANULLSKIP
+    routines, you'll more than likely *CRASH* your machine.
+
+  
+ ** PLEASE NOTE: I suggest that before you really get started in using
+    PLLB-C2P that you actually have a look through at least one or two of
+    the C2P routines first, just to make sure that you have some
+    understanding of the basic theory.
+
+    Plus, it'll help me better the package, with the IDEAS, OPT's, FLAMES ;)
+    etc etc.... that i'm all too sure i'll receive....  ;)
+
+
+
+
+; -------------------------------------------------------------------------
+
+
+;			   >> Pllb C2p Test <<
+
+
+; -------------------------------------------------------------------------
+
+
+
+; Ok, Well since PLLB-C2P has turned into something more than just a few
+; C2p routines, i'd better briefly (me be brief - impossible) run through
+; how you should actually use it... 
+ 
+
+; Well firstly, you need to ALLOCATE the fast ram buffers, i've provided
+; a couple of simple ALLOC and DEALLOC routines which will attempt to
+; grab as many blocks of fastram as possible (remember these are 512K
+; blocks of memory)
+
+
+; If this routine FAILS and can't alloc any 512k buffers, well then i'm
+; sorry, but your out of luck... ;)
+
+; if this happens  'Pllb_C2p_enabled_flag'.w  = NULL (FAILED)
+
+
+Demo_Startup:
+
+	bsr Pllb_Alloc_fast_buffers
+
+		tst.w Pllb_C2p_Enabled_Flag
+		beq.b pllb_ram_alloc_failed
+ 
+			bsr The_Demo_Init
+
+pllb_ram_alloc_failed:
+
+		bsr Pllb_DeAlloc_fast_buffers	
+
+	rts			; DEMO FAILED or FINISHED  ;)
+
+
+
+; --------------------------------------------------------------------------
+; --------------------------------------------------------------------------
+; --------------------------------------------------------------------------
+; --------------------------------------------------------------------------
+
+
+The_DemoInit:
+
+
+	; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	; <<<<<<<<<<<<<<<<<<<< INIT PLLB-C2P START >>>>>>>>>>>>>>>>>>>>>
+	; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+	; if you should wish to force PLLB-C2p into always running
+	; with a predefined number of FASTRAM buffers, well feel free,
+	; But you'll also have to alloc/dealloc those buffers yourself.
+ 
+	; (I.e. So you wouldn't call the PLLB_ALLOC & DEALLOC routines
+        ;        supplied)
+
+
+	; Insert the addresses of each of the fastram buffers into
+	; pllb's fastram address pointers.. and make sure you alloc the
+	; buffers in a progressive order, starting at buffer 'A'. 
+        ;  I.e. A,B,C,D
+
+
+	; if not, you'll surely crash the machine ;)
+
+
+
+	   ; For 1 buffer	
+		;move.l #YourFastBufferA,Pllb_C2p_FastBuffer_PointerA
+
+	    ; For 2 buffers
+		;move.l #YourFastBufferB,Pllb_C2p_FastBuffer_PointerB
+
+	    ; For 3 buffers
+		;move.l #YourFastBufferC,Pllb_C2p_FastBuffer_PointerC
+
+	    ; For 4 buffers
+		;move.l #YourFastBufferD,Pllb_C2p_FastBuffer_PointerD
+
+
+ 
+	; There are 4 valid Fastbuffer tag's 512k,1024k,1536k & 2048k
+
+	; Now you'll need to set 'Pllb_C2p_Fastram_buffersize'.w to your
+	; number of fast ram buffers.
+
+		;move.w #Pllb_C2P_Tag2048k,PllB_C2p_FastRam_BUfferSize
+
+
+	; Turn PLLB C2P ON
+
+		;move.w #Pllb_c2p_active,Pllb_C2p_Enabled_Flag
+
+
+
+	; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	; <<<<<<<<<<<<<<<<<<<< INIT PLLB-C2P START >>>>>>>>>>>>>>>>>>>>>
+	; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+	; >>>> Set the Number of Bitplanes you wish to use  <<<
+	; >>>> only 4bit/6bit and 8bit are valid in this version
+
+ move.w #Pllb_C2P_ColourDepth8bit,Pllb_C2p_ColourDepth
+
+	; >>>> Set your required pixel output width <<<<
+	; >>>> only  'Pixelwidth1','Pixelwidth2' & 'Pixelwidth4' are valid
+
+ move.w #Pllb_C2P_PixelWidth1,Pllb_C2p_PixelWidth
+
+	; >>>> Set the C2P type
+	; >>>> Only NORMAL, DELTA, NULLSKIP and DELTANULLSKIP are valid
+	
+ move.w #Pllb_C2P_Type_NORMAL,Pllb_C2p_Conversion_Type
+
+
+        ; **** NOTE: if you select DELTANULLSKIP c2p, you'll have to
+        ; >>>> allocate it a DELTA buffer, and then place the address of
+        ; >>>> this buffer into 
+        ; >>>> 'Pllb_C2p_DeltaNullSkip_buffer_pointer'
+
+	        ;move.l $4.w,a6		
+                ;move.l #(ScreenWidthInPixels*ScreenHeight)/4,d0		
+                ;move.l #MEMF_FAST,d1			
+                ;jsr AllocMem(a6)		
+ 
+                ;  tst.l d0
+                ;  beq FAILED_DELTANULLSKIP_BUFFER_ALLOC
+
+                ;move.l d0,Pllb_C2p_DeltaNullSkip_buffer_pointer
+
+
+
+	; >>>> init the size of your chunky frame buffer <<<
+
+	; >>>> width should be an even MULT of 16 pixels !
+
+ move.w #320,PLLB_C2P_ChunkyScreenWidth
+ move.w #255,PLLB_C2P_ChunkyScreenHeight
+ 
+	; >>>> Init Bitplane size
+           
+ move.w #40*255,PLLB_C2P_BitPLane_Size
+
+	; >>>> Pass the CHIPRAM address of the Temp Image Buffer
+	; >>>> You'll have to allocate this buffer yourself and then place
+	; >>>> it's address in 'PLLB_C2P_TEMP_IMAGE_BUFFER"
+
+	; >>>> make sure, that you align this value to 64bits.. for
+	; >>>> the best possible performance... 
+
+
+		 ; I.e. something like this will do !!
+
+		; move.l $4.w,a6		
+		; move.l #((ScreenWidthInPixels/8)*ScreenHeight)*planes),d0		
+		; move.l #MEMF_CHIP,d1			
+		; jsr AllocMem(a6)		
+
+		; tst.l d0
+		; beq FAILED
+
+		; move.l d0,Pllb_C2P_Temp_Image_buffer
+
+
+	; >>>> This code aligns *all* of the c2p routines for their best
+	; >>>> possible performance, Well I hope so anyway.
+ 	 
+  jsr Pllb_C2P_Routine_alignment_system
+
+	; >>>> This init's the supplied Blitter bitplane transfer variables
+	; >>>> i.e. max numb of bitplanes, size of frame... etc etc
+
+
+  jsr Pllb_c2p_Init_BlitterResort_Table
+
+
+	; >>>> And finally (if all goes well) this will init the FastRam
+	; >>>> precalc buffers, for you.
+
+  jsr Pllb_C2p_init_precalc_tables
+
+
+
+	; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	; <<<<<<<<<<<<<<<<<<<< INIT PLLB-C2P DONE >>>>>>>>>>>>>>>>>>>>>>
+	; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+
+
+
+
+Main_Program_LP:		
+
+
+	; if your using the PLLBC2P code 'as is', well then you have
+	; to call this routine as MUCH AS POSSIBLE!...
+
+
+		jsr Pllb_C2p_blitter_resort_frame
+
+
+	; PLease NOTE: The blitter copy/resort routine only transfers a
+	;              *SINGLE* bitplane from the Temp Image Buffer to your
+	;              screen, per every successful call. A successful call
+        ;              being when the blitter is free for use.
+
+
+	;   it's purpose is to check the blitters progress and if it's
+	; finished copying a bitplane, well then, it starts the next
+        ; bitplane transfer, if need be..  
+
+	; basically, the idea is too interleave/wedge the Pllb_c2p_blitter
+	; resort routines, in between your main chunky rendering routines... 
+	; Hence, giving the blitter some time and allowing you to move
+ 	; on without constantly waiting for it.
+
+
+	; For Example, in the Zrotate/Flexer demo I included in this package
+	; well, all I did was call this routine at the end of drawing each
+	; zrotated scanline into the chunky buffer.
+ 
+	; If your Cpu is quite fast, and you've been able to render the new
+        ; Chunky frame buffer before the blitter has completed shifting
+	; the last frame, well unfortunately at the moment you'll have to
+        ; wait till it's complete....
+
+	; There may be a way to avoid waiting via using a triple buffering
+        ; system, but i've not tried it as yet. Sorry.
+
+  
+
+	; >>>>>>>>>>>>>>>>>>>>>> PLLB-C2p Frame Buffer <<<<<<<<<<<<<<<<<
+
+	; >>> Before you call the Handle PLLB-C2P routine
+	; >>> you first need to tell it the ADDRESS of your
+	; >>> Chunky buffer(s) (if your using DELTA c2p then you'd
+        ; >>> Have two Source chunky buffers, this frame & last frame )
+
+	move.l Chunky_Buffer1,Pllb_C2P_Chunky_Frame_bufferA
+	move.l Chunky_Buffer2,Pllb_C2P_Chunky_Frame_bufferB 
+
+	; >>>> Also you need to tell is where it's meant to OUTPUT
+	; >>>> the final C2p'd Image.. I.E. The address of your PLANAR
+	; >>>> frame buffer.
+	
+	; NOTE: The Pllbc2p routines do alter these values so you must
+	;       set them prior to each Pllbc2p C2P call. ;(
+
+	Move.l Current_Picture,Pllb_C2P_Display_Frame_buffer
+
+	; NOTE: you'll always need to this, as my routines do alter them !
+
+	bsr Pllb_C2p_process_frame_buffer
+
+
+	; >>>>>>>DONE>>>>>>>>> PLLB-C2p Frame Buffer <<<<<<<<<<<<<<<DONE
+
+
+
+		tst.b Is_The_Program_Over
+		bne.b Main_Program_LP
+
+	rts
+
+
+
+   Well, good luck, if you any problems please feel free to contact me ! 
+
+ *=-----------------------------------------------------------------------=*
+
+                                T H E    E N D	
+
+ *=-----------------------------------------------------------------------=*

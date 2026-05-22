@@ -1,0 +1,13 @@
+Name            name
+
+Syntax          
+
+Function        
+
+History         ------ * GhostRider V0.42 changes.
+                030394 - 
+
+Preferences     None.
+
+Ideas/Bugs      None.
+

@@ -1,0 +1,75 @@
+Short:        ISO C compiler, PPC-WarpOS Target
+Author:       Volker Barthelmann, Frank Wille <frank@phoenix.owl.de>
+Uploader:     aminet aminet net
+Type:         dev/c
+Version:      0.9g
+Architecture: generic
+URL:          http://sun.hasenbraten.de/vbcc/
+
+vbcc - portable ISO/ANSI C compiler (c) in 1995-2019 by Volker Barthelmann
+
+
+INTRODUCTION
+
+    vbcc is a portable and retargetable ISO/ANSI C compiler.
+
+    This archive contains the startup codes, C-libraries, amiga.lib
+    replacements as well as all the standard and system specific
+    header files for this target.
+
+    All major parts of this distribution (including compiler,
+    preprocessor, libraries etc.) have been built using this system.
+
+
+INSTALLATION
+
+    Just execute the installer or extract the archive into your
+    vbcc/targets directory. You may install as many targets as
+    you need to support.
+
+
+LEGAL
+
+    vbcc is copyright in 1995-2019 by Volker Barthelmann.
+
+    This archive may be redistributed without modifications and used
+    for non-commercial purposes.
+
+    An exception for commercial usage is granted, provided that the target
+    CPU is M68k and the target OS is AmigaOS. Resulting binaries may be
+    distributed commercially without further licensing.
+
+    In all other cases you need my written consent.
+
+    This copyright applies to vc, vbcc and vsc.
+
+    This archive may contain other tools (e.g. assemblers or linkers)
+    which do not fall under this license. Please consult the corresponding
+    documentation of these tools.
+
+    Note that this distribution contains several programs, libraries etc.
+    that are from different authors and are under different legal status.
+    So always read the corresponding documentation to find out under
+    what conditions a certain file may be used, distributed etc.
+
+
+BUGREPORTS/COMMENTS
+
+    If you think vbcc generates bad code, throws enforcer hits, crashes,
+    seems to be not ISO-compliant etc. and the problem is not mentioned
+    anywhere in this docs as known problem, please send a mail with your
+    system configuration, the vbcc version, the command line you used, the
+    source that caused the problem and a brief description of the problem
+    to
+
+        vb@compilers.de           and/or
+        frank@phoenix.owl.de
+
+    Also if you find problems with the includes, the libraries or you have
+    suggestions, dislikes etc. send us a mail.
+    Corrections, improvements etc. of the manuals are appreciated, too.
+
+
+
+Volker Barthelmann                                   vb@compilers.de
+Frank Wille                                          frank@phoenix.owl.de

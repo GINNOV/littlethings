@@ -1,0 +1,2130 @@
+               _
+   _|_        / \.ММ/\_/\М._
+    |        /   Џ\/     \/ \                   _
+    |       Y _____Џ\/Џ_____ Y           ___   /Џ\   ___              .--.
+.---------  |/ЏЏЏЏЏ\  /ЏЏЏЏЏ\|  -----  .YЏЏЏYОY   Y:YЏЏЏY. ___  ------.\/.--.
+|        Ќ  f   |   YY   |   Y      Ќ.ООl___jОl___jОl___jОYЏЏЏY     Ќ  \/ Ќ |
+|.          l  -М-  jl  -М-  j     /Џ/\Мf _ YМf _ YМf _ YОl___j             |
+|Ё          |\  | _/ЏЏ\_ |  /|    ( <  >l/ \jМl/ \jМl/ \j./__ /            .|
+|:          j \__/ /ЏЏ\ \__/ l     \_\/ `\ /МММ\ /МММ\ /Мl/ /j             :|
+|.         (   ЏЏ /    \ ЏЏ   )           V `МММVМММММVМ' \/               .|
+|           \__   \_/\_/   __/               .:::::::'                      |
+|.            Џ\          /Џ    ЋЋ=--   DISK 2 - LESSON 8    --=ЛЛ         .|
+|   /\          Y : .  . Y                З .  .  .                      tS |
+`--'/\`-------  (_| | :| )  ----------           З  .       ----------------'
+   `--'         \\j_j_ll//              .  З     .
+                 ~:Џ:Џ::~                            .
+
+CORSO DI ASSEMBLER - LEZIONE 8
+
+Autore: Fabio Ciucci
+
+In questa lezione verranno approfondite le conoscenze sul 68000 e saranno
+fatte delle precisazioni su vari argomenti gia' trattati.
+Una nota per chi installa il corso su HardDisk: vi consiglio di fare delle
+directory, con il nome del relativo disco del corso:
+
+Assembler1
+Assembler2
+Assembler3
+...
+
+Dove copiare gli interi dischetti. Poi aggiungete ad s:startup-sequence:
+
+assign Assembler1: dh0:Assembler1
+assign Assembler2: dh0:Assembler2
+assign Assembler3: dh0:Assembler3
+...
+
+(dh0: e' solo un esempio... ci metterete il drive opportuno, naturalmente!).
+Poi vi consiglierei di scompattare tutti i sorgenti e i dati, che sono in
+formato powerpacker. Per fare cio', copiate il file c:PP nell'HardDisk, e
+verificate se avete in LIBS: la PowerPacker.library, altrimenti copiatela
+da questo disco. Ora, eseguite dallo shell "PP", in modo da abilitare la
+scompattazione automatica. Ora fatevi una directory "provvisoria", per
+esempio chiamatela "buffer". Se copiate TUTTI i file dalla directory
+Assembler1 alla directory Buffer, tutti i file saranno scompattati, infatti
+si "allungheranno". Ora potete ricopiarli tutti in Assembler1 (magari con
+un MOVE del DiskMaster o di DirOpus, che li ricancella anche da buffer).
+Allo stesso modo potete ricopiare tutto Assembler2 in buffer, poi ricopiare
+in Assembler2. Per risparmiare questa pur veloce operazione, potete caricare
+il PP prima di copiare i file da dischetto alle directory su HD, in modo che
+i file in AssemblerX siano sccompattati.
+I 3 comandi assign servono per fare in modo che anziche' cercare il disco
+con il nome "AssemblerX:" si cerchi nella directory "dh0:AssemblerX".
+In alcuni dei prossimi listati, infatti, si cerca "Assembler2:", e cosi'
+sara' anche per "Assembler3:".
+
+
+P.S: Ho intenzione di tradurre in Inglese l'intero corso. Pero' questo mi
+     costringerebbe a non scrivere piu' nuove lezioni per MESI interi...
+     Quindi, se trovassi qualcuno che abbia gia' letto il disco 1, che
+     sappia l'ingese decentemente, e abbia voglia di tradurre almeno
+     una lezione, io sarei felicissimo. Chi mi aiutasse nell'opera di
+     traduzione naturalmente avrebbe una percentuale molto alta sui
+     profitti ricavati dall'estero (che ne dite del 30%? Forse ш troppo..)
+     Chi puo' aiutarmi, (sto parlando di un BEL lavoro di traduzione),
+     mi contatti quanto prima.
+
+P.S2: Mi raccomando di copiare a TUTTI i vostri amici (e non) il disco 1
+      del corso, di darlo ai negozianti della vostra citta', di mettere
+      annunci nelle bacheche o nei giornaletti per vedere se interessa
+      a qualcuno, e trovare nuovi contatti per programmare. In particolare
+      potreste diffondere la filosofia CyberAssemblica della scena,
+      di cui trovate un sunto nel file SCENA.TXT.
+      Anche il Papa quando si affaccia dal balcone deve avere il disco 1
+      del corso! (liberamente copiabile).
+      Per quanto riguarda il disco 2, ossia questo, invece, non e'
+      liberamente copiabile, altrimenti io poi non prenderei nemmeno quei
+      (non molti) soldi che mi mandano coloro che hanno avuto solo il
+      disco 1. Immaginiamoci se costoro avessero subito entrambi i dischi!
+      Comunque, quando (e se) faro' dischi 3, 4, eccetera, probabilmente
+      rendero' anche il disco 2 liberamente copiabile (shareware, pero'),
+      in modo che i nuovi possano avere subito i disk1+2, poi io mi
+      rifaccio qualche spicciolo col disco 3, 4...
+
+
+Continuiamo la lezione, sia che il file sia su HardDisk che su Floppy.
+Innanzitutto e' necessario completare la lezione sul 68000, dato che per ora
+ne e' stato fatto un uso semplificato. Gia' dalla lezione precedente avete
+potuto constatare che spessissimo e' necessario operare sui singoli bit dei
+numeri o dei registri, ebbene piu' andrete avanti nella programmazione e piu'
+tenderete ad inserire istruzioni come AND,OR,NOT,ROL,ASL... eccetera, ossia
+le operazioni logiche booleane e di scorrimento sui bit.
+Ah! Nella directory LEZIONI e' presente un testo che spiega cosa e' la SCENA
+AMIGA. Ora che state diventando dei coder e' opportuno che sappiate chi
+dovete ringraziare per la nascita della cultura della programmazione delle
+demo, in quel modo "illegale", che come avete visto pero' funziona, e anche
+molto bene. Il testo e' SCENA.TXT, leggetevelo quando non avete voglia di
+farvi fumare il cervello con le lezioni di asm!
+Prima di procedere nel corso, e' necessario fare un listato di startup,
+ossia di salvataggio e rispristino della copper di sistema, piu' efficiente
+di quello usato fino ad adesso, inoltre tale startup dovra' essere
+inclusa in tutti i prossimi listati, dunque sara' certamente piu' utile
+caricarla tramite la direttiva "INCLUDE" gia' vista per includere la routine
+che suona la musica. "Costruiremo" questa startup nella lezione passo dopo
+passo, come risultato delle varie precisazioni.
+Analiziamo la procedura di startup usata nelle lezioni precedenti:
+
+Inizio:
+	move.l	4.w,a6		; Execbase
+	jsr	-$78(a6)	; Disable
+	lea	GfxName(PC),a1	; Nome lib
+	jsr	-$198(a6)	; OpenLibrary
+	move.l	d0,GfxBase
+	move.l	d0,a6
+	move.l	$26(a6),OldCop	; salviamo la vecchia COP
+
+; Qua e' puntata la nostra copperst e ci sono le routines
+
+	move.l	OldCop(PC),$dff080	; Puntiamo la cop di sistema
+	move.w	d0,$dff088		; facciamo partire la cop
+	move.l	4.w,a6
+	jsr	-$7e(a6)	; Enable
+	move.l	gfxbase(PC),a1
+	jsr	-$19e(a6)	; Closelibrary
+	rts
+
+In pratica arrestiamo il multitasking e gli interrupt di sistema tramite
+il Disable, poi apriamo la libreria grafica, tramite la quale possiamo
+trovare l'indirizzo della vecchia copperlist, sapendo che si trova $26 bytes
+dopo l'indirizzo di GfxBase. Sapendo come rimettere a posto la vecchia
+copperlist e avendo immobilizzato il WorkBench, agiamo in modo diretto sui
+chip custom senza temere incompatibilita'. Al termine delle routines sara'
+necessario eseguire l'Enable per riattivare il multitasking e puntare la
+vecchia copperlist per rivisualizzare le finestrelle del sistema operativo.
+Queste operazioni sono il minimo indispensabile per poter lavorare, ma si
+potrebbero fare dei perfezionamenti al codice, per esempio si potrebbero
+eseguire delle routines della libreria grafica che resettano il modo video,
+in modo da resettare anche modi video per monitor VGA/Multisync/Multiscan
+o altri. Una funzione apposita esiste, e si chiama LoadView, vediamola:
+
+; Abbiamo il GfxBase nel registro A6
+
+	MOVE.L	$22(A6),WBVIEW	; Salva il WBView attuale di sistema
+	SUBA.L	A1,A1		; View nullo per azzerare il modo video
+	JSR	-$DE(A6)	; LoadView nullo - modo video azzerato
+
+La funzione LoadView richiede che sia specificato l'indirizzo della struttura
+view in a1, ma in questo caso A1 e' AZZERATO, dato che sommiamo a1 a se
+stesso, ricavando a1=0. Quando A1 e' NULLO la funzione resetta il modo video
+riportandolo ad un LOWRES non interlacciato e senza frequenze speciali per
+i monitor. A questo punto siamo piu' sicuri di avere la situazione della
+copperlist sotto controllo, inoltre abbiamo salvato il vecchio puntatore alla
+struttura WBVIEW in una label, che ci permettera' alla fine del listato di
+ripristinarlo, e con esso le eventuali frequenze speciali per monitor:
+
+	MOVE.L	WBVIEW(PC),A1	; Vecchio WBVIEW in A1
+	MOVE.L	GFXBASE(PC),A6	; GFXBASE in A6
+	JSR	-$DE(A6)	; loadview - rimetti il vecchio View
+
+Per essere sicuri che anche il modo interlacciato sia resettato e ripristinato
+correttamente, si puo' attendere per due fotogrammi tramite l'esecuzione della
+routine WaitOF, sempre della graphics.library:
+
+	MOVE.L	WBVIEW(PC),A1	; Vecchio WBVIEW in A1
+	MOVE.L	GFXBASE(PC),A6	; GFXBASE in A6
+	JSR	-$DE(A6)	; loadview - rimetti il vecchio View
+	JSR	-$10E(A6)	; WaitOf ( Risistema l'eventuale interlace)
+	JSR	-$10E(A6)	; WaitOf
+
+Per avere l'animo in pace, mettiamo un paio di WaitOF anche dopo il primo
+loadwiew che resetta il modo video, e gia' che ci siamo controlliamo se il
+reset e' veramente avvenuto testando se il WBVIEW e' azzerato come previsto:
+
+; Abbiamo il GfxBase nel registro A6
+
+	MOVE.L	$22(A6),WBVIEW	; Salva il WBView attuale di sistema
+	SUBA.L	A1,A1		; View nullo per azzerare il modo video
+	JSR	-$DE(A6)	; LoadView nullo - modo video azzerato
+	JSR	-$10E(A6)	; WaitOf ( Queste due chiamate a WaitOf    )
+	JSR	-$10E(A6)	; WaitOf ( servono a resettare l'interlace )
+
+Avendo usato routines del sistema operativo, siamo certi che in macchine del
+futuro il modo video sara' comunque azzerato.
+Per "esagerare" nella compatibilita', possiamo richiamare alla fine del listato
+delle funzioni della intuition.library che "ridisegnano" gli schermi e le
+finestrelle:
+
+	move.l	4.w,a6		; ExecBase in A6
+	LEA	IntuiName(PC),A1 ; Nome libreria da aprire (intuition)
+	JSR	-$198(A6)	; OldOpenLibrary - apri la lib
+	TST.L	D0		; Errore?
+	BEQ.s	EXIT		; Se si, esci senza eseguire il codice
+	MOVE.L	D0,A6		; IntuiBase in a6
+	jsr	-$186(A6)	; ReThinkDisplay - Riordina i connotati degli
+				; schermi...
+
+Questa operazione e' analoga a quella svolta col WBView.
+Per ora non abbiamo ancora usato il blitter, ma nelle prossime lezioni ci
+saranno molte 'blittate', e siccome useremo questa startup, sara' utile
+predisporla per tale scopo. Basta accertarsi che il blitter non sia usato
+dal sistema operativo mentre lo stiamo usando noi, ed esiste una funzione
+della GfxLib in grado di far cessare l'utilizzo del blitter da parte del
+WorkBench:
+
+	jsr	-$1c8(a6)	; OwnBlitter, che ci da l'esclusiva sul blitter
+				; impedendone l'uso al sistema operativo.
+
+Al termine del listato, bastera' chiamare la funzione che fa l'opposto, ossia
+riabilita l'uso del blitter da parte della graphics.library:
+
+	jsr	-$1ce(a6)	; DisOwnBlitter, il sistema operativo ora
+				; puo' nuovamente usare il blitter
+
+Queste due funzioni sono simili al Disable e all'Enable, che come abbiamo
+visto fermano il multitasking e gli interrupts di sistema e li riabilitano.
+In realta' esiste anche una funzione meno drastica del Disable, cioe' il
+Forbid, il quale disabilita il multitasking lasciando in funzione gli
+interrupt di sistema; nessuno vieta di usare insieme Forbid e Disable, forse
+rende l'arresto del sistema meno brusco, proviamoli insieme:
+
+	move.l	4.w,a6		; ExecBase in A6
+	JSR	-$84(a6)	; FORBID - Disabilita il Multitasking
+	JSR	-$78(A6)	; DISABLE - Disabilita anche gli interrupt
+				;	    del sistema operativo
+; routines
+
+	MOVE.L	4.w,A6		; ExecBase in a6
+	JSR	-$7E(A6)	; ENABLE - Abilita System Interrupts
+	JSR	-$8A(A6)	; PERMIT - Abilita il multitasking
+
+Ora l'Amiga non puo' protestare con un Guru Meditation o un SoftWare Failure
+dicendo che non l'avevamo avvertita che stavamo programmando l'hardware!
+
+	                / \  //\
+	  |\___/|      /   \//  .\
+	  /O  O  \__  /    //  | \ \
+	 /     /  \/_/    //   |  \  \
+	 @___@'    \/_   //    |   \   \
+	    |       \/_ //     |    \    \
+	    |        \///      |     \     \
+	   _|_ /   )  //       |      \     _\
+	  '/,_ _ _/  ( ; -.    |    _ _\.-~        .-~~~^-.
+	  ,-{        _      `-.|.-~-.           .~         `.
+	   '/\      /                 ~-. _ .-~      .-~^-.  \
+	      `.   {            }                   /      \  \ 
+	    .----~-.\        \-'                 .~         \  `. \^-. 
+	   ///.----..>        \             _ -~             `.  ^-`  ~^-_
+	     ///-._ _ _ _ _ _ _}^ - - - - ~                     ~--,   .-~ 
+	                                                           |_/~ 
+
+Dato che salviamo lo status di tutto, perche' non salvare i valori dei
+registri dati ed indirizzi? Esiste una istruzione che viene usata
+prevalentemente per questo scopo, ed e' il MOVEM. I registri pero' sono
+salvati nello STACK, ossia il registro A7, detto anche SR, che per ora abbiamo
+evitato di usare. Vediamo cosa e' lo stack: pensate che si tratta di un
+registro analogo ad un registro indirizzi, non per niente e' il registro A7,
+dunque il valore che contiene e' un indirizzo, ossia PUNTA ad un indirizzo.
+Il fatto e' che se modifichiamo l'indirizzo contenuto in A7 (o SP) l'Amiga
+impazzisce totalmente. Ma chi mette quell'indirizzo nello Stack Pointer?
+Dato che modificandolo si verifica il Guru/Software Failure, potrete intuire
+che e' il sistema operativo che decide tale numero ogni reset, ed e' lui a
+modificarlo quando serve. Sapendo come usarlo, pero' puo' esserci molto utile.
+Abbiamo visto nel corso come sia possibile indicare una zona di memoria con
+l'indirizzamento indiretto, ad esempio scrivendo:
+
+	lea	bitplane,a0
+	move.l	#$123,(a0)+
+	move.l	#$456,(a0)+
+
+Abbiamo inserito i valori $123 e $456 nel bitplane agendo sul registro a0,
+dato che abbiamo fatto PUNTARE a0 al bitplane. Da questo listatino vediamo
+anche come sia possibile, con l'indirizzamento indiretto con post-incremento,
+inserire dati consecutivamente, uno dopo l'altro, nella zona di memoria.
+Cosa succederebbe se, dopo quelle istruzioni, scrivessimo:
+
+	move.l	-(a0),d0
+	move.l	-(a0),d1
+
+Succederebbe che in d0 sarebbe copiato l'ultimo valore inserito, ossia $456,
+mentre in d1 il primo, $123, e a0 punterebbe di nuovo a bitplane.
+In pratica siamo "tornati indietro".
+Ebbene, immaginate di fare l'operazione opposta a questa: nel caso che
+abbiamo visto, c'e' una zona di memoria, che abbiamo chiamato BITPLANE, e
+scriviamo da quell'indirizzo in avanti con i move.l #xxx,(a0)+
+
+	Bitplane
+	   o------------>
+
+Poi, dopo un certi numero di istruzioni, a0 punta a bitplane+x, cioe' molto
+piu' avanti in memoria.
+Possiamo "riprendere" i valori che abbiamo "seminato" in questo campo con dei
+move.l -(a0),xxx che ci fanno tornare indietro fino a raggiungere nuovamente
+l'indirizzo di partenza BITPLANE. Ma attenzione! abbiamo raccolto i dati
+nell'ordine inverso rispetto a quello di immissione, infatti l'ultimo inserito
+e' il primo ripreso. Lo stack punta ad un indirizzo in memoria, che serve da
+"campo" in cui seminare, ossia da zona dove salvare e riprendere dati.
+Bisogna stare attenti, pero', che viene usato "all'indietro", al contrario
+dell'esempio del bitplane. L'esigenza dello stack nasce con i primi CPU, ed
+e' organizzato in questo modo: la memoria di un computer di solito viene
+riempita dalle locazioni piu' basse fino alle piu' alte, per esempio se
+abbiamo un computer con 512k di memoria e dobbiamo caricarci un file lungo
+256k, saranno riempiti i primi 256k e rimarranno liberi i Kb dal 257 al 512.
+Volendo riservare uno spazio STACK per salvare dei dati generici, si e'
+pensato di far partire questo spazio dalla fine della memoria circa, e di
+salvare i dati "all'indietro" verso la prima locazione di memoria, in modo
+da utilizzare al meglio la memoria:
+
+
+	ZERO ---------------------------------------FINE MEMORIA
+	     Programmi ----->>		<<-----STACK
+
+
+In questo modo lo stack non viene sovrascritto a meno che la memoria non sia
+proprio finita, e comunque i programmi sotto sistema operativo evitano tale
+scontro! Noi dobbiamo fare demo o giochi eseguibili dal sistema operativo,
+dunque dobbiamo usare lo stack in modo standard per non creare conflitti o
+sovrascritture. Se facessimo un programma in autoboot e senza bisogno di
+uscita, potremmo definire un'area nostra per lo stack, ma questo puo'
+generare problemi di compatibilita' e per ora vi consiglio di non farlo.
+Vediamo infine come immettere e prelevare dati dallo STACK, cominciando
+con un esempio semplicissimo: salvare il contenuto del registro D0, e
+successivamente ripristinarlo.
+
+	MOVE.L	d0,-(SP)	; salviamo d0 nello stack. NOTA: se dobbiamo
+				; salvare un solo registro, usiamo MOVE e
+				; non MOVEM, usato per Multipli registri.
+
+;	Routines che modificano D0
+
+	MOVE.L	(SP)+,d0	; ripristiniamo il vecchio valore di d0
+				; prendendolo dallo STACK
+
+Da notare che scrivere MOVE.L d0,-(SP) o MOVE.L d0,-(A7) e' equivalente, in
+memoria viene assemblata la stessa sequenza binaria. Notiamo che il contenuto
+di d0 viene copiato nell'indirizzo cui punta SP, e SP stesso viene a puntare
+una long piu' indietro. Poi d0 viene modificato da varie routines, e quando
+vogliamo ottenere il suo vecchio valore basta riprenderlo dall'indirizzo
+in SP, e notate bene che con (SP)+ riportiamo SP a puntare l'indirizzo che
+puntava prima di aver salvato d0, cioe' siamo andati indietro di una long,
+poi siamo ritornati avanti ripescando il valore.
+Proviamo ora a salvare il valore di piu' registri:
+
+	MOVE.L	d0,-(SP)	; salviamo d0 nello stack
+	MOVE.L	d1,-(SP)	; salviamo d1 nello stack
+	MOVE.L	d2,-(SP)	; salviamo d2 nello stack
+	MOVE.L	d3,-(SP)	; salviamo d3 nello stack
+
+;	Routines che modificano d0,d1,d2,d3
+
+	MOVE.L	(SP)+,d3	; ripristiniamo il vecchio valore di d3
+	MOVE.L	(SP)+,d2	; ripristiniamo il vecchio valore di d2
+	MOVE.L	(SP)+,d1	; ripristiniamo il vecchio valore di d1
+	MOVE.L	(SP)+,d0	; ripristiniamo il vecchio valore di d0
+				; prendendoli dallo STACK
+
+Notate che l'ultimo valore salvato e' il primo che puo' essere ripescato,
+proprio per il fatto che andiamo indietro e poi ritorniamo avanti, leggendo
+dall'ultimo valore immesso al contrario fino al primo:
+
+						Indirizzo di partenza STACK
+	IMMISSIONE:	-(SP)	<--------------o	- indietro -
+
+
+						Indirizzo di partenza STACK
+	LETTURA:	(SP)+	--------->     o	- avanti -
+
+
+e' una struttura detta a "pila", infatti puo' essere immaginata in questo
+modo: pensate di avere una collezione di fumetti, e di volerla ordinare dal
+numero uno al numero 50. Trovato il numero 1, lo mettete su un tavolo.
+Trovato il numero 2 lo mettete sopra il numero 1. Poi il 3 sul 2, e via via
+fate una "pila" di fumetti, fino a che non avrete messo il numero 50 in
+cima alla catasta. Ora, se voleste riprendere i fumetti, il primi che si
+presenta e' il 50, poi sotto trovate il 49, il 48 eccetera, e come ultimo
+trovate l'1. Lo stack infatti e' del tipo "first in, last out", ossia "il
+primo messo dentro e' l'ultimo tirato fuori".
+Capirete che modificando impropriamente lo stack vengono presi valori in
+memoria a caso e considerati come valori salvati prima.
+Dunque state attenti, quando avete eseguito un:
+
+	MOVE.L	xxxx,-(SP)	; salviamo xxxx nello stack
+
+La prossima volta che leggete con (SP)+ dallo stack ricavate xxxx.
+
+Nello stack potete salvare e riprendere qualsiasi dato, ma una delle piu'
+evidenti utilita' e' quella di salvare lo stato dei registri, e per fare
+questo si puo' usare il semplice MOVE.L, nel caso gia' visto del salvataggio
+di un solo registro, oppure il MOVEM (MOVE Multiple) per piu' registri.
+Vediamo come funziona il MOVEM: per salvare tutti i registri (escluso a7,
+ovviamente, che e' l'SP, dunque d0,d1,d2,d3,d4,5,d6,d7,a0,a1,a2,a3,a4,a5,a6),
+si deve eseguire questo solo MOVEM anziche' 15 MOVE:
+
+	MOVEM.L	d0-d7/a0-a6,-(SP)	; salva tutti i registri nello STACK
+
+E per ripristinarli tutti basta un:
+
+	MOVEM.L	(SP)+,d0-d7/a0-a6	; riprendi tutti i registri dallo STACK
+
+Praticamente il MOVEM sposta una lista di registri nella destinazione, nel
+caso del "MOVEM.L d0-d7/a0-a6,destinazione", oppure copia una sorgente in vari
+registri, nel caso di "MOVEM.L sorgente,d0-d7/a0-a6".
+La sorgente e la destinazione sono in formato "standard", per cui si puo'
+copiare da e verso LABEL/INDIRIZZI o indirizzamenti indiretti:
+
+	MOVEM.L	d0-d7/a0-a6,-(SP)
+	MOVEM.L	d0-d7/a0-a6,LABEL
+	MOVEM.L	d0-d7/a0-a6,$53000
+
+	MOVEM.L	$53000,d0-d7/a0-a6
+	MOVEM.L	LABEL(PC),d0-d7/a0-a6
+	MOVEM.L	(SP)+,d0-d7/a0-a6
+
+La lista segue questo standard: si possono indicare i registri separatamente,
+separandoli con la barretta "/", per cui si puo' dire che:
+
+	MOVEM.L	d0-d7/a0-a6,-(SP)
+
+e' equivalente a:
+
+	MOVEM.L	d0/d1/d2/d3/d4/d5/d6/d7/a0/a1/a2/a3/a4/a5/a6,-(SP)
+
+Ma, poiche' le serie consecutive di registri possono essere indicati ponendo
+il primo registro della serie e l'ultimo separati da un "-", si dividono con
+la barretta solamente i registri dati da quelli indirizzi.
+In realta' l'asmone accetta anche:
+
+	MOVEM.L	d0-a6,-(SP)
+
+Considerandolo come la lunghissima istruzione precedente, ma dato che non
+tutti gli assemblatori accettano questa forma, e' meglio mettere la "/" tra
+le serie di registri dati e quella dei registri indirizzi.
+Facciamo degli esempi: vogliamo salvare i registri d0,d1,d2,d5 e a3:
+
+	MOVEM.L	d0-d2/d5/a3,-(SP)
+
+Abbiamo semplificato d0/d1/d2 con d0-d2.
+Proviamo ora a salvare d2,d4,d5,d6,a3,a4,a5,a6:
+
+	MOVEM.L	d2/d4-d6/a3-a6,-(SP)
+
+Chiaramente per ripristinare questi registri si scrivera':
+
+	MOVEM.L	(SP)+,d2/d4-d6/a3-a6
+
+Credo che la sintassi del MOVEM sia chiara. Tramite questa istruzione e'
+possibile gestire il multitasking, infatti vi siete mai chiesti come e'
+possibile far girare due programmi insieme, che usano gli stessi registri
+dati e indirizzi, senza che interferiscano fra loro: la risposta e' semplice!
+All'inizio di ogni routine c'e' un MOVEM che salva lo stato dei registri,
+la routine viene eseguita, e all'uscita i registri tornano al loro stato
+originario come se tale routine non fosse mai stata eseguita.
+Molte routines infatti sono cosi' strutturate:
+
+Routine:
+	MOVEM.L	d0-d7/a0-a6,-(SP)
+	....
+	....
+	MOVEM.L	(SP)+,d0-d7/a0-a6
+	rts
+
+In questo modo, un "BSR.W ROUTINE" non causa la modifica dei registri, per
+cui se in a5 c'era $dff000 e in a6 ExecBase, siamo sicuri che dopo aver
+eseguito la routine ci sono sempre questi valori.
+Nell'usare il MOVEM capita spesso, le prime volte, di perdere "IL FILO" dei
+movem gia' fatti per cui puo' succedere una cosa del genere:
+
+
+Routine:
+	MOVEM.L	d0-d7/a0-a6,-(SP)
+	....
+	....
+	MOVEM.L	(SP)+,d0-d7/a0-a6
+	....
+	....
+	MOVEM.L	(SP)+,d0-d7/a0-a6
+	rts
+
+In questo caso c'e' un ERRORE MADORNALE, perche' come prima cosa lo stack e'
+andato troppo avanti, per cui tutti i dati che verranno ripresi dallo stack
+in seguito saranno sbagliati, come seconda cosa gia' i registri avranno valori
+diversi da quelli in entrata. Per far tornare tutto si potrebbe fare cosi':
+
+
+Routine:
+	MOVEM.L	d0-d7/a0-a6,-(SP)
+	....
+	....
+	....
+	MOVEM.L	d0-d7/a0-a6,-(SP)
+	....
+	....
+	MOVEM.L	(SP)+,d0-d7/a0-a6
+	....
+	....
+	MOVEM.L	(SP)+,d0-d7/a0-a6
+	rts
+
+In questo modo all'uscita della routine i registri hanno il valore di entrata
+e lo stack e' tornato all'indirizzo di entrata. (entrata nella routine!)
+
+A questo punto possiamo dotare la nostra startup di salvataggio iniziale dei
+registri e ripristino finale, analogamente a questo ultimo esempio.
+Ecco come si presenta la nostra startup in questo momento:
+
+MAINCODE:
+	movem.l	d0-d7/a0-a6,-(SP)	; Salva i registri nello stack
+	move.l	4.w,a6			; ExecBase in a6
+	LEA	GfxName(PC),A1		; Nome libreria da aprire
+	JSR	-$198(A6)		; OldOpenLibrary - apri la lib
+	MOVE.L	d0,GFXBASE		; Salva il GfxBase in una label
+	BEQ.w	EXIT2			; Se si, esci senza eseguire il codice
+	LEA	IntuiName(PC),A1	; Intuition.lib
+	JSR	-$198(A6)		; Openlib
+	MOVE.L	D0,IntuiBase
+	BEQ.w	EXIT1			; Se zero, esci! Errore!
+
+	MOVE.L	IntuiBase(PC),A0
+	CMP.W	#39,$14(A0)	; versione 39 o maggiore? (kick3.0+)
+	BLT.s	VecchiaIntui
+	BSR.w	ResettaSpritesV39
+VecchiaIntui:
+
+	MOVE.L	GfxBase(PC),A6
+	MOVE.L	$22(A6),WBVIEW	; Salva il WBView attuale di sistema
+
+	SUBA.L	A1,A1		; View nullo per azzerare il modo video
+	JSR	-$DE(A6)	; LoadView nullo - modo video azzerato
+	SUBA.L	A1,A1		; View nullo
+	JSR	-$DE(A6)	; LoadView (due volte per sicurezza...)
+	JSR	-$10E(A6)	; WaitOf ( Queste due chiamate a WaitOf    )
+	JSR	-$10E(A6)	; WaitOf ( servono a resettare l'interlace )
+	JSR	-$10E(A6)	; Altre due, vah!
+	JSR	-$10E(A6)
+
+	MOVEA.L	4.w,A6
+	SUBA.L	A1,A1		; NULL task - trova questo task
+	JSR	-$126(A6)	; findtask (d0=task, FindTask(name) in a1)
+	MOVEA.L	D0,A1		; Task in a1
+	MOVEQ	#127,D0		; Priorita' in d0 (-128, +127) - MASSIMA!
+	JSR	-$12C(A6)	;_LVOSetTaskPri (d0=priorita', a1=task)
+
+	MOVE.L	GfxBase(PC),A6
+	jsr	-$1c8(a6)	; OwnBlitter, che ci da l'esclusiva sul blitter
+				; impedendone l'uso al sistema operativo.
+	jsr	-$E4(A6)	; WaitBlit - Attende la fine di ogni blittata
+	JSR	-$E4(A6)	; WaitBlit
+
+	move.l	4.w,a6		; ExecBase in A6
+	JSR	-$84(a6)	; FORBID - Disabilita il Multitasking
+	JSR	-$78(A6)	; DISABLE - Disabilita anche gli interrupt
+				;	    del sistema operativo
+**************
+	bsr.w	HEAVYINIT	; Ora puoi eseguire la parte che opera
+**************			; sui registri hardware
+
+	move.l	4.w,a6		; ExecBase in A6
+	JSR	-$7E(A6)	; ENABLE - Abilita System Interrupts
+	JSR	-$8A(A6)	; PERMIT - Abilita il multitasking
+
+	SUBA.L	A1,A1		; NULL task - trova questo task
+	JSR	-$126(A6)	; findtask (d0=task, FindTask(name) in a1)
+	MOVEA.L	D0,A1		; Task in a1
+	MOVEQ	#0,D0		; Priorita' in d0 (-128, +127) - NORMALE
+	JSR	-$12C(A6)	;_LVOSetTaskPri (d0=priorita', a1=task)
+
+	MOVE.W	#$8040,$DFF096	; abilita blit
+	BTST.b	#6,$dff002	; WaitBlit...
+Wblittez:
+	BTST.b	#6,$dff002
+	BNE.S	Wblittez
+
+	MOVE.L	GFXBASE(PC),A6	; GFXBASE in A6
+	jsr	-$E4(A6)	; Aspetta la fine di eventuali blittate
+	JSR	-$E4(A6)	; WaitBlit
+	jsr	-$1ce(a6)	; DisOwnBlitter, il sistema operativo ora
+				; puo' nuovamente usare il blitter
+	MOVE.L	IntuiBase(PC),A0
+	CMP.W	#39,$14(A0)	; V39+?
+	BLT.s	Vecchissima
+	BSR.w	RimettiSprites
+Vecchissima:
+
+	MOVE.L	GFXBASE(PC),A6	; GFXBASE in A6
+	MOVE.L	$26(a6),$dff080	; COP1LC - Punta la vecchia copper1 di sistema
+	MOVE.L	$32(a6),$dff084	; COP2LC - Punta la vecchia copper2 di sistema
+	JSR	-$10E(A6)	; WaitOf ( Risistema l'eventuale interlace)
+	JSR	-$10E(A6)	; WaitOf
+	MOVE.L	WBVIEW(PC),A1	; Vecchio WBVIEW in A1
+	JSR	-$DE(A6)	; loadview - rimetti il vecchio View
+	JSR	-$10E(A6)	; WaitOf ( Risistema l'eventuale interlace)
+	JSR	-$10E(A6)	; WaitOf
+	MOVE.W	#$11,$DFF10C	; Questo non lo ripristina da solo..!
+	MOVE.L	$26(a6),$dff080	; COP1LC - Punta la vecchia copper1 di sistema
+	MOVE.L	$32(a6),$dff084	; COP2LC - Punta la vecchia copper2 di sistema
+	moveq	#100,d7
+RipuntLoop:
+	MOVE.L	$26(a6),$dff080	; COP1LC - Punta la vecchia copper1 di sistema
+	move.w	d0,$dff088
+	dbra	d7,RipuntLoop	; Per sicurezza...
+
+	MOVEA.L	IntuiBase(PC),A6
+	JSR	-$186(A6)	; _LVORethinkDisplay - Ridisegna tutto il
+				; display, comprese ViewPorts e eventuali
+				; modi interlace o multisync.
+	MOVE.L	a6,A1		; IntuiBase in a1 per chiudere la libreria
+	move.l	4.w,a6		; ExecBase in A6
+	jsr	-$19E(a6)	; CloseLibrary - intuition.library CHIUSA
+Exit1:
+	MOVE.L	GfxBase(PC),A1	; GfxBase in a1 per chiudere la libreria
+	jsr	-$19E(a6)	; CloseLibrary - graphics.library CHIUSA
+Exit2:
+	movem.l	(SP)+,d0-d7/a0-a6 ; Riprendi i vecchi valori dei registri
+	RTS			  ; Torna all'ASMONE o al Dos/WorkBench
+
+Ci sono solo quattro particolari aggiunti: uno e' quello del controllo dopo
+l'apertura della Graphics.library, infatti se per qualche motivo non si
+potesse aprire, in d0 anziche' l'indirizzo del GfxBase troveremmo ZERO.
+Non si fa altro che uno pseudo "TST.L D0" e un salto alla label EXIT in caso
+di non apertura. Vedrete, con lo studio dei Condition Codes, come mai basti
+fare un "beq" dopo un move, senza usare il "tst", per sapere se d0 e'azzerato.
+Un'altro particolare e' la comparsa della COPPER2 di sistema, (GfxBase+$32)
+che non e' altro che il valore inserito in $dff084, COP2LC, dal sistema
+operativo; per ora non abbiamo mai usato la copperlist 2, ma in certe lezioni
+piu' avanti non mancheremo di illustrarne i casi di utilita'.
+Altra "finezza" e' quella di resettare gli sprites, ma solo se siamo sul
+kickstart 3.0 o superiori, dato che la funzione di reset degli sprite e'
+disponibile da questa versione in avanti. La SubRoutine che resetta gli sprite
+e' un classico esempio di programmazione "legale", con chiamate al sistema
+operativo... come potrete notare sbirciandola e' piu' complicato usare il
+sistema operativo che programmare via hardware (non e' vero??).
+Infine c'e' il settaggio della priorita' del task. Come sapete ogni programma
+che viene eseguito in multitasking ha una sua "priorita'" rispetto agli altri.
+Ebbene, mettiamola al massimo! Ossia 127. In relta' non servirebbe, dato che
+dopo disabilitiamo del tutto il multitasking, ma vedremo in seguito che e'
+utile settare la priorita' al massimo e riabilitare il multitasking per
+caricare files dati da dischetto, harddisk o CDrom.
+
+Con questa startup facciamo il possibile affinche' il sistema operativo possa
+essere "scavalcato" senza problemi. Vediamo ora cosa possiamo fare per
+prendere in modo piu' completo il controllo dell'hardware di Amiga.
+Innanzitutto vanno introdotti i registri DMACON, INTENA, ADKCON ed INTREQ, che
+sono dedicati alla "chiusura" o "apertura" dei CANALI DMA, nonche' alla
+abilitazione degli interrupt e di altre cose. Per ora nei listati abbiamo dato
+per scontato che il COPPER, I BITPLANES e gli SPRITE sono abilitati, infatti
+possiamo vedere sia i testi e i menu' dell'ASMONE (BITPLANE) che la freccia
+puntatore del mouse (SPRITE). Questo significa che tali canali sono abilitati.
+Comunque e' meglio modificare di persona lo stato di questi registri per
+essere sicuri che i canali che ci interessano siano abilitati, e quelli che
+non ci interessano non lo siano. Come facciamo per le copperlist, bastera'
+salvare lo stato di questi registri all'inizio, poi eseguire il nostro codice
+che abilita e disabilita a volonta', infine rimettere i registri nello stato
+di partenza, come nulla fosse accaduto.
+Ma innanzitutto vediamo cosa sono questi canali DMA.
+DMA significa "Direct Memory Access", ossia "accesso diretto alla memoria".
+Infatti nell'Amiga l'accesso alla memoria e' molto complesso, dato che ci deve
+accedere non solo il processore, ma anche il copper per visualizzare immagini,
+il blitter per copiarle e spostarle, l'audio per suonare. Per evitare che
+succedano "incidenti" a tutti questi processori che vogliono mettere le mani
+sulla memoria (almeno quella CHIP) tutti contemporaneamente, e' stato messo
+un sistema di "semafori" e di viadotti, si puo' parlare di urbanistica e
+viabilita'. Infatti nel chip AGNUS esiste un gestore dei canali DMA, il
+quale coordina le operazioni, facendo accedere i chip custom e il 68000 alla
+memoria "a turno", quando il canale e' libero. Tale accesso puo' essere sia
+di lettura che di scrittura (il copper LEGGE le copperlit, l'audio LEGGE le
+musiche, il blitter pero' SCRIVE anche le immagini, e cosi' via).
+Esistono vari canali DMA, ognuno dedicato ad un particolare scopo, vediamoli:
+
+1) DMA COPPER:	 Attraverso questo canale il copper legge la COPPERLIST.
+		 Se viene disabilitato la copperlist non viene piu' letta,
+		 di conseguenza spariscono sia i bitplane, che gli sprite,
+		 che le eventuali sfumature fatte modificando il colore di
+		 sfondo varie volte mettendo dei WAIT in copperlist.
+		 In pratica lo schermo rimane di colore unito, del colore
+		 COLOR0. In questo caso si puo' cambiare il colore dello
+		 schermo solo col processore, con "MOVE.W #xxx,$dff180".
+
+2) DMA SPRITE:	 Questo canale esegue il trasferimento delle strutture sprite,
+		 quelle puntate nei registri SPRxPT in copperlist.
+		 Abbiamo comunque gia' visto come sia possibile visualizzare
+		 sprites scrivendo direttamente nei registri SPRxDAT, facendo
+		 manualmente il lavoro del DMA. Disabilitando il solo canale
+		 del DMA SPRITE, spariscono gli sprite come se fossero puntati
+		 a zero, e rimangono sullo schermo i bitplane e le sfumature
+		 ottenute con i WAIT e MOVE della copperlist. Da notare che
+		 se viene disattivato il DMA BITPLANE, anche tenendo il DMA
+		 SPRITE attivo gli sprite spariscono.
+
+3) DMA BITPLANE: Disabilitando questo canale i bitplane puntati nei BPLxPT
+		 non vengono piu' visualizzati, in compenso, pero', se
+		 e' attivo il canale DMA del copper le eventuali sfumature
+		 fatte col COLOR0 vengono visualizzate. Spegnere questo
+		 canale puo' equivalere a mettere ZERO bitplanes nel BPLCON0,
+		 ossia il "dc.w $100,$200" in copperlist.
+		 Da notare che se viene disabilitato il DMA BITPLANE, gli
+		 sprites spariscono assieme ai bitplane, anche se il canale
+		 DMA SPRITE e' attivo. Questo succedeva anche quando mettevamo
+		 zero bitplanes nel BPLCON0.
+
+4) DMA DISCO:	 Serve per il trasferimento dei dati dal drive alla memoria
+		 CHIP in fase di lettura o scrittura.
+
+5) DMA AUDIO1	 Si tratta di 4 canali separati che controllano le 4 voci
+   DMA AUDIO2	 stereo dell'Amiga. Per esempio, per emettere un suono dalla
+   DMA AUDIO3	 voce 1, occore aprire il canale DMA AUDIO1, e per rendere
+   DMA AUDIO4	 muta tale voce basta richiudere tale canale DMA. Ovviamente
+   		 i 4 canali sono sempre chiusi quando l'Amiga tace, ad esempio
+   		 quando si utilizza il WorkBench senza musiche di sottofondo.
+
+6) DMA BLITTER:	 Questo DMA si occupa degli accessi in lettura e scrittura
+		 del blitter. Analizzeremo i canali DMA del blitter nella
+		 lezione dedicata a questo processore.
+
+Ma come viene spartito il tempo di accesso alla memoria tra il processore e
+i chip custom? Dipende molto dalla risoluzione video e da quali canali sono
+abilitati. In pratica meno canali sono accesi e piu' vanno veloci il 68000 e
+gli altri CHIP in funzione.
+Vediamo il rapporto tra risoluzione video e DMA: l'immagine video e' fatta
+di linee raster, cioe' di linee disegnate dal pennello elettronico, che si
+chiama, appunto, raster. Sappiamo gia' come attendere una data linea verticale
+leggendo il $dff006 (VHPOSR), oppure con la copperlist tramite un WAIT.
+Ebbene, in ogni linea raster sono possibili 227,5 accessi alla memoria, e il
+DMA ne utilizza solo 225. Un ciclo di accesso alla memoria, se vi interessa,
+ha la durata di 0,00000028131 secondi in uno schermo 320x256 PAL a 50Hz.
+Dato che il 68000 non farebbe in tempo ad accedere alla memoria ogni ciclo di
+BUS, gli sono concessi accessi solo durante i cicli pari, dunque 113 volte per
+linea raster. Il problema e' che anche il Blitter ed il Copper possono
+accedere nei cicli pari, rubando cicli al povero 68000.
+I Cicli dispari sono utilizzati invece dal gestore DMA per gli accessi AUDIO,
+DISCO, SPRITE.
+Riassumendo, ci sono 227/228 cicli per linea raster, divisi in cicli pari e
+cicli dispari. Nei 113 cicli dispari possono accedere alla memoria CHIP solo
+l'AUDIO, il DISCO, e gli SPRITE, a turno. Nei 113 cicli pari possono accedere
+alla memoria IL BLITTER, il COPPER e il 68000, a turno, dove pero' il povero
+68000 ha poca priorita'.
+Capirete che se il blitter DMA e' disattivato, il 68000 potra' accedere alla
+memoria piu' spesso, avendo piu' cicli pari liberi.
+Considerate che il DMA copper ha priorita' sul DMA BLITTER, il quale a sua
+volta ha priorita' sul 68000, che farebbe meglio a lavorare in FAST RAM.
+Infatti se il codice che il 68000 sta eseguendo e' in FAST RAM anziche' in
+CHIP RAM, il processore non subisce il minimo rallentamento. E' per questo
+che conviene mettere il codice in fast ram con le SECTION CODE.
+Facciamo un esempio: se il copper stesse occupando il bus, sia il blitter
+che il 68000 dovrebbero attendere il prossimo ciclo pari. Il problema e'
+che, mentre con una risoluzione di 320x256 LOWRES a 6 bitplanes il 68000 deve
+concedere "solo" la meta' dei cicli pari al copper per visualizzare i 6
+bitplanes, totalizzandone 56 per linea, nel caso di un 640x256 HIRES a 16
+colori, ossia 4 bitplanes, il copper "ruba" quasi tutti i cicli pari al 68000,
+di conseguenza il programma rallenta (se non c'e' FAST RAM sul computer).
+Gli accessi DMA durante la linea raster seguono un preciso schema: abbiamo
+visto che i cicli pari sono spartiti tra il COPPER, il BLITTER e il 68000.
+Nel caso dei cicli dispari, gli accessi per DISCO,AUDIO,SPRITE e BITPLANE
+seguono questo ordine: dalla linea orizzontale $7 alla $c avvengono gli accessi
+al DMA DISCO, dalla linea $D alla $14 quelli AUDIO, dalla $15 alla $34 quelli
+SPRITE, infine dalla $35 alla $e0 quelli per i BITPLANE.
+Riassumiamo:
+
+	     - MAPPA DEGLI ACCESSI DMA IN OGNI LINEA RASTER - 
+
+CICLI PARI: Sono 113, e sono spartiti tra Copper, Blitter e 68000, dove
+	    il copper ha la priorita' maggiore, per cui se siamo in una
+	    risoluzione alta, es. 640x256 a 4 bitplanes, il 68000 non
+	    puo' accedere quasi mai alla memoria, causando un rallentamento
+	    molto evidente. L'unico rimedio e' porre il codice in fast ram,
+	    per cui non ci sono rallentamenti al processore. Tra l'altro nei
+	    processori 68020 e superiori il codice in fast ram e' sempre
+	    molto piu' veloce di quello in CHIP RAM.
+
+CICLI DISPARI: Sono 113, e sono spartiti tra Audio, Disco e Sprite in questo
+	       ordine:
+			linea orizzontale:
+
+			$07 - $0C	Accesso al DMA DISCO
+			$0d - $14	Accesso ai 4 canali DMA AUDIO
+			$15 - $34	Accesso agli 8 canali DMA SPRITE
+			$35 - $e0	Accesso ai bitplane in memoria
+
+
+In realta' ai fini della programmazione non serve sapere questi particolari
+tecnici, ma possono far capire come sia importante fare economia di canali
+DMA per raggiungere la massima velocita' operativa.
+Se per esempio in una vostra produzione avete una schermata in HAM o in HIRES
+nella parte alta dello schermo, mentre sotto fate girare altre cose in bassa
+risoluzione, considerate che per il periodo dalla prima linea alla fine della
+schermata "impegnativa" come DMA (es. hires a 16 colori) sia il processore che
+il blitter subiscono rallentamenti, e potrebbero non farcela nel tempo rimasto
+sotto la figura. Per acquistare velocita' potreste innanzitutto attivare i
+16 colori solo dove effettivamente servono, esempio:
+
+
+----------- inizio schermata, BPLCON0 settato per 16 colori HIRES
+\ spazio NERO
+/
+ *** ###***  ##***##  ##**  ##* #* # # # *#*#       ### * ***#*##
+ *** ###***  ##***##  ##**  ##* #* # # # *#*#       ### * ***#*## > FIGURA
+ *** ###***  ##***##  ##**  ##* #* # # # *#*#       ### * ***#*##
+\ spazio NERO
+/
+----- bplcon0 settato per risuluzione minore
+
+ **
+				**	> PALLINE E CUBETTI 3d ROTANTI
+		**
+----- spazio nero
+
+
+----- fine schermata, dc.w $ffff,$fffe
+
+In questo caso vedete la cronaca di una copperlist. Supponiamo che alla
+routine 3d sotto la figura manchi proprio poco per essere eseguita in tempo
+per il cinquantesimo. Basta cambiare leggermente la copperlist e la routine
+potrebbe filare ad un fotogramma al secondo, vediamo cosa fare:
+
+COPPERLIST
+	dc.w	$100,$200	; 0 bitplanes nella zona "NERA" iniziale
+	dc.w	$3507,$fffe	; aspetta la linea dove comincia la figura
+	dc.w	$100,$c200	; attiva hires 16 colori
+	dc.w	$a007,$ffe	; aspetta linea dove finisce la figura
+	dc.w	$100,$200	; 0 bitplanes nella zona NERA sotto la pic
+	dc.w	$b007,$fffe	; aspetta la fine della zona nera
+	dc.w	$100,$3200	; 3 bitplanes lowres per routine vettoriale
+	dc.w	$e007,$fffe	; sotto questa linea non arrivano le figure
+	dc.w	$100,$200	; quindi spegnamo per bene il dma BITPLANE
+	;	e magari facciamo una sfumatura col COLOR0 e i WAIT,
+	;	per riempire la parte inferiore del monitor senza impegnare
+	;	il DMA
+	dc.w	$ffff,$fffe
+
+
+Per esagerare, potremmo anche restringere la finestra video dove le figure
+non riempiono in senso orizzontale tutto lo schermo. Facciamo questo caso:
+abbiamo un solido 3d che ruota al centro dello schermo, e abbiamo gia' chiuso
+il dma bitplane sopra e sotto di esso:
+
+---------- inizio schermo, dc.w $100,$200
+
+
+
+----------------   /\	---- inizio solido, dc.w $100,$3200
+		  / |\
+		 /  | \
+		/   |  \
+		\___|__/
+--------------------------- fine solido, dc.w $100,$200
+
+------------- fine schermo, dc.w $ffff,$fffe
+
+
+Come vedete, il solido ruota al centro dello schermo, e non occupa mai
+le zone di estrema destra ed estrema sinistra dello schermo. A questo punto,
+potremmo anche agire sul DIWStrt e DIWStop per "chiudere" un poco lo schermo,
+rendendolo largo solo il necessario, poi potremmo "riallargarlo" quanto serve
+per eventuali disegni piu' larghi sopra o sotto di esso:
+
+
+	dc.w	$8E,$2c81	; DiwStrt LARGO normale per figura larga
+	dc.w	$90,$2cc1	; DiwStop LARGO normale
+
+	WAIT
+
+	dc.w	$8E,$2c91	; DiwStrt ristretto nella zona del solido
+	dc.w	$90,$2cb1	; DiwStop
+
+
+Infatti restringendo la finestra video risparmiamo tempo DMA, dato che il
+trasferimento dei bitplane avviene solo nella zona interna alla finestra
+video definita.
+
+Chiudiamo questa parentesi, e vediamo come aprire e chiudere questi canali.
+Nell' Amiga esiste un registro hardware ($dff096), denominato DMACon
+(=DMA Controller), che gestisce l' accensione di ogni singolo canale DMA.
+Il DMAConW ($dff096) serve solo per SCRIVERE eventuali modifiche, mentre il
+DMAConR ($dff002) serve solamente per LEGGERE i vari bit.
+Ecco la mappa dei 2 registri $dff096 e $dff002: (uguali ma uno per lettura e
+uno per scrittura). Il registro e' BITMAPPED come il $dff100 (BPLCON0) per
+cui conta quali bit sono accesi o spenti, singolarmente:
+
+(NOTA: i bits 13 e 14 sono a sola lettura (R), il 15 a sola scrittura (W))
+
+DMACON ($dff096/$dff002)
+
+bit- 15 DMA Set/Clear		(W)	(si puo' solo scrivere dal $dff096)
+     14 BlitBusy (o BlitDone)	(R)	(si puo' solo leggere dal $dff002)
+     13 Blit Zero		(R)	(si puo' solo leggere)
+     12 X			(non usato)
+     11 X			(non usato)
+     10	BlitterNasty (BlitPri)  (R/W)	(R/W = Sia leggibili che scrivibili)
+      9	Master	(DmaEnable)	(R/W) - "interruttore generale"
+      8	DMA BitPlane (RASTER)	(R/W) - detto anche BPLEN
+      7 DMA del Copper		(R/W) - detto anche COPEN
+      6 DMA del Blitter		(R/W) - detto anche BLTEN
+      5 DMA degli Sprite	(R/W) - detto anche SPREN
+      4 DMA dei Dischi		(R/W) - detto anche DSKEN
+      3 DMA Audio3 (voce 4)	(R/W) - ossia AUD3EN
+      2 DMA Audio2 (voce 3)	(R/W) - ossia AUD2EN
+      1 DMA Audio1 (voce 2)	(R/W) - ossia AUD1EN
+      0 DMA Audio0 (voce 1)	(R/W) - ossia AUD0EN
+
+*SET/CLR
+-Il bit 15 e' importantissimo: se esso e' acceso allora i bit settati a 1 in
+ scrittura nel $96 servono ad accendere i relativi DMA, se il bit 15 e' a 0,
+ allora gli altri bit a 1 nel registro servono a spegnere i relativi canali.
+ Mi spiego meglio: per accendere o spegnere uno o piu' canali e' comunque
+ necessario impostare ad 1 i relativi bit; quello che determina se quei
+ canali devono venir spenti od accesi e' il bit 15: se e' ad 1 si accendono,
+ mentre a 0 si spengono (sempre indipendetemente dal loro precedente stato).
+ Diciamo che si sceglie su quali OPERARE, poi si decide se spegnere(0) od
+ accendere(1) in base al bit 15.
+ Facciamo un esempio:
+		;5432109876543210
+	move.w #%1000000111000000,$dff096	; sono ACCESI i bits 6,7 e 8
+		;5432109876543210
+	move.w #%0000000100100000,$dff096	; sono SPENTI i bits 5 e 8.
+
+
+N.B.: I BIT 14-10 RIGUARDANO IL BLITTER E I CICLI DI CLOCK DELLA CHIP,
+      ARGOMENTO CHE VERRA' AMPIAMENTE DISCUSSO IN SEGUITO.
+      IN QUESTA LEZIONE NON SARANNO USATI.
+
+*BlitBusy
+-Il bit 14 e' di sola lettura (lo si puo' leggere SOLO dal $dff002), e serve a
+ sapere se il blitter sta "blittando" (ossia lavorando) in quel momento.
+ Questo bit e' utilizzato per sapere se il blitter sta lavorando o meno,
+ infatti, come diremo piu' avanti nel corso, non e' possibile modificare i
+ registri del blitter mentre sta ancora blittando... anzi, e' possibile ma
+ succederebbe il disastro ! Dunque bisogna attendere che questo bit sia a 0 con
+ un btst prima di riutilizzare il blitter.
+
+*Blit Zero
+-Il bit 13 si imposta solo quando l' esito di una blittata e' 0, ovvero,
+ quando la RAM modificata con una qualsiasi blittata e' stata interamente
+ impostata a 0. Puo' verificarsi in molte situazioni, anche se torna comodo
+ leggere questo bit solo in rare circostanze, per la verita'(x es.: controllare
+ se due oggetti -bob- collidono senza modificare la RAM), ma approfondiremo
+ in seguito.
+
+-I bit 12-11 non sono utilizzati dalla macchina, per il momento.
+
+*BlitPri
+-Il bit 10, se impostato, fa si che il blitter utilizzi tutti i cicli di bus
+ della chip disponibili, "rubando" anche quei pochi che sono disponibili al
+ povero 68000. Se questo accede alla Fast od alla ROM non verra' rallentato,
+ altrimenti verra' addirittura fermato nell' accedere alla Chip.
+ In pratica quando questo bit e' a 1, il blitter ha una piena, anziche'
+ completa, priorita' sul 680x0
+
+*DmaEn/Master
+-Il bit 9 e' l' interruttore generale: e' necessario impostarlo ad 1 per
+ far funzionare i DMA dei vari dispositivi. Lo si puo' spegnere ad esempio per
+ disabilitare momentaneamente tutti i canali senza ricorrere all' azzeramento
+ dell' intero registro.
+
+-I bit 8-0 servono per accendere/spegnere i canali DMA dei vari dispositivi.
+
+In sostanza solo i bit 10-0 sono switchabili (scambiabili) usando il bit 15.
+Per esempio, ora proviamo ad accendere solo i DMA dei plane, del copper e del
+blitter. Per fare questo, prima e' necessario resettare il registro per
+spegnere tutti i canali, disabilitando quindi gli eventuali DMA indesiderati;
+poi si settano i DMA voluti:
+
+	move.w	#$7fff,$dff096			; $7fff = %0111111111111111
+						; ossia: tutto spento: il
+						; bit 15 e' a ZERO, dunque
+						; tutti gli 1 significano
+						; in questo caso SPENGI.
+		; 5432109876543210
+	move.w	#%1000001111000000,$dff096	; bits 6,7,8,9 settati, ossia
+						; BLITTER,COPPER,BITPLANE
+						; ed interruttore generale
+						; bit 15 ad 1, dunque tutti
+						; gli 1 significano ACCENDI
+
+Il valore $7fff e' %0111111111111111, quindi vengono resettati tutti i DMA-bit.
+Poi vengono impostati i DMA del Copper, dei Plane e del blitter, piu' quello
+master, grazie al bit 15 impostato ad 1 !
+
+IL FUNZIONAMENTO DI QUESTO IMPORTANTISSIMO REGISTRO E' ANALOGO A QUELLO DEI
+REGISTRI 'INTENA' ED 'INTREQ'-, DUNQUE NON PROSEGUITE FINO A CHE NON AVETE
+DUBBI SULLA FUNZIONE DEL BIT 15 COME "ACCENDI/SPEGNI" BIT.
+
+Nei listati che abbiamo visto fino ad ora non sono stati mai usati i registri
+$dff096 (DMACON) e $dff002 (DMACONR), perche' abbiamo dato per scontato che
+i canali DMA del copper, dei bitplanes e degli sprites fossero abilitati.
+In effetti, se al momento dell'esecuzione del programma si puo' vedere lo
+schermo dell'asmone, significa che sia il dma COPPER che quello BITPLANE e'
+abilitato. La presenza della freccia puntatore indica che essa e' visualizzata
+con il DMA SPRITE. Ma programmando a livello hardware non si possono fare
+compromessi, non si deve "sperare" che sia tutto come vogliamo. Abbiamo gia'
+visto come sia importante settare TUTTI i registri della copperlist come il
+BPL1MOD, il DIWSTART/STOP eccetera, per evitare di trovarseli con valori
+stani. Lo stesso faremo con i canali DMA: ne salveremo lo stato all'inizio
+della startup, poi li spegneremo tutti e accenderemo solo quelli desiderati,
+e alla fine rimetteremo i canali DMA nello stato iniziale, proprio come
+facciamo per la copperlist.
+Abbiamo detto che per leggere lo stato del DMACON occorre leggere dal DMACONR,
+cioe' il $dff002. Una routine di "salvataggio" potrebbe essere:
+
+	move.w	$dff002,OLDDMA	; DMACONR - salvo lo stato del DMA
+
+Ora possiamo cambiarlo a nostro piacimento agendo sul $dff096, il registro per
+la scrittura:
+
+	move.w	#$7fff,$dff096	; DMACON - azzero tutti i canali
+
+		; 5432109876543210
+	move.w	#%1000001110100000,$dff096 ; Abilito Copper,Bitplane e Sprite
+
+Niente di piu' facile. Ora dobbiamo rimettere a posto il vecchio valore, prima
+dell'uscita. Pero' ATTENZIONE! Non possiamo mettere OLDDMA diretammente nel
+DMACON ($dff096) cosi' come lo abbiamo letto dal DMACONR ($dff002), perche'
+il bit 15, quello SET/CLR, e' di sola scrittura e in lettura e' sempre a zero,
+dunque rimettendo il valore col bit 15 azzerato, i bit settati anziche'
+accendere i canali DMA il spegnerebbero eventualmente. Serve dunque prima
+di settare il bit 15 del valore salvato in OLDDMA, in questo modo i bit
+settati varrebbero come ACCENSIONE. Ma come fare per settare il bit 15 di una
+word?? Ci sono infiniti modi. Uno sarebbe quello di usare l'istruzione BSET,
+ad esempio:
+
+	move.w	$dff002,d0	; Salvo il DMACONR in d0
+	bset.l	#15,d0		; setto il bit 15 (SET/CLR)
+	move.w	d0,OLDDMA	; e salvo il valore in OLDDMA
+	...
+	bsr.w	routines
+	...
+	move.w	#$7fff,$dff096		; azzero tutti i canali
+	move.w	OLDDMA(PC),$dff096	; riattivo solo quelli che erano
+	rts				; attivi all'inizio.
+
+Altrimenti si puo' usare l'istruzione OR. Ricordiamo il suo offetto sui bit:
+
+ 0 OR 0 = 0
+ 0 OR 1 = 1
+ 1 OR 0 = 1
+ 1 OR 1 = 1
+
+L'esempio di prima diventerebbe:
+
+	or.w	#$8000,OLDDMA	; $8000 = %1000000000000000, ossia bit 15 ad 1
+
+Come vedete dalla tabella sopra, i bit azzerati lasciano invariata la
+destinazione, in questo caso i primi 14 bit sono azzerati, dunque i primi 14
+bit di OLDDMA dopo tale OR rimangono invariati (0 OR 0=0, 0 OR 1=1).
+Essendo il bit 15 settato, abbiamo che 1 OR 0=1, dunque viene settato il
+bit 15 e rimangono invariati gli altri 14 bit. Lo stesso che col BTST #15,d0.
+Nella startup conviene usare l'OR, perche' sono salvati anche altri registri
+oltre al DMACON. Si tratta di INTENA ($dff09a in scrittura e $dff01c in
+lettura), INTREQ ($dff09c in scrittura e $dff01e in lettura) e ADKCON ($dff09e
+in scrittura e $dff010 in lettura). Per ora posso solo anticiparvi che tali
+registri sono botmapped come il DMACON, e funzionano analogamente con il bit
+15 che serve da SET/CLR. L'INTENA e L'INTREQ servono per gli interrupt, mentre
+ADKCON per compiti vari per il DISK DRIVE e l'AUDIO. Vedremo come usare questi
+registri quando saranno trattati gli interrupt e l'audio, per ora salviamone
+lo stato assiame al DMACON. Vediamo ora come salvare questi 4 registri:
+
+	LEA	$DFF000,A5		; Base dei registri CUSTOM per Offsets
+	MOVE.W	$2(A5),OLDDMA		; DMACONR - Salva lo status del DMA
+	MOVE.W	$1C(A5),OLDINTENA	; Salva il vecchio status di INTENA
+	MOVE.W	$10(A5),OLDADKCON	; Salva il vecchio status di ADKCON
+	MOVE.W	$1E(A5),OLDINTREQ	; Salva il vecchio status di INTREQ
+
+Ora dobbiamo settare il bit 15 di tutte e 4 le word contrassegnate dalle
+label OLDDMA,OLDINTENA,OLDADKCON,OLDINTREQ, per poter ripristinare il valore
+all'uscita. Considerate che le 4 label sono messe consecutivamente:
+
+OLDDMA:			; Vecchio status DMACON
+	dc.w	0
+OLDINTENA:		; Vecchio status INTENA
+	dc.w	0
+OLDADKCON:		; Vecchio status ADKCON
+	DC.W	0
+OLDINTREQ:		; Vecchio status INTREQ
+	DC.W	0
+
+Dunque entra in gioco l'OR. se per una word basta fare un OR.w #$8000,dest
+possiamo sistemare con un solo OR 2 word, con un OR.L #$80008000,dest!!!
+In questo caso per 4 word bastano un paio di questi OR:
+
+	MOVE.L	#$80008000,d0		; Prepara la maschera dei bit alti
+					; da settare nelle word dove sono
+					; stati salvati i registri
+	OR.L	d0,OLDDMA	; Setta il bit 15 di tutti i valori salvati
+	OR.L	d0,OLDADKCON	; dei registri hardware, indispensabile per
+				; rimettere tali valori nei registri.
+
+Ecco che con poche istruzioni abbiamo salvato e "settato" tutti e 4 i registri
+che andremo ad azzerare subito dopo:
+
+	MOVE.L	#$7FFF7FFF,$9A(a5)	; DISABILITA GLI INTERRUPTS & INTREQS
+	MOVE.L	#0,$144(A5)		; SPR0DAT - ammazza il puntatore!
+	MOVE.W	#$7FFF,$96(a5)		; DISABILITA I DMA
+
+A questo punto possiamo abilitare i soli canali DMA che ci servono.
+All'uscita bastera' azzerare tutti i registri e ripristinarli:
+
+	MOVE.W	#$7FFF,$96(A5)		; DISABILITA TUTTI I DMA
+	MOVE.L	#$7FFF7FFF,$9A(A5)	; DISABILITA GLI INTERRUPTS & INTREQS
+	MOVE.W	#$7fff,$9E(a5)		; Disabilita i bit di ADKCON
+	MOVE.W	OLDADKCON(PC),$9E(A5)	; ADKCON 
+	MOVE.W	OLDDMA(PC),$96(A5)	; Rimetti il vecchio status DMA
+	MOVE.W	OLDINTENA(PC),$9A(A5)	; INTENA STATUS
+	MOVE.W	OLDINTREQ(PC),$9C(A5)	; INTREQ
+
+Niente di piu' semplice! Ora abbiamo il completo controllo dei canali DMA, e
+siamo sicuri che possiamo attivarli e disattivarli come ci pare, tanto
+all'uscita vengono ripristinati.
+
+Per finire la nostra startup, potremmo definire un EQUATE. Ricordate cosa sono
+gli EQUATES? le direttive assembler EQU o =, che definiscono delle uguaglianze
+tra delle parole inventate a piacere e dei numeri, es:
+
+CANE	EQU	10
+GATTO	EQU	20
+
+	MOVE.L	#CANE,d0	; viene assemblato come MOVE.L #10,d0
+	MOVE.L	#GATTO,d1	; assemblato come MOVE.L #20,d1
+	ADD.L	d0,d1		; RISULTATO = 30
+	rts
+
+Le equates sono simili alle label, ma non terminano con i :. Al posto di EQU
+si puo' usare l'uguale (=):
+
+CANE	=	10
+
+Potremmo definire un EQU per i canali DMA da settare:
+
+		;5432109876543210
+DMASET	EQU	%1000001110000000	; copper e bitplane DMA abilitati
+;		 -----a-bcdefghij
+
+;	a: Blitter Nasty   (Per ora non ci interessa, lasciamolo a zero)
+;	b: Bitplane DMA	   (Se non e' settato, spariscono anche gli sprite)
+;	c: Copper DMA	   (Azzerandolo non e' eseguita nemmeno la copperlist)
+;	d: Blitter DMA	   (Per ora non ci interessa, azzeriamolo)
+;	e: Sprite DMA	   (Azzerandolo spariscono solo gli 8 sprite)
+;	f: Disk DMA	   (Per ora non ci interessa, azzeriamolo)
+;	g-j: Audio 3-0 DMA (Azzeriamo lasciando muto l'Amiga)
+
+Come vedete i bit 15 e il 9 devono essere SEMPRE SETTATI, dato che uno e' il
+SET/CLR e l'altro il Master, l'interruttore generale.
+Nel listato si puo' mettere:
+
+	MOVE.W	#DMASET,$96(a5)		; DMACON - abilita bitplane e copper
+
+In questo modo possiamo avere all'inizio del listato l'EQU da modificare con
+sotto un breve sommario di aiuto con il significato dei bit.
+
+Ma vediamo la startup, caricate in un buffer di testo Lezione8a.s e studiatelo.
+Nel commento finale sono riportate alcune note su certe modifiche minori.
+
+   З                                                                З
+   І                          . .__                                 :
+   :                          З^ЗЏЏ\                              __Ё__
+_ _|__  _______ ____________  /\    \______________ _________ ____\  //____ _
+Џ Џ|ЏЏ  ЏЏЏЏЏЏЏ ЏЏЏЏЏЏЏЏЏЏЏЏ\/  \    ЏЏЏЏЏЏЏЏЏЏЏЏЏЏ ЏЏЏЏЏЏЏЏЏ ЏЏЏЏЏ\//ЏЏЏЏЏ Џ
+   :                  _ј ,       \__. .                             І
+   І                 //\/         ЏЏЗ^З   /\__. .                   :
+   З                '/\                  /  ЏЏЗ^З                   :
+_ _|___ ____________/ /_____ _________  /     /\________ ______ ____|______ _
+Џ Џ|ЏЏЏ ЏЏЏЏЏЏЏЏЏЏЏЏЏ ЏЏЏЏЏЏ ЏЏЏЏЏЏЏЏЏ\/     /  ЏЏЏЏЏЏЏЏ ЏЏЏЏЏЏ ЏЏЏЏ|ЏЏЏЏЏЏ Џ
+   І                            .    . .__  /                       З
+   :                   "COi! аe$ІgN" З^ЗЏЏ\/                        :
+   .                                                                З
+   З                                                                .
+   .                                                                .
+
+Ora che abbiamo la startup "universale", possiamo anche metterla a parte in
+un file ed includerla all'inizio dei prossimi listati tramite la direttiva
+INCLUDE, che abbiamo gia' usato per includere la routine musicale.
+Bastera' iniziare ogni listato con un:
+
+	Section	UsoLaStartUp,CODE
+
+*****************************************************************************
+	include	"startup1.s"	; con questo include mi risparmio di
+				; riscriverla ogni volta!
+*****************************************************************************
+
+Da notare che Startup1.s e' la startup senza il SECTION, per cui dobbiamo
+mettere la direttiva SECTION nome,CODE o CODE_C ogni volta prima dell'include.
+La Startup fa un "BSR.S START", per cui iniziaremo il listato con:
+
+START:
+	MOVE.W	#DMASET,$96(a5)		; DMACON - abilita bitplane, copper
+					; e sprites.
+
+	move.l	#COPPERLIST,$80(a5)	; Puntiamo la nostra COP
+	move.w	d0,$88(a5)		; Facciamo partire la COP
+	move.w	#0,$1fc(a5)		; Disattiva l'AGA
+	move.w	#$c00,$106(a5)		; Disattiva l'AGA
+	move.w	#$11,$10c(a5)		; Disattiva l'AGA
+
+Considerate che in a5 e' presente $dff000. In questo caso lo ho sfuttato.
+
+Sembrerebbe una startup perfetta, ma gli manca ancora la ciliegina sopra.
+Questa ciliegina e' la possibilita' di lanciare il programma da icona del
+WorkBench senza problemi. Infatti, fino a che facciamo partire da cli/shell
+i nostri programmi basta questa startup, ma nel caso si vogliano disegnare
+delle icone per farli partire da WorkBench col doppio click del mouse occorre
+aggiungere qualche istruzione. E' solo una formalita' burocratica, ma se non
+si fa con programmi grandi, che allocano pure la memoria, puo' capitare che
+all'uscita non tutta la memoria sia liberata, o anche peggio.
+Ecco cosa occorre aggiungere all'inizio:
+
+ICONSTARTUP:
+	MOVEM.L	D0/A0-A1/A4/A6,-(SP)	; salva i registri nello stack
+	SUBA.L	A1,A1
+	MOVEA.L	4.w,A6
+	JSR	-$126(A6)	; _LVOFindTask(a6)
+	MOVEA.L	D0,A4
+	TST.L	$AC(A4)		; pr_CLI(a4) stiamo eseguendo dal CLI?
+	BNE.S	FROMCLI		; se si, salta le formalita'
+	LEA	$5C(A4),A0	; pr_MsgPort
+	MOVEA.L	4.W,A6		; Execbase in a6
+	JSR	-$180(A6)	; _LVOWaitPort
+	LEA	$5C(A4),A0	; pr_MsgPort
+	JSR	-$174(A6)	; _LVOGetMsg
+	LEA	RETURNMSG(PC),A0
+	MOVE.L	D0,(A0)
+FROMCLI:
+	MOVEM.L	(SP)+,D0/A0-A1/A4/A6	; ripristina i registri dallo stack
+	BSR.w	MAINCODE	; esegui il nostro programma
+	MOVEM.L	D0/A6,-(SP)
+	LEA	RETURNMSG(PC),A6
+	TST.L	(A6)		; Eravamo partiti dal CLI?
+	BEQ.S	ExitToDos	; se si, salta le formalita'
+	MOVEA.L	4.w,A6
+	JSR	-$84(A6)	; _LVOForbid - nota! Non serve il permit
+	MOVEA.L	RETURNMSG(PC),A1
+	JSR	-$17A(A6)	; _LVOReplyMsg
+ExitToDos:
+	MOVEM.L	(SP)+,D0/A6		; exit code
+	MOVEQ	#0,d0
+	RTS
+
+RETURNMSG:
+	dc.l	0
+
+Non sto a commentare approfonditamente le chiamate alle librerie del sistema
+operativo, vi basti sapere che sono queste le formalita' di cui parlavo.
+Se eseguite da workbench un programma che non ha questo codice all'inizio,
+il problema piu' grosso e' quello che all'uscita da tale programma la
+memoria che ha occupato non viene liberata!!!
+Come potete notare, all'inizio si controlla se il programma e' stato eseguito
+dal CLI o dal WorkBench, controllando un apposito flag di sistema.
+Se il programma e' stato lanciato dal CLI, vengono saltate le formalita' da
+seguire in caso di esecuzione da WB. Altrimenti,tali formalita' sono eseguite.
+Anziche' unire questo pezzo all'altra startup, conviene tenerla a parte, in
+modo da scegliere se includerlo o meno, dato che alcuni assemblatori, inclusa
+le versione di ASMONE modificato del corso, al momento dell'esecuzione causano
+un loop infinito, dato che "sembrerebbe" caricato da WorkBench, ma poi al
+momento dell'esecuzione delle "formalita'" sembrerebbe il contrario. Altre
+versioni di Asmone o altri assemblatori invece eseguono tranquillamente questo
+codice, ma per compatibilita' con ogni assemblatore si preferisce metterlo a
+parte:
+
+;	Include	"DaWorkBench.s"	; togliere il ; prima di salvare con "WO"
+
+In questo modo, durante gli assemblaggi e le prove con "J" non lo includiamo,
+mentre prima di salvare l'eseguibile finale con "WO" lo facciamo includere.
+
+Caricate la Lezione8b.s, il primo listato che utilizza la startup universale
+inclusa con INCLUDE. Comprende l'utilizzo sia dei bitplane che degli sprite,
+per cui potete fare delle prove per verificare l'abilitazione o meno dei
+canali DMA.
+__   __            __            __     __            __            __   __
+ /\_/_/\__   __   / /\__   __   / /\   /\ \   __   __/\ \   __   __/\_\_/\
+/ / \_\/_/\_/_/\_/_/ / /\_/_/\_/_/  \_/  \_\_/\_\_/\ \ \_\_/\_\_/\_\/_/ \ \_
+\/     \_\/ \_\/ \_\/_/ / \_\/ \ \  / \  / / \/_/ \ \_\/_/ \/_/ \/_/     \/_
+-:-----:------------\_\/--------\_\/---\/_/--------\/_/---------------------
+
+Vi siete spaventati trovando la NUOVA routine che attende la linea verticale?
+Ebbene, non c'e' nulla di mostruoso, invece e' molto migliore.
+Analiziamo la vecchia "routine":
+
+	cmp.b	#$xx,$dff006	; VHPOSR
+
+Ebbene, non facciamo che controllare il byte $dff006, che contiene la posizione
+verticale del pennello elettronico, i bit da 0 a 7, ossia da $00 a $ff.
+Ma come sapete dalla gestione dei WAIT in copperlist, il pennello elettronico
+supera la linea $FF, che in realta' non e' che la 200 in uno schermo normale.
+Per raggiungere le posizioni oltre il $FF con i WAIT del COPPER abbiamo visto
+che dobbiamo aspettare la fine di tale zona:
+
+	dc.w	$FFDF,$FFFE	; aspetta il limite della zona NTSC
+
+Dopodiche' il contatore riparte da $00
+
+	dc.w	$0007,$FFFE	; aspetta linea $100
+	dc.w	$0107,$FFFE	; aspetta la linea $FF+$01=$101
+
+Fino a $38. Ebbene, anche il byte in $dff006 si comporta in questo modo: una
+volta raggiunta la posizione $ff riparte da $00, indicando pero' $100, e
+continua fino a $138 (con $38), dopodiche' riparte da $00, lo ZERO vero, per
+poi arrivare nuovamente a $ff, per fare gli altri $38, eccetera.
+E' per questo che nei listati si attende sempre la linea $FF, o la $80, perche'
+attendere la linea $00 o la linea $20 col $dff006 avrebbe significato eseguire
+la routine 2 volte per fotogramma, in quanto $00 si verifica alla linea $00
+e alla linea $100.
+Ma allora, come fare per aspettare tranquillamente le prime 38 linee, e le
+linee dopo la $ff? Insomma, serve una routine che aspetti senza errori una
+qualsiasi delle 312 linee della scansione.
+Non e' difficile, dato che il bit ALTO, l'ottavo, si trova molto vicino al
+$dff006, esattamente al $dff005, il byte prima.
+Dobbiamo fare come abbiamo fatto con la posizione verticale degli sprite,
+infatti abbiamo il bit alto a parte.
+In questo caso, pero', non si trova in giro per la memoria, ma proprio prima
+del byte in questione. Analiziamo la situazione:
+
+
+$dff004 byte che ora non ci interessa, contiene il bit LOF per l'interlace
+$dff005 ci interessa! il bit 0 e' il V8, ossia il bit alto della pos. vertic.
+$dff006 ormai lo conosciamo! i bits V7-V0, gli 8 bit bassi della pos. vertic.
+$dff007 contiene la posizione orizzontale (H8-H1). La risoluzione e' 1/160
+	dello schermo. Ora non ci interessa proprio!!!
+
+Il $dff004/$dff005 e' il registro VPOSR, mentre il $dff006/$dff007 e' il VHPOSR
+ogni registro infatti e' lungo una WORD. Possiamo pero' accedere ad essi come
+singoli bytes, in certi casi. Per attendere la linea $100, possiamo fare cosi':
+
+WaitVbl:
+	btst.b	#0,$dff005
+	beq.s	WaitVbl
+
+Questa routine aspetta che il bit alto, il V8, sia settato. Se e' settato
+significa che siamo alla linea $100, o comunque dopo di essa.
+Per fare una routine UNIVERSALE, possiamo fare cosi': (a5=$dff000)
+
+Waity1:
+	MOVE.L	4(A5),D0	; $dff004 e $dff006, ossia VPOSR e VHPOSR
+	LSR.L	#8,D0		; sposta i bit di 8 posizioni a destra
+	AND.W	#%111111111,D0	; Seleziona solo i bit della pos. verticale
+	CMP.W	#300,D0		; linea 300? ($12c)
+	bne.s	Waity1
+
+In questo caso abbiamo copiato $dff004/5/6/7 in d0, poi spostiamo il tutto
+di 8 bit a destra, dato che i primi 8 bit di destra sono occupati dalla
+posizione orizzontale del $dff007 che non ci interessa, portando la posizione
+verticale all'estrema destra. A questo punto, con un AND, selezioniamo solo
+i primi 8 bit, ossia quelli del $dff006 piu' quello alto del $dff005.
+In questo modo abbiamo in d0 il numero reale di linea da 0 a 312!
+Vi ricordo che il comando AND ha questo effetto:
+
+ 0 AND 0 = 0
+ 0 AND 1 = 0
+ 1 AND 0 = 0
+ 1 AND 1 = 1
+
+Infatti AND da come risultato 1 soltanto quando sia il bit del primo operando
+che quello del secondo operando sono ad 1, il comando si potrebbe tradurre
+con "SONO AD 1 SIA IL PRIMO CHE IL SECONDO BIT? SE SI, RISPONDO CON 1, SE NO
+INVECE RISPONDO CON UNO ZERO". Un AND infatti e' utile per azzerare certi bit
+di un numero, nel nostro caso abbiamo azzerato quelli alti:
+
+	AND.W	#%00000000000000000000000111111111,d0
+
+Forse appare piu' chiaro in esadecimale:
+
+	AND.W	#$000001FF,D0	; solo il byte basso piu' il bit 8.
+
+L'unico sconveniente e' che servono ben 4 istruzioni. Vediamo di scrivere una
+routine che ne usi solo 3:
+
+WBLANNY:
+	MOVE.L	4(A5),D0	; VPOSR e VHPOSR - $dff004/$dff006
+	AND.L	#$0001FF00,D0	; Seleziona solo i bit della pos. verticale
+	CMP.L	#$00013000,D0	; wait linea $130 (304)
+	BNE.S	WBLANNY
+
+In questo caso lavoriamo su tutta la long senza spostare (shiftare) i bit.
+Basta ricordarsi che il numero di linea da attendere e' spostato di 2 cifre
+a sinistra. Per esempio, per attendere la linea $FF:
+
+	CMP.L	#$0000ff00,D0	; wait linea $130 (304)
+
+E' decisamente migliore, e piu' veloce. Vi consiglio di usare sempre questa
+routine. Altrimenti, se non vi dispiace "sporcare" un paio di registri in
+piu', ci sarebbe una versione turbizzata, quella presente in Lezione8b.s:
+
+
+	MOVE.L	#$1ff00,d1	; bit per la selezione tramite AND
+	MOVE.L	#$13000,d2	; linea da aspettare = $130, ossia 304
+Waity1:
+	MOVE.L	4(A5),D0	; VPOSR e VHPOSR - $dff004/$dff006
+	ANDI.L	D1,D0		; Seleziona solo i bit della pos. verticale
+	CMPI.L	D2,D0		; aspetta la linea $130 (304)
+	BNE.S	Waity1
+
+Come vedete nella sostanza non cambia nulla, solo che le operazioni sono fatte
+tra registri anziche' tra costanti, e questo e' piu' veloce.
+La velocita' e' importante, perche' se per esempio fate attendere la linea 50
+con la prima routine che abbiamo visto che ha anche l'LSR, quando il processore
+ha finito tutti i test e si e' accorto che siamo alla linea 50, siamo ormai
+alla meta' della linea 50!!
+
+Devo solo consigliarvi di fare attenzione che in a5, o a6, a seconda del
+registro che usate di base, ci sia sempre il $dff000, che non sia cioe'
+sovrascritto da qualche subroutine. Per evitare cio', potete salvare i registri
+col MOVEM come spiegato prima, oppure potete mettere un LEA $dff000,a5 sotto
+il "MOVE.L #$1ff00,d1". Lo stesso vale per i registri d0,d1 e d2, dovete
+essere sicuri che non siano in uso da altri programmi, dato che li modificate.
+
+Come ultima cosa, non attendete mai oltre la linea $138, dato che e' l'ultima,
+o vi si blocchera' la routine in un loop infinito.
+
+Se il video viene settato a frequenza NTSC (azzerando $dff1dc), il limite
+massimo e' la linea $106.
+
+         ииииииииииииииииииииииииииииииииииииииииииииииииииииииииииии
+         ииииииииииииииииииииииииииииииииииииииииииииииииииииииииииии
+         ииии                                                   Эииии
+         ииии          ___                                      Эииии
+         ииии      __ји@**#__                      ____цццц_    [ииии
+         ииии     gиАЏ     А4ц_                __ји@ЄАЈЏЏЏЏЖ&   Ьииии
+         ииии   ,иP          Ќ0ўИ           ,gиЄАЏ          0Q  [ииии
+         ииии   и~  _______    Аи_         _иА   ___цциии,      Ьииии
+         ииии       ииииииииm_   Аи_  _ ,_/иД _цииииииииД      Ьииии
+         ииии       ААЄиииииииQ__  А#_и Iио _Циииииии@А         Эииии
+         ииии      _    `ииииииииц_ ЌЂВ    dииибииииГ           ]ииии
+         ииии     `ицИ   иии1 "ЂиииQ__    ЦиииД ЖиииИ           Ьииии
+         ииии      Vи#_  #ииђ (ц Аииииј  иииА ц) Жии#    ,Ў     ]ииии
+         ииии       и#и_ ЌиииQ___ииииии  Ћиииц__ Jиии   ИиF     Эииии
+         ииии       Ќи_`N_ ЂиииииииВААЏ___ЌА0ииииииии  _иА      [ииии
+         ииии        АиЕиб&_ ЈААА~   Ииииии, Џ~АААА"_.јиЙ       ]ииии
+         ииии          #и ЌиQ_       Ќи' ЌЄА  ___цциЄАиP        Iииии
+         ииии           `W_иP4MјцццццццццццциииЄА"и _иА         ]ииии
+         ииии            Ќии_ 0FЏЏ7#ЏЏЏЌиЏЏЏЏTи   ии@Д          Ьииии
+         ииии             Ќ#иииц._рW___jи____jи_цјиГ            [ииии
+         ииии               Ђ#иFЈАЖи^^Є4иЄЄААЂиии^              [ииии
+         ииии                АЋN__IN_   и___циЛА                [ииии
+         ииии                   А^Є*#ииии@ЄА"            xCz    Iииии
+         ииии                                                   Эииии
+         ииииL__________________________________________________Iииии
+         ииииииииииииииииииииииииииииииииииииииииииииииииииииииииииии
+         ииииииииииииииииииииииииииииииииииииииииииииииииииииииииииии
+
+
+Ora che abbiamo visto l'utilita' delle istruzioni AND/OR/LSR per salvare i
+DMA e per controllare meglio la linea del VBLANK, veniamo a nuovi utilizzi
+di tali istruzioni logiche. Senza dubbio e' il caso di analizzare come fare
+una routine di fade, ossia di dissolvenza di una figura dal nero, sfumando
+via via verso il colore pieno e lucente (e viceversa).
+Innanzitutto vediamo dove dobbiamo operare:
+
+CopColors:
+	dc.w $180,0,$182,0,$184,0,$186,0
+	dc.w $188,0,$18a,0,$18c,0,$18e,0
+	....
+
+In copperlist, dove sono i registri colore. Quello che dobbiamo fare e'
+mettere al posto di quegli zeri i valori RGB (esattamente la word: $0RGB)
+giusti, "aumentandoli" in modo che con vari passaggi, uno per fotogramma,
+si innalzino fino a raggiungere i colori della nostra figura:
+
+CopColors:
+	dc.w $180,$000,$182,$fff,$184,$200,$186,$310
+	dc.w $188,$410,$18a,$620,$18c,$841,$18e,$a73
+	...
+
+Innanzitutto dobbiamo avere la lista dei colori della figura in una tabella
+da "consultare", altrimenti non sapremmo quando siamo "arrivati":
+
+TabColoriPic:
+	dc.w $fff,$200,$310,$410,$620,$841,$a73,...
+	...
+	
+(NOTA: il colore 0, il $dff180, in questa tabella non e' stato messo, dato che
+ e' nero, $000, rimane sempre nero e non lo comprendiamo nella routine,
+ partiamo invece dal colore 1, $dff182, che in questo caso e' $FFF).
+
+Per fare questa tabella basta togliere "a mano" i $180,$182,$184 dalla
+copperlist copiata con l'editor, e ovviamente rimangono i colori.
+
+Ora che abbiamo la tabella con i colori "destinazione", come fare una routine
+che "aumenti" i colori fino a quelli giusti, nella tabella?
+Sicuramente dobbiamo lavorare separatamente per ognuna delle 3 componenti RGB,
+e per separarle possiamo usare l'AND, che come abbiamo visto "seleziona" solo
+una parte di bits, azzerando gli altri. Avendo l'indirizzo della tabella coi
+colori in a0, vediamo, per esempio, come separare la sola componente blu:
+
+	MOVE.W	(A0),D4		; Metti il colore dalla tabella colori in d4
+	AND.W	#$00f,D4	; Seleziona solo la componente blu ($RGB->$00B)
+
+Ora in d4 abbiamo solo il valore del BLU... se il colore era $0123, in d4 dopo
+l'AND.w #%000000001111,d4 (selezionati solo i 4 bits, o nibble), il valore
+e' $0003, dunque siamo riusciti nell'impresa. Vediamo come selezionare la
+componente verde:
+
+	AND.W	#$0f0,D4	; Selez. solo la componente verde ($RGB->$0G0)
+
+E quella rossa:
+
+	AND.W	#$f00,D4	; Selez. solo la componente rossa ($RGB->$R00)
+
+Fin qui dovrebbe essere tutto chiaro.
+Ora, potremmo gia' fare la routine "FAKE", quella "FALSA", che funziona in
+questo modo: ogni volta si aggiunge #1 ad ogni singola componente, e si
+compara con il colore in tabella, se dobbiamo smettere di aggiungere a
+quella componente. Per esempio, se abbiamo il colore $0235 da raggiungere,
+avremo questi passaggi ogni fotogramma:
+
+1)	$111	; +$111, tutti e 3
+2)	$222	; +$111, tutti e 3
+3)	$233	; +$011, la componente RED va bene, aggiungo solo a Gr. e Blu
+4)	$234	; +$001, le componenti RED e GREEN vanno bene, +1 solo Blu
+5)	$235	; +$001, come sopra, +1 solo blu
+
+Ogni volta dovremmo comparare con un CMP la componente ROSSA del colore in
+tabella con quello che stiamo "aumentando", se non la abbiamo raggiunta
+aggiungere 1, se la abbiamo raggiunta non aggiungere, poi fare lo stesso con
+il VERDE e il BLU, infine unire le 3 componenti "risultanti" tramite uno o
+piu' istruzioni OR, ottenendo la word colore risultante da mettere nella
+copperlist. E questo per ognuno dei 16, 32 colori o quanto sono.
+La quantita' non e' un problema per il processore, con dei cicli DBRA si
+puo' fare tutto. L'unico particolare e' che il sistema che ho descritto non
+e' esattissimo, e specialmente in AGA si vede che i colori vanno per i fatti
+suoi. Dunque, la struttura della routine rimane la stessa, ma dobbiamo cambiare
+il modo di calcolo. Dobbiamo prima notare una cosa: quanti fotogrammi, dunque
+quante volte dovremmo richiamare la routine per eseguire un fade completo?
+Se abbiamo il colore $0F3, un bel verde, per esempio, partendo da $000 e
+aggiungendo 1 ogni volta, con la routine di prima ci vorrebbero 15 add.w #$010
+per la componente verde, dato che deve raggiunfere il valore $f (15).
+Dunque, consideriamo di fare una routine "parametrica", la quale possa
+calcolare i colori ad una delle 16 possibili FASI del fade, dove la fase 0 e'
+il NERO completo, e la fase 16 e' il colore pieno. Supponiamo di tenere "il
+conto" della fase da fare in una label "FaseDelFade". Ogni volta dovremo fare:
+
+	addq.w	#1,FaseDelFade	; sistema per la prossima volta la fase da fare
+
+Dunque, al primo fotogramma faremo un "BSR.s Fade" con "FaseDelFade" ad 1,
+e i colori saranno messi scurissimi, il fotogramma successivo richiameremo la
+routine, ma con "FaseDelFade" a 2, e i colori si schiariranno (2/16 del colore
+pieno), infine quando la eseguiremo con "FaseDelFade" a 3, i colori saranno
+uguali a quelli della tabella. Prima riferendomi alla frazione, 2 sedicesimi
+del colore, stavo anticipando la tecnica da usare! Infatti mentre una routine
+Fake, uno degli orrori di routine fade che aggiungono sempicemente 1 ogni volta
+non sono precise frazionariamente, quella che faremo e' accettabile.
+Veniamo al dunque: con la routine Fake avremmo questi passaggi per arrivare
+ad un $084:
+
+ $011
+ $022
+ $033
+ $044
+ $054
+ $064
+ $074
+ $084
+
+Ebbene, quando si arriva a meta' abbiamo un GRIGIO! $044!! anziche' un verdino.
+In realta', a meta', saremmo dovuti essere a $042, ossia al verdino scuro,
+che guarda caso e' proprio 1/2 di $084.
+Ora, ecco che si affaccia la soluzione: disponendo del valore "FaseDelFade",
+che possiamo chiamare MULTIPLIER, abbiamo che quando e' a 0, dobbiamo 
+calcolare 0/16 (zero sedicesimi) dei colori, ossia tutti ZERO.
+D'altronde, quando e' ad 1, dobbiamo calcolare 1/16 dei colori.
+Cosi' fino a 16/16, in cui il colore rimane uguale.
+Come implementare in istruzioni tale formula? Facile! Disponendo di una
+componente RGB isolata, ad esempio la BLU: (abbiamo in d0 il MULTIPLIER)
+
+	MOVE.W	(A0),D4		; Metti il colore dalla tabella colori in d4
+	AND.W	#$00f,D4	; Seleziona solo la componente blu ($RGB->$00B)
+	MULU.W	D0,D4		; Moltiplica per la fase del fade (0-16)
+	ASR.W	#4,D4		; shift 4 BITS a destra, ossia divisione per 16
+	AND.W	#$00f,D4	; Seleziona solo la componente BLU
+	MOVE.W	D4,D5		; Salva la componente BLU in d5
+
+In pratica moltiplichiamo per il MULTIPLIER la componente, poi la dividiamo per
+16, in questo caso dividere per 16 equivale ad un ASR.W #4,Dx, come abbiamo
+gia' visto per la routine di print dei caratteri 8x8 che MULU.W #8,Dx si puo'
+sostituire da un LSL.w #3,Dx. Consideratelo come una DIVU.w #16,D4, e tutto
+torna. Ripetendo 3 volte questo procedimento per le 3 componenti RGB, abbiamo
+la routine di FADE dal NERO ai colori, e se partiamo col multiplier a 16,
+sottrando ogni volta #1 fino allo zero, avremo il fade contrario, dal colore
+al nero. Quest'ultimo si chiama FADE OUT, mentre il primo e' il FADE IN.
+
+Possiamo vedere in pratica il funzionamento della routine descritta nei due
+listati Lezione8c.s e Lezione8d.s. La differenza tra questi due listati e'
+solo nell'ordine in cui vengono eseguite le operazioni di divisione delle 3
+componenti RGB, ma il principio di moltiplicazione per il multiplier e
+divisione per 16 e' lo stesso. La piu' chiara forse e' quella di Lezione8d.s.
+
+Il disegno e' un logo del gruppo RAM JAM, fatto da FLENDER, che e' italiano.
+Ho utilizzato questo disegno perche' sono entrato a far parte di questo
+gruppo proprio mentre stavo scrivendo questa lezione. Dunque il corso da qua
+in avanti e' una produzione RAM JAM!!!
+
+Proseguiamo con una variazione sul tema, caricate Lezione8e.s. Questa e' la
+stessa routine, con una lieve modifica che consisite nell'aggiunta di una
+componente dominante aggiuntiva, la quale fa assumere al disegno quella
+tonalita'. Puo' essere utile per dare un'aria da carnevale al tutto.
+
+Infine, sto per presentarvi una routine che puo' passare da qualsiasi colore
+a qualsiasi altro! In pratica occorrono due tabelle, una con i colori iniziali,
+per esempio se si partisse dal nero, una tabella con tanti zeri, e una'altra
+con i colori finali. Ne risulta che per fare il fade di prima, ossia dal nero
+ai colori normali, si deve mettere come prima tabella una tutta azzerata e
+come seconda quella coi colori, per passare dai colori al nero, (FADE OUT),
+come prima tabella si deve mettere quella coi colori normali, e come seconda
+una tutta azzerata.
+A questo punto ecco le innovazioni: per esempio possiamo fare un fade dal
+BIANCO ai colori normali, mettendo come prima tabella tutti $FFF e come
+seconda quella coi colori normali.
+Esageriamo: possiamo passare da una colorazione ad un altra! Basta mettere
+nella prima tabella i colori come vogliamo che siano all'inizio, e come
+seconda come li vogliamo alla fine. In questo modo possiamo passare da una
+tonalita' verde ad una bluastra, eccetera.
+Caricatevi Lezione8f.s e provate la routine, che mostra proprio gli esempi che
+ho fatto. Per quanto riguarda il funzionamento della routine, e' piuttosto
+complicato, e non ho voglia di rivederla, se volete provare a capirla leggete
+i miei (pochi) vecchi commenti. Comunque almeno imparate ad usarla per i vostri
+scopi!
+
+               ,јиииииm                              И____
+               иVД   ЌиQ                             иўЄ4и,
+            _јци#__  .иF       ________              и   и#цииц_
+           .и^Ј~АЂиа  `и_ __gјииииииииии#јц___       и&  VоА~ЏАиL
+           `иј_   __   ЌииииииЛ^^ААААААЄ*0иииииј__ _Ци~   _____Jи
+            ЌЂиц_јииј__иииГ"               Ќ~^ЋиииииP   _јииииииА
+               ААА  А#ии/    Иgццц___           ЌА#ииц_јиА
+                     ииP     #иииииииц_       ___  А4иииИ
+       _____________ ииЬ      А _FАииии_    _Ц**иЎ_  "0и#_ _____________
+       \___          ии#        и   АЂииL  Ци  _ `иь   Жии_         ___/
+         T           Жии       0и  (ј Ќииb иЭ (и) иf    Жии,         T
+         |            #и#И     (и&____јиЄА А#И   _иД     ииQ         |
+         |             0ии__    А^ЄЄЄА" __  Ќ^***ГД      ииV         |
+         |              Аиииц______    ,ии             _ции'         |
+         |                АЋиииииии   ииии   ________циии@~          |
+         |                 _ии~ЈииP  `ААЄ*  јиииииииииоАЏ            |
+         |        _цииN___ииА  _ии  _       0_ЏЏЏЌ4и_                |
+         |      ,ииАЏЏ"0ииА  Ијии" _и .     `и_    Аиц_   _          |
+         |      lи      ^  __иииЙ ,и" Ц  иQ  Ќи,     Аииииии_        |
+         |      Ќиц__g#   јиЄ~иД  иА ,и  ии   #ии__    АЏЏ Ќи,  xCz  |
+     _ __І_______ЌА^Єии   Жи Ии__Ци__иP  ии   ЖииЂи_    ____иf ______І__ _
+         :           иђ___ии #иииииииииијииццции' Ќ4#   ииЄЄА        :
+         .           "Ђиии@   ~~Џ ЏЌ"А^^ЄЄЋ**ииГ   lи   Юи           .
+                         Џ                          иL__Ци
+                                                    А**ЄА
+
+
+Ora voglio proporvi tre di listati, opera di altrettanti "alievi" partiti da
+zero con il mio corso, proprio come voi, incoraggiante no?
+
+LEZIONE8g.s	- parallasse 10 livelli (di Federico Stango)
+
+LEZIONE8h.s	- pannello di controllo con gadgets (di Michele Giannelli)
+
+LEZIONE8h2.s	- scrolltext 8X8 (di Lorenzo Di Gaetano)
+
+Questi tre listati utilizzano le sole conoscenze del disco 1 del corso.
+Io ho cambiato solamente la startup, inserendo la startup1.s al posto del
+vecchio modo di inizializzare del disco1.
+Spero che anche voi stiate facendo delle prove "autonome", altrimenti a che
+serve leggersi tutto come un romanzo? Sveglia!!!
+E se avete fatto qualcosa di carino vedete di spedirmelo, almeno lo metto nelle
+prossime lezioni e diventate famosi come Fiorello.
+
+Proseguiamo ora con una domanda frequente: "Come funzionano gli equalizzatori
+presenti nella piccola demo AMIGAET.EXE del disco 1 del corso?".
+Ebbene, ho "tagliato" quel pezzo di listato, potete vedere come funziona il
+tutto in lezione8i.s.
+
+Attenzione: la routine "music.s" del disco 2 non e' la stessa di quella del
+disco 1. Le 2 modifiche sono la rimossione di un BUG che alle volte causava
+una guru all'uscita del programma, e il fatto che mt_data e' un puntatore alla
+musica, e non LA musica. Questo permette di cambiare la musica piu' facilmente,
+per creare music disks, come si vede in lezione8i2.s.
+
+
+Siamo arrivati a fare gli equalizzatori, ma non abbiamo ancora visto come
+stampare un punto, ossia "plottare un dot". Rimediamo subito con Lezione8l.s
+
+(poi mettere plottata si diversi planes da 3d_stars.s)
+
+Ok, ora che sappiamo stampare i punti, stampiamone tanti uno accanto all'altro
+per fare delle "linee", in Lezione8m.s e Lezione8m2.s
+
+Ebbene, se si possono fare linee, si possono fare anche curve paraboliche,
+basta moltiplicare X*X, in Lezione8m3.s, Lezione8m4.s, Lezione8m5.s
+
+Vediamo ora come "ottimizzare" la routine di stampa dei punti. Come avete
+visto, ha una moltiplicazione, il che e' molto male perche' le moltiplicazioni
+sono lente. Come fare per "toglierla"? Dobbiamo moltiplicare per 40, dunque
+basta "eseguire" tutte le moltiplicazioni possibili, cioe' i primi 256
+multipli di 40, e scrivere i risultati in una tabella. Ora abbiamo in questa
+tabella tutti i "risultati" della moltiplicazione in questione a seconda dei
+vari casi. Basta fare in modo che venga "preso" dalla tabella il risultato
+giusto ogni volta, come prendiamo la X o la Y giusta dalle tabelle delle
+coordinate per gli sprite. Vediamolo in pratica in Lezione8n.s
+
+Verifichiamo se effettivamente la nuova routine e' piu' veloce di quella
+vecchia, scrivendo e cancellando tutto lo schermo, in Lezione8n2.s
+
+Dato che abbiamo visto come azzerare un punto (basta mettere un BCLR al posto
+del BSET), proviamo ad "animare" un punto come abbiamo fatto per gli sprite,
+scrivendolo e cancellandolo ogni frame a posizioni diverse, in Lezione8n3.s
+
+Provate a farvi versioni modificate, a piu' biplanes, con piu' di un punto
+alla volta, eccetera. Per stampare su 2 bitplanes, ossia 4 colori, potete
+fare cosi': color0 e' lo sfondo, mentre abbiamo 3 colori diversi per plottare.
+Considerando di avere i 2 bitplanes con i nomi "Bitplane1" e "Bitplane2",
+potreste farvi 3 routines, una che plotta nel bitplane1, una che plotta nel
+bitplane2, e una che plotta in entrambi i bitplanes, e saltare ad una di
+queste 3 routines per stampare in uno dei 3 colori.
+
+-- Incredibile! Lorenzo di Gaetano ha scritto al volo un suo listato!
+   vedetevelo: Lezione8n4.s
+
+Mi immagino che abbiate fatto un programma che studia funzioni megacomplesse,
+che disegna onde come la sigla di Quark. Allora si puo' fare un breve stacco
+pubblicitario per i wait del copper, che non sono stati usati per le routines
+dei punti. Date un'occhiata a cosa possono fare dei semplici wait e color0,
+senza l'ausilio di nessun bitplane, in Lezione8o.s
+Non ci sono trucchi, solo che la copperlist viene "costruita", oltre che
+modificata, ecco la routine che "crea" il pezzo saliente della copperlist:
+
+; INITCOPPER crea la parte di copperlist con tanti WAIT e COLOR0 di seguito
+
+INITCOPPER:
+	lea	barcopper,a0	; Indirizzo dove creare la copperlist
+	move.l	#$3001fffe,d1	; Prima wait: linea $30 - WAIT in d1
+	move.l	#$01800000,d2	; COLOR0 in d2
+	move.w  #coplines-1,d0	; numero di linee copper
+initloop:
+	move.l	d1,(a0)+	; metti il WAIT
+	move.l	d2,(a0)+	; metti il COLOR0
+	add.l	#$02000000,d1	; prossimo wait, aspetta 2 linee piu' in basso
+	dbra	d0,initloop
+	rts
+
+Come si puo' vedere, il risultato di questa routine e' di creare:
+
+barcopper:
+	dc.l	$3001fffe	; wait linea $30
+	dc.l	$01800000	; color 0
+	dc.l	$3201fffe	; wait linea $32
+	dc.l	$01800000	; color 0
+	dc.l	$3401fffe	; wait linea $34
+	dc.l	$01800000	; color 0
+	....
+
+Pensate quanto spazio e quanto tempo risparmiamo in questo modo.
+
+	                             ________
+	                      ___---'--------`--..____
+	,-------------------.============================
+	(__________________<|_)   `--.._______..--'
+	      |   |   ___,--' - _  /
+	      |   |  |            |
+	   ,--'   `--'            |
+	   ~~~~~~~`-._            |  _
+	              `-.______,-'  (і)
+	                           '(_)`
+	                            Џ Џ
+
+Per terminare la lezione, credo sia il caso di trattare una caratteristica
+del processore che, nonostante sia importantissima, fino ad ora non e' stata
+discussa. Infatti CREDEVATE di sapere abbastanza sul 68000, ma in realta' fino
+ad ora e' stato studiato "all'acqua di rose", il minimo indispensabile per
+fare delle routines. Infatti non sono stati nominati i Codici di Condizione,
+e con essi il CCR, il quale fa parte dello SR (Status Register).
+Ecco i 16 bit che compongono il registro:
+
+	SR:
+				     ___
+	15	T - TRACE		\
+	14	- non usato dal 68000	 |
+	13	S - SUPERVISOR		 |
+	12	- non usato dal 68000	 |- SYSTEM BYTE
+	11	-			 |
+	10	I2 \			 |
+	9	I1  > INTERRUPT MASK	 |
+	8	I0 /		     ___/
+	7	-			\
+	6	-			 |
+	5	-			 |
+	4	X - EXTENSION		 |- USER BYTE (Condition Code Register)
+	3	N - NEGATIVE		 |  (contiene i flag aritmetici)
+	2	Z - ZERO		 |
+	1	V - OVERFLOW (eccesso)	 |
+	0	C - CARRY (RIPORTO)  ___/
+
+
+Ebbene, questo misterioso registro contiene dei bit riguardanti i FLAG di
+condizione, per la precisione il suo byte basso, detto CCR (Condition Code
+Register) contiene tali FLAG. Il byte alto dello SR lo tratteremo piu'
+avanti, quando parleremo di INTERRUPT e di MODO SUPERVISORE.
+Per ora posso solo anticiparvi che il processore puo' funzionare in due modi,
+uno UTENTE (USER) e uno SUPERVISORE. Normalmente i programmi che scriviamo
+sono eseguiti in modo UTENTE. Quando ci serviranno gli interrupt vedremo come
+passare da modo Supervisor a modo User e viceversa, ma ricordatevi che alcune
+istruzioni si possono eseguire solamente in modo SUPERVISORE, se provate ad
+eseguirle in modo USER va tutto in coma profondo. Queste istruzioni sono
+dette PRIVILEGIATE, fate attenzione!
+Per ora ci bastera' CAPIRE il byte basso dello SR, il CCR.
+Ogni istruzione, agendo, puo' influenzare i flag, per esempio se una
+sottrazione da un risultato negativo si setta il flag N, se da zero si setta
+il flag Z, se una addizione ha come risultato un numero piu' grande, ad
+esempio, di quello contenibile in D0.l, si settera' il bit V, overflow, che
+indica l'impossibilita' di contenere il risultato nella destinazione. Questo
+vale anche per il Carry, ossia il riporto, che si setta in caso di riporto.
+Si potrebbero controllare i flag stessi testando il byte CCR, ma siccome il
+68000 e' il miglior processore del mondo, sono presenti istruzioni a
+sufficienza per sapere lo stato dei flag: si tratta di Bcc, dove cc sta per
+Condition Codes e puo' essere sostituito con CS,EQ,GE,GT,HI,LE,LS,LT,MI,PL...
+Vi ricordate che parlando del modo di funzionamento delle istruzioni CMP
+seguite da BEQ e BNE giustificammo il fatto che il BEQ/BNE sapesse come era
+andata al CMP perche' il risultato del CMP veniva scritta su un "foglietto"?
+Ebbene, il "foglietto" dove il CMP scrive il risultato per il BEQ/BNE e'
+il CCR, il byte basso di SR!! In realta' questo foglietto e' composto da
+4 bit, piu' un quinto, detto eXtend, che serve a scopi particolari.
+Tramite questi 4 bit, si possono creare un bel po' di "situazioni", non solo
+BEQ e BNE, ma si puo' sapere se un numero e' piu' grande o piu' piccolo di
+un'altro, se due numeri sono uguali, se si verifica un riporto in una
+operazione, se il risultato e' negativo, eccetera. Ecco tutti i Bcc:
+
+
+		bhi.s	label	; > per numeri senza segno
+		bgt.w	label	; > per num. con segno
+		bcc.s	label	; > detto anche BHS, Carry = 0 (senza segno)
+		bge.s	label	; >= per num. con segno
+		beq.s	label	; = per tutti i numeri
+		bne.w	label	; >< per tutti i numeri
+		bls.w	label	; <= per num. senza segno
+		ble.w	label	; <= per num. con segno
+		bcs.w	label	; < per num. senza segno; detto anche BLO,
+				; significa che il Carry = 1
+		blt.w	label	; < per num. con segno
+		bpl.w	label	; Se Negative = 0 (PLus)
+		bmi.s	label	; Se Negative = 1, (Minus) num. con segno
+		bvc.w	label	; V=0, no OVERFLOW (risultato contenibile)
+		bvs.s	label	; V=1 OVERFLOW (risultato troppo grande per
+				; essere contenuto nella destinazione)
+
+
+Ora vediamo come usare i Bcc dopo CMP.x OP1,OP2
+
+	beq.s	label	; OP2 =  OP1 - per tutti i numeri
+	bne.w	label	; OP2 >< OP1 - per tutti i numeri
+	bhi.s	label	; OP2 >  OP1 - senza segno
+	bgt.w	label	; OP2 >  OP1 - con SEGNO
+	bcc.s	label	; OP2 >= OP1 - senza segno, detto anche *"BHS"*
+	bge.s	label	; OP2 >= OP1 - con SEGNO
+	bls.w	label	; OP2 <= OP1 - senza segno
+	ble.w	label	; OP2 <= OP1 - con SEGNO
+	bcs.w	label	; OP2 <  OP1 - senza segno, detto anche *"BLO"*
+	blt.w	label	; OP2 <  OP1 - con SEGNO
+
+Ed ora come usarli dopo un TST.x OP1
+
+	beq.s	label	; OP1 =  0 - per tutti i numeri
+	bne.w	label	; OP1 >< 0 - per tutti i numeri
+	bgt.w	label	; OP1 >  0 - con SEGNO
+	bpl.s	label	; OP1 >= 0 - con SEGNO (oppure BGE)
+	ble.w	label	; OP1 <= 0 - con SEGNO
+	bmi.w	label	; OP1 <  0 - con SEGNO (oppure BLT)
+
+Come si vede dopo un CMP si possono sapere un bel po' di cose! Si possono
+notare i segni > (maggiore), >= (maggiore o uguale), =, >< (diverso),
+<= (minore o uguale), < (minore), e per di piu' esiste un Bcc di queste
+comparazioni per numeri normali, e uno per i numeri Signed (con segno).
+Per quanto riguarda i numeri negativi, fino ad ora abbiamo solo accennato che,
+ad esempio, -1 e' $FFFFFFFF, -5 e' $FFFFFFFB, stabilendo piu' o meno che il
+bit alto, ossia il 31 se siamo in longword, il 15 se in .w e il 7 se in .b, e'
+quello del segno, ossia che se e' ad 1 il numero e' negativo, e procede come
+se tornasse "indietro" da $FFFF che e' -1, a $FFFE che e' -2, $FFFD per -3
+eccetera, fino ad arrivare (in campo .w) a $8001, cioe' -32767, seguito da
+$8000, cioe' -32768, che e' il numero piu' negativo possibile in una word con
+segno, e corrisponde a %1000000000000000, ossia il bit alto del segno settato
+e gli atri tutti azzerati: eravamo partiti da -1, cioe' %111111111111111.
+Questo sistema usato per avere numeri negativi in binario e' detto complemento
+a due. Sappiamo gia' che il bit piu' significativo, ossia quello piu a
+sinistra, rappresenta il segno: se = 0 e' positivo, se = 1 e' negativo.
+Questo sistema vale sia per numeri .byte (il bit e' il 7), che per quelli
+.word (il bit e' il 15), che per quelli .longword (il bit e' il 31).
+Vediamo ora in dettaglio come funziona il complemento a due: abbiamo notato
+che non basta cambiare il bit piu' significativo per passare da positivo a
+negativo, facciamo l'esempio di +26 e -26 in campo .word:
+
+		;5432109876543210
+	+26	%0000000000011010	($001A)
+	-26	%1111111111100110	($FFE6)
+
+Il bit 15 in +26 e' azzerato e in -26 e' settato, ma non e' evidentemente
+l'unica modifica da fare per passare da -26 a -26!!!
+Occorre fare il complemento a due di %0000000000011010, che consiste
+nell'INVERTIRE tutti i bit e AGGIUNGERE 1 al risultato.
+Proviamo se e' vero: invertendo tutti i bit si ottiene:
+
+	%1111111111100101
+
+Aggiungiamo 1:
+
+	%1111111111100101 +
+			1 =
+	-----------------
+	%1111111111100110
+
+Se vi confonde la fila di 1, isolate i 6 bit bassi: %100101 e' 25, se si
+aggiunge 1 = %100110, cioe' 26, con i bit dal 7 al 15 tutti ad 1, cioe' -26.
+Se vogliamo -26 in un byte, basta %11100110, ossia $E6.
+Se vogliamo -26 in una long: %1111111111111111111111111100110 = $FFFFFFE6
+Si puo' scegliere di usare i nostri byte, word o long come vogliamo, con segno
+o senza segno, dipende dalle istruzioni che usiamo e dal nostro programma.
+Per chiarire, ecco quanto puo' contenere un .b, un .w o un .l a seconda del
+sistema usato, se "normale" o "complemento a 2":
+
+BYTE con segno	 .8 bit	 - da -128 ($80) a +127 ($7f)
+BYTE senza segno .8 bit	 - da 0 ($00) a 255 ($ff)
+WORD con segno	 .16 bit - da -32768 ($8000) a +32767 ($7fff)
+WORD senza segno .16 bit - da 0 ($0000) a 65535 ($ffff)
+LONG con segno	 .32 bit - da -2147483648 ($80000000) a +2147483648 ($7fffffff)
+LONG senza segno .32 bit - da 0 ($00000000) a 4294967299 ($ffffffff)
+
+Come si puo' vedere, nel campo SIGNED BYTE i numeri da 128 a 255 sono
+considerati come i valori da -128 e -1, in campo SIGNED WORD i valori che
+vanno da 32768 a 65535 sono considerati come i valori da -32768 e -1.
+Lo stesso valore per la notazione .longword.
+Ricapitolando, ecco 2 sistemi per ottenere un numero negativo dal positivo:
+
+Sistema 1:
+
+Dato il numero N=%00110 (6 decimale) per trovare -N si esegue la negazione
+bit a bit di N, ottenendo N=%11001 (-7 decimale) e poi si somma 1 al risultato:
+
+	N=%11001+%00001=%11010 (-6 decimale)
+
+Sistema 2:
+
+Sato il numero N=%00110 (6 decimale) per trovare -N si esegue la negazione
+bit a bit di N fino all'1 meno significativo N=%11010 (-6 decimale).
+
+Se nella nostra routine non accade mai di scendere sotto lo zero, e' bene
+usare un byte per i suoi 255 valori, se invece volessimo andare da -50 a +50,
+occorre usare istruzioni come BGT,BLE,BLT, che confrontano numeri con segno,
+al posto di BHI e BLS, ad esempio, che confrontano numeri senza segno.
+Addizioni e sottrazioni funzionano sia con numeri con segno che senza segno,
+mentre le moltiplicazioni e le divisioni no, infatti sono presenti due tipi
+di istruzione per numeri con o senza segno: MULU e DIVU per i numeri senza
+segno, MULS e DIVS per i numeri con segno.
+
+Chiariti i numeri negativi, vediamo i bit del CCR, ossia i flag, uno ad uno:
+
+
+*bit 0 - Carry (C): settato ad 1 quando il risultato di un'addizione genera un
+riporto ('carry'), o quando un sottraendo e' maggiore del minuendo, cioe'
+quando una sottrazione ha richiesto un "prestito". Il bit di Carry contiene
+inoltre il bit piu' o meno significativo di un operando sottoposto ad uno
+shift o ad una rotazione. Viene posto a zero quando l'ultima operazione
+eseguita non ci sono ne' riporti, ne' "prestiti". Per esempio, un modo per
+settare il flag CARRY e' questo:
+
+	move.l	#$FFFFFFFF,d0
+	ADDQ.L	#1,d0
+
+Il risultato e' d0=00000000, con il flag CARRY e ZERO settati, perche' abbiamo
+ecceduto il massimo contenibile in .l, e il risultato e' pure ZERO!
+
+*bit 1 - Overflow (V): viene settato se il risultato dell'ultima operazione
+tra numeri dotati di segno il risultato e' troppo grande per poter essere
+contenuto nell'operando destinazione, ad esempio se tale risultato supera i
+limiti -128..+127 nel campo byte. Ad esempio, la somma.b 80+80 genera un
+oVerflow, avendo superato +127. In campo .w i limiti sono -32768..+32767, e
+in campo .l sono -/+ 2 miliardi. Da notare che la somma 80+80 in campo byte
+non setta il flag di Carry ed eXtend, ma solamente quello di oVerflow, dato
+che 160 non supera 255, il massimo contenibile in un byte per numeri normali.
+
+*bit 2 - Zero (Z): settato quando l'operazione genera il risultato zero (utile
+anche per controllare il decremento di un contatore), nonche' quando si
+confrontano due operandi uguali.
+
+*bit 3 - Negative (N): viene settato ad 1 se in una operazione il bit alto del
+numero, in formato complemento a due, e' settato. In pratica se il risultato
+e' un numero negativo questo bit e' settato, altrimenti azzerato.
+Il complemento a due si ottiene facendo il complemento a uno dell'operando
+(ossia invertendo tutti i bit), aggiungendo quindi 1; ad esempio, +26 in
+binario e' %000110010; il suo complemento a uno e'%11100101 (inversione dei bit
+0 in bit 1 e viceversa); aggiungendo 1 si ottiene %11100110.
+Il bit 7, detto bit di segno, viene copiato nel bit 3 dello Status Register;
+Nel caso di -26, ad esempio, N viene settato, indicando un numero negativo.
+
+*bit 4 - Extend (X): e' una ripetizione del bit di Carry, e viene usato in
+operazioni effettuate in notazione BCD (Binary Coded Decimal: il numero
+decimale 20, ad esempio, non viene rappresentato con 00010100, ma nella forma
+due decine, zero unita' 0010 0000) ed in operazioni binarie 'estese' come ADDX
+e SUBX, versioni particolari delle istruzioni di addizione e sottrazione ADD e
+SUB.
+				  _____
+				 /\___/\
+				/_/__/  \
+				\    \  /
+				 \____\/
+				      Y
+				      :
+				      .
+
+Alla luce di queste nuove conoscenze, vedetevi il testo di riferimento su tutte
+le istruzioni del processore, con relativi effetti sui FLAG del CCR, il
+68000-2.TXT, un'"evoluzione" del vecchio 68000.TXT del primo disco, che ormai
+e' roba da bambini per voi (o no?).
+
+Prima di iniziare la LEZIONE9.TXT, sarebbe bene che vi leggeste tutto il
+68000-2.TXT, almeno sarete veramente ferrati sulle istruzioni della CPU!
+Consideratelo come una LEZIONE8b,TXT, "FATEVELO" tutto, carpitene l'essenza.
+Ammetto che puo' SPAVENTARVI (se siete mezze cartucce) leggerlo tutto, ma
+una volta presa confidenza con quello che e' scritto in quel bel testo da 100K
+potrete finalmente dire in giro che sapete programmare il 68000.
+Tra l'altro, se piu' avanti trovate istruzioni che non conoscete, non potete
+lamentarvi, perche' sono spiegate nel 68000-2.TXT!!
+Come prima cosa, andatevi a vedere le istruzioni CMP e Bcc, in cui i vari
+tipi di Bcc sono spiegati piu' diffusamente, poi partite dall'inizio e arrivate
+alla fine, magari rileggendolo piu' volte, facendo delle pause tra una lettura
+e l'altra, mangiandovi un panino. Questo 68000-2.TXT e' il secondo macigno che
+dovete superare; il primo era la LEZIONE2.TXT dove avete imparato le prime
+basi, gli indirizzamenti. Molti si sono fermati a quella collina. Ora vi
+si presenta una montagna, e altrettanti non avranno il fegato per superarla.
+Ma chi la superera', potra' cercare di arrivare alla vetta!
+
+Lo avete letto almeno una volta? Avete chiari i Condition Codes?
+Ecco degli esempi che verificheranno se avete capito. Sono stati gentilmente
+scritti da Luca forlizzi (the Dark Coder) e da Antonello Pardi (Deathbringer),
+permettendomi di velocizzare la scrittura delle lezioni sull'AGA e sul 3d.
+
+Lezione8p1a.s	-> CC nell'istruzione MOVE
+Lezione8p1b.s	-> CC in MULU/MULS
+Lezione8p1c.s	-> CC in DIVU/DIVS
+Lezione8p2a.s	-> CC e registri indirizzi Ax
+Lezione8p2b.s	-> Estensione del segno nei registri indirizzi Ax
+Lezione8p3.s	-> CC in TST
+Lezione8p4.s	-> CC in AND,NOT,OR,EOR
+Lezione8p5.s	-> CC in NEG
+Lezione8p6.s	-> CC in ADD
+Lezione8p7.s	-> CC in CMP
+Lezione8p8.s	-> CC in ADDX
+Lezione8p9.s	-> CC in lsr,asr,lsl,asl
+
+Per finire caricate il mio Lezione8p9b.s, che contiene anche un "quesito".
+
+		   ____________________
+		   \                  /
+		    \________________/
+		   _( o..       ..o  )_
+		  /  )(\__     __/) (  \
+		 (  /  \/ /   \ \/   \  )
+		 /\(     (    _)      )/\
+		 \_/\ __  \___/    __/\_/
+		     \\\_________ ( /
+		      \\_|_|_|_|7  /
+		       \\|_|_|_|/ /
+		        \________/
+
+
+Prima di passare alla prossima lezione, ci sarebbero un paio di cose che
+vorrei dirvi. Quel mio amico che programma l'avventura, Michele, mi ha chiesto
+delle cose l'ultima volta che mi e' venuto a trovare, e suppongo che potrebbero
+interessare anche a molti di voi. Lui ha fatto un pannello di controllo in
+basso, simile a Lezione8h.s, e nella parte alta visualizza le varie figure, che
+carica dal dischetto (vedremo piu' avanti come caricare files con la libreria
+di sistema dos.library). Il problema e' che aveva i .raw delle figure, ma la
+palette di ogni figura la doveva tenere nel programma principale in tabelle
+preparate, una per figura, e una routine si occupava di copiare i colori della
+tabella giusta in copperlist a seconda della figura caricata. Questo pero'
+ingarbugliava il codice, dato che le figure sono dozzine. Allora mi sono
+ricordato che con gli iffconverter, compreso il KefCon, si puo' salvare ANCHE
+LA PALETTE in fondo al .RAW! Basta cambiare l'opzione CMAP OFF in BEHIND, e
+in fondo al .raw viene attaccata la palette, dal color0 all'ultimo, word dopo
+word. Si potrebbe anche scegliere BEFORE, che attacca la palette prima della
+pic, ma in tal caso occorrerebbe puntare a "dopo la palette", satandola.
+Stabilito che conviene salvare con la CMAP BEHIND (in fondo), vediamo cosa
+cambia nel file .raw salvato.
+Il file e' uguale, ma piu' lungo, nel caso del logo di questa lezione e' piu'
+lungo di 16 words, infatti ha 16 colori.w in fondo, come in questo esempio
+(per capirci):
+
+inizio_pic:
+	incbin	'logo320*84*16c.raw'	; bitplanes.raw normali
+	dc.w $000,$fff,$200,$310	; palette
+	dc.w $410,$620,$841,$a73
+	dc.w $b95,$db6,$dc7,$111
+	dc.w $222,$334,$99b,$446
+fine_pic:
+
+Ho opportunamente risalvato il logo in questo formato, vediamo con quale
+semplice routine si puo' copiare la palette in copperlist, in Lezione8q.s
+Da notare che la pic se puntata normalmente funziona anche nei listati
+precedenti, infatti abbiamo solo delle word "in piu'" che non sono
+visualizzate essendo "dopo" la fine dell'ultimo bitplane.
+
+Altra cosa che mi e' stata chiesta, e': come si fa a sapere quale processore
+e quale kickstart e' presente sulla macchina? In Lezione8r.s questo mistero
+e' svelato... basta consultare degli appositi bit dedicati allo scopo!
+
+Dunque, se siete convinti di aver capito ogni cosa fino a qui, potete passare
+a caricare la LEZIONE9.TXT, che vi introdurra' FINALMENTE al blitter, che a
+questo punto sicuramente stavate domandandovi se veramente esiste.
+
+Una nota: se sapete leggere l'inglese, vi sara' certamente utile avere questi
+libri fondamentali:
+
+La seconda edizione del manuale dell'hardware di Amiga:
+
+"Amiga Hardware Reference Manual" codice ISBN: 0-201-18157-6
+
+
+PER QUANTO RIGUARDA IL 680x0:
+
+Motorola, "MC68020 32-bit Microprocessor User Manual, fourth edition",
+Prentice Hall ISBN 0-13541657-4
+
+Motorola, "MC68030 Enhanced 32-bit Microprocessor User Manual, second edition"
+Prentice Hall ISBN 0-13-566951-0,  Motorola ISBN 0-13-566969-3.
+
+Motorola, "MC68040 32-bit Microprocessor User Manual"
+
+
+Forse non vi conviene prendere l'user manual del 68000, ne' quello del 68040,
+dato che il 68000 e' spiegato (spero) abbastanza bene nel 68000-2.txt, e il
+68040 per ora e' appannaggio di pochi fortunati, dunque demo o giochi che
+vanno su solo 68040 avrebbero poca diffusione. Inoltre le differenze maggiori
+ci sono tra 68000 e 68020, mentre tra 68020 e 68030 le differenze sono poche,
+lo stesso vale per il 68030 rispetto al 68040. Le maggiori differenze comunque
+sono nella MMU e nelle istruzioni di controllo delle CACHE, ma programmando
+demo e NON sistemi operativi cio' non ci interessa piu' di tanto.
+
+                                 _/\  /\  /\_
+      _                          \ (_/  \_) /                          _
+     _)\__________________________)  _/\_  (__________________________/(_
+    (______________\_\__\___\________)  (________/___/__/_/______________)
+        (_  ________________\_\__\___ \/ ___/__/_/_________________  _)
+          \/                         \  /                          \/
+                                      \/

@@ -1,0 +1,13 @@
+Documentation for Clear
+
+       This program is used to fill unused areas of memory with a specific byte
+pattern.  For example, if you wish to fill free memory areas with 'w' ($77, 119
+decimal), use "clear 77".  If you are thinking now that this program is of no
+use to you, you are probably right.  I use it only as a quick and dirty way to
+recognize unused areas of memory when browsing with Metascope.  I would have
+supplied the source code, if I had not accidently lost it recently.  This was my
+first attempt at assembly language programming on the Amiga, so it probably has
+bugs lurking in it somewhere.  
+
+  Glen McDiarmid
+  

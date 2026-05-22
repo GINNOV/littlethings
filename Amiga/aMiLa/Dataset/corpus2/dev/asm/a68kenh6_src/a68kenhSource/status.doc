@@ -1,0 +1,57 @@
+
+New or enhanced instructions:
+
+	Bcc	long
+*	BFCHG
+*	BFCLR
+*	BFEXTS
+*	BFEXTU
+*	BFFFO
+*	BFINS
+*	BFSET
+*	BFTST
+	BKPT	#<data>	0..7
+	BRA	long
+	BSR	long
+	CALLM	#<data>,<ea>		68020 only
+*	CAS	Dc,Du,<ea>
+*	CAS2	Dc1:Dc2,Du1:Du2,(Rn1):(Rn2)
+*	CHK	long
+*	CHK2	<ea>,Rn
+*	CMP2	<ea>,Rn
+*	DIVS.L
+*	DIVSL.L
+*	DIVU.L
+*	DIVUL.L
+*	EXTB.L
+	LINK	long
+*	MOVE	CCR,<ea>
+	MOVE16				68040 only
+*	MOVEC
+*	MULS.L
+*	MULU.L
+*	PACK
+	RTD	#<disp>	-32768..32767
+	RTM				68020 only
+	TRAPcc
+*	UNPK
+
+New modes:
+
+*	Scale factor ('*1', '*2', '*4' or '*8')
+*	Odd offsets now legal
+	32 bit offsets
+
+
+* = Implemented
+
+
+To do:
+
+  1) Finish changing 'Error (0, xxxx)' in "Operands.c"
+
+  2) Implement stuff above not marked by '*'
+
+  3) Need validity check so that 'Dn:Dn' can't show up as source operand
+
+  4) Implement validity checks needed to catch errors in "/test.asm"

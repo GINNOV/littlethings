@@ -1,0 +1,116 @@
+
+			       GenPragma v1.0
+			       --------------
+
+			   © 1992-94 David Kinder
+			   ----------------------
+
+Introduction
+------------
+
+Until fairly recently, the interface between a C program and the system
+library routines consisted of a large linker library (usually called
+"amiga.lib"). Calls to library functions were interfaced using a "stub" -
+a short piece of code extracted from the linker library. This resulted in
+large programs and slow compilation.
+
+Now there is a second way, via the #pragma statement. The ANSI standard
+defines the #pragma preprocessor command as totally implementation
+dependant, so on the Amiga it is used to produce calls to the system
+library functions without the need for a linker library. The information
+about the library functions are stored in include files, one for each
+library. The precise details of these files is unimportant, suffice to say
+that if your compiler supports #pragma, then all you need is
+
+#include <pragma/foobar.h>
+
+and all calls to "foobar.library" will no longer need the stubs from the
+linker library.
+
+What if you have not got the necessary pragma files? The solution is to use
+function definition files (files ending in "_lib.fd"), or FD files for short.
+Commodore distributes such files for the system libraries with most
+compilers, and third-party libraries usually come with such a file. An FD
+file is a general description of the library functions, so that from the FD
+file compiler-dependant files (eg. linker libraries, pragma files) can be
+produced. GenPragma is a utility for generating pragma files from FD files.
+
+Use
+---
+
+When run from the CLI, the template is
+
+GenPragma [<fd file> [<pragma file>]] [PDC|LATTICE|SAS] [PRIVATE] [COMMENT]
+
+If no FD file is specified, the program starts up as from Workbench (see
+below). If no pragma file is given, the processed file is printed to
+standard output (ie. the screen). The options are:
+
+PDC	    The two known compilers that support the #pragma statement are
+LATTICE     PDC v3 and SAS/Lattice C v5+. These two compilers require the
+SAS	    the pragma statement in a slightly different form, so make sure
+	    that you are generating the pragma file for your compiler. The
+	    default is PDC. SAS and LATTICE have the same effect, since
+            "Lattice C" is the old name of the SAS/C compiler.
+
+PRIVATE     Certain library functions are described in FD files but are
+	    marked as system private, ie. the programmer did not intend
+	    other programmers to use these functions. Normally these are not
+	    translated to pragma statements, but can be if this option is
+	    specified. Be careful if you use private functions in your own
+	    code!
+
+COMMENT     FD files may contain comments (denoted by a * at the start of
+	    the line). These are usually ignored to save space, but can be
+	    included if you wish. GenPragma surrounds each comment line by
+	    the C comment convention (a /* ... */).
+
+The entire FD file is read into memory before output begins, so GenPragma
+is useable even on a single-drive system (which is more than can be said
+for your average C compiler). As a result of this, GenPragma creates a
+temporary file in the T: directory. If GenPragma is being run after the
+Amiga has been booted from a disk without a standard Startup-Sequence, make
+sure T: is assigned (ram:t is the usual).
+
+If you are running AmigaDOS 2.04 or higher (v37+) then when started from
+its icon GenPragma will open a window with several gadgets. These gadgets
+can be activated by clicking with the mouse or pressing the appropriate key
+(which is underlined in the gadget name).
+
+COMPILER    This is a mutual exclusion gadget to select the compiler type
+	    ths pragma file is to be output for. This gadget is equivalent
+	    to the PDC/LATTICE/SAS command line options.
+
+GENERATE PRIVATE / KEEP COMMENTS
+
+	    These two checkboxes allow selection of whether private functions
+	    are generated and whether comments are retained, respectively.
+	    These gadgets correspond to the PRIVATE/COMMENT command line
+	    options.
+
+GENERATE PRAGMA FILE
+
+	    A file requester appears to allow you to select the FD files to
+	    convert. Only files ending in "_lib.fd" are available for
+	    selection. You can select more than one file by highlighting all
+	    the files you want then clicking on "Okay". All files will be
+	    read into memory before you are prompted for a directory to
+	    write the processed pragma files. As before, this requires a
+	    temporary file in T:, so make sure T: is assigned. You can
+	    run more than one copy of GenPragma at the same time (why?)
+	    without interference as the name of the temporary file depends
+	    on the task structure address (ignore that bit if you didn't
+	    understand a word of it). The temporary files will have a name
+	    something like
+
+		    T:Gen.C453E6
+
+	    and will go away after GenPragma finishes.
+
+About the source
+----------------
+
+GenPragma is compiled under PDC v3.34, although it shouldn't be too hard
+to get it to compile under another compiler. The gadtools front end was
+created using GadToolsBox.
+

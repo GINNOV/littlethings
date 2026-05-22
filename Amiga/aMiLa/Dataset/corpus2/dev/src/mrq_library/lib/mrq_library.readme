@@ -1,0 +1,37 @@
+Short: Fast C2P + CGX procedures for games, demos... And more!
+
+Author: Marcin Kielesinski <misterq@canpol.pl>
+
+     help - Wojciech 'Wodnik' Brzostek
+            Marcin 'Sajko' Nowak          <sajko@viper.pl>
+            Damian 'Dami' Piotrowski      <dami@canpol.pl>
+            Marcin 'Igor' Wieczorek       <mwieczor@us.edu.pl>
+            Przemyslaw 'Sensei'  Gruchala <sensei@box43.gnet.pl>
+            Patryk 'PatPPC' Dâbrowski     <patppc@polbox.com>
+
+Uploader: Marcin Kielesinski <misterq@canpol.pl>
+Version: 1.12
+Type: dev/asm
+Replaces:
+WWW: http://vvv.pl/~undead
+
+Short
+------
+
+See doc/!_mrq_library in archive.
+BTW: At the moment is present only Polish documentation & doc...
+
+Changes in this release
+------------------------
+V1.12 - bugfixed on AGA side, added includes for C, fix asm includes...
+
+V1.10 - First public beta relase (it *may* contain bugs, however there
+were none noticed).
+
+Future
+------------------------
+PPC C2P, 18bitAGA & 16bit CGX routines...
+
+Usage
+-------------------------
+For coders only :)

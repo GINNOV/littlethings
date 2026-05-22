@@ -1,0 +1,20 @@
+Short: Generates Finite State Machine source code.
+Author:    Jim Steichen (jimbot@frontiernet.net)
+Uploader:  Jim Steichen (jimbot@frontiernet.net)
+Type:      dev/c
+Version:   3.0
+Requires:  C-Compiler of some sort (SAS-C (or gcc) recommended).
+
+    This version of StateMachine is written to run on the AmigaOne PC
+    under AmigaOS4.  If you want a 680x0 version, you'll have to email
+    me for one.  The original StateMachine program was a CanDo deck &
+    was published in 1994.  It had to be re-written since CanDo does
+    not work under AmigaOS4 (it has problems under OS3.9 also!).
+    The program is completely documented in StateMachine.guide, which
+    is included.
+    
+ AUTHOR
+    James T. Steichen
+    2217 N. Tamarack Dr.
+    Slayton, Mn. 56172-1155, USA
+    jimbot@frontiernet.net

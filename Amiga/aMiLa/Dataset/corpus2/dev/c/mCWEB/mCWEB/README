@@ -1,0 +1,85 @@
+% This file is part of mCWEB.
+% mCWEB is based on CWEB by Silvio Levy which in turn is
+% based on programs by D. E. Knuth.
+% They are distributed WITHOUT ANY WARRANTY, express or implied.
+% Version 1.1 -- October 1998
+
+% Copyright (C) 1996-1998 Markus Öllinger
+
+% mCWEB is a real extension to CWEB which means that all of the
+% original code is part of mCWEB. mCWEB's command set is a superset
+% of CWEB's commands. mCWEB is backwards compatible so that you can
+% also translate old-style CWEB programs.
+
+% Permission is granted to make and distribute verbatim copies of this
+% document provided that the copyright notice and this permission notice
+% are preserved on all copies.
+
+% Permission is granted to copy and distribute modified versions of this
+% document under the conditions for verbatim copying, provided that the
+% entire resulting derived work is given a different name and distributed
+% under the terms of a permission notice identical to this one.
+
+% Please send comments, suggestions, etc. to moell@ist.tu-graz.ac.at
+
+This directory contains the following files:
+
+Makefile          The Makefile for UNIX systems.
+smakefile         The smakefile for SAS/C for Amiga.
+mCWEB.readme	  This file.
+README            Information on how to build on UNIX systems.
+README.Amiga      Information on how to build on the Amiga.
+comm-man.ch       Changes to common.w when making the full manual.
+mcommon.c         Used for bootstrapping mctangle.
+mcommon.h         Header file included by mctangle.w and mcweave.w
+mcommon.w         Common code for mctangle & mcweave.
+mcommon-Amiga.ch  Changes to mcommon.w for Amiga.
+ctang-man.ch      Changes to mctangle.w when making the full manual.
+mctangle.c        The C file for mctangle, used for bootstrapping.
+mctangle.w        The mctangle preprocessor.
+mctangle-Amiga.ch Changes to mctangle.w for Amiga.
+cweav-man.ch      Changes to mcweave.w when making the full manual.
+mcweave.w         The mcweave preprocessor.
+mcweave-Amiga.ch  Changes to mcweave.w for Amiga.
+prod.w            The productions mcweave uses for prettyprinting.
+mcweb.1           The manual page.
+cweb.el           The unchanged emacs lisp file.
+mcwebmac.tex      The TeX macro package.
+Xmcwebmac.tex	  Included by localized versions of mcwebmac.tex
+dmcwebmac.tex	  German version of mcwebmac.tex
+fmcwebmac.tex	  French version of mcwebmac.tex
+mcwebman.1        MetaPost figures in PostScript format.
+mcwebman.2
+mcwebman.mp       Source of the MetaPost figures.
+mcwebman.tex      The user manual in LaTeX (!).
+mcwebman.bbl	  The Bibliography file for the manual.
+mcwebman.dvi	  DVI file ready to be printed
+
+IMPORTANT: Please touch *.c before proceeding.
+Then edit the opening lines of Makefile so that it has the proper
+directory information for your local system.
+
+To make mctangle and mcweave say `make all'; this should produce roughly
+the following actions (possibly with harmless warning messages from cc):
+
+cc -g -w -c mctangle.c
+cc -g -w -DCWEBINPUTS=\"/usr/lib/mcweb\" -c mcommon.c
+cc -g -o mctangle mctangle.o mcommon.o 
+./mctangle mcweave
+cc -g -w -c mcweave.c
+cc -g -w -o mcweave mcweave.o mcommon.o
+
+To get some reassurance that things are OK, you can say `make cautiously',
+which ensures that mCTANGLE will reproduce itself. (Otherwise the source
+files mcommon.w and mctangle.w won't actually have been used.)
+
+To install mcweave and mctangle say `make install'. You probably need to
+be superuser to do this; but it's wise to `make all' first, BEFORE
+becoming superuser and saying `make install'.
+
+To make the usermanual, say 'make usermanual'. The user manual is written
+in LaTeX. The mcweb distribution contains some style files, that are used
+by the manual.
+Usually, you should already have those files. If you are missing some of
+them, they should be copied to the LaTeX style file directory before
+making the manual.

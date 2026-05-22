@@ -1,0 +1,10 @@
+Short:        Combines assembly with parts of C. V1.9
+Author:       Joe Siebenmann
+Uploader:     joes potomac net ( Joe Siebenmann )
+Architecture: m68k-amigaos
+
+
+EZAsm combines 680X0 assembly language with parts of C.
+Produces highly optimized code. Supports all 3.x functions,
+braces, "else", ".fd" support, and much more.
+ 

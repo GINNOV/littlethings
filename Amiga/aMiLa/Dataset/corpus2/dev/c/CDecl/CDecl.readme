@@ -1,0 +1,12 @@
+Short:        Convert C declarations to/from english.
+Author:       finkel@libra.math.tau.ac.il (Graham Ross with enhancements by David Wolverton,)
+Requires:     Tested on A500 w. 1M, but should run on all Amigas.
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+English to C (and vice versa) translator for C
+declarations.  This little gem will translate english
+such as "declare foo as pointer to function returning
+pointer to array 10 of pointer to long" into
+"long *(*(*foo)())[10]", and vice versa.  Update from
+version on disk number 114. Includes source.

@@ -1,0 +1,72 @@
+Date: 3rd Feb 1997
+Subject: CadOS 1.3 - release 1
+
+I am proud to present the first public release of CadOS, an operating
+system to work behind AGA demo-programming.
+
+WHAT?
+-----
+If you look at most demo sources today, you will find they have a operating
+system of the coder's invention behind them, at minimum they will have a
+little "startup code". There exist some demos that break this rule, but they
+don't work on anything other than A500s :-)
+
+CadOS is one such demo OS, and a quite advanced one at that. It is a
+responsible OS, taking over the OS gracefully, and leaving it pretty much
+in the same state it got it.
+
+It comes with lots of high level routines, that all coders appreciate.
+For example, you can generate an entire copperlist with one call! Another
+call can load and unpack a file for you, another can generate a screen
+from an IFF file and even unpack the IFF into the bitmap for you.
+
+But - unlike most demoOSes - it has DOCUMENTATION!
+Over 100k of docs, each function described exactly with AmigaGuide manpages,
+also the system itself is described and its features and errorrequesters
+are listed.
+
+Finally, most importantly, programs that use CadOS are more user-friendly!
+
+WHY?
+----
+CadOS is my OS. I have developed it for over a year, more than many other
+coders have put to their OS. During this time, I have uncovered many
+problems with compatibility when one stops the AmigaOS from being the master
+of the Amiga, and taking the crown for yourself. The philosophy of CadOS
+is to make demos much safer to the user and the user's Amiga, while not
+giving up very much of what the coder likes to do. And, to improve the
+safety-factor of demos at large, I am allowing anyone to use it, read it's
+source, and take it apart to please themselves with. Now any demo coder can
+add to or improve his own OS. May the user never need a 'scratch partition'
+to run demos.
+
+WHERE?
+------
+CadOS has a homepage, 
+
+           http://www.abdn.ac.uk/~u13sac/kyzer/cados.html
+
+you can download it from there, CadOS will also be made available for ftp
+from aminet. And you can also expect all good coding sites and BBSes to
+carry it.
+
+WHAT NOW?
+---------
+In the future, I propose to add:
+- CIA chip saving (lacking currently!)
+- MMU protection.
+- much more support sources (I have a backlog to convert!)
+
+I would appreciate if people downloaded CadOS and gave it a look, and
+tested the executable programs on their Amigas, especially if they have
+a 68030 or better, the snazzier the config the better.
+
+In particular, I would like feedback:
+
+- Does it assemble with your assembler? (tested with PhxAss 4.33)
+- Do the binaries work? (tested A1200.020.14.2MbC8MbF.v39.330MbHD and
+  A1200.020.14.2MbC0MbF.v39.0MbHD)
+- Can you get it to work with one of your sources?
+- Do you like it?
+
+Enjoy!  -Kyzer/CSG

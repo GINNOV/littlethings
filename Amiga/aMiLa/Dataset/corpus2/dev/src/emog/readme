@@ -1,0 +1,65 @@
+
+  These are the sources of a tool called EMOG which may be used
+  to convert a C header to an E source . I've mailed this tool
+  at the Amiga-E mailinglist but the response wasn't that big
+  so I won't continue this program as there seems to be no
+  interests . If anyone wants to complete this proggy feel
+  free to do so. I would continue it if there is enough
+  resonance but I don't believe in this.
+
+
+  COMPILING
+
+  If you want to compile this you need to have the E compiler
+  plus the GeekGadgets stuff. Changing the directory to the
+  place where the sources are located and typing "makeall MAKE"
+  will generate the binary. "makeall -?" gives you a small
+  description of the options.
+
+
+  PROBLEMS
+
+  The C header file must contain valid ANSI-C code because
+  I'm not checking for errors. I assume the following things
+  about the C header file:
+
+    1. No empty macros. "#define MYMACRO" must be replaced
+       by "#define MYMACRO 1" . The value 1 isn't needed.
+       Any other expression is valid, too but why using
+       something more complicated.
+
+    2. Structure definitions containing something like
+       this:
+
+	    struct mystruct {
+
+	      struct {
+		int x, y;
+	      } thiscomponent;
+
+	    };
+
+       aren't valid. Instead the declaration should be
+       changed to following:
+
+	  struct point {
+	    int      x, y;
+	  };
+
+	  struct mystruct {
+	    point    thiscomponent;
+	  };
+
+
+
+    3. Macros with args aren't supported.
+
+    4. Casting in macros will not be converted successfully.
+
+
+
+  TODO
+
+  Module loading (lomo.e) for setting up a table of identifiers
+  which may be used to use proper identifier names .
+

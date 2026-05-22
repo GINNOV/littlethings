@@ -1,0 +1,16 @@
+Short:        Window C source - example for beginners
+Author:       Dalibor.Kezele@public.srce.hr (Dalibor Kezele)
+Uploader:     Dalibor Kezele public srce hr (Dalibor Kezele)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+
+         This little routine is just an example of a simply structure
+         of any C program which uses intuition. In this code is shown
+         how to open windows, set menus, make a new face of the mouse
+         pointer, print an intuition text, work with "messages" which
+         intuition sends to our proggys and calling the amiga's "bad"
+         AutoRequest (which is known as System Request).
+
+         Routine is developed in Aztec C 5a but it should be compiled
+         on other compilers also cause I program very friendly. :-D

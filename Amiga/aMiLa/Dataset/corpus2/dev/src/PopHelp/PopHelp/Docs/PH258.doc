@@ -1,0 +1,319 @@
+
+		 PopHelp v2.58 Professional By MpL
+		===================================
+
+About PopHelp:
+--------------
+  PopHelp is FreeWare, but still copyrighted by MpL. Feel free to distribute
+ PopHelp as much as you like, provided that you include all files listed
+ below. PopHelp may not be sold for profit. You may not change these files.
+ PopHelp is not guarateed to do anything useful. Use at your own risk.
+ If you do find this program useful, how about sending me some kind of a
+ small bribe...
+
+  PopHelp is a small (about 27K) utility which includes some important DOS-
+ commands and tools in one package. PopHelp is fully programmed in assembler
+ (executable compiled with A68k). PopHelp was programmed on an A500 with
+ KS1.3 so if you have a better configuration (and who has not?) you may find
+ this program a bit useless. I myself have even used this couple of times.
+ Well, at least I had something to spend my spare time to. This version was
+ released on 20.12.1994. See the 'PH_History.doc' file to see updates and
+ bugfixes from earlier versions.
+
+  These files should be included in this package:
+   - PopHelp		= The executable
+   - Pophelp.info	= Icon for WB use
+   - PH258.doc		= How to use PH
+   - PH258.guide	= Same in AmigaGuide format
+   - PH_History.doc	= How it all began
+
+Installing and running:
+-----------------------
+  This part is going to be easy! To use PopHelp, just copy the executable
+ wherever you want to. You do not need to install any fancy libraries or
+ fonts. PopHelp does not need them. However, there are couple of libraries
+ that give you access to special files. Read on to find out more.
+
+  Use 'Run' command to run PopHelp from CLI/Shell. You may also run it from
+ Workbench by double-clicking its icon. Once activated PopHelp will open a
+ small window and display free memory and time on it. PopHelp will also try
+ to access preferences file 'S:PH.prefs'. This file does not have to exist.
+ If nothing happens, there was an error: ROM-libs could not be opened, not
+ enough memory etc. PopHelp does not need any special libraries etc. to run,
+ so this should not happen very often. If it does, something is quite wrong!
+ PopHelp should work with KickStart1.2 and higher. PopHelp can be made
+ resident.
+
+Using PopHelp:
+--------------
+  Press the right mouse button to see the menus. Select one of the commands
+ with mouse or keyboard short cuts. After that a window will pop up and you
+ are asked to enter parameters for the selected command. However, some simple
+ commands may not need any kind of parameters.
+
+  On the top of the window you can see two string-gadgets with some kind of
+ explanation about the required parameters. Note that if you have earlier
+ entered some parameters, they are still present in the gadgets. You can
+ edit them or press RightAmiga+X to clear the string (RightAmiga+Q brings
+ it back). After you have entered the first parameter, press Return and you
+ can enter the second parameter (if only one parameter is needed, the second
+ gadget will be 'ghosted' and you can not use it).
+ You can also activate one of the string-gadgets with mouse. After entering
+ the required parameters (one or two) and pressing Return, the command will
+ be executed. If you leave both or one of the string-gadgets blank or press
+ the window's close-gadget, the command will be cancelled.
+
+  Below the string-gadgets there are four drive-gadgets for the most usual(?)
+ devices: DF0:, DF1:, RAM: and DH0:. Clicking one of these will clear the
+ active string-gadget and copy the device string into it. After that you can
+ add, for example, a filename.
+
+  Below the drive-gadgets you see the option-gadgets. These usually contain
+ some kind of options, like the corresponding DOS-commands. Activate or
+ deactivate the ones you want. If you activate some option-gadgets they
+ will stay activated until you deactivate them, as long as you use the same
+ command. When you select another command that has options, these option-
+ gadgets will be deactivated so that you do not need to 'clean up' them,
+ since the new command probably has different options. Option-gadgets that
+ are not currently used are 'ghosted'.
+
+  Below the option-gadgets you can see two thin borders. These spaces will
+ usually contain some information about the execution of the command. This
+ helps you to keep up with what is going on.
+
+  The lowest big border is used to print errors or small messages that
+ usually require some kind of response from the keyboard, like 'y' for yes,
+ 'n' for no or maybe just a pressing of Return.
+
+Here are the menus and commands in them:
+----------------------------------------
+Pop:
+----
+About:		 Displays some information about PopHelp.
+
+Quit:		 Exits Pophelp. You can also exit by clicking the window's
+		close-gadget.
+
+Commands:
+---------
+Copy:		 Enter source and destination file/path. '*' and '?' can be
+		used as wildcards. (e.g. 'df0:*', 'Disk:C/Prgv1.?')
+		You can copy several files by using these wildcards. However,
+		if you copy a directory you can copy only one at a time since
+		subdirectories are ignored. If you copy into a destination
+		directory that does not exist, you will be asked if you would
+		like it to be created before proceeding. If a destination
+		file already exists, you will be informed and asked if you
+		would like to overwrite it. If an error occurs during the
+		copy, incomplete destination file will be removed. PopHelp
+		also checks if there is enough disk-space on the destination
+		path. If not, you will be informed and the file will not be
+		copied. This, however, is ignored when copying to RAM: since
+		it is always 'full'.
+		If 'Flags' is selected, the destination files will have the
+		same protection flags set than the source files. 'Comments'
+		will preserve comments. See Preferences/CopyBuffer!
+
+ReName:		 Enter the old file/directory name and then the new name for
+		it.
+
+Delete:		 Just enter the file/path to be deleted. Wildcards (*,?) can
+		be used. If you delete a directory and 'All' is selected, all
+		files in that directory will be deleted and after that the
+		directory itself. However, subdirectories are skipped.
+		If you try to delete a file/dir that is protected from
+		deletion you will be informed about that and asked if you
+		would like to unprotect the file and delete it after that.
+
+Move:		 Works as the 'Copy' command, but this deletes the source
+		after copying it. First enter the file/path to be moved,
+		press Return and enter the destination path/file and hit
+		Return again. Comments and flags will be automatically
+		preserved.
+
+MakeDir:	 Give the name of the directory to be created. Multiple
+		directories can be created at a time. 'DF0:dir1/dir2/dir3'
+		would create directory 'df0:dir1' which would contain
+		subdirectory 'dir2' (df0:dir1/dir2) which would contain
+		subdirectory 'dir3' (df0:dir1/dir2/dir3).
+
+			DF0: -- dir1
+				   |
+				  dir2
+				     |
+				    dir3
+
+Protect:	 Set the protection flags as you want and then enter the
+		file/path to be protected. Wildcards (*,?) can be used.
+
+Dir:		 Enter the directory to be displayed and press Return.
+		If no directory name is entered, the current work directory
+		will be shown. The directory window is divided in two spaces.
+		On the left side you see the subdirectories this directory
+		contains. On the right side are the files and their sizes
+		in this directory. On the bottom is displayed the number of
+		subdirectories and files in this directory, available disk-
+		space in kilobytes and the amount of bytes in the files.
+		There are also some arrow-gadgets (top, bottom, page/row
+		up/down). With them you can scroll the directories on screen
+		if they are too long to fit in one page.
+		You can enter a subdirectory by clicking mouse on its name
+		on the left side. After this the FIRST-gadget will bring back
+		the first directory. You can exit 'Dir' by clicking the
+		window's close-gadget.
+		'.fastdir' option uses '.fastdir' file if one is found. This
+		is an old invention used at least by 'CLI-Mate' program
+		but I decided to include it anyway. The directory is stored
+		in a file and it loads faster than normal directory. See
+		Special/Make.fastdir! 'TrackDir' uses trackdisk to read
+		the directory. This might be a bit faster than directory read
+		by normal means at least with long directories under OFS and
+		KickStart1.2/1.3. 'Last Dir' (memory dir) displays the last
+		directory which was displayed on screen when exited. This
+		will save time if you need the same directory many times.
+
+Execute:	 You can execute a DOS-command with this command the same way
+		you would do it in CLI/Shell. This uses 'Run' command (which
+		has to be available). A small window will be opened for
+		possible text output.
+
+FileNote:	 Allows you to set a comment on a file. These comments can
+		be displayed with DOS's 'List' command. To remove the comment
+		enter a blank comment. Wildcards (*,?) can be used.
+
+Type:		 Displays ASCII file. Just enter the file name. If the file
+		is powerpacked it will be decrunched provided that power-
+		packer.library is found in your LIBS: (and reqtools.library
+		for the password, if the file is crypted). If not, the
+		file will be displayed as normal ASCII and it may look a bit
+		strange. You can scroll the text in the window with the
+		arrow-gadgets. Press the window's close-gadget to exit.
+
+SetClock:	 'Reset' will reset the battery backed up clock. Use this
+		if your Amiga does not recognise the clock while SetClocking
+		in DOS.	'Load' loads the current time from the clock and sets
+		the system time. 'Save' asks you to enter the current date
+		and time as DD-MM-YY HH:MM:SS and saves them in the clock.
+		(e.g. 26-09-92 22:08:02 or 26-9-92 22:8:2)
+
+Disk:
+-----
+ReLabel:	 Changes a disk name. First enter the drive where the disk is
+		and then the new name for the disk.
+
+Install:	 Just enter the drive to be installed. This command installs
+		a normal DOS-boot. 'NoBoot' removes the boot. If 'FFS' is
+		selected the boot will be in FastFileSystem format to be used
+		with KickStart2.x+.
+
+Format:		 Enter the drive to be formatted and a name for the disk.
+		'Quick' option initializes only the boot and root blocks.
+		'Verify' determines if the format will be verified.
+		If 'Install' is selected, the disk will be installed with
+		normal DOS-boot after the format. 'FFS' uses FastFileSystem
+		format. 'MarkBADD' works like a program called 'BADFormat'.
+		If it finds damaged blocks, they will be marked as used. Then
+		those bad blocks won't cause any read/write errors but you
+		can still use the 'healthy' parts of the disk.
+		See Preferences/MarkBADD!
+
+DiskCopy:	 Copies a whole disk to another disk. Enter the source and
+		destination drives. You can use one or two drives. If you use
+		only one drive you may have to change disks several times.
+		This depends on the amount of free memory. PopHelp copies as
+		much data into memory as possible (PH tries to preserve at
+		least 50K of memory available so that your system has
+		something to work in) and asks you to change disks after
+		that. 'Verify' determines if the copy is verified.
+		You can't have two identical disks in the drives at the same
+		time. If 'Date' is selected, the destination disk's creation
+		and last modification dates will be modified. This makes the
+		disks look different so that AmigaDOS can separate them.
+		If I remember right, KickStarts1.2/1.3 have a bug, so this
+		won't normally help. TrackSalve tries to do something about
+		it, so use it. In KickStart2.x and higher 'Date' should have
+		the required effect.
+
+Special:
+--------
+Vectors:	 This menu displays some strategic vectors. The reset vectors
+		should normally be zero. Hope you do not have any viruses!
+
+Make.fastdir:	 This command creates a '.fastdir' file in the specified
+		directory. The '.fastdir' file is identical to files created
+		with a program called 'CLI-Mate'. See Commands/Dir!
+
+ShowGfx:	 View graphics. You can show IFF ILBM files and
+		workbench icon (.info) files. If the shown icon has two
+		images, you can toggle between them by pressing Return.
+		PopHelp needs 'icon.library' to view icons.
+		Powerpacked ILBMs supported if powerpacker.library is
+		available.
+
+Preferences:
+------------
+CopyBuffer:	 This affects the size of the buffer used by the 'Copy' and
+		'Move' commands. 'AutoSize' allocates a buffer according to
+		the file size, so that the copy can always be done in one
+		part. 'SetSize' allows you to set a fixed size to the
+		buffer by typing it in kilobytes from the keyboard. After
+		that this size will be used for every file.
+		For example, if you want to copy a 50K long file and you
+		use AutoSize, the buffer size will automatically be adjusted
+		to 50K. If you use SetSize and set the buffer to 50K the
+		file can also be copied in one part. However, if you set the
+		buffer size to 32K the file must be copied in two parts.
+		(If PH fails to allocate the AutoSized buffer it tries to
+		allocate the SetSized buffer!)
+		Note that the memory for the buffer is allocated only when
+		the 'Copy' and 'Move' commands are used. Otherwise it is
+		free to be used by other programs.
+
+ScreenMode:	 Select PAL or NTSC size. When PopHelp opens other windows,
+		like in 'Dir' and 'Type', you can have a window that covers
+		the whole screen (more text!) if you have a PAL Amiga. You
+		can't select PAL if your Amiga is in NTSC mode.
+
+Borders:	 This affects the outlook of the 3D-things. KickStarts1.2/1.3
+		and 2.x+ have usually white and black colours swapped, so
+		this helps the borders not to look strange. Pick up the one
+		you like the best!
+
+MarkBADD:	 When you use the 'MarkBADD' option in 'Format', bad blocks
+		are marked as used so that they will not be used by DOS.
+		However, AmigaDOS usually reads and writes only full tracks
+		at a time. If we mark only couple of blocks in a track used,
+		also those blocks will be read and written anyway every time
+		the track is used and they will cause trouble. So, in this
+		case it is no use marking only those couple of blocks. If we
+		want to	have some advantage, we have to mark the whole track.
+		There is also the 'old' option which marks only blocks but
+		you should use the option that marks whole tracks. (There are
+		80 cylinders on a disk (0-79), a cylinder consists of 2
+		tracks,	one on each side of the disk and a track consists of
+		11 blocks.)
+
+PHPointer:	 Use PopHelp's built-in pointer. This pointer is displayed
+		when PopHelp window is active and it is currently the normal
+		KickStart2.x+ pointer. When PopHelp does something for longer
+		time or is waiting for response, the pointer will be usually
+		changed to KickStart2.x+ style clock, even if this option is
+		not enabled.
+
+SavePrefs:	 Saves the current preferences settings to a file called
+		'S:PH.prefs'. When PopHelp is run, it checks for this file
+		and sets the preferences according to the file.
+
+
+  I hope you understood something of this text even if it is not perfect
+ English. If you have any problems, suggestions, bug reports, donations or
+ anything then write to:
+
+	Mika Lundell
+	K-- not available --A21
+	6-- changed --SA
+	FINLAND
+
+  You can also reach me via e-mail:
+	InterNet: c71829@uwasa.fi
+	 FidoNet: 2:224/930

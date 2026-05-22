@@ -1,0 +1,26 @@
+To Do:
+~~~~~~
+
+-For displaying memory/resource flags do a bits->name mapper
+   ie Show MEMF_CHIP instead of a decimal value
+
+-Have a flag (1 per resource type) so that when an allocation is made
+   a requester appears asking if a failure should be faked.
+
+-GUI
+
+-Allow freeing/viewing/editing/saving of individual allocations (in GUI)
+
+-Make amigaguide documentation
+
+-add a 'dog tag' at end of memory allocations, and verify it's still
+valid when freeing.
+
+-make pointer_status() call which returns validity of the data:
+   dhPS_NULL for a NULL pointer, DHPS_CORRUPT for corrupt data
+   DHPS_OKAY for okay.
+
+-pointer status should be defined to call an empty routine when not
+DEBUGing
+
+-directly support kprintf

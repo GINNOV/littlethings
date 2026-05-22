@@ -1,0 +1,132 @@
+
+     H2I V1.1                 Programmer's Manual                    Page 1
+
+
+
+
+
+     ›1mNAME 
+
+          ›0mH2I - Compiler C include files to assembler include files 
+
+
+
+     ›1mSYNOPSIS 
+
+          ›0mH2I <file>[.h] 
+
+
+
+     ›1mDECRIPTION 
+
+               ›0mH2I  translates C include files into assmembler include
+          files.  This can be a help to  all  those  programmers  that
+          have their own structure definitions together with assembler
+          parts in  their programs.  H2I has the advantage that it can
+          keep the structure definitions consistent for both languages
+          because they base on only one file.  
+
+               <file> is the name of  the  C  include  file.    If  it
+          doesn't end with ".h" the suffix is appended.  The assembler
+          include file has the same name with the suffix ".i".  
+
+               H2I  understands  a  small  subset  of  the  C  and the
+          C-preprocessor syntax.  In  fact  these  are  the  structure
+          definition   without   bitfields,  the  "#define",  and  the
+          "#include" statement.  The structure definitions may contain
+          all standard C type and the specific AMIGA types as they are
+          defined  in  "exec/types.h"   and   "libraries/dos.h".   The
+          structure components can be: 
+
+               - all types 
+               - pointers 
+               - arrays 
+               - pointers to arrays 
+               - pointer to functions 
+
+
+               The contents of the function parenthesis of pointers to
+          function  components  is  not checked, so this can be K&R or
+          ANSI style functions.  
+
+               The  syntax  for  structure  definitions  contains  two
+          special expressions that must be added to standard C include
+          files: 
+
+                    Between the name of a structure definition and the
+               left  brace  the following expression must be inserted:
+               "/*/" <identifier> "*/".  <identifier>  is  used  as  a
+               prefix  to  the  C  names  of the structure components.
+               <identifier> should be unique to all other and standard
+               assembler include files.  <identifier> is also used  as
+               the  prefix for the LABEL statement that gives the size
+
+
+     H2I V1.1                                                    18 July 90
+
+
+     H2I V1.1                 Programmer's Manual                    Page 2
+
+
+               of a  structure.    The   generated   LABEL   name   is
+               <prefix>_SIZE.  
+
+                    Between  the  name of structure definition and its
+               name as the structure  component  the  same  expression
+               must be  inserted  as descriped above.  <identifier> is
+               used here as  the  LABEL  name  that  is  used  in  the
+               assembler structure definition.  
+
+                    The  prefix  expression  are  comments  for normal
+               C-compilers and only be used by H2I.  
+
+
+               The complete  syntax  that  is  understood  by  H2I  is
+          descriped in the file "Syntax" in this directory.  
+
+
+
+     ›1mEXAMPLE 
+
+          ›0mstruct mystruct /*/ ms */ { 
+             struct MsgPort /*/ MP_SIZE */ myport; 
+             struct Message /*/ MN_SIZE */ mymsg; 
+             struct Message /*/ MN_SIZE */ *mymsg2; 
+             char string[256]; 
+             long number; 
+             VOID (*function)(); 
+          }; 
+
+
+          Translated to: 
+
+           STRUCTURE mystruct,0 
+              STRUCT   ms_myport,MP_SIZE 
+              STRUCT   ms_mymsg,MN_SIZE 
+              APTR     mymsg2 
+              ARRAY    ms_string,1,256 
+              LONG     ms_number 
+              APTR     ms_function 
+              LABEL    ms_SIZE 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     H2I V1.1                                                    18 July 90
+

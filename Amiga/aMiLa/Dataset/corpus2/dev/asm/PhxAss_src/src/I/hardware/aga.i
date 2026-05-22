@@ -1,0 +1,48 @@
+ ifnd HARDWARE_AGA_I
+HARDWARE_AGA_I set 1
+*
+*  hardware/aga.i
+*  for PhxAss
+*
+*  © copyright by F.Wille in 1993
+*
+
+BLTCON0L	= $05a
+BLTSIZV 	= $05c
+BLTSIZH 	= $05e
+SPRHDAT 	= $078
+BPLHDAT 	= $07a
+DENISEID	= $07c
+LISAID		= DENISEID
+BPLCON3 	= $106
+BPLCON4 	= $10c
+CLXCON2 	= $10e
+BPL7DAT 	= $11c
+BPL8DAT 	= $11e
+HTOTAL		= $1c0
+HSSTOP		= $1c2
+HBSTRT		= $1c4
+HBSTOP		= $1c6
+VTOTAL		= $1c8
+VSSTOP		= $1ca
+VBSTRT		= $1cc
+VBSTOP		= $1ce
+SPRHSTRT	= $1d0
+SPRHSTOP	= $1d2
+BPLHSTRT	= $1d4
+BPLHSTOP	= $1d6
+HHPOSW		= $1d8
+HHPOSR		= $1da
+BEAMCON0	= $1dc
+HSSTRT		= $1de
+VSSTRT		= $1e0
+HCENTER 	= $1e2
+DIWHIGH 	= $1e4
+BPLHMOD 	= $1e6
+SPRHPTH 	= $1e8
+SPRHPTL 	= $1ea
+BPLHPTH 	= $1ec
+BPLHPTL 	= $1ee
+FMODE		= $1fc
+
+ endc

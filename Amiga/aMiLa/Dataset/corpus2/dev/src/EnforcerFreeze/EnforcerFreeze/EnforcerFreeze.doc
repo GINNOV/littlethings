@@ -1,0 +1,182 @@
+    COMMAND
+	EnforcerFreeze
+
+    TEMPLATE
+	DECREMENT/N/K,REQUEST/S,TASKPRI/N/K,ILLEGAL/S,BG=USEGBTASK/S,QUIT/S
+
+    DESCRIPTION
+	Freeze Nasty Processes, which produce Enforcer Hits
+
+	GENERAL
+	    EnforcerFreeze installs an additional TrapHandler for
+	    Address Faults as explained in Enforcer.doc (for that
+	    reason, it _might_ be incompatible with VMM);
+	    it either creates a busy Task at priority -127 and
+	    whenever an Enforcerhit occurs, the priority of the
+	    hitting Task is set to -128 (BGTask) or it installs a
+	    high priority waiting task that is signalled whenever
+	    a task produces an Enforcerhit.
+	    EnforcerFreeze now may prompt the user with a message
+	    that one task has produced a Hit and ask what to do.
+
+	* The Traphandler may be temporarily disabled by sending CTL-D
+	  the process; it may be re-enabled by sending CTL-E to the process.
+
+	* The Requester can be turned off
+	  either by not specifying REQUEST on start
+	  or by sending CTL-F (as a toggle) to the Process
+	  it may be re-enabled by againsending CTL-F to the process.
+
+	  If there is no Requester active, we just decrease the task
+	  priority for each hit automatically
+
+	  The decrease in Priority, we perform (either on user request or
+	  automatically) can be set on start w/ the DECREMENT keyword
+
+	* We currently can queue up to 16 Enforcerhits while prompting
+	  for user decision; (the according processes are "stopped" up
+	  to the moment, the user decides, what to do) if there occur more
+	  hits, while we are prompting for User-Input (or the hell why)
+	  the TrapCode acts, like if REQUESTMODE was turned off (decrease
+	  Priority)
+
+	* The Priority of the handlertask can be set on startup
+	  (0 <= priority <= 19) (this is neither priority of fgtask
+	  nor of bgtask, but priority of the main process)
+
+	* Tasks just moved into the "Waitinglist" can be reactivated
+	  by just changing their priority. If they were already waiting,
+	  this selection has no effect.
+
+	* Tasks marked "Invalid" can be reactivated e.g. via ARTM
+	  (freeze & activate -> the status is changed, and the right
+	  list is used)
+
+	* Tasks marked w/ "Wait-0" can not be reactivated such easy:
+	  U have to know, if they were waiting or running, and if
+	  waiting, for which signals, in order to reinstall the original
+	  state (hopeless); this way should be used only, if a task shall
+	  be stopped forever (also past EnforcerFreeze-termination)
+
+	* Frozen Tasks are moved into a private List, and can thus
+	  _not_ be found via FindTask or Monitors any more
+
+	* If EnforcerFreeze is quit (via CTL-C) the the "frozen" programs
+	  are restarted w/ Priority -128 (in the waitinglist 8>)
+
+
+	- Unfortunately We have to wait up to 'QUANTUM' for a taskswitch,
+	  so there may be produced many hits, before we can stop the task...
+	  (I have counted up to 10000 hits in a loop like
+	  "int x = 0; while (!(pr->pr_Task.tc_SigMask)) x|=*(STRPTR)NULL;" )
+	  Up to now, all tries to freeze the current task before a
+	  taskswitch have been unsuccessful ... (I have no documentation
+	  about 680x0, so this won't change so fast) (I have tried to simulate
+	  a JSR "Wait(0)" on the user-stack, but the only result is: the
+	  machine is freezing (see ForeignFreeze.asm))
+
+
+	/*
+	BACKGROUNDTASK MODE: (optional - this mode might be dropped
+					 in future Versions)
+
+	* Minimal Priority means: the task is stopped, since the BGTask
+	  has Priority -127
+
+	* while the user is prompted for input, the hitting Task is stopped
+	  by minimizing its priority (so it's still accessible)
+
+	- The BackgroundTask needs lots of CPU time (e.g. Blanker won't show
+	  its patterns any more)
+
+	- EnforcerFreeze QUIT has no effect in connection w/ BG-Tasks
+	*/
+
+	FOREGROUNDTASK MODE: (default)
+	* Minimal Priority does _not_ stop a task, since it gets all remaining
+	  time, if other tasks are waiting ...
+
+	* The hitting tasks are removed from the task list, while the user is
+	  prompted for a decision
+
+	* The Signals CTL-CDEF are passed to the Parenttask, if they are
+	  send to the childtask.
+
+	- at least for the time we are prompting for a decision, the
+	  hitting task is removed from tasklist and thus can not be found
+	  via 'FindTask()'
+
+
+    NOTES
+	Kickstart 2.0+ required
+	compiles w/ SAS/C v6.51
+
+	CLI only (currently)
+
+	!!!!! RUNS ONLY ON 68030, NEEDS ENFORCER RUNNING !!!!!!!!
+	it needs an MMU to run, but how can we test that?
+
+    WARNING
+	This Program is highly experimental!
+
+	* It is changing System Vectors, so the machine might hopelessly
+	  crash; never checked interference w/ Viruskillers, nor tested
+	  together w/ VMM etc.
+	* It is poking in Task Structures and Exec TaskList ...
+	* It is using Forbid/Permit (and perhaps even not enough)
+	* Nobody is AmigaGER was able to tell me about doing it,
+	  and I did not find any note in GuruBook nor in RKRM,
+	  so it is just a try.
+	* No Betatesting yet - I am always in a great lack of testers =8*}
+	  However EnforcerFreeze is running for over one month now on
+	  my system and has not yet caused any problem.
+	* According to exec/AllocTrap(), direct write to Exception
+	  table is not allowed, but we do so; thus we are illegal
+
+	*** Use only at Your own risk! ***
+	(Dont't blame me for Your damage)
+
+    BUGS
+	* Task must be halted for REQUEST mode
+	  or
+	* Requestmode should do some security checks
+	  else we might be hitting ourself =8-}
+
+	* EnforcerFreeze cannot be made pure, since we
+	  are using some 'code-variables' (sorry for that,
+	  but the main part of TrapStubs has been taken
+	  from 'Enforcer.doc')
+
+    TODO
+	**** Immediate Trapping
+	     we must currently wait for the next taskswitch to occur,
+	     before the hitting task is suspended; that means, that up
+	     to 10000 additional hits might occur (which then are skipped)
+	     (sorry, but i have no idea, how to speed up this taskswitch)
+
+	*! Task/Program exclusion list (not only input.device)
+	*! RexxDest - instead of Request send a string to an ARexxPort
+	  (e.g. Port="REXX"
+		String="ENFORCERHIT TASK=$(tc) PRI=$(tp) STATE=$(ts) \
+			    LIST=$(&TrapData.FrozenTasks) MODE=$(bg|fg)")
+	* Commodities interface?
+	* GUI? (better via RexxDest)
+	* ARexx Port?
+	    MODE	FREEZE|DRECREASE|REQUEST|SLEEP/S
+	    SET 	DECREMENTVALUE/K/N
+	    FREEZE	TASKNAME/K,TASKID/K/N
+	    FROZENTASKS  STEM/K
+	    WAITINGTASKS STEM/K
+	    QUIT	FORCE/S
+	* better message handling? (there may be lost hits ...)
+	* RemTask/Ctl-DEF Choices?
+
+
+
+
+    HISTORY
+	11-04-95 b_noll Project started
+	31-05-95 b_noll First public Release
+
+
+

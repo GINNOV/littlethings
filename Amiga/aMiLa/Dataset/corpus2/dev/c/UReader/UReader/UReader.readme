@@ -1,0 +1,73 @@
+Short:        UReader 0.02
+Author:       Gilles Pelletier
+Uploader:     gilles.pelletier@voila.fr (Gilles Pelletier)
+Type:         dev/c
+Version:      0.02 (15-Sep-2011)
+Requires:     Ucode package or ttengine.library package
+Architecture: m68k-amigaos
+
+Introduction
+~~~~~~~~~~~~
+Unicode is the best way to have a unique code behind each letter of most
+scripts used by computer industry.
+With Unicode you can obtain a russian text annoted with english and french
+with all its accents.
+
+Installation
+~~~~~~~~~~~~
+For ucode.library:
+Download Ucode.lha and read Ucode.Readme by Ken Shillito before start.
+Download C_Ucode.lha and copy the includes or copy the includes supplied.
+Download and install the glyphs, otherwise there will be nothing on the screen.
+
+For ttengine.library:
+Download the package.
+You need also a unicode true type font.
+I don't know a complete one, but try the following
+l_10646.ttf
+code2000.ttf
+
+
+The program
+~~~~~~~~~~~
+UReader.c, is a little program able to display unicode files.
+This C language code builds two executable files UReader using Ucode.library
+and UReaderTTEngine using ttengine.library and a true type font.
+Of course, the true type font must have some unicode glyphs to
+work. Source code is provided in an educational way...
+
+
+UReader
+Will work on any Amiga with sufficient place on harddisk to install glyphs.
+You can change the font size and style by using tooltypes in the executable
+icon.
+FONTSIZE=11
+FONTSTYLE=SS
+
+
+UReaderTTEngine
+May crash with 68000, depends on the TTEngine compilaton.
+You can change the fontname and size by using tooltypes in the
+executable icon.
+FONTNAME=FONTS:l_10646.ttf
+FONTSIZE=11
+Options between parenthesis are disabled like:
+(FONTNAME)=FONTS:toto.ttf
+
+These options are also valid with project icons.
+
+Steps
+~~~~~
+V0.02 15-Sep-2011 bug fix for 68000
+                  cosmetic changes to animate the mouse pointer during rendering
+V0.01 20-Oct-2008 first release.
+      01-Sep-2008 start.
+
+
+Notes
+~~~~~
+Ucode.library is wrotten in assembly, and works fine on my A2000 68000 at 7.14MHz,
+and 25Mo of glyphs on the harddisk.
+Thanks Ken Shillito for this fantastic piece of code!
+
+Enjoy Unicode on Amiga Classic.!

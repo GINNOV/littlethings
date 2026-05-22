@@ -1,0 +1,381 @@
+
+                          Defender - The Source
+                          =====================
+
+
+                             By Dave Edwards
+                             ===============
+
+
+ Ok, this is going to be one of the harder  DOCS to write, because the subject
+matter is still under development as I write!
+
+
+        The main features this  file  will  cover  are  1)  How  to create the
+executable code; 2) How to run it; 3) What  to do when it's running; 4) How to
+return to AmigaDOS; 5) Details of the program's inner workings.
+
+ 1) How to create the executable
+ -------------------------------
+
+        Since the source will appear on an ACC  disc,  and be packed using the
+now famous PowerPacker, the source will  have to be decrunched before assembly
+otherwise Genam will throw a purple fit.
+
+
+        Those coders with a second floppy disc  drive  are catered for:the ACC
+'Decrunch' menu will decrunch the files  you want to a blank formatted disc in
+DF1: for you. What if you haven't got a second drive?
+
+
+        In this case, you'll need either PowerPacker  (version 3.0 courtesy of
+Amiga Format's coverdisc is best if  you  can't afford V4.0) or ARPDecrunch by
+our very own Mark Meany. Decrunch the  files  to RAM: first, then copy the lot
+over en masse to a fresh disc in DF0:, either  via the CLI Copy command or, if
+you're a novice CLI user, using something more friendly such as CLIMate.
+
+
+        Once you've got the  files  copied  over,  you'll  need  to change the
+include statements to refer to  the  path  of  your new disc. If you're an ACC
+regular, this  won't  cause  any  problems.  All  include  files  required are
+supplied with the source.
+
+
+        Now, just assemble and go! I suggest  that  you  flush the contents of
+RAM: and assemble to a file in RAM:.  There's  a reason for this:I haven't yet
+included the snippet of code to stop  the  drives from spinning, so if you run
+the executable from a real  disc,  the  drive  won't  stop  spinning until you
+return to DOS!  This  problem,  naturally,  won't  arise  from  using RAM:. My
+favourite choice is to assemble to a file called RAM:Q and use that.
+
+ 2) How to run it
+ ----------------
+
+        This is easy. If you've got an  error-free  assembly completed, and an
+executable file in RAM:, just type "RAM:Q"  or whatever its name is at the CLI
+prompt and off it goes!
+
+ 3) What to do when it's running
+ -------------------------------
+
+        First, sit and watch the intro. This  isn't  finished yet, there'll be
+more pages than this. But it'll give you an idea of what's to come.
+
+
+        Ok, now that you're bored with the intro,  hit any key on the keyboard
+EXCEPT for the ESC key and the various  shift  keys. You'll see why later! Hey
+presto, the game appears!
+
+
+        Well, so far it doesn't do much. You  can  make the ship move relative
+to the other things on screen,  reverse  it,  and shoot laser shots across the
+screen. Also, some of the nasties (see  the  intro for a list of the cast) can
+move under their own steam. Not all of  them  can, because I want to reproduce
+the movement patterns of the  originals  and  I haven't yet worked all of them
+out!
+
+
+        And how do you make the ship move  etc.?  Well, you'll need a joystick
+plugged into joystick port 1 (the usual  haunt of a joystick on an Amiga), and
+the mouse in its usual haunt (you'll  see  why  later). To make things happen,
+use the following:
+
+
+        Joystick UP             :       Move ship up
+
+        Joystick DOWN           :       Move ship down
+
+        FIRE button             :       Fire laser shots
+
+        Left SHIFT key          :       Reverse ship direction
+
+        Left ALT key            :       Thrust
+
+ Be warned, the ship will move quite fast! Try playing 'dodgem' with the other
+objects and see what I mean.
+
+
+        At the moment, shooting at things  won't  kill them (because I haven't
+written the death code for the objects).  However, the laser shots WILL appear
+in the correct direction, and behave sensibly  if you reverse the ship quickly
+as is 'de rigeur'  on  the  arcade  original.  Coding  this  part  was  pretty
+difficult, I can tell you!
+
+
+        Later on, I'll add  keys  for  hyperspace  and  smart  bombs when they
+exist, pop in the code  to  allow  things  to  be  shot,  and code to give the
+landers the ability to kidnap the people (the little pegs at the lower part of
+the screen). Also, I'll add code  to  transform  landers  to mutants when they
+reach the top of the screen with a body  in tow, bring a baiter or two to life
+if the player takes too long killing off  the current occupants, and allow all
+of the really vicious objects  to  throw  little  exploding rocks at the ship,
+just like the original.
+
+ 4) How to return to AmigaDOS
+ ----------------------------
+
+        And now, here is why you were told to leave the ESC key alone! This is
+because the ESC key gets you out of the program and back to AmigaDOS!
+
+
+        Well, not quite. First, it freezes  the  program  to let you know that
+you're about to leave it. Then, press  the  left  mouse button and Hey Presto!
+Hello AmigaDOS!
+
+ 5) Defender's inner workings
+ ----------------------------
+
+        This is a fairly complex program. I'll split the workings into its key
+portions, and treat them separately.
+
+
+        a) Screen organisation. Thanks  are  due  to  Mike Cross for the basic
+screen organisation after his  little  tutorial  on  interleaved  bitmaps. The
+basic format of an interleaved bitmap  screen  is quite simple. Let an example
+screen be 320x256 pixels and 3  bitplanes  deep. The normal organisation is to
+have separate linear bitmaps, so that  if  the first screen address is $20000,
+the memory addresses for a normally organised screen are:
+
+
+        $20000, $20002, .... , $20026   Bitplane 1, line 1
+        $20028, $2002A, .... , $2004E   Bitplane 1, line 2
+
+                        ...
+
+        $22800, $22802, .... , $22826   Bitplane 2, line 1
+        $22828, $2282A, .... , $2284E   Bitplane 2, line 2
+
+                        ...
+
+        $25000, $25002, .... , $22526   Bitplane 3, line 1
+        $25028, $2502A, .... , $2504E   Bitplane 3, line 2
+
+                        ...
+
+ An interleaved bitmap screen of  the  same  format  would  have the following
+organisation:
+
+
+        $20000, $20002, .... , $20026   Bitplane 1, line 1
+        $20028, $2002A, .... , $2004E   Bitplane 2, line 1
+        $20050, $20052, .... , $20076   Bitplane 3, line 1
+
+        $20078, $2007A, .... , $2009E   Bitplane 1, line 2
+        $200A0, $200A2, .... , $200C6   Bitplane 2, line 2
+        $200C8, $200CA, .... , $200EE   Bitplane 3, line 2
+
+                        ...
+ Note that in the above, I am addressing WORDS (hence the even addresses). The
+addresses above would be the  addresses  passed  to, for example, the blitter,
+whenever a screen write operation was required at the given locations.
+
+
+        Now comes the fun part. ACC Defender  does  not have even a relatively
+simple interleaved bitmap like the  one  above.  The bitmap I use has an extra
+word of screen data at either side of the  visible portion of the screen! Why?
+Well, all of ACC Defender's objects  are  less than 16 pixels wide, so they'll
+all fit into a single screen word widthways. Having an extra word of screen at
+either side of the  visible  portion  means  that  I  can  ignore the need for
+clipping altogether, and save LOTS of processor time! Clever, huh?
+
+
+        The remaining point concerns the  bitplane  moduli stored in BPL1MOD &
+BPL2MOD. For an interleaved bitmap these cannot be zero! In the simple example
+interleaved bitmap above, we want the bitplane  hardware to skip from the word
+at address $20026 (end of bitplane  1,  line  1)  to go to address $20078, the
+start of bitplane 1, line  2.  Well,  the  BPL1PTH/L  register  will  point to
+address $20028 at the end of sending  one  bitplane line to the video hardware
+so we want a modulo of $20078-$20028 =  $0050.  This value should be stored in
+both BPL1MOD and BPL2MOD. For my bitmap,  with an extra word at each side, the
+start address would not be  $20000  for  bitplane  1,  but $20002 (word $20000
+being the 'left-hand-margin', if you like).  Hence, the values for BPL1MOD and
+BPL2MOD for my screen are a bit different! See the code for more details!
+
+
+        One more point. The technique I used to  obviate the need for clipping
+could be extended, so that you could have  a wider screen still, enabling much
+bigger blitter objects to be handled without  the need for clipping. Since I'm
+using TWO lots of screen  memory  and  double-buffering  all  graphic  output,
+however, this approach becomes massively memory-hungry!
+
+
+        But why use an interleaved bitmap? Simple  - instead of three blits to
+plot a graphic onto the screen, you  only  need one! And, if you're using busy
+waits for the blitter (sigh) such as  I'm  doing  (agh! even worse!), then you
+will only need one blitter busy wait  per  object instead of three! It also is
+much more efficient from the point of  view  of screen clearing - one big blit
+to fill the screen area with zeros  instead  of three for a 3-bitplane screen.
+This, of course, requires that your graphics  are in the right format for this
+but if you're using the PD IFF-Converter by Metallion of Kefrens, then this is
+no problem, because his IFF-Converter  has  such an option built-in! Thanks to
+Metallion of Kefrens for this!
+
+
+        The only disadvantage is that masks  have  to be in the same format! I
+know this means more CHIP RAM chewed  up  (always  a scarce commodity on older
+Amigas!), but if you  want  some  clever  effects,  it  can  be turned to your
+advantage! OK, I haven't done this in the current version of ACC Defender, but
+it's possible to  use  masks  with  'holes'  left  in  one  of the interleaved
+bitplanes to allow new colours to materialise  within an object when it passes
+over another - the 'tinted window' effect!  Hold up a red camera filter to the
+light and wave a blue object behind it and see what I mean - you can reproduce
+this using clever masks and interleaved bitplanes. The only limitation here is
+the ability of the coder to juggle all of the possible colour combinations AND
+debug the rest of the code as well!
+
+
+        b) Animation structures. Much of my code should be sub-titled 'Welcome
+to the Wonderful World of Data  Structures',  because I use my own custom data
+structures heavily in many of my  programs.  This  is a good habit to get into
+(why else does the operating system use masses of them?) because it allows you
+to force YOUR pet scheme upon the machine without having to remember what data
+structure is being referred to by something of the form:
+
+
+                        move.l  8(a0),d0
+
+ If you're using several structures of your  own, then determining the correct
+context of the above can  be  a  total  nightmare!  So,  since  HiSoft  kindly
+provided RS directives, use them like I  do! If you've defined some structures
+as I've done, and hit a line of the form
+
+
+                        move.l  Anim_CFrame(a0),d0
+
+ then it's a hell of a lot easier to read and understand!
+
+
+        Right. I actually do something rather  naughty  here,  akin to some of
+the bad habits of a certain class of C programmer usually to be found haunting
+UNIX systems (guess  my  programming  ancestry!).  I've  defined  an Anim data
+structure, and then defined an  AlienObject  structure, embedding an Anim data
+structure within it as in:
+
+
+                AO_Anim         rs.b    Anim_Sizeof
+
+ which is akin to the way that Exec  IORequests  are  defined in terms of each
+other (all the variants such as IOExtPar,  IOExtSer and IOTD contain something
+of the form:
+
+
+                ioext_std       rs.b    io_sizeof
+
+ embedded within them). Don't worry about  this - it's to make my life easier.
+You just have the problem  of  remembering  that  many of the references in my
+code to data items called 'Anim_xxx' often refer to AO_ structures too.
+
+
+        There was  method  in  my  apparent  madness.  Having  got  the  basic
+animation system working, it was  easiest  to  just tack the data for specific
+aliens onto the end of  an  Anim  structure,  and  easiest  of  all to make up
+another data structure for this purpose.
+
+
+        Now, Anim data structures contain data about  the position of an Anim,
+but no data about its size. That's in the  companion AnFr (short for Animation
+Frame) structure. This allows me to  have  different sized animation frames in
+the same animation if I  want,  so  that  I  can  create animations of objects
+receding into the distance if I want.  I  don't  use that feature here, but it
+has the advantage of saving me re-writing the whole damn lot when I DO want to
+do this! Also, I DO use different sized  animation frames for the flame at the
+rear of the ship, plus code to reposition  each AnFr correctly relative to the
+base position of the entire Anim.
+
+
+        And just to make life even easier, the  whole  lot are connected toget
+her via list pointers, making the  creation  of an animation sequence easy - I
+just wrote code that could handle one  Anim  structure,  then embedded it in a
+neat loop to make all of them come  to  life!  One  quick bit of list handling
+code and Hey Presto! - lots of animated objects (if you want them).
+
+
+        c) Basic object movement relative to the  ship. This is another sneaky
+one! Basically, what I do is  this:the  ship  (and  the flame) have an Anim_ID
+value of zero. The code that animates this  lot plots the graphics with a zero
+ID in the same place each time. All  other  Anims are plotted according to the
+value of a 'landscape counter'.
+
+
+        The 'landscape counter' (called  CurrXPos  in the main variable table)
+can vary from $0000 to $1FFF currently (although  other values could be chosen
+for this). This value is added onto  the  current X position of each Anim, and
+if the resulting number lies on the visible  portion of the screen (i.e., from
+-16 to +336) then it is plotted,  else  it  isn't.  The key that activates the
+thrust simply  increments  or  decrements  this  counter,  depending  upon the
+direction of the ship.  The  effect:  fast  scrolling  screen  without  moving
+massive chunks of memory about OR mucking about with bitplane scroll counters!
+
+
+        Note that the values chosen for  the  limits  should  be  zero for the
+lower limit, and some value made up of all  '1' bits for the upper limit. This
+allows the use of a quick AND  instruction  to  conform all coordinates to the
+screen limits (and saves LOTS of time over standard clipping techniques!)
+
+
+        For the record, the possible range of coordinate  values from $0000 to
+$1FFF is $2000 pixels, or 8,192 pixels in  total. Dividing 8192 by 320 gives a
+total of over 25 screens worth of scattered graphics without having to find 25
+screens worth of memory for them,  and  the  ability  to scroll through all of
+this vast area (using a wrap-around scroll) at quite a pace.
+
+
+        The thrust is handled by incrementing a  thrust counter (CurrXSpeed in
+the  variable  table)  until  it  hits  a  certain  maximum  value  while  the
+appropriate key is held  down.  Releasing  the  key decrements the counter but
+more slowly to give an 'inertia'  effect.  This  value is added on to CurrXPos
+each time a display loop is enacted. Result:variable speed scrolling depending
+upon how the user hits the key.
+
+
+        d) Object's own movement. This is a simple  one in concept. There is a
+pointer reserved in the AlienObject  structure  pointing to a piece of code to
+be called. Initially, this points to an  initialisation routine for each alien
+which sets the position and speed, and then  changes the code pointer to a new
+routine that moves the object relative  to  its initial position. As a result,
+for example, the landers move about.  Sit  still  long enough and they'll come
+floating by.
+
+
+        Handling movement for some objects is  going  to  be a bit harder. The
+bombers have to move along something  approximating  a sine curve with 'kinks'
+put in randomly, so coding this  is  going  to  be fun when I get round to it!
+Also, the landers will eventually have  to  'kidnap' the humans on the surface
+(drawing of which has yet to be coded) and mutate when they hit the top of the
+play area. That'll be LOTS of fun...
+
+
+        e) Laser firing. Nice hard one this.  Another  data structure (argh!).
+Again, a linked-list sort of thing,  containing  entries  such as a pointer to
+the graphic data, how many words are  to  be  displayed, masks for the graphic
+data and a host of other things. Also, to  reproduce the 'long-persistence' of
+a Defender laser cannon, I had to set  up  something  that 'rippled' data from
+the currently displayed entry in the  list  to the next entry in the list, and
+display all of those  with  nonzero  coordinates.  Two  routines  handle this,
+DoFireLists() handling all of the  major  donkey  work, and SetFire() creating
+the first entry in the list when  the  fire  button  is  pressed. You wouldn't
+believe how hard this was to get right! Oh, if you take out the code that uses
+the FireLock() variable to prevent one press  of the fire button setting off a
+huge barrage of laser shots, and move  the  ship up and down with the joystick
+while doing this, the resulting pattern is quite pretty!
+
+
+        f)  Future  implementation   details.  The  scanner  is  going  to  be
+implemented  using  hardware  sprites  (let  the  hardware  have  the  fun  of
+displaying it while I  do  something  more  constructive  with  the  processor
+time!), and I'll be using  something  suitably  wonderful  for  the landscape.
+Then, of course, comes the fun of  handling  collisions  between laser shots &
+other objects, and alien life forms with the ship.
+
+ Right. That about covers it. Have fun with the source, have yet more fun with
+the object code, and if anyone has bright  ideas about doing the collisions in
+a quick yet clean manner, let me know. And as always:
+
+
+
+                Live fast, code hard & die in a beautiful way
+
+
+
+                                Dave Edwards.
+

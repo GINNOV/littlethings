@@ -1,0 +1,132 @@
+Short:    V2.0 - Bumpmapped image on your WB
+Uploader: dm98411@edb.tietgen.dk (Thomas Jensen)
+Author:   dm98411@edb.tietgen.dk (Thomas Jensen)
+Type:     util/wb
+Requires: Kickstart 3.0
+Version:  2.0
+
+****************************************************
+*** NEW: homepage at http://www.amiga.dk/wbbump/ ***
+****************************************************
+
+Legal information:
+
+  WBBump - Bumpmapping on the Workbench!
+
+  Copyright (C) 1999  Thomas Jensen - dm98411@edb.tietgen.dk
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software Foundation,
+  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+
+
+Introduction:
+
+  WBBump is a "tool" to make your Workbench a bit nicer to look at.
+
+  A bumpmapped logo is put on your Workbench(tm) screen or any other
+  public screen of your wish. The lightsource of the bumpmapping is
+  your mouse pointer!
+
+  THIS IS NOT A HACK - This program should be system friendly.
+  If it dosn't work on your system, please send a @{"bug report" LINK author}.
+
+
+History:
+
+2.0 final (build 634) -  1999/6/29
+
+  * Fixed bug with AGA (bumpmap was always on grey background)
+    Now it should be applied on the existing background as the CGX version
+    (Thanks for the help Daniel)
+
+  * Removed annoying requester when not started from a project
+
+
+2.0b2 (build 614) -  1999/5/16
+
+  * Added AGA/ECS/OCS support (experimental).
+
+  * Fixed blur plugin (It didn't work at all...)
+
+  * Added Clock plugin (digital and internet time)
+
+  * Bugfixes: chrashes with two instances (when closing)
+
+  * Disabled multithreading - it caused some strange chrashes
+
+  * Fixed examples
+
+  * WBBump no longer needs the WBBump: assign
+    (But the examples still do)
+
+
+2.0b1 (build 569) -  1999/5/8
+
+  * Fixed bug that would cause WBBump to reload instead of quit, when
+    task was sent a break signal
+
+  * Converted big examples to PNG
+
+  * Changed some ReadPixel()'s to ReadPixelLine8(), thanks to
+    Gunther Nikl for noticing.
+    Result is a general speedup in the startup phase.
+
+  * (hopefully) removed CyberGuard hit (read from adr $20).
+    I still can't figure out why MuForce didn't get it?
+    Thanks to Duncan Gibb for reporting.
+
+  * WBBump now only renders if the screen it's on is the frontmost one.
+    before it would check for the active screen rather than the frontmost one.
+    Thanks to Michal Bartczak for noticing.
+
+  * Plugin support.
+
+  * New tooltypes POSITIONX, POSITIONY and LIGHTCOLOR
+
+
+1.3  (build 286) -  1999/04/29
+
+  * Aminet release
+
+  * Added notification on icon which started WBBump
+
+  * Added "Show interface" Commodities command
+
+  * Taskname is now a bit more informative (for those that care :)
+
+
+1.2  (build 270) -  1999/04/28
+
+  * Big speedup in 8bit code (2 pass E/asm -> 1 pass asm)
+
+  * Converted some examples to GIF for smaller archive
+
+  * Bugfixes in thread code
+
+  * Added "Intel Outside" example project
+
+
+1.1  (build 244) -  1999/04/27
+
+  * Complete rework of bitmap handling
+
+  * Added datatypes support
+
+  * Added seperate thread for drawing
+
+
+1.0  (build 142) -  1999/04/18
+  Initial version
+

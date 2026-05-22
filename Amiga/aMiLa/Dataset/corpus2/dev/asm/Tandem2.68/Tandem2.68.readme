@@ -1,0 +1,61 @@
+Short:        Revolutionary Editor/Assembler/Debugger
+Author:       shillito@tpg.com.au (Ken Shillito)
+Uploader:     shillito tpg com au (Ken Shillito)
+Type:         dev/asm
+Architecture: m68k-amigaos
+
+<< This is Release 1 - the previous version was a Pre-release of Tandem >>
+
+Tandem  Release 1  Versnio 2.68   April 2000
+
+Tandem is an integrated Editor/Assembler/Debugger for the Amiga computer. It
+has a revolutionary BASIC-type user interface, which makes assembly language
+programs nearly as easy to debug as interpreting languages.
+
+All the debugging commands refer to all the labels in source code, and
+you can also issue "immediate mode" commands in assembly language.
+
+All the Amiga OS3.1 includes and FD's are pre-assembled in Tandem, so you
+need never make INCLUDE's to header .i files, or XREF's to _LVO offsets -
+all are pre-assembled and instantly available.
+
+Tandem assembles much faster than other common assemblers, according to
+benchmarks I have done. Tandem does all 68030, 68882(FPU) & MMU, and
+all types of conditional & MACRO features.
+
+Freeware
+--------
+Tandem is freeware, provided it is not included in a commercial product.
+
+Full Docs
+---------
+Tandem comes with a very extensive & complete AmigaGuide.
+
+Learn Assembly Language
+-----------------------
+Tandem comes with a hands-on tutorial in its AmigaGuide, which you can use
+to learn how to write assembly language.
+
+Optional Supplement - the tandem.library GUI
+--------------------------------------------
+Tandem comes with tandem.library, a complete & very easy to program GUI
+with copious sample programs, which you can use if you want to. The full
+source code of tandem.library is supplied.
+
+Support
+-------
+I would welcome email correspondence about Tandem.  shillito@tpg.com.au
+
+This Release
+------------
+Only 1 bug was reported from the pre-release, which caused Tandem to
+refuse to assemble in rare instances on some types of Amiga. Now fixed.
+
+Improvements:
+
+* Tandem now opens on the default public screen (but can set Prefs to
+  open on a private screen)
+* TAB key now operates correctly
+* Windows remember where they were, & their size, next time Tandem opens.
+* Some new options in the tandem.library optional supplement.
+* The TLDemo program has been re-written.

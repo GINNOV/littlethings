@@ -1,0 +1,70 @@
+A short instruction in using the GhostRider DeckRunner:
+
+Usage: GRDR FILENAME <CODE HEXADDRESS> <CHIP HEXADDRESS> 
+                     <STATIC> <COLD> <FORCE> <SETNMI> <QUIET>
+
+FILENAME:       Path and name of GR file to be loaded.
+CODE Addr:      Load GR code to address.
+CHIP Addr:      Address of work area in CHIP memory.
+STATIC:         Don't backup area used in CHIP memory.
+COLD:           Should GR patch the coldcapture.
+FORCE:          Ignore AllocMem-fail.
+SETNMI:         Set the NMI vector to GR-entry.
+QUIET:          Don't start GR (use with SETNMI/COLD).
+
+Use this loader to start GR if you plan on re-entering GR after the first
+exit. If using direct DOS-load, memory may have been trashed when trying to
+re-enter.
+
+The keyboard and preference files will be loaded from S:
+
+Use the STATIC option if you plan to use GR's debugger. With this specifier
+the work area in CHIP memory will be allocated with a AllocMem call. Use the
+CHIP option to specify an address for a AllocAbs call.
+
+If the load address is set to $F00000, the needed reset handling code will
+automatically be added. The FORCE option will be used.
+
+This command uses the ReadArgs of DOS 2.04+. Maybe I should do a 1.3
+version? Let me know... Too lazy to do it if nobody wants it anyway.
+
+Examples:
+
+grdr c:gr code 7f00000 chip 1f0000 static cold quiet
+
+grdr c:gr code f00000 setnmi
+
+grdr c:gr code f00000 setnmi chip 4 force
+
+(The last one needs the "FORCE" option since the system will not be too
+happy about giving up the area specified for work - the ExecBase and the
+MC68k default vector base... Erm, I just tried it out - surprisingly it
+works ;) - but make sure to have a VBR equipped CPU and do not (I tell you!)
+set the STATIC option :)
+
+History:
+
+...
+210194      - Added $f00000 handling.
+310194      - Now GR checks for correct revision number of settings.
+              Loading is aborted if revision numbers differ.
+            - Added KeyMap loading.
+            - Config and keymap are read from
+              "ENVARC:GhostRider.Prefs/KeyMap". The Config-option has been
+              removed - only the specified filenames are accepted.
+010294.6    - Added COLD-argument.
+            - Modified output at wrong syntax (now usage is printed).
+060294.7    - Fixed a cache problem in the reloc routine.
+170494.8    - Above removed. There was not a problem.
+            - When GhostRider has been loaded, there will be added a MsgPort
+              to the system which will identify the location of GR. This
+              makes it possible to use the ghostrider.library available with
+              the GhostRider V1.0 release.
+140894.9    - Added support for loading two hunks (GR is now split in CODE
+              and CHIP hunk).
+            - Added CHIP and STATIC options. (CHIP is needed since the work
+              address you put in the pref file is not known at MemAlloc
+              time :)
+290894.10   - The last 6 bytes of the preference file was not loaded.
+              Fixed.
+080994.11   - Preference files now read from S:

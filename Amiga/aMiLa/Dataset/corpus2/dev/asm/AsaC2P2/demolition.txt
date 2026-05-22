@@ -1,0 +1,203 @@
+----------------------------------------------------------------------
+                         D E M O L I T I O N      I I
+
+                          JOENSUU, 22-24 Nov 1996
+
+Disclaimer   : All those typos in bad english aren't made on purpose.
+               Still, I'm using english in this jolly text because it
+               seems to be standard in scene. I'm 100% sure that
+               foreigners won't come anyway but here we go.
+
+Date & Place : Demolition will be again held in the Joensuun Kauppaoppilaitos.
+               It is the same place than last time, it can hold about 250
+               people with some computer and hifi equipment. Date will be
+               friday 22-11-96 and doors will open at 2000.
+
+Entrance fee : 100 Fim, girls and foreigners free.
+
+Boozing      : Yes, we know, boozing is the (best?) part of the parties but
+               we surely can't allow as free politics as last time. We won't
+               confiscate your booze unless you drink it inside. We know
+               that all of you don't have a car so you can have your booze
+               fi. in your bag. Note! All confiscated booze will be most
+               likely consumed by organizers! Let's just hope for perfect
+               weather for having fun.
+
+               Duncan/Damones promised to take care of boozing organization.
+               Don't know what it means but I guess that at least guided
+               bar tour.
+
+               Be sure that you will be thrown out if we will catch
+               you smoking inside.
+
+Projector    : Video projector will be the same than last time. Amiga will
+               be connected via tv-modulator and PC will use direct RGB
+               input. Do note that you shouldn't use tricky screen modes
+               since projector doesn't show 50hz modes (pc case of course).
+               If you want to use it make it optional. You may test your
+               product before competition. Also PA will be most likely the
+               same as last time.
+
+Competitions : Again, we will have combined compos with Amiga and PC. Those
+               will be naturally demo, intro, music and graphics one. There
+               will be also fast compos and those are combined as well.
+
+Preliminary
+schedule     : Pe      2300    music and graphics deadline
+                       0100    graphics competition
+                       0130    music competition
+
+               La      2000    demo and intro deadline
+                       0000    intro competition
+                       0100    demo competition
+
+               Su      0400    voting deadline
+                       0600    results and reruns.
+
+               Final schedule with much more events you will see
+               at the party place.
+
+Machines     : Amiga will be the best we can get. Most likely it
+               will be 060/50 but we can guarantee at least 040/40.
+               Make your product in a manner that it works on any
+               processor without special tricks.
+
+               PC will be Pentium 120Mhz, Matrox Millenium and
+               1MB Gus standard. We will use MS-DOS 7.0 (Win95 dos
+               prompt only) for showing demos and intros. We will show
+               demos with clean boot, which in this case means himem.sys
+               and Scitech Display Doctor so it should be safe to use
+               svga resolutions and colors.
+
+               I guess that all coders know this already but do not
+               assume that having scitech installed means that you
+               have possibility use 24bit modes. Some cards have
+               their truecolor mode done with 32bits, like Matrox
+               Millenium. More precisely, don't assume any modes,
+               check them before using.
+
+               If you use svga graphics we strongly recommend you
+               to test your production before compo in compo machine.
+
+Democompo    : These are the general rules for demo competition.
+
+               - Maximum file size is four megabytes. Demo may be also
+                 pure animation file with sound but I guess you can't
+                 do much in four megabytes.
+
+               - If demo is just an animation it has to be in
+                 executable form.
+
+               - Demo must work with eight megabytes of ram
+                 but it may take advantage of more memory.
+
+               - It must not write anything to harddisk nor any other
+                 media.
+
+               - PC demos must work also without soundcard.
+
+               - Please note projector limits mentioned before.
+                 PC max resulution is 640x480 and Amiga max resulution
+                 is 640x512.
+
+Introcompo   : These are the general rules for intro competition.
+
+               - Same rules as in demo competition but maximum file size
+                 for compo version is 80 kilobytes.
+
+               - Release version can be larger and it must work without
+                 sound.
+
+Graphics     : Maximum resolution will be 640x512 with 256 colors.
+               Amiga pictures will be shown with Amiga and PC pictures
+               will be shown with Compushow unless you want to use other
+               viewer. Please bring also the viewer with you.
+
+Music        : Maximum of 32 channels are accepted. File size maximum is
+               one megabyte (1048576 bytes). All contributions must be
+               delivered on PC formatted disk and we will play modules with
+               Cubic player. If you aren't satisfied with Cubic Players sound
+               we also have the newest versions of FT2 and Capamod. Feel
+               free to bring your own player. ST3 seems to have some
+               problems in a machine we are going to use as a compo
+               machine.
+
+Jury         : There will be a different juries for all the competitions.
+               All juries compose of two organizers and three randomly
+               chosen Demolition visitors.
+
+               Naturally jury can disqualify any product if it is
+               racistic, shitty, previously released or violating any
+               copyrights. In music competition it is Jurys
+               opininion. Everyone can't be happy or do you wan't to
+               listen all those tunes? I don't think so.
+
+               Organizers will decide whether they call juries up.
+               Jury will be called at least in music competition.
+
+Prizes       : Well, Imagine situation if we had 10000 fim for
+               prizes. I just won't say you any figures since
+               it isn't sure if there will be but .. it's up to
+               you! All the money left over after expenses will be
+               given as prices. Organizers aren't going to be paid.
+
+                          MUSIC   GFX    INTRO   DEMO
+                         ----------------------------
+                      1.   9%      9%     12%     20%
+                      2.   6%      6%      8%     13%
+                      3.   3%      3%      4%      7%
+                         ----------------------------
+                          18%     18%     24%     40%
+
+               !! NOTE, ALL THE DAMAGES CAUSED FOR THE PLACE WILL !!
+               !! REDUCE THE AMOUNT OF MONEY WE WILL PAY AS PRIZES !!
+
+               !! PRIZES ARE PAID AFTERWARDS ANYWAY !!
+
+Spreading    : All the productions will be released at the party place.
+               All the products will be uploaded to Manowar, Triplex BBS
+               and to somewhere in internet. Do note that we can't
+               guarantee that productions will be available next day.
+
+Other        : We will show some nice movies and old demonstrations
+               on big screen. If you have any movies you would like
+               to see in big screen bring it with you. We have time
+               for from two to four movies.
+
+Cafe         : Unlike last time there will be at least a little
+               cafe selling coffee, lemonade and maybe even something
+               to eat :)
+
+How to find  : If you come by bus or train just watch the map included
+               in invitation intro package. There is also maps in
+               stations and stations aren't that far away from
+               Kauppaoppilaitos unless you have much equipment. Then
+               I would recommend you to take a taxi, it won't cost much.
+               Don't walk over the river if you want to party place from
+               stations.
+
+               If you come by car it is quite easy to find it even
+               without map. If you come from north to Joensuu (Kuopio,
+               Jyväskylä, Kajaani) then just follow signs for Lappeenranta.
+               When you drive over a river (rather large, can't miss it)
+               just wait for next traffic lights and turn to right.
+               Then just drive a little bit more and follow the signs
+               of kauppaoppilaitos.
+
+               If you come from south to Joensuu (Anything via Lappeenranta)
+               just turn left in the first lights in Joensuu and then
+               follow the signs of kauppaoppilaitos.
+
+Contact info : If you want to contact Demolition organizers you should mail
+               to following addressess.
+
+               mpiirone@lut.fi (Zen-Ti-Nel / NV)
+               jhheinon@niksula.hut.fi (Wihannes / NV)
+
+               You can call to Manowar BBS, dial to 013-745300 or
+               013-745301.
+
+               Also, you can call with voice. Dial to 040-5849020 / Mikko
+               or 013-745123 / Make.
+                                                                                    
+

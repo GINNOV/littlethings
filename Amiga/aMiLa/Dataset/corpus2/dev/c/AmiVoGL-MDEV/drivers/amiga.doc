@@ -1,0 +1,114 @@
+  Amiga Driver Document
+  Author: Dr. Charles E. Campbell, Jr.
+
+
+  The Amiga/Vogl Screen and Window
+
+    The amiga driver opens a screen and a window
+    with the following default properties:
+
+    	a full size screen (based on your workbench screen size)
+    	four bitplanes (ie. 16 colors)
+    	single buffer mode
+    	high resolution
+    	interlaced
+        borderless window
+
+
+  Optional Configuration
+
+    You may call AMIGA_config(char *config) prior to calling
+    winopen() to modify the default screen configuration.  The
+    configuration string is composed of single letter "commands":
+
+        b = give window a border
+    	d = double buffer mode
+    	e = extra halfbrite mode
+    	h = ham mode
+    	s = single buffer mode (default)
+    	1 = one bit plane
+    	2 = two bit planes
+    	3 = three bit planes
+    	4 = four bit planes
+    	5 = five bit planes
+
+    If the window is not borderless, then vogl's
+
+        winopen(char *title)
+
+    function will yield a titled window.
+
+
+  Amiga/Vogl Graphics Data Structures
+
+    The vogl winopen() calls upon AMIGA_init() to initialize
+    graphics on the amiga.  The AMIGA_init() function sets
+    up data structures in chip memory which the programmer
+    may use for his/her own purposes.
+ 
+    	WORD                 *voglareaBuffer
+    	struct BitMap        *voglback
+    	struct BitMap        *voglfront
+    	struct DiskFontBase  *DiskfontBase
+    	struct GfxBase       *GfxBase
+    	struct IntuiText     *voglitext
+    	struct IntuitionBase *IntuitionBase
+    	struct IOStdReq      *vogl_cd_ioreq
+    	struct Library       *ConsoleDevice
+    	struct RastPort      *voglrastport
+    	struct Screen        *voglscreen
+    	struct TextAttr      *vogltextattr
+    	struct TmpRas        *vogltmpras
+    	struct Window        *voglwindow
+
+    Thus, this amiga driver could be used directly rather
+    than via vogl, as all of the important variables are
+    globally visible.
+
+    The AMIGA_exit() function cleans up all of the memory
+    allocated by AMIGA_init().
+
+
+  Hershey Fonts
+
+    The Hershey font functions have been fixed for the
+    Amiga so that they, too, are available.  All of the
+    programs in the examples directory have been compiled
+    and tested.
+
+
+  Hardware Fonts
+
+    The Amiga/Vogl hardware font loader (AMIGA_font) uses
+    the following convention to specify fonts:
+
+        fontname;height[;{BEIPU}]
+
+    The fontname and height are required; the modifiers (BEIPU)
+    are not.  The modifiers' meanings are:
+
+        B == bold
+        E == extended
+        I == italic
+        P == plain (default)
+        U == underlined
+
+    Vogl starts up with two fonts: the "small" hardware font
+    (id of 0) and the "large" hardware font (id of 1).  The Amiga/vogl
+    driver initializes these fonts to:
+
+        small hardware font: "topaz;9;P"
+        large hardware font: "topaz;11;P"
+
+    For whatever reason, Vogl typically allows only one font.  The
+    winopen()/ginit() functions set
+
+        vdevice.maxfontnum = 2
+
+    To use more Amiga fonts, you'll need to change vdevice.maxfontnum
+    and to load the fonts using AMIGA_fontname(char *fontspec)
+    directly.  Obviously, this stratagem will not port to GL or other
+    Vogl platforms.  The AMIGA_fontname() function was designed to
+    handle an arbitrary quantity of fonts.  This function only
+    loads new fonts as needed; already loaded fonts are re-used
+    properly.

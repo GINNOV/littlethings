@@ -1,0 +1,66 @@
+******************************************************************************
+*                                                                            *
+*                              ArpRequest.bas                                *
+*                                                                            *
+*                         © 1991 by Andreas Ackermann                        *
+*                                                                            *
+******************************************************************************
+
+ ================== Am Dateiende steht's nochmal in Deutsch ==================
+
+ What is ArpRequest.bas ?
+ It's a demonstration how to use the Arp-Filerequester in AmigaBasic. I be-
+ lieve that the Basic-users rather have been forgotten with the whole
+ arp-project but especially they are in need of things like this wonderful
+ filerequester.
+ Look into the programm to get a programming description !
+
+ About installation :
+ Simply copy the files exec.bmap and arp.bmap into the directory where you
+ put the programm containing the ArpRequest-routine. Certainly, you should
+ have installed the arp.library on your startup-disk.(If you haven't done it
+ yet use InstallLibrary of this drawer !) For reasons of security you should
+ CHDIR to the drawer containing your programm (to make sure that AmigaBasic
+ will find the Bmaps !).
+
+ And now have fun using the Arp-filerequester in Basic !
+ [The arp_lib.fd-file was used to create arp.bmap. By the way it contains
+  information (for the programmer) on all Arp-Routines ! ]
+
+ Was ist ArpRequest.bas ?
+ Es demonstriert, wie man den Arp-Filerequester von AmigaBasic aus einsetzt.
+ Gerade für BasicProgrammierer ist die Benutzung dieses Requesters interes-
+ sant, da AmigaBasic keine Routienen zur Verfügung stellt, sich einen eigenen
+ File-Requester zu schreiben. Jedoch läßt die Arp-Documentation den uner-
+ fahrenen Basic-Anwender im Stich.
+ Doch nun gibt es ArpRequest.bas, das es auf einfachste Weise jedem Program-
+ mierer gestattet, diesen Requester zu benutzen.
+ Sehen Sie sich das kommentierte Listing an !
+
+ Zur Installierung :
+
+ Sie brauchen lediglich die Dateien arp.bmap und exec.bmap ins gleiche Ver-
+ zeichnis zu kopieren, in dem sich auch das Programm befindet, von dem aus Sie
+ den Requester nutzen wollen. Selbstverständlich muß sich auf ihrer System-
+ startdiskette (i.d.R. der Workbench) die arp.library befinden.
+ (Benutzen Sie hierzu InstallLibrary, falls Sie noch nicht im Besitz der arp.
+ library sind !)
+ Sollte Basic bei den LIBRARY-Aufrufen einen Fehler melden, müssen Sie mit
+ CHDIR das aktuelle Verzeichnis auf die Schublade setzen, in der sich das
+ Programm befindet !
+ [Die Datei arp_lib.fd wurde zur Generierung der arp.bmap benötigt. Sie bietet
+  dem Programmierer einige weitere Informationen zu allen arp-Befehlen. ]
+
+ Und nun viel Spaß !!!
+
+
+                                            Andreas Ackermann
+                                            Lorenz-Summa-Str. 10
+                                            W-8679 Oberkotzau
+
+                                             Oberkotzau, den 3.Oktober 1991
+
+
+
+
+

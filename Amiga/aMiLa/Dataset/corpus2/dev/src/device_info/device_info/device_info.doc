@@ -1,0 +1,173 @@
+TABLE OF CONTENTS
+0001 --background--
+0002 device_info_t
+0003 free_device_info
+0004 get_device_info
+--background--
+
+NAME
+   device_info -- Get information about a mounted DOS device.
+
+DESCRIPTION
+   This is a simple set of functions to obtain information about a
+   mounted DOS device *by drive name*, not by device name and unit number.
+
+   The main motivation has been that many programs expect the user to
+   specify device and unit instead of simply the drive name. For example,
+   instead of "cd0:" it has to be "scsi.device", unit 6.
+
+   This is extremely tedious in most cases because nobody wants to keep
+   SCSI-ID's in mind - not to mention that they might change.
+
+   And why should one have to fiddle with several setups once a new serial
+   card is installed and replace the string "serial.device" by
+   "new-serial.device" in loads of settings windows? Let the user specify
+   "SER:" and as time comes map "SER:" to a better device without the need
+   to tell this every program.
+
+   The only problem about that is that it is a bit annoying for
+   programmers to collect this information together "manually". You have
+   to lock the DosList, dig around in obscure data structures and fiddle
+   with BCPL strings.
+
+   These functions free you from this work. The device_info_t structure
+   uses C strings and does not require any locking as everything is
+   copied "by value" into the structure. No pointer references are used,
+   so you can access the data even if the drive was ejected, unmounted
+   or replaced. Of course this does not spare you a decent error handling,
+   but you can be sure not to access any already released memory.
+
+   For compiling this material, use the included makefile and possible
+   additional files:
+
+   smakefile, SCOPTIONS  - For SAS/c 6.57
+   Makefile              - For gcc 2.7.2
+
+   The code should also work with Dice C.
+
+AUTHOR
+   Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+
+COPYRIGHT
+   This code is placed in the public domain. That means, you can use at as
+   you like, even in commercial software. You even don't have to give me
+   any credits.
+
+   You use this material at your own risk. I'm not responsible for any
+   damage resulting from it.
+
+   If you find any bugs or make any improvements, please let me know so
+   this source can be updated.
+
+HISTORY
+   v1.0, 12-Aug-1998
+   - initial release
+
+EXAMPLE
+   For an example usage, take a look at the included "test_device_info.c".
+
+SEE ALSO
+   device_info_t, free_device_info(), get_device_info()
+
+device_info_t
+
+NAME
+   device_info_t -- Device information data type.
+
+FUNCTION
+   The device_info_t stores information about a device.
+
+SEE ALSO
+   get_device_info()
+
+SOURCE
+    struct device_info_s
+    {
+        STRPTR name;                /* Name, e.g. "PC0" (no colon!) */
+        STRPTR handler;             /* Handler, e.g. "l:CrossDOSFileSystem" */
+        STRPTR device;              /* Device, e.g. "mfm.device" */
+        LONG unit;                  /* Unit number, e.g. 0 */
+        ULONG dos_type;
+        ULONG low_cylinder;
+        ULONG high_cylinder;
+        ULONG block_size;           /* Block size in bytes */
+        ULONG blocks_per_track;
+        ULONG heads;
+    };
+    
+    typedef struct device_info_s device_info_t;
+free_device_info
+
+NAME
+   free_device_info -- .
+
+SYNOPSIS
+   free_device_info( device_info )
+
+   VOID free_device_info( device_info_t * );
+
+FUNCTION
+   Free resources allocated by get_device_info().
+
+INPUTS
+   device_info - Device information to free. This is the return value of
+       get_device_info(). If this is NULL, the function will do nothing.
+
+SEE ALSO
+   get_device_info()
+
+get_device_info
+
+NAME
+   get_device_info -- Get information about the given device..
+
+SYNOPSIS
+   device_info = get_device_info( name )
+
+   device_info_t *get_device_info( STRPTR );
+
+FUNCTION
+   Get information about the given device.
+
+   This is achieved by scanning the locking the DosList using
+   LockDosList() and search for the device using FindDosEntry(). The
+   resulting data are copied into own memory areas (by value) and no
+   references to the original are kept. The DosList is then unlocked
+   again.
+
+   Some convenient translations are performed, e.g. BCPL strings are
+   converted to zero terminated C strings and the block size is stored
+   in bytes instead of longs.
+
+   To give back these resources once they are not needed any more, you
+   have to call free_device_info().
+
+INPUTS
+   name - Zero terminated device name, including trailing colon (:), for
+          example "df0:".
+
+RESULT
+   If the information could be obtained, the full a full device_info_t
+   is returned.
+
+   In case of error, NULL is returned and IoErr() contains more
+   information. Possible values are:
+   
+   ERROR_NO_FREE_STORE          - Not enough memory
+   ERROR_INVALID_COMPONENT_NAME - 'name' did not end in ":"
+   ERROR_DEVICE_NOT_MOUNTED     - Could not find any information about
+                                  the requested device
+
+NOTES
+   Not all string fields of device_info-T have to contain values. For
+   example, "df0:" does not have a handler but only a device, so
+   device_info->handler is NULL.
+
+   If device_info->device is NULL, most numeric fields are so. In such
+   a case, device_info->unit is -1. This can happen for example with
+   "Ram:".
+
+SEE ALSO
+   free_device_info(), dos.library/IoErr() dos.library/LockDosList()
+
+

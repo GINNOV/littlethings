@@ -1,0 +1,76 @@
+Header-Creator V1.0 (Entwicklungstool f¸r C-Programmierung)
+===========================================================
+
+
+Beschreibung
+------------
+
+Beim Header-Creator handelt es sich um ein Entwicklungstool
+f¸r C-Programmierer. Es soll das Kommentieren des Sourcecodes
+erleichtern, indem es das l‰stige Erstellen von Funktions-
+kˆpfen und einem Programmkopf ¸bernimmt.
+
+Somit ist es mˆglich, sich voll und ganz auf die Erstellung
+des eigentlichen Programms zu konzentrieren. Der Header-
+Creator generiert aus dem kompilierbaren C-Source einen
+Code mit Standardkˆpfen, in welchen bereits der Name des
+Autors und das Datum eingef¸gt worden sind. Nun ist nur noch
+das restliche Ausf¸llen der Kˆpfe notwendig.
+
+Das urspr¸ngliche Sourcefile verbleibt als Backup.
+
+
+Installation
+------------
+
+Die Datei 'hc' braucht einfach in die Schublade c oder ein
+beliebiges anderes Verzeichnis kopiert zu werden.
+
+
+Benutzung
+---------
+
+In der Shell muﬂ der Befehl 'hc' gefolgt vom Namen des
+Sourcefiles eingeben werden.
+
+
+Beispiel:
+
+Ram:> hc test.c
+
+Im aktuellen Verzeichnis wird die kommentierte Datei test.c
+erstellt. Die urspr¸ngliche Datei verbleibt als test.c.bak .
+
+
+Rechtliches
+-----------
+
+Header-Creator V1.0 ist FREEWARE und darf uneingeschr‰nkt
+benutzt bzw. als komplettes Archiv kopiert und weitergegeben
+werden. Das komplette Archiv beinhaltet folgende Dateien:
+
+ hc             -> Programm
+ hc.readme      -> Readme-File
+ hc_d.doc       -> Dokumentation (deutsch)
+ hc_e.doc       -> Dokumentation (englisch)
+
+Ich bitte Benutzer jedoch um eine email, damit ich weiﬂ,
+inwiefern der Header-Creator Gebrauch findet. Anregungen und
+Hinweise auf Bugs sind ebenfalls herzlich willkommen.
+
+email: Dirk.Matiack@gmx.de
+
+
+
+
+Viel Spaﬂ mit dem Header-Creator !
+
+KEEP ON DEVELOPING - KEEP THE AMIGA ALIVE !!!
+
+
+Dirk Matiack
+
+
+
+
+

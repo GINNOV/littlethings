@@ -1,0 +1,45 @@
+Short:     Graphical User Interface system for Intuition Games
+Uploader:  oondy@q-group.demon.co.uk  (Andrew King)
+Author:    goo@q-group.demon.co.uk    (Andrew King)
+Type:      dev/c
+Version:   0.19 BETA
+Requires:  OS 3.0, C compiler, C programming knowledge
+
+
+So, you want to program a game with a stable and usable user
+interface?  Well, you've come to the right place.  Welcome to the
+world of Goo...
+
+Goo (the name derives from GUI which is pronounced "gooey") is a GUI
+that doesn't get tied up with using lots of gadget structures and such
+for Intuition gadgets (not GadTools gadgets mind).
+
+Goo creates "objects" and are individually attached to a window.
+These objects can be anything from bitmaps to text strings - bitmaps
+are more suited to games than Image structures say for instance.
+
+Note that Goo doesn't use Intuition gadgets for most objects.  These
+objects are currently supported:
+
+- BUTTON (image and textual)
+- STRING (text input)
+- LABEL
+- LISTS (not in this beta)
+- CYCLE (not in this beta)
+
+Each object can be manipulated using tags, and provides extra features
+like Windows '95/98 style "tip text" help popups.
+
+It's dynamic!  It's great!  It's simple!  :) AmigaGuide autodocs are
+included.
+
+Please note that this system only works with C compilers since it is a
+link library.. I've tried creating shared libraries but get no where.
+
+Suggestions and comments should be directed to
+goo@q-group.demon.co.uk.
+
+--
+Remember FUBAR?  Get a refresher of its status:
+http://www.q-group.demon.co.uk
+

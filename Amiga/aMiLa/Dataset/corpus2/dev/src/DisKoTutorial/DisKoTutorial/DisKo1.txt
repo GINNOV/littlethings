@@ -1,0 +1,111 @@
+Chapitre 1 : Mon premier programme MUI
+Par Corto
+
+Comme il faut évidemment commencer par des choses simples, notre premier programme ne ressemblera pas à un player de CD. Cela vous demanderait trop de connaissances d'un seul coup ! Nous commencerons donc par voir l'organisation du programme puis nous reviendrons sur les éléments techniques qui le composent.
+Voilà les objectifs de ce chapitre :
+- découverte de la composition d'un programme MUI
+- description de l'interface avec l'approche "macros"
+- manipulation des méthodes et attributs des objets
+
+
+ Organisation du programme
+
+Pour ce premier programme, nous allons au plus simple, aussi, en plus du traditionnel main(), nous avons une fonction d'ouverture des bibliothèques nécessaires et une autre fonction pour leur fermeture. Sans oublier la fonction qui nous intéresse le plus : Create_Gui(), qui gère l'interface de sa création à sa disparition. Dans le chapitre suivant, cette organisation changera pour plus de flexibilité.
+
+Cette fonction principale peut être découpée en plusieurs parties :
+
+- description hiérarchique de l'application et des composants de la fenêtre suivant le principe immuable : déclaration d'un objet, détail de son contenu, fin de la description avec End
+- affectation des propriétés et appel de méthodes : ajout d'une action liée au bouton de fermeture, affichage de la fenêtre
+- boucle d'attente de fin par clic sur le bouton de fermeture ou par CTRL-C
+- fermeture de la fenêtre et destruction de l'interface
+
+Indispensable pour concrétiser tout ça ... voici le source (disponible ici !) :
+
+
+
+
+Pour l'instant, nous ne gérons aucune communication avec les composants. Par exemple, aucun clic de souris n'a d'effet, sauf sur le gadget de fermeture qui est un cas particulier et requiert à lui tout seul une boucle de gestion des événements. A cette occasion, on voit apparaître par deux fois des appels à DoMethod qui permet d'appeler une méthode (terme en programmation objet pour désigner une fonction) d'un objet donné. Son usage va vite devenir très fréquent !
+La fonction set(), quant à elle, change un attribut d'un objet. Elle représente un cas particulier de la fonction SetAttrs() qui permet de modifier plusieurs attributs grâce aux tags système. Pour lire un attribut, il existe bien entendu un équivalent nommé get().
+Nous savons désormais comment communiquer de façon simple avec les composants MUI. La lecture du chapitre 2 permettra d'aller plus loin en se basant sur ces notions ; on pourra par exemple signifier à un bouton "appelle telle méthode de tel objet lorsque tu es cliqué".
+
+
+ Description de l'interface
+
+Maintenant que l'on a compris le fonctionnement basique d'une application MUI, nous pouvons nous intéresser au détail des composants : leur type, leurs propriétés et la manière de les décrire pour obtenir une interface conforme à ce que l'on attendait.
+Pour ce premier projet, seuls des objets simples interviennent, de type Bouton et Texte, avec une déclinaison en plusieurs nuances pour ce dernier. Aucun de ces objets ne propose d'intéraction, cela nécessiterait des appels à DoMethod() (souvenez-vous !).
+
+Nous l'avons vu, chaque application se doit d'avoir une fenêtre principale qui commence elle-même par un groupe, vertical ou horizontal, qui sert de conteneur de composants. Vous essaierez d'ailleurs de changer VGroup en HGroup. L'ajout d'un composant repose toujours sur le même principe : déclaration d'un objet, détail de son contenu, fin de la description avec End. MUI fonctionne massivement à base de macros. Ca explique par exemple pourquoi le bouton créé avec SimpleButton() ne laisse pas apparaître de mot-clé End. Sinon, pour les objets de type texte, on crée un enfant (Child) TextObjet avec son lot de couples attribut/valeur.
+
+Le concept délicat vient de la Frame (le cadre), qui représente le support de l'objet et définit aussi son pourtour. C'est pourquoi l'exemple fait varier le type de frame pour chacun des 3 objets texte. A l'exécution du programme, on constate l'effet du changement de frame ! Un autre aspect que l'on peut modifier, c'est l'apparence des chaînes de caractères grâce à des balises de type \33x avec 'x' déterminant la commande : gras, centré, normal, etc. Les codes sont référencés dans <libraries/mui.h>. Au lieu de ces codes, il est possible d'utiliser une constante équivalente : MUIX_B, MUIX_C, MUIX_N, ...
+
+Remarque à propos de MAKE_ID : ce define permet de construire un entier à partir de 4 caractères (on le trouve présent dans <libraries/iffparse.h>). Ce nombre représente un indentifiant qui servira pour la gestion des réglages (préférences). Pour une fenêtre, on pourra ainsi affecter et conserver la disposition, la couleur de fond, etc. Cet ensemble est sauvé dans ENVARC: dans un fichier dont le nom est la chaîne que l'on a affectée à MUIA_Application_Base.
+
+Un dernier conseil à propos de l'arborescence : respectez l'indentation ! C'est encore plus important ici qu'ailleurs. Comme les macros sont omniprésentes, la négligeance dans l'écriture entraînera imanquablement une erreur concernant une macro non terminée. Un minimum de rigueur est préférable à un maximum de prise de tête. Appliquez donc le principe de précaution :)
+
+ Compilation
+
+Voici le moment tant attendu : la création de l'exécutable ! Nous rappelons ici les lignes de commandes pour chaque compilateur. Un makefile étant préférable ...
+
+SAS/C :
+sc exemple.c LINK TO exemple
+
+GCC :
+gcc -O2 -c exemple.c
+gcc -noixemul -o exemple exemple.o
+
+VBCC :
+vc -c99 -c exemple.c
+vc -o exemple exemple.o -lamiga
+
+
+ Notions acquises dans ce chapitre
+
+- composition d'un programme MUI
+- VGroup : les composants qu'il contient seront ajoutés verticalement, de haut en bas
+- utilisation de la classe TextObjet et affichage d'un bouton, sans intéraction
+- fonctions set() et SetAttrs() (qui, comme GetAttrs(), proviennent de BOOPSI)
+- fonction DoMethod() pour communiquer avec les composants
+- boucle d'attente de fermeture : c'est le seul ID qui doit être utilisé, les événements des autres composants seront gérés d'une autre manière
+- usage intensif des macros : SimpleButton ou TextFrame cachent en réalité un contenu plus complexe
+- possibilité de mise en forme avec la frame et les profils d'écriture (centrage, gras, etc.).
+
+  
+
+  
+
+  
+
+  
+
+ 
+
+
+
+
+
+
+
+ 
+
+ Commentaires 
+
+  
+
+  2004-07-14 18:16:55 - 
+
+Avec le SDK MorphOS, il faut aussi utiliser -noixemul pendant le phase de compilation sinon on crée des objets s'attendant à être linkés avec le code de démarrage d'ixemul.
+Donc:
+gcc -noixemul -O2 -Wall -c exemple.c
+
+Et -Wall ne peut pas faire de mal pour remarquer des bugs potentiels.
+
+
+
+  2004-07-24 22:36:10 - Corto 
+
+Henes : Ok, merci, je ne savais pas, j'ai modifié dans l'original.
+
+Sinon : Pour compiler en 68k à partir de VBCC MorphOS :
+vc +m68k -c99 -c exemple.c -DNO_INLINE_STDARG
+vc +m68k -o exemple exemple.o -lamiga
+

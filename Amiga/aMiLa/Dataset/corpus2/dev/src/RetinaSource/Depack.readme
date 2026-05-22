@@ -1,0 +1,8 @@
+
+A hint for depacking the archives "RBO_Data.lha" and "RBO_SCode.lha"....
+
+Depack them onto 2 Disx called "Data" and "SCode" or into 2 Directories
+with this names. So you will have to change nothing or only a few things
+in the source code if you want to assemble it...
+
+                                                  Janosh / NPL

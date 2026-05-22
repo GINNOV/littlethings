@@ -1,0 +1,23 @@
+About Hz
+
+This program is intended as a very simple first example for assembly
+language programmers that also happens to be a useful tool.
+
+The contents of this archive are:
+
+ · ReadMe - This note
+ · Hz.asm - The source code for the Hz program
+ · Hz     - The assembled program created from Hz.asm
+
+The program allows you to switch between NTSC (60 Hz) and PAL (50 Hz)
+screen modes and is useful for developing NTSC/PAL sensitive games,
+demos, and other programs.  Usage is as follows:
+
+Hz [N=NTSC/S|P=PAL/S]
+
+So, for example, Hz n (or N or NTSC) switches to NTSC, Hz PAL switches
+to PAL, and so on.  Hz ? supplies a usage summary.  The default action
+is to switch to NTSC mode.
+
+Please read the copyright notice provided in the source code (Hz.asm)
+for distribution/usage information.

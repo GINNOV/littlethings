@@ -1,0 +1,20 @@
+Short: makefile dependency examiner
+type: dev/c
+uploader: rk@gup.uni-linz.ac.at
+
+This is a port of makedepend, a sophisticated makefile dependency examiner.
+I found this little tool within the distribution of ET++, an application
+framework, running on UNIX.
+
+makedepend scans C sources like a C preprocessor and evaluates #define, #undef
+#ifdef... directives to determine all necessary include files. The result is
+appended to a specially prepared makefile automatically.
+
+Don't flame me for the horribly ugly programming style - I have just made all
+necessary changes to get it work with SAS/C 6.50.
+
+------
+Rainer Koppler
+Department for Graphics and Parallel Processing (GUP-Linz)
+University of Linz, Austria, Europe.
+email: rk@gup.uni-linz.ac.at

@@ -1,0 +1,96 @@
+	addi.w	#$15,ax
+	addi.w	#$9,ay
+	addi.w	#$3,az
+
+rax:	cmpi.w	#360*4,ax
+	blt.b	ray
+	subi.w	#360*4,ax
+ray:	cmpi.w	#360*4,ay
+	blt.b	raz
+	subi.w	#360*4,ay
+raz:	cmpi.w	#360*4,az
+	blt.b	rot
+	subi.w	#360*4,az
+rot:
+	lea	SIN,a0
+	lea	COS,a1
+	move.w	ax,d0
+	move.w	(a0,d0.w*2),sx
+	move.w	(a1,d0.w*2),cx
+	move.w	ay,d0
+	move.w	(a0,d0.w*2),sy
+	move.w	(a1,d0.w*2),cy
+	move.w	az,d0
+	move.w	(a0,d0.w*2),sz
+	move.w	(a1,d0.w*2),cz
+
+	lea	POINTS(pc),a0
+	lea	RPOINTS(pc),a1
+	lea	PPOINTS(pc),a2
+	lea	P_TABLE+512,a3
+	move.w	(a0)+,d7
+
+ROTATE:	movem.w	(a0)+,d0-d2
+
+rotX:
+	move.w	cx,d5
+	move.w	sx,d6
+	move.w	d1,d3
+	move.w	d2,d4
+	muls	d5,d1
+	muls	d6,d4
+	sub.l	d4,d1
+	add.l	d1,d1
+	swap	d1
+	muls	d6,d3
+	muls	d5,d2
+	add.l	d3,d2
+	add.l	d2,d2
+	swap	d2
+rotY:	
+	move.w	cy,d5
+	move.w	sy,d6
+	move.w	d0,d3
+	move.w	d2,d4
+	muls	d5,d0
+	muls	d6,d4
+	sub.l	d4,d0
+	add.l	d0,d0
+	swap	d0
+	muls	d6,d3
+	muls	d5,d2
+	add.l	d3,d2
+	add.l	d2,d2
+	swap	d2
+rotZ:
+	move.w	cz,d5
+	move.w	sz,d6
+	move.w	d0,d3
+	move.w	d1,d4
+	muls	d5,d0
+	muls	d6,d4
+	sub.l	d4,d0
+	add.l	d0,d0
+	swap	d0
+	muls	d6,d3
+	muls	d5,d1
+	add.l	d3,d1
+	add.l	d1,d1
+	swap	d1
+
+	move.w	d0,(a1)+
+	move.w	d1,(a1)+
+	move.w	d2,(a1)+
+	sub.w	Zoffset,d2
+	neg.w	d2
+	move.w	(a3,d2.w*2),d2
+	muls	d2,d0
+	muls	d2,d1
+	asr.l	#8,d0
+	asr.l	#8,d1
+	add.w	px,d0
+	add.w	py,d1
+	move.w	d0,(a2)+
+	move.w	d1,(a2)+
+	dbf	d7,ROTATE
+

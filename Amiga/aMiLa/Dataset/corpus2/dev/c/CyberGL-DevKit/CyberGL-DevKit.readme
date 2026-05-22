@@ -1,0 +1,21 @@
+Short:    CyberGL-stubs/fd/inline for gcc-2.7.2.+
+Uploader: Niels.Froehling@Informatik.Uni-Oldenburg.DE (Niels Froehling)
+Author:   Niels.Froehling@Informatik.Uni-Oldenburg.DE (Niels Froehling)
+Type:     dev/c
+
+ I've created some usefull things for CyberGL. This collection contains a missed
+fd-file, a new inline-include for gcc, and library-call-stubs for gcc based upon
+inline-inlude with automatic open and close for every program linked with it.
+ The standard-includes are a bit modified to be as gl-compatible as possible.
+
+ include/clib/cybergl_protos.h
+ include/cybergl/cybergl.h
+ include/cybergl/cybergl_display.h
+ include/fd/cybergl_lib.fd
+ include/gl/gl.h
+ include/inline/cybergl.h
+ include/pragmas/cybergl_pragmas.h
+ include/proto/cybergl.h
+ lib/libgl.a
+ lib/libgl.c
+ lib/libgl.o

@@ -1,0 +1,10 @@
+Short:        An optimizing C compiler for m68000.
+Author:       Matthew Brandt
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+An optimizing C compiler for the 68000.  Has successfully compiled itself
+on a 68000 based Unix system V machine, but has yet to be fully ported to
+the Amiga.  It will currently produce assembly output for simple C routines
+on the Amiga, but needs lots of work to be really useful as anything other
+than a learning tool for budding compiler guru's.  

@@ -1,0 +1,100 @@
+# ################################################################
+# #         MakeFile for ListBrowserExamplePPC program           #
+# ################################################################
+#
+MAKE    = SDK:c/make
+#
+# Smarter folks will know what to do with this:
+#CROSS  = ppc-amigaos-
+#
+CC      = GCC:bin/$(CROSS)gcc
+#
+CFLAGS = -c -ISDK:Local/Include
+#
+DBGFLAGS = -c -ggdb -ISDK:Local/Include
+#
+#COMMON = GlobalObjects/CommonFuncsPPC.o
+#
+ACMD = LhArc
+#
+OPTS = -x -a 
+#
+ARCHIVEFILE = ListBrowserExamplePPC.lha
+#
+LIBS = -lm -lamiga -lauto
+#
+# -----------------------------------------------------------------
+#
+.c.o :
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(CFLAGS) $<
+#
+all:
+	$(MAKE) ListBrowserExamplePPC
+	$(MAKE) ListBrowserExamplePPCDBG
+	$(MAKE) makeArchive
+	$(MAKE) makeList
+#
+clean:
+	DELETE *.s
+	DELETE *.o
+	DELETE $(ARCHIVEFILE) QUIET FORCE
+#
+help :
+	ECHO "Place EnsureASCII somewhere in your command path (EX:  Sys:c/EnsureASCII)"
+	ECHO "Place AmigaDOSErrs.h in SDK:Local/Include/AmigaDOSErrs.h"
+	ECHO "All other components can remain in a source directory."
+	ECHO "Available Targets for the makefile are:"
+	ECHO "   ListBrowserExamplePPC, ListBrowserExamplePPCDBG,"
+	ECHO "   makeArchive, makeList or 'all'."
+	ECHO "Read ListBrowserExamplePPC.readme or ListBrowserExample.c for"
+	ECHO "more information on the program."
+#
+ListBrowserExamplePPCDBG : ListBrowserExampleD.o
+	$(CC) $< -o $@ $(LIBS)
+#
+ListBrowserExampleD.o : ListBrowserExample.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -o $@ $<
+#
+ListBrowserExamplePPC : ListBrowserExample.o
+	$(CC) $< -o $@ $(LIBS)
+#
+ListBrowserExample.o : ListBrowserExample.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(CFLAGS) -o $@ $<
+#
+#
+makeList:
+	$(ACMD) list $(ARCHIVEFILE) >Archive.list  
+#
+# Place EnsureASCII somewhere in your command path (ex:  Sys:c/EnsureASCII)
+# Place AmigaDOSErrs.h in SDK:Local/Include/AmigaDOSErrs.h
+# All other components can remain in their own source directory.
+#
+makeArchive : 
+	FileNote ListBrowserExamplePPC "For AmigaOS4 & PPC (gcc V2.95+)!"
+	FileNote ListBrowserExample    "The main program for AmigaOS3.5+"
+	FileNote SMakeFile             "For SAS-C & AmigaOS3.5+"
+	COPY MakeFile.dist    RAM:MakeFile
+	COPY MakeFile         RAM:MakeFile.bak
+	COPY RAM:MakeFile     MakeFile
+	FileNote ListBrowserExamplePPC "For AmigaOS4 & gcc V2.95+"
+	$(ACMD) $(OPTS) add $(ARCHIVEFILE) MakeFile
+	$(ACMD) $(OPTS) add $(ARCHIVEFILE) SMakeFile
+	COPY   RAM:MakeFile.bak MakeFile
+	DELETE RAM:MakeFile.bak RAM:MakeFile
+	$(ACMD) $(OPTS) add $(ARCHIVEFILE) ListBrowserExamplePPC.readme
+	$(ACMD) $(OPTS) add $(ARCHIVEFILE) ListBrowserExamplePPC
+	$(ACMD) $(OPTS) add $(ARCHIVEFILE) ListBrowserExample
+	$(ACMD) $(OPTS) add $(ARCHIVEFILE) ListBrowserExample.c.original
+	$(ACMD) $(OPTS) add $(ARCHIVEFILE) ListBrowserExample.c
+	$(ACMD) $(OPTS) add $(ARCHIVEFILE) AmigaDOSErrs.h
+	$(ACMD) $(OPTS) add $(ARCHIVEFILE) EnsureASCII
+#

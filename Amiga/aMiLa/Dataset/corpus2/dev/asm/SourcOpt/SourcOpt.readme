@@ -1,0 +1,11 @@
+Short:        Assembly source optimizier
+Architecture: m68k-amigaos
+
+SourcOpt	A little assembly language source optimizer.  While most assem-
+		blers have optimization, they optimize the compiled code.  One
+		disadvantage of this however, is when debugging code thru a
+		disassembler or monitor, the code you see differs from that
+		you have written because of the optimization.  By optimizing
+		the source first, you can eliminate some of these differences.
+		Version 1.0, binary only, CLI usage only.
+		Author:  Alexander Fritsch

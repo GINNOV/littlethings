@@ -1,0 +1,42 @@
+# #####################################################################
+#  MakeFile - the gcc make file for StateMachinePPC ExamplePPC program
+# #####################################################################
+#
+MAKE     = SDK:c/make
+#
+CC       = GCC:bin/gcc
+#
+CFLAGS   = -c -ISDK:Local/Include
+#
+LIBS     = -lm -lamiga -lauto
+#
+DBGFLAGS = -c -ggdb -gdwarf-2 -DDEBUG=1 -ISDK:Local/Include
+#
+all   :
+	$(MAKE) ExamplePPC
+#
+clean :
+	Delete *.o QUIET
+#
+EXOBJS = ExamplePPC.o ExampleLex.o
+#
+ExamplePPC : $(EXOBJS) 
+	$(CC) $(EXOBJS) -o $@ $(LIBS) -lnet -lz
+#
+ExamplePPC.o : Example.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -o $@ $<
+#
+ExampleLex.o : ExampleLex.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -o $@ $<
+#
+FLEX      = FLeX
+#
+ExampleLex.c : Example.flex
+	$(FLEX) -L -v -o$@  $<
+#

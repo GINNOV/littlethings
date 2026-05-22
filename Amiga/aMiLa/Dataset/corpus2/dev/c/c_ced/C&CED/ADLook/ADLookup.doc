@@ -1,0 +1,42 @@
+
+                              ADLookup
+
+   WHAT IT IS
+   ~~~~~~~~~~
+ADLookup is an autodoc function lookup routine for Cygnus Ed.  It
+brings the doc for the function under the cursor into a CED view.
+
+   WHAT YOU NEED
+   ~~~~~~~~~~~~~
+autodoc files
+~~~~~~~~~~~~~
+Works on any files that have the same format as the C= autodocs.
+
+assign
+~~~~~~
+autodocs: <dir that has the autodoc files>
+
+   ie  > ls autodocs:
+         amiga_lib.doc
+         asl.doc
+          ...
+
+index file
+~~~~~~~~~~
+ADInd makes the index file.  It's not quick.  It takes several seconds
+to start up.  You can check out the operation by not redirecting the
+output.
+
+Usage:  ADInd >autodocs:INDEX autodocs:
+
+       'ADInd ?' will remind you of the usage
+
+Cygnus Ed F-Key assignments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ADLookup.ced goes in REXX and assign a CED function key (or macro) to
+
+   rexx:adlookup.
+
+If you have problems, there are some possible solutions in the
+GetStruct.doc file
+

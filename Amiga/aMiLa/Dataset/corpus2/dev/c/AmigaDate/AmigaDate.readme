@@ -1,0 +1,34 @@
+Short: Outputs "(dd.mm.yy)" Useful in Makefiles
+Type: dev/c
+Uploader: too@cardhu.cs.hut.fi
+Author: Tomi Ollila <too@cardhu.cs.hut.fi>
+
+This program Outputs SAS/C AMIGADATE and DICE COMMODORE_DATE style date string
+This is most useful in Makefiles, where one can define preprocessor strings.
+
+GNUMakefile example:
+
+#
+# Amigadate GNUMakefile example. (You must have amigadate compiled by now ;D)
+#
+
+AMIGADATE=	$(shell amigadate)
+
+MAKE=	gmake
+CC=	gcc
+CFLAGS=	-v -O2 -D__AMIGADATE__='"$(AMIGADATE)"'
+LFLAGS= -nostdlib -s
+
+
+AmigaDate: amigadate.c
+	$(CC) $(LFLAGS) -o $@ amigadate.c
+
+
+#EOF
+
+This program is re-entrant and can be made resident. Perhaps the easiest way
+to do this is to enter `protect amigadate +H' but this may not work with
+future OSses.
+
+Tomi Ollila
+too@cardhu.cs.hut.fi

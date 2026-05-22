@@ -1,0 +1,21 @@
+Short:        Sourcecode of Retina Burn One Demo
+Author:       S. Smith  (Cylon / DIMENSION X)
+Uploader:     stoetzer rz tu-ilmenau de
+Architecture: m68k-amigaos
+
+
+type:
+RBO_Source: This is the complete sourcecode (incl. binaries) of the
+            Retina Burn One Rave Demo by DIMENSION X.
+
+            The source code is written in ASM One V1.05 Assembler.
+
+            The package includes two sub-archives
+
+              - RBO_SCode: The source code and the includes
+              - RBO_Data : The binaries like Gfx and Muzax
+
+            Author: S. Smith  (Cylon / DIMENSION X)
+
+            Uploader: stoetzer@rz.tu-ilmenau.de
+                      (J. Stoetzer)

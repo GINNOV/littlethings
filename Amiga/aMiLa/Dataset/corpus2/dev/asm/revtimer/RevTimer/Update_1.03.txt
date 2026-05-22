@@ -1,0 +1,10 @@
+Changes v1.02 -> v1.03
+----------------------
+Minor bugfix:
+The date format for the VerDate variable changed to the correct one.
+Ie. DD.MM.YY (Used to be DD-MM-YY).
+
+This worked on WB2.1, but not on WB3.1, so I thought that I should change
+it.
+
+The official format IS: DD.MM.YY , so it was not documented to work.

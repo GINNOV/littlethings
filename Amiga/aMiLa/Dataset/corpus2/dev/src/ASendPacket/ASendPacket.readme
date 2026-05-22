@@ -1,0 +1,8 @@
+Short:        Asynchronous multiple packets example.
+Author:       Phillip Lindsay
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Example program for sending multiple packets asynchronously to a dos
+handler, for those interested in implementing programs with asynchronous
+AmigaDos file I/O.  

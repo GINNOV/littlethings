@@ -1,0 +1,44 @@
+A quick guide to programs compiled with the unix library
+--------------------------------------------------------
+
+If you are using programs compiled with my unix library, you should note
+the following points:
+
+a) The following environment variables are taken into account by the unix library,
+and therefore by any program compiled with it:
+
+USER - A user name for the sole Amiga user (default "user").
+USERNAME - The full name of the sole Amiga user (default $USER).
+HOME - A "home" directory (default "s:") for programs that want one. Configuration
+       files will probably end up here ...
+SHELL - A program which behaves reasonably like a Unix shell (default "bin:sh").
+	You should copy the sh executable there if you don't have a Unix-like shell.
+HOSTNAME - The name of your machine (default "amiga").
+
+b) Command line parsing is a mixture of AmigaDOS and Unix conventions (this
+explanation assumes familiarity with Unix terminology ...) :
+
+- Arguments in single quotes (') are left as is.
+
+- Within arguments in double quotes ("), * acts as an escape character. Arguments
+cotaining wildcards are expanded into several arguments (note that this is a
+different from the Unix behaviour). ' must be used to escape wildcards (this is the
+standard AmigaDOS convention).
+
+- Within unquoted arguments, \ acts as an escape character for wildcards, spaces, 
+etc. Arguments containing wildcards are expanded into several arguments.
+
+As an example, assume that uecho is an unix-like echo command compiled with the
+unix library, and that the current directory contains one file, echo.c. Then
+
+  uecho 'f*un\' "#?.c" "*.c" "\mad" \*.c \\ \n
+
+displays
+
+  f*un\ echo.c .c \mad *.c \ n
+
+c) Timezones. If you install the timezone information (provided with the
+unix library), you must set your system clock to GMT. Otherwise the times
+displayed or set by the unix library will be incorrect. To compensate, you
+won't have to adjust your system clock for daylight savings time (the local
+time calculated from GMT will always be correct).

@@ -1,0 +1,130 @@
+
+                UpdateCat documentation
+                ~~~~~~~~~~~~~~~~~~~~~~~
+ UpdateCat is a simple utility for  creating  and updating a catalogue of your
+entire floppy disc collection. This  catalogue  is  used by WhereIs, and could
+conceivably be examined  by  other  applications  as  well.  (Future EarthSoft
+products will almost certainly make use of it).
+
+ UpdateCat is written in ARexx, so  you  cannot  run  it unless you have ARexx
+installed on your system. If you use  Workbench  2.0  or greater then you have
+ARexx already, otherwise you'll have to buy it!
+
+ To install UpdateCat onto another disc,  you should copy the files UpdateCat,
+UpdateCat.info and  UpdateCat.rexx  into  the  directory of your choice. Shell
+users note that UpdateCat.rexx is essential - the other two are only there for
+the benefit of Workbench users.  If  you  are  planning  on redistributing the
+program then you MUST also  copy  across  the  file  UpdateCat.doc (wot you're
+reading now). If you have a global  REXX:  directory then UpdateCat.rexx could
+go there instead.
+
+ To run UpdateCat, boot from your  Workbench  2.0  disc, or any disc which has
+ARexx installed, then  just  double-click  on  the UpdateCat icon. You'll also
+need to have IconX in your C: directory.
+
+ 1) HOW TO CREATE A NEW (EMPTY) CATALOGUE
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ Floppy disc users:
+        Simply format a disc and relabel it "Catalogue"
+
+ Hard disc users:
+        Create a directory called Catalogue ANYWHERE on the hard disc,
+        then add the following line to your user startup sequence:
+
+        Assign Catalogue: <full_pathname_of_catalogue_directory>
+
+ 2) HOW TO CATALOGUE ONE OR MORE FLOPPY DISCS
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ Simply  double-click  on  the  UpdateCat  icon,  or,  from  a  Shell type the
+following:
+
+        RX UpdateCat
+
+ then follow instructions.
+
+ Note that the name you give for each disc  doesn't have to be the volume name
+of the disc. For instance, if you have a  load of discs all called "Empty" but
+with different writing on the labels,  then  you can refer to each disc by its
+own personal name. When  UpdateCat  prompts  you,  you are given the option of
+either using the volume name [just press  enter], or using an alternative name
+of your choice [type name then press enter].
+
+ 3) HOW TO DELETE A DISK FROM THE CATALOGUE
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ To delete a disc from the catalogue, just type, from a Shell:
+
+        Delete Catalogue:<disc_name>
+
+ or, if you are a Workbench 2 user, you can  open the catalogue drawer, select
+Show>All Files from the Window menu,  select  the disc and either drag it into
+the trashcan or select Delete... from the Icon menu.
+ =============================================================================
+=                               PUBLIC DOMAIN NOTICE
+==============================================================================
+
+ UpdateCat is freeware, not shareware. There is no fee. Just send a blank disc
+and a stamped self-addressed envelope  (enclose  an international reply coupon
+if writing from outside the UK) and we will fill your disc full of goodies and
+post it back to you. If you  forget  the  stamped  envelope  (or international
+reply coupon) then we shall keep your disc - you have been warned.
+
+ UpdateCat was written by Arcane Jill. Copyright 1992, EarthSoft.
+
+ This program is FREEWARE. It is NOT shareware.
+
+     +------------------------------------------------------------------+
+     |                                                                  |
+     |  UpdateCat version 1.0 may be reproduced as many times as you    |
+     |  like, supplied with any application, and distributed with       |
+     |  no restrictions whatsoever, PROVIDED that the following         |
+     |  condition is adhered to:                                        |
+     |                                                                  |
+     |  THE FOLLOWING DOCUMENTS MUST BE SUPPLIED TOGETHER:              |
+     |          UpdateCat                                               |
+     |          UpdateCat.doc                                           |
+     |          UpdateCat.info                                          |
+     |          UpdateCat.rexx                                          |
+     |                                                                  |
+     +------------------------------------------------------------------+
+
+ You can even use the program in  commercial  applications, free of charge. No
+further  permission  is   required,   but  you  absolutely  MUST  include  the
+above-listed documents with the application.
+
+ WHO ARE EARTHSOFT?
+
+    EarthSoft are a group of Amiga enthusiasts who believe wholeheartedly
+    in the principle of PUBLIC DOMAIN. You should never have to pay
+    money for an EARTHSOFT product. Our aim is to provide high quality
+    software, fully documented, and absolutely free of charge.
+
+    Please support us in our beliefs by distributing our products
+    far and wide across the globe.
+
+    Our address is:
+
+        EarthSoft
+        5 Dumergue Avenue
+        Queenborough
+        Kent
+        ME11 5BJ
+        England
+
+    If you would like to know more about EarthSoft, our philosophy, or
+    our products (both existing and forthcoming) please write to us. If
+    you are interested in actually becoming an EarthSoft developer and
+    writing software in our name then we can send you our guidelines
+    and standards.
+
+=============================================================================
+                                   BUGS
+============================================================================== 
+
+ There are no KNOWN bugs in  UpdateCat  (-obviously,  otherwise  I  would have
+fixed them), but of course there MAY be bugs I don't know about, so...
+
+ If you find any, please write to me at the  above address, telling me exactly
+how to reproduce the symptoms of the bug. I will then produce a new version of
+UpdateCat which does not  contain  the  bug  AND  SEND  YOU A FREE COPY OF THE
+UPDATED VERSION (supply own disc and postage)
+

@@ -1,0 +1,35 @@
+Warpcollect 0.3
+
+Warpcollect is a quick hack to integrate Elf2Exe2 with GCC-WarpUP.
+When using warpcollect, you don't have to use Elf2Exe2 from makefiles
+or CLI anymore.
+
+Requirements:
+68040, ixemul.library v48 and GCC-WarpUP.
+
+Installation:
+Copy warpcollect to ade:lib/gcc-lib/ppc-amigaos/<your version>.
+Copy specs to the same location. It might be wise to backup the original
+file first. Make sure that Elf2Exe2 is in bin: so sh shell can find it.
+
+Usage:
+Just compile your programs normally. The only difference is that the ELF
+file will be converted to hunk object automaticly. If you want to keep
+a copy of the ELF file, just set the enviroment variable KEEPWARPELF to
+greater than 0. Then you will have two files, "your_program" and
+"your_program.warpelf".
+
+The source code is included for interested people.
+
+
+HISTORY:
+
+0.3
+Improved error handling.
+Now the specs file works with PowerUP too.
+
+0.2
+Fixed a stupid bug which caused the program to crash on big commandlines.
+
+
+Jarmo Laakkonen <jami.laakkonen@kolumbus.fi>

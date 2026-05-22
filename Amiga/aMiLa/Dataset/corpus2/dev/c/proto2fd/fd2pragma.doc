@@ -1,0 +1,68 @@
+************************************************************************
+
+                      FD2Pragma v37.1 (20.11.1995)
+
+                ©1995 Quarz Development / A.H.Schneider
+
+                             - Freeware -
+
+************************************************************************
+
+
+This is a little tool I wrote when creating a shared  library  with  C++
+code  using SAS/C++. It simly does what its name tells: convert function
+description entries (.FD) into a pragma form for use with the  compilers
+#pragma statement for library calls.
+
+This tool is distributed together with  'proto2fd',  which  helps  while
+converting  prototypes  to  function  descriptions.  (See proto2fd.doc).
+
+There seem to be a problem with SAS/C++ 6.56 version of FD2Pragma,  when
+you  use  floating  points  registers  as  parameters  for  your library
+function calls. (In SAS/C++, you get a compiler error, if you try to use
+a  Ax  or  Dx  register  for  parameters  of  floating  point type, f.e.
+'double').
+
+That's where this replacement tool helps out. It just takes  a  function
+description  file  generated  manually  or  by  the  'proto2fd' tool and
+creates the  corresponding  #pragma  statements  into  the  output  file
+(normally a header file *.h).
+
+But unlike the original tool provided with SAS/C++, it doesn't create an
+error  messages,  when  floating  point  registers  are  used  for   the
+parameters  of  the  function  description. For the Ax and Dx registers,
+this tool behaves exactly like the orginal, while  for  functions  using
+floating   point   registers  it  creates  pragma  statements  with  the
+altenative  'flibcall'  keyword  as  described  in  the  'SAS/C  Library
+Reference'  manual.  The  differences  between  the  'libcall'  and  the
+'flibcall' pragmas are -besides the possibilty  to  use  floating  point
+datatypes  as  parameters  for  library calls - the differently computed
+'magic' value and the restriction to only 6 parameters with the flibcall
+(14 with 'libcall').
+
+The command syntax is:
+
+        fd2pragma <infile> [outfile]
+
+        infile:  filename of the file containing the function
+                 descriptions.
+
+        outfile: filename of the output file (optional). If left out, an
+                 appropriate filename with extension  '_pragmas.h'  will
+                 be created from the infile name.
+
+If you have any problems using this tool or suggestions, please  let  me
+know.
+
+Alex H. Schneider
+
+schneidr@igt.baum.ethz.ch
+
+************************************************************************
+
+Program History:
+
+        v37.1 (20.11.1995):     . First public release
+
+
+************************************************************************

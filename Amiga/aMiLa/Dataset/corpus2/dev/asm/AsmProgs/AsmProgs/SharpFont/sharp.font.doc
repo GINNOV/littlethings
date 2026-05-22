@@ -1,0 +1,14 @@
+Documentation for sharp.font
+
+       This is an 8 pixel non-proportional font similar to the clean.font
+released on Amigazine Jan87.  It is suitable for use with the blitzfonts released
+on Fish 60, provided you change the name 'topaz.font' inside blitzfonts to
+'sharp.font'.  This you can do with NewZap, or some other file modify program.
+You should keep a copy of the standard blitzfonts, and execute it from your
+startup-sequence also, so that programs that use topaz.font also benefit from
+the speed-up gained from using blitzfonts.
+
+  Kirk Davies,
+  10 Finchley Street,
+  Milton,
+  Queensland, Australia.

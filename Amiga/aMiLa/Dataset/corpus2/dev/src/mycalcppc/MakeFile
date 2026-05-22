@@ -1,0 +1,179 @@
+####################################################################
+#
+#        MAKEFILE FOR Programmer's Calculator program using gcc.
+#
+# ##################################################################
+#
+MAKE     = SDK:C/make
+#
+CC       = GCC:Bin/gcc
+#
+DBGFLAGS = -c -ggdb -gdwarf-2 -DDEBUG=1 -ISDK:Local/Include
+#
+CFLAGS   = -c -ISDK:Local/Include
+#
+GLOB     = GlobalObjects/CommonFuncsPPC.o
+#
+LIBS     = -lm -lstringfuncs -lamiga -lauto
+#
+# or Perhaps you can obtain byaccppc.lha from http://www.os4depot.net/share/development/utility/
+#
+YACC     = BYacc
+# Bison
+#
+YACFLAGS = -v -d -l -t
+#
+LEX      = FLeX
+#
+LEXFLAGS = -L -s
+#
+all :
+	$(MAKE) MyCalcPPC
+	$(MAKE) MyCalcPPCDBG
+	$(MAKE) makearchive
+#
+# -------------------- Final 68020 target: -------------------------------
+#
+MyCalcPPC : MyCalc.o CFlex.o Calc.o
+	$(CC) CFlex.o Calc.o MyCalc.o CPGM:$(GLOB) -o $@ $(LIBS)
+	Delete MyCalc.o CFlex.o Calc.o QUIET
+	COPY MyCalc.guide Help:english/MyCalc.guide
+#
+MyCalc.o : MyCalc.c MyCalcLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(CFLAGS) -o $@ $<
+#
+#
+y.tab.o :  y.tab.c MyCalcLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(CFLAGS) -o $@ $<
+#
+Calc.o : y.tab.o
+	COPY   y.tab.o Calc.o
+	Delete y.tab.o
+#
+#
+# -------------- yylex() stuff: ----------------------------
+#
+CFlex.c : CalcFLex.flex
+	$(LEX) $(LEXFLAGS) $<
+	Copy   lex.yy.c $@
+	Delete lex.yy.c
+#
+CFlex.o : CFlex.c MyCalcLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(CFLAGS) -o $@ $<
+#
+# ----------------- BYacc stuff: ---------------------------------
+#
+y.tab.c :  Calc.y
+	$(YACC) $(YACFLAGS) $<
+#
+# -------------------- DEBUG-stuff: --------------------------------------
+#
+DBG : 
+	$(MAKE) MyCalcPPCDBG
+	$(MAKE) CalcFlexer
+	$(MAKE) CalcParser
+#
+#
+MyCalcPPCDBG : MyCalcD.o y.tabD.o Flex.yyD.o
+	$(CC) -ggdb -gdwarf-2 Flex.yyD.o y.tabD.o MyCalcD.o CPGM:$(GLOB) -o $@ $(LIBS) -lnet -lz
+#
+MyCalcD.o : MyCalc.c MyCalcLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -o $@ $<
+#
+Flex.yyD.o: Flex.yy.c MyCalcLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -o $@ $<
+#
+Flex.yy.c : CalcFlex.flex
+	$(LEX) $(LEXFLAGS) $<
+	Copy   lex.yy.c Flex.yy.c
+	Delete lex.yy.c
+#
+y.tabD.o:    y.tab.c MyCalcLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -o $@ $<
+#
+# -----------------------------------------------------------------
+#
+CalcFLexer :   flex.D.o
+	$(CC) -ggdb -gdwarf-2 $< -o $@ $(LIBS) -lnet -lz
+#
+#
+CalcParser : y.D.o lex.yy.o
+	$(CC) -ggdb -gdwarf-2 lex.yy.o y.D.o -o $@ $(LIBS) -lnet -lz
+#
+#
+#
+lex.yy.o : lex.yy.c MyCalcLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(CFLAGS) -o $@ $<
+#
+lex.yy.c    :  CalcFlex.flex
+	$(LEX) $(LEXFLAGS) $<
+#
+flex.D.o    : flex.yy.c MyCalcLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -DFLEX_DEBUG=1 -o $@ $<
+#
+y.D.o       :    y.tab.c MyCalcLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -DPARSE_DEBUG=1 -o $@ $<
+#
+MyCalcLocale.h : MyCalc.cd
+	CatComp $<       CFILE  $@ NOCODE NOARRAY NOBLOCK
+	CatComp $<       CTFILE mycalc.ct
+#
+#
+ACMD    = LhArc
+#
+ARCOPTS = -x -a
+#
+makeList : mycalcppc.lha
+	$(ACMD) list $< >Archive.list  
+#
+makeArchive : mycalcppc
+	FileNote $< "(C) 2002 by J.T. Steichen, Compiled for AmigaOS4.0 & PowerPC AmigaOne!"
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha MyCalc2.0.readme
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha MyCalcPPC.info
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha $<
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha MyCalc060
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha MyCalc060.info
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha MakeFile
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha MyCalc.guide
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha MyCalc.guide.info
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha MyCalc.cd
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha MyCalc.ct	
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha MyCalc.c
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha Calc.y
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha CalcFlex.flex
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha CFlex.c
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha MyCalcLocale.h
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha y.output
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha y.tab.c
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha y.tab.h
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha cprinit
+	$(ACMD) $(ARCOPTS) add mycalcppc.lha SMakeFile
+#
+

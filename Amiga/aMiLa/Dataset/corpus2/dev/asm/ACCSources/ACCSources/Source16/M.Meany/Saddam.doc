@@ -1,0 +1,50 @@
+
+
+				StopSaddam
+				==========
+
+					by M.Meany, Sept 1991.
+
+ What Is StopSaddam
+ ------------------
+
+ StopSaddam is a small program written to detect the presense of one of the
+latest, realy nasty, file viri.
+
+ DrawBacks
+ ---------
+
+ Yes! There are a few. These, as far as I am aware, are:
+
+	1/ The system looses about 1k ( Oh no! ) of memory.
+	2/ The Intuition library is left open ( Oh no again! only 99.7 of
+	  the programs I use need this library ).
+	3/ The virus is detected and stopped from loading, but it is not
+	  removed ... you can't have everythinhg! I am working on removal,
+	  but it may be beyond me.
+	4/ Though the virus does not make it into memory, the disc icon
+	  does not vanish when the disc is removed. I'm not sure this is
+	  a bad thing as it reminds you the disc is infected!
+	5/ I'm not sure how an infected disc will behave once SADDAM has
+	  been identified!
+	6/ If the virus is on the boot disc it will not be detected. I'm
+	  ready to adapt the code into a boot block and this restriction
+	  should then be removed!
+
+ Advantages
+ ----------
+
+ The Saddam file virus ( disk-validator ) will not run rampage through your
+discs!
+
+ Usage
+ -----
+
+ Run from the CLI with no parameters. This works best if done as one of the
+first commands of the discs startup-sequence.
+
+ Why?
+ ----
+
+ Because I discovered what it's like to loose discs because of this virus!
+

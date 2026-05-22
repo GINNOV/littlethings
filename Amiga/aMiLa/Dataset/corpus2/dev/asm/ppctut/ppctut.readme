@@ -1,0 +1,23 @@
+Short:        MagicSNs PowerPC ASM Tutorial
+Author:       MagicSN@Birdland.es.bawue.de
+Uploader:     MagicSN Birdland es bawue de
+Type:         dev/asm
+Architecture: ppc-warpup
+
+This document is a sideproduct of my ongoing work about the PowerPC Version
+of my rtgmaster.library. It is a Amigaguide Tutorial of how to do PowerPC
+Assembler. It is mainly intended for 68k ASM Coders who want to learn
+PowerPC Assembler. Well, Tutorial is too much said, it mainly explains
+the PPC ASM Commands. You could for example start with it to convert
+the speed-intensive parts of your 64k Intro to PPC Assembler. You only
+had to convert about 10% of your code, usually  !!! The rest stays 68k...
+
+The Tutorial bases on the StormPowerASM Assembler from Haage&Partner, which
+means that it uses the PowerOpen Standard, which means that it uses WarpOS
+from Haage&Partner. If you use ppc.library, you should read the documentation
+VERY CAREFULLY, as not everything of the docs will also apply to ppc.library
+(in fact a lot of stuff will be totally different...)
+
+This is a small Update which fixes a small bug in the last document
+(concerning the handling of the Borrow/Carry Bit by the PPC, which is
+different from like the 68k handles things...).

@@ -1,0 +1,15 @@
+Documentation for AddKickMem
+
+       This program is useable if you have Kickstart in ROM on your Amiga 1000.  
+It ignores any command line parameters, it cannot be used to add other than the
+memory between F80000 and FBFFFF unless you reassemble with different start and
+end addresses.
+
+       I originally wrote this program as an exercise in converting a program
+from BCPL into assembler.  It is designed for speed and size, and does
+absolutely no checking.  If you run it on a machine with no memory between
+F80000 and FBFFFF, it will crash.  If you run it more than once since the last
+warm boot, it will crash.
+
+  Program copyright Glen McDiarmid 1987.  Use, modify and distribute freely.
+       

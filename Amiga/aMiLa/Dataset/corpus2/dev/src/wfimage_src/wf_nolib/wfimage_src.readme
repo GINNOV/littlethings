@@ -1,0 +1,42 @@
+short:    waveforms.image class source v44.0
+Author:   phin@sufo.estates.co.uk (Paul Juhasz)
+Uploader: phin@sufo.estates.co.uk (Paul Juhasz)
+Version:  44.0
+Type:     dev/src
+
+---------------------------------------------------------------
+
+   waveforms.image class source - ©'98-2001 strandedUFO
+
+   This is a subclass of image.class for drawing any of the five basic waveforms
+   into a window or a gadget. Note that this is a source version, ie, needs to be
+   compiled or linked with your program, it is not a classes/images resident BOOPSI
+   class as such.
+
+   The supplied test program implements such a gadget in GadTools, which will cycle
+   through the images.
+
+   The test program can have two tooltypes in its icon:
+
+    OWNSCREEN={<yes> or <no>}   - use a custom screen or run on Workbench.
+    REALOSCI={<yes> or <no>}    - this will affect the pens: <yes> results in a
+                                    lightgreen wave on dark green background and
+                                    yellow zero line, <no> will force BAR-pens.
+                                    See developer doc for more details.
+
+   For updates or bugfixes please refer to my website:
+
+            http://www.sufo.estates.co.uk/amiga/software.html
+
+   This software is Freeware, which means, anyone can use and spread it freely,
+   provided that the archive contents are not altered in any way.  Any liability
+   arising from such use or sale is solely the responsibility of the user.  All
+   rights remain with the author.
+
+
+phineas - Monday, 8th Oct. 2001
+
+
+Live fast, code hard and die a beautiful death... (old c0DerZ saying)
+
+

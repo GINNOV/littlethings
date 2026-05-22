@@ -1,0 +1,51 @@
+Short:        Source code for SetMouse 2.0
+Author:       Ketil Hunn (ketil@sis.pitt.edu)
+Uploader:     Ketil Hunn (ketil sis pitt edu)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+
+TITLE
+
+  Source Code for SetMouse
+
+VERSION
+
+  2.0   (04.Oct.96)
+
+AUTHOR
+
+  Ketil Hunn
+  Nabbetorpveien 35B
+  N-1632 Gamle Fredrikstad
+  Norway
+
+  E-Mail: ketil@sis.pitt.edu
+
+  http://www.sis.pitt.edu/~ketil/
+
+DESCRIPTION
+
+  Source code for SetMouse. SetMouse is a:
+
+  small utility to centre mousepointer on screen upon startup as in MS-Windows.
+  Nice if you have many programs in your WBStart-drawer (the wait-pointer will
+  be centered and well visible).
+
+  May also position/move mousepointer to any coordinates on a screen.
+
+SPECIAL REQUIREMENTS
+
+  OS 2.04 or higher.
+
+AVAILABILITY
+
+  ftp://ftp.wustl.edu/pub/aminet/dev/c/SetMouseSource.lha (15.096)
+
+PRICE
+
+  Free.
+
+DISTRIBUTABILITY
+
+  Freeware.

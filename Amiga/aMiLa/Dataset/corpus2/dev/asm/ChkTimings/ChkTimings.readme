@@ -1,0 +1,16 @@
+Short: Check 040/060 execution timings
+Uploader: kakace@aix.pacwan.net (Didier Levet)
+Author: kakace@aix.pacwan.net (Didier Levet)
+Type: dev/asm
+
+   This is a little set of macros that can be used to
+   check 68040/68060 code speed.
+   It allows you to get very accurate results, so you
+   can choose the fastest sample code, or test instruction
+   orders (68060 superscalar optimization).
+
+                   USE IT AT YOUR OWN RISK !
+
+   Support : kakace@aix.pacwan.net
+   Version : 1.3 (9.10.97), first public release.
+

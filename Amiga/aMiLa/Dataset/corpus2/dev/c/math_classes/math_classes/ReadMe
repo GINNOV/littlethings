@@ -1,0 +1,18 @@
+Short: A Matrix and a Bignum class for C++
+Uploader: trulsson@student.docs.uu.se (Erik Trulsson)
+Author: trulsson@student.docs.uu.se (Erik Trulsson)
+
+
+This is a couple of classes written in C++ that handles
+Bignums (integers whose size is limited only by available memory)
+and matrices.
+The matrix directory contains several versions of the code, use whatever suits
+you best. (There is even a C version includd that was my first attempt this)
+The PMatrix class is a permutation matrix and the LUMatrix is a matrix that
+has been LU-decomposed. (if you didn't understand the last sentence so don't worry,
+you probably won't need them then :-) )
+The documentation is sorely lacking but using the classes is fairly 
+straight-forward. (The Bignum class is fairly well commented - in Swedish only. :-( )
+
+This code is hereby placed into the public domain.
+

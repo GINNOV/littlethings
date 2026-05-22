@@ -1,0 +1,183 @@
+Short:        Barfly (68k+PPC) ASM Development System
+Author:       laire popmail owl de (Ralph Schmidt)
+Uploader:     blubberdiblub gmail com (Niels Boehm)
+Type:         dev/asm
+Version:      2.00
+Architecture: m68k-amigaos >= 2.0.4
+
+This is the same distribution as the one that Ralph uploaded on 1998-04-28
+except that I fixed a couple of small bugs in the debugger BDebug with
+friendly permission of Ralph Schmidt:
+
+    o The hunk parser is now more permissive and will read a HUNK_DEBUG even
+      when there is no (incorrect) entry for it in the HUNK_HEADER, which
+      fixes reading of debug hunks for objects compiled with gcc.
+
+    o When the hunk parser searches for source files, it will also look for
+      them in the directory where the object file resides (besides all other
+      paths) and in case of gcc stabs debug hunks won't get stuck when the
+      source file doesn't exist.
+
+    o The BDebug source code Ralph gave me is slightly more recent than the
+      binary from the original archive. It displays SegTracker information
+      in the register window if you have that tool running. However, the
+      PC/disassembly line in that window was corrupted when you didn't have
+      SegTracker running. I fixed that.
+
+
+If you find bugs in BDebug (exclusively, I don't have the files nor the
+permission to work on BAsm), you should probably get in contact with me
+instead of Ralph, as I have the means and might be willing to fix them.
+
+Niels Boehm <blubberdiblub (at) gmail (dot) com>
+
+
+The unchanged original description follows below:
+
+============================================================================
+
+TITLE
+
+    Barfly
+
+VERSION
+
+    Barfly 2.00
+
+AUTHOR
+
+    Developed by
+
+    Ralph Schmidt
+    Kleiner Hellweg 4
+    33154 Salzkotten
+    FR Germany
+
+    <laire@popmail.owl.de>
+
+NEWS
+    Please don`t expect any support for this release. If i get bugreports
+    I may or may not fix them depending on my time and motivation.
+
+DESCRIPTION
+
+    Barfly is a very powerful Assembler Development system with
+    an Intuition controlled Sourcelevel Debugger that also supports
+    SAS and GCC.
+
+    Assembler:
+
+    o Supports 68000..68060 and 6888x
+    o VERY fast Source Passing
+    o Arexx-Support
+    o Enhanced Hunk and Section Support
+    o Pre-Compiled Includes
+    o Cached Includes & Incbins
+    o Advanced Macro Support Functions
+    o High-Level Macros
+    o Enhanced SAS Smalldata Format
+    o Advanced Peephole Optimizer
+    o Multipass Optimizer
+
+
+    Debugger:
+
+    BDebug is an OS-Debugger that is based mainly on the Amiga Task
+    concept and not on the Supervisor Mode. The Debugger can open
+    unlimited debug sessions and the user is able to control these
+    session simultaneous.
+    The window amount is unlimited and fortunately BDebug is very
+    configurable.
+    The *SAS D1 Debug Hunk*, *GCC Stabs Debug Hunk*, a privat BASM
+    Debug Hunk format, and the usual Symbol Hunk is supported.
+    Support 68000..68060 and 6888x
+
+    o Debug Methods:
+
+      o Debug File
+      o Debug Task 
+      o Catch Next Task
+      o Catch Crashed Task
+      o Catch Enforcer Hits
+
+
+    o ToolWindows:
+
+      o RegWindow(1 for a session)
+      o FPUWindow(1 for a session)
+      o DissWindow(unlimited)
+      o MemWindow(unlimited)
+      o CoppWindow(unlimited)
+      o SourceWindow(unlimited)
+      o StructWindow(unlimited)->Include Structures are shown
+      o BreakWindow(1 for a session)
+      o WatchWindow(1 for a session)
+      o ChecksumWindow(1 for a session)
+      o SnoopWindow(1 for a session)
+
+    o Unlimited Information Window
+
+      o TaskWindow
+      o SystemWindow
+      o ProcessWindow
+      o CLIWindow
+      o HunkWindow
+      o SymbolWindow
+      o LibraryWindow->FD-Window->Autodocs/DissWindow
+      o DeviceWindow
+      o ResourceWindow
+      o PortWindow
+      o ResidentWindow
+      o InterruptWindow
+      o AutodocsWindow
+
+    o Warm,Freeze and Kill Tasks
+
+    o Trace Modes
+
+      o Step 1
+      o Step X
+      o Step DEBUG Line
+      o Trace DEBUG Line
+      o Trace over Calls
+      o Trace X over Calls
+      o Trace over OS-Calls
+      o Trace on Flows
+      o Trace on Address
+      o Trace out of OS
+      o Run Task
+      o Run Watched Task
+      o Run History Task->History trace
+
+    o Register Undo and History Window
+
+    o A lot more functions not listed here...
+
+
+NEW FEATURES
+
+    fixed a lot bugs
+    added ppc support to basm
+
+SPECIAL REQUIREMENTS
+
+    >=V37, >=1MB suggested.
+
+
+HOST NAME
+
+    Any Aminet site, e.g. ftp.uni-paderborn.de
+
+
+DIRECTORY
+
+    /pub/aminet/dev/asm
+
+FILE NAMES
+
+    BarflyDisk2_00.lha
+
+PRICE
+
+    Barfly *WAS* a Shareware product. It`s now GIFTWARE...if you think
+    it`s worth something feel free to send something.

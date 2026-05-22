@@ -1,0 +1,433 @@
+==============================
+PowerEngine1.0:    display_aga.o object specifications
+==============================
+DocVersion: $VER: PowerDisplay/AGA v1.0
+==============================
+(c)1997 IMMORTAL Systems
+
+This doc is freeware as well as the display_aga.o itself. It can be distribu-
+ted freely.
+
+
+INTRODUCTION:
+------------------
+
+Display_aga.o is the standart amigaOS object and you can use it easily in
+assembler and probably in C and E(after some conversions).
+
+PURPOSE:
+------------------
+This object includes various variables and procedures useful for easy setup
+and using AGA chipset for 3D games and realtime 3d applications.
+It includes procedures for easy setup of an AGA screen,double-buffering,
+and also 4 quite fast 24bit to HAM8 chunky-to-plannar routines.
+You can use only severe features ,i.e. only AGA screen setup and double
+buffering for 3D-vector game.
+
+FEATURES:
+------------------
+
+	-	easy direct usage of intuition screens and double-buffering
+	-	full multitasking support
+	-	running in almost all AGA-screenmodes :-)
+	-	68020+ and OS3.0 optimized
+	-	fast 24BIT to HAM8 c2p routines
+	-	written in high-optimizing assembler
+	-	DOES NOT USE BLITTER AND COPPER :-)
+
+REQUIREMENTS
+------------------
+You need just an AMIGA, AGA(AA) chipset, 68020+ and OS3.0+.
+It does *not* require any FASTRAM.
+(But fastram is *STRONGLY STRONGLY* recommented).
+
+BENCHMARKS
+------------------
+On poor A1200 it takes approximately 50-75 frames for conversion of 24bit
+chunky 320x256 1x1 to ham8 screen.
+(Conversion time HEAVILY depends on converting image.)
+(I mean 1 frame=1/50 sec).
+
+************************************************************************
+      DESCRIPTION OF DISPLAY_AGA.O's FUNCTIONS AND VARIABLES
+************************************************************************
+
+Display_aga.o contains severe procedures and variables. They are accessible
+from you master source by some XREFs. You needn't to care about XREFs
+'coz I have an useful include file to do this. (display_aga.i)
+It also contains some constant's definitions.
+
+DISPLAY_AGA.o PROCEDURES
+========================
+NOTE: All procedures are explained with following header convention:
+
+..NAME: procedure's name
+..INPUT: required input data in cpu's registers
+..OUPUT: output data in cpu's registers
+..UPDATES: list of variables updated or changed by routine
+..REQUIRES DEFINED: list of variables which are needed by procedure
+		    for input or correct function
+
+
+
+
+**
+NAME:	__agaopendisplay
+INPUT:	d0.l=mode id
+OUTPUT: d0.l=0 success d0.l<>0 fail
+UPDATES: __bitmap1,__bitmap2,__bytesperrow,__bytesperplaneline,
+	__maxrows,__maxcols,__winmap1,__winmap2,__wwx1,__wwy1,__wwrows,
+	__wwcols,__agascrb1,__agascrb2,__pcurscrb,__pcurbitmap,__pcurwinmap,
+	__pcurline,__screen,__vblankcounter
+REQUIRES DEFINED:  __intuition
+
+This function will allocate resources and intuition screen with appropriate
+screenmode and 8 bitplanes,will set the default pallete for ham8 c2p,will
+allocate structures and two interleaved buffers for double buffering.
+It will also set the window's properties to fullscreen and it will set the
+buffer1 as an VIEW BUFFER (it is currently displayed) and buffer 2 as an
+RENDER BUFFER (it is NOT displayed and it is free for rendering).
+When you want to use the ham8 c2p please don't change the default palette
+(__colors label) and the modeid MUST CONTAIN THE CORRECT HAM-ENABLE KEY.
+(see include:graphics/modeid.i).
+Screen's palette is available at the __colors label as an color table
+structure prepared for LoadRGB32() function. Although you CAN change it
+freely before calling __agaopendisplay, remember that structure is large
+enough only for setting 64 colors! If you want to set i.e.256 colors palette
+you can't do it this way! (use LoadRGB32 instead).
+
+This function requires an pointer to opened intuition.library in __intuition
+variable.If the pointer is not correct, it will crash your Amiga.
+
+If this routine fails, it returns some nonzero-values in d0.
+DANGER: When the procedure fails on allocating an interleaved bitmap,it will
+allocate not-interleaved,BUT THIS IS *not* CHECKED!
+This function also calls __resetproperties routine.
+
+ModeID REQUIREMENTS: Screen MUST be AGA-compatible (not CGFX stuff here),and
+it MUST support 8-bitplanes and double-buffering.
+If you want to use __agac2p routines, it MUST support HAM8 and interleaved
+bitmaps in addition and it should have its default palette.
+
+**
+NAME:	__agaclosedisplay
+INPUT:	none
+OUTPUT: d0.l=0 success d0.l=-1 fail
+UPDATES: none
+REQUIRES DEFINED: __intuition,__screen,__agascrb1,__agascrb2
+
+This function will deallocate screen, all buffers and resources allocated
+by __agaopendisplay. Use it only for this 'coz this routine needs some
+hidden resources allocated by __agaopendisplay.
+
+**
+NAME:	__agachangebuffer
+INPUT:	none
+OUTPUT: none
+UPDATES: __pcurscrb,__pcurbitmap,__pcurwinmap,__pcurline
+REQUIRES DEFINED: __agascrb1/2,__bitmap1/2,__winmap1/2,__screen,__intuition
+
+This function will swap the buffers. Buffer that was used for rendering will
+be displayed and buffer that was displayed will be available for rendering.
+WARNING: This function DOES NOT ANY wait stuff. So please call some VBL wait
+routine before calling this or call __agavblchangebuffer instead.
+
+**
+NAME:	__agavblchangebuffer
+INPUT:	none
+OUTPUT: none
+UPDATES: same as __agachangebuffer + __mainpri
+REQUIRES DEFINED: same as __agachangebuffer + __gfx
+
+This function does same stuff like previous routine,but in addition it
+waits for vertical-blank before swaps buffers.
+How the wait stuff is provided: First, it will set the task's priority to 60
+and then it calls the WaitTOF() from graphics.library. Then it will set
+task priority back to value defined in __mainpri variable(default=0).
+REASON: VBL waiting is MORE EXACT DUE TO HIGHER PRIORITY.
+
+NOTE: This function needs defined __gfx variable else it will crash the
+machine.
+This function also calls __agachangebuffer and __changepri routines.
+
+**
+NAME:	__changepri
+INPUT:	d0.b = requested priority, -128..127
+OUTPUT: d0.b = previous priority
+UPDATES: none
+REQUIRES DEFINED: none
+
+This function changes task's priority. It's called by __agavblchangebuffer.
+It may be useful for you.
+
+**
+NAME:	__resetproperties
+INPUT:	none
+OUTPUT: none
+UPDATES: __winmap1,__winmap2,__pcurbitmap,__pcurwinmap,__pcurscrb,__pcurline
+REQUIRES DEFINED: __bitmap1/2,__bytesperrow,__bytesperplaneline,__maxrows,
+		  __maxcols,__wwx1,__wwy1,__wwrows,__wwcols,__agascrb1/2,
+		  __intuition,__screen
+
+This routine will reread the __wwrows,__wwcols,__wwx1,__wwy2 variables and
+will update all variables depending on this.Then it will set the buffer1
+for VIEWING and buffer2 for RENDERING. This function is supposed to call
+after changing window's properties.
+(when you want to change i.e.window's size update the __ww*.* variables and
+the call this routine).
+NOTE: This function calls __agachangebuffer.
+
+**
+NAME:	__agac2p
+INPUT: none
+OUTPUT: none
+UPDATES: __pcurline,__psource
+REQUIRES DEFINED: __bytesperrow,__bytesperplaneline,__rendermode,__wwcols,
+__pcurline,__psource,__ham8tolerance
+
+This is the entry point to all ham8 chunky-to-plannar routines. It will
+convert one window's line of 24-bit RRGGBB00 data (pointed by __psource)
+to ham8 plannar screen (bitmap destination is pointed by __pcurline).
+Then, __pcurline and __psource are increased and will point at the next line.
+(See variables descriptions for detailed info).
+Routine ASSUMES that screen is in ham8-compatible mode, palette is default
+and ALL BITMAPS ARE IN INTERLEAVED FORMAT.
+When some bitmaps won't be in interleaved format, this routine will not work
+and probably it will crash down your Amiga.
+Please look at __rendermode and __ham8tolerance descriptions.
+
+**
+NAME:	__agac2pall
+INPUT:  none
+OUTPUT: none
+UPDATES: __pcurline,__psource
+REQUIRES DEFINED: same as __agac2p + __wwrows
+
+This function will call __agac2p for the each line of buffer. Use it when
+you don't need the line-based conversion and you want do convert whole
+24-bit chunky buffer instead of single line.
+
+
+DISPLAY_AGA.o VARIABLES
+========================
+
+**
+NAME: __bitmap1,2
+SIZE: long
+DEFAULT VALUE: ???
+
+These variables point to byte #0 of bitplane #0 of an interleaved bitmap of
+each buffer. If you use __agaopendisplay function, you needn't to change them
+and don't do it.
+
+**
+NAME: __bytesperrow
+SIZE: long
+DEFAULT VALUE: ???
+
+It says how many bytes "costs" one line of bitmap. In 8-bp screens it's the
+same how many pixels is in one line.
+Change it only when you don't use __agaopendisplay.
+
+**
+NAME: __bytesperplaneline
+SIZE: long
+DEFAULT VALUE: ???
+
+It says how many bytes are in one bitplane of one line. In 8-bp screens it's
+the same as __bytesperrow/8.
+Change it only when you don't use __agaopendispplay.
+
+**
+NAME: __maxrows
+SIZE: long
+DEFAULT VALUE: ???
+
+It says how many lines(maximum) can be displayed on the screen. Useful
+for setting the new window's size.
+
+**
+NAME: __maxcols
+SIZE: long
+DEFAULT VALUE: ???
+
+It says how many pixels(maximum) can be displayed in one line. Useful
+for setting the new window's size.
+!!!: Value is in 1/32 of pixel !!!
+
+**
+NAME: __winmap1,__winmap2
+SIZE: long
+DEFAULT VALUE: ???
+
+Point to the up/left corner of window in the bitplane 0 in interleaved
+bitmap. For each buffer.
+If you use __agaopendisplay, don't change them.
+
+**
+NAME: __mainpri
+SIZE: byte
+DEFAULT VALUE: 0
+
+This is the task's priority value from range -128..127. It's set by
+__agavblchangebuffer when WaitTOF() is done.
+
+**
+NAME: __rendermode
+SIZE: byte
+DEFAULT VALUE: 0
+
+On this value depends what chunky-to-plannar routine will be used in
+__agac2p routine. There are 4 available routines, each optimized for diffe-
+rent pixel size.
+In __rendermode variable, only bits #0 and #1 are checked.
+
+bit#	1	0     pixel size
+------------------------------------
+value:	0	0	 1x1 default
+value:	0	1	 2x1
+value:	1	0	 1x2
+value:	1	1	 2x2
+
+**
+NAME: __wwx1
+SIZE: long
+DEFAULT VALUE: 0
+
+This is the window's up/left corner x-coordinate. It's in 1/32 of pixel.
+After change, please call __resetproperties to update another variables
+(winmaps,pcurline, etc..).
+
+**
+NAME: __wwy1
+SIZE: long
+DEFAULT VALUE: 0
+
+This is the window's up/left corner y-coordinate.It's in lines.
+Call __resetproperties after changing.
+
+**
+NAME: __wwcols
+SIZE: long
+DEFAULT VALUE: __maxcols after __agaopendisplay
+
+Window's horizontal size in 1/32 of pixel. It must not be higher than
+__maxcols. Call __resetproperties after changing.
+
+**
+NAME: __wwrows
+SIZE: long
+DEFAULT VALUE: __maxrows after __agaopendisplay
+
+Window's vertical size in lines. It must not be higher than __maxrows.
+This variable is only used by __agac2pall to determine how many lines
+is needed to convert.
+
+
+**
+NAME: __agascrb1,2
+SIZE: long
+DEFAULT VALUE: ???
+
+Each pointer points to its standart intuition screenbuffer structure.
+
+**
+NAME: __pcurscrb
+SIZE: long
+DEFAULT VALUE: __agascrb1 after __agaopendisplay or __resetproperties
+
+Points to the current intuition screenbuffer structure for VIEWING.
+
+**
+NAME: __pcurbitmap
+SIZE: long
+DEFAULT VALUE: __bitmap2 after __agaopendisplay or __resetproperties
+
+Points to the current interleaved bitmap for RENDERING. See also __bitmap1,2.
+
+**
+NAME: __pcurwinmap
+SIZE: long
+DEFAULT VALUE: __winmap2 after __agaopendisplay or __resetproperties
+
+Points to the current interleaved bitmap for RENDERING,at the window's
+up/left corner.See also __winmap1,2.
+
+**
+NAME: __pcurline
+SIZE: long
+DEFAULT VALUE: __winmap2 after __agaopendisplay or resetproperties
+	       or current winmap for rendering after __agachangebuffer
+
+Points to the begin of current line in the window in the active bitmap
+for rendering. After __agaopendisplay, __resetproperties and __aga(vbl)change
+buffer it's set to the default winmap value.
+After __agac2p routine it's set to the address of next line.
+
+**
+NAME: __psource
+SIZE: long
+DEFAULT VALUE: ???
+
+Pointer to 24-bit source line buffer for __agac2p. After __agac2p it's
+increased automaticly of 1 line.
+Data in buffer are organized as RRGGBB00 longs.
+This pointer YOU MUST CHANGE MANUALLY BEFORE __agac2p.
+
+**
+NAME: __screen
+SIZE: long
+DEFAULT VALUE: ???
+
+Pointer to standart screen structure opened by __agaopendisplay.  In most
+cases you needn't to change it or use it.
+
+**
+NAME: __ham8tolerance
+SIZE: word
+DEFAULT VALUE: 80
+
+This value is used by __agac2p to determine the lowest value of pixel
+difference when the HOLD mode is interrupted and new base register is
+selected. It influence the quality and speed of 24bit to HAM8 conversion.
+You may experiment with it freely. Value must be from range 0-255.
+
+**
+NAME: __intuition
+SIZE: long
+DEFAULT VALUE: ???
+
+You MUST specify this pointer for most of functions. It must point to
+an opened intuition.library v39+.
+
+**
+NAME: __gfx
+SIZE: long
+DEFAULT VALUE: ???
+
+Pointer required by __agavblchangebuffer. It must point to an opened
+graphics.library.
+
+**
+NAME: __vblankcounter
+SIZE: long
+DEFAULT VALUE: 0
+
+This variable is increased every screen's frame by an VBEAM interrupt server
+added by __agaopendisplay. You can read or change it freely, diplay_aga
+object does not use it itself.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

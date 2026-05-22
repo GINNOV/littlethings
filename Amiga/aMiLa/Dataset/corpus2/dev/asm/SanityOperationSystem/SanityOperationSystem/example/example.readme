@@ -1,0 +1,140 @@
+SOS Sanity Operating System Big Example
+---------------------------------------
+
+This is a complete example for a demo made with sos.
+
+
+
+A  very  important  part  of the SOS system is missing in the original
+release:   The demo loader.  The loader interprets a script of effects
+and loads and executes the effects.
+
+This  archive  contains  all effects of the Mainzelmännchen production
+"Secret  Members"  in  crunched,  executable  form  and  the loader as
+source.
+
+
+
+To create a running demo, type
+
+> cd all
+> soscon files demo.dat bigdisk
+> sosram demo.dat demo.exe 3mb
+
+after you inserted the path of "all" into your s:sosdirs file.
+
+
+
+It also contains the sources of some simpler effects used in this
+demo.
+
+
+
+
+The loader-script:
+------------------
+
+The  basic  memory  system  of SOS allows not to free a single effect.
+you  can  only  remember  an  old  memory configuration, allocate some
+memory  and  later  restore the old configuration.  Therefore a simple
+script for a demo using the standard loader looks like this (note that
+only full line comments are allowed!)
+
+
+p			; remember old memory configuration
+m 100000		; alloc memory for module
+M mod1			; load module
+l 4 textpage		; load textpage 
+p			; remember old memory configuration
+l 1 effect1		; load effect 1 in slot 1
+l 2 effect2		; load effect 2 in slot 2
+l 3 effect3		; load effect 3 in slot 3
+t			; start the tune
+s 1 160			; start effect in slot 1 for 160 frames
+s 2 160			; start effect in slot 2 for 160 frames
+s 3 80			; start effect in slot 3 for 80 frames
+r			; restore memory after loading module and
+			; before loading the effects
+p
+s 4			; start textpage
+
+l 1 effect4		; load effect 4 in slot 1
+l 2 effect5		; load effect 5 in slot 2
+l 3 effect6		; load effect 6 in slot 3
+s 1 160			; start effect in slot 4 for 160 frames
+s 2 160			; start effect in slot 5 for 160 frames
+s 3 80			; start effect in slot 6 for 80 frames
+r			; kick effects out of memory
+r			; kick module out of memory
+p
+m 100000		; ... load next module
+M mod2
+....
+x			; loop demo
+
+
+
+This  is  sufficient  for simple demos, but not at all perfect.  After
+kicking  the  first 3 effects, you must load the next few effects.  to
+avoid  a  blank  screen,  you  can  load a simple effect that does not
+consume too much memory (like a textpage) at the beginning of the demo
+and show it while you load the next effects.  The disadvantage is that
+the textpage has to be in the memory ALL THE TIME.
+
+
+Since  SOS  version  2.6,  a new memory managment was introduced:  The
+Alternating  memory  managment.   This  allows  you  to  load the next
+effects  while  you  still  show  the  old effect.  Alternating memory
+managment  is  enabled  from  the script by the "A"-command.  A simple
+script for alternating memory managment looks like this:
+
+
+p
+m 154574		; allocate memory for the module
+M mod1			; start module
+p			; load module
+A
+l 1 intro.scr		; load first effect
+t 50			; start music after 50 frames
+S 1 320			; start first effect for 320 frames
+E 1 _cred1.scr 80	; next effect
+E 1 pray.scr 80		; next effect
+E 1 _cred2.scr 80	; next effect
+E 1 pray.scr 80		; next effect
+E 1 _cred3.scr 80	; next effect
+E 1 pray.scr 80
+E 1 _cred4.scr 120
+E 1 pray.scr 40
+E 1 scalaanim.scr 320
+E 1 webuyit.scr 638
+E 1 plasma256.scr 320
+E 1 _spruch1.scr 160
+E 1 _spruch2.scr 160
+E 1 scalabox.scr 640
+E 1 escher.scr 320
+E 1 stripe3d.scr 640
+E 1 feedback.scr 480
+E 1 _pic3.scr 160
+W			; wait till the last effect is over
+r			; free memory
+r
+x			; exit demo
+
+
+
+The  loader  still  contains  the  hidden  part  detection for sectret
+members, I assume that you should remove it...
+
+
+
+GFX
+---
+
+Gfx  is  a  simple  graphics  shower/fader.   If you need to display a
+fullscreen  picture  in  your  demo, you can just write a .i-file that
+describes  size  and  resolution  of the picture and assemble gfx.asm.
+The viewer is not perfect, you may need to adapt the source if it bugs
+for your resolution.
+
+It  is an example of using the AGAC library for fading.  If you fade a
+non-aga picture, it will automatically adept to aga or ecs chipset.

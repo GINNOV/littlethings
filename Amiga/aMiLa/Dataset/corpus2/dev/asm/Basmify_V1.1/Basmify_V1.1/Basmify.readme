@@ -1,0 +1,14 @@
+Short:    V1.1 - Rexx scripts: Basm in CygnusED
+Author:   Ulrich Flegel <flegel@ibr.cs.tu-bs.de>
+Uploader: flegel@ibr.cs.tu-bs.de
+Type:     dev/asm
+
+ARexx  Programs  to  assemble  and  handle  errors/warnings  with  Basm  and
+CygnusED.
+
+Please  read  the  file  Basmify.doc  carefully.
+
+This is release version 1.1.
+
+Ulrich Flegel.
+

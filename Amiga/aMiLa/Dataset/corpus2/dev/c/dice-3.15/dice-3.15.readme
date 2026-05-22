@@ -1,0 +1,54 @@
+Short:        DICE 3.15 Source Release
+Author:       Matt Dillon <dillon@best.net>
+Uploader:     Aaron "Optimizer" Digulla <digulla home lake de>
+Type:         dev/c
+Version:      3.15
+Architecture: m68k-amigaos
+
+This is the source of DICE 3.15. It is a commercial product of
+OIC but made Freeware (not PD !) by its author Matt Dillon.
+Here is the original text by him:
+
+    I have finally found the time to release the source to the DICE compiler.
+    It's pretty much as-is, I'm sorry to say, but still a pretty good piece
+    of work even now.  The release is roughly equivalent to the last
+    commercial release that we (OIC) did.
+
+    The core source will compile on the Amiga and can also be compiled on
+    most UNIX platforms.  It generates 68000 output and all files are output
+    in the amiga's binary, object, and library file formats.  Embedded 68000
+    support is included, which is basically what I use it for these days.
+
+    Sources for the complete system: dcc, dcpp, dc1, das, dlink, and dobj
+    have been released along with a bunch of other stuff.  Since I still
+    use DICE for embedded hardware projects, it isn't *totally* obsolete.
+
+    The code should easily compile on an Amiga or a FreeBSD box and ought
+    to compile reasonably well on other UNIX boxes.  The code can be
+    retrieved from the Obvious Implementations Corp. web site:
+
+	http://www.obviously.com/
+
+    I haven't done much work on the Amiga recently.  Some of you might have
+    heard that I got caught up in an ISP startup <wry grin>.  That was about
+    3 years ago and I've been working at it ever since.  Thank god we don't
+    have to deal with Microcruft NT.  It's FreeBSD all the way.  I'm doing
+    mostly UNIX work these days... back to my root's, in fact, as I was using
+    BSD 4.2 at UC Berkeley a couple of years before the Amiga came out.
+
+    In anycase, DICE is probably my finest piece of code.  I hope people get
+    some use out of the core and libraries.
+
+						-Matt
+
+I asked if he would mind if I would upload it to Aminet and he said:
+"Not at all, feel free to post it.". So here it is. I don't think he'll
+like to be bothered about bugs (mostly because he won't have any time
+to fix them anyway) and I'm just to uploader, so don't bother me
+either ;-)
+
+--
+Aaron "Optimizer" Digulla          Team AMIGA        AROS Head of Development
+Author of XDME, ResTrackLib, CInt.		<http://home.pages.de/~AROS/>
+"(to) optimize: Make a program faster by improving the algorithms rather than
+by buying a faster machine."

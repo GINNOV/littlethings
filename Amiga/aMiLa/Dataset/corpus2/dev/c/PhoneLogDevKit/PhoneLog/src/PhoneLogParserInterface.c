@@ -1,0 +1,151 @@
+ /* Copyright © 1996 Kai Hofmann. All rights reserved. */
+
+ #include "PhoneLogParserInterface.h"
+ #include "PhoneLog.h"
+ #include "PhoneLogScanner.h"
+ #include "PhoneLogParser.h"
+
+
+ int ParsePhoneLogFile(char *filename)
+
+/*
+******* PhoneLogParser/ParsePhoneLogFile ************************************
+*
+*   NAME
+*	ParsePhoneLogFile -- Parse a log file (V33)
+*
+*   SYNOPSIS
+*	NumOfParseErrs = ParsePhoneLogFile(name);
+*
+*	int ParsePhoneLogFile(char *filename);
+*
+*   FUNCTION
+*	Parse a log file.
+*
+*   INPUTS
+*	name - The name of the log file.
+*
+*   RESULT
+*	NumOfParseErrs - Number of occured parse errors.
+*
+*   EXAMPLE
+*	...
+*	if (ParsePhoneLogFile("AmiTCP:log/AmiLog.log") != 0)
+*	 {
+*	  \* Parse errors have occured *\
+*	 }
+*	...
+*
+*   NOTES
+*	This function uses  InsertPhoneLogEntry() and InsertPhoneLogMark()
+*	as callback functions so that you can insert parsed datas into your
+*	program.
+*
+*   BUGS
+*	No known bugs.
+*
+*   SEE ALSO
+*	InsertPhoneLogEntry(), InsertPhoneLogMark()
+*
+*****************************************************************************
+*
+*
+*/
+
+  {
+   int NumOfParseErrs;
+
+   PhoneLogScanner_BeginFile(filename);
+   NumOfParseErrs = PhoneLogParser();
+   ClosePhoneLogParser();
+   PhoneLogScanner_CloseFile();
+   return(NumOfParseErrs);
+  }
+
+
+ void InsertPhoneLogEntry(struct PhoneLogEntry *item)
+
+/*
+******* PhoneLogParser/InsertPhoneLogEntry **********************************
+*
+*   NAME
+*	InsertPhoneLogEntry -- Insert a parsed entry into your program (V33)
+*
+*   SYNOPSIS
+*	InsertPhoneLogEntry(item);
+*
+*	void InsertPhoneLogEntry(struct PhoneLogEntry *item);
+*
+*   FUNCTION
+*	This function will be called by the parser to insert a phone log
+*	entry into your software.
+*	So please modify the function body according to your needs!
+*
+*   INPUTS
+*	item - PhoneLogEntry structure to insert into your program.
+*
+*   RESULT
+*	None
+*
+*   NOTES
+*	Don't forget to return to the parser after you have inserted the
+*	item into your program!
+*
+*   BUGS
+*	No known bugs.
+*
+*   SEE ALSO
+*	ParsePhoneLogFile(), InsertPhoneLogMark()
+*
+*****************************************************************************
+*
+*
+*/
+
+  {
+   return;
+  }
+
+
+ void InsertPhoneLogMark(struct PhoneLogMarker *item)
+
+/*
+******* PhoneLogParser/InsertPhoneLogMark ***********************************
+*
+*   NAME
+*	InsertPhoneLogMark -- Insert a parsed mark into your program (V33)
+*
+*   SYNOPSIS
+*	InsertPhoneLogMark(item);
+*
+*	void InsertPhoneLogMark(struct PhoneLogMarker *item);
+*
+*   FUNCTION
+*	This function will be called by the parser to insert a phone log
+*	mark into your software.
+*	So please modify the function body according to your needs!
+*
+*   INPUTS
+*	item - PhoneLogMarker structure to insert into your program.
+*
+*   RESULT
+*	None
+*
+*   NOTES
+*	Don't forget to return to the parser after you have inserted the
+*	item into your program!
+*
+*   BUGS
+*	No known bugs.
+*
+*   SEE ALSO
+*	ParsePhoneLogFile(), InsertPhoneLogEntry()
+*
+*****************************************************************************
+*
+*
+*/
+
+  {
+   return;
+  }

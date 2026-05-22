@@ -1,0 +1,34 @@
+Short:    Always WFLG_SMART_REFRESH (incl. C-Source)
+Uploader: Tcn@techbase.in-berlin.de (Timo C. Nentwig)
+Author:   Tcn@techbase.in-berlin.de (Timo C. Nentwig)
+Type:     dev/src
+
+Replacement for SmartWB by Grzegorz Calkowski.
+
+SmartWB replaces WFLG_SIMPLE_REFRESH with WLG_SMART_REFRESH.
+
+Since al least most of standard C= programs still  uses  the  obscured
+simple  refresh  this OpenWindowTagList() patch is neccessary to speed
+up windows.
+
+This archive is mainly for tutorial purpose so you  can  do  with  the
+source  whatever  you  want  but  it's  still copyrighted © by Timo C.
+Nentwig.
+
+C-Source is included.
+
+----------------------------------------------------------------------
+
+The   program   patches   -0x25e   (-606)   [OpenWindowTagList()]   of
+intuition.library.
+
+So the workbench windows are smart-refreshed.  It  should  also  patch
+every other window (e.g. C='s Prefs) opened by OpenWindowTagList() but
+it doesn't (that's why I changed the name SmartWIN to SmartWB).  Don't
+ask me why, I've no idea :-(
+
+Probaly just a minor stupid mistake. This can happen when  writing  10
+minutes programs ;)
+
+If you find the strange bug in the source, please let me know !
+

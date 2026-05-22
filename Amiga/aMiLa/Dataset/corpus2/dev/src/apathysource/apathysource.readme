@@ -1,0 +1,23 @@
+Short:        Source for 40kb intro: Apathy/PowerLine
+Author:       Henrik Magnusson (Raylight)
+Uploader:     druid powerline goteborg mail telia com
+Type:         dev/src
+Architecture: m68k-amigaos
+
+ Full source code for 40kb intro, released at The Party 5, by PowerLine.
+ Compatible with PhxAss 4.18+ (© Frank Wille). Contains:
+
+ - 2*2, Full Screen Zoom Rotator
+
+ - Copper Wall
+
+ - Highly Optimized Dot Tunnel
+
+ - Support Routines, eg. Fading, Syncronization, Memory Management.
+
+ - All Graphics and Music
+
+ - Needed Compilation Scripts
+
+ Uses The Player 6.1A (© Jarno Paananen). Reproduction needs permission from
+ the authors. Quick contact: chip@toaster.joy.se

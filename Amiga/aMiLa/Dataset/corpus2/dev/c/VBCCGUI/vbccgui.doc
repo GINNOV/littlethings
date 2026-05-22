@@ -1,0 +1,71 @@
+Introduction:
+	This program is a small GUI for Volker Bartelman's VBCC compiler
+	made because I was tired of typing in the cli all the time.
+
+Legal:
+	This program is freeware, no more than a nominal fee may be
+	charged for distribution of this program, it may however be
+	added on any PD/Shareware CD-rom and on Amiga Format cover CD.
+
+	The content of this archive may not be added to, reverse
+	engineered or in otherways changed from its original state.
+
+Installation:
+	Well, it is not very easy to start, and not as powerfull as
+	some of the commercial C packages but it is free :-) and it
+	has continued support.
+
+	Edit the "VBCC-startup" file to match your location of VBCC
+	and place it in your s: directory, place the vbccgui
+	executable somewhere (preferably c: or you have to edit the
+	VBCC-startup file further) and place the VBCC icon where you
+	can reach it (I have left mine in the Workbench	window)
+
+	Copy the "vbccgui.config" file to the vbcc: path, as the program
+	is not yet ready to handle if this file is missing or misplaced!
+
+	If you do not have MagicWB installed, copy the font to your
+	fonts: directory.
+
+Usage:
+	Now start VBCC from the icon and you will see the window of
+	VBCC-gui v1.2 with its 10 gadgets.
+
+	the six upper gadgets are two string gadgets where you can
+	put the location of input and output files, and two "H" gadgets
+	that call up a window showing the last 10 files you have used as
+	input or output, and two "F" gadgets that brings up a
+	file-selector for input.
+
+	The tree gadgets below are as follows:
+
+	Include Math library? Will link with the math library so you
+				can use the float datatype.
+
+	Execute? Will ask you after compiling if you want to run the
+				program just compiled.
+
+	Close con? Will close the console window after your program.
+
+	The OK gadget below will compile your source to the destination
+	and if promted by the above gadgets will ask you if you want to
+	run the executeable.
+
+History:
+	changes from 1.0 to 1.01: Some bugs fixed.
+	changes from 1.01 to 1.02: Some more bugs fixed!
+	changes from 1.02 to 1.1: Config file added.
+	changes from 1.1 to 1.2: History list and File selector added.
+
+Future:
+	Additions to this gui will be made after input from you!
+	Write to my girlfriend's email sorcia@post8.tele.dk (we live
+	together so I will get it too :-) and write VBCC-gui in the
+	subject.
+
+	I have planned for linking with multiple .lib files, and an
+	easy to use fd_to_lib funktion.
+
+	In the far future I may make an arexx port to this version.
+
+	Also in my mind is an idea to make a fully IDE using vbcc.

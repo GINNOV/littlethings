@@ -1,0 +1,42 @@
+         File: objc-1.8.7.zip
+       Author: Kim Shrier (kim@tinker.com)
+      Release: 1.8.7 (Feb. 8th, 1998)
+Compatibility: PR2
+     Location: contrib/lang
+  Description: The Portable Objective C compiler by David Stes
+        Notes: This is an executable version of the Portable Objective
+               C compiler, version 1.8.7, and the source code.  It uses
+               mwcc and mwld to do the actual compiling after processing
+               the Objective C source into C.  It was compiled to run
+               from the GeekGadgets directory, /boot/apps/GeekGadgets.
+               After unzipping the package, the files in bin should be
+               moved to /boot/apps/GeekGadgets/bin; move the files in
+               lib to /boot/apps/GeekGadgets/lib; move the files in
+               include to /boot/apps/GeekGadgets/include; and move
+               the files in man to /boot/apps/GeekGadgets/man.  You
+               should also have /boot/apps/GeekGadgets/bin in your
+               execution path in order for the compiler to run.  The
+               source for this compiler and its libraries in in the
+               src directory.  You can build the compiler and libraries
+               by typing the following commands:
+
+                   ./configure powerpc-be-beos (or i586-be-beos)
+                   make
+                   make cakit
+                   make install
+
+               If you want the compiler to install in a different directory,
+               such as /boot/usr/local, you can specify it on the configure
+               command as follows:
+
+                   ./configure --prefix=/boot/usr/local
+
+               You then do the makes and the compiler will install in
+               /boot/usr/local.  Make sure that /boot/usr/local/bin is
+               in your PATH environment variable.
+
+
+               Additional information can be found at:
+
+                   http://users.pandora.be/stes/compiler.html
+

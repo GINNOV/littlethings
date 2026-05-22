@@ -1,0 +1,87 @@
+PURPOSE
+
+  This is a collection of files to make life as a C programmer a bit easier.
+  They require GoldED by Dietmar Eilert. The error parsing scripts also
+  require DICE commercial by Obvious Implementations Corp.
+
+COPYRIGHT
+
+The complete package is © Copyright 1995 Stefan Berendes. All rights reserved.
+May only be distributed on Aminet and via noncommercial BBS.
+May also be included to any GoldED distribution package by Dietmar Eilert.
+
+Some of the ARexx scripts are based on scripts originally written by
+François Helsen and Dietmar Eilert.
+The install script is based on install scripts by Dietmar Eilert.
+
+If you modify the scripts, please send me a copy of the modified files
+or at least the modifications you made. New scripts are also welcome for
+inclusion to this package.
+
+For comments, bug reports, flames, improvisations etc, send Email to
+
+    BERENDES@reze-1.rz.rwth-aachen.de
+    Stefan Berendes, 2:2452/107.38      (FidoNet)
+
+or Snailmail
+
+    Stefan Berendes
+    Königstr. 62
+    52064 Aachen
+    Germany
+
+
+INSTALLATION
+
+  Simply run the provided install script. At least GoldED 3.0.1+ is required.
+  (It may run under previous versions of the editor, but it has not been
+  tested though.)
+
+  My private suggestion is:
+
+  Run the install script. Replace your old quickstarter with the new one
+  provided in this package. When the editor pops up, select "USE new presets"
+  and "SAVE preferences". Save the prefs as e.g. "GolDICE.prefs". Now start
+  the editor with the command
+
+    "ed arexx GOLDED.DICE config GoldED:config/GolDICE.prefs FORCE <filename>"
+
+  (you may set an alias or use Stefan Becker's ToolManager to do this).
+  Please note that the Arexx port name GOLDED.DICE is required by the arexx
+  scripts.
+  You may also load the C syntax parser, auto indent and other programmer
+  specific presets. Save the prefs. When running GoldEd with the command
+  above, you will get a programmer specific editor with syntax parsing and
+  the like. Special tip: To interrupt your session, press <right amiga>-%,
+  and your session with all open files will be saved and restored when you
+  start your editor again.
+  To edit some text, e.g. a mail, simply call the editor with "ed <filename>"
+
+QUICKSTARTER:
+
+    A modified version of GoldEDs quickstarter "Ed". This one accepts a
+    FORCE/S switch as argument. If this switch is specified, only an
+    already running GoldED is accepted that has an Arexx port with the
+    same name as specified with the AREXX/K keyword. Otherwise a new
+    GoldED is started with the given ARexx port and config file.
+    This is a workaround for the missing capability of GoldED to have
+    window-dependant configurations. This feature may become obsolete
+    in the near future ;-)
+
+    Note: The scipts require GoldEDs Arexx port to be named GOLDED.DICE.
+    Use the following command to set up editor:
+
+    "Ed AREXX GOLDED.DICE CONFIG GoldED:config/GolDICE.prefs FORCE"
+
+
+PRESETS:
+
+    My menu and keyboard settings. Support all the new scripts and also
+    require some of the scripts that came with GoldED. For function key
+    setting see the README file.
+
+AREXX:
+
+    A collection of useful ARexx scripts, including errorhandling
+    (requires DICE 3.0 commercial), compiler control, programming
+    support and misc functions. See the README file.

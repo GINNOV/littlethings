@@ -1,0 +1,26 @@
+InitLayers equ -30
+CreateUpFrontLayer equ -36
+CreateBehindLayer equ -42
+UpFrontLayer equ -48
+BehindLayer equ -54
+MoveLayer equ -60
+SizeLayer equ -66
+ScrollLayer equ -72
+BeginUpdate equ -78
+EndUpdate equ -84
+DeleteLayer equ -90
+LockLayer equ -96
+UnlockLayer equ -102
+LockLayers equ -108
+UnlockLayers equ -114
+LockLayerInfo equ -120
+SwapBitsRastPortClipRect equ -126
+WhichLayer equ -132
+UnlockLayerInfo equ -138
+NewLayerInfo equ -144
+DisposeLayerInfo equ -150
+FattenLayerInfo equ -156
+ThinLayerInfo equ -162
+MoveLayerInFrontOf equ -168
+InstallClipRegion equ -174
+

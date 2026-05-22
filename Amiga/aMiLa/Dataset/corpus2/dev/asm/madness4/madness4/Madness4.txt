@@ -1,0 +1,42 @@
+MACHINE:A1200 although possibly any amiga with enough chip ram
+        soon to be AGA only when i write the next routine
+        so that i can have big multicoloured sprites
+CODE:Andyrew
+GFX:OJ
+LEFT SHIFT EXIT		 
+
+Status: incomplete (scrolling works though)
+	next bit to right is the player
+
+Miner Madness4 is my current project.
+
+
+MinerMadness 1&2 were games i wrote with my mate merlin on
+ye olde c64.  They were flip screen games, which we played to death
+sadly we never released them.  If I remember ill upload them to
+arnold or some other 64 site.
+
+MM4 is 8 way scrolling up to 4 pixels a vblank.
+it runs at 50 frames a second on my 1200.
+
+the level is created from an iff picture.
+
+its going to have a very rough light sourcing 
+its just a pretty effect and i dont see the point in spending all
+my processor time making it perfect. if you want perfect buy me
+a gfx card and an exelorator.
+
+BUGS:other than it just being the scroller, NONE that are mine.
+     but, ifflib keeps refusing to open in some screen modes (WEIRD!)
+     to fix this run codewatcher (for some reason) with madness4.x
+     
+     i.e. codewatcher madness4.x
+     
+Source is included. I use standard includes, but i also have
+	my own collection of little routines which i have not
+	included. They are all minor things like takeover system
+	setup standard things etc.
+
+
+Email:	The_Widds@MSN.COM	Yes I know its MSN so sue me!
+	

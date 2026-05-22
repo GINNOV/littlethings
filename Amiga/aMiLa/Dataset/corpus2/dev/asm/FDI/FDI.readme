@@ -1,0 +1,29 @@
+Short:    Very good FD to Asm converter.  v2.2
+Uploader: kjots@gem.menzies.latrobe.edu.au (Karl J. Ots)
+Author:   kjots@gem.menzies.latrobe.edu.au (Karl J. Ots)
+Requires: OS2.0+
+Type:     dev/asm
+Replaces: dec/asm/FDI.lha
+
+FDI converts FD files that look something like this:
+
+	InitCode(startClass,version)(d0/d1)
+	InitStruct(initTable,memory,size)(a1/a2,d0)
+
+Into Assembly language include files that look like this:
+
+	_LVOInitCode 			EQU	-$0048
+	_LVOInitStruct 			EQU	-$004E
+
+FDI offers:
+	* Three CALL macros:
+	   - Standard,
+	   - PC-Reletive base movement,
+	   - Simple - no base movement.
+	* Hexidecimal or Decimal offsets.
+	* Neat, tab-alligned output (with variable tabs).
+	* Non-include file output repression for easy scripting.
+	* Private entries can be processed or ommited.
+
+All options are controlled, and it is up to YOU which one you
+want to use.

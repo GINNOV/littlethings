@@ -1,0 +1,15 @@
+Short:        xmplayer.library - plays a FastTracker modules
+Author:       crust@go2.pl (Michaî Skorupka)
+Uploader:     ymi@inetia.pl (Marcin Wieczorek)
+Type:         dev/asm
+Version:      1.0a
+Requires:     OS2.04
+Date: 	     17-Apr-2001
+
+This  library  is  designed  for  coders - for more details see the autodoc
+file.   It plays FastTracker (XM) modules.Package contains xmplayer.library
+which  was written in assembler, and needed developer files :  includes (C,
+assembler)  and  autodoc file.  You can also find an example XM by Madman /
+Amnesty.Library  was  written  based  on  source code of PS3M Copyright (c)
+Jarno Paananen a.k.a.  Guru / S2 1994-96.
+

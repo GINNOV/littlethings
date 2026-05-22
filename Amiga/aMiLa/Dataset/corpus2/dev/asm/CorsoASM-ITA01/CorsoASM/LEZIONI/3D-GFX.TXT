@@ -1,0 +1,1447 @@
+
+   ************************************************************************
+ ****************************************************************************
+************                                                      ************
+**********            tECNICHE e aLGORITMI aPPLICATIVI              **********
+**********             pER lA rEALIZZAZIONE dI mOTORI               **********
+**********               iN gRAFICA 3d cOL cOMPUTER                 **********
+************                                                      ************
+ ****************************************************************************
+   ************************************************************************
+
+	Realizzato da    :  -+- Cristiano Tagliamonte -+- Aceman/BSD -+-
+
+	Ultima revisione :  29 Settembre 1996
+
+
+				    !     !
+		      _..-/\        |\___/|        /\-.._
+		   ./||||||\\.      |||||||      .//||||||\.
+		./||||||||||\\|..   |||||||   ..|//||||||||||\.
+	     ./||||||||||||||\||||||||||||||||||||/|||||||||||||\.
+	   ./|||||||||||||||||||||||||||||||||||||||||||||||||||||\.
+	  /|||||||||||||||||||||||||||||||||||||||||||||||||||||||||\
+	 '|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||`
+	'||||'     `|||||/'   ``\|||||||||||||/''   `\||||||'     `|||`
+	|/'          `\|/         \!|||||||!/         \|/'          `\|
+	V              V            \|||||/            V              V
+	`              `             \|||/             '              '
+				      \./
+				       V
+
+
+				cONTENUTI				
+==========================================================================
+
+               °    Introduzione
+               °    I vettori
+               °    Prospettiva
+               °    Rotazione
+               °    Ottimizzazione delle rotazioni
+               °    Wireframe
+               °    Hidden face
+               °    Filled vector e scan line
+               °    Flat shading
+               °    Ottimizzazioni per il calcolo della sorgente di luce
+               °    Gouraud shading
+               °    Phong shading
+               °    Reflection mapping
+               °    Texture mapping
+               °    Free direction texture mapping
+               °    Texture mapping bilineare
+               °    Texture mapping biquadratico
+               °    Bump mapping
+               °    Clipping 2D
+               °    Ottimizzazione del fill
+               °    Appendice A: Notazione in virgola fissa
+               °    Appendice B: Coordinate polari
+               °    Appendice C: Gestione degli oggetti
+               °    Note finali
+
+
+				iNTRODUZIONE
+==========================================================================
+
+ Questo breve testo vuol essere di aiuto a chi vuol intraprendere l'arduo
+ed affascinante cammino verso la programmazione di un motore grafico 3D,
+scoprendone inizialmente i concetti di base per poi affrontare i piu`
+complessi e spettacolari effetti realizzabili. Col termine "motore" si
+indica l'insieme di routine atte alla gestione e alla manipolazione di
+specifici dati che una volta elaborati nella maniera dovuta daranno come
+risultato la visualizzazione dell'ambiente 3D in tempo reale.
+ Il seguente testo non vuol essere un corso di programmazione orientato
+alle applicazioni 3D, bensi` un'opera nella quale vengano forniti piu`
+semplicemente i concetti sui quali si fondano molti motori 3D.
+ Per una completa comprensione si raccomanda la conoscenza di base della
+trigonometria, dell'algebra lineare e di un linguaggio di programmazione
+(meglio se non evoluto).
+ 
+
+				i vETTORI
+==========================================================================
+
+ Un vettore non e` altro che una quantita` di valore con una direzione e
+un verso, o in termini spicci una linea. Nel contesto verranno sempre
+specificati vettori che vanno da un punto di coordinate (0,0,0) (l'origine
+degli assi) verso un altro punto (x,y,z), cosi' facendo si puo' affermare
+che questo vettore ha come quantita` (x,y,z).
+	  _
+       |  /|                Un vettore viene indicato con una lettera, ad
+       | /                 esempio nella figura affianco e' rappresentato
+(0,0,0)|/         x        il vettore V(x,y,z). Il sistema di riferimento
+   ----+------------>      usato e` dato da tre variabili, immaginabili
+      /|\                  come un semplice piano cartesiano perpendicolare
+   z / | \                 all'asse z. Per semplicita` consideriamo la
+    /  |  \                crescita della y verso il basso (e non verso
+       |   \               l'alto) in modo da ridurre i calcoli da svolgere
+       |    \. V           per la visualizzazione di un punto sullo schermo.
+      y|                   L'asse z cresce quando esso si allontana
+       v                   dall'osservatore (il quale e` fermo) , mentre
+			   diminuisce nel caso si avvicini all'osservatore.
+ Utilizzeremo i vettori per definire ogni punto nello spazio, cio` non
+significa in termini pratici che un vettore costituisca una linea
+visualizzata su schermo, bensi` indica il segmento immaginario compreso
+tra l'origine degli assi ed un punto nello spazio.
+
+
+				pROSPETTIVA
+==========================================================================
+
+ Uno dei primissimi problemi che sorgono per la realizzazione di un motore
+3D e` come visualizzare sullo schermo un punto nello spazio, infatti ogni
+punto comprende tre coordinate mentre sul monitor ne abbiamo a
+disposizione solo due: manca l'asse z! Per risolvere il tutto non
+bisogna far altro che calcolare la proiezione dei punti sul piano
+coincidente lo schermo, il che in realta` non e` nulla di complesso.
+ Immaginiamo che il nostro monitor sia trasparente, ossia di poterci
+vedere cio` che si trovi al suo interno, supponiamo che dentro vi sia un
+cubo che saltelli. Questa e` l'immagine che vedremmo dal nostro schermo:
+		     ________________________________
+		    |                                |
+		    |                                |
+		    |             ____               |
+		    |            /   /\              |
+    schermo -->     |           /___/  \             |
+		    |           \   \  /             |
+		    |            \___\/              |
+		    |                                |
+		    |                                |
+		    |________________________________|
+
+Consideriamo che il nostro sguardo coincida con l'asse z e che il centro
+del monitor coincida con l'origine dei tre assi:
+
+		  + monitor                    +----------+ monitor
+	   asse Z |           _                |          |
+	<---------|- - - - - ¢_>               |    .     |
+		  |         occhio             | (0,0,0)  |
+		  +                            +----------+
+
+Ora la situazione in cui ci troviamo vista lateralmente e` la seguente:
+
+		    (cubo)
+	      ___________________ A
+	     |                   |-_      + (schermo)
+	     |                   |  -_    |
+      a      |                   |    -_  |
+      s      |                   |      -_|A'
+      s      |                   |        +_    
+      e      |                   |        | -_
+	     |                   |        |   -_
+      Y      |                   |        |     -_
+	     |                   |        |       -_   _
+	     |___________________|B_______|B'_______- ¢_> (occhio)
+				       (0,0,0)
+			 <---- asse Z ---->
+
+occhio = il nostro punto di vista (chiamiamolo O, non e` l'origine!)
+A,B    = punti nello spazio xyz
+A',B'  = punti proiettati sul monitor (B' coincide con l'origine)
+AB     = segmento uguale alla coordinata y di A in tre dimensioni
+A'B'   = segmento uguale alla coordinata y di A' (perche` quella di B'=0)
+			      ^^^^^^^^^^^^^^^^^^ y proiettata sul monitor!
+BO     = distanza osservatore-punto
+B'O    = distanza osservatore-schermo (chiamiamola d)
+
+ Le coordinate sul monitor rappresentano esattamente quelle dei punti
+proiettati, che quindi dobbiamo calcolare. Si puo` notare che i triangoli
+reattangoli AOB e A'OB' sono simili in quanto hanno un angolo in comune
+ed entrambi ne hanno uno retto, quindi possiamo scrivere la seguente
+proporzione:
+		A'B'/AB=B'O/BO             che e' uguale a...
+		A'B'=AB*B'O/BO
+
+ Siccome in B' corrisponde l'origine degli assi xyz, BB' e` la coordinata
+z del punto A, quindi BO=BB'+B'O=z+d. E' possibile stabilire arbitrariamente
+la posizione osservatore-schermo (e` consigliabile utilizzare un valore
+pari a 256, in tal modo sara` possibile evitare le moltiplicazioni eseguendo
+shift a sinistra di 8 bit).
+ La coordinata y proiettata (yp) definita come A'B' e' quindi uguale a:
+ 
+		yp=d*y/(z+d)     perche'  A'B'=yp  AB=y  B'O=d  BO=z+d
+
+ Abbiamo cosi` calcolato la coordinata y del nostro punto su schermo!
+Riguardo l'ascissa x il discorso e` analogo: basta considerare la
+situazione vista dall'alto, dove il cubo e' leggermente scostato a destra:
+
+		    (cubo)
+	      ___________________ A
+	     |                   |-_      |(schermo)
+	     |                   |  -_    |
+      a      |                   |    -_  |
+      s      |                   |      -_|A'
+      s      |                   |        +_    
+      e      |                   |        | -_
+	     |                   |        |   -_
+      X      |                   |        |     -_
+	     |                   |        |       -_   _
+	     |___________________|B_______|B'_______- ¢_> (occhio)
+				       (0,0,0)
+			 <---- asse Z ---->
+		xp=d*x/(z+d)
+
+ Per chiarire le differenze tra vista dall'alto e laterale seguono due
+immagini dello stesso modello. La prima figura non e' altro che
+l'Enterprise (l'astronave del film StarTrek) vista lateralmente, mentre
+la seconda e` vista dall'alto.
+
+
+ \==================================|                    _=_
+  \_________________________________/              ___/==+++==\___
+	       """\__      \"""       |======================================/
+		     \__    \_          / ..  . _/--===+_____+===--""
+			\__   \       _/.  .. _/         `+'
+     USS ENTERPRISE      \__ \   __/_______/                      \ /
+	NCC-1701          ___-\_\-'---==+____|                  ---==O=-
+		    __--+" .    . .        "==_                     / \
+		    /  |. .  ..     -------- | \
+		    "==+_    .   .  -------- | /          vista laterale
+			 ""\___  . ..     __=="
+			       """"--=--""
+
+					  _____
+				      _.-'     `-._
+				   .-'  ` || || '  `-.
+	 _______________  _      ,'   \\          //  `.
+	/               || \    /'  \   _,-----._   /   \
+	|_______________||_/   /  \\  ,' \ | | / `.  //  \
+	   |    |             _] \   / \  ,---.  / \   // \
+	   |     \__,--------/\ `   | \  /     \  / |/   - |
+	   )   ,-'       _,-'  |- |\-._ | .---, |  -|   == |
+	   || /_____,---' || |_|= ||   `-',--. \|  -| -  ==|
+	   |:(==========o=====_|- ||     ( O  )||  -| -  --|
+	   || \~~~~~`---._|| | |= ||  _,-.`--' /|  -| -  ==|
+	   )   `-.__      `-.  |- |/-'  | `---' |  -|   == |
+	   |     /  `--------\/ ,   | /  \     /  \ |\   - |
+	 __|____|_______  _    ] /   \ /  `---'  \ /   \\ /
+	|               || \   \  //  `._/ | | \_.'  \\  /
+	\_______________||_/    \   /    `-----'    \   /
+				 `.  //           \\  ,'  vista dall'alto
+				   `-._   || ||   _,-'
+				       `-._____,-'
+
+
+ Bisogna tener conto che nel video le coordinate hanno come origine il
+punto in alto a sinistra, mentre per la trasformazione 3D->2D sono state
+considerate al centro del monitor. Per ovviare questo problema basta
+sommare, al termine dei calcoli per la proiezione, una costante a xp e a
+yp grazie alla quale i relativi assi verranno traslati di un numero di
+pixel equivalente alla costante. Riassumendo, ponendo d=256, le coordinate
+proiettate sullo schermo (da A(x,y,z) a A'(xp,yp)) sono equivalenti a:
+
+cx = larghezza schermo/2, per traslare l'ascissa a destra
+cy = altezza schermo/2, per traslare l'ordinata in basso
+
+	  xp=256*x/(z+256)+cx
+	  yp=256*y/(z+256)+cy
+
+ Attenzione al fatto che la coordinata z del punto non puo` coincidere con
+il punto di vista dato che si verificherebbe una divisione per zero.
+Nemmeno si deve porre la profondita` di un punto inferiore a quella del
+punto di vista: sarebbe assurdo poter visualizzare punti posti dietro
+l'osservatore!
+
+
+				rOTAZIONE
+==========================================================================
+
+ Tratteremo solo rotazioni intorno agli assi x,y e z. Altre formule di
+rotazione effettuate intorno ad un asse arbitrario sono derivabili da
+quelle che vedremo.
+ Innanzitutto spieghiamo il significato di rotazione intorno ad un asse.
+Consideriamo un orologio analogico, le sue lancette ruotano intorno l'asse
+(passante per il centro dell'orologio) perpendicolare l'orologio stesso:
+
+		       \
+			\ ______________
+			 X____________ /
+			//\   12     // orologio
+		       //  \  /     //
+		      //9   \/___ 3//
+		     //           //
+		    //           //
+		   //     6     //
+		  //___________/X
+		 /_____________/ \  asse immaginario su cui
+				  \ ruotano le lancette
+
+ Tecnicamente parliamo di rotazione di un punto su di un asse, quando il
+punto si muove sul piano appartenente ad il punto stesso e perpendicolare
+all'asse in modo da non alterare la distanza punto-asse (che rimane
+costante). In questo modo il punto compie un movimento circolare intorno
+l'asse, ossia ci ruota intorno, e la distanza punto-asse funge da raggio
+per la circonferenza descritta dalla rotazione del punto in questione.
+ La rotazione intorno l'asse y si puo` immaginare come la traiettoria
+percorsa da un punto che giri intorno l'asse y senza modificare la propria
+ordinata, che rimane appunto inalterata.
+
+ Adesso vediamo realmente come effettuare rotazioni. Utilizzando come
+sistema di riferimento un piano a 2 dimensioni e` possibile convertire le
+coordinate cartesiane (x,y) di un punto in coordinate polari (r,t):
+
+       _ V           V(x,y)=V'(r,t)             _ V'     r=distanza
+  y|   /|                                   |   /|         punto-origine
+   |  /              r=sqrt(x*x+y*y)        | r/
+   | /               t=arctan(y/x)          | /          t=angolo compreso
+   |/                                       |/) t          tra il vettore
+   +------->         x=r*cos(t)             +------->      ed il semiasse
+	x            y=r*sin(t)                            positivo x
+
+ Dopodiche` per ruotare il punto intorno l'origine si dovra` sommare
+l'angolo di cui si vuol ruotare il punto alla variabile t e convertire le
+risultanti coordinate polari in cartesiane. Questo metodo risulta troppo
+lento per applicazioni in real time in quanto sono presenti quadrati,
+arcotangenti e radici quadrate; inoltre introducendo la variabile z si
+andrebbe incontro ad una pesante gestione delle coordinate polari
+(utilizzo di integrali tripli, ecc.): meglio trovare una soluzione piu`
+semplice e veloce.
+ Immaginiamo di avere un vettore con ordinata nulla V(x,0) e vogliamo
+ruotarlo di un angolo a:
+
+  y               vettore               y     _ Vr(xr,yr)   vettore
+    |             coincidente             |   /|            ruotato
+    |             l'ascissa               |  /              di a
+    |                                     | /               radianti
+    |    V(x,0)                           |/) a
+    +----->->                             +------->
+	    x                                     x
+
+ Se volessimo trasformare in polari le coordinate di V risulterebbe r=x
+(x=sqr(x*x+0*0)) e t=0 (0=arctan(0/x). Per ruotare il vettore basta
+sommare a t l'angolo di rotazione a. Quindi:
+
+(V   = generico vettore in coordinate cartesiane)
+(V'  = generico vettore in coordinate polari)
+(Vr  = vettore ruotato di a radianti in coordinate cartesiane)
+(Vr' = vettore ruotato di a radianti in coordinate polari)
+(Vxr = vettore ruotato con la sola componente x in coordinate cartesiane)
+(Vyr = vettore ruotato con la sola componente y in coordinate cartesiane)
+
+	V(x,y) = V'(r,t)
+	Vr(xr,yr) = Vr'(r,t+a)    ->    xr=r*cos(t+a)  yr=r*sin(t+a)
+Andiamo a sostituire xr e yr con le relative formule:
+	Vr(r*cos(t+a),r*sin(t+a)) ->    r=x  t=0
+Andiamo a sostituire r con x e t con 0:
+	Vxr(x*cos(a),x*sin(a))
+
+E questa e` la formula per la rotazione di un vettore che non ha
+la componente y. Ora cosideriamo un vettore che ha l'ascissa nulla V(0,y):
+
+	r=y    (=sqr(0*0+y*y))  
+	t=pi/2 (=arctan(y/0)=arctan(infinito))
+	Vyr(y*cos(pi/2+a),y*sin(pi/2+a))
+
+Un paio di formule trigonometriche ci dicono:
+
+	cos(pi/2+a)=-sin(a)
+	sin(pi/2+a)=cos(pi/2)
+
+ma siccome utilizziamo un sistema di riferimento con l'asse y "rovesciato"
+dobbiamo cambiare un segno ad entrambe le formule per poterle sfruttare,
+che quindi diventano:
+
+	cos(pi/2+a)=sin(a)
+	sin(pi/2+a)=-cos(a)
+
+Adesso la formula per ruotare un vettore senza componente x e` uguale:
+
+	Vyr(y*sin(a),-y*cos(a))
+
+Ma se guardiamo al caso generale, abbiamo un vettore V che ha entrambe le
+componenti x e y. Difatti un generico vettore con con le componenti x e y
+e` uguale a:
+
+	V1(x,0)+V2(0,y)=V(x+0,0+y)=V(x,y)
+
+ Ora possiamo usare le formule di rotazione dei singoli casi per calcolare
+il caso generale con un'addizione tra vettori:
+
+	Vxr(x*cos(a)         ,x*sin(a)         ) +
+	Vyr(        +y*sin(a),        -y*cos(a)) =
+	------------------------------------------
+	Vr (x*cos(a)+y*sin(a),x*sin(a)-y*cos(a))
+
+Grazie a questa formula e` possibile ruotare un qualsiasi vettore su uno
+spazio bidimensionale. In un ambiente 3D la formula appena descritta
+coincide con la rotazione intorno l'asse z (non c'e` nessuna coordinata z
+cambiata). Per ruotare il punto intorno un altro asse basta lasciar fuori
+la relativa variabile e utilizzare le altre nella precedente espressione,
+il che si puo` sintetizzare con:
+
+    intorno l'asse z         intorno l'asse y         intorno l'asse x
+  --------------------     --------------------     --------------------
+  xr=x*cos(a)+y*sin(a)     xr=x*cos(a)+z*sin(a)     yr=y*cos(a)+z*sin(a)
+  yr=x*sin(a)-y*cos(a)     zr=x*sin(a)-z*cos(a)     zr=y*sin(a)-z*cos(a)
+
+
+			oTTIMIZZAZIONE dELLE rOTAZIONI
+==========================================================================
+
+ Dato un angolo di rotazione per ogni asse (x,y e z) con le precedenti
+formule sarebbero occorse ben 12 moltiplicazioni per poter ruotare un solo
+punto. Qui vedremo come effettuare rotazioni eseguendo 9 moltiplicazioni
+per ogni punto. Consideriamo:
+
+  ax=angolo di rotazione intorno l'asse x      s1=sin(ax)   c1=cos(ax)
+  ay=angolo di rotazione intorno l'asse y      s2=sin(ay)   c2=cos(ay)
+  az=angolo di rotazione intorno l'asse z      s3=sin(az)   c3=cos(az)
+
+ Ognuna delle variabili x,y e z influenza le rotazioni intorno a due assi
+(nella rotazione intorno al proprio asse la variabile rimane inalterata),
+possiamo cosi` indicare con x' y' e z' le variabili parzialmente ruotate
+(cioe` dopo la prima rotazione) e con x'' y'' e z'' le variabili
+completamente ruotate. Detto cio` le formule viste in precedenza
+corrispondono a:
+
+	x' = x*c1+y*s1
+	y' = x*s1-y*c1
+
+	x''= x'*c2+z*s2   <-  coordinata x ruotata completamente
+	z' = x'*s2-z*c2
+
+	y''= y'*c3+z'*s3  <-  coordinata y ruotata completamente
+	z''= y'*s3-z'*c3  <-  coordinata z ruotata completamente
+	
+che equivale a scrivere:
+
+   x''= (x*c1+y*s1)*c2+z*s2=c2*c1 *x + c2*s1 *y + s2 *z
+
+   y''= (x*s1-y*c1)*c3+((x*c1+y*s1)*s2-z*c2)*s3=
+	c3*s1 *x - c3*c1 *y + s3*s2*c1 *x + s3*s2*s1 *y - s3*c2 *z=
+	(s3*s2*c1+c3*s1) *x + (s3*s2*s1-c3*c1) *y + (-s3*c2) *z
+
+   z''= (x*s1-y*c1)*s3-((x*c1+y*s1)*s2-z*c2)*c3=
+	s3*s1 *x - s3*c1 *y - c3*s2*c1 *x - c3*s2*s1 *y + c3*c2 *z=
+	(-c3*s2*c1+s3*s1) *x + (-c3*s2*s1-c3*c1) *y + (c3*c2) *z
+
+ Dall'ultimo passaggio di ognuna di queste formule si puo` notare che non
+vengono calcolate coordinate parzialmente ruotate e che ogni coordinata
+ruotata equivale alla somma delle variabili (non ruotate) moltiplicate
+per un determinato fattore. Se precalcoliamo questi fattori potremo
+utilizzarli per tutti quei punti che devono essere ruotati nella stessa
+direzione. In questo modo avremo svolto semplicemente 9 moltiplicazioni
+per ogni punto (esclusi i precalcoli per i fattori).
+In sostanza dobbiamo calcolare prima queste costanti:
+
+	xx=c2*c1
+	xy=c2*s1
+	xz=s2
+	yx=c3*s1+s3*s2*c1
+	yy=-c3*c1+s3*s2*s1
+	yz=-s3*c2
+	zx=s3*s1-c3*s2*c1=s2*c1+c3*s1
+	zy=-s3*c1-c3*s2*s1=c3*c1-s2*s1
+	zz=c3*c2
+
+poi per ogni punto si devono svolgere questi calcoli (sfruttando gli
+stessi fattori):
+
+	x''=xx * x + xy * y + xz * z
+	y''=yx * x + yy * y + yz * z
+	z''=zx * x + zy * y + zz * z
+
+Ed otterremo le tre coordinate ruotate.
+ Questo algoritmo risulterebbe meno efficiente del precedente se si
+utilizzassero pochi punti, mentre nel caso di una elevata quantita` di
+vettori e` possibile raggiungere notevoli risparmi in tempi di calcolo.
+
+
+				wIREFRAME
+==========================================================================
+
+ Il wireframe e` la piu` semplice ed antica tecnica atta a riprodurre
+poligoni. Consiste semplicemente nel tracciare linee che uniscano i
+vertici del poligono da rappresentare, nient'altro. Il tracciamento delle
+linee dovra` svolgersi sfruttando le coordinate proiettate dei punti (e non
+quelle con tre variabili xyz).
+ Vediamo quindi come tracciare linee nel caso si stia programmando in un
+linguaggio che non permetta direttamente di svolgere questa funzione
+(come il C e l'Assembler). Analizziamo l'algoritmo di Bresenham. Abbiamo
+due punti P1(x1,y1) e P2(x2,y2) e vogliamo visualizzarne la linea che
+possa unirli:
+
+    P1(x1,y1)
+	.------______                                 ^
+		     ------______         P2(x2,y2)   | dy
+				 ------______.        v
+			  dx
+	<------------------------------------>
+
+consideriamo:
+		x2 > x1
+		y2 > y1
+		dx = x2-x1
+		dy = y2-y1
+		dx > dy
+
+Tutti gli altri tipi di linee sono derivarivabili da questo tipo.
+Dopodiche` andiamo a calcolare questi valori:
+
+		xl = x1            -> ascissa attuale del punto
+		yl = y1            -> ordinata attuale del punto
+		 d = 2*dx-dy       -> variabile di decisione
+		d1 = 2*dy          -> incremento di d (se d<0)
+		d2 = 2*(dy-dx)     -> incremento di d (se d=>0)
+
+Finalmente vediamo l'algoritmo vero e proprio:
+
+   > loop di dx iterazioni
+      > visualizza pixel alla posizione (xl,yl)
+      > xl=xl+1
+      > se d<0 allora:
+	 > d=d+d1
+      > altrimenti:
+	 > d=d+d2
+	 > yl=yl+1
+   > prossima iterazione
+
+Una linea e` formata da un insieme di pixel, nel nostro caso il numero di
+pixel che compone la linea equivale a dx, quindi dobbiamo realizzare un
+loop che si ripete dx volte in cui per ogni iterazione bisogna
+visualizzare un punto. Ma quali coordinate dovra` avere questo punto?
+Indichiamo con xl e yl le coordinate del punto da proiettare su video,
+le quali inizialmente coincideranno con quelle di P1(x1,y1). Al termine di
+ogni iterazione andiamo ad incrementare xa, in questo modo uscendo dal
+ciclo xa coincidera` con x2 (perche` x2=x1+dx). Cosa succede invece alla
+ordinata del pixel? La incrementiamo semplicemente quando la variabile d
+e` positiva.
+ E` possibile utilizzare anche un altro algoritmo per tracciare linee, il
+quale risulta spesso piu` efficiente di quello di Bresenham (soprattutto
+se realizzato in Assembly) che sfrutta il principio di interpolazione
+lineare, lo vedremo piu` dettagliatamente nel paragrafo relativo al fill
+e scan line.
+
+
+				 hIDDEN fACE
+==========================================================================
+
+ Hidden face significa faccia nascosta, in questo paragrafo vedremo come
+eliminarla. Difatti nella realta` in un solido non trasparente non sono
+visibili tutte le facce per ovvi motivi. Visualizzare sul monitor solo le
+facce visibili e` sicuramente piu` realistico rispetto a tracciarle tutte.
+
+ Il piu` semplice e intuitivo algoritmo e` quello del "pittore". Consiste
+nell'ordinare le facce che compongono l'oggetto in base alla componente z.
+In seguito si devono disegnare le facce partendo da quella piu` lontana
+sino a quella piu` vicina; in questo modo le facce disegnate per ultime
+saranno visibili, mentre sulle nascoste verranno disegnate quelle
+visibili. A suo discapito questo algoritmo include un pesante spreco di
+tempo macchina, inoltre e` praticamente inutilizzabile per grafica in
+wireframe, pero` permette a qualsiasi oggetto (che non sia wireframe) di
+essere visualizzato correttamente.
+
+ Un'altra via consiste nel calcolare la normale (la retta perpendicolare)
+su ogni faccia, controllare se punta verso l'osservatore ed in caso
+contrario non visualizzarla. Questo algoritmo e` valido solo se i vertici
+che delimitano la faccia sono posti in memoria in senso orario, in quanto
+i calcoli che vedremo sfruttano questa caratteristica. Inoltre gli oggetti
+dovranno necessariamente essere convessi, ossia non devono esserci facce
+che possano "oscurare" (non nascondere!) altre facce.
+ La retta normale la possiamo considerare una grandezza vettoriale che
+nello spazio viene indicata come un comune vettore con tre componenti.
+
+ La visibilita` di un poligono dipende esclusivamente dalla sua
+orientazione lungo l'asse z. Essendo piu` precisi possiamo dire che la
+sola componente z e` necessaria per sapere se la faccia e` nascosta o meno.
+Consideriamo la nostra faccia come la seguente:
+
+			per individuare un piano bastano tre punti. Di
+	A(x1,y1)        conseguenza, per ricavare la normale sul piano 
+	 /\             coincidente la nostra faccia, saranno sufficienti
+	/  \            le coordinate dei primi tre vertici della faccia.
+     D /    \ B(x2,y2)  Lasciando da parte eventuali dimostrazioni, e`
+       \    /           possibile affermare che la componente z della
+	\  /            normale e` equivalente a:
+	 \/
+	C(x3,y3)              (x2-x1)*(y3-y1)-(x3-x1)*(y2-y1)
+
+ Se il risultato e` minore o uguale a zero la faccia e` nascosta,
+altrimenti e` visibile. Per sapere semplicemente se questa componente z e`
+maggiore o minore di zero potremmo anche utilizzare le coordinate
+proiettate, ovvero:
+
+                          (xp2-xp1)*(yp3-yp1)-(xp3-xp1)*(yp2-yp1)
+
+ Il modo migliore per visualizzare un oggetto concavo e` salvare in un
+buffer le facce che non sono nascoste (controllando l'orientazione della
+normale), in seguito ordinare le facce in base alla propria componente z
+e tracciarle a partire da quella piu` lontana a quella piu` vicina.
+
+
+			fILLED vECTOR e sCAN lINE
+==========================================================================
+
+ I filled vector non rappresentano altro che poligoni "riempiti" di un
+determinato colore. Realizzare una routine di fill significa colorare il
+contenuto di un poligono conoscendone le coordinate proiettate dei
+vertici. Immaginiamo che il poligono da riempire sia il seguente:
+
+|        A|\            potremmo procedere nella seguente maniera:
+|         | \           a partire dalla coordinata y minore del poligono
+|         |  \          (in questo caso quella di A) e via via arrivando
+|         |   \         all'ultima posizione verticale (ossia y di D)
+|         |    \        coloriamo la riga delimitata dalle posizioni x
+|         |     \ B     dei lati in quella posizione y.
+|        D \     |
+|           \    |      Il principio del fill si basa sul riempimento di
+|            \   |      righe orizzontali partendo dalla riga superiore
+|             \  |      del poligono sino a quella inferiore.
+|y             \ |
+v               \|C     Vediamo un esempio relativo ad una sola riga:
+
+|        A|\
+|         | \           dobbiamo riempire la riga indicata nella figura.
+|         |  \          Partiamo dalla coordinata x del lato AD.
+|  riga   |   \         Iniziamo col colorare questo punto.
+|   da -->|****\        Passiamo al punto successivo (ossia quello a
+| riempire|     \ B     destra) e coloriamo anch'esso; procediamo col
+|        D \     |      colorare i pixel successivi fin quando arriviamo
+|           \    |      a colorare il punto posto sul lato AB e passiamo
+|            \   |      alla prossima riga.
+|             \  |      Cio` significa che per ogni riga ci servono le
+|y             \ |      coordinate x del punto estremo a destra e del
+v               \|C     punto estremo a sinistra.
+
+Ora che abbiamo capito cosa fare vediamo come realizzare il tutto.
+ Bisogna utilizzare due tabelle (matrici unidimensionali) in memoria di
+dimensioni equivalenti al numero di pixel verticali rappresentabili sullo
+schermo (es.: in una risoluzione 320*200 dobbiamo avere due tabelle di
+200 valori ciascuna). Consideriamo ogni posizione delle tabelle una
+posizione y nello schermo ed il contenuto del primo array come la
+corrispondente componente x del punto estremo a sinistra mentre il valore
+del secondo array come la componente x del punto estremo a destra.
+Cosi` facendo bastera` colorare tutti i pixel alla riga corrispondente
+la posizione delle tabelle partendo dalla posizione x contenuta dalla
+prima tabella sino alla posizione x contenuta dalla seconda (tutti i punti
+di una riga hanno la stessa ordinata). Facciamo un esempio pratico:
+
+ 0| x=0 ->A. <- x=0        per semplicita` consideriamo i segmenti AB e CD
+ 1| x=0 -> .. <- x=1       inclinati a 45 gradi . I vertici sono:
+ 2| x=0 -> . . <- x=2      A(0,0)  B(5,5)  C(5,10)  D(0,5)
+ 3| x=0 -> .  . <- x=3     le nostre due tabelle saranno:
+ 4| x=0 -> .   . <- x=4    +-------------------------------------------+
+ 5| x=0 ->D.    .B<- x=5   |TAB1| 0| 0| 0| 0| 0| 0| 1| 2| 3| 4| 5|..|..|
+ 6|  x=1 -> .   . <- x=5   +-------------------------------------------+
+ 7|   x=2 -> .  . <- x=5   |TAB2| 0| 1| 2| 3| 4| 5| 5| 5| 5| 5| 5|..|..|
+ 8|    x=3 -> . . <- x=5   +-------------------------------------------+
+ 9|     x=4 -> .. <- x=5   Per riempire il poligono bastera` colorare i
+10|y     x=5 -> .C<- x=5   pixel compresi tra i corrispondenti valori
+  v                        delle due tabelle utilizzando come componente
+			   y l'indice delle tabelle (che e` lo stesso per
+entrambe). A volte e` possibile eliminare i due valori estremi delle
+tabelle, quando in quelle righe vi e` un solo pixel (come nel nostro
+esempio). Adesso non ci rimane altro che ricavarci il contenuto di questi
+due array.
+ Le tabelle contengono semplicemente le coordinate x di tutti i punti che
+compongono i lati del poligono; inoltre queste ascisse sono ordinate in
+base alla loro componente y. In pratica dobbiamo svolgere una routine di
+tracciamento di linee per tutti i lati della faccia, in cui non
+visualizziamo i pixel, bensi` salviamo la componente x in un array la cui
+posizione equivale alla y di quel punto. Questa procedura prende il nome
+di "scan line", ovvero linea di scansione. In altre parole la scan line,
+dati due punti, rappresenta le coordinate di tutti quei punti posti lungo
+il segmento che congiunge i due punti conosciuti. La procedura per la
+quale si realizzano per tutti i lati di un poligono una scan line e` detta
+"scan conversion" e praticamente significa suddividere il poligono in un
+insieme di righe e colonne.
+ Per realizzare una scan line e` possibile utilizzare l'algoritmo di
+Bresenham, ma conviene sfruttare il procedimento di interpolazione
+lineare, che risulta piu` efficiente. Vediamo sinteticamente in cosa
+consiste.
+ Consideriamo due generici punti A(x1,y1) e B(x2,y2) dove y2>y1.
+Ora calcoliamo:
+
+       dx=x2-x1     <-- lunghezza della linea che unisce A e B
+       dy=y2-y1     <-- altezza della linea che unisce A e B
+       stepx=dx/dy  <-- numero di pixel orizzontali su ogni riga
+
+Mentre l'algoritmo generale e`:
+
+       > x=x1
+       > y=y1
+       > loop di dy iterazioni
+	  > se e` libera la posizione y della tab1:
+	     > salva x in posizione y della tab1
+	  > altrimenti:
+	     > salva x in posizione y della tab2
+	  > x=x+stepx
+	  > y=y+1
+       > prossima iterazione
+
+Questo algoritmo permette il calcolo di una scan line nel caso y2>y1, se
+invece risulta y1>y2 bastera` scambiare entrambe le coordinate dei due
+punti (ossia considerare y1 come y2 e x1 come x2).
+ La tab1 e` l'array che contiene i punti estremi a sinistra mentre la tab2 i
+punti estremi a destra. Col nostro algoritmo puo` capitare che alcuni
+valori scritti nella tab1 appartengano alla tab2, e viceversa. Vediamo
+cosa fare per evitare questo inconveniente.
+
+ Se abbiamo i punti salvati in senso orario il tutto risulta piu` semplice
+e veloce. Dati due punti A(x1,y1) e B(x2,y2) posti in senso orario se y1
+e` maggiore di y2 allora la scan line appartiene alla tab1 (quella
+contenente le posizioni x minori) in caso contrario apparterra` alla tab2
+(contenente le x maggiori). Ecco l'algoritmo completo per il tracciamento
+di una scan line:
+
+       > confronta y1 con y2
+          > se y1>y2:
+            > la giusta tab e` tab1
+          > se y1<y2:
+            > la giusta tab e` tab2
+            > scambia y1 con y2
+            > scambia x1 con x2
+          > se y1=y2: non tracciare la scan line!
+       > dy=y1-y2
+       > dx=x1-x2
+       > stepx=dx/dy
+       > x=x2
+       > y=y2
+       > loop di dy iterazioni
+          > salva x in posizione y nella giusta tab
+	  > x=x+stepx
+	  > y=y+1
+       > prossima iterazione
+
+ Una volta eseguita la scan conversion del poligono dovremo calcolare la
+componente y minore dei quattro punti che compongono i vertici del
+poligono ed l'altezza in pixel del poligono stesso. La coordinata y minore
+rappresenta l'indice delle tabelle da cui partire per riempire il poligono
+e quindi la posizione y superiore del poligono. L'altezza del poligono e`
+equivalente alla differenza tra la y maggiore e la y minore e ci serve
+per sapere quante righe dovremo riempire per l'attuale poligono.
+
+ Riassumendo, per effettuare il fill di un poligono si devono svolgere i
+seguenti passi:
+
+    - definire in memoria due tabelle dimensionate ad ys valori (dove ys
+      rappresenta l'altezza in pixel dello schermo);
+    - calcolare la y minore dei vertici e l'altezza del poligono;
+    - ricavare la scan line di ogni lato del poligono salvandola
+      opportunamente nella giusta tabella (scan conversion);
+    - partendo dalla posizione y minore, riempire la riga delimitata dalle
+      posizioni x contenute dalle tabelle stesse per un numero di volte
+      equivalente all'altezza del poligono.
+
+				
+				fLAT sHADING
+==========================================================================
+
+ Siamo arrivati all'analisi del primo (e piu` semplice) algoritmo di
+shading, grazie al quale potremo attribuire ad ogni poligono comprendente
+l'oggetto una precisa intensita` di luce, la quale verra` determinata in
+base all'orientazione della faccia rispetto alla sorgente di luce.
+ Il flat shading permette di attribuire ad ogni faccia un solo colore che
+determinera` quanto il poligono sia illuminato. Facciamo un esempio:
+
+             +-------------+
+  vista      |             |
+dall'alto    |             |         <--- oggeto in 3D teorico (teorico
+             |             |              perche` in realta` non c'e`, noi
+             |             |              andiamo a visualizzare le
+             +-------------+              coordinate proiettate)
+                    |
+                    |                <--- direzione della sorgente di luce
+      ______________|_____________   <--- schermo del monitor
+                    |
+                    |
+                    o                <--- punto di vista dell'osservatore
+
+ Consideriamo che la sorgente di luce corrisponda con il punto di vista,
+la sua direzione e` perpendicolare lo schermo. Definiamo l'angolo di
+inclinazione della faccia rispetto la sorgente di luce come l'angolo
+compreso tra la retta corrispondente la direzione della luce ed il versore
+della faccia (ovvero la retta normale).
+ Piu` questo angolo e` piccolo e piu` il poligono risulta orientato verso
+l'osservatore. Possiamo intuire che tanto la faccia e` posta di fronte
+l'osservatore e tanto sara` maggiore l'intensita` di luce applicata su
+quella faccia. Di conseguenza ad un angolo minore corrispondera` una
+luminosita` maggiore della faccia. Ecco un altro esempio:
+
+                         /\
+                        /  \         vista dall'alto
+                       /    \
+       oggetto 3D --> /      \
+       immaginario   /        \
+                    /          \
+                    \          /
+                     \        /   a = angolo compreso tra il versore della
+                      \      /        faccia e la direzione della luce
+                     /|\    /
+                    /-| \  /
+                   / a|  \/
+      versore     /   |
+      faccia --> /    | <-- direzione luce (in questo caso
+                /     |     coincidente il punto di vista)
+               /      |
+           -----------|------------- <-- schermo del monitor
+                      o              <-- punto di vista dell'osservatore
+
+ L'insensita` di luce attribuibile al poligono e` proporzionale al coseno
+di questo angolo. Sappiamo che il generico risultato di cos(a) e` compreso
+tra -1 e 1. Da notare che se il poligono e` visibile il nostro angolo
+varia da 0 a 90 gradi, altrimenti la faccia risulta nascosta (e` possibile
+utilizzare questa caratteristica per l'eliminazione dell'hidden face!).
+Quindi il valore del coseno relativo al nostro angolo copre un range di
+valori da 0 e 1.
+ Inoltre, utilizzando 256 colori, bastera` moltiplicare il coseno per 256
+(oppure effettuare uno shift di 8 bit a sinistra) e otterremo il pixel
+chunky col quale dovremo riempire la relativa faccia!
+Vediamo come ricavare questo valore.
+
+ Innanzitutto dobbiamo specificare la palette dei colori da utilizzare.
+Cio` e` possibile definendo nella memoria video una tavolozza che parte
+dal colore di luminosita` minore sino ad arrivare gradualmente al colore
+piu` chiaro.
+ Per il calcolo del coseno conviene sfruttare la regola di Lambert, la
+quale afferma che il prodotto scalare tra due rette espresse come
+grandezze vettoriali e` equivalente al prodotto della lunghezza dei
+relativi vettori e del coseno dell'angolo limitato dalle rette stesse,
+ovvero l'angolo a. Quindi, per conoscere cos(a), non dovremo far altro che
+svolgere questo prodotto scalare e dividere il risultato per il prodotto
+delle lunghezze dei due vettori.
+
+ Per calcolare il prodotto scalare di due vettori si esegue il prodotto
+delle corrispondenti componenti e poi si sommano i risultati, ad esempio:
+
+      H=(xh,yh,zh)  ;  K=(xk,yk,zk)
+      H*K=xh*xk+yh*yk+zh*zk         <-- prodotto scalare
+
+ Per ricavare una lunghezza di un vettore possiamo ricorrere al teorema di
+Pitagora grazie al quale si puo` affermare che la lunghezza e` equivalente
+alla radice quadrata della somma dei quadrati di ogni componente.
+
+Verifichiamo come calcolare i coefficienti x, y e z del versore della
+faccia:
+
+         Nx=(y2-y1)*(z3-z1)-(y3-y1)*(z2-z1)    <-+--- i tre coefficienti
+         Ny=(z2-z1)*(x3-x1)-(z3-z1)*(x2-x1)    <-|    della retta normale
+         Nz=(x2-x1)*(y3-y1)-(x3-x1)*(y2-y1)    <-+
+
+ N.B.: i punti devono essere posti in memoria in senso orario!
+
+         x1, y1, z1 = componenti del primo punto del poligono
+         x1, y2, z2 = componenti del secondo punto del poligono
+         x3, y3, z3 = componenti del terzo punto del poligono
+
+ Infine ecco la formula per calcolare il pixel chunky:
+
+                             Nx*lx + Ny*ly + Nz*lz
+         cos(a)=-------------------------------------------------
+                sqrt(Nx*Nx+Ny*Ny+Nz*Nz) * sqrt(lx*lx+ly*ly+lz*lz)
+
+         pixel chunky = 256*cos(a)
+
+          a = angolo tra il versore e la direzione della sorgente di luce
+         lx = componente x della sorgente di luce
+         ly = componente y della sorgente di luce
+         lz = componente z della sorgente di luce
+
+ Le coordinate lx, ly e lz rappresentano la posizione della sorgente di
+luce. Nel caso la luce coincida con il punto di vista dell'osservatore,
+le relative coordinate risulteranno:
+
+         lx=0  ;  ly=0  ;  lz=-256
+
+zl e` uguale all'opposto della distanza tra l'osservatore e lo schermo
+(nel nostro caso la distanza tra l'osservatore e lo schermo e` 256).
+
+
+		oTTIMIZZAZIONI pER iL cALCOLO dELLA sORGENTE dI lUCE
+==========================================================================
+
+ In questa parte vediamo come velocizzare il nostro motore 3D nel caso
+comprenda l'implementazione di una sorgente di luce reale.
+
+ Una prima ottimizzazione consiste nell'utilizzare un buffer dove andremo
+a precalcolare tutte le normali di ogni faccia (o di ogni vertice nel caso
+del gouraud shading); poi anziche` calcolare ad ogni frame tutte le
+normali, ruotiamo i nostri versori precalcolati dello stesso angolo con
+cui ruotiamo i vertici dell'oggetto sfruttando la stessa identica
+procedura descritta in precedenza (utilizzando preferibilmente l'algoritmo
+a 9 moltiplicazioni).
+
+ Abbiamo detto che il prodotto scalare tra il vettore normale ed il
+vettore corrispondente la sorgente di luce moltiplicato 256 ci permette
+di conoscere il pixel chunky. Ora vediamo come eliminare subito le radici
+quadrate e la divisione. Analizziamo di nuovo la formula:
+ 
+                              Nx*lx + Ny*ly + Nz*lz
+         cos(a)=-------------------------------------------------
+                sqrt(Nx*Nx+Ny*Ny+Nz*Nz) * sqrt(lx*lx+ly*ly+lz*lz)
+
+Per attuare questa ottimizzazione dobbiamo rendere unitario il vettore
+normale ed il vettore corrispondente la sorgente di luce. Rendere unitario
+un vettore significa dividere ognuna delle componenti per la sua distanza
+dall'origine; cio` fa si` che le nuove componenti abbiano un range
+compreso tra -1 e +1, ecco perche` si dice unitario.
+ Vediamo algebricamente come rendere unitario un qualsiasi versore:
+
+                                      Nx
+                      uNx=---------------------------
+                          sqrt(Nx*Nx + Ny*Ny + Nz*Nz)
+
+                                      Ny
+                      uNy=---------------------------
+                          sqrt(Nx*Nx + Ny*Ny + Nz*Nz)
+
+                                      Nz
+                      uNz=---------------------------
+                          sqrt(Nx*Nx + Ny*Ny + Nz*Nz)
+
+ Piu` genericamente, dato un vettore V(x,y,z), per calcolare le
+componenti del relativo vettore unitario uV(ux,uy,uz):
+
+                                      x
+                          ux=---------------------
+                             sqrt(x*x + y*y + z*z)
+
+                                      y
+                          uy=---------------------
+                             sqrt(x*x + y*y + z*z)
+
+                                      z
+                          uz=---------------------
+                             sqrt(x*x + y*y + z*z)
+
+ Per rendere unitaria la sorgente di luce possiamo anche evitare di
+dividere ogni sua componente per la lunghezza della medesima, infatti
+siamo noi a decidere dove si trova, quindi arbitrariamente possiamo
+assegnare coordinate unitarie. Ad esempio tornando al caso che la luce
+coincida col punto di vista:
+
+                       ulx=0  ;  uly=0  ;  ulz=-1
+
+Quindi la formula per calcolare l'intensita` di luce viene ridotta a:
+
+                     cos(a) = uNx*ulx + uNy*uly + uNz*ulz
+                     pixel chunky = 256*cos(a)
+
+ Rendere unitario un vettore e poi ruotarlo o ruotare un vettore e poi
+renderlo unitario significa svolgere la stessa funzione; quindi al momento
+in cui andiamo a precalcolare le normali possiamo renderle subito unitarie,
+in seguito andremo a ruotare i versori gia` resi unitari. In questo modo
+evitiamo di eseguire 2 radici quadrate e una divisione per vertice ad ogni
+frame!
+
+N.B.: nel caso si voglia muovere la sorgente di luce, utilizzando questa
+      ottimizzazione non si potranno attuare traslazioni della sorgente
+      di luce, ma solo rotazioni, in quanto la distanza origine-luce deve
+      rimanere costante.
+
+ L'ultima ottimizzazione consiste nel mantere fissa in un punto la
+sorgente di luce, piu` precisamente diciamo che deve coincidere sempre con
+il punto di vista dell'ossevatore. Naturalmente utilizzeremo coordinate
+unitarie per i versori e la luce. Vediamo la formula per calcolare il
+pixel chunky in questo particolare caso:
+
+            pixel chunky = 256*( uNx*ulx + uNy*uly + uNz*ulz) =
+                         = 256*( uNx*0   + uNy*0   + uNz*(-1))=
+                         = -256*uNz
+
+Ora il nostro pixel chunky dipende solo da uNz, quindi possiamo
+precalcolare per ogni vertice -256*uNz al posto del semplice uNz, ruotarlo
+e utilizzare subito questo valore come pixel chunky. In questo modo
+evitiamo 3 moltplicazioni e 2 addizioni. Inoltre siccome ci serve solo uNz
+possiamo benissimo evitare di ruotare uNx e uNy, risparmiando la bellezza
+di altre 6 moltiplicazioni per faccia (o per vertice nel caso del
+gouraud). In totale risparmiamo ben 9 moltiplicazioni e 2 addizioni per
+faccia (o per vertice nel gouraud)!
+ Naturalmente dovremo precalcolare oltre a -256*uNz anche uNx e uNy
+moltiplicati 256 (256*uNx, 256*uNy) che servono per poter ruotare -256*uNz.
+ Inoltre se invertiamo la nostra palette potremo utilizzare 256*uNz al
+posto di -256*uNz.
+
+
+				gOURAUD sHADING
+==========================================================================
+
+ Questo algoritmo di ombreggiatura permette di sfumare l'interno di ogni
+poligono al contrario del flat shading col quale si assegna un unico
+colore per faccia.
+
+ Innanzitutto bisogna calcolare il versore di ogni vertice dell'oggetto
+anziche` di ogni poligono. Le componenti della normale sul vertice sono
+equivalenti alla media aritmetica delle componenti delle normali di tutte
+le facce che toccano quel vertice. Facciamo un esempio:
+
+            ____        sia V un generico vertice di un cubo appartenente
+           /f2 /\       alle facce f1, f2 e f3. Consideriamo le normali di
+          /___/V \      codeste facce, chiamiamo questi versori N1,N2,N3.
+          \f1 \f3/      
+           \___\/       N1(Nx1,Ny1,Nz1)  N2(Nx2,Ny2,Nz2)  N3(Nx3,Ny3,Nz3)
+
+
+Allora la normale su V e` equivalente a:
+
+           NV( (Nx1+Nx2+Nx3)/3, (Ny1+Ny2+Ny3)/3, (Nz1+Nz2+Nz3)/3 )
+
+In questo caso le facce appartenenti a V sono 3, a seconda dell' oggetto
+che si vuol utilizzare il numero di poligoni appartenenti ad un vertice
+cambiano.
+
+ Una volta precalcolate tutte le normali (preferibilmente gia` unitarie)
+su ogni spigolo dovremo calcolare la quantita` di luce che cade su ognuno
+dei vertici, ovvero il pixel chunky, utilizzando la legge gia` studiata
+nel flat shading (magari sfruttando eventuali ottimizzazioni citate nel
+precedente paragrafo).
+
+ In seguito facciamo la scan conversion (spiegata nel paragrafo dedicato
+al fill e scan line) di tutti i poligoni visibili.
+
+ Adesso dobbiamo interpolare linearmente per ogni faccia i pixel chunky
+appartenenti ai vertici di quella faccia. In pratica dovremo svolgere una
+semplice scan conversion del poligono utilizzando i pixel chunky al posto
+delle coordinate x dei vertici, tutto qui. Naturalmente cio` va svolto
+solamente se la faccia risulta visibile.
+
+ Non rimane altro che effettuare il fill vero e proprio dei poligoni. Come
+per un normale fill bisogna eseguire un loop ad iterazioni equivalenti
+all'altezza in pixel del poligono. Ad ogni iterazione preleviamo di volta
+in volta le coordinate x iniziali e finali dalle tabelle delle scan line
+(come per un normale fill), pero` stavolta preleviamo anche i pixel chunky
+iniziali e finali.
+ Ora dobbiamo interpolare il pixel chunky iniziale con quello finale
+partendo dalla coordinata x iniziale sino ad arrivare a quella finale. Per
+far cio` basta utilizzare l'algoritmo per tracciare una scan line con le
+seguenti modifiche:
+
+     - utilizzare il pixel chunky iniziale al posto della coordinata x1;
+     - utilizzare il pixel chunky finale al posto della coordinata x2;
+     - utilizzare la x iniziale al posto della coordinata y1;
+     - utilizzare la x finale al posto della coordinata y2;
+     - utilizzare la riga dello schermo chunky da "fillare" come tabella
+       dove la scan line verra` salvata.
+
+Ed ecco realizzato il gouraud shading!
+
+
+				pHONG sHADING
+==========================================================================
+
+ Il phong shading permette di assegnare ad ogni pixel la sua reale
+intensita` di luce, al contrario del gouraud nel quale si generano
+sfumature all'interno di ogni faccia tra le intensita` di luce di ogni
+vertice dell'oggetto.
+ La maggiore definizione che si ottiene col phong rispetto al gouraud
+comporta allo stesso tempo un drastico aumento delle operazioni che il
+processore deve svolgere. La pesantezza dei calcoli da eseguire e` tale da
+impedire agli attuali elaboratori di tracciare soddisfacienti scene in
+phong shading in tempo reale.
+
+ Nel gouraud calcoliamo la reale intensita` di luce su ogni vertice,
+dopodiche` ogni colore viene intepolato lungo ogni lato del poligono,
+infine si interpolano i colori posti sui lati estremi a sinistra con i
+colori posti sui lati estremi a destra in modo da riempire l'intero
+poligono.
+ Nel phong invece interpoliamo sempre le normali, non si interpolano mai
+i colori. Una volta determinati i versori su ogni vertice, questi devono
+essere interpolati lungo ogni lato; successivamente i versori posti lungo
+i lati estremi a sinistra verranno interpolati con quelli posti lungo i
+lati estremi a destra, quindi per ogni singolo verra` calcolato il colore
+sfruttando la tradizionale formula piu` volte studiata.
+
+ Il phong ci impedisce di sfruttare le diverse ottimizzazioni possibili
+col gouraud shading e col flat shading. Infatti nel phong e` impossibile
+utilizzare normali unitarie in quanto nel momento in cui queste vengono
+interpolate la loro lunghezza (equivalente al risultato dell'espressione
+sqrt(Nx*Nx+Ny*Ny+Nz*Nz)) puo` variare. Quindi occore eseguire almeno
+una divisione ed una radice quadrata per pixel, il che non e` poco.
+
+
+				rEFLECTION mAPPING
+==========================================================================
+
+ Se un solido riflette sempre e solo una singola immagine (in gergo
+denominata "texture") allora possiamo affermare che su quel solido e`
+stato applicato il reflection mapping.
+ Nel caso la texture corrisponda approsimativamente alla rappresentazione
+bidimensionale di una luce (es.: un cerchio il cui centro risulta molto
+chiaro mentre agli orli viene sfumato in una tinta piu` scura), e`
+possibile raggiungere effetti simili (e a volte superiori) al phong e al
+gouraud.
+
+ Spesso questo effetto viene erroneamente confuso con l'environment
+mapping, il quale permette invece di riflettere un intero ambiente che
+circonda l'oggetto (il quale ambiente e` spesso definito per semplicita`
+come un cubo, quindi in questo caso sul solido verranno riflesse sei
+immagini).
+
+ In questo paragrafo verra` descritto come realizzare il reflection
+mapping utilizzando esclusivamente texture di dimensioni 256*256 pixel.
+L'implementazione di texture di dimensioni differenti e` facilmente
+derivabile.
+
+ Vediamo dettagliatamente come realizzare un comune oggetto in reflection
+mapping.
+ Inizialmente ci andiamo a precalcolare tutti i versori unitari su ogni
+vertice (come per il gouraud) e li moltiplichiamo per 128 (oppure
+applichiamo un semplice scorrimento di 7 bit a sinistra), il che
+matematicamente si traduce in:
+            _                                            _
+           |  PVx = 128*Nx / sqrt(Nx*Nx + Ny*Ny + Nz*Nz)  |
+        PV |  PVy = 128*Ny / sqrt(Nx*Nx + Ny*Ny + Nz*Nz)  |
+           |_ PVz = 128*Nz / sqrt(Nx*Nx + Ny*Ny + Nz*Nz) _|
+
+Chiamiamo PV il vettore che ha come componenti questi 3 valori.
+La normale unitaria ha come coordinate 3 valori che comprendono numeri
+reali tra -1 e +1. Ora abbiamo PVx, PVy e PVz che rispetto ai versori
+unitari sono molplicati 128, questo vuol dire che copriranno un raggio
+di valori compresi tra -128 e +128 (anche se in realta` tali valori non
+superano mai +127). E qui finisce la fase di precalcolo.
+
+ In tempo reale dobbiamo ruotare il vettore PV per ogni vertice (casomai
+sfruttando gli stessi fattori di rotazione dei punti se si ha realizzato
+la rotazione a 9 moltiplicazioni). Del vettore PV ci servono solo le
+componenti x e y ruotate, quindi possiamo anche non ruotare PVz evitando
+cosi` di svolgere almeno 3 moltiplicazioni e 2 addizioni per vertice
+(naturalmente e` necessario precalcolare PVz per ogni vertice per poter
+ruotare PVx e PVy). Ad ognuna delle componenti ruotate x e y del vettore
+PV addizioniamo il valore 128. Al termine di questi calcoli, il range dei
+valori che PVx e PVy potranno comprire sara` compreso tra 0 e 255.
+
+ In realta` ((PVx ruotato)+128) e ((PVy ruotato)+128) rappresentano le
+coordinate della texture da mappare (ossia tracciare) sul poligono. Cio`
+significa che se abbiamo un poligono delimitato da 4 punti, dobbiamo
+mappare su quel poligono la parte di texture delimitata dai 4 relativi PVx
+e PVy ruotati (e sommati con 128). Quindi bastera` mappare il "pezzo" di
+texture su quel poligono e ripetere il tutto per ogni faccia visibile per
+realizzare il reflection mapping!
+
+ Ora vediamo come tracciare la parte di texture una volta calcolati i
+nuovi PVx e PVy.
+ Innanzitutto dobbiamo svolgere la scan conversion del poligono, in piu`
+bisogna interpolare PVx e PVy lungo tutti i lati della nostra faccia, il
+che significa fare 2 ulteriori scan conversion del poligono utilizzando
+i PVx e i PVy al posto delle coordinate x dei vertici. Quindi in tutto
+vi sono 3 scan conversion: la prima e` quella tradizionale, la seconda
+viene fatta sostituendo PVx alle x dei vertici, mentre la terza utilizza i
+PVy al posto delle x (facciamo esattemente come per le normali nel phong,
+con la differenza che consideriamo 2 componenti (PVx e PVy) al posto di 3
+(Nx, Ny e Nz)).
+ Abbiamo eseguito la scan conversion del poligono, quel di cui abbiamo
+bisogno e` un algoritmo che permetta di associare ad ogni punto
+appartenente alla faccia un determinato pixel della texture.
+ Consideriamo la seguente figura come la nostra faccia proiettata a video:
+
+               .                 Dopo aver interpolato PVx e PVy e svolto
+              . .                la scan conversion, per ogni coppia di
+             .   .               punti sulla stessa posizione y dello
+      P1 -> .     . <- P2        schermo, ad esempio P1 e P2, conosciamo
+           .       .             la loro coordinata x assieme a PVx e PVy.
+            .     .              Adesso dobbiamo interpolare PVx e PVy
+             .   .               dal punto P1 al punto P2, in questo modo
+              . .                sapremo il valore di PVx e PVy per tutti
+               .                 i punti del poligono. Per interpolare
+                                 questi 2 valori lungo una riga si deve
+   P1 -> x1, y, PVx1, PVy1       applicare l'algoritmo generale per il
+   P2 -> x2, y, PVx2, PVy2       tracciamento di una scan line utilizzando
+   dPVx = PVx1-PVx2              dx al posto di dy,  dPVx (per interpolare
+   dPVy = PVy1-PVy2              PVx) e dPVy (per interpolare PVy) al posto
+     dx = x1-x2                  di dx, proprio come abbiamo fatto nel
+                                 gouraud per interpolare i pixel chunky.
+
+  Come gia` accennato, PVx e PVy rappresentano le coordinate del pixel
+texture da tracciare. Appena svolte le 3 scan conversion conoscevamo PVx e
+PVy appartenenti ad ogni vertice della faccia. Quindi, interpolando PVx e
+PVy lungo tutto il poligono, ricaveremo le coordinate dei punti della
+texture per tutti i punti della faccia! Ora, con delle semplici operazioni
+di copia, potremo mappare il poligono associando, ad ogni suo punto, il
+pixel chunky della texture in posizione (PVx,PVy).
+
+
+				tEXTURE mAPPING
+==========================================================================
+
+ Questo effetto permette il tracciamento di un'intera immagine su di un
+poligono, in pratica e` come se "incollassimo" su ogni faccia una
+texture.
+ In questo paragrafo tratteremo del texture mapping senza prospettiva, il
+quale risulta essere l'algoritmo piu` veloce per mappare un'immagine su di
+un poligono, ma allo stesso tempo anche meno realistico.
+
+ Consideriamo di utilizzare poligoni formati da 4 lati, ogni spigolo del
+poligono coincide con uno spigolo della faccia, cio` che dobbiamo fare
+e` tracciare la tutta texture sul poligono. In pratica e` come se
+dovessimo realizzare il reflection mapping sapendo che le coordinate della
+texture da mappare sono sempre costanti e coincidono esattamente con i 4
+vertici della texture stessa. Se la texture e` 256*256 pixel realizzeremo
+un algoritmo di reflection mapping sapendo che PV1(0,0), PV2(255,0),
+PV3(255,255), PV4(0,255) sono gli stessi per ogni poligono. In altre
+parole andiamo ad interpolare le coordinate x e y della texture lungo
+tutto il poligono, in modo tale da sapere per ogni pixel appartenente alla
+faccia da tracciare quale sia il relativo punto della texture. Tutto qui.
+
+
+			fREE dIRECTION tEXTURE mAPPING 
+==========================================================================
+
+
+			tEXTURE mAPPING bILINEARE
+==========================================================================
+
+
+			tEXTURE mAPPING bIQUADRATICO
+==========================================================================
+
+
+				bUMP mAPPING
+==========================================================================
+
+
+				cLIPPING 2d
+==========================================================================
+
+
+				oTTIMIZZAZIONE dEL fILL
+==========================================================================
+
+
+			aPPENDICE a: nOTAZIONE iN vIRGOLA fISSA
+==========================================================================
+
+ Nell'elaborazione di oggetti 3D si ha spesso a che fare con numeri reali,
+non interi. La maggior parte dei linguaggi evoluti permettono la diretta
+manipolazione di tali numeri, casomai sfruttando un eventuale
+coproccessore matematico oppure emulandoli via software. L'emulazione
+che apportano gli attuali compilatori risulta decisamente lenta per
+applicazioni in tempo reale, inoltre se si lavora in Assembly non si ha
+a disposizione la diretta gestione di numeri reali a meno che non venga
+utilizzato il coprocessore matematico. In alternativa alla FPU (che
+sfrutta numeri in virgola mobile) si puo` optare per il formato in virgola
+fissa che, nonostante una minore precisione rispetto al formato in virgola
+mobile, rimane la scelta migliore in quanto le operazioni svolte in tale
+formato risultano piu` veloci.
+ In linea di principio, in un elaboratore elettronico, tutti i numeri
+(anche quelli reali) vengono rappresentati come interi, la notazione in
+virgola fissa si basa sulla diretta semplificazione di tale
+rappresentazione, vediamo come.
+
+ Un numero reale viene rappresentato come quel valore intero dato dal
+prodotto del numero reale moltiplicato per una costante definita a priori.
+E` proprio da questa costante che dipende la precisione con la quale
+possono essere rappresentati numeri non interi. Ecco un esempio:
+
+           3.25             <- numero reale
+           256              <- costante
+
+           3.25*256 = 832   <- 3.25 in virgola fissa
+
+In questo modo possiamo rappresentare tutti i numeri reali con un discreto
+margine di errore che per le nostre applicazioni risulta praticamente
+ininfluente. E` conveniente utilizzare come costante una potenza di 2
+(es.: 256, 65536), con la quale e` possibile velocizzare la manipolazione
+di numeri in tale notazione. Difatti e` noto che il computer rappresenta
+un qualsiasi numero come una sequenza di bit, quindi, utilizzando come
+costante una potenza di 2, e` possibile definire 2 campi di bit per ogni
+cifra: una dedicata alla parte intera mentre l'altra dedicata alla parte
+frazionaria.
+ Se un numero in virgola fissa ha un numero di bit dedicati alla parte
+intera uguale ad <a> e un numero di bit dedicati alla parte frazionaria
+uguale a <b>, allora si dice che quel numero e` nel formato "a:b". Bisogna
+inoltre sfecificare che la parte intera di una cifra in virgola fissa
+appartiene al campo di bit piu` alto, mentre la parte frazionaria
+appartiene al campo di bit piu` basso.
+
+           3.25        <- numero reale
+           256=2^8     <- costante
+           832         <- 3.25 in virgola fissa
+           8:8         <- formato del numero in virgola fissa. Se
+                          utilizziamo 1 word (16 bit) abbiamo gli 8 bit
+                          piu` significativi dedicati alla parte intera e
+                          gli altri 8 bit meno significativi per quella
+                          frazionaria.
+
+ Vediamo come convertire un numero intero nel formato in virgola fissa e
+viceversa:
+
+           num intero        = (num virgola fissa) / (costante)
+           num virgola fissa = (num intero)        * (costante)
+
+ Infine occupiamoci di comprendere come effettuare le 4 operazioni con
+tali numeri:
+
+           (a:b) + (c:d) = impossibile!!
+           (a:b) + (a:b) = a:b
+           (a:b) * (c:d) = (a+c):(b+d)
+           (a:b) / (c:d) = (a-c):(b-d)
+
+Ci accorgiamo subito che risulta impossibile sommare 2 numeri in virgola
+fissa di diverso formato, bisogna prima rendere omogenee le 2 cifre
+(significa che le 2 cifre devono avere lo stesso formato). Da notare che
+una qualsiasi cifra intera puo` essere intesa come un numero in virgola
+fissa nel formato "a:0"; quindi e` possibile svolgere direttamente
+moltiplicazioni e divisioni tra numeri in virgola fissa ed interi.
+
+
+			aPPENDICE b: cOORDINATE pOLARI
+==========================================================================
+
+ Come gia` sappiamo, per rappresentare un generico punto su di un piano
+possiamo utilizzare gli assi cartesiani. Le componenti x ed y non
+rappresentano altro che le proiezioni del nostro punto sull'ascissa e
+sull'ordinata.
+ Immaginiamo invece di voler indicare un punto utilizzando un altro
+sistema di riferimento, nel nostro caso le coordinate polari.
+
+  ^                    Consideriamo r la distanza tra il punto P e
+y |     .P(x,y)        l'origine, mentre t come l'angolo compreso tra il
+  |    /               segmento OP ed il semiasse positivo x.
+  |   /                E` possibile indicare qualsiasi punto utilizzando
+  | r/                 queste 2 variabili (r e t), le quali rappresentano
+  | /                  proprio le coordinate polari.
+  |/) t                Per ogni P(x,y) corrisponde un P'(r,t). Vediamo
+  +------------>       come effettuare queste conversioni.
+ O            x
+                       Sia R(x,0) la proiezione di P(x,y) sull'asse x
+  ^                    (ovvero il punto di ordinata 0 e di equivalente
+y |     .P(x,y)        ascissa di P). Il triangolo ORP e` rettangolo in R,
+  |    /|              quindi per il teorema di Pitagora:
+  |   / |
+  | r/  |                         r = OP = sqrt( x*x + y*y )
+  | /   |
+  |/) t |              Possiamo anche affermare che:
+  +-----+------>
+ O      R     x        PR = r*sin(t)   =>   sin(t) = PR/r
+                       OR = r*cos(t)   =>   cos(t) = OR/r
+
+Se facciamo attenzione possiamo affermare che (considerando il punto
+P(x,y)) PR=y e OR=x. La tangente di un angolo e` equivalente al rapporto
+del seno di quell'angolo col relativo coseno, quindi:
+
+        tan(t) = sin(t)/cos(t) = (PR/r)/(OR/r) = PR/OR = x/y
+        x/y = tan(t)
+
+        t = arctan(x/y)
+        r = sqrt(x*x+y*y)
+
+        x = r*cos(t)
+        y = r*sin(t)
+
+Ora sappiamo come convertire le coordinate cartesiane in polari e
+viceversa, cio` risultera` utile per comprendere come effettuare la
+rotazione di un punto.
+
+
+			aPPENDICE c: gESTIONE dEGLI oGGETTI
+==========================================================================
+
+ Vogliamo tracciare il nostro oggetto su schermo sia esso in wireframe,
+gouraud shading, texture mapping o in altra tecnica di rendering che piu`
+ci va a genio; sappiamo perfettamente come visualizzare una singola
+faccia, ma come potremmo gestire tutte le facce che compongono il solido
+tridimensionale?
+ Bisogna definire un "formato" con cui l'oggetto risiede in memoria, in
+base al quale potremo visualizzare qualsiasi figura 3D utilizzando sempre
+le stesse routine che compongono il nostro motore 3D. Iniziamo col vedere
+un esempio pratico:
+
+            V5 _____________ V6   teniamo conto di dover definire come
+             /|	           /|     oggetto un semplice cubo, per prima
+            / |	          / |     cosa potremmo indicarne il numero di
+           /  |	         /  |     vertici e di facce di cui e` composto;
+          /   |	        /   |     in seguito elenchiamo tutte le
+      V1 /____|_______ /V2  |     coordinate (x,y,z) dei vertici del cubo;
+        |     |       |     |     infine indichiamo le caratteristiche di
+        |   V8|_______|_____|V7   tutte le facce. Nel caso piu` semplice
+        |    /        |    /      per definire una faccia basta indicarne
+        |   /         |   /       i vertici (casomai ordinati in senso
+        |  /          |  /        orario per facilitare la rimozione
+        | /           | /         dell'hidden face e il calcolo della
+        |/____________|/          normale). Ecco come e` possibile
+      V4               V3         definire in memoria un cubo:
+
+           8            <- numero di vertici dell'oggetto
+           6            <- numero di facce dell'oggetto
+           -50,-50,-50  <- coordinate x,y,z del vertice V1
+           +50,-50,-50  <- coordinate x,y,z del vertice V2
+           +50,+50,-50  <- coordinate x,y,z del vertice V3
+           -50,+50,-50  <- coordinate x,y,z del vertice V4
+           -50,-50,+50  <- coordinate x,y,z del vertice V5
+           +50,-50,+50  <- coordinate x,y,z del vertice V6
+           +50,+50,+50  <- coordinate x,y,z del vertice V7
+           -50,+50,+50  <- coordinate x,y,z del vertice V8
+           1,2,3,4      <- puntatori ai vertici che compongono la faccia 1
+           2,6,7,3      <- puntatori ai vertici che compongono la faccia 2
+           6,5,8,7      <- puntatori ai vertici che compongono la faccia 3
+           5,1,4,8      <- puntatori ai vertici che compongono la faccia 4
+           5,6,2,1      <- puntatori ai vertici che compongono la faccia 5
+           4,3,7,8      <- puntatori ai vertici che compongono la faccia 6
+
+Analizziamo come vengono definiti i poligoni, prendiamo la faccia 1:
+
+           1,2,3,4      <- significa che la faccia e` composta dai primi 4
+                           punti posti nella lista dei vertici, ovvero:
+
+           -50,-50,-50  <- coordinate x,y,z del vertice V1
+           +50,-50,-50  <- coordinate x,y,z del vertice V2
+           +50,+50,-50  <- coordinate x,y,z del vertice V3
+           -50,+50,-50  <- coordinate x,y,z del vertice V4
+
+Ogni lato e` rappresentato dalla congiunzione lineare di 2 vertici,
+nell'esempio appena proposto i lati della faccia 1 sono i segmenti
+delimitati dal primo al secondo punto (V1 e V2), dal secondo al terzo (V2
+e V3), dal terzo al quarto (V3 e V4) e dal quarto al primo punto (V4 e
+V1).
+ Nel nostro caso ogni faccia e` un quadrilatero, naturalmente e` possibile
+realizzare il proprio motore 3D che utilizzi un diverso numero di lati,
+l'importante e` che ogni poligono sia convesso, altrimenti l'algoritmo di
+scan conversion risulterebbe decisamente piu` complesso di quello studiato
+nel paragrafo relativo al fill e scan line.
+
+
+				nOTE fINALI
+==========================================================================
+
+ Innanzitutto ringrazio Randy/RamJam (Fabio Ciucci), dal quale ho
+acquisito le solide basi dell'Assembly su 680x0 ed appreso le conoscenze
+indispensabili per sfruttare i chip-custom ECS/AGA del mitico Amiga.
+ Non indifferente e` la riconoscenza che ho per Hedgehog/??? (Marco
+Ricci), fornitore di moltissime informazioni (che mi hanno permesso di
+scrivere questo doc) ed utile consigliere su tecniche di "coding".
+ Un ringraziamento va inoltre a Psyko/Vajrayana (Pasquale Mauriello), che
+mi ha gentilmente spedito materiale cartaceo su cui studiare e verificare
+parte della mia cultura.
+ Saluto tutti gli scener italiani che si stanno impegnando duramente
+nell'intento di realizzare una produzione, valida o pessima che sia:
+l'importante e` che i risultati siano frutto del proprio lavoro. 
+
+ Se qualcuno e` interessato a ricevere gratuitamente l'ultima versione
+di questo file di testo per posta elettronica o per comunicarmi eventuali
+errori o imprecisioni puo` contattarmi via e-mail:
+
+          dayco@rgn.it
+
+oppure scrivetemi via posta celere:
+
+          Cristiano Tagliamonte
+          Via Filippo Masci, 86/G
+          66100 Chieti
+
+
+                                ______ ____ _    _    ___   _
+                               / || __|| __||\  /|   / ||\ ||
+                              //||||   ||_  | \/ |  //||| \||
+                             /__ |||__ ||__ ||\/|| /__ |||\ |
+                            //  |||___||___|||  ||//  |||| \|
+                           ========================aCEmAN/bSd
+

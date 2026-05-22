@@ -1,0 +1,193 @@
+
+			    DOS DEVICE DRIVER
+
+		  DOS DEVICE DRIVER EXAMPLE FOR AZTEC C
+
+			       A RAM DISK,
+
+			    by Matthew Dillon
+
+				  V1.10 (Works with the workbench!)
+
+    Dedicated to all those people out there (including me!) who have been
+    struggling with DOS devices.  Placed in PUBLIC DOMAIN.  I would like to
+    give special thanks to Steve Beats for helping me get it to work with
+    the workbench.  He saved me at least 24 manhours plus a couple of white
+    hairs.
+
+    Documentation is sorely lacking... even the RKM examples are sorely
+    lacking.  What programmers need is a working example ... as full an
+    implementation as possible to figure out all the little DOS quirks that
+    the manuals don't tell you about... Little things like when the driver
+    stores a string in a structure it must be in BCPL 'length first'
+    format.  There are literally hundreds of these babies!
+
+REQUIREMENTS:
+
+    -Aztec C compiler
+
+    -A precompiled symbol table of all sub-directory include's (*/*.H). i.e.
+     one which does NOT include top level stuff like <stdio.h>.  Remember to
+     compile with the +L option when generating the symbol table.
+
+    -A tiny bit of background with BPTR's and how dos works in general.
+
+     The LARGE data and code model will be used... It makes life *much*
+     easier.  This will NOT effect performance as there are very few global
+     elements anyway.
+
+    *Alternately, no requirements if you just want to look at the source.
+
+
+MOUNTLIST:
+
+    You will want to change this to a more permanent file path, obviously,
+    though to run the example you might as well leave the driver in RAM:
+
+
+THE EXAMPLE:
+
+    How 'bout a RAM disk?  RAM disks use most DOS packet types...  Since my
+    RAM disk is not meant for normal usage, There will be a lot of minor
+    items I will leave unimplimented:
+
+	-I don't check out-of-memory conditions (remember! This is ONLY an
+	 example!)
+
+	-The ARCHIVE protection bit is not supported
+
+    All packet types normally associated with a RAM disk are supported,
+    Most especially LOCKS, which *many* people have not been able to figure
+    out in the past.  There are also a number of compatibility issues,
+    discussed below.
+
+DEBUGGING:
+
+    Since this is an example, FULL Debugging has been implemented.  Since
+    the DOS device driver cannot make DOS library calls itself (confusion
+    on the message port), CreatProc() is used to create a secondary process
+    which will do the actual printing of the debug messages.  The messages
+    are sent to the debug process via a dedicated message port.
+
+    Since Debugging causes a huge efficiency decrease, and since you are
+    going to want to fool around with the device, you can turn off debug
+    error message output by:
+
+    CD test:
+    type debugoff	(will get an error, but debugging will be turned
+			off)
+
+    alternately, 'type debugon' will turn it back on.
+
+    The debugging code itself is a good example.
+
+    ---------------------------------------------------------------------
+
+RESTRICTIONS:
+
+    The Workbench assumes that locks are always sizeof(struct FileLock).
+    Although DOS allows you to extend the structure however you like, if
+    you want your driver to work with the workbench it MUST be a normal
+    FileLock.  This isn't a big problem... simply use the fl_Link and
+    fl_Key fields to point to other things.
+
+    The Workbench checks the DOS Device List every second or so.  To make
+    a disk icon appear (see the source), you must construct a VOLUME node.
+    This is in addition to the DEVICE node that DOS already constructed
+    for our device driver.
+
+    If you do not intend to support the Workbench, you do not need to
+    make a volume node, and can extend the FileLock structure however you
+    want (beyond the required fields, that is).
+
+
+DOS IN GENERAL:
+    DOS is the only part of the Amiga that was written in (ugghh) BCPL.
+    BCPL has many strange notions.  Pointers in BCPL are always longword
+    aligned and shifted right by 2 (divided by 4), so 0x0 would mean
+    address 0, 0x1 would mean address 4, etc...
+
+    To convert BPTR's to C pointers (CPTR's), simply shift left by 2. To
+    convert the otherway, simply shift right by 2, but remembering that the
+    original C pointer must be longword aligned.
+
+    BCPL strings (BSTR's) are quite different.  Most commonly you have
+    "BPTR's to BSTR's", which means you both have to convert the pointer
+    to a C pointer, and then interpret it differently.	The first character
+    in a BSTR is the length of the string (unsigned 0 to 255).	The
+    actual string starts at ptr+1 (CPTR+1), and has NO TERMINATION
+    CHARACTER.	See the BTOS() routine in DEVICE.C
+
+    Most DOS structures which have string arrays are in BCPL format.  For
+    example, the Name and Comment fields in FileInfoBlock are in BCPL
+    format.  The DOS library from C converts these fields to normal C
+    strings for you when you make Examine()/ExNext() calls, but are BCPL
+    strings inside any device driver.
+
+FILESYSTEMS:
+    Beware that it is perfectly acceptable to CurrentDir(lock) a lock which
+    is a file rather than a directory, then open "" to access that file.
+    The workbench does this quite a bit.
+
+    One major point not addressed well in my device driver is handling
+    multiple writer's to the same file (or a reader and a writer).  It is
+    also acceptable to open a file ACCESS_OLD (1005) and write to it.
+
+    Another common problem is an incorrectly implemented Examine()/ExNext()
+    function.	Keep in mind that *any* entry in the directory being
+    scanned can be removed or moved out of that directory at anytime,
+    including between ExNext() calls.  My RAM: disk accomplishes this by
+    rescanning the directory at every ExNext() call (an admittedly
+    inefficient method).
+
+    Finally, you must properly implement shared access to files.  Remember
+    that it *is* possible to have a reader AND a writer, or two writers, or
+    N readers and N writers each with separate filehandles going to a
+    single file.  I do not properly implement some of these cases in my
+    example, but note the bug at the beginning of the source.o
+
+    ACTION_INHIBIT is not addressed well in the device driver.	This has
+    one argument, a Bool TRUE or FALSE.  If TRUE, it 'inhibits' access to
+    the low level hardware handling the device.  This isn't very
+    useful for a RAM disk.
+
+    My example device does not handle small block sizes well in that they
+    cause a large amount of overhead.  A really serious RAM disk would
+    combine small blocks into larger ones (in terms of memory storage).
+    This was actually a bug in the 1.1 RAM: disk.  I'm not sure how well
+    the 1.2 RAM: disk fixes it.  Workbench has a nasty habit of writing 1
+    and 2 byte blocks (somebody should really fix that!).
+
+
+OTHER DOS PECULARITIES:
+
+    NON FILE SYSTEMS:	Specifically, control terminals like CON: ..
+    The CLI and other programs get a duplicate filehandle of the control
+    terminal by openning the file '*'.  This is how the CLI is able to open
+    two filehandles (Input()/Output()) to the same CON: device that would
+    otherwise cause two invocations of a CON: device.
+
+    This isn't to say you can simply Open("*",1005), you CAN'T!  You must
+    open CON:blah, then extract the handler process ID from that
+    filehandle, then manually send an OPEN_OLD packet with filename "*" to
+    the handler.
+
+    ACTION_DISK_INFO, when sent to a CONSOLE device, will return the window
+    associated with the console as follows:
+
+	    id_VolumeNode   =	console window
+	    id_InUse	    =	console IO blvock
+
+    There are probably many more.
+
+
+
+					Matthew Dillon
+
+					ARPA: dillon@ucbvax.berkeley.edu
+					UUCP: ..!ihnp4!ucbvax!dillon
+					SNAIL:	Matthew Dillon
+						891 Regal Rd.
+						Berkeley, Ca. 94708
+
+

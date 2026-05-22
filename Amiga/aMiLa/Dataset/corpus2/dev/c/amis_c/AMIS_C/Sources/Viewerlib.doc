@@ -1,0 +1,459 @@
+TABLE OF CONTENTS
+
+ViewerLib/--background--
+ViewerLib/BuiltRequester
+ViewerLib/CloseRequester
+ViewerLib/CursDown
+ViewerLib/CursLeft
+ViewerLib/CursRight
+ViewerLib/CursSOL
+ViewerLib/CursUp
+ViewerLib/DoRreturn
+ViewerLib/FileRequester
+ViewerLib/FreeRequester
+ViewerLib/GetWinPos
+ViewerLib/GetImage
+ViewerLib/GetYPos
+ViewerLib/InternalCommand
+ViewerLib/LoadImage
+ViewerLib/NewViewerbar
+ViewerLib/SetViewervar
+ViewerLib/SetViewervar2
+ViewerLib/ShowRequester
+ViewerLib/WordWrapSaveFilter
+ViewerLib/--background--                             ViewerLib/--background--
+
+ This library is passed to all viewers of AMIS, it can not be opened the
+normal way. But for the rest it works just like a normal library (note that
+the base of this library is the AMIS_Base which is not a library structure).
+
+ Viewers can use this library to control some parts of AMIS and to be able
+to use some standard functions AMIS has built-in, such as requesters, image
+loading (with cache and datatypes), etc.
+
+ Every new version of AMIS will have more functions available for the
+viewers. Therefore you must set the version of AMIS which your viewer needs
+in the vw_version field of the Viewer structure.
+
+   NOTE
+	At the moment this documentation is not fully completed, later
+	archives will have (more) complete documentation and better includes
+	too. If you want too create a new viewer you can send me an E-mail
+	(wmestrom@cs.ruu.nl) and I will send you the latest version of AMIS
+	with the autodocs and includes you need.
+
+ViewerLib/BuiltRequester                             ViewerLib/BuiltRequester
+
+   NAME
+	BuiltRequester -- Built a requester from a requester definition.
+			  (V1.00)
+
+   SYNOPSIS
+   	reqbase = BuiltRequester(A0,A1)
+   	D0
+
+	struct ReqBase *BuiltRequester(struct Req *, struct TagItems *);
+
+   FUNCTION
+	This function builts a ReqBase structure from a requester
+	definition. This ReqBase can then be used to display the requester
+	and close it again (and open it again, etc). When you are done with
+	the requester you can free this structure using the FreeRequester()
+	function.
+
+   INPUTS
+	Req  -
+	Tags:
+	    AM_Screen
+		This tag can be used to specify on which screen you want the
+		requester to appear. When this tag is ommited or zero the
+		default public screen will be used.
+
+	    AM_Locale
+		This tag can be used to pass a catalog which will be used to
+		localize the text in the requester (buttons, title, etc).
+
+	    AM_LocaleOffset
+		This indicates which offset should be added to the locale
+		string numbers given in the requester definition and gadgets
+		taglist.
+
+	    AM_MessagePort
+		Here you can pass a pointer to a message port which you want
+		to use as the IDCMP port for this requester. Here you will
+		receive commands like mouse clicks etc. If this tag is
+		ommited or zero a port will be created.
+
+	    AM_ESC_Function
+		Here you can pass a pointer to a function that you want to
+		be executed when the escape key is pressed.
+
+	    AM_Return_Button
+		Here you can pass a pointer to a function that you want to
+		be executed when the return key is pressed.
+
+	    AM_CloseFunction
+		Here you can pass a pointer to a function that you want to
+		be executed when the close button of the requester window is
+		selected.
+
+	    AM_Gadgets
+		The ti_data of this tag should be an other taglist. In this
+		taglist you can specify all text and buttons you want to be
+		displayed in the requester. These are the tags you can use
+		in this taglist:
+
+		    AM_SameWidth
+			The next n number of gadgets will all have the same
+			width. Where ti_data defines the value of n. The
+			width will be stored in the iw_groupwidth field of
+			the ReqBase structure for later use when these
+			gadgets are created.
+		    AM_SameLeft
+			The next n number of gadgets will all have the same
+			x coordinate. Where ti_data defines the value of n.
+			The width will be stored in the iw_groupleft field
+			of the ReqBase structure for later use when these
+			gadgets are created.
+		    AM_Code
+			Here you can specify a pointer to a function you
+			want to be executed while the gadgets are being
+			created. When this function is called all gadgets
+			defined earlier in the taglist are already created,
+			all gadgets later in the taglist are not. This
+			function can be used to change gadget definitions to
+			make the layout a little nicer. For example you can
+			use the width of some buttons created earlier to
+			calculate the width of one of the following gadgets.
+			This function may also change the iw_width,
+			iw_height, iw_groupwidth and iw_groupleft fields of
+			the ReqBase structure. (iw_width and iw_height are
+			the width and height of the requester, which are
+			initialy set to the values passed in the Req
+			structure).
+
+		    AM_Button
+			The ti_data field should be a pointer to a AR_Button
+			structure. This button gadget will be created and
+			added to the requester.
+		    AM_CheckMark
+			The ti_data field should be a pointer to a
+			AR_CheckMark structure. This checkmark gadget will
+			be created and added to the requester.
+		    AM_Cycle
+			The ti_data field should be a pointer to a AR_Cycle
+			structure. This cycle gadget will be created and
+			added to the requester.
+		    AM_Listview
+			The ti_data field should be a pointer to a
+			AR_Listview structure. This listview gadget will be
+			created and added to the requester.
+		    AM_Slider
+			The ti_data field should be a pointer to a AR_Slider
+			structure. This slider gadget will be created and
+			added to the requester.
+		    AM_Integer
+			The ti_data field should be a pointer to a
+			AR_Integer structure. This integer gadget will be
+			created and added to the requester.
+		    AM_Number
+			The ti_data field should be a pointer to a AR_Number
+			structure. This number gadget will be created and
+			added to the requester.
+		    AM_String
+			The ti_data field should be a pointer to a AR_String
+			structure. This string gadget will be created and
+			added to the requester.
+		    AM_Text
+			The ti_data field should be a pointer to a AR_Text
+			structure. This text gadget will be created and
+			added to the requester.
+
+		    AM_UserGadget
+			The ti_data field of this tag should be a pointer to
+			a normal intuition Gadget structure. This gadget
+			will be added to the requester.
+
+		    AM_BackBox
+			The ti_data field should be a pointer to a
+			AR_BackBox structure. This will created an image of
+			a normal requester background pattern, this image
+			will be added to the requester. (This is the same
+			pattern as used in the AMIS requesters). Note that
+			this should be the last item of your taglist since
+			all gadgets are rendered in reverse order as you
+			specify them in your list. (and normally a
+			background should be rendered first so all other
+			graphics will be drawn over the background).
+
+		    AM_IText
+			The ti_data field should be a pointer to a IntuiText
+			structure. This text will be printed in the
+			requester when it is opened using the intuition
+			PrintIText() function.
+
+   NOTE
+	You will normally want to set the AM_MessagePort to the AMIS_MsgPort
+	passed to you in the AMIS_Structure. Because if you don't do this
+	the requester will not react to ANY user input(!), you will have to
+	handle all messages by yourself. If you do pass the AMIS_MsgPort as
+	the message port to be used, AMIS will handle all user input from
+	clicking on the windows close gadget to pressing a gadget shortkey.
+
+   RESULT
+	reqbase	- A pointer to a ReqBase structure or zero when this
+		  function failed (usually out of memory).
+
+   SEE ALSO
+	CloseRequester(), FreeRequester(), ShowRequester()
+
+ViewerLib/CloseRequester                             ViewerLib/CloseRequester
+
+   NAME
+	CloseRequester -- Remove a requester from the screen (close the
+			  window). (V1.00)
+
+   SYNOPSIS
+   	CloseRequester(A0)
+
+	void CloseRequester(struct ReqBase *);
+
+   FUNCTION
+	This function will close the requester window. The gadgets etc. are
+	not freed so you can open the window again using the ShowRequester()
+	function. You don't have to re-built the requester first.
+
+   INPUT
+	ReqBase - The ReqBase structure BuiltRequester() passed to you.
+
+   SEE ALSO
+	BuiltRequester(), FreeRequester(), ShowRequester()
+
+ViewerLib/CursDown                                         ViewerLib/CursDown
+
+   NAME
+	CursDown -- Move the cursor of the active window one line down.
+
+   SYNOPIS
+	Err = CursDown()
+	D0
+
+	ULONG CursDown(void);
+
+   FUNCTION
+	This function will move the cursor of the active window one line
+	down. It will do nothing when the cursor was on the last line.
+
+   RESULT
+	Err - Zero when everything went ok. 10 when there was no active
+	      editor window.
+
+   SEE ALSO
+	CursLeft(), CursRight(), CursSOL(), CursUp()
+
+ViewerLib/CursLeft                                         ViewerLib/CursLeft
+
+   NAME
+	CursLeft -- Move the cursor of the active window one character left.
+
+   SYNOPIS
+	Err = CursLeft()
+	D0
+
+	ULONG CursLeft(void);
+
+   FUNCTION
+	This function will move the cursor of the active window one
+	character to the left. It will jump to the previous line when the
+	cursor was on the first character of the line.
+
+   RESULT
+	Err - Zero when everything went ok. 10 when there was no active
+	      editor window.
+
+   SEE ALSO
+	CursDown(), CursRight(), CursSOL(), CursUp()
+
+ViewerLib/CursRight                                       ViewerLib/CursRight
+
+   NAME
+	CursRight -- Move the cursor of the active window one character
+		     right.
+
+   SYNOPIS
+	Err = CursRight()
+	D0
+
+	ULONG CursRight(void);
+
+   FUNCTION
+	This function will move the cursor of the active window one
+	character to the right. It will jump to the next line if the cursor
+	was on the last character of the line.
+
+   RESULT
+	Err - Zero when everything went ok. 10 when there was no active
+	      editor window.
+
+   SEE ALSO
+	CursDown(), CursLeft(), CursSOL(), CursUp()
+
+ViewerLib/CursSOL                                           ViewerLib/CursSOL
+
+   NAME
+	CursSOL -- Move the cursor of the active window to the first
+		   character of the line.
+
+   SYNOPIS
+	Err = CursSOL()
+	D0
+
+	ULONG CursSOL(void);
+
+   FUNCTION
+	This function will move the cursor of the active window to the first
+	character of the line.
+
+   RESULT
+	Err - Zero when everything went ok. 10 when there was no active
+	      editor window.
+
+   SEE ALSO
+	CursDown(), CursLeft(), CursRight(), CursUp()
+
+ViewerLib/CursUp                                             ViewerLib/CursUp
+
+   NAME
+	CursUp -- Move the cursor of the active window one line up.
+
+   SYNOPIS
+	Err = CursUp()
+	D0
+
+	ULONG CursUp(void);
+
+   FUNCTION
+	This function will move the cursor of the active window one line up.
+	It will do nothing when the cursor is on the first line.
+
+   RESULT
+	Err - Zero when everything went ok. 10 when there was no active
+	      editor window.
+
+   SEE ALSO
+	CursDown(), CursLeft(), CursRight(), CursSOL()
+
+ViewerLib/DoReturn                                         ViewerLib/DoReturn
+
+   NAME
+	DoReturn -- Insert a return in the active editor window.
+
+   SYNOPIS
+	Err = DoReturn()
+	D0
+
+	ULONG DoReturn(void);
+
+   FUNCTION
+	This function will do exactly the same as what happens when the user
+	presses the [Return] key (if it wasn't redefined of course.
+
+   RESULT
+	Err - Zero when everything went ok. 10 when there was no active
+	      editor window.
+
+ViewerLib/FreeRequester                               ViewerLib/FreeRequester
+
+   NAME
+	FreeRequester -- Free all memory (gadgets etc.) used by a requester.
+			 (V1.00)
+
+   SYNOPSIS
+   	FreeRequester(A0)
+
+	void FreeRequester(struct ReqBase *);
+
+   FUNCTION
+	This function will free all memory, gadgets, etc. used by a
+	requester. NOTE: The ReqBase structure will also be freed, so it is
+	invalid after you have called this function!
+
+   INPUT
+	ReqBase - The ReqBase structure BuiltRequester() passed to you.
+
+   SEE ALSO
+	BuiltRequester(), CloseRequester(), ShowRequester()
+
+ViewerLib/GetImage                                         ViewerLib/GetImage
+
+   NAME
+	GetImage -- load an image using datatypes (only available with
+		    kickstart 3.0 or higher), if the image is already in the
+		    cache it will not be loaded again.
+
+   SYNOPSIS
+	object = GetImage(A1)
+	D0
+
+	struct Object *GetImage(char *filename);
+
+   FUNCTION
+	This function will check AMIS cache if this image is already loaded,
+	if it is not it will be loaded and added to the cache. Then a
+	pointer to a datatype object will be returned.
+
+   INPUT
+	filename - the filename of the image you want to load, this function
+		   also supports filenames in the format:
+		   "file://localhost/...".
+		   Filenames in the format:
+		   "http://..." are completely ignored.
+
+   RESULT
+	object - a pointer to a datatype object or zero if the file could
+		 not be loaded.
+
+   SEE ALSO
+	LoadImage()
+
+ViewerLib/InternalCommand                           ViewerLib/InternalCommand
+
+   NAME
+	InternalCommand -- Send AMIS an internal command.
+
+   SYNOPIS
+	result = InternalCommand(A0)
+	D0
+
+	ULONG InternalCommand(char *command);
+
+   FUNCTION
+	With this function you can send AMIS an internal command which AMIS
+	will execute and return the result of that command to you. It works
+	with all internal commands which you can find in the AMIS.guide.
+
+   RESULT
+	result - Result of the internal command.
+
+ViewerLib/ShowRequester                               ViewerLib/ShowRequester
+
+   NAME
+	ShowRequester -- Show a requester, built using the BuiltRequester()
+			 function. (V1.00)
+
+   SYNOPSIS
+   	ShowRequester(A0)
+
+	void ShowRequester(struct ReqBase *);
+
+   FUNCTION
+	This function will show a requester built by the BuiltRequester
+	function.
+
+   INPUT
+	ReqBase - The ReqBase structure BuiltRequester() passed to you.
+
+   SEE ALSO
+	BuiltRequester(), CloseRequester(), FreeRequester()
+
+

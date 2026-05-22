@@ -1,0 +1,14 @@
+VERSION		EQU	1
+REVISION	EQU	51
+DATE	MACRO
+		dc.b	'30.11.96'
+	ENDM
+VERS	MACRO
+		dc.b	'SuperScroll 1.51'
+	ENDM
+VSTRING	MACRO
+		dc.b	'SuperScroll 1.51 (30.11.96)',13,10,0
+	ENDM
+VERSTAG	MACRO
+		dc.b	0,'$VER: SuperScroll 1.51 (30.11.96)',0
+	ENDM

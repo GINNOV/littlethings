@@ -1,0 +1,7 @@
+short: some handy macros for ANSI C programmers
+uploader: bsimpson@touchdwn.demon.co.uk (Bruce Simpson)
+author: bsimpson@touchdwn.demon.co.uk (Bruce Simpson)
+type: dev/c
+
+mymacros.h   - My personal include file ;-)
+               Various handy hardware macros, instruction shorthand etc.

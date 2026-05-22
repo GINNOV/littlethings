@@ -1,0 +1,11 @@
+Short:    Function which extracts n-th root 
+Uploader: rgoran@eunet.yu (Goran Radovic)
+Author:   rgoran@eunet.yu (Goran Radovic)
+Type:     dev/c
+Version:  1.0
+
+Amiga libraries, C libraries and calculator programs don't have this
+function, so I wrote it.
+
+Fixed BUGS from previous version.
+

@@ -1,0 +1,227 @@
+HAHAAA!! Non avrei mai pensato che avrei scritto un doc sul tmap; ce ne sono
+così tanti su internet; se ne vuoi prendere uno interessante vai su
+www.altavista.digital.com e ricerca "texture mapping" (rigorosamente con le
+<">) e dovresti trovare un file di ~63k; prendilo è molto interessante
+perchè spiega le basi; per il resto dovresti avere tutto quello che ti serve
+:-)
+
+Innanzitutto ce l'hai una routine di scanline? Se non ce l'hai leggi
+qua altrimenti salta direttamente a dopo.
+
+*** Scanline ***
+
+Che cos'è una routine di scanline?
+Dato che lo schermo è fatto di linee quando si deve riempire un poligono (di
+qualsiasi forma), tale poligono deve essere "convertito" in linee
+orizzontali in modo da riempire solo linee sullo schermo. Per esempio
+un triangolo così verrà convertito in linee orizzontali
+         .                   .
+        / \       --\       ...
+       /   \      --/      .....
+      /     \             .......
+      ¯¯¯¯¯¯¯
+Quindi per fillare un poligono bisogna sapere di quante linee orizzontali è
+formato, più gli estremi delle linee. Per fare questo in genere si usano due
+tabelle grandi quanto la lunghezza in linee dello schermo; una contiene gli
+estremi di destra delle linee e l'altra per quelli di sinistra.
+
+A questo punto ti starai chiedendo come fare le tabelle no? Bene è tutto
+molto semplice, non devi far altro che interpolare la coordinata x lungo la
+y (a me hanno consigliato di non usare l'algoritmo di bresenham perchè
+quello normale di interpolazione è leggermente più veloce).
+
+Allora riprendiamo il triangolo (considerando i vertici)
+
+      1->.         p1=(25,0)
+        / \        p2=(0,25)
+       /   \       p3=(50,25)
+   2->/     \<-3
+      ¯¯¯¯¯¯¯
+quindi nelle tabelle dovrai avere qualcosa così:
+
+     tab1   tab2      per fare le tabelle si fa ± così:
+0     25     25
+1     24     26       dx=(p2.x-p1.x)/(p2.y-p1.y)
+2     23     27       poi
+3     22     28       x=p1.x;
+4     21     29       for y=p1.y to p2.y
+5     20     30        if tab1[y]<>0 then tab1[y]=x else tab2[y]=p1.x
+6     19     31        x=x+dx
+:     :      :        next
+:     :      :
+23    2      48
+24    1      49
+25    0      50
+:
+:
+(altri valori che non c'interessano)
+
+ci 6? A questo punto ti fai un ciclo che per ogni valore di y vede se c'e' da
+tracciare una linea orizzontale (ovvero se tab1[y] e tab2[y] sono diversi
+da 0) così hai gli estremi della linea e la sua coordinata y.
+Nell'esempio fai un ciclo tipo:
+for y=0 to 50
+ line (tab1[y],y,tab2[y],y)
+next
+ed è fatto! Hai riempito un triangolo1! :-))
+Spero di essere stato abbastanza semplice nella spiegazione :-)
+
+*** Texture Mapping ***
+
+Allora cos'è il texture mapping? Non si tratta altro che riempire un
+poligono invece di usare sempre lo stesso colore, una serie di colori presi
+da un'altra immagine. Il problema sta nel prendere i colori nell'ordine
+giusto e per questo ci sono vari algoritmi:
+1) polygon grandients: calcola dei valori (tratti da alcuni calcoli
+   vettoriali) e li usa per calcolare il colore del pixel con le formule
+   u=k1+a/c
+   v=k2+b/c
+   colore = txt[u,v] -> abituati xchè le coordinate sulla texture sono
+                        sempre individuate dalle variabili u,v :)
+   Questo è il metodo di texturare i poligoni in 3d; bel senso che la
+   texture viene vista come un piano 3d; è il metodo "perspective
+   correction" che (penso) venga usato negli acceleratori 3d via hardware :)
+   farlo via software è lentissimo!!
+2) due div per scanline: calcola le u,v agli estremi della scanline (come
+   nella scanline, solo che invece di interpolare solo la x, qui si
+   interpolano anche le u,v sui lato del poligono) e poi si interpolano le
+   u,v lungo la scanline:
+   u=u0+du*(x-x0)
+   v=v0+dv*(x-x0)
+   dove
+   u0=u all'inizio della scanline   u1=u alla fine
+   v0=v  """""""""""""""""""""""    v1=v  "    "
+   du=(u1-u0)/(tab2[y]-tab1[y])
+   dv=(v1-v0)/ """"""""""""""
+   x-x0=differenza tra la x corrente (x) e la x all'inizio della scanline
+   >>>Funziona con qualsiasi poligono
+3) due div per poligono: calcola gli incrementi dv/dx e du/dx per l'intero
+   poligono e le usa per interpolare le coordinate:
+   u=u0+du*(x-x0)
+   v=v0+dv*(x-x0)
+   du=(u1-u0)/(lunghezza della massima scanline)
+   dv=(v1-v0)/("""""""""""""""""""""""""""""""")
+   u1,u0,v1,v0: valori di u,v agli estremi della massima scanline
+   >>>> Funziona solo con triangoli
+   Questi due metodi sono i cosiddetti "texture mapping" a 2d perchè in
+   pratica si "scala" la texture tra i vertici dei poligoni, assegnando ad
+   ogni vertice del poligono un punto sulla texture e poi s'interpolano
+   linearmente le u,v lungo la scanline. Usando questi metodi si ha un
+   texture mapping molto veloce, ma aimè molto impreciso xchè si possono
+   notare delle distorsioni lungo la texture (soprattutto quando si usano
+   triangoli :( e io ne so qualcosa! Prova a vedere il tmap che ho fatto io
+   e noterai che quando ruota si nota che la texture viene "divisa" in due
+   lungo la diagonale della faccia!
+
+Fondamentalmente queste sono le routine più famose per fare il texture
+mapping; adesso ti faccio faccio vedere un esempio di un possibile ciclo di
+texture mapping (pwr triangoli):
+
+loop:
+ scanline(); <- calcola le tabelle delle scanline
+ tmap()
+ goto loop;
+
+tmap()
+ calcola du/dy,dv/dy
+ interpola le u,v lungo il lato sinistro del triangolo
+ calcola du/dx,dv/dx per la scanline massima
+ for y=ymin to ymax (del triangolo)
+  u=u[y]
+  v=v[y]
+  for x=tab1[y] to tab2[y]
+   plot(x,y,txt[u,v])
+   u=u+du
+   v=v+dv
+  next x
+ next y
+endproc tmap
+
+Adesso sai ± o meno ciò che so anch'io sul tmap; si tratta solo di tradurre
+il tutto in asm e incominciare a far girare qualcosa.... :)
+Io adesso sono arrivato a fare l'env-mapping di oggetti molto più complessi
+del "solito" cubo; mi faccio gli oggetti con imagine e poi li converto con
+il tddd2raw+un'altro convertitore fatto da me e ho passato a Modem
+un'esempio di env-map. Risultato? Sul mio misero a1200 le routine vanno a
+1x1 in 5fps; sul suo a 50fps!!!! :))) Tutto si spiega dal fatto che lo 030
+ha la data cache, e il suo amy ha la fast (importantissima).
+
+Se hai qualcos'altro da chiedere, fai pure! :-)
+
+Ps: ho rivisto ancora il rotator xchè volevo vedere alcune cose; a quanto
+    pare tu non conosci come si fanno le addizioni in decimale! Per questo
+    il rotator non è così preciso come vorresti; adesso ti spiego questo
+    "trucchetto" (spiegato a me da Hedgehog):
+
+Quando devi interpolare qualsiasi cosa ti ritrovi a fare qualcosa del tipo:
+
+x=a0+da/db*b
+che si traduce in un ciclo
+a=a0
+loop:
+ a=a+da/db  da/db è l'incremento di "a" quando ci si muove su "b"
+ :
+goto loop
+
+in assembler il tutto si traduce in:
+
+; calcolo da/db
+; a1,a0 valori da interpolare lungo b1,b0
+move.w   a1,d0
+sub.w    a0,d0 ; a1-a0
+move.w   b1,d1
+sub.w    b0,d1 ; b1-b0
+swap     d0    ; (a1-a0)<<16
+divs.l   d1,d0 ; da/db incremento shiftato di 16 per la parte decimale
+               ; in modo tale che  bit 31..16  15..0
+               ;                   d0= intero  decimale
+
+move.l   d0,dadb  ; salva l'incremento
+:
+: altre istruzioni
+:
+move.w   a0,d0 ; valore iniziale
+swap     d0    ; a0<<16
+move.l   dadb,d1
+loop:
+add.l    d1,d0 ; (a+da/db)<<16
+move.l   d0,d2
+swap     d2    ; valore intero in d2.w che serve
+:
+:
+dbra     d4,loop
+
+Il tutto si può semplificare (e soprattutto levare 1 o anche 2 istruzioni
+nel loop) usando l'addx:
+
+il calcolo di da/db va bene solo che prima di salvarlo fai uno "swap d0"
+in modo da avere nella word alta la parte decimale, e nella word bassa la
+parte intera (quella che più c'interessa); poi quando devi addizionare
+l'icremento alla variabile corrente fai così:
+
+add.l    d1,d0
+addx.w   d3,d0 ; >>> in d3 ci deve essere 0!!! <<<
+
+così in d0.w hai subito la variabile da usare e hai risparmiato uno swap!
+(4 cicli su no 020) che non è male! ;))
+L'addx serve perchè nel caso c'è il riporto dalla parte decimale, viene
+addizionato (per questo d3 deve essere uguale a 0), così viene sfruttata la
+parte decimale ;))
+Non a caso, nel file con gl'inner loop più veloci trovi le addx invece che
+delle add seguite da uno swap!
+
+Pss: se vuoi, passalo pure questo doc, così magari divento più famoso! ;))
+
+
+Amighevolmente,
+
+/
+\/\/ashburn / X-Zone & DeGeNeRaTiOn
+
+Email: simon@digicolor.lognet.it
+Snail:
+ Aversa Simone
+ Via F.Novati 27
+ 26100 Cremona
+ Italy
+

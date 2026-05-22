@@ -1,0 +1,119 @@
+                S T O R M P A T C H E R
+
+
+           - © HAAGE & PARTNER Computer GmbH -
+   
+   
+StormC Compilerpatch V1.05 vom 03.04.96 auf V1.05 vom 21.04.96
+
+StormLink V1.051 vom 04.03.96 auf V1.053 vom 13.04.96
+
+StormLib Bibliothekspatch vom 26.4.96
+
+Vorgehensweise zum Patchen:
+***************************
+
+Klicken Sie doppelt auf das Piktogramm StormC-Patch3.BAT.
+Daraufhin wird ICONX und das Patch-Bat gestartet, welches ein 
+Ausgabefenster öffnet über das Sie über eventuell aufgetretene 
+Fehler informiert werden. Vor dem Patchen wird Ihre alte StormC-
+Version umbenannt und ist nach dem Patchen unter dem Namen 
+StormC.backup in der Schublade STORMC:STORMSYS vorhanden.
+
+Der Patcher geht davon aus, daß er die Datei StormC in der Schublade
+STORMC:STORMSYS findet. Andernfalls wird eine Fehlermeldung ausgegeben.
+
+Fehlermeldungen:
+****************
+
+Nach erfolgreichem Patchen erscheint KEINE Nachricht. Wird ein Fehler
+während des Patchens festgestellt, erscheint eine Fehlermeldung wie 
+Beispielsweise: 
+
+"Sorry, this ist not the correct Version of xx to patch!"
+
+In dem Fall kann es sich nur um eine bereits gepatchte Version der 
+jeweiligen Datei handeln.
+
+Behobene Fehler:
+****************
+
+COMPILER
+========
+
+* Im Small Data Model war eine Optimierungsstufe fehlerhaft.
+
+* Falscher Code in Konstruktor-Initialisierungslisten, wenn Datenmember
+  (z.B. wegen Padding) nicht direkt aufeinanderfolgen.
+
+* Manchmal "zu gute" Optimierung ab Stufe 5
+
+* Virtuelle Memberfunktionen von Templateklassen wurden manchmal
+  fälschlich nicht erzeugt.
+
+* Unter ganz bestimmten Umständen hielt der Codegenerator
+  64-Bit-Variablen (long long, double), die in einem Registerpaar
+  abgelegt werden, für unbenutzt, was diverse unerfreuliche
+  Konsequenzen hatte (z.B. wurden solche Parameter nicht vom Stack
+  in die Register umgepackt)
+
+Storm-Link
+==========
+
+*	Syncron/Asyncron Bug im Arexx-interface.
+
+*	Spontanabsturzes beim schreiben von Mapfiles.
+
+*	Symbol-Name-Dictionaries für effizientere Suche.
+
+*	Der Code zum "smart-detect" von Init und Exitroutinen
+	wurde heftig überarbeitet, da er doppeltg so viel Laufzeit
+	benötgigte wie das Auflösen der Symbole selber.
+	Jetzt werden Pauschal alle INIT/EXIT Routinen aus Codehunks benutzt,
+	deren Unit referenziert wird. Das ist auch kompatibler mit z.B. dem
+	GCC, MaxonC oder SAS/C.
+
+*	Leere Reloc-Hunks konnten einen Enforcerhit werfen.
+
+Storm-BIBLIOTHEK
+================
+
+* new lieferte ein falsches Ergebnis, wenn eine Klasse der Länge 0 ange-
+  fordert wurde.
+  
+* Durch einen Fehler in der ifstream-Klasse wurde ein EOF nicht korrekt 
+  behandelt.
+
+* Die Formatierung %[^...] für scanf() usw. funktionierte nicht.
+
+* String scanf hatte Fehler beim Einlesen von Zeichen mit Code >=128
+  (wurden als negative int interpretiert)
+
+* Einige Fehler in den mathematischen Routinen korrigiert
+
+* Alle Funktionen in ctype.h neu geschrieben
+
+* Makros für variable Parameterlisten korrigiert und optimiert
+
+* Erweiterte Nutzung des Makros _INLINE_INCLUDES zur Benutzung von inline
+  Funktionen.
+
+* Durch Änderungen in der Linkstrategie funktionierte die Streambibliothek
+  plötzlich manchmal nicht mehr.
+
+* Einige häufig benutzte Funktionen hand-optimiert.
+
+* Die wizard.library wird nun auch automatisch geöffnet.
+
+
+Bei Fragen wenden Sie sich bitte an:
+
+	HAAGE & PARTNER Computer GmbH
+	Mainzer Straße 10A
+	61191 Rosbach v.d.H.
+
+	06007/930051 (15:00 - 19:00 Uhr)
+
+	Compuserve: 100654,3133
+	Internet:	100654.3133@compuserve.com
+	Web-Page:	http://ourworld.compuserve.com/homepages/haage_partner

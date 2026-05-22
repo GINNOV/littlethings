@@ -1,0 +1,222 @@
+
+Thanks Amiga!
+
+
+maker.lib   14 sep 1988   (C) Copyright by Lars Thuring
+
+The following is a short description of the routines supplied with the
+library maker.lib, of various usefullness.  This is public domain and may
+be freely used and distributed. This goes for commercial programs as well,
+however, anyone is free to contribute to my happiness.
+
+The routines are:    MakeAutoRequest()
+                     MakeBox()
+                     MakeMenu()
+                     MakeName()
+
+There are also some shorties (like upper() etc. which were all made in
+the time when I misstrusted library routines and got scared when using
+printf() meant an additional 4 kB of programcode ...) and one spinoff
+routine, GetBoxCoordinates().
+
+Compiler: Lattice 3.10.
+
+--8<-----------------------------------------------------------------------
+
+Generic Info.
+These routines use string arrays as their main arguments. The format of
+each text string is:
+
+            "[command / option]TextIfAny"
+
+   ex:      "[M]Project"                       or
+            "[]Please insert MyDisk !"
+
+
+The '[' and the ']' is NOT indicating an optional field as usuall. These
+must be present even if a default command is used. If the routine should
+use a text (f.x. for rendering a menu header) this is supplied after the
+right ']'.
+
+The string array must end with a NULL pointer to indicate end of array.
+F.x a small array for rendering a requester might look like:
+
+
+UBYTE *InformUser[] =
+   {
+   "[T] No CHIP memory ",
+   "[ ] is available ! ",
+   "[]",
+   "[N]OK",
+   NULL                       /* Last argument is null */
+   };
+
+
+The commands in [] are usually only an ASCII character, sometimes followed
+by a digit. The usage of characters differ between routines.
+
+
+
+int MakeAutoRequest( w, data )
+
+This routine uses AutoRequest() to make a simple yes/no requester
+in a window.
+
+Input:   struct Window *w;          A pointer to a window.
+         UBYTE *data[];             Commands/texts to be used (see below).
+
+Return:  int result;                Return value: TRUE/FALSE or -1 if error.
+
+The text string commands available are:
+
+   Bnn   - Set background colour to nn.
+   Fnn   - Set frontpen colour to nn.
+   Jn    - Set drawing mode; if n=1 select JAM1, else select JAM2.
+   Lnn   - Set new line spacing in pixels.
+   N     - The following text goes to the "negative" gadget.
+   P     - The following text goes to the "positive" gadget (if any).
+   T     - The following text(s) is the requester information.
+
+NOTE: The AutoRequest() routine return values are TRUE or FALSE. A return
+      value of -1 means an error have occured.
+
+
+
+VOID MakeBox( rp, x,y, w,h, data)
+
+Draw a box or contour, possibly with a text.
+
+Inputs:  struct RastPort *rp;          Where to put result.
+         SHORT x,y;                    Offset into raster.
+         SHORT w,h;                    Size of box (may be zero).
+         UBYTE *data;                  A single command string.
+
+Return:  none.
+
+This routine can draw a box of a predefined size by supplying the w & h
+arguments. If these are ==0 then the command string is checked for a text
+to fit the box around.
+
+The following commands are available:
+
+   Bnn   - Set background colour to nn.
+   C     - Set drawing mode to COMPLEMENT.
+   Fnn   - Set frontpen colour to nn.
+   J     - Set drawing mode to JAM2.
+   S     - Make solid background.
+   0     - Draw a regular box.
+   1     - Draw a dropshadow for a box.
+   2     - Draw perspective depth lines for a box.
+   3     - Ditto, but with fixed depth.
+
+NOTE: The boxtypes can be combined to get a box with a dropshadow or to
+      get a box with "depth look". If more than one box type argument
+      is given, the routine will call itself with the rest of the string
+      as argument. Some weird effects may occur.
+      It is recomended that the 'C' option is used.
+      This routine sets the FgPen and BgPen in the host rp (which may be
+      undesirable).
+
+   e.x. of data string: "[C0C1C]Df1:"
+
+
+
+VOID MakeMenu( data, M, I, T )
+
+Fill in supplied structs to render a menu.
+
+Inputs:  UBYTE *data[];                Command string arrary.
+         struct Menu      M[];         Uninitilized Menu structs to use.
+         struct MenuItem  I[];         Ditto for menu items.
+         struct IntuiText T[];         Ditto intuition text structs.
+
+Return:  none.
+
+The default settings for a Menu or MenuItem is:
+
+      MENUENABLED
+      ITEMTEXT | ITEMENABLED | HIGHCOMP
+      JAM1
+
+in respective variables.
+
+Each datastring corresponds to a Menu, MenuItem or SubItem [-struct].
+Each MenuItem is assumed to belong to the last Menu datastring and
+each SubItem is assumed to belong to the last MenuItem declaration made.
+See the mtest.c file.
+
+The following commands are available in strings ("This is" refers to the
+text after ']'):
+
+   _c       - This item may be selected by right amiga-key + chr( c ).
+   A        - This is a alternate text for previous item.
+   B        - Highlight this item by drawing a box.
+   C        - This item may be 'CHECKED' by selecting it.
+   D        - This menu/item is disabled at start.
+   H        - Start adding items in next column.
+   I        - This is a menuitem.
+   J        - Set drawmode for this menu/item to JAM2.
+   M        - This is a menu (header).
+   N        - No highlightning when selected.
+   S        - This is a subitem.
+   V        - Item is checked at start.
+   a-z,0-4  - Mutual Exclude corresponding MenuItem. I.e. an 'a' deselects
+              the first menuitem under this menu (-struct), a 'b' the
+              second etc.etc. and a '4' deselects the 32:nd.
+
+NOTE: To render the menues after call MakeMenu(), use the address of the
+      first Menu struct with SetMenuStrip().
+
+
+
+int MakeName( result, func, sex)
+
+Return a random name.
+
+Inputs:  UBYTE *result;                Where to put result (should be big).
+         USHORT func;                  What type of result is wanted.
+         USHORT sex;                   Boy / girl.
+
+Result:  0.
+
+This routine doesn't use a command string.
+
+The following defines are included in MakeName.h and will controll the
+result as described:
+
+func defines:
+
+      FIRSTNAME         only.
+      LASTNAME          only.
+      FULLNAME          both firstname and lastname, seperated by a ' '.
+      TITLENAME         put "Mr " or "Ms " in front of name.
+      MARRIEDNAME       will put "Mrs " instead of "Ms " if TITLENAME also
+                        was selected.
+
+sex defines:
+
+      GIRLNAME          ...
+      BOYNAME           ...
+
+
+NOTE: See the RANDOM define for something to change.
+      Some names were added during daylight which might explain their
+      oddness.
+
+
+
+Finally, if you liked/disliked this let me know. Also, there is a next
+version. AutoDocs 1.3 anyone ?? My address:
+
+Lars Thuring
+Turkosgatan 29
+421 50 Vastra Frolunda
+Sweden
+
+Phone: 031-497508
+
+
+(eller som AUGS medlem 690)
+
+
+

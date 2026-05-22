@@ -1,0 +1,91 @@
+                  SFPatch.h -- How to use SetFunction
+
+
+All functions in Amiga .libraries can be replaced by using the exec function
+SetPatch(). The problem is that very little examples exist. This example/toolkit
+is based on the source of WBTitle by Mark Thomas.
+
+USAGE
+~~~~~
+
+SFPatch.h is a file which you can include in your source to make patching very
+easy. It is currently only for SAS/C. A few simple steps are required:
+
+1. #include "SFPatch.h"
+
+2. Open Intuition (and Exec) (required in patch functions)
+
+3. Allocate a SetFunc
+
+4. Initilise the SetFunc:
+    sf_Library : Library which the function is in.
+    sf_Offset : Offset of function from library, value can be obtained from
+      the libraries #?_pragmas.h file, for example the pragma for diskfont
+      library contains the following entry:
+      
+            #pragma libcall DiskfontBase OpenDiskFont 1e 801
+      
+      If you are to patch the OpenDiskFont() function then set sf_Library to
+      DiskfontBase, and sf_Offset to -0x1e (negative of first number after
+      the function name in the pragma (number is hex))
+    sf_Func : New function.
+    sf_QuitMethod,
+    sf_Count : see below.
+
+5. Call SFReplace(SetFunc)
+
+6. When finished call SFRestore(SetFunc)
+
+A complete example which patches DisplayBeep() from intuition library is 
+included, type smake to compile.
+
+NOTES ON QUITMETHOD
+~~~~~~~~~~~~~~~~~~~
+
+When restoring a patch there is no standard safe way. Safety can never be
+guaranteed. I have implemented 2 diferent quit methods. With the first
+(SFQ_WAIT) the function is restored and then waits for sf_Count seconds. 
+The other (SFQ_COUNT) restores the function and then waits until sf_Count = 0.
+With SFQ_COUNT your replacment function should increment sf_Count when it is
+entered and decrement it when it exits. See the example for more info.
+
+WHAT CANNOT BE PATCHED
+~~~~~~~~~~~~~~~~~~~~~~
+
+Due to the method in which the patches are installed/removed you should not
+patch the following functions:
+
+   exec.library   SetFunction()
+                  Forbid()
+                  Permit()
+                  CacheClearU()
+
+DISTRIBUTION
+~~~~~~~~~~~~
+
+If you use SFPatch in your programs then please add a note to your docs to
+indicate this, and try to send me a copy of the program.
+
+CONTACT
+~~~~~~~
+
+After september 95:
+   cs2lk@sal.scms.rgu.ac.uk
+
+IRC: Wangi
+
+Lee Kindness
+8 Craigarn Road
+Portlethen
+Aberdeen
+AB1 4QR
+SCOTLAND
+
+OTHER
+~~~~~
+
+SFPatch is a direct result of some of my recent programs: YourFault, NaeGrey
+and Wanginfo (download util/boot/YourFault.lha from aminet for a complete
+list of my 17 or so programs...)
+
+Wangi! _\\//

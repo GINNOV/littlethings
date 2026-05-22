@@ -1,0 +1,124 @@
+
+							Amiganuts,
+							12 Hinkler Road,
+							Southampton,
+							Hants.
+							SO2 6FT
+							England.
+
+
+
+			Amiganuts Label Printer
+			~~~~~~~~~~~~~~~~~~~~~~~
+
+					by Mark Meany
+
+ Disclaimer
+ ~~~~~~~~~~
+ This program relies on the user having correctly set preferences for the
+device they have attached to their machine. Poorly set preferences may well
+result in incorrectly printed labels.
+
+ By using this program you are accepting full responsability for its
+performance. Under no circumstances will the author accept responsability
+for damage caused to labels, printer, computer, the space-time continum or
+anything other related material, persons or events.
+
+ Introduction
+ ~~~~~~~~~~~~
+ Have you ever wanted to produce your own, unique, disk labels? I have!
+Blank, tractor fed, 3.5 inch disk labels are realatively inexpensive, around
+£7.00 per 1000 label roll at the time of writing. So why not do it I said to
+myself.
+
+ A lengthy search of many a PD list and equally dissapointing replies from
+good PD contacts later led me to the conclusion that there was no a simple
+to use graphic label printing utility available in the realms of PD. Hmmm!
+
+ A few hours of sweating over that ever enthusiastic assembler, Devpac, and
+I had a useable utility. Well for my purposes anyway! A program that could
+load IFF brushes created in DPaint and print them onto labels. Bliss! "A
+program that deserves to be unleashed upon the world of PD enthusiasts" I
+remember saying to myself!
+
+ So there it is in a nutshell! The demise of a fiendish label printer!
+
+ This simple utility may not be the end of things as we know them! I have
+since purchased a lazer printer ( falls around in orgasmic ecstasy ) and
+now realise how much it is lacking, the utility that is. With the amount of
+time put into it, what did I expect?
+
+ It would appear that there are no end of uses that a flexible printing
+utility could be put to. For instance, printing labels for home made wine
+( as suggested by a red nosed relative of mine, while describing the
+necessity to pick dandelions well away from urban areas to reduce the risk
+of suffering toxic shock after twelve months fermentation ). This particular
+relative had plans of producing labels bearing a comic charecture of his
+face surrounded by verse pronouncing his 'brew' as nectre of the gods
+curtesy of 'Chateau de Bassett'. As one who has never turned his hand to
+the art of fermenting the spoils of natures, who am I to comment?
+
+ If I ever get around to completing it, the sucessor to LabelPrint will
+allow IFF files of any dimension to be loaded and dumped to a printer, in
+splendid technicolour if one posesses a suitable printer ( I will be
+experimenting with a Citizen Swift 24 Colour ).
+
+ I hope the past fifty five lines served as a pleasant means of passing the
+time. I will now digress and explain how to operate the utility accompanying
+this text.
+ 
+ Usage
+ ~~~~~
+ LabelPrint is VERY basic in operation. It will allow you to load brushes
+saved from most paint packages and then print these to tractor fed disk
+labels. You may then proceed by sticking the label onto a floppy disk, a
+very pleasing pastime I am told.
+
+ The only restriction, approaching strangulation, is that the IFF brush
+must be of the following dimensions: 200x90x2. For the hard of hearing that
+means 200 pixels wide, 90 pixels high and 2 planes deep ( or 4 colour for
+those familiar with DPaint terminology ). 
+ 
+ Before running LabelPrint you should complete the following checklist
+which has been provided to prevent dissapointment:
+
+	1. Make sure you have some IFF brushes saved from a paint program
+	   to hand. These must be 200x90x2.
+	1. Make sure you have a printer.
+	2. Make sure you have a printer connected to your computer.
+	3. Make sure you have some tractor fed disk labels (a).
+	4. Make sure the labels are correctly positioned in your printer.
+	5. Make sure your printer is online.
+
+ If you cannot satisfy the above criteria, consider one of the following
+courses of action:
+
+	1. Give the program away ( Yes, it's PD and you can do this ).
+	2. Buy a printer, this seldom fails.
+	3. Buy and attach a suitable lead to connect printer to computer.
+	4. Buy some tractor fed labels (a), this is as foolproof as 2.
+	5. Feed labels into printer, can be tricky so beware.
+	6. Put your printer online, it will then begin a symbiotic
+	   relationship with your computer that can be a joy to behold!
+	7. Seek help! The dent in your pride will be negligible when
+	   compared to the self humilliation brought on whenever your
+	   "stupid" computer gets the better of you. Everyones been there
+	   and there's generations more yet to come!
+
+ (a) Blank, tractor fed labels can be obtained from SeaSoft Computing whos
+address and phone number I have included at the end of this document. It
+may seem odd that Amiganuts should recommend another company, but we have
+our reasons. We have found SeaSoft to be very competative as far as price
+is concerned, but most important helpful and honest! We sincerely recommend
+that you try them for all your computer accessories and are confident you
+will not feel wronged by this advice. Please feel free to correct us on
+this issue, but we doubt you will have the need!
+
+ Back to the program in question, or why bother because I've had too much
+to drink and need a rest. Is it not sad that a man disassosiate himself
+from reality in order to deal with it.
+
+ 
+
+
+

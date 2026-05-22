@@ -1,0 +1,30 @@
+#ifndef _INCLUDE_PRAGMA_GETSCREENMODE_LIB_H
+#define _INCLUDE_PRAGMA_GETSCREENMODE_LIB_H
+
+#ifndef CLIB_GETSCREENMODE_PROTOS_H
+#include <clib/getscreenmode_protos.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef __GNUC__
+#ifdef NO_OBSOLETE
+#error "Please include the proto file and not the compiler specific file!"
+#endif
+#include <inline/getscreenmode.h>
+#endif
+
+#if defined(AZTEC_C) || defined(__MAXON__) || defined(__STORM__)
+#pragma amicall(GetScreenModeBase,0x01E,GETSCREENMODE_GetClass())
+#endif
+#if defined(_DCC) || defined(__SASC)
+#pragma  libcall GetScreenModeBase GETSCREENMODE_GetClass 01E 00
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif	/*  _INCLUDE_PRAGMA_GETSCREENMODE_LIB_H  */

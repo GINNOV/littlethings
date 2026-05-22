@@ -1,0 +1,6 @@
+Short: Displays text in an standard RECOVERY_ALERT
+
+A small command to display texts in a recovery-alert.  Works on all
+machines with Kickstart V33 or higher.
+
+Alert V1.1  © 1993 Ketil Hunn

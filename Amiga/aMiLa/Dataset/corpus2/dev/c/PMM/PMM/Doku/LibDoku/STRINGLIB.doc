@@ -1,0 +1,43 @@
+StringLib.ReadMe is a original poster and text taken from the
+Fred Fish-puplic domain series. These sources build the biggest
+part of the link-library. Own sources an source-codes that be
+declared as freeware are added.
+The various authors all wrote with own specials. One uses
+char, another ubyte and third UBYTE.
+I've make the source more conform. Based on the oldest codes now
+all strings are char.
+The vbcc-compiler find a lot of 'const' declared variables that
+not real used as const. This warnings all be corrected, two errors
+also be corrected. This are the only changes that be made on the
+source. My own sources work with special includes, created to
+make the building of the bbs-system simple. In this collection
+the sources don't do that to work like standard-stringfunctions.
+
+After this, I build the lib and compile the strings(3)-testsystem.
+A problem will be found at memchr - test 9. I don't know the
+reason of this error. As I take a lock in the source, I killed
+the most lines, obtimize the rest and rebuild all. The problem
+not longer exists.
+
+The source of 'teststringlib.c' is included.
+First version: Works on the internal functionnames of the lib.
+This will be work with and without stringfunctions of your
+compiler. As second comes a version 'testvbcc.c'. I exclude
+all tests of function's that not exist on vbcc.
+
+The test found problems that will be send by me to Volker
+Barthelmann to check it. I've included the testprogram.
+Ignore the error's, they are NOT real errors. Only problems
+with a litte hack by fred fish and the strict ansi-c-progamming
+from vbcc.
+
+Future:
+-------
+Many more stringfunctions waiting. They will added, after port
+and test them.
+
+Sources:
+--------
+The sourcecode has no makefile, because I used my PMM to create
+the lib.
+If you really need them, please contact me.

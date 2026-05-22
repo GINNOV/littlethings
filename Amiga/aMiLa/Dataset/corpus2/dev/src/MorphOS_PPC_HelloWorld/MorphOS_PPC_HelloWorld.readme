@@ -1,0 +1,35 @@
+Short:		Fully commented PPC assembly source.  
+Author:		ausppc@gmail.com (AusPPC)
+Uploader:	ausppc@gmail.com (AusPPC)
+Type:		dev/src
+Version:	1.03
+Replaces:	dev/src/MorphOS_PPC_HelloWorld.lha
+Architecture:	ppc-morphos
+Distribution:	Aminet
+
+The HelloWorld.s source file in this archive can be used as a stand-alone 
+MorphOS PPC assembly example but is intended as a companion file for the 
+morphzone.org programming tutorial found here - 
+
+http://library.morphzone.org/An_Introduction_to_MorphOS_PPC_Assembly
+
+Please note that HelloWorld.s is also intended as a reference document for 
+beginner PPC assembly programmers and is therefore heavily commented.  Most 
+comment lines are much longer than the traditional 80 character width of many 
+source files and may be difficult to read on small displays.  
+
+HelloWorld-libamiga.s has been modified so that linking with the vbcc 
+libamiga.a file is needed to produce an executable.  
+
+HelloWorld_optimised.s uses a simple technique to reduce program size and the 
+amount of reads and writes to memory compared to the other two versions.  
+
+The text formatting of these source files is suited for an editor or viewer 
+that properly supports tabs and assumes a tab size of 8.  
+
+v1.02 Update: The previous method of defining the __abox__ symbol was wrong.  
+
+v1.03 Update: Aside from the addition of HelloWorld_optimised.s there is also 
+              a sneaky preview of a MorphOS assembly debugger.  On many levels 
+              MAD is a crude program and can only be considered as an alpha 
+              release.  I would very much like to get some user feedback.  

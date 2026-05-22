@@ -1,0 +1,10 @@
+Short:        ZLib Port to WarpOS
+Author:       gzip@prep.ai.mit.edu,madler@alumni.caltech.edu,MagicSN@Birdland.es.bawue.de (port)
+Uploader:     MagicSN Birdland es bawue de
+Type:         dev/src
+Architecture: generic
+
+ZLib is a Compression Software from Jean-loup Gailly and Mark Adler for example needed
+in the PNG Format and for gzip. This Source-Archive contains sources adapted for the
+usage in StormC PPC (Adaption done by me, original software by Jean-loup Gailly and
+Mark Adler). A Project File is not included.

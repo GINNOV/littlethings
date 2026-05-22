@@ -1,0 +1,56 @@
+/*
+ * CCHECK.C -- Amiga Lattice C version 4/8/86
+ *
+ *
+ * Copyright: The Regents of the University of California
+ *   [Note - since Steve Draper distributed cchk.c over
+ *    Usenet, I assume it's effectively in the public
+ *    domain. JCM
+ *
+ * Title:  ccheck
+ *
+ * Purpose: To find and report all badly matched openers and
+ *   closers plus assignment/equality confusions
+ *   in a c source file.
+ *
+ * Author:  Steve Draper, expanding cnest by Tom Anderson
+ *
+ * Usage:  ccheck [-q] [-v] <filename1> <filename2> ...
+ *
+ * History (in reverse order to minimize reading time for updates):
+ *
+ *
+ *   June 13, 1994 Jason Petty
+ *   - Must get valid file name else exits with usage.
+ *     Changes marked VANSOFT.
+ *
+ *
+ *   July 16, 1988  Converted to PDC by Jeff Lydiatt.
+ *
+ *   April 8, 1986  Converted to Amiga Lattice C from from butchered text
+ *                  file.  If any one can supply me with the original source
+ *                  I would appreciate it.  IF-ELSE check seems flaky.
+ *  
+ *                           Thom Althoff (BIX althoff)
+ *                       c/o American Broadcasting Companies
+ *                           30 W. 67th St Video Tape Tech Support 
+ *                           Floor B1
+ *                           New York City, N.Y. 10023
+ *
+ *   June 18, 1985  Converted to Aztec C - removed BDS C code  -  Rick Moore
+ *
+ *   January 9, 1983  Single BDS/UNIX source created
+ *      as CCHECK.C  -- Jeff Martin
+ *
+ *   December 29, 1982 Adapted for BDS C --
+ *       Jeff Martin at home.
+ *
+ *   December 20, 1982 Converted to cchk --
+ *       Steve Draper at UCSD
+ *
+ *   December 9, 1982 Jeffrey Mogul at Stanford
+ *    - checks for unclosed comment at end of file.
+ *
+ *   December 3, 1982 creation date --
+ *      Tom Anderson at microsof!fluke
+ */

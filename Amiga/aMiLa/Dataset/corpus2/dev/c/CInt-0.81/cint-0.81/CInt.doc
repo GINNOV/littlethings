@@ -1,0 +1,274 @@
+
+Since this is not the final docs (they are done in TeX), this is just a
+small draft.
+
+Overview
+--------
+
+The C-interpreter (CI from now on) uses a BOOPSI-like interface, that is
+you can create Code-objects, store source in it and can execute it with
+a special method. Here is a short example:
+
+    Object * code;
+
+    code = CInt_NewObject (NULL, CINTCLASS
+	, CIA_Source, "printf (\"Hello World\\n\");"
+	, CIA_StaticString, TRUE
+	, TAG_END);
+
+This example is the infamous hello.c. It creates a code object, stores
+a statement in it (CIA_Source). Since the source is a static string
+(it is not freed before the object), the resource CIA_StaticString
+is set to TRUE which saves a couple of bytes.
+
+    There is a CInt_SetAttr(), CInt_GetAttr(), CInt_DoMethod() and
+CInt_Dispose(). For this release, I use my own interface (ie. all
+standard BOOPSI functions are available with the prefix "CInt_"),
+since I need global data (shared by all processes on the system)
+and data unique to each process. When I find a good solution (hints
+are welcome !), the interface may change (ie. I will use the
+real functions and install a public class). If that happens, I will
+provide #define's so you still don't have to change your code.
+
+    The next important step is to execute the code in the object:
+
+    int rc;
+    Value result;
+
+    rc = CInt_DoMethod (code, CIM_Execute, &result);
+
+This executes the source stored in the object. The result of the
+last operation (eg. return or the last expression) is stored in
+<result>. <rc> is the return code which is defined to be compatible
+with the shell: 0 means no error, 5 means warning, 10 means error
+and 20 means something severe (if you access memory outside the valid
+bounds, this is NOT thought of beeing severe ! That's just an error...
+You get the idea).
+
+Here follows a BOOPSI-compatible description of the class:
+
+BOOPSI Class Interface
+----------------------
+
+Class:		cintclass
+Superclass:	rootclass
+Include File:	<interpreter/cint.h>
+
+ANSI-C compatible interpreter. The objects contains source which can be
+executed. The source can contains predefined functions (like printf())
+or user-defined C-compiled functions or user-defined interpreted functions
+plus most standard C-stuff.
+
+New Methods:
+------------
+
+int CIM_Execute (Value * result) - Execute the current contents of the
+    object. The result of the last expression is stored in <result> if
+    it is non-NULL. If the pointer is non-NULL, it is initialised by
+    the method (ie. it is not neccessary to initialize it with
+    CInt_InitValueStruct()).
+
+	The result is the current error-code of the interpreter. (See
+    CIA_ErrorCode below).
+
+int CIM_SetSymbolValue (STRPTR name, Value * value) - Set the value of
+    a variable in the interpreter.
+
+    NOTE: The interpreter uses implicit type-casting very extensively.
+    Thus it is not neccessary that the type of <value> matches the type
+    of the symbol. If <value> is an int-type and the variable <name>
+    is a string, the value is converted into a string internally and
+    then assigned to <name>.
+
+Changed Methods:
+----------------
+
+The methods OM_SET and OM_GET return the current value of the attribute
+CIA_ErrorCode.
+
+Attributes:
+-----------
+
+CIA_Replace (BOOL, ISG) Defines whether the definition of a new global
+    variable should replace an old variable with the same name.
+
+    Default: FALSE
+
+CIA_IOMode (LONG, ISG) The source can be stored in a string or a file.
+    If this is set to IOM_STRING, then the value following CIA_Source
+    must be a string; for IOM_FILE it has to be a valid FILE*-pointer
+    (the latter is not implemented yet *sigh*).
+
+    Default: IOM_STRING
+
+CIA_Source (APTR, IS) The source to store in the object. If you set this
+    twice, all memory associated with the former source is freed. The
+    type of this attribute is specified with CIA_IOMode.
+
+CIA_StaticString (BOOL, ISG) Normally, the object creates a copy
+    of the source if it is a string. But if you are sure that the
+    memory for the string stays valid all the time until the object
+    is freed, you can save a couple of bytes if you set this to
+    TRUE.
+
+    Default: FALSE
+
+CIA_ErrorCode (ULONG *, IG) Use this to query the state of the interpreter.
+    Most functions return this value as return-value. After an error,
+    the class is in an exceptional state and most functions will
+    fail immediately until you query this attributs. By reading it,
+    the interpreter tells you what is wrong and resets itself. Querying
+    this attribute does NOT change CIA_ErrorMessage so you can still
+    get the list of error-messages afterwards (eg. in another routine
+    where you handle errors).
+
+    The following values are possible:
+
+	0   Everything is fine
+	5   During the execution of the last command, some warnings
+	    have been generated. This should not be harmful; most
+	    functions will still work.
+	10  Something serious has happened which means that the
+	    execution of the last command had to be aborted. After
+	    querying the attribute, everything should be as it was
+	    before you executed the last command.
+	20  If you get this back, you are a miracle worker ! It means
+	    that the code was just about to crash. I try to terminate
+	    execution by calling exit(), but there is not much chance
+	    that it will work.
+
+    NOTE: Reading this attribute resets it.
+
+
+CIA_ErrorMessage (STRPTR **, IG) This is to get a list of all warnings
+    and errors created by the last operation. Every message is a pointer
+    in the array which is NULL-terminated.
+
+    If you are done with processing the messages, you have to free them
+    with CInt_FreeErrorMessages().
+
+    NOTE: Reading this attribute clears it. If there has not been an
+    error, you get NULL back.
+
+    NOTE2: It is not possible to set this attribute, but you can
+    specify it at creation time.
+
+    NOTE3: This attribute is ALWAYS a pointer to STRPTR* ! If you
+    specify it at creation time, the interpreter will WRITE the
+    error messages into it, so you can find out what went wrong
+    even when there is no object yet.
+
+CIA_UserData (ULONG, ISG) This is for you. You can do whatever you
+    want with it. For now, there is no way to access this field inside
+    the interpreted code, sorry.
+
+CIA_Version (ULONG, G) This is the current version of the CI. The upper
+    16 bits contain the version, the lower 16 bits the revision.
+
+CIA_VersionString (STRPTR, G) Like CIA_Version, but returns the version
+    string as defined in the Amiga developer material.
+
+Convenience Functions
+---------------------
+
+CInt_InitValueStruct() - This function is neccessary to initialize
+    a Value-structure before you can use it to give values into the
+    interpreter (eg. for the CIM_SetSymbolValue-Method).
+
+CInt_ExecuteString() - Executes the contents of a string. Use it like
+    this:
+
+    STRPTR * errs;
+    int      rc;
+    int      t;
+
+    rc = CInt_ExecuteString ("printf (\"Hello world.\\n\");", &errs);
+
+    if (rc != RETURN_OK) /* Error ? */
+    {
+	fprintf (stderr, "There have been errors/warnings:\n");
+
+	for (t=0; errs[t]; t++)
+	    fputs (errs[t], stderr);
+
+	CInt_FreeErrorMessages (errs);
+    }
+
+CInt_AddGlobalSymbols() - Add user-defined global symbols to the
+    interpreter. These variables are shared by all processes (ie. you
+    can use them to exchange data).
+
+	The only parameter of the function is an SymDef-array. This array
+    consists of a series of declarations and addresses. A declaration
+    describes a new global variable (in this case the address is NULL),
+    or a new global function (like printf()); here the address is the
+    address of the function. Here a short example from the actual code:
+
+	{ "int printf (string, ...);",  (APTR) printf   },
+	{ "int GlobalInt;",             NULL            },
+	{ NULL, 					}
+
+    As you can see, this is really a prototype of the function printf()
+    (well, mostly... C does not know about the type "string"). You can
+    add any function by simply giving the prototype and the address
+    (but you should make sure that the function is available during
+    the lifetime of the class since you can't remove it yet... oh well)
+
+    The second line shows how to declare a new global variable (in fact,
+    you can define any number of variables in one line as you can in C;
+    for functions this does not work since I need the address).
+
+    The NULL in the last line terminates the list.
+
+CInt_FreeErrorMessages() - This function must be used to free all memory
+associated with an array of error messages (as returned by CIA_ErrorMessage
+or CInt_ExecuteString()).
+
+Installation
+------------
+
+    copy libs/cint.library libs:
+
+or
+
+    assign libs: libs add
+
+If you want to compile the example, there is no need to copy the includes
+over your include-files; the SCOPTIONS-file searches the files in this
+directory.
+
+Examples
+--------
+
+The file ci_test.c is a short, but complete example, for the use of the
+CI. The directory test/ contains a bunch of example programs that can
+be executed directly with ci_test. I use them myself to test the interpreter.
+Here are some highlights:
+
+	tfor.c - a for-loop which counts up and down and prints the
+		counter with printf()
+	top.c - a test for all C-operators.
+	ttime.c - an example for using systems functions.
+
+These are the most important, but there are more. The example program
+ci_test.c can be compiled with SAS/C 6.51 (which I use right now; dunno
+about DICE since I didn't had the time to test it. Sorry again).
+
+If you have questions, examples, support code (eg. the complete amiga
+Gfx-library in SymDef-format), write to me at:
+
+    Aaron Digulla
+    Th.-Heuss-Str 8
+    78467 Konstanz
+
+or (preferred)
+
+    digulla@fh-konstanz.de
+
+If you send snail-mail, include an envelope with stamp and your address or
+you will wait quite some time for an answer (would you spend $$$ for
+answering mail form australia ? ;)
+
+Don't expect an answer until 26.6.95 since I'm on hollidays until then :)
+
+Amiga makes it possible.

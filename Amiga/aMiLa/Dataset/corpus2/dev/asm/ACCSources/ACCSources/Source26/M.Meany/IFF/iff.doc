@@ -1,0 +1,232 @@
+
+                       IFF Files
+                       ~~~~~~~~~
+
+ IFF - Interchange File Format
+
+ ' IFF is a standard for creating data  files  specifically  designed for easy
+transfer between programs and machines.'  RKM Includes & Autodocs.
+
+ All IFF files consist of one or more chunks  that follow a rigid structure as
+explained below.
+
+              _________________ 
+             |                 |
+             |     char ID     |
+             |_________________|
+             |                 |
+             |  long DataSize  |
+             |_________________|
+             |                 |
+             |    char Data    |
+             |_________________|
+
+ The ID is always a four byte string that identifies the chunk. The string may 
+consist of characters space ($20) through  tilde ($7E), but leading spaces are
+not permitted.
+
+ The ID is always followed the size of  the  data contained in this chunk. The
+value is stored as an unsigned long word. The size of the data is always eight
+bytes less than the size of the chunk in question.
+
+ After the size  comes  the  data  itself.  The  size  of  the  data will vary
+according to the type of chunk.  Odd  length  chunks  are allowed, but MUST be
+followed by a pad byte that is not included in the size of the chunk data.
+
+ The chunk ID string should be considered as case sensitive.
+
+ All IFF files start with a special  wrapper  chunk that defines what the file
+contains. The wrapper chunk  is  always  12  bytes  long and has the following
+format.
+
+              _________________ 
+             |                 |
+             | special char ID |
+             |_________________|
+             |                 |
+             |  long DataSize  |
+             |_________________|
+             |                 |
+             |   specific ID   |
+             |_________________|
+
+ There are four chunk ID's that may be used:
+
+ 'FORM'  -     A FORM can consist of any number of data chunks. The data in
+               the FORM chunk is a 4 character string that defines what is to
+               follow. When reading FORM, think File.
+
+           eg  FORM    - IFF data structure follows
+               28000   - this CAT contains 28000 bytes of data
+               ILBM    - arranged in ILBM format
+
+           eg  FORM    - IFF data structur follows
+               48000   - this CAT contains 48000 bytes of data
+               FTXT    - arranged in FTXT format
+
+ 'CAT '  -     A CAT can contain one or more FORMs arranged sequentially.
+               The data in the CAT chunk can define what FORMs are to follow.
+               When reading CAT, think CATalogue of files.
+
+          eg   CAT     - IFF CAT structure follows
+               12000   - this CAT contains 12000 bytes of data
+               FTXT    - consisting of FTXT FORM's
+
+ 'LIST'  -     A LIST is similar to a CAT, but there can be common chunks
+               shared by all FORMs in a LIST, these are defined as PROPs.
+               Also a LIST may contain other LISTs as well as FORMs and PROPs.
+
+ 'PROP'  -     A PROP defines default properties for FORMs in a LIST. Any form
+               can override the properties described in a PROP though.
+
+ An IFF file is a single FORM, CAT or LIST chunk.
+
+ For the time being we will consider the  simplest type of IFF file consisting
+of a single FORM. This will make the examples  much easier to follow. Remember
+that the data in the FORM chunk describes what is contained in the FORM. There 
+are a number of FORMs supported, the most common being:
+
+               ILBM            ilterleaved bit map file
+               FTXT            formatted text
+               SMUS            simple musical score
+               8SVX            8-bit sampled voice
+
+ Each FORM consists of chunks, the  chunks  must  be one of those supported by
+the FORM.
+
+ When writing an IFF reader,  your  program  should  leave  chunks it does not
+understand alone. You may decide  to  support  only  FORMs,  in which case you
+should open a file, read the wrapper  chunk  and see if it has ID FORM. If not
+do not attempt to process the file.
+
+ To make the  examination  of  IFF  files  a  little  easier  you  can use the
+IFFChunks utility found in my source  directory  on  this disk. This will move
+through an IFF file printing information on all chunks encountered. There is a 
+slight bug in this code at present, it was  written for my own use and I could
+live with it, with some files the last chunk is repeated.
+
+ ILBM
+ ~~~~
+ The most basic ILBM FORM must contain  a  BMHD  chunk and a BODY chunk. These
+will be explained below. All the other chunks  that can occur in an ILBM chunk
+are optional. This is summarised in the following regualar expression:
+
+ILBM = "FORM" #{ "ILBM" BMHD [CMAP] [GRAB] [DEST] [SPRT] [CAMG] CRNG* 
+                 CCRT* [BODY] }
+
+ Where "...."          implies the literal string enclosed in quotes.
+       #{ ... }        implies size of all enclosed chunks.
+       [ ... ]         implies chunk is optional
+       ....*           implies none or more repetitions of chunk are allowed.
+
+ All chunks must appear before the BODY chunk. The order in which these chunks
+appear is not fixed and a reader must be  prepared for chunks to arrive in any
+order. When more than one chunk of the same  type appears, the one nearest the
+BODY is the one that counts.
+
+ BMHD Bit Map HeaDer chunk
+ ~~~~
+ ID            LONG    the chunk ID 'BMHD'
+ Size          LONG    number of bytes following ( 20 )
+ w             WORD    raster width of picture in pixels
+ h             WORD    raster height of picture in pixels
+ x             WORD    Left most pixel position for this image
+ y             WORD    Upper most pixel position for this image
+ nPlanes       BYTE    depth of image ( number of bitplanes )
+ Masking       BYTE    several types of masking are supported, 0 = none used
+ Compression   BYTE    0=>No compression, 1=>byteRun compression
+ pad1          BYTE    0 ( ignore on read, set to 0 on write )
+ transparent   WORD    colour number to ignore ( masking )
+ xAspect       BYTE    pixel aspect ( EA states 10 for 320 pixel display )
+ yAspect       BYTE    pixel aspect ( EA states 11 for 200 pixel display )
+ pageWidth     WORD    source page width if image from a larger picture
+ pageHeight    WORD    source page height if image from a larger picture
+
+ If Masking is 1, the bitplane data  includes  a mask the size of one bitplane
+that is interleaved with the bitplanes.
+
+ If compression is 1, all scan lines  have  been  compressed using the byterun
+algorithm ( will explain this later ).
+
+ BODY
+ ~~~~
+ ID            LONG    the chunk ID 'BODY'
+ Size          LONG    number of bytes following
+ Data          BYTES   the data itself
+
+ The data stored in the body chunk is the image data in interleaved format. If 
+a mask is to be applied, the mask is also interleaved with the bitplanes.
+
+ CMAP Colour MAP
+ ~~~~
+ ID            LONG    the chunk ID 'CMAP'
+ Size          LONG    number of bytes following.
+ Data          BYTES   the colour data itself.
+
+ Because IFF must support cross machine compatibility,  the CMAP chunk must be
+in a format that can support as many  machines  as  possible. For this reason,
+each colour value is stored as it's Red, Green and Blue intensity values, each
+of these occupying one byte.
+
+ Since each intensity can have a value from 0 to 255 machines with much higher
+colour resolution are supported. The Amiga uses only 4 bits for each intensity
+yielding an intensity  in  the  range  0  to  15.  For  compatibility, the IFF
+standard suggests that intensities  in  a  smaller  range use the high bits of
+each Red, Green and Blue byte, indicating that on the Amiga the high nibble be
+used. This means some shifting is required by both IFF readers and writers.
+
+ Consider the following colour  value,  $0fe7.  This  is  a valid Amiga colour
+value: Red = $f, Green = $e, Blue = $7. To save in a CMAP, the following bytes
+would need to be written: Red = $f0,  Green  =  $e0, Blue = $70. The following
+fragment of code demonstrates how this could be done.
+
+               *****************************************
+
+; a0->save buffer, d0=colour value
+
+               move.w          d0,d1                    make a copy
+               and.w           #$0f00,d0                isolate Red
+               asr.w           #4,d0                    into high nibble
+               move.b          d0,(a0)+                 save Red byte
+
+               move.w          d1,d0                    colour
+               and.w           #$00f0,d0                isolate green
+               move.b          d0,(a0)+                 save Green byte
+
+               and.w           #$000f,d1                isolate blue
+               asl.w           #4,d1                    into high nibble
+               move.b          d1,(a0)+                 save Red
+
+               *****************************************
+
+ To see the logic in this, consider a MacII which stores colour intensities in
+six bits. All the Amiga will loose when loading a MacII IFF-ILBM is the lowest
+three intensities as it will read the highest four bits of the byte. This will
+most likely reduce subtle shading, but maintain the overall effect.
+
+ CAMG  specific to the Amiga
+ ~~~~
+ ID            LONG    the chunk ID 'CAMG'
+ Size          LONG    size of data to follow ( 4 bytes )
+ Data          LONG    lowest word holds Amiga View Modes for the image
+
+ The long word of data in a CAMG chunk should  contain the Amiga view modes as
+defined  in   include/graphics/view.[i|h].  Note,  you  should  not  save  the
+V_SPRITES, VP_HIDE,  V_GENLOCK_AUDIO  or  V_GENLOCK_VIDEO  bits  with the view
+modes when writing a CAMG chunk.
+
+ The above chunks are  the  most  common  ILBM  chunks  used.  There are other
+chunks, but I am not  going  to  cover  those  here.  To  support  this months
+discussion I have supplied a very crude ILBM save subroutine and some examples 
+of it in action. The object was not to produce an amazing ILBM writer, but one
+that was simple to follow, relatively easy to use and functional.
+
+ To use this subroutine you must prepare  a structure and pass it's address in
+a0. From the structure the subroutine  builds  an  IFF file. Next month I will
+supply a better version  that  uses  subroutines  to  build  each  chunk while
+maintaining track of the overall file size.  This should allow CAT files to be
+built up. I will also  supply  the  byterun  crunch  and  decrunch  sources to
+support the writing/reading of ILBM files.
+
+                                               M.Meany
+

@@ -15,6 +15,10 @@
 		A11100002E80002600000000 /* EmulatorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001600000000 /* EmulatorService.swift */; };
 		A11100002E80002700000000 /* WebEmulatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001700000000 /* WebEmulatorView.swift */; };
 		A11100002E80002800000000 /* AmigaPlaygroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001800000000 /* AmigaPlaygroundTests.swift */; };
+		A11100002E80002900000000 /* VAmigaValidationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001900000000 /* VAmigaValidationService.swift */; };
+		A11100002E80002A00000000 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A11100002E80001A00000000 /* Assets.xcassets */; };
+		A11100002E80007100000000 /* AmigaPlaygroundUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80007200000000 /* AmigaPlaygroundUITests.swift */; };
+		A11100002E8000B200000000 /* AssistantChatSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000B100000000 /* AssistantChatSession.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,19 +29,31 @@
 			remoteGlobalIDString = A11100002E80000500000000;
 			remoteInfo = AmigaPlayground;
 		};
+		A11100002E80007400000000 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A11100002E80000100000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A11100002E80000500000000;
+			remoteInfo = AmigaPlayground;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A11100002E80000600000000 /* AmigaPlayground.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AmigaPlayground.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A11100002E80000600000000 /* Amiga Playground.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Amiga Playground.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A11100002E80000900000000 /* AmigaPlaygroundTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AmigaPlaygroundTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A11100002E80001100000000 /* AmigaPlaygroundApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmigaPlaygroundApp.swift; sourceTree = "<group>"; };
-		A11100002E80001200000000 /* BoingBallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoingBallView.swift; sourceTree = "<group>"; };
-		A11100002E80001300000000 /* CompilerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompilerService.swift; sourceTree = "<group>"; };
-		A11100002E80001400000000 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A11100002E80001500000000 /* OllamaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OllamaService.swift; sourceTree = "<group>"; };
-		A11100002E80001600000000 /* EmulatorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmulatorService.swift; sourceTree = "<group>"; };
-		A11100002E80001700000000 /* WebEmulatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebEmulatorView.swift; sourceTree = "<group>"; };
+		A11100002E80007300000000 /* AmigaPlaygroundUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AmigaPlaygroundUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A11100002E80001100000000 /* AmigaPlaygroundApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AmigaPlaygroundApp.swift; sourceTree = "<group>"; };
+		A11100002E80001200000000 /* BoingBallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/BoingBallView.swift; sourceTree = "<group>"; };
+		A11100002E80001300000000 /* CompilerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CompilerService.swift; sourceTree = "<group>"; };
+		A11100002E80001400000000 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/ContentView.swift; sourceTree = "<group>"; };
+		A11100002E80001500000000 /* OllamaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/OllamaService.swift; sourceTree = "<group>"; };
+		A11100002E80001600000000 /* EmulatorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EmulatorService.swift; sourceTree = "<group>"; };
+		A11100002E80001700000000 /* WebEmulatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/WebEmulatorView.swift; sourceTree = "<group>"; };
 		A11100002E80001800000000 /* AmigaPlaygroundTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AmigaPlaygroundTests.swift; path = AmigaPlaygroundTests/AmigaPlaygroundTests.swift; sourceTree = "<group>"; };
+		A11100002E80001900000000 /* VAmigaValidationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/VAmigaValidationService.swift; sourceTree = "<group>"; };
+		A11100002E80001A00000000 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = "<group>"; };
+		A11100002E80007200000000 /* AmigaPlaygroundUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AmigaPlaygroundUITests.swift; path = AmigaPlaygroundUITests/AmigaPlaygroundUITests.swift; sourceTree = "<group>"; };
+		A11100002E8000B100000000 /* AssistantChatSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AssistantChatSession.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,6 +65,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A11100002E80003500000000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A11100002E80007600000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -69,8 +92,9 @@
 		A11100002E80000300000000 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A11100002E80000600000000 /* AmigaPlayground.app */,
+				A11100002E80000600000000 /* Amiga Playground.app */,
 				A11100002E80000900000000 /* AmigaPlaygroundTests.xctest */,
+				A11100002E80007300000000 /* AmigaPlaygroundUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -78,16 +102,60 @@
 		A11100002E80000400000000 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				A11100002E80001100000000 /* AmigaPlaygroundApp.swift */,
-				A11100002E80001200000000 /* BoingBallView.swift */,
-				A11100002E80001300000000 /* CompilerService.swift */,
-				A11100002E80001400000000 /* ContentView.swift */,
-				A11100002E80001500000000 /* OllamaService.swift */,
-				A11100002E80001600000000 /* EmulatorService.swift */,
-				A11100002E80001700000000 /* WebEmulatorView.swift */,
-				A11100002E80001800000000 /* AmigaPlaygroundTests.swift */,
+				A11100002E80006100000000 /* App */,
+				A11100002E80006200000000 /* Views */,
+				A11100002E80006300000000 /* Services */,
+				A11100002E80006400000000 /* Resources */,
+				A11100002E80006500000000 /* Tests */,
 			);
 			name = Sources;
+			sourceTree = "<group>";
+		};
+		A11100002E80006100000000 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A11100002E80001100000000 /* AmigaPlaygroundApp.swift */,
+			);
+			name = App;
+			sourceTree = "<group>";
+		};
+		A11100002E80006200000000 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A11100002E80001400000000 /* ContentView.swift */,
+				A11100002E80001200000000 /* BoingBallView.swift */,
+				A11100002E80001700000000 /* WebEmulatorView.swift */,
+			);
+			name = Views;
+			sourceTree = "<group>";
+		};
+		A11100002E80006300000000 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A11100002E8000B100000000 /* AssistantChatSession.swift */,
+				A11100002E80001300000000 /* CompilerService.swift */,
+				A11100002E80001600000000 /* EmulatorService.swift */,
+				A11100002E80001500000000 /* OllamaService.swift */,
+				A11100002E80001900000000 /* VAmigaValidationService.swift */,
+			);
+			name = Services;
+			sourceTree = "<group>";
+		};
+		A11100002E80006400000000 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A11100002E80001A00000000 /* Assets.xcassets */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		A11100002E80006500000000 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				A11100002E80001800000000 /* AmigaPlaygroundTests.swift */,
+				A11100002E80007200000000 /* AmigaPlaygroundUITests.swift */,
+			);
+			name = Tests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -97,6 +165,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A11100002E80004200000000 /* Build configuration list for PBXNativeTarget "AmigaPlayground" */;
 			buildPhases = (
+				A11100002E8000A100000000 /* Increment Build Number */,
 				A11100002E80003100000000 /* Sources */,
 				A11100002E80003200000000 /* Frameworks */,
 				A11100002E80003300000000 /* Resources */,
@@ -107,7 +176,7 @@
 			);
 			name = AmigaPlayground;
 			productName = AmigaPlayground;
-			productReference = A11100002E80000600000000 /* AmigaPlayground.app */;
+			productReference = A11100002E80000600000000 /* Amiga Playground.app */;
 			productType = "com.apple.product-type.application";
 		};
 		A11100002E80000700000000 /* AmigaPlaygroundTests */ = {
@@ -128,6 +197,24 @@
 			productReference = A11100002E80000900000000 /* AmigaPlaygroundTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		A11100002E80007900000000 /* AmigaPlaygroundUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A11100002E80007A00000000 /* Build configuration list for PBXNativeTarget "AmigaPlaygroundUITests" */;
+			buildPhases = (
+				A11100002E80007700000000 /* Sources */,
+				A11100002E80007600000000 /* Frameworks */,
+				A11100002E80007800000000 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A11100002E80007500000000 /* PBXTargetDependency */,
+			);
+			name = AmigaPlaygroundUITests;
+			productName = AmigaPlaygroundUITests;
+			productReference = A11100002E80007300000000 /* AmigaPlaygroundUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -136,14 +223,18 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					A11100002E80000500000000 = {
 						CreatedOnToolsVersion = 15.0;
 					};
 					A11100002E80000700000000 = {
 						CreatedOnToolsVersion = 15.0;
-						TestHostTarget = A11100002E80000500000000 /* AmigaPlayground */;
+						TestHostTarget = A11100002E80000500000000;
+					};
+					A11100002E80007900000000 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = A11100002E80000500000000;
 					};
 				};
 			};
@@ -162,6 +253,7 @@
 			targets = (
 				A11100002E80000500000000 /* AmigaPlayground */,
 				A11100002E80000700000000 /* AmigaPlaygroundTests */,
+				A11100002E80007900000000 /* AmigaPlaygroundUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -171,6 +263,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A11100002E80002A00000000 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,7 +274,36 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A11100002E80007800000000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A11100002E8000A100000000 /* Increment Build Number */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Increment Build Number";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "PBXPROJ=\"${PROJECT_FILE_PATH}/project.pbxproj\"\nif [ ! -f \"$PBXPROJ\" ]; then\n  PBXPROJ=\"${PROJECT_DIR}/AmigaPlayground.xcodeproj/project.pbxproj\"\nfi\n/usr/bin/perl -0pi -e 's/(CURRENT_PROJECT_VERSION = )(\\d+)(;)/$1.($2 + 1).$3/ge' \"$PBXPROJ\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A11100002E80003100000000 /* Sources */ = {
@@ -194,6 +316,8 @@
 				A11100002E80002400000000 /* ContentView.swift in Sources */,
 				A11100002E80002500000000 /* OllamaService.swift in Sources */,
 				A11100002E80002600000000 /* EmulatorService.swift in Sources */,
+				A11100002E8000B200000000 /* AssistantChatSession.swift in Sources */,
+				A11100002E80002900000000 /* VAmigaValidationService.swift in Sources */,
 				A11100002E80002700000000 /* WebEmulatorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -206,6 +330,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A11100002E80007700000000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A11100002E80007100000000 /* AmigaPlaygroundUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -213,6 +345,11 @@
 			isa = PBXTargetDependency;
 			target = A11100002E80000500000000 /* AmigaPlayground */;
 			targetProxy = A11100002E80000A00000000 /* PBXContainerItemProxy */;
+		};
+		A11100002E80007500000000 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A11100002E80000500000000 /* AmigaPlayground */;
+			targetProxy = A11100002E80007400000000 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -250,6 +387,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -273,6 +411,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -311,6 +450,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -327,6 +467,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -339,11 +480,13 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 36;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "AmigaPlayground";
+				INFOPLIST_KEY_CFBundleDisplayName = "Amiga Playground";
+				INFOPLIST_KEY_CFBundleName = "Amiga Playground";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 GINNOV. All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -353,7 +496,9 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = GINNOV.AmigaPlayground;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = AmigaPlayground;
+				PRODUCT_NAME = "Amiga Playground";
+				VERSIONING_SYSTEM = "apple-generic";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -367,11 +512,13 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 36;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "AmigaPlayground";
+				INFOPLIST_KEY_CFBundleDisplayName = "Amiga Playground";
+				INFOPLIST_KEY_CFBundleName = "Amiga Playground";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 GINNOV. All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -381,7 +528,9 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = GINNOV.AmigaPlayground;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = AmigaPlayground;
+				PRODUCT_NAME = "Amiga Playground";
+				VERSIONING_SYSTEM = "apple-generic";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -394,7 +543,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 36;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -403,7 +552,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AmigaPlayground.app/Contents/MacOS/AmigaPlayground";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Amiga Playground.app/Contents/MacOS/Amiga Playground";
 			};
 			name = Debug;
 		};
@@ -414,7 +563,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 36;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -423,7 +572,43 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AmigaPlayground.app/Contents/MacOS/AmigaPlayground";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Amiga Playground.app/Contents/MacOS/Amiga Playground";
+			};
+			name = Release;
+		};
+		A11100002E80007B00000000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 36;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = GINNOV.AmigaPlaygroundUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = AmigaPlayground;
+			};
+			name = Debug;
+		};
+		A11100002E80007C00000000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 36;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = GINNOV.AmigaPlaygroundUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = AmigaPlayground;
 			};
 			name = Release;
 		};
@@ -453,6 +638,15 @@
 			buildConfigurations = (
 				A11100002E80005500000000 /* Debug */,
 				A11100002E80005600000000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A11100002E80007A00000000 /* Build configuration list for PBXNativeTarget "AmigaPlaygroundUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A11100002E80007B00000000 /* Debug */,
+				A11100002E80007C00000000 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

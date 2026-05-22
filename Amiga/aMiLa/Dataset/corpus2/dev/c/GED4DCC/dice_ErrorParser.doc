@@ -1,0 +1,61 @@
+dice/DICE_ERROR_PARSER                         dice/DICE_ERROR_PARSER
+
+ We handle the following Rexx Commands:
+
+     QUIT
+          Terminate the error parser
+
+     NEXT    <stem>
+
+          Advance the current pointers to  the  next  entry.  If  nothing  is
+          active, we wrap around to the beginning again
+
+     FIRST   <stem>
+
+          Go to the first error
+
+     PREV    <stem>
+
+          Advance the current pointers to the previous entry. If  we  are  at
+          the beginning, don't do anything.
+
+     CURRENT <stem>
+
+          Return information on the current error
+
+     CLEAR
+
+          Clear out all errors stored
+
+     TTXSAME "<file>" "<project>" "<macro>"
+
+          Load a file into the error parsing. A string containing  the  lines
+          which  correspond  to the source is returned. This string is not to
+          be freed.
+
+     LOAD    "<error>" "<dir>" "<sourcefile>" <args>
+
+          Load errors into the parser
+
+
+ Where <stem> Is any valid rexx variable name and it will contain the
+ following on return:
+
+     FILE:   The name of the file to edit
+
+     DIR:    The directory that the file is relative to
+
+     LINE:   The line number of the file to go to
+
+     ARGS:   The REXX arguments associated with the compile command
+
+     COL:    The column number in the file
+
+     ERRNO:  The error number
+
+     STRING: The error message to be printed out
+
+     TEXT:   The complete text of the original line
+
+     FPATH:  The full pathname of the file
+

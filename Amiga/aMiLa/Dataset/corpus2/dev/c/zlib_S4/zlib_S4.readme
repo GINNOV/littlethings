@@ -1,0 +1,40 @@
+Short:        Zlib link library for StormC 4
+Author:       Jean-loup Gaily, Mark Adler et al., Jan-Erik Karlsson
+Uploader:     Jan-Erik Karlsson
+Type:         dev/c
+Version:      1.2.1
+Replaces:     zlib_S4.lha
+Architecture: m68k-amigaos
+Required:     StormC 4
+
+this is a simple port of the zlib library for stormC 4
+it's an update of the link library that comes with stormC4
+all versions is here (000, 020 603 and 881)
+
+the 020 version is compiled with the 68020-60 option
+
+(if you want a 040|060 version contact me)
+
+LhA Freeware Version 2.2
+Copyright © 1991-94 by Stefan Boberg.
+Copyright © 1998-2000 by Jim Cooper and David Tritscher.
+
+Listing of archive 'zlib_S4.lha':
+Original  Packed Ratio    Date     Time    Name
+-------- ------- ----- --------- --------  -------------
+   57989   14578 74.8% 11-Mar-02 13:55:36  zlib.html
+     175     124 29.1% 29-Jun-02 02:00:20  readme.amiga
+    9064    3008 66.8% 29-Mar-04 21:34:26 +zconf.h
+   57739   17424 69.8% 29-Mar-04 21:22:04 +zlib.h
+   62160   32465 47.7% 29-Mar-04 21:40:18 +z000.lib
+   59436   31635 46.7% 29-Mar-04 21:46:42 +z020.lib
+   75412   35224 53.2% 29-Mar-04 21:52:32 +z603.lib
+   59436   31635 46.7% 29-Mar-04 21:57:18 +z881.lib
+    9545    3934 58.7% 29-Mar-04 21:17:00  algorithm.txt
+   36703   14528 60.4% 29-Mar-04 21:17:00  ChangeLog
+   14457    5811 59.8% 29-Mar-04 21:17:00  FAQ
+    1210     545 54.9% 29-Mar-04 21:17:00  INDEX
+    5840    2691 53.9% 29-Mar-04 21:17:00  README
+    4490    2073 53.8% 29-Mar-04 21:22:04  zlib.3
+-------- ------- ----- --------- --------
+  453656  195675 56.8% Operation successful.

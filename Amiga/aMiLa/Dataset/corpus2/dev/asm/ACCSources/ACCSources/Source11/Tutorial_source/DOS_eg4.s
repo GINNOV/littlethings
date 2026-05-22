@@ -1,0 +1,49 @@
+
+; DOS_eg4.s
+
+; Example of SetComment () usage.
+
+; M.Meany, April 1991
+
+		Incdir		sys:Include/
+		Include		exec/exec_lib.i
+		Include		libraries/dos_lib.i
+
+;--------------	Open DOS library
+
+		lea		dosname,a1	a1-> lib name
+		moveq.l		#0,d0		any version
+		CALLEXEC	OpenLibrary	and attempt open
+		move.l		d0,_DOSBase	save lib base ptr
+		beq		error		quit if error
+
+;--------------	Delete the file
+
+		move.l		#filename,d1	d1=addr of file
+		move.l		#comment,d2	d2=addr of file comment
+		CALLDOS		SetComment	and add comment
+
+;--------------	Close DOS library
+
+		move.l		_DOSBase,a1	a1->lib base
+		CALLEXEC	CloseLibrary	and close it
+
+;--------------	Finish
+
+error		rts
+
+;------
+;--------------	DATA
+;------
+
+dosname		dc.b		'dos.library',0
+		even
+
+_DOSBase	dc.l		0
+
+filename	dc.b		'ram:letter.doc',0
+		even
+
+comment		dc.b		"This wasn't here before",0
+		even
+

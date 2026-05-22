@@ -1,0 +1,138 @@
+The converter (v3.4) currently supports the following:
+
+ 6 diffrent kinds of polygons (plus 4 transparency variations)
+
+  * Flat-shaded polygons
+  * Texture-mapped polygons
+  * Reflection-mapped polygons
+  * Texture+reflection-mapped polygons
+  * Bump+Reflection-mapped polygons
+  * Bump+Texture+reflection-mapped polygons
+
+ For all 6 type you can have the following transparencey settings:
+
+  * Texture 0 transparency. This means that every pixel that's 0 in the
+   texture will be 100% transparent. If this mode is used on a 
+   normally flatshaded surface a special halfbright transparence is 
+   used.
+  * Additive transparence the R,G,B value for every dot in the
+   polygon vill be absoulte added to the background colour.
+  * Subtractive transparence the R,G,B value for every dot in the
+   polygon vill be absoulte subtracted to the background colour.
+  * RGB higher transparence. ie the highest of the R,G,B values
+   of the polygon point and the background colour.
+
+ There is one special transparence mode and that is halfbright. In this mode
+ the background colour is made half as bright as it was before. Note that
+ this mode is MUCH faster than the other transparency modes.
+ 
+ 
+ How to use the transparency:  
+ 
+  * Set transparency to less then 5% for no transparency
+  * Set transparency to 5-25% for texture 0 transparency
+   NOTE if a flat-shaded polygon is used with this transparency mode a
+   special halfbright drawing mode is used. 
+  * Set transparency to 25-50% for subtractive transparency
+  * Set transparency to 50-75% for additive transparency
+  * Set transparency to higher then 75% for RGB-higher transparency
+ 
+
+ (NOTE! There are no such things as only bump or bump+texture,because bump
+  needs a light to have any effect. Bump+flat and bump+texture will work as
+  flat and texture only.)
+  
+How to modell objects:
+
+  (This explain the surface settings for every type of mapping)
+  
+0  Flat:
+    Colour:     R,G,B This sets the colour for the surface
+    Luminosity: Colour brightness,ie 0=Backdrop,100=Colour
+    
+1  Texture:
+    All textures must:
+     * Be an IFF-ILBM file.
+     * Contain no more then 256 colours.
+     * Be not wider then 256 pixels, or less then 8 pixels.
+     * Have a minimum height of 8.
+     * Be a mutiple of 8 pixels wide.(width=n*8) 64,128,192..
+    The mapping modes supported are:
+     * Planar Image Map
+     * Spherical Image Map
+     * Cylindrical Image Map
+    Does support:
+     * Moving of Center
+     * All texture axis (X,Y,Z)
+     * Scaling
+     
+    Colour:     R,G,B Colour change of texture. Normal= 128,128,128
+    Luminosity: Strength of colour,0=Flat,100=Normal texture colour
+
+2  Reflectionmap:
+   (Really 2 modes of reflection,image reflection and phong-mapping)
+
+   Phong reflection:
+
+    Colour:     R,G,B This sets the colour for the surface
+    Luminosity: Colour brightness,ie 0=Backdrop,100=Colour
+    Diffusion:  0=Flat shaded with spot,100 edges at backdrop colour
+    Specularity:0%=No spot,100%=Spot at Ambient colour
+    Glossiness: Size of lightspot.Low=Big spotlight,Huge=Small spot
+    Reflection: Reflectivity. 0=Flat shaded,100=Full
+    
+   Image reflection:
+   
+    All reflectiontextures must:
+     * Be an IFF-ILBM file.
+     * Contain no more then 256 colours.
+     * Be not wider then 256 pixels, or less then 8 pixels.
+     * Have a minimum height of 8.
+     * Have a width of 2^x pixels i.e 8,16,32,64,128,256
+     * The height same as the width. i.e 128x128,256x256 etc
+     * If bumpmapping is used be 256x256 in size.
+     * Use spherical image reflection. (Won't look the same as in LW!)
+
+    Colour:     R,G,B.Colour change of reflectiontexture. 
+                Normal= 128,128,128
+    Luminosity: Strength of colour,0=Flat,100=Normal texture colour
+    Reflection: Reflectivity. 0=Flat shaded,100=Image
+        
+3  Texture+Reflection-mapping:
+   
+   Reflection settings as for Reflectionmap
+   Texture as texturemap
+           
+4  Bump+Reflection-mapping:
+
+   All bumptextures must:
+     * Be an IFF-ILBM file.
+     * Contain no more then 256 colours.
+     * Be not wider then 256 pixels, or less then 8 pixels.
+     * Have a minimum height of 8.
+     * Be a mutiple of 8 pixels wide.(width=n*8) 64,128,192...
+     * If texturemapping are present have the same size as
+      the texturemap.
+
+   The bumpmapping modes supported are:
+     * Planar Image Map
+     * Spherical Image Map
+     * Cylindrical Image Map
+
+   NOTE! Colour 0=Lowest height,255=Highest
+      
+    Bump amplitude: 0%=Flat bump 100%=Strong bump
+    
+   
+5  Bump+Texture+Reflection-mapping:
+
+   Reflection settings as for Reflectionmap
+   Texture as texturemap
+   Bump as Bump+Reflection-mapping but:
+   
+    * Mapping method used will be the same as for the texture!!
+   
+
+
+   
+

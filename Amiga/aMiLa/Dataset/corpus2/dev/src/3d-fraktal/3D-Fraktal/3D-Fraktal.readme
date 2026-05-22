@@ -1,0 +1,66 @@
+Short:    Animated 3D-fractal using OpenGL
+Uploader: walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Type:     dev/src
+Autor:    walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Requires: C Compiler (e.g. gcc), StormMesa
+
+Animated 3D-fractal using OpenGL.
+
+Tutorial source showing:
+
+ - recursive programming
+ - "divide and conquer" methods
+ - double buffering
+ - animation
+ - lighting
+ - usage of display lists
+ - glut menus
+
+
+OpenGL(R) is a registered trademark of Silicon Graphics, Inc.
+
+The executable included in this archive require 68030 cpu and 68881 fpu or better.
+A 68060 or PowerPC CPU and a fast 3D-accelerator is strongly recommended.
+
+The source is highly portable.
+It shold work with all major (ANSI)C-compilers and operating systems.
+
+Testet on Amiga 4000/30 with CyberVision64/3D,
+AmigaOS 3.5, CyberGraphX 3, Warp3D 3.
+
+
+Literature:
+
+Brian W. Kernighan, Dennis M. Ritchie:
+The C Programming Language
+
+Andrew Koenig: 
+C Traps and Pitfalls
+
+Robert Sedgewick:
+Algorithms in C
+
+Mason Woo, Jackie Neider, Tom David, Dave Shriner, Tom Davis:
+OpenGL 1.2 Programming Guide
+
+Renate Kempf and Chris Frazier:
+OpenGL Reference Manual
+
+Mark Kilgar:
+The OpenGL Utility Toolkit (GLUT) Programming Interface API
+
+
+
+World Wide Web:
+
+http://www.norman-interactive.com (my Homepage)
+
+http://www.informatik.uni-stuttgart.de (University Stuttgart, Dept. of Computer Science)
+
+http://www.ninemoons.com (GeekGadgets)
+
+http://www.haage-partner.com (Haage & Partner Homepage)
+
+http://www.sgi.com (Silicon Graphics - Inventor of OpenGL)
+
+http://www.OpenGL.org (OpenGL Homepage)

@@ -1,0 +1,50 @@
+Short:    New gfx/intuition/dos library functions
+Author:   Jure Vrhovnik (jurev@gea.fer.uni-lj.si)
+Uploader: jurev@gea.fer.uni-lj.si
+Type:     dev/c
+
+
+ Supra -- Extension functions to dos, intuition and graphics library
+ =====
+
+ Version 1.1 (11. Apr 1995)
+ © Copyright by Jure Vrhovnik. All rights reserved.    
+
+
+NEW from v1.0:
+    - AddToolType() - add or change icon's tooltypes very easily
+    - Minor error in source code, which was causing some problems with
+      linking, is fixed. (pragmas weren't included)
+
+Supra is a linked library which contains a few useful functions
+that are easy to use. A brief description of what it contains:
+
+    o File copier
+    o Very easy but powerful recursive directory scanning
+    o Quick file type/existance checking
+    o Create an entire directory path (extension to CreateDir() )
+    o Image colour remapping (now you can show images in their real
+      colors on a workbench!)
+    o Obtain a list of best pens (extension to ObtainBestPen() )
+NEW o Add or change icon's tooltypes
+
+
+Here is a list of function names:
+
+    - FCopy()
+    - FileType()
+    - RecDirInit()
+    - RecDirNext()
+    - RecDirTags()
+    - RecDirFree()
+    - MakePath()
+    - ObtPens()
+    - RelPens()
+    - MakeNewImg()
+    - FreeNewImg()
+NEW - AddToolType()
+
+Every function is well documented (in Commodore's RKM amigaguide style),
+and there are some useful examples included in this archive.
+
+Source code of functions and examples are included.

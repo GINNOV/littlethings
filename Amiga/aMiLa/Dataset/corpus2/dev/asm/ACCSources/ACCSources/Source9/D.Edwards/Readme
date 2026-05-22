@@ -1,0 +1,78 @@
+
+							Dave Edwards
+							232 Hale Road
+							WIDNES
+							Cheshire
+							WA8 8QA
+
+
+ ( Clipped from a letter to me M.M. )
+
+	Also, the following assembler include files:
+
+
+			ACC_Startup.i
+			exec_support.i
+			glibfunc.i
+
+
+are now available in their version 1.0 incarnations. The files were written
+to provide the following features:
+
+
+	ACC_Startup.i	:	PD startup code for applications
+				startable from either WorkBench
+				or the CLI. Allows applications
+				access to input parameters in a
+				consistent fashion.
+
+	exec_support.i	:	PD assembler version of the C file
+				amiga.lib. Provides various useful
+				functions such as CreatePort() etc.
+
+	glibfunc.i	:	PD graphics library support, prov-
+				iding a selection of functions to
+				make graphics primitives easier to
+				live with. Includes such functions
+				as MakeAllVPorts().
+
+
+Full docs (including calling synopses in the case of the files exec_support.i
+and glibfunc.i) provided as source code comments. These can be lifted out and
+written to separate DOC files if wanted.
+
+	Second topic:source code. I was laid low over the Christmas holiday
+by tonsilitis, which really ruined any enjoyment of my Christmas dinner. As
+a result, I haven't produced as much new source code as I would have liked.
+However, I have written & completely debugged a collection of routines that
+handle on-screen animation of blitter objects via the blitter interrupt. I
+include the current version of the source for your perusal on this disc. It
+should be noted, however, that since my machine is a half-meg job, you will
+need to add directives to assemble the lot to CHIP RAM, which I can afford
+to leave out as yet having no FAST RAM on my machine. I'll also supply some
+decent documentation for the code on a separate file. Since this disc boots
+up into PPMore (renamed ShowDocs on this disc), you can browse at will.
+
+	This code DOES NOT implement screen switching, but can be adapted to
+perform that function to kill off any screen flicker (which occurs with even
+fairly small bobs for some reason I haven't yet figured out). However, it is
+designed to be efficient, using the blitter interrupt to trigger further in-
+stances of blitter activity rather than busy waiting (time better spent being
+used for matters such as collision detection etc). At the moment, the blitter
+objects are masked onto the screen, but that can be changed also, and under-
+lying background data is saved into a buffer for recovery at a later stage. I
+offer this as yet more PD code for inclusion on future ACC discs.
+
+
+			Ta ra for now,
+
+
+
+
+			Dave Edwards.
+
+
+
+
+
+

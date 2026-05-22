@@ -1,0 +1,6 @@
+Short:        Port of Matthew Brandt's CC68k compiler
+Architecture: m68k-amigaos
+
+Amiga Port of Matthew Brandt's CC68k compiler,
+an optimizing C compiler for the Motorola 68000
+processor.  Source code included.

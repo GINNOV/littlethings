@@ -1,0 +1,25 @@
+Short:    Asm sourcecode for an old demo by Triumph
+Author:   Carl H Aaby (carla@ifi.uio.no)
+Uploader: Carl H Aaby (carla@ifi.uio.no)
+Type:     dev/asm
+Here is the sourcecode for the first part of the old demo
+No Temptations from Triumph. It is made public for educational
+reasons, and you are free to use it anyway you want.
+
+The demo itself was released in 1990, so I made some small
+changes to the sourcecode to make it AGA compatible.
+
+I know that the code is not at all state of art, it was my
+first real thing I ever made in assembler, so please DO NOT
+give any reply back on how it should have been done.
+
+The demo itself it quite simple, so it should been very easy
+to understand the way things work.
+
+Contact me if you want some help with the source, or if you
+want me to release more demo sources.
+
+And do not forget to visit out homepage at:
+http://www.triumph.no
+
+

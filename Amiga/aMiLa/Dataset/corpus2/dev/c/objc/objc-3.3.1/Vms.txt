@@ -1,0 +1,20 @@
+Portable Object Compiler (c) 1997,98,99,2002.  All Rights Reserved.
+
+OpenVMS porting notes contributed by Pierre.Bru@spotimage.fr
+
+DCL Driver
+----------
+
+	The DCL driver is called objc.com, located in src/objc
+
+YACC & LEX
+----------
+
+	This port uses the FLEX and BISON ports of those utilities, for VMS.
+	(Only needed to recompile the compiler with itself).
+
+Makefiles
+---------
+
+	They are specific for OpenVMS, in each directory : Makefile.vms
+

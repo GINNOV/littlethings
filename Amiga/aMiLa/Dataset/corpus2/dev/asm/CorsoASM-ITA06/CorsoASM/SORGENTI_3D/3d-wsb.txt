@@ -1,0 +1,95 @@
+
+
+			Il treddi' in Asm
+			by Washburn / DarkAge
+
+Ingradienti:
+1  Amiga 
+1  cpu 68020+ (e relativa conoscenza dell'asm)
+2+ Mb di memoria (meglio se almeno 1mb fast)
+1  hard disk
+1  assemblatore (meglio se AsmOne v1.29)
+1  chunky 2 planar
+
+alcune routine per la startup di una intro/demo e inizializzazione
+dell copperlist.
+
+
+Allora.... cosa vuol dire treddi' (da ora in poi 3d) ?
+Vuol dire che nella rappresentazione di figure geometriche non si usano
+solo 2 coordinate (x,y) ma 3 (x,y,z) per identificare la "profondita'" di un
+punto nello spazio.
+
+Ma allora come si puo' visualizzare un oggetto in 3d su uno schermo in 2d?
+Ci sono vari metodi per fare questa "conversione" da 3d a 2d; la proiezione
+assonometrica (quella a 120 gradi), oppure, quella usata' la proiezione
+prospettica.
+
+La proiezione prospettica funziona in questo modo:
+se un punto ha una coordinata Z minore di un altro punto allora quel punto
+sara' piu' vicino, cioe' a coordinata Z minore corrisponde un oggetto piu'
+vicino. Il tutto si traduce, in termini pratici, in una divisione per punto;
+bastera' dividere la X per Z e la Y per Z e il gioco e' fatto!
+Bisogna precisare alcune cose:
+
+Cosa succede se la Z=0?
+1) si verifica un trap (errore) del processore per divisione per 0.
+2) perche' vuoi disegnare un oggetto che in realta' non vedi? =)
+
+Lo schermo ha l'orientamento degli assi X e Y diverso rispetto
+all'orientamento degli assi 3D (vedi figura), quindi quando si fa calcola
+la proiezione prospettica di un punto bisogna ricordarsi di aggiungere le
+coordinate del centro dello schermo.
+
+Orientamento assi
+
+	^ Y			+---------------> X
+	|  			|
+	|  / Z			|       . -> centro dello schermo
+	| /			|
+	|/			|
+	+------------> X	V Y
+
+Adesso armiamoci di AsmOne e vediamo di disegnare qualcosa (rigorosamente in
+chunky).
+
+Allora il codice per la proiezione prospettica e' molto semplice:
+
+; Grandezza dello schermo chunky
+widht=320
+height=256
+
+	lea	punti3d,a0
+	lea	chunky,a1
+	move.w	punti,d7
+	subq	#1,d7
+Proj:
+	movem	(a0)+,d0-d2	; legge le coordinate 3d
+	tst	d2		; se la Z<=0
+	ble.s	noproj		; non proiettare il punto
+	divs	d2,d0		; proietta la X
+	neg	d1		; la Y ha un orientamento diverso 
+				; nello schermo!
+	divs	d2,d1		; proietta la Y
+	move.l	a1,a2		; calcolo indirizzo del punto
+	move	d1,d3		;
+	and.l	#$ffff,d3	;
+	mulu.l	#width,d3	;
+	add.l	d3,a2		;
+	add.w	d1,a2		;
+	move.b	#$ff,(a2)	; plotta il punto
+noproj	dbf	d7,proj
+	rts
+
+punti	dc.w	4		; 4 punti da disegnare
+punti3d
+	dc.w	0,0,1		; coordinate di un quadrato
+	dc.w	0,50,1
+	dc.w	50,50,1
+	dc.w	50,0,1
+
+chunky	ds.b	width*height
+
+Note: per il disegno del punto sullo schermo chunky bisogna calcolare
+l'indirizzo del punto in questione e dopo metterci dentro il colore del punto.
+

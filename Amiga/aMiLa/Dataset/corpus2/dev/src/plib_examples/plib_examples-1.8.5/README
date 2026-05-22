@@ -1,0 +1,23 @@
+
+PLIB Examples and Documents
+===========================
+             by Steve Baker.
+
+LICENSING:
+
+These example programs are offered as OpenSource freeware
+under the provisions of the GNU Public
+License (GPL). Those terms and conditions are
+detailed in the file 'COPYING' in this directory.
+
+REQUIREMENTS:
+
+In addition to the PLIB libraries that I provide, you
+will also need OpenGL (OpenGL 1.1 or later -
+Mesa 3.0 or later) and GLUT (The OpenGL utilities
+toolkit - version 3.7 or later) and a hardware 3D
+graphics accellerator that supports OpenGL.
+
+             by Steve Baker.
+             <sjbaker1@airmail.net>
+             http://www.sjbaker.org

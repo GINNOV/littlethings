@@ -1,0 +1,59 @@
+Short:        Cross assembler for DSP3210 chips
+Uploader:     Wrangler491@gmail.com
+Author:       wrangler491_at_gmail_dot_com
+Type:         dev/asm
+Architecture: other
+Replaces:     2.12
+Version:      2.13 
+Distribution: Aminet
+Kurz:         Cross-Assembler fuer DSP3210-Chips
+
+
+ASM3210 Version 2.13 - cross-DSP3210 assembler
+elf2exem68k Version 1.2 - Creates an Amiga executable from a final ELF object
+
+This is an implementation of an assembler for the DSP3210 as used on the Amiga
+AA3000 and AA3000+.  The host machine needs to be x86-64 running linux (I use 
+cygwin, so that definitely works but other linux-type OSes ought to work). 
+
+Huge thanks to phx for helping me understand ELF file formats, constructors 
+and destructors and many other things! 
+
+Copyright Wrangler 2021, 2022, 2023
+
+Some code based on the work of Tom Roberts' ASM32 for the DSP32C
+
+
+Usage:
+------
+
+asm3210 [options] foo.s
+
+will provide:
+foo.o - an ELF object containing the binary output for linking with vlink and 
+elf2exem68k
+
+Options
+
+-b            Output raw binary file
+-h            Help text
+-i filename   Specify input file instead of filename being the final parameter
+-l            Also output a listing file with name <filename>.lst
+-o filename   Specify output file
+-v            Version information
+
+
+elf2exem68k [options] foo.o
+
+will create an Amiga executable from the ELF object foo.o.  
+NB only ELF objects created for the DSP3210 will be handled correctly.
+
+Options
+
+-h            Help text
+-i filename   Specify input file instead of filename being the final parameter
+-o filename   Specify output file
+-v            Version information
+
+
+See documentation.txt for important details and how to create an executable

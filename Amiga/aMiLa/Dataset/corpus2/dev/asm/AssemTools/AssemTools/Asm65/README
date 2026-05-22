@@ -1,0 +1,78 @@
+
+
+
+                   *         ****    *     *    ***    ****
+                  * *       *    *   **   **   *   *   *
+                 *   *      *        * * * *   *       *
+                *******      ****    *  *  *   ****    ****
+               *       *         *   *     *   *   *       *
+              *         *   *    *   *     *   *   *   *   *
+             *           *   ****    *     *    ***     ***
+
+
+
+*****************************************************************************
+This program may be freely distributed as long as this file AND the documents
+are kept together with the executables.
+*****************************************************************************
+
+
+Asm65 is a cross-macroassembler for Amiga - exclusively written for
+Amiga in assembly language.  The development started in April, 1988
+and is still in progress although I only edit the source file when
+new bugs are found.
+I wrote this compiler because I designed a small controller board
+using the Rockwell 65c02 CMOS processor and I didn't want to compile
+the programs on a C-64...  I also wanted to be able to use macros
+which weren't available on my old SAKU assembler on C-64 (SAKU was
+also written by me - in 6502 assembly language, of course!).
+
+My 65c02 board supports limited multitasking (max. 16 tasks can run
+simultaneously).  Each task has it's own private zero page and stack
+which are swapped by hardware to allow fast task-switching.
+My software currently supports inter-task messages and dynamic memory
+allocation (allocated in blocks of 256 bytes).
+The board contains a 65c02, two 65c22's, 32KB RAM, and 32KB EPROM.
+It runs reliably at 2,45MHz (using 2Meg chips).  The current consump-
+tion is about 20mA at 5V.
+
+If you are interested in the 65c02 board OR want to get the latest
+version of Asm65 OR want to send your contribution you can contact
+me using the addresses below:
+
+
+MAIL:	Jukka Marin
+	Ruskeisentie 24
+	70900 Toivala
+	FINLAND
+
+E-MAIL:	jmarin@finkuo.bitnet
+
+
+P.S.	If you like this program I would  appreciate a small
+	donation from you!  You know,  it takes some time to
+	write a macro assembler...  You may also ask for the
+	latest  version of the Asm65 (or the  source code if
+	you  especially want  to get it - but the  source is
+	*terrible* :-o ).
+
+	Thanks for your contribution!
+
+	-jm
+
+
+
+9-Mar-89:
+
+P.P.S.	The sources are now included.  But - you shouldn't
+	read them unless it is absolutely necessary.
+	Bug reports etc. are welcome.  I'm trying to update
+	Asm65 whenever it is needed...     ~~~~~~
+	However, I've got my job...
+
+12-Mar-89:
+
+	Re-compiled using A68k...  Several branches converted to
+	short using a special utility.  Executable now smaller
+	and faster (well, at least a bit...).
+

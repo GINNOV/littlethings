@@ -1,0 +1,57 @@
+
+
+		         Complex Numbers for C
+
+				  by
+
+			  Nicholas d'Alterio
+
+
+This is small set of functions I put together when faced with having
+to use complex numbers whilst programming in C. This may be duplicating
+work done by others but here it is anyway.
+
+Description
+
+The functions perform the basics arithmetic operations for complex numbers
+together with the standard Modulus and Arguments.
+
+Sorry for the major over commenting but the lecturers love it!
+
+Compilation
+
+Just use the appropriate Makefile
+
+Use
+
+Complex numbers are dealt with as a structure (COMPLEX) with simply 
+contains two fields, the real and imaginary parts. i.e.
+
+	num.Real            real part
+	num.Imag	    complex part
+
+Then just use the appropriate functions
+
+The Functions 
+
+ComAdd	-	add 2 complex numbers
+ComSub	-	subtract a complex number from another
+ComMul  -	multiply 2 complex numbers
+ComDiv  - 	divide one complex number by another
+ComArg	-	the argument of a complex number
+ComMod  -	modulus of a complex number
+
+History
+
+This will probably be the one and only release unless I have made any
+major cockups
+
+Send any bugs or comments to n.dalterio@ic.ac.uk
+
+Use
+
+Use as you see fit - its totally free
+
+Look out for matrix functions - coming soon
+	 
+$Id: Complex.doc 1.2 1995/07/10 20:22:59 daltern Exp daltern $

@@ -1,0 +1,286 @@
+
+
+                               Documentation
+
+                     AztecErr Version 1.25 © 1993 by H.P.G
+
+                                   FreeWare
+
+Index:
+
+        Index
+        History
+        General Description
+        System Reqirements
+        Legal Stuff
+        Installation
+        Commandline
+        Using AztecErr
+        Arexx-Commands
+        Technical
+        BUGS
+        Last
+        Address
+
+
+History:
+
+    Version 0.90  First binary version. Previous versions are rexx scripts.
+
+    Version 0.95  Added ARexx Support Routins.
+
+    Version 1.00  Better design. First general release.
+
+    Version 1.10  Removed some enforcer hits.
+
+    Version 1.25  Font independent window and gadgets. Second general
+                  release.
+
+
+
+General Description:
+
+
+    AztecErr is a programmer-tool.
+    It supports the quickfix-option of the Manx Aztec C Compiler system
+    version 5.xx. It has a full gadtools user interface.
+
+    AztecErr is a OS 2.xx only tool. It doesn`t run under Kickstart 1.3.
+
+    AztecErr [AE] reads the AztecC.Err file and displays the contained
+    errors on its window.
+    On this window there are several gadgets. By pressing the gadgets you
+    may simply scroll through the error list to the next, previous, first
+    or last error. Alternatively you can press a key for each gadget.
+
+    AztecErr has full env support. It sets up two variables with the line
+    and column number of the current displayed error. You can examine these
+    variables and i.e. call your editor to jump to the given position.
+    (see  below).
+
+    If you have RexxHost.Library, AE will try to open an AREXX-Port. So you
+    may send rexx messages to AE with the same meaning than the Gadgets.
+
+
+System Requirements:
+
+    You need at minimum OS 2.xx. Version 36L  may  have  some  problems
+    too, because some functions had not been implemented  in  this beta
+    version.
+
+    AztecErr is mainly interrested if you have installed the Manx AztecC
+    system version 5.xx.
+
+    To use AE automatically you should set the env variable  CCEDIT  via
+    MSet (support program of Manx) to AztecErr. Also  you  must  compile
+    with  option -qf for QuickFix.
+
+    If you want to use AE in another  way,  you  can  use  a  batchfile.
+
+    No Requirements but recommendments:
+    ===================================
+
+    If you are using an editor which  has  an  ARexx port  or  supports
+    ARexx  or the best, your editor has also the  ability   of   macro-
+    definitions  (i.e.  DMe,  Ced,  TTX  etc...), so  you  can  use  AE
+    automatically.
+    E.g.
+    if you create an ARexx script,  which  examines  the  env  variables
+    'AztecErrLastLine' and 'AztevErrLastColumn', you will be able to jump
+    directly to the place in your text where the error has been occured.
+    If you call this script after compiling, you can easily examine all
+    errors and recompile it again, after correcting the last error.
+
+    An example Script for DMe and TTX is included.
+
+    Warning: You  can  use  this  abilities  of  AE  only  if  you  have
+             the RexxHost.Library and loads it in memory, like explained
+             above.
+
+
+Legal Stuff:
+
+
+        This  program  and  all files come with it, also the docfiles, are
+        released as FREEWARE.
+
+        this means:
+
+            everybody may use AztecErr,
+
+            everybody may copy AztecErr, if:
+
+                1. You copy all included files, see list at the end of the
+                   doc file.
+                2. No changes are made,  this  means  the  program and all
+                   included files must stay in the original form.
+                   Exception: you  may  archieve  it; but in this case you
+                              must also archieve the whole package.
+                3. If  you  recompile  it, you have to include a notice to
+                   the original author. If you also want to (re)distribute
+                   in any new form you have to send me a copy.
+                4. You may not sell AztecErr.
+                   Execption: you`re  allowed  to  take  a  small copy fee
+                              which should not extend 5US$.
+                5. If you want to include AztecErr
+                   or one of the  included files as a part of a commercial
+                   package,  you  must  have  written  permission  of  the
+                   author (address see below).
+
+
+        I take no warranty or garanty for the function of this program.
+        The whole risk of using AztecErr stays only by the user.
+
+
+Installation:
+
+    The best is to copy AztecErr in the same directory in which are  cc,
+    as and ln located.
+    But it must be in the current AmigaDOS searchpath
+
+Commandline:
+
+    AE supports currently only three commandline parameters which are all
+    optional:
+
+    TopEdge/N   This is the topedge where the window should appear.
+                Default is 0.
+
+    PortName=P  This is the name of the ARexx port AE will open.
+                Default is AZTEC_ERROR_PORT.
+
+    Screen=S/K  If you want AztecErr  to  appear  on  another  than  the
+                wbench screen you may specify here the name  of  another
+                PublicScreen. Notice: The name is case dependent.
+
+Usage:
+
+    AE  supports the  quickfix-option  of  the  Manx  Aztec  C  Compiler
+    version 5.xx. By compilisation if an error occures, cc will call the
+    program which is the content of the env variable CCEDIT.
+    If you set CCEDIT to  AztecErr  [options]  ,  so  AztecErr  will  be
+    started.  AztecErr  reads  the  file  'AztecC.Err'  of  the  current
+    directory and opens a window.
+    If you quits AztecErr, the compiler starts again.
+    If you quits AztecErr by using the Break  Gadget  ,  AztecErr  exits
+    with return code 5 (WARN), which can  be  examined in batch files or
+    scripts etc.
+
+    In the second line are a lot of gadgets which initially displays the
+    first error from the AztecC.Err file.
+
+    Gadget list From left to right:
+
+    Below Err:          This is the currently displayed error.
+    Below Sum:          This is the total number of errors.
+    Below Kind:         This is the kind of the error, either ERROR or
+                        WARNING
+    Below SourceFile:   This is the name of the source file in which the
+                        errors has been detected.
+    Ln:                 The line number of the error.
+    Col:                The column number of the error.
+    EC:                 The code of the error.
+
+    Below               This is the description of the error
+
+    Next Line:
+
+    First         [f]   Activating this gadget or pressing 'f', AE displays
+                        the first error.
+    Previous      [p]   AE displayes the previous error.
+    Next          [n]   AE displayes the next available error. If there are
+                        no more errors the following text will be displayed
+                        ----- No More Errors ------.
+                        Activating next gadget again, closes the window and
+                        leaves the program.
+    Last          [l]   AE displays the last error.
+    Quit          [q]   AE quits.
+    Break         [b]   AE quits with return code 5 (WARN).
+
+    You can type also the following keys:
+
+    [i]                 Is the same than clicking the zip gadget of the
+                        window. AE will be iconified.
+                        WARNING: all functions are  still  available also
+                        in this state. By pressing 'i' again, the window
+                        will resizes to the old size and position.
+
+ARexx Commands:
+
+    This commands are equivalent to the gadgets above.
+
+    FIRST
+    PREVIOUS
+    NEXT
+    LAST
+    BREAK
+
+    QUIT
+    CANCEL        CANCEL is a synonym for QUIT and is only supported for
+    EXIT          compatibility with other rexx commands and libraries.
+
+
+Technical:
+
+    AE uses mainly OS 2.xx only functions.
+    AE uses DOS-, Intuition- and GadTools.Library
+
+    Because of the codesize there are no extra error- and  break-handling
+    routines supported.
+
+    So its yours, to take  care  that  AE  don`t  try  to  read  a wrong
+    AztecC.Err file with a wrong format. If this happens AE may crash.
+    Also you should not try to quit AE whith a ^C, because there is no ^C
+    support. Maybe the window  stays  still  open  and  the  program has
+    been terminated.
+
+    If you don`t have RexxHost.Library , so AE is also fully functionable,
+    but of course with the restriction that there is no ARexx port   and
+    the env variables AztecErrLastLine and AztecErrLastColumn  will  not
+    be set.
+
+    You can call AE also with the command  'rxsend'  of  the  Csh-Shell.
+    You doesn`t need an editor which owns an AREXX-Port, its also ok  to
+    have an editor which is able to start DOS-commands ( MEmacs etc.  ).
+    But its a little more tricky.
+
+Last:
+
+    I hope many people will use AE to program faster and easier and with
+    a less amount of errors.
+
+    If you find any bug of AE, please let me know.
+
+
+    have fun ..
+
+
+Address:
+
+   Hans-Peter Guenther
+   Gruener Weg 5
+   D-3501 Fuldatal 2
+   B.R.D (Germnany)
+
+List Of Files:
+
+ (If you miss one of the following files you release is incomplete)
+
+    AztecErr                    : The binary
+    AztecErr.info
+    AztecErr.doc                : English manual
+    AztecErr.doc.info
+    AztecErr.dok                : German manual
+    AztecErr.dok.info
+    AztecC.Err                  : Example error file
+
+    rexx  (dir)                 : Rexx scripts
+        DME_AztecError.dme      : Script for use with DMe
+        DME_AztecError.dme.info
+        TTX_AztecError.ttx      : Script for use with TTX
+        TTX_AztecError.ttx.info
+    rexx.info
+
+
+----END
+

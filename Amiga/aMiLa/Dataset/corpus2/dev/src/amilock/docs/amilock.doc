@@ -1,0 +1,90 @@
+			Amilock   Version 1.0.1
+			    Release Version.
+
+RELEASE CONDITONS -
+
+	Bascially there are no conditions on the usage of this program no on the
+source code (included in this archive, if it isn't contact me (see below)), though 
+a little mention, if you decide to use parts of the code, wont, hurt, and I'd be
+grateful, since I did use quite a bit of time coding the below system.  
+
+	This program is PD, you may do with it as you wish, the code is free,
+and if you have any questions about it, feel free to contact me.  (but please
+give credit where credit is due, ie if you use it in a program of yours, 
+give us a mention).
+
+	cemn@manta.jcu.edu.au (Michael Nielsen BEHons).
+	
+	The above address should be valid until the end of 1994.
+	
+
+
+TESTING
+
+	This program was originally an attempt to stop people from trying to 
+force access to the system, it was going to have a hard ware key along with it
+however, due to the sucess of the multiuser filesystem development group, this
+project is becoming too expensive to be of any real use, so it will die in its
+infancy.  Thus the program Amilock was born, it has many of the features which
+I Deviced to make the system safe, it will only temporarely protect it's own 
+password file, which means it is not accessible while the system is accessible
+this is a small feature which will prevent some one editing the file, if you 
+turned your back for a moment, (you should have activated the program if you
+leave the machine).
+
+	The program will block all interactions with the user temporarely, 
+without causing any problems with the system.  It does this by inserting a 
+high priority interrupt server into the input.device interrupt queue, this 
+then forces the keyboard and mouse to pass information to this server first.
+the server interpretates the information and decides if it is allowed or not.
+If the action is to be disallowed, it remaps it to something harmless, eg, a
+left mouse button press is mapped to a right mouse button press (which is trapped
+by the main program and nulled).  Any attempt to use the keyboard as an 
+emergency mouse is also foiled, by the use of traps for keyboard entries.  
+Any keyboard event considered improper, is simply Nulled, (the machine ignores
+Null messages). 
+
+
+TESTING
+
+	I have now stopped work on this little program, it works, and has been
+tested under the following conditions.
+
+	Compatibility.
+
+		Dos 3.0 (A4000/040) 	
+
+		Dos 2.0x(A3000/030) 	(thanks to Derek
+						(gldrm@manta.jcu.edu.au)).
+			(A2000)
+				
+			(A500 )	 	(thanks to Gerard 
+						(G.vanderHorst@research.ptt.nl))
+
+	Usage.
+
+		That is very simple, if you edit the password file, simply use
+the format indicated, the first field is the user name the second is the 
+password, the rest is required, but not used, and can be set to any thing.
+
+	then
+
+		Deamon 
+
+			That boots the deamon, and sets the system up, temporarely
+protecting the password file from tampering.  To remove this simply login as Root
+this is hard coded, so no other username will be accepted, or in other words allow
+tampering with the password file.
+
+		login or logout (provided login is in the path)
+
+			Your system is now untouchable except by the three (or one)
+fignered salute.  the mouse continues to move as normal, however it does not
+do any thing other than move.  I was going to block that as well, but I though
+it was better to allow it to move.  (people tend to think a machine is frozen
+if the mouse does not move :->)
+
+	I can be contacted, at cemn@manta.jcu.edu.au (up untill end of next year).
+
+
+	Enjoy, BTW this is my first Piece of PD!

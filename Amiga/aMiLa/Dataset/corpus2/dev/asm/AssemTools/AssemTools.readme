@@ -1,0 +1,12 @@
+Short:        Collection of assembly language examples
+Author:       Jukka Marin
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+A collection of files which should be of great interest to Amiga assembly
+language programmers.  The collection includes 140 macro routines which
+make assembly language programming a lot easier.  There is also a library
+of routines containing buffered C-like file handling functions (fopen,
+fclose, fgets, fputs, etc) and a file name requester.  All routines are
+re-entrant.  For example programs using the macros and library, and a 65c02
+cross macro assembler.  

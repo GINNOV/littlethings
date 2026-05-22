@@ -1,0 +1,8 @@
+Short:        C example on writing AGA copper lists.
+Author:       peru@maya.dei.unipd.it (Stefano Peruzzi)
+Uploader:     peru maya dei unipd it (Stefano Peruzzi)
+Type:         dev/src
+Architecture: m68k-amigaos
+
+This is a C example that explains how to write
+a full AGA color transition with Copper.

@@ -1,0 +1,59 @@
+Files contained herein:
+
+	README			- This file
+	COPYING			- copying permissions for the treewalk
+	main.c			- main routines for treewalk program
+	filter.c		- code to compile & execute filter expressions
+	magic.c			- code to handle `strings`
+	errors.h		- error numbers set by parts of treewalk program
+	treewalk.c		- code for the treewalk function proper
+	treewalk.h		- header needed to use the treewalk function
+	Makefile		- used to build the entire mess
+	treewalk		- the executable
+	timings			- comparisons between treewalk & similar tools
+	treewalk.doc		- documentation on the treewalk program
+	treewalk.fun		- documentation on the treewalk function
+	daily.rexx		- simple backup script using treewalk
+	daily.ftw		- support routine for same
+	files.rexx		- emulation of the lattice files command
+	patname.ftw		- support routine for the above
+	copy.ftw		- ditto
+	basename.ftw		- ditto, but usefull elsewhere
+	rootname.ftw		- ditto, but usefull elsewhere
+	printcomment.ftw	- prints the comment on each file that has one
+	mginsert.ftw		- inserts file names into a running mg3a
+	nonrecursive.ftw	- can be used to limit recursion
+	twpath.ftw		- used by above, among others
+
+
+For hackers:
+
+This code is written in Lattice C, uses it's ANSI features pretty
+heavily, and also makes heavy use of the Lattice library. You may be
+able to make it work with Manx, but it probably won't be easy. If you
+want to try, I'd recommend having the ARP library around.
+
+The makefile is written to use my utilities, most notably make, cc &
+rm. Adopting everything but "make clean" to a stock AmigaDOS/Lattice
+environment should be pretty simple. You can compile with both -w &
+-rr safely, providing you've got an interface to the
+rexxsyslib.library somewhere.
+
+The code in filter.c uses an operator precedence parser to deal with
+the expressions. It looks like black magic, but works very well,
+especially if you're going to interpret it via a stack mechanism.
+Since the result (in both cases) doesn't use system stack, I consider
+this a major win. The one extra thing I'm thinking about doing is an
+"optimization" pass over the finished expression, to take out the
+targets of the short-circuit "and"'s & "or"'s (just make everything that
+points to <shortcircuitnode> point to <shortcircuitnode>->n_next).
+
+If you don't have REXX, or want a version without REXX support,
+compile with -dNO_REXX. This will cause unrecognized tokens to
+generate parse errors instead of REXX invocations. It also makes the
+REXX support code vanish. I thought about using Execute instead of
+ARexx, but 1) if you've got both, you can do one from the other
+anyway; 2) ARexx feels like the right thing to use in this case; and
+3) Getting the Execute right depends heavily on your environment
+(WShell, Shell, csh, CLI, etc.). If you think you can make it work
+right in all environments, let me know.

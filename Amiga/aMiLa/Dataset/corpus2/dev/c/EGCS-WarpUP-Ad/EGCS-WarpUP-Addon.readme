@@ -1,0 +1,32 @@
+Short:    Installtion help for EGCS WarpUP
+Author:   GNU guys, paladin@cs.tu-berlin.de, MagicSN@Birdland.es.bawue.de
+Uploader: MagicSN@Birdland.es.bawue.de
+Type:     dev/c
+
+Recently the EGCS Compiler has been ported to WarpUP, so now you can
+develop software for WarpUP - which also will run on future PPC Boards
+like the Escena Boards, as these Boards are WarpUP-Only !!! - with a
+freeware compiler which supports the latest C++ Standard.
+
+Sadly EGCS is a bit HARD to install, in all versions. This archive
+contains:
+
+- A document explaining how to install EGCS in common, and EGCS-WarpUP
+  version specific.
+- The tools LoadElfWOS (Load a WarpUP ELF File, like sadly the EGCS
+  WarpUP produces) and elf2exe (converts a WarpUP ELF File into a
+  Amiga Hunk Format File, so that LoadELFWos is not needed anymore)
+- Correct inlines for EGCS WarpUP
+- Source-Code for LoadElfWOS
+- Info about where you get the different archives for the EGCS WarpUP
+  installation or EGCS installation in general
+
+Well, it took me really some time to get this complicated GNU Compiler
+working. Not that easy like installing StormC, definitely...
+
+Steffen Haeuser
+
+
+
+
+   

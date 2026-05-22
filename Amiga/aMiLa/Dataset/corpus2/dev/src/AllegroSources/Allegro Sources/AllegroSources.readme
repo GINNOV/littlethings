@@ -1,0 +1,14 @@
+Short:        Allegro - a game programming library source code
+Author:       Allegro developers, Hitman (OS4 port), Ilkka Lehtoranta
+Uploader:     Ilkka Lehtoranta (ilkleht@yahoo.com)
+Version:      1.1
+Type:         dev/src
+Architecture: generic
+
+Allegro is cross-platform library aimed at video game and multimedia
+programming.
+
+This archive contains source code of Allegro/MorphOS port.
+It is based on an OS4 port developed by Hitman/Code HQ.
+
+http://alleg.sourceforge.net/

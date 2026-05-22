@@ -1,0 +1,17 @@
+Short:        Fast 3D mapper in 68k asm, used in Enforce
+Author:       Filip Doksansky
+Uploader:     troda cbnet cz
+Type:         dev/asm
+Architecture: m68k-amigaos
+
+DESCRIPTION
+The Enfroce engine has been developed by Filip Doksansky. The used 68k
+3D mapping code are still fastest what i seen in game, so i ask him if
+is possible, when the Enforce is canceled, relase at least the very fast
+beta (but it have limitations and bugses, ofcourse ;) what i still
+holding and the sources, at least the critical ones.
+Hope anyone find the asm sources interesting and try learn from it.
+Feedback to author is not possible.
+
+AUTHOR:
+Filip Doksansky

@@ -1,0 +1,43 @@
+
+ Definition of the 'RPortVPort' output type
+--------------------------------------------
+
+1.WHY ANOTHER OUTPUT TYPE?
+
+It gives more control on rendering process and is more general than
+'Window' output type.  Output handler renders the graphics into specified
+RastPort at the given coordinates and with the given size.  It can be used
+for both normal and off-screen rendering.
+
+For now it is used by MUI Mesa class so MUI programs will work only with
+handlers supporting 'RPortVPort'.
+
+
+2.HOW TO USE IT?
+
+Use the following structure:
+
+struct RPortVPort
+{
+struct RastPort *RPort; // RastPort where to render
+struct ViewPort *VPort; // ViewPort associated with display
+long LeftEdge,TopEdge;  // coordinates
+long Width,Height;      // drawing area size
+};
+
+Before rendering, you have to specify OH_Output as pointer to struct
+RPortVPort (could also be done in CreateContext).
+Any time you can set OH_Output to NULL pointer (or set RPort/VPort to
+NULL), this means your previous rendering environment is no longer valid
+and the handler will free any resources associated with it (eg. you
+want to close/iconify the window preserving the GL context).
+
+
+3.HOW TO WRITE A HANDLER?
+
+See the supplied sources - 'grey' is very simple handler, that supports both
+"window" and "rportvport" outputs.
+Hints:  The structure you get in InitOutputHandler() or Set...Attrs()
+should be copied in the private buffer.  If it is NULL, assume RPort and
+VPort are NULL (you have to free any resources before leaving Set...Attrs()
+in that case). The handler don't have to return OH_Width/Height values.

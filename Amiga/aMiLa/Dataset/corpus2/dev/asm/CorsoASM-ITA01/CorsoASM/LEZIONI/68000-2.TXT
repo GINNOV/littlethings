@@ -1,0 +1,3496 @@
+
+;	TABELLA DI RIFERIMENTO DELLA PROGRAMMAZIONE 68000 - LIVELLO 2
+
+	                            !     !
+		      _..'/\        |\___/|        /\-.._
+	           ./||||||\\.      |||||||      .//||||||\.
+	        ./||||||||||\\|..   |||||||   ..|//||||||||||\.
+	     ./||||||||||||||\||||||||||||||||||||/|||||||||||||\.
+	   ./|||||||||||||||||||||||||||||||||||||||||||||||||||||\.
+	  /|||||||||||||||||||||||||||||||||||||||||||||||||||||||||\
+	 '|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||`
+	'||||'     `|||||/'   ``\|||||||||||||/''   `\||||||'     `|||`
+	|/'          `\|/         \!|||||||!/         \|/'          `\|
+	V              V            \|||||/            V              V
+	`              `             \|||/             '              '
+	                              \./
+Autore: Fabio Ciucci		       V
+
+Sinteticamente gli indirizzamenti:
+
+*******************************************************************************
+ move.l #123,xxxx	   ; Immediato: si copia il valore dopo il # nella
+ 			   ; destinazione.
+*******************************************************************************
+ move.l xxxx,$50000	   ; Assoluto lungo (una longword, fino dove arrivano
+ 			   ; gli indirizzi di memoria nel computer!).
+*******************************************************************************
+ move.l xxxx,$500.w	   ; Assoluto corto (indirizzo minore di $7FFF)
+ 			   ; Esempio: "move.l 4.w,a6"
+*******************************************************************************
+ move.l	xxxx,D0		   ; Registro dati diretto (si puo' accedere con .b
+ 			   ; .w e .l ad un registro dati Dx)
+*******************************************************************************
+ move.l	xxxx,A0		   ; Registro indirizzi diretto (si puo' accedere solo
+ 			   ; con .w e .l ad un registro indirizzi Ax, infatti
+ 			   ; un "move.b d0,a0", per esempio, darebbe errore,
+ 			   ; allo stesso modo, move.b a0,d0 non e' assemblato!)
+*******************************************************************************
+ move.l	xxxx,(a0)	   ; Registro indirizzi indiretto (cioe' si scrive non
+ 			   ; nel registro Ax, ma nell'indirizzo presente in
+ 			   ; quel registro; si puo' operare con .b, .w e .l).
+*******************************************************************************
+ move.l	xxxx,(a0)+	   ; Registro indirizzi indiretto con post-incremento
+ 			   ; ( dopo la copia a0 viene incrementato di 1 se
+ 			   ; l'istruzione era .b, di 2 se .w e di 4 se .w)
+*******************************************************************************
+ move.l	xxxx,-(a0)	   ; Registro indirizzi indiretto con pre-decremento
+			   ; (prima il registro viene decrementato, di 1 se
+			   ; l'istruzione era .b, di 2 se .w e di 4 se .w, poi
+			   ; avviene la copia indiretta, ossia nell'indirizzo
+			   ; contenuto nel registro
+*******************************************************************************
+ move.l	xxxx,$123(a0)	   ; Registro indirizzi indiretto con OFFSET (distanza
+ 			   ; di indirizzamento) - la copia viene fatta nell'
+ 			   ; indirizzo risultante dalla somma del contenuto del
+ 			   ; registro indirizzi ax piu' l'offset, che puo'
+ 			   ; variare tra -32768 e 32767 ($8000-$7fff)
+*******************************************************************************
+ move.l	xxxx,$12(a0,d0.w)  ; Reg. indirizzi indiretto con OFFSET e INDICE
+ 			   ; In questo caso, viene sommato l'indice oltre
+ 			   ; che l'offset e il contenuto del registro Ax.
+			   ; l'offset puo' variare tra -128 e +127 ($80-$7f)
+			   ; l'indice e' un registro dati o indirizzi del quale
+			   ; si possono considerate solo i suoi 16 bit bassi
+			   ; o tutti i 32 bit. Esempi:
+
+					move.l	$12(a1,d2.w),d0
+					move.l	$12(a1,d2.l),d0
+					move.l	$12(a1,a2.w),d0
+					move.l	$12(a1,a2.l),d0
+
+*******************************************************************************
+ move.l offset(PC),xxxx	   ; Relativo al PC con OFFSET; normalmente si
+ 			   ; fa calcolare l'offset dall'assemblatore, mettendo
+ 			   ; una label dove vogliamo scrivere, Es:
+
+					move.l	label(pc),d0
+
+			   ; La label deve essere non piu' lontana di $7fff
+			   ; perche' l'offset massimo e' -32768 e 32767
+			   ; nota: solitamente si puo' mettere il (PC) solo
+			   ; all'operando sorgente, e non a quello destinaz.,
+			   ; per esempio "move.l d0,label(PC)" non esiste.
+			   ; L'unica istruzione che lo permette e' il BTST:
+
+		btst.l	d0,label(pc)
+
+			  ; Allo stesso modo, 3 istruzioni che hanno un solo
+			  ; operando permettono questo indirizzamento
+
+		jmp	label(pc)
+		jsr	label(pc)
+		pea	label(pc)
+
+*******************************************************************************
+ move.l offset(PC,d0.w),xxxx ; Relativo al PC con OFFSET e INDICE; anche in
+ 			     ; questo caso si fa calcolare l'offset
+ 			     ; dall'assemblatore usando le label. Ricordarsi
+ 			     ; che la label non puo' distare piu' di 127 bytes
+ 			     ; dall'istruzione, essendo l'ofsset max -127,+127
+
+		move.l	LabCanez(pc,d2.w),d0
+		move.l	LabGatto(pc,d2.l),d0
+		move.l	LabTopol(pc,a2.w),d0
+		move.l	Labella1(pc,a2.l),d0
+
+			    ; Come abbiamo visto per l'indirizzamento senza
+			    ; indice, si puo' usare questo indirizzamento
+			    ; solo per l'operando sorgente, non per quello
+			    ; destinazione. Per esempio:
+			    ; "move.l d0,Labella1(pc,a2.l)"  non esiste!
+			    ; Solo il BTST lo permette al secondo operando:
+
+		btst.l	d0,label(pc,a2.w)
+
+			    ; E 3 istruzioni ad un solo operando:
+
+		jmp	label(pc,d2.l)
+		jsr	label(pc,d2.w)
+		pea	label(pc,d2.w)
+
+*******************************************************************************
+ move.w d1,SR		    ; Status Register
+*******************************************************************************
+ move.w	d1,ccr		    ; Condition Code Register
+*******************************************************************************
+
+Ancora piu' sinteticamente:
+
+Modi di indirizzamento					Sintassi
+----------------------					--------
+
+Registro dati diretto					  Dn
+Registro indirizzi diretto				  An
+Registro indirizzi indiretto				 (An)
+Registro indirizzi indiretto con Post-Incremento	 (An)+
+Registro indirizzi indiretto con Pre-Decremento		 -(An)
+Registro indirizzi indiretto con Offset (max 32767)	 w(An)
+Registro indirizzi indiretto con Offset e Indice	b(An,Rx)
+Assoluto corto						   w
+Assoluto lungo						   l
+Program Counter con Offset (calcolato dall'asmone)	 w(PC)
+Program Counter con Offset e Indice			b(PC,Rx)
+Immediato						  #x
+Status Register						  SR
+Condition Code Register					  CCR
+
+
+******************************************************************************
+
+			LO STATUS REGISTER: SR
+
+SR - Status Register: i 16 bit di questo registro vengono utilizzati solo
+quando il processore si trova in modo supervisore; altrimenti sono disponibili
+al programmatore gli 8 bit meno significativi, detti Registro dei Codici
+Condizione (CCR). Vediamo nel dettaglio le funzioni di SR:
+
+bit 0 - Carry (C): settato ad 1 quando il risultato di un'addizione genera un
+riporto ('carry'), o quando un sottraendo e' maggiore del minuendo, cioe'
+quando una sottrazione ha richiesto un "prestito". Il bit di Carry contiene
+inoltre il bit piu' o meno significativo di un operando sottoposto ad uno
+shift o ad una rotazione. Viene posto a zero quando l'ultima operazione
+eseguita non ci sono ne' riporti, ne' "prestiti".
+
+bit 1 - Overflow (V): viene settato se il risultato dell'ultima operazione
+tra numeri dotati di segno il risultato e' troppo grande per poter essere
+contenuto nell'operando destinazione, ad esempio se tale risultato supera i
+limiti -128..+127 nel campo byte. Ad esempio, la somma.b 80+80 genera un
+oVerflow, avendo superato +127. In campo .w i limiti sono -32768..+32767, e
+in campo .l sono -/+ 2 miliardi. Da notare che la somma 80+80 in campo byte
+non setta il flag di Carry ed eXtend, ma solamente quello di oVerflow, dato
+che 160 non supera 255, il massimo contenibile in un byte per numeri normali.
+
+bit 2 - Zero (Z): settato quando l'operazione genera il risultato zero (utile
+anche per controllare il decremento di un contatore), nonche' quando si
+confrontano due operandi uguali.
+
+bit 3 - Negative (N): viene settato ad 1 se in una operazione il bit alto del
+numero, in formato complemento a due, e' settato. In pratica se il risultato
+e' un numero negativo questo bit e' settato, altrimenti azzerato.
+Il complemento a due si ottiene facendo il complemento a uno dell'operando
+(ossia invertendo tutti i bit), aggiungendo quindi 1; ad esempio, +26 in
+binario e' %000110010; il suo complemento a uno e'%11100101 (inversione dei bit
+0 in bit 1 e viceversa); aggiungendo 1 si ottiene %11100110.
+Il bit 7, detto bit di segno, viene copiato nel bit 3 dello Status Register;
+Nel caso di -26, ad esempio, N viene settato, indicando un numero negativo.
+
+bit 4 - Extend (X): e' una ripetizione del bit di Carry, e viene usato in
+operazioni effettuate in notazione BCD (Binary Coded Decimal: il numero
+decimale 20, ad esempio, non viene rappresentato con 00010100, ma nella forma
+due decine, zero unita' 0010 0000) ed in operazioni binarie 'estese' come ADDX
+e SUBX, versioni particolari delle istruzioni di addizione e sottrazione ADD e
+SUB.
+
+Terminologia:
+
+Nibble:
+Meta' di un byte. Non  indirizzabile direttamente, ma estraibile dal byte
+mediante shift e rotazioni. In un byte si distingue il nibble destro (detto
+"basso" o "meno significativo") dal nibble sinistro (detto "alto" o "piu'
+significativo").
+
+Stack:
+Letteralmente "catasta". E' un'area di memoria destinata alla memorizzazione di
+valori di registri secondo il principio LIFO, last in first out (l'ultimo
+valore inserito, trovandosi in cima allo stack, e' anche il primo ad essere
+estratto). Quando, nel corso del programma, si esegue una diramazione ad una
+subroutine, sullo stack viene salvato il valore di PC (Program Counter), che
+viene "ripreso" come indirizzo di ritorno a subroutine terminata.
+
+
+DIRETTIVE E CARATTERISTICHE DELL'ASSEMBLATORE:
+
+L'assemblatore che si usa, nel nostro caso ASMONE, trasformando il listato da
+formato testo ascii nel binario corrispondente alle istruzioni e ai dati
+contenuti nel listato stesso, ha certe convenzioni e direttive particolari
+che occorre sapere, oltre alla conoscenza delle istruzioni 68000 vere e proprie
+elencate in questo testo.
+
+Innanzittutto, se non viene specificato il .b, .w o .l nell'operazione, viene
+assunto sempre il .w; un esempio:
+
+	move	d0,d1
+
+Viene assemblato come "MOVE.W d0,d1". Allo stesso modo un:
+
+	move	d0,12(a0,d0)
+
+Viene assemblato come
+
+	MOVE.W	D0,$0C(A0,D0.W)
+
+Dunque anche il registro usato come indice, il d0, e' considerato come d0.w.
+Per questo conviene SEMPRE specificare i vari .b, .w e .l nelle istruzioni, o
+non saremo mai sicuri di come puo' essere assemblato il tutto, specialmente da
+assemblatori diversi.
+
+Esistono anche altre particolarita', ad esempio per le istruzioni come ASL,ASR,
+LSR,ROL,ROR,ROXL,ROXR, che quando SHIFTANO di un solo bit, possono essere
+scritte in queste due forme:
+
+	(form1)
+		ROL.w	#1,d3
+		ROL.w	#1,(a0)
+	(form2)
+		ROL.w	d3
+		ROL.w	(a0)
+
+Naturalmente, quando lo shift e' maggiore di 1, occorre specificarlo!
+
+	Es:
+		ROL.W	#3,d3
+
+Altra IMPORTANTE operazione che svolge l'assemblatore, e' quella di riconoscere
+automaticamente quando e' il caso di usare MOVEA oppure MOVE, infatti esistono
+due istruzioni specifiche: il MOVE per le copie generiche, tranne che per
+le copie verso registri INDIRIZZI An, le quali sono compiute dal MOVEA.
+
+Infatti:
+		MOVE.W	#10,d0
+		MOVE.W	d1,d2
+
+Sono operazioni di competenza del MOVE, mentre:
+
+		movea.w	d1,a0
+		movea.l	a1,a0
+		movea.w	(a1),a0
+
+Sono operazioni verso Registri Indirizzi, dunque sono dei MOVEA!!! In realta'
+non occorre far caso ogni volta che facciamo un MOVE se si tratta di un MOVE
+o di un MOVEA, perche' ASMONE lo fa per noi. Basta specificare sempre MOVE:
+
+		move.w	a1,a0
+		move.l	d0,d1
+		move.l	(a1),a4
+
+Queste 3 istruzioni saranno assemblate correttamente, la prima e la terza come
+MOVEA e la seconda come MOVE. Addirittura si puo' specificare il MOVEA quando
+non e' corretto, e verra' assemblato il MOVE giusto:
+
+		movea.l	d0,d1
+
+Sara' assemblato come MOVE.L d0,d1.
+
+Lo stesso vale per ADD,ADDI,ADDA ; SUB,SUBI,SUBA ; AND,ANDI ; CMP,CMPA,CMPI
+EOR,EORI ; OR,ORI: prendiamo il caso dell'ADD come esempio per tutti questi
+gruppi di istruzioni: esistono 3 tipi di ADD, che svolgono la medesima
+operazione di addizione, ma su operandi diversi. Ebbene, se si deve fare una
+somma di questo tipo:
+
+	ADD.W	d0,d1
+
+Ossia tra registri, ad esempio, basta il semplice ADD, mentre se si deve fare
+una somma ad un registro indirizzi, esiste l'apposito ADDA:
+
+	ADDA.L	d0,a1
+
+Nel caso si debba aggiungere una costante, con l'indirizzamento #immediato,
+esiste l'apposito ADDI:
+
+	ADDI.W	#10,d0
+
+Ebbene, dovremmo scrivere sempre gli ADD stando attenti al caso:
+
+		add.l	(a1),d0
+		addi.b	#$12,(a1)
+		add.b	label(pc,d2.w),d0
+		adda.l	(a1),a0
+		add.w	$12(a1,d2.l),d0
+		adda.w	(a1)+,a0
+		add.b	$12(a1,d2.w),d0
+		adda.w	label(pc),a0
+		addi.w	#$1234,$1234.w
+
+Naturalmente quasi tutti gli assemblatori accettano sempre ADD in compilazione
+e assemblano correttamente a seconda dei casi gli ADDI/ADDA/ADD:
+
+		add.l	(a1),d0
+		add.b	#$12,(a1)
+		add.b	label(pc,d2.w),d0
+		add.l	(a1),a0
+		add.w	$12(a1,d2.l),d0
+		add.w	(a1)+,a0
+		add.b	$12(a1,d2.w),d0
+		add.w	label(pc),a0
+		add.w	#$1234,$1234.w
+
+Dunque scrivete sempre ADD, risparmiandovi di dividere l'istruzione nei 3 casi
+diversi, tanto e' pur sempre un ADD.
+Lo stesso vale per le altre istruzioni che hanno il "fratellino" che finisce
+in "A" per i registri indirizzi e quello che finisce in "I" per le costanti.
+Dunque, scrivete sempre:
+
+	MOVE	- per le istruzioni MOVE,MOVEA
+	ADD	- per le istruzioni ADD,ADDI,ADDA
+	SUB	- per le istruzioni SUB,SUBI,SUBA
+	AND	- per le istruzioni AND,ANDI
+	CMP	- per le istruzioni CMP,CMPA,CMPI
+	EOR	- per le istruzioni EOR,EORI
+	OR	- per le istruzioni OR,ORI
+
+Gli inventori degli assemblatori ci hanno cosi' fatto risparmiare 10 istruzioni
+"accorpandone" 17 in 7 solamente. Se pero' siete dei maniaci e degli esteti
+del listato, potete specificarle tutte e 17 (mah!).
+
+Un consiglio: quando agite su un registro indirizzi, ad esempio:
+
+	MOVEA.L	xxxx,Ax
+	CMPA.L	Ax,Ax
+	ADDA.L	xxxx,Ax
+	SUBA.L	xxxx,Ax
+
+Usate sempre l'estensione .L, e mai .W, perche' gli indirizzi sono lunghi una
+longword, e soprattutto perche' queste istruzioni su registri non agiscono
+come le altre per l'indirizzamento .W, tanto piu' che non permettono
+l'indirizzamento .B: infatti, un MOVEA.W o un ADDA.W agisce non sulla word
+bassa del registro indirizzi, ma sull'intero indirizzo, ricavando la word alta
+"mancante" riempiendola con una replica del bit 15 della word bassa. Dunque
+avviene una cosa simile all'istruzione EXT (vedi), e questo puo' essere FATALE
+per alcune routines, infatti questa "estensione" fa si' che, per esempio,
+un ADD.W #$5000,a0 aggiunga il valore $00005000, perche' il bit 15 di $5000 e'
+azzerato, mentre un ADD.W #$B000,A0 provoca un aumento di $FFFFB000, il che
+e' MOOOLTO pericoloso.
+
+Un'altra convenzione e' che si puo' indicare il registro A7 anche come SP:
+
+	movem.l	d0-d7/a0-a6,-(SP) <-> movem.l d0-d7/a0-a6,-(a7)
+
+Proseguiamo con le convenzioni: sappiamo che per definire un'area di commento
+occore precedere il testo del commento da un ;, ma si puo' farlo precedere
+anche da un asterisco "*":
+
+	move.l	4.w,a6	* commento!
+
+Ma, in realta', dopo l'istruzione si potrebbe mettere direttamente il
+commento senza precederlo col "*" o col ";"
+
+	move.l	4.w,a6	commento!
+
+Comunque non tutti gli assemblatori permettono questo, e dipende anche dai
+settaggi delle preferenze dei vari assemblatori, quindi mettete sempre il ";"
+prima dei vostri commenti.
+
+Ci sono inoltre gli EQUATES, ossia dei simboli che possiamo definire e usare
+al posto dei numeri nel listato:
+
+NumeroPlanes	EQU	5
+
+	move.w	#NumeroPlanes,d0	; assemblato come MOVE.W #5,d0
+
+Gli equates si definiscono in modo simile alle label, hanno nomi a piacere e
+non devono essere spaziate dall'inizio, ma a differenza delle label non devono
+terminare con i ":". Si puo' usare anche il simbolo "=" al posto dell'EQU.
+
+-	-	-	-	-	-	-	-	-	-
+
+Naturalmente, se nel listato sono presenti delle operazioni o delle 
+espressioni, sono risolte in fase di assemblaggio, come avviene digitando
+l'espressione col comando "?" della linea comandi ASMONE:
+
+	MOVE.W	#(10*3)+2,D0	; Sara' assemblato come MOVE.W #32,d0
+	MOVE.W	#(30/3)+2,d0	; Sara' assemblato come MOVE.W #12,d0
+	
+Allo stesso modo, si possono usare anche gli Equates definiti per i calcoli:
+
+	move.w	#NumeroPlanes*2,d0
+
+Oppure si possono specificare degli Offset da alcune label:
+
+	MOVE.b	d0,SPRITE+1
+	MOVE.b	d1,SPRITE+2
+	MOVE.b	d2,SPRITE+3
+
+Abbiamo gia' visto che questo e' equivalente a fare 3 label per ogni byte
+dopo la label SPRITE. Per esempio, per scrivere 100 bytes dopo una label:
+
+	MOVE.B	d0,label+100
+
+E Cosi' via. L'Offset in memoria sara' calcolato come ci fosse una label in
+quel punto, 100 bytes dopo label (il numero conta sempre 1 byte!!!).
+
+Infine, si puo' addirittura specificare una LABEL-EQUATE, per esempio:
+
+HSTART:	EQU	*+1
+VSTOP:	EQU	*+2
+
+MIOSPRITE:		; lunghezza 13 linee
+	dc.b $50	; VSTART
+	dc.b $90	; HSTART
+	dc.b $5d	; VSTOP
+	dc.b $00
+	...
+
+In questo caso, viene usato l'"*" dopo l'EQU, che indica "QUESTO INDIRIZZO",
+allora possiamo tradurre in:" HSTART: questo indirizzo+1", eccetera.
+Anziche' porre le label tra un byte e l'altro, le abbiamo definite ad una certa
+distanza da tale byte, ma abbiamo scritto "l'offset" da quel punto.
+Riferendoci a HSTART e VSTOP, ci riferiremo proprio ai bytes indicati, come
+se le label fossero poste in quel punto. (Es: "M HSTART": 90 5c 00 ....)
+Tale stratagemma dell'"*" dopo l'EQU, puo' essere usato anche per Bcc:
+
+	move.l	d1,d2
+;*-6
+	move.b	(a1),d0
+;*-2
+	cmp.b	(a1),d0
+	beq.s	*-2
+	dbra	d2,*-6
+
+In questo caso possiamo calcolare NOI anziche' l'assemblatore l'offset dei
+Bcc e dei DBcc. (ho messo dei ; per indicare gli offset come fossero label per
+rendere piu' chiaro). Usare le label pero' e' piu' comodo sicuramente.
+
+Potrebbe servire quando si usa la direttiva "REPT", che ripete una data parte
+di dati o di codice:
+
+	REPT	100	; 100 volte
+
+	dc.b	"ciao"
+
+	ENDR	; fine della parte da ripetere
+
+Con questa direttiva scriviamo in memoria 100 volte "CIAO". Naturalmente se
+si usassero delle LABEL, si verificherebbe l'errore di "label gia' esistente",
+dunque si potrebbe usare lo stratagemma di prima:
+
+
+	REPT	100	; 100 volte
+
+	move.l	d1,d2
+;*-6
+	move.b	(a1),d0
+;*-2
+	cmp.b	(a1),d0
+	beq.s	*-2
+	dbra	d2,*-6
+
+	ENDR
+
+Eiste il comando "SET", che "definisce una variabile" per cui si puo', tramite
+il REPT, creare tabelle o istruzioni in sequenza, per esempio, per creare
+una tabella con i multipli del 2:
+
+TABELLA:
+	dc.b	0,2,4,6,8,10,12,14,16,18
+
+Possiamo scrivere anche:
+
+
+TABELLA:
+
+A set 0		; A e' uguale a 0
+
+	Rept	10	; fai 10 volte il pezzo da qua a ENDR
+
+	Dc.b	A*2	; metti (col dc.b) A*2 in memoria
+A set A+1		; Al prossimo "loop" A vale A+1
+
+	Endr
+
+Comunque il comando REPT non esiste in tutti gli assemblatori, e spesso rende
+meno chiaro il listato. E' meglio non usarlo, a meno che non salvi molto lavoro
+di scrittura "manuale".
+
+Per terminare questa parte, ecco le operazioni che possono essere inserite
+nelle "espressioni" risolte durante l'assemblaggio, utilizzabili anche
+quando si usa il comando "?" per calcolare dalla linea comandi:
+
+
+	()	Parentesi	; Es: (10*2)*(3+5)
+	*	Moltiplicazione
+	+	Addizione
+	-	Sottrazione
+	/	Divisione
+	^	Potenza	      (es: "moveq #2^4,d0", assemblato "moveq #16,d0")
+
+Ci sono anche gli operatori LOGICI sui bit:
+
+	&	AND	(Es: %01010101 & %00001111 = %00000101
+	!	OR	(Es: %00110011 ! %11000011 = %11110011
+	~	EOR	(Es: %00110011 ~ %11000011 = %11110000
+	>>	Shift a destra (Es: $50>>2 = $14) (%01010000>>2 = 00010100)
+	<<	Shift a sinistra (come LSL) (Es: $14<<2 = $50)
+
+Questi possono essere utilissimi, as esempio per "spezzare" dei valori .l in
+due words, eccetera. Facciamo il caso che si voglia dividere un valore lungo
+una word, mettendone gli 8 bit bassi in una destinazione e gli 8 bit alti
+in un'altra. Possiamo definire un Equate, e lasciar "spezzare" il valore
+all'ASMONE, per cui possiamo semplicemente cambiare tale equate ogni volta:
+
+
+MICS	equ	2000
+
+
+	move.b  #(MICS&$FF),$400(a4)	; metti il byte basso del time
+	move.b  #(MICS>>8),$500(a4)	; metti il byte alto del time
+
+Dunque, (MICS&$FF) significa MICS AND $00FF, e come sappiamo l'AND azzera i
+bit che sono a zero nel secondo operando e lascia invariati, in questo caso,
+i primi 8, cioe' $FF (%11111111). Essendo MICS = 2000, cioe' $07d0, in
+questo caso l'operazione e' $07d0 AND $00FF, per cui il risultato e' $00d0,
+cioe' il BYTE BASSO della word. L'istruzione viene assemblata cosi':
+
+	MOVE.B	#$D0,$400(A4)
+
+Per quanto riguarda MICS>>8, equivale a $07d0 LSR 8, dunque il risultato e'
+il bite alto "spostato" al posto di quello basso: $0007:
+
+	MOVE.B	#$07,$500(A4)
+
+Si possono spezzare anche indirizzi di una longword nelle 2 word, da porre per
+esempio nei puntatori ai bitplanes:
+
+INDIRIZZO	EQU	$75000
+
+Copperlist:
+	dc.w	$e0,INDIRIZZO>>16	; word alta dell'indirizzo in BPL0PTH
+	dc.w	$e2,INDIRIZZO&$FFFF	; word bassa dell'indirizzo in BPL0PTL
+
+Il tutto sara' assemblato cosi':
+
+	dc.w	$e0,$0007
+	dc.w	$e2,$5000
+
+Comunque e' meglio puntare i bitplanes con una routine e non usare indirizzi
+assoluti (FISSI). Questi operatori sono molto utili, tenetene sempre conto.
+
+Continuiamo con le direttive:
+
+	END	; indica la fine del listato, quello che compare dopo l'END
+		; non viene assemblato
+
+Ci sono poi le direttive riguardanti l'allineamento a indirizzi pari o dispari:
+
+	EVEN	; allinea ad indirizzo PARI (allineamento a word, 16 bit)
+	ODD	; allinea ad indirizzo DISPARI
+
+Even va messo quando si verifica l'errore "Word at odd address"
+Altrimenti si puo' allineare a LongWord (32 bit), o a 64 bit. Per esempio, nel
+CHIPSET AGA, certe risuluzioni grafiche necessitano che i bitplanes siano
+ad indirizzi multipli di 64 bit, ed e' indispensabile questa direttiva.
+Per allineare si usa CNOP:
+
+	CNOP	Size[,Offset]
+
+	cnop	0,2	; allinea a word (16 bit) equivalente di EVEN
+	cnop	0,4	; allinea a longword (32 bit)
+	cnop	0,8	; allinea ad indirizzi divisibili per 8 (64 bit)
+	cnop	0,16	;...
+
+A proposito dell'allineamento, RICORDATEVI CHE su un indirizzo dispari si
+puo' operare solo in .b, altrimenti un MOVE.W o MOVE.L #xxx,indirizzo causa
+un crash totale con reset e GURU MEDITATION/SOFTWARE FAILURE.
+
+Altra direttiva importantissima e' il DC.x, che permette di mettere in memoria
+bytes, words e longwords, specialmente di Copperlist o Tabelle:
+
+	dc.w	$1234,$4567,$8901,$2345...
+
+Oppure per label usate come variabili con una word/long solitaria:
+
+GfxBase:
+	dc.l	0
+
+Nel caso si scriva del testo, si usa il dc.b e si pone il testo tra "" o ''
+
+	dc.b	"Testo ASCII",$10,$11
+
+E si puo' anche inserire qualche valore decimale/esadecimale/binario sulla
+stessa linea, basta separarli con le virgole. Ricordatevi che dopo un testo
+o comunque un dc.b occorre mettere EVEN per pareggiare l'eventuale indirizzo
+dispari formatosi!
+
+Sua variante e' il DCB.x, che mette in memoria vari bytes, words o longwords
+tutte uguali, es:
+
+	dcb.b	100,$55		; metti in memoria 100 bytes $55 consecutivi
+	dcb.b	50,$00		; 50 bytes azzerati
+
+Questa direttiva si puo' anche chiamare BLK, per compatibilita' col vecchio
+(ma mitico) SEKA, comunque il DCB e' universalmente usato.
+
+Per le SECTION BSS, che sono formate da soli spazi azzerati, si usa la
+direttiva "DS.x [numero]" per specificare quanto spazio occupare:
+
+	ds.b	100	; 100 bytes azzerati
+
+A proposito di SECTION, le SECTION sono una direttiva dell'assemblatore, che
+ha la funzione di allocare le parti del codice in CHIP o in FAST ram secondo
+la loro natura. Nei computer schifosi o antichi, per esempio MSDOS o altri
+reperti archeologici, non esiste il multitasking e il rilocamento dei programmi
+nella memoria, infatti i programmi sono fatti per andare a certi indirizzi
+precisi di memoria, mentre su amiga ogni programma puo' essere "rilocato",
+ossia copiato in una qualsiasi zona di memoria libera, in tal modo vari
+programmi possono stare in memoria contemporaneamente, ad indirizzi diversi.
+Vabbe', su windows cel'hanno fatta a far caricare piu' di un programma in
+memoria, ma ognuno lavora da solo, senza multitasking HAHAHAHAHAHAH!
+Comunque, l'effetto di queste direttive si vede quando viene salvato
+l'eseguibile con "WO", infatti nel formato dell'eseguibile Amiga ci sono gli
+Hunk, ossia i pezzi di memoria decisi con le SECTION, i quali sono allocati
+dal mitico sistema Operativo dell'Amiga.
+Pero' quando assembliamo e Jumpiamo da ASMONE, se l'opzione di AutoAlloc non
+e' attivata tutte le section sono assemblate in CHIP (Se alla domanda iniziale
+di ASMONE abbbiamo risposto C!). L'ASMONE ha questa opzione disattivata di
+default. Potete attivarla dal menu' Project/Preferences../AutoAlloc.
+Comunque l'AutoAlloc occupa piu' memoria, dato che oltre alla memoria allocata
+all'inizio, ogni volta ne alloca ALTRA per le section.
+Le SECTION possono essere CODE, DATA o BSS, e andare in CHIP o in PUBLIC, cioe'
+in qualsiasi memoria. Per indicare che vada in chip si aggiunge un _C:
+
+	Section	Grafica,DATA_C	; Dati, in CHIP!!!
+
+Altra direttiva UTILISSIMA e' l'INCBIN, che carica dei dati da disco mettendoli
+in memoria al punto dove si trova l'incbin stesso:
+
+	INCBIN	"nomefile"
+
+Una direttiva analoga e' INCLUDE "nomefile", che invece include un testo ASCII,
+ossia un pezzo di sorgente, che viene assemblato assieme al resto del codice.
+Puo' servire per includere routines "universalmente usate", ad esempio la
+Startup iniziale o la routine della musica. Vi sconsiglio pero' di usare troppo
+gli INCLUDE, perche' poi si arriva al punto di non sapere piu' cosa c'e' nel
+listato, e se si perde uno dei file da includere addio assemblaggio!
+
+Direttiva associata a INCBIN e INCLUDE e' INCDIR, che stabilisce da quale
+directory caricare i files. Attenzione pero' che l'ultimo INCDIR vale anche
+per tutti i listati caricati dopo, dunque se i files da includere sono da
+un'altra parte dovere riazzerare l'INCDIR. Esempi:
+
+	INCDIR	"dh0:sorgentozzi/mieifiles"	; decide una dir
+
+	INCDIR	""	; Azzera l'incdir, la directory diventa quella corrente
+
+Vi sconsiglio di riempire i vostri sorgenti di INCDIR e INCLUDE, perche' poi
+se vi trovate, ad esempio, a dover portare un vostro listato a far vedere ad
+un amico, dovrete copiarvi nel dischetto il vostro povero sorgente diviso in
+una cinquantina di piccoli files, e sara' dura trovarli tutti nelle svariate
+directory dell'hard disk. Infine, una volta giunti da tale amico, dovrete
+cambiare tutti i Path degli INCDIR, e magari vi accorgerete che manca un file
+e dovete rinunciare a far vedere il programma in funzione.
+Un uso intelligente di INCBIN/INCLUDE puo' essere questo: per quanto riguarda
+l'INCBIN, si possono includere nel listato in formato DC.x tutti i dati piu'
+piccoli, sotto i 5Kb, per esempio sprites o piccole tabelle, mentre per le
+figure o le musiche, piu' grandi di 5K, converra' caricarle con INCBIN: in
+questo modo i files "sciolti" sono il meno possibile, e il listato e' corto.
+Per gli INCLUDE lo stesso: al massimo si puo' usare l'include per la routine
+della musica o per la startup, ma nessuno vieta di non usare proprio per
+nulla INCLUDE. Nel corso e' servito per includere la "Startup1.s", piu' che
+altro per risparmiare spazio, che su un dischetto non e' tantissimo.
+Volete forse negare la soddisfazione che c'e' a fare "A" e "J" e veder
+partire subito una decina di solidi 3D con una cinquantina di palline e gli
+equalizzatori senza 30 minuti di caricamento di INCLUDE????
+
+Ci sarebbero anche gli assemblaggi condizionali (IF,ENDIF,ELSE), ma non sono
+poi la fine del mondo, se serviranno saranno spiegati piu' avanti.
+
+Anche le MACRO (MACRO,ENDM) verranno spiegate, eventualmente, piu' avanti, dato
+che non sono che una specie di EQUATE di varie istruzioni, e se ne puo' fare
+ampiamente a meno.
+
+Per quanto riguarda le Label Locali (quelle precedute dal .) credo siano una
+frivolezza stupida, per chi non ha fantasia e non riesce a inventare nomi
+per le sue label. Vabbe', forse sono stato esagerato, comunque non credo che
+abbiano una utilita' particolare. Dunque, per favore, non mi fate sorgenti con
+label precedute dal punto, o vi allontanerete dalla mia corrente ideologica
+coderistica. 
+
+-	-	-	-	-	-	-	-	-	-
+
+Una coppia di direttive che al giorno d'oggi non sono piu' alla moda, ma che
+potrebbero servire sono ORG e LOAD, che servono in pratica per allocare ad
+indirizzi FISSI, ASSOLUTI, NON RILOCABILI le istruzioni del nostro listato.
+Ovviamente queste istruzioni venivano usate ai tempi in cui venivano fatte
+quelle demo che oggi infatti non funzionano sui computer moderni, dato che
+SE SI FA UN DEMO/GIOCO IN FORMATO FILE ESEGUIBILE, NON CI DEVONO ESSERE
+INDIRIZZI ASSOLUTI, MA SOLTANTO SECTION!
+L'utilizzo di ORG e LOAD e' rimasto per fare un demo/gioco autoboot, ossia
+una TRACKMO (demo su tracce con caricamento non dos) o un gioco di vecchio
+tipo. D'altronde le ultime demo e gli ultimi giochi sempre piu' sono
+installabili su Hard Disk, specialmente le MIGLIORI demo e i MIGLIORI giochi
+(vedi BANSHEE e BRIAN THE LION per i giochi).
+Credo proprio che nei prossimi anni spariranno i dischi autoboot, perche' non
+sono installabili su HD, ne' facilmente convertibili per CD32 o CD-ROM, e
+l'unica cosa certa e' che gli HD e i CD-ROM saranno sempre piu' diffusi.
+E' anche il fatto che TUTTO si installa su HD che ha fatto diffondere i
+PC MSDOS cosi' bene (anche le tangenti, si sa).
+In questo corso avevo pensato di includere una ampia parte su come farsi un
+loader da disco via hardware, e magari un copiatore alla XCOPY/DCOPY, visto
+che ne ho iniziato a programmare uno anni fa. Ma alla luce della realta', ho
+invece deciso di non trattare per niente il caricamento MFM via hardware o
+autoboot, perche' vi insegnerei a fare qualcosa che penalizzerebbe la vostra
+produzione!!!! La migliore opzione e' quella di caricare files con il sistema
+operativo, ossia la DOS.LIBRARY, come fanno le ultime e migliori produzioni.
+Dunque vi esorto a programmare solo files eseguibili, da salvare con "WO",
+diffidando degli obsoleti autoboot e, peggio, di iniziare il listato cosi':
+
+	ORG	$30000	; organizza il codice con indirizzi assoluti da $30000
+	LOAD	$30000	; assembla all'indirizzo $30000
+
+Anche perche' se avete 1MB o 2MB di chip senza FAST, come A500+/a600 e a1200
+di base, a $30000 c'e' caricato ASMONE stesso, il quale sara' sovrascritto e
+tutto andra' in GURU MEDITATION. (Mi ricordo ancora allo smau del 91 o del 92,
+i bambini stupidi che caricavano asmone sugli A600 e si chiedevano perche' non
+funzionassero i sorgenti rubati o copiati che volevano far passare per opera
+loro, HAHAHAHA! Ebbene, erano sorgenti che avevano trovato nei dischetti del
+lontano 1987-1988, ed erano pieni di ORG e LOAD HAHAHAHAH!).
+
+-	-	-	-	-	-	-	-	-
+
+Ci sono poi altre particolarita' a livello di assemblaggio che dipendono dai
+settaggi dell'ASMONE, e sono:
+
+Da menu: Assembler/assemble../Ucase=Lcase
+
+Questa opzione significa Upper case = Lower case, e si riferisce alle lettere
+maiuscole o minuscole che compongono le LABEL. Normalmente tale opzione e'
+settata, dunque l'assemblatore considera ugualmente le tettere maiuscole e
+minuscole, e si puo' scrivere:
+
+LaBel1:
+	btst	#6,$bfe001
+	bne.s	labEL1
+
+Cioe' basta che la "parola" che costituisce la label sia la stessa, anche se
+le maiuscole e minuscole sono differenti. Con Ucase=Lcase disabilitato,
+invece, le due label sarebbero considerate differenti, e ci sarebbe una
+segnalazione di errore, si dovrebbe scrivere:
+
+Label1:
+	btst	#6,$bfe001
+	bne.s	Label1
+
+O comunque ogni label dovrebbe essere uguale, anche per quanto riguarda la
+disposizione delle maiuscole e minuscole. Dato che solitamente ci si dimentica
+quali caratteri abbiamo messo maiuscoli e quali minuscoli, e' meglio lasciarla
+settata, viva la liberta'!
+
+Una nota sulle label: il comando "=S" dalla linea comandi mostra la SIMBOLTABLE
+che e' la lista di tutte le label con gli offset.
+
+Ultima nota: se compilate un sorgente con un milione di label, al momento del
+salvataggio dell'eseguibile con "WO" va tutto in GURU MEDITATION, a meno
+che non eseguiate un bel "stack 20000" prima di eseguire ASMONE.
+
+******************************************************************************
+
+Legenda:
+------
+   Dn	Registro Dati		(n compreso tra 0-7)
+   An	Registro Indirizzi	(n compreso tra 0-7 - A7 e' detto anche SP)
+    b	costante a 8-bit	( da -128 ($80) a +127 ($7f) )
+    w	costante a 16-bit	( da -32768 ($8000) a +32767 ($7fff) )
+    l	costante a 32-bit	( massimo $FFFFFFFF )
+    x	costante a 8-, 16-, 32-bit
+   Rx	Registro Indice; tra questi ci possono essere:
+
+		Dn.W	16 bits bassi di un Registro Dati
+		Dn.L	Tutti i 32 bits di un Registro Dati
+		An.W	16 bits bassi di un Registro Indirizzi
+		An.L	Tutti i 32 bits di un Registro Indirizzi
+
+                           --------------------------
+
+ 
+ \==================================|                    _=_ 
+  \_________________________________/              ___/==+++==\___ 
+	       """\__      \"""       |======================================/ 
+		     \__    \_          / ..  . _/--===+_____+===--"" 
+			\__   \       _/.  .. _/         `+' 
+     USS ENTERPRISE	 \__ \   __/_______/                      \ / 
+	NCC-1701	  ___-\_\-'---==+____|                  ---==O=- 
+		    __--+" .    . .        "==_                     / \ 
+		    /  |. .  ..     -------- | \ 
+		    "==+_    .   .  -------- | / 
+			 ""\___  . ..     __==" 
+			       """"--=--"" 
+ 
+ 
+
+	                                  _____
+	                              _.-'     `-._
+	                           .-'  ` || || '  `-.
+	 _______________  _      ,'   \\          //  `.
+	/               || \    /'  \   _,-----._   /   \
+	|_______________||_/   /  \\  ,' \ | | / `.  //  \
+	   |    |             _] \   / \  ,---.  / \   // \
+	   |     \__,--------/\ `   | \  /     \  / |/   - |
+	   )   ,-'       _,-'  |- |\-._ | .---, |  -|   == |
+	   || /_____,---' || |_|= ||   `-',--. \|  -| -  ==|
+	   |:(==========o=====_|- ||     ( O  )||  -| -  --|
+	   || \~~~~~`---._|| | |= ||  _,-.`--' /|  -| -  ==|
+	   )   `-.__      `-.  |- |/-'  | `---' |  -|   == |
+	   |     /  `--------\/ ,   | /  \     /  \ |\   - |
+	 __|____|_______  _    ] /   \ /  `---'  \ /   \\ /
+	|               || \   \  //  `._/ | | \_.'  \\  /
+	\_______________||_/    \   /    `-----'    \   /
+	                         `.  //           \\  ,'
+	                           `-._   || ||   _,-'
+	                               `-._____,-'
+
+
+                           --------------------------
+
+;	ELENCO DI TUTTE LE ISTRUZIONI del 68000:
+
+NOTA: non sono presenti le istruzioni quasi mai usate, come ABCD,SBCD,SBCD,
+      LINK,UNLK, non viene descritta ne' listruzione TAS, che non va usata su
+      Amiga, ne' ILLEGAL o RESET, che generano solamente una eccezione e un
+      reset delle periferiche.
+
+
+Legenda:
+
+Condition codes:
+
+	C	Carry (ossia riporto)
+
+	V	Overflow (Fuori misura)
+
+	Z	Zero
+
+	N	Negative
+
+	X	Extend
+
+	Stati dei Condition codes:
+
+Simbolo  Significato
+-------  -----------
+
+   *     Settato a seconda del risultato dell'operazione
+   -     Non modificato
+   0     Azzerato
+   1     Settato
+   U     Stato dopo l'operazione INDEFINITO
+   I     Settato dal dato immediato
+
+	Altri simboli per l'indirizzamento:
+
+<ea>     Operando di indirizzamento effettivo
+<data>   Dato immediato
+<label>  Label dell'Assemblatore (ASMONE)
+<vector> Vettore di eccezione dell'istrizione TRAP (0-15)
+<rg.lst> lista di registri dell'istruzione MOVEM
+
+							       Condition Codes
+							       ---------------
+					  Assembler   Data
+Instruction Description		           Syntax     Size        X N Z V C
+-----------------------                   ---------   ----        ---------
+***************************************************************** X N Z V C ***
+ADD      Addizione binaria                 Dn,<ea>     BWL        * * * * *
+                                           <ea>,Dn
+
+	NOTA: esistono 3 tipi di ADD dedicati: per i registri dati (ADD), per
+	i registri indirizzi (ADDA) e per le costanti (ADDI). L'assemblatore
+	accetta pero' il semplice ADD anche per scecificare ADDA e ADDI, per
+	cui si puo' sempre scrivere ADD anche quando si "addano" registri
+	indirizzi o costanti, sara' l'assemblatore ad assemblarlo come ADDA o
+	ADDI a seconda dei casi.
+
+	Somma di 2 valori binari, risultato salvato nell'operando destinazione.
+	FLAG: Carry ed eXtend = 1 se si verifica un riporto, altrimenti = 0
+	Negative = 1 se il risultato e' negativo, Negative = 0 se e' positivo.
+	oVerflow = 1 se il risultato supera la dimensione .b, .w o .l dell'ADD
+	Zero = 1 se il risultato e' Zero
+
+	Es:
+
+	Dn,<ea>
+		add.b	d0,d1
+		add.w	d0,(a1)
+		add.l	d0,(a1)+
+		add.b	d0,-(a1)
+		add.w	d0,$1234(a1)
+		add.l	d0,$12(a1,d2.w)
+		add.b	d0,$12(a1,d2.l)
+		add.b	d0,$12(a1,a2.w)
+		add.w	d0,$12(a1,a2.l)
+		add.l	d0,$1234.w
+		add.w	d0,$12345678
+
+	<ea>,Dn
+		add.b	d1,d0
+		add.w	a1,d0		; nota: solo add.w e add.l da reg. Ax
+		add.l	(a1),d0
+		add.w	(a1)+,d0
+		add.b	-(a1),d0
+		add.l	$1234(a1),d0
+		add.b	$12(a1,d2.w),d0
+		add.w	$12(a1,d2.l),d0
+		add.w	$12(a1,a2.w),d0
+		add.b	$12(a1,a2.l),d0
+		add.l	$1234.w,d0
+		add.w	$12345678,d0
+
+		add.w	label(pc),d0
+		add.b	label(pc,d2.w),d0
+		add.l	label(pc,d2.l),d0
+		add.w	label(pc,a2.w),d0
+		add.b	label(pc,a2.l),d0
+
+***************************************************************** X N Z V C ***
+ADDA     Addizione binaria a registro An   <ea>,An     -WL        - - - - -
+
+	Come ADD, ma dedicata alle addizioni su registri indirizzi, dunque
+	e' possibile solo adda.w e adda.l, non adda.b.
+	Da notare che i FLAG aritmetici non sono influenzati da questa
+	operazione, a differenza dell'ADD.
+
+	Consiglio: usate SEMPRE l'estensione .L
+
+	Es:
+
+	<ea>,An
+		adda.l	d1,a0
+		adda.l	a1,a0
+		adda.l	(a1),a0
+		adda.l	(a1)+,a0
+		adda.l	-(a1),a0
+		adda.l	$1234(a1),a0
+		adda.l	$12(a1,d2.w),a0
+		adda.l	$12(a1,d2.l),a0
+		adda.l	$12(a1,a2.w),a0
+		adda.l	$12(a1,a2.l),a0
+		adda.l	$1234.w,a0
+		adda.l	$12345678,a0
+		adda.l	label(pc),a0
+		adda.l	label(pc,d2.w),a0
+		adda.l	label(pc,d2.l),a0
+		adda.l	label(pc,a2.w),a0
+		adda.l	label(pc,a2.l),a0
+
+		adda.l	#$1234,a1	; nota: quando si deve "ADDARE" una
+					; costante ad un registro indirizzi,
+					; l'istruzione non e' addi, ma adda,
+					; e non puo' essere .b.
+
+	; Inoltre, la funzione del .w e del .l e' diversa da quella comune:
+	; operando su registri INDIRIZZI, ogni volta si opera su tutto
+	; l'indirizzo, cioe' su tutta la LONGWORD. Dunque, se facciamo
+	; ADD.W #$12,a0 o ADD.L #$12,a0 non ci sono differenze, perche' in
+	; entrambi i casi abbiamo aggiunto $12, che e' un numero positivo
+	; contenibile in una word. Dovete pero' fare attenzione al fatto
+	; che se il numero .w che volete aggiungere e' maggiore di $7fff,
+	; succedera' che il valore del bit del segno verra' copiato nei
+	; bit dal 16 al 31, facciamo un esempio:
+
+		lea	$1000,a0
+		ADDA.W	#$9200,a0	; aggiungi $FFFF9200 ad a0
+
+	; In questo caso il risultato e' $FFFFA200, un gran brutto address!
+	; State dunque attenti ad usare ADDA.L quasi sempre, perche' questa
+	; caratteristica dell'estensione a 32 bit del segno e' comune a
+	; tutti gli indirizzamenti dell'ADDA. (nonche' SUBA,CMPA,MOVEA)
+
+***************************************************************** X N Z V C ***
+ADDI     Addizione con dato Immediato      #x,<ea>     BWL        * * * * *
+
+	Somma di un dato #Immediato, ossia di una costante, alla destinazione.
+	i Flag si comportano come nell'istruzione ADD:
+	FLAG: Carry ed eXtend = 1 se si verifica un riporto, altrimenti = 0
+	Negative = 1 se il risultato e' negativo, Negative = 0 se e' positivo.
+	oVerflow = 1 se il risultato supera la dimensione .b, .w o .l dell'ADD
+	Zero = 1 se il risultato e' Zero
+
+	Es:
+
+	#x,<ea>
+		addi.w	#$1234,		d1	; le destinazioni sono state
+		addi.b	#$12,		(a1)	; distanziate per maggiore
+		addi.l	#$12345678,	(a1)+	; leggibilita'
+		addi.w	#$1234,		-(a1)
+		addi.b	#$12,		$1234(a1)
+		addi.w	#$1234,		$12(a1,d2.w)
+		addi.l	#$12345678,	$12(a1,d2.l)
+		addi.w	#$1234,		$12(a1,a2.w)
+		addi.b	#$12,		$12(a1,a2.l)
+		addi.w	#$1234,		$1234.w
+		addi.l	#$12345678,	$12345678
+
+		adda.l	#$1234,a1	; nota: quando si deve "ADDARE" una
+					; costante ad un registro indirizzi,
+					; l'istruzione non e' addi, ma adda,
+					; e non puo' essere .b
+
+***************************************************************** X N Z V C ***
+ADDQ     Addizione di #Immediato a 3-bit  #<1-8>,<ea>   BWL       * * * * *
+
+	Significa ADD Quick, ossia addizione veloce di un numero da 1 a 8,
+	che funziona esattamente come l'ADDI, dunque conviene usare sempre
+	l'ADDQ anziche' l'ADDI per la somma di numeri da 1 a 8, dato che
+	esiste questa istruzione dedicata. I Flag si comportano come l'ADD:
+	FLAG: Carry ed eXtend = 1 se si verifica un riporto, altrimenti = 0
+	Negative = 1 se il risultato e' negativo, Negative = 0 se e' positivo.
+	oVerflow = 1 se il risultato supera la dimensione .b, .w o .l dell'ADD
+	Zero = 1 se il risultato e' Zero
+
+	Es:
+
+	#<1-8>,<ea>
+		addq.w	#1,d1
+		addq.w	#1,a1	; NOTA: non e' possibile addq.b su registri Ax
+		addq.w	#1,(a1)
+		addq.l	#1,(a1)+
+		addq.l	#1,-(a1)
+		addq.w	#1,$1234(a1)
+		addq.b	#1,$12(a1,d2.w)
+		addq.w	#1,$12(a1,d2.l)
+		addq.w	#1,$12(a1,a2.w)
+		addq.l	#1,$12(a1,a2.l)
+		addq.w	#1,$1234.w
+		addq.l	#1,$12345678
+
+***************************************************************** X N Z V C ***
+ADDX     ADD con flag eXtend                Dy,Dx      BWL        * * * * *
+                                         -(Ay),-(Ax)
+
+	Questa addizione serve per fare somme binarie in precisione multipla,
+	per intenderci a 64 bit. Differisce da ADD per il fatto che il FLAG X
+	viene sommato al risultato dell'operazione.
+	I flag sono influenzati in questo modo:
+	FLAG: Carry ed eXtend= 1 se si verifica un riporto, altrimenti = 0
+	Zero = 1 se il risultato e' Zero, altrimenti rimane INVARIATO
+
+	Es:
+
+	Dy,Dx
+		addx.b	d0,d1		; possibile addx.b, addx.w, addx.l
+
+	-(Ay),-(Ax)
+		addx.b	-(a0),-(a1)	; possibile addx.b, addx.w, addx.l
+
+	Facciamo un esempio di somma a 64 bit: vogliamo sommare il valore
+	esadecimale a 64 bit $002e305a9cde0920 al valore $00001437a9204883.
+	Possiamo fare cosi':
+
+	move.l	#$002e305a,d0	;\ primo valore in d0 e d1
+	move.l	#$9cde0920,d1	;/
+	move.l	#$00001437,d2	;\secondo valore in d2 e d3
+	move.l	#$a9204883,d3	;/
+	add.l	d1,d3		; somma delle long basse dei 2 numeri a 64 bit
+				; ora l'eventuale riporto e' nel flag X
+	addx.l	d0,d2		; Somma delle long alte, con aggiunta del
+				; flag X, che e' l'eventuale riporto della
+				; somma delle long basse.
+
+	Abbiamo la somma a 64 bit nei reg. d3 (32 bit bassi) e d2 (bit alti).
+	Se la somma superasse i 64 bit possibili (ma cosa volete mai sommare?)
+	allora verra' impostato il FLAG di Carry.
+
+***************************************************************** X N Z V C ***
+AND      AND logico tra bits               Dn,<ea>     BWL        - * * 0 0
+					   <ea>,Dn
+
+	L'operazione di AND logico viene effettuata tra i singoli bit della
+	sorgente e quelli della destinazione, e il risultato e' memorizzato
+	nella destinazione. Ecco una tabella di AND bit a bit:
+
+	0 AND 0 = 0
+	0 AND 1 = 0
+	1 AND 0 = 0
+	1 AND 1 = 1
+
+	Dunque l'utilizzo principale e' quello di "mascherare" dei bit, per
+	esempio un AND.B #%00001111,d0 ha come effetto di azzerare i 4 bit
+	alti, e lasciare inalterati i 4 bit bassi, dunque si puo' dire di
+	aver "selezionato" solo i 4 bit bassi del valore in d0.
+	FLAG: eXtend non modificato, oVerflow e Carry sempre 0
+	Negative e Zero settati o azzerati a seconda dell'esito dell'AND
+
+	Es:
+
+	Dn,<ea>
+		and.w	d0,d1		; non e' possibile fare un AND usando
+		and.b	d0,(a1)		; un registro indirizzi diretto, per
+		and.w	d0,(a1)+	; esempio "and.w a0,d0" non esiste.
+		and.l	d0,-(a1)
+		and.w	d0,$1234(a1)
+		and.b	d0,$12(a1,d2.w)
+		and.b	d0,$12(a1,d2.l)
+		and.w	d0,$12(a1,a2.w)
+		and.l	d0,$12(a1,a2.l)
+		and.w	d0,$1234.w
+		and.b	d0,$12345678
+
+	<ea>,Dn
+		and.b	d1,d0		; come sopra, "and.w d0,a0" non esiste
+		and.w	(a1),d0
+		and.b	(a1)+,d0
+		and.w	-(a1),d0
+		and.b	$1234(a1),d0
+		and.l	$12(a1,d2.w),d0
+		and.b	$12(a1,d2.l),d0
+		and.w	$12(a1,a2.w),d0
+		and.b	$12(a1,a2.l),d0
+		and.b	$1234.w,d0
+		and.l	$12345678,d0
+		and.l	label(pc),d0
+		and.b	label(pc,d2.w),d0
+		and.w	label(pc,d2.l),d0
+		and.b	label(pc,a2.w),d0
+		and.l	label(pc,a2.l),d0
+
+***************************************************************** X N Z V C ***
+ANDI     AND bit per bit con Immediato  #<data>,<ea>   BWL        - * * 0 0
+
+	Come l'istruzione AND, ma specifico per valori #Immediati.
+	FLAG: eXtend non modificato, oVerflow e Carry sempre 0
+	Negative e Zero settati o azzerati a seconda dell'esito dell'AND
+
+	Es:
+
+	#<data>,<ea>
+		andi.b	#$12,		d1	; le destinazioni sono state
+		andi.l	#$12345678,	(a1)	; distanziate per maggiore
+		andi.b	#$12,		(a1)+	; leggibilita'
+		andi.w	#$1234,		-(a1)
+		andi.l	#$12345678,	$1234(a1)
+		andi.w	#$1234,		$12(a1,d2.w)
+		andi.b	#$12,		$12(a1,d2.l)
+		andi.w	#$1234,		$12(a1,a2.w)
+		andi.l	#$12345678,	$12(a1,a2.l)
+		andi.l	#$12345678,	$1234.w
+		andi.b	#$12,		$12345678
+
+		andi.b	#$12,ccr
+		andi.w	#$1234,sr	; *** ISTRUZIONE PRIVILEGIATA ***
+
+***************************************************************** X N Z V C ***
+ASL      Arithmetic Shift Left            #<1-8>,Dy    BWL        * * * * *
+                                            Dx,Dy
+                                            <ea>
+
+	Shift aritmetico a sinistra. Per shift si intende uno "scorrimento"
+	di bits, in questo caso verso Sinistra, es: %0001 shiftato di 2: %0100
+	cioe' i bits che compongono il numero sono fatti scorrere, "shiftare"
+	verso sinistra; nel caso dell'ASL i bit bassi vengono "riempiti" con
+	degli zeri, mentre i bit "uscenti" dalla parte sinistra sono copiati
+	nei FLAG Carry ed Extend. Con l'indirizzamento #immediato lo shift
+	massimo e' #8, mentre nel formato Dx,Dy vengono usati i primi 6 bit
+	del registro Dx, dunque lo shift puo' andare da 0 a 63 ($3f)
+	I FLAG sono modificati tutti a seconda dell'operazione; nel Carry
+	e nell'eXtend viene copiato il bit alto "fatto uscire"
+
+			valore che shifta
+			verso sinistra
+			 ------------
+	   Flag X/C <-- |<- <- <- <- | <--- 0 - Entra uno zero da destra
+ 			 ------------
+
+	; Indirizzamenti come ASR,LSL,LSR,ROL,ROR,ROXL,ROXR
+
+	Es:
+
+	#<1-8>,Dy
+		asl.b	#2,d1	; possibile .b, .w e .l, massimo asl.x #8,Dy
+
+	Dx,Dy
+		asl.b	d0,d1	; possibile .b, .w e .l, lo shift massimo in
+				; questo caso e' 63 (sono usati i primi 6 bit
+				; del registro dati)
+	<ea>
+		asl.w	(a1)		; nota: l'"asl <ea>" puo' essere solo
+		asl.w	(a1)+		; .w, non e' possibile usare .b o .l
+		asl.w	-(a1)		; nota2: si puo' anche scrivere la
+		asl.w	$1234(a1)	; forma "asl.w #1,(a1)","asl.w #1,xxx",
+		asl.w	$12(a1,d2.w)	; ma in genere si scrive semplicemente
+		asl.w	$12(a1,d2.l)	; "asl.w <ea>" per gli shift di 1 bit.
+		asl.w	$12(a1,a2.w)
+		asl.w	$12(a1,a2.l)
+		asl.w	$1234.w
+		asl.w	$12345678
+
+***************************************************************** X N Z V C ***
+ASR      Arithmetic Shift Right           #<1-8>,Dy    BWL        * * * * *
+                                            Dx,Dy
+                                            <ea>
+
+	Shift aritmetico a destra. Per shift si intende uno "scorrimento"
+	di bits, in questo caso verso Destra, es: %0100 shiftato di 2: %0001
+	cioe' i bits che compongono il numero sono fatti scorrere, "shiftare"
+	verso destra. In ogni shift, il bit basso del registro destinazione
+	viene copiato nei bit Carry ed eXtend, mentre il bit piu' alto
+	viene lasciato INVARIATO. (a differenza dell'LSR, ossia dello SHIFT
+	LOGICO a destra, dove il bit piu' alto viene posto a zero).
+	Dunque, l'ASR, a differenza dell'LSR, mantiene il bit del segno.
+	Con l'indirizzamento #immediato lo shift massimo e' #8,
+	ossia a 3 bit, mentre nel formato Dx,Dy vengono usati i primi 6 bit
+	del registro Dx, dunque lo shift puo' andare da 0 a 63 ($3f)
+	I FLAG sono modificati tutti a seconda dell'operazione; nel Carry
+	e nell'eXtend viene copiato il bit basso "fatto uscire"
+
+			valore che shifta
+			verso destra
+			 ------------
+		    /-->|-> -> -> ->| ---> Flag X/C
+ 		    |    ------------
+		    |_____|
+	Il bit alto viene replicato per mantenere il segno
+
+	; Indirizzamenti come ASL,LSL,LSR,ROL,ROR,ROXL,ROXR
+
+	Es:
+
+	#<1-8>,Dy
+		asr.b	#2,d1	; possibile .b, .w e .l, massimo asr.x #8,Dy
+
+	Dx,Dy
+		asr.b	d0,d1	; possibile .b, .w e .l, lo shift massimo in
+				; questo caso e' 63 (sono usati i primi 6 bit
+				; del registro dati)
+
+	<ea>
+		asr.w	(a1)	; possibile solo .w. Equivale ad asr.w #1,<ea>
+		asr.w	(a1)+	; leggere la nota all'istruzione ASL
+		asr.w	-(a1)
+		asr.w	$1234(a1)
+		asr.w	$12(a1,d2.w)
+		asr.w	$12(a1,d2.l)
+		asr.w	$12(a1,a2.w)
+		asr.w	$12(a1,a2.l)
+		asr.w	$1234.w
+		asr.w	$12345678
+
+***************************************************************** X N Z V C ***
+Bcc      Conditional Branch            Bcc.S <label>   BW-        - - - - -
+                                       Bcc.W <label>
+
+	Test dei codici di condizione e diramazione. Per cc si intende uno
+	di questi: hi,ls,cc,cs,ne,eq,vc,vs,pl,mi,ge,lt,gt,le,ra.
+	Possono essere .s (ossia .b) o .w solamente, non .l.
+	FLAG: nessun flag viene modificato
+	Possono essere usati dopo un CMP, un TST, o anche dopo un ADD eccetera.
+	In pratica questa istruzione serve per fare dei salti a certe label
+	se e solo se i flag sono in una certa posizione. L'unico e' il
+	BRA, che significa Branch Always, ossia SALTA SEMPRE, che salta ogni
+	volta. Negli altri casi dipende dai Condition Codes. Vediamo intanto
+	le possibili Bcc:
+
+	Es:	(Considerate la situazione dopo un CMP.x OP1,OP2)
+	
+		bhi.s	label	; > (Se OP2 e' maggiore di OP1) (OP=Operando)
+				; (HIgher ) - OP2 > OP1, senza segno
+				; * Se Carry=0 e Z=0
+
+		bgt.w	label	; > (Se OP2 e' maggiore di OP1) con segno
+				; (Greather Than) OP2 > OP1, con segno
+				; * (N and V or not N and not V) and not Z
+
+		bcc.s	label	; >= (detto anche BHS) - * Se il Carry = 0
+				; (Carry bit Clear) - OP2 >= OP1, senza segno
+
+		bge.s	label	; >= (Se OP2 e' maggiore o uguale di OP1)
+				; (Greather than or Equal) OP2>=OP1, con segno
+				; * Se N=1 e V=1, or N=0 e V=0
+
+		beq.s	label	; = (Se Z = 1), (zero o operandi uguali)
+				; (Equal) OP2 = OP1, per num. con o senza segno
+
+		bne.w	label	; >< (Se Z = 0), (Se OP1 e' diverso da OP2)
+				; (Not Equal), per numeri con o senza segno
+
+		bls.w	label	; <= (Se OP2 e' minore o uguale di OP1)
+				; per numeri senza segno (Low or Same)
+				; * Se Carry = 1 or Z = 1
+
+		ble.w	label	; < (Se OP2 e' minore o uguale a OP1) per
+				; numeri con segno
+				; * N and not V or not N and V or Z
+
+		bcs.w	label	; < (detto anche BLO) - * Se il Carry = 1
+				; (Carry bit Set) - OP2 < OP1, senza segno
+
+		blt.w	label	; < (Se OP2 e' minore di OP1)
+				; (Less Than), per numeri con segno
+
+		bpl.w	label	; + (Se Negative = 0), ossia se il risultato e'
+				; positivo (PLus)
+
+		bmi.s	label	; - (Se Negative = 1), ossia se il risultato e'
+				; negativo (Minus)
+
+		bvc.w	label	; Se il bit di Overflow e' V=0 (per numeri
+				; con segno) - NO OVERFLOW (V-bit Clear)
+
+		bvs.s	label	; Se il bit di Overflow e' V=1 (per numeri
+				; con segno) - OVERFLOW (V-bit Set)
+
+		bra.s	label	; always, salta sempre! Come il JMP
+
+
+	Gli utilizzi di questi salti condizionati sono infiniti, per esempio,
+	con un:
+
+		TST.B	d0
+		BEQ.S	Label
+
+	Accade che SE d0=0, allora il flag Z (zero) viene impostato, dunque
+	il beq (Z=1, zero operandi uguali) fa saltare a Label. Oppure:
+
+		CMP.W	d0,d1
+		bhi.s	label	; > (Se OP2 e' maggiore di OP1)		
+
+	In questo caso se d1 e' maggiore di d0 il BEQ fa saltare a Label.
+	Da notare che il CMP confronta la destinazione (d1) con la sorgente,
+	e non viceversa!
+
+	Facciamo dei casi con un ADD:
+
+	ADD.W	d0,d1
+	BCS.s	label	; se c'e' un riporto, vai alla label (significa che
+			; abbiamo superato il valore contenibile dalla word)
+
+	ADD.L	d3,d4
+	BEQ.s	label	; Se il risultato e' zero, salta alla label
+
+	ADD.B	d1,d2
+	BVS.s	Label	; Overflow! la somma di due numeri con lo stesso
+			; segno, siano essi positivi o negativi, e' superiore
+			; al campo di numeri in complemento a 2 possibile
+			; in un byte, (-127..+128).
+
+	Ora vediamo come usare i Bcc dopo CMP.x OP1,OP2
+	
+		beq.s	label	; OP2 =  OP1 - per tutti i numeri
+		bne.w	label	; OP2 >< OP1 - per tutti i numeri
+		bhi.s	label	; OP2 >  OP1 - senza segno
+		bgt.w	label	; OP2 >  OP1 - con SEGNO
+		bcc.s	label	; OP2 >= OP1 - senza segno, detto anche *"BHS"*
+		bge.s	label	; OP2 >= OP1 - con SEGNO
+		bls.w	label	; OP2 <= OP1 - senza segno
+		ble.w	label	; OP2 <= OP1 - con SEGNO
+		bcs.w	label	; OP2 <  OP1 - senza segno, detto anche *"BLO"*
+		blt.w	label	; OP2 <  OP1 - con SEGNO
+
+	Ed ora come usarli dopo un TST.x OP1
+
+		beq.s	label	; OP1 =  0 - per tutti i numeri
+		bne.w	label	; OP1 >< 0 - per tutti i numeri
+		bgt.w	label	; OP1 >  0 - con SEGNO
+		bpl.s	label	; OP1 >= 0 - con SEGNO (oppure BGE)
+		ble.w	label	; OP1 <= 0 - con SEGNO
+		bmi.w	label	; OP1 <  0 - con SEGNO (oppure BLT)
+
+	Questi ultimi valgono anche dopo un ADD.x o un SUB.x, per esempio:
+
+		ADD.W	d1,d2
+		beq.s	RisultatoZero
+		bpl.s	RisultatoMaggioreDiZero
+		bmi.s	RisultatoMinoreDiZero
+
+	In questo modo si risparmia un eventuale TST.w d2 dopo l'ADD.
+
+***************************************************************** X N Z V C ***
+BCHG     Test a Bit and CHanGe             Dn,<ea>     B-L        - - * - -
+                                        #<data>,<ea>
+
+	Questa operazione cambia un singolo bit specificato, per "cambia" si
+	intende che se era 0 lo pone ad 1, se era ad 1 lo pone a 0.
+	Per fare questo prima lo testa, impostando il flag Z, dopodiche'
+	lo "cambia" con un NOT.
+	FLAG: Solo lo Z viene modificato
+	Se l'operando destinazione e' un registro dati allora l'istruzione
+	e' sempre .L, ed e' possibile specificare con l'operando sorgente
+	un bit da 0 a 31.
+	Se l'operando destinaz. e' un byte della memoria, allora l'istruzione
+	e' sempre .B, ed e' possibile specificare con l'operando sorgente
+	un bit da 0 a 7.
+
+	; Indirizzamenti come BSET,BCLR; il BTST ne ha alcuni in piu' (PC)
+
+	Es:
+
+	Dn,<ea>
+		bchg.l	d1,d2		; solo .L quando si opera su un
+					; registro DATI. In questo caso e'
+					; possibile specificare un bit
+					; compreso tra 0 e 31
+
+		bchg.b	d1,(a1)		; solo .B quando si opera su altri
+		bchg.b	d1,(a1)+	; indirizzamenti. In questo caso e'
+		bchg.b	d1,-(a1)	; possibile specificare un bit
+		bchg.b	d1,$1234(a1)	; compreso tra 0 e 7
+		bchg.b	d1,$12(a1,d2.w)
+		bchg.b	d1,$12(a1,d2.l)
+		bchg.b	d1,$12(a1,a2.w)
+		bchg.b	d1,$12(a1,a2.l)
+		bchg.b	d1,$1234.w
+		bchg.b	d1,$12345678
+
+	#<data>,<ea>
+		bchg.l	#1,d2		; solo .L quando si opera su un
+					; registro DATI. In questo caso e'
+					; possibile specificare un bit
+					; compreso tra 0 e 31
+
+		bchg.b	#1,(a1)		; solo .B quando si opera su altri
+		bchg.b	#1,(a1)+	; indirizzamenti. In questo caso e'
+		bchg.b	#1,-(a1)	; possibile specificare un bit
+		bchg.b	#1,$1234(a1)	; compreso tra 0 e 7. Attenzione pero'
+		bchg.b	#1,$12(a1,d2.w)	; che l'ASMONE erroneamente assembla
+		bchg.b	#1,$12(a1,d2.l)	; anche valori superiori al 7,in questo
+		bchg.b	#1,$12(a1,a2.w)	; caso il bit su cui operare e', ad
+		bchg.b	#1,$12(a1,a2.l)	; esempio, se #13, #13-8=5.
+		bchg.b	#1,$1234.w
+		bchg.b	#1,$12345678
+
+	NOTA:
+		l'ASMONE purtroppo assembla anche i bchg con valori superiori
+		a 7, (per esempio il DevPac darebbe errore).
+		NON DATE MAI valori superiori al 7 per il bchg.b!
+		Se comunque qualche listato lo avesse, l'istruzione viene
+		eseguita comunque, e il bit viene "calcolato" sottraendo 8,
+		oppure se il numero e' maggiore di 16 sottraendo 2*8, 3*8
+		eccetera. Ecco, per esempio, una lista di equivalenti
+		del bchg.b #1,xxx, ovviamente solo per informazione:
+
+		bchg.b	#1,<ea>
+		bchg.b	#1+8,<ea>	; ossia #9
+		bchg.b	#1+8*2,<ea>	; ossia #17
+		bchg.b	#1+8*3,<ea>	; ossia #25
+		bchg.b	#1+8*4,<ea>	; ossia #33
+		bchg.b	#1+8*5,<ea>	; ossia #41
+		...
+		bchg.b	#1+8*30,<ea>	; ossia #241
+		bchg.b	#1+8*31,<ea>	; ossia #249 (massimo 255)
+
+		Questo errore dell'ASMONE (e del 68000?) e' presente per
+		istruzioni BCHG,BSET,BCLR,BTST
+
+***************************************************************** X N Z V C ***
+BCLR     Test a Bit and CLeaR              Dn,<ea>     B-L        - - * - -
+                                        #<data>,<ea>
+
+	Questa istruzione AZZERA il bit specificato.
+	Se l'operando destinazione e' un registro dati allora l'istruzione
+	e' sempre .L, ed e' possibile specificare con l'operando sorgente
+	un bit da 0 a 31.
+	Se l'operando destinaz. e' un byte della memoria, allora l'istruzione
+	e' sempre .B, ed e' possibile specificare con l'operando sorgente
+	un bit da 0 a 7.
+
+	; Indirizzamenti come BCHG,BSET; il BTST ne ha alcuni in piu' (PC)
+
+	Es:
+
+	Dn,<ea>
+		bclr.l	d1,d2		; solo .L quando si opera su un
+					; registro DATI. In questo caso e'
+					; possibile specificare un bit
+					; compreso tra 0 e 31
+
+		bclr.b	d1,(a1)		; solo .B quando si opera su altri
+		bclr.b	d1,(a1)+	; indirizzamenti. In questo caso e'
+		bclr.b	d1,-(a1)	; possibile specificare un bit
+		bclr.b	d1,$1234(a1)	; compreso tra 0 e 7
+		bclr.b	d1,$12(a1,d2.w)
+		bclr.b	d1,$12(a1,d2.l)
+		bclr.b	d1,$12(a1,a2.w)
+		bclr.b	d1,$12(a1,a2.l)
+		bclr.b	d1,$1234.w
+		bclr.b	d1,$12345678
+
+	#<data>,<ea>
+		bclr.l	#1,d2		; solo .L quando si opera su un
+					; registro DATI. In questo caso e'
+					; possibile specificare un bit
+					; compreso tra 0 e 31
+
+		bclr.b	#1,(a1)		; solo .B quando si opera su altri
+		bclr.b	#1,(a1)+	; indirizzamenti. In questo caso e'
+		bclr.b	#1,-(a1)	; possibile specificare un bit
+		bclr.b	#1,$1234(a1)	; compreso tra 0 e 7
+		bclr.b	#1,$12(a1,d2.w)
+		bclr.b	#1,$12(a1,d2.l)
+		bclr.b	#1,$12(a1,a2.w)
+		bclr.b	#1,$12(a1,a2.l)
+		bclr.b	#1,$1234.w
+		bclr.b	#1,$12345678
+
+	NOTA:
+		l'ASMONE purtroppo assembla anche i bclr con valori superiori
+		a 7, (per esempio il DevPac darebbe errore).
+		NON DATE MAI valori superiori al 7 per il bclr.b!
+		Consultate la nota al BCHG per ulteriori informazioni
+
+***************************************************************** X N Z V C ***
+BSET     Test a Bit and SET                Dn,<ea>     B-L        - - * - -
+                                        #<data>,<ea>
+
+	Questa istruzione SETTA ad 1 il bit specificato.
+	Se l'operando destinazione e' un registro dati allora l'istruzione
+	e' sempre .L, ed e' possibile specificare con l'operando sorgente
+	un bit da 0 a 31.
+	Se l'operando destinaz. e' un byte della memoria, allora l'istruzione
+	e' sempre .B, ed e' possibile specificare con l'operando sorgente
+	un bit da 0 a 7.
+
+
+	; Indirizzamenti come BCHG,BCLR; il BTST ne ha alcuni in piu' (PC)
+
+	Es:
+
+	Dn,<ea>
+		bset.l	d1,d2		; solo .L quando si opera su un
+					; registro DATI. In questo caso e'
+					; possibile specificare un bit
+					; compreso tra 0 e 31
+
+		bset.b	d1,(a1)		; solo .B quando si opera su altri
+		bset.b	d1,(a1)+	; indirizzamenti. In questo caso e'
+		bset.b	d1,-(a1)	; possibile specificare un bit
+		bset.b	d1,$1234(a1)	; compreso tra 0 e 7
+		bset.b	d1,$12(a1,d2.w)
+		bset.b	d1,$12(a1,d2.l)
+		bset.b	d1,$12(a1,a2.w)
+		bset.b	d1,$12(a1,a2.l)
+		bset.b	d1,$1234.w
+		bset.b	d1,$12345678
+
+	#<data>,<ea>
+		bset.l	#1,d2		; solo .L quando si opera su un
+					; registro DATI. In questo caso e'
+					; possibile specificare un bit
+					; compreso tra 0 e 31
+
+		bset.b	#1,(a1)		; solo .B quando si opera su altri
+		bset.b	#1,(a1)+	; indirizzamenti. In questo caso e'
+		bset.b	#1,-(a1)	; possibile specificare un bit
+		bset.b	#1,$1234(a1)	; compreso tra 0 e 7
+		bset.b	#1,$12(a1,d2.w)
+		bset.b	#1,$12(a1,d2.l)
+		bset.b	#1,$12(a1,a2.w)
+		bset.b	#1,$12(a1,a2.l)
+		bset.b	#1,$1234.w
+		bset.b	#1,$12345678
+
+	NOTA:
+		l'ASMONE purtroppo assembla anche i bset con valori superiori
+		a 7, (per esempio il DevPac darebbe errore).
+		NON DATE MAI valori superiori al 7 per il bset.b!
+		Consultate la nota al BCHG per ulteriori informazioni
+
+***************************************************************** X N Z V C ***
+BTST     Bit TeST                          Dn,<ea>     B-L        - - * - -
+                                        #<data>,<ea>
+
+	Questa istruzione TESTA se il bit specificato e' ZERO.
+	Se l'operando destinazione e' un registro dati allora l'istruzione
+	e' sempre .L, ed e' possibile specificare con l'operando sorgente
+	un bit da 0 a 31.
+	Se l'operando destinaz. e' un byte della memoria, allora l'istruzione
+	e' sempre .B, ed e' possibile specificare con l'operando sorgente
+	un bit da 0 a 7.
+
+	; Indirizzamenti come BCHG,BSET,BCLR, in piu' gestisce il reg. PC
+
+	Es:
+
+	Dn,<ea>
+		btst.l	d1,d2		; solo .L quando si opera su un
+					; registro DATI. In questo caso e'
+					; possibile specificare un bit
+					; compreso tra 0 e 31
+
+		btst.b	d1,(a1)		; solo .B quando si opera su altri
+		btst.b	d1,(a1)+	; indirizzamenti. In questo caso e'
+		btst.b	d1,-(a1)	; possibile specificare un bit
+		btst.b	d1,$1234(a1)	; compreso tra 0 e 7
+		btst.b	d1,$12(a1,d2.w)
+		btst.b	d1,$12(a1,d2.l)
+		btst.b	d1,$12(a1,a2.w)
+		btst.b	d1,$12(a1,a2.l)
+		btst.b	d1,$1234.w
+		btst.b	d1,$12345678
+
+		btst.b	d1,label(pc)		; il BTST puo' fare anche
+		btst.b	d1,label(pc,d2.w)	; gli indirizzamenti relativi
+		btst.b	d1,label(pc,d2.l)	; al PC usati come destinaz.!!!
+		btst.b	d1,label(pc,a2.w)
+		btst.b	d1,label(pc,a2.l)
+
+	#<data>,<ea>
+		btst.l	#1,d2		; solo .L quando si opera su un
+					; registro DATI. In questo caso e'
+					; possibile specificare un bit
+					; compreso tra 0 e 31
+
+		btst.b	#1,(a1)		; solo .B quando si opera su altri
+		btst.b	#1,(a1)+	; indirizzamenti. In questo caso e'
+		btst.b	#1,-(a1)	; possibile specificare un bit
+		btst.b	#1,$1234(a1)	; compreso tra 0 e 7
+		btst.b	#1,$12(a1,d2.w)
+		btst.b	#1,$12(a1,d2.l)
+		btst.b	#1,$12(a1,a2.w)
+		btst.b	#1,$12(a1,a2.l)
+		btst.b	#1,$1234.w
+		btst.b	#1,$12345678
+
+		btst.b	#1,label(pc)		; il BTST puo' fare anche
+		btst.b	#1,label(pc,d2.w)	; gli indirizzamenti relativi
+		btst.b	#1,label(pc,d2.l)	; al PC usati come destinaz.!!!
+		btst.b	#1,label(pc,a2.w)
+		btst.b	#1,label(pc,a2.l)
+
+	NOTA:
+		l'ASMONE purtroppo assembla anche i btst con valori superiori
+		a 7, (per esempio il DevPac darebbe errore).
+		NON DATE MAI valori superiori al 7 per il btst.b!
+		Consultate la nota al BCHG per ulteriori informazioni
+
+***************************************************************** X N Z V C ***
+BSR      Branch to SubRoutine          BSR.S <label>   BW-        - - - - -
+                                       BSR.W <label>
+
+	Questa istruzione salta alla label come un JSR e ritorna quando trova
+	la fine della sub-routine (l'rts).
+	FLAG: nessun flag viene modificato
+
+		bsr.s	label	; possibile .s (ossia .b) o .w (NON .L!)
+
+***************************************************************** X N Z V C ***
+CHK      CHecK Dn Against Bounds           <ea>,Dn     -W-        - * U U U
+
+	Questa istruzione controlla se il valore a 16 bit contenuto nel
+	registro dati destinazione e' minore di zero, oppure e' maggiore
+	di un determinato operando sorgente. Se il valore e' nei limiti
+	si passa all'istruzione dopo, altrimenti viene generata una
+	Eccezione, comunque questa istruzione non viene MAI usata e non
+	fa che mandare tutto in GURU MEDITATION... non serve, non la usate.
+
+***************************************************************** X N Z V C ***
+CLR      CLeaR (azzera)                     <ea>       BWL        - 0 1 0 0
+
+	Questa istruzione azzera la destinazione, come un move.x #0,<ea>
+	FLAG: eXtend non modificato, Zero =1, gli altri azzerati
+
+	Es:
+
+	<ea>
+		clr.b	d1	; possibile .b, .w e .l
+		clr.w	(a1)
+		clr.b	(a1)+
+		clr.w	-(a1)
+		clr.l	$1234(a1)
+		clr.w	$12(a1,d2.w)
+		clr.b	$12(a1,d2.l)
+		clr.w	$12(a1,a2.w)
+		clr.b	$12(a1,a2.l)
+		clr.w	$1234.w
+		clr.l	$12345678
+
+***************************************************************** X N Z V C ***
+CMP      CoMPare (confronta)               <ea>,Dn     BWL        - * * * *
+
+	Confronta, tramite una sottrazione, la sorgente con un registro dati.
+	Fate attenzione al fatto che nei casi si voglia verificare quale dei
+	due operandi e' maggiore con BMI, BPL, BHI ecc, che e' l'operando
+	destinazione, l'OP2, che viene confrontato con la sorgente (OP1).
+	Potete vedere meglio questo fatto all'istruzione Bcc
+	FLAG: eXtend non modificato, gli altri a seconda del confronto.
+
+	Es:
+
+	<ea>,Dn
+		cmp.b	d1,d0
+		cmp.w	a1,d0		; nota: non e' possibile cmp.b con Ax
+		cmp.w	(a1),d0
+		cmp.b	(a1)+,d0
+		cmp.w	-(a1),d0
+		cmp.l	$1234(a1),d0
+		cmp.w	$12(a1,d2.w),d0
+		cmp.l	$12(a1,d2.l),d0
+		cmp.w	$12(a1,a2.w),d0
+		cmp.l	$12(a1,a2.l),d0
+		cmp.w	$1234.w,d0
+		cmp.b	$12345678,d0
+		cmp.w	label(pc),d0
+		cmp.l	label(pc,d2.w),d0
+		cmp.w	label(pc,d2.l),d0
+		cmp.b	label(pc,a2.w),d0
+		cmp.w	label(pc,a2.l),d0
+
+***************************************************************** X N Z V C ***
+CMPA     CoMPare Address                   <ea>,An     -WL        - * * * *
+
+	Questa istruzione funziona come il CMP, ma e' dedicato ai confronti
+	con i registri indirizzi, per cui non e' possibile il CMPA.B.
+	Gli indirizzi vanno considerati come numeri senza segno, dunque occorre
+	usare i Bcc per tali numeri:
+
+	beq.s	label	; OP2 =  OP1
+	bne.w	label	; OP2 >< OP1
+	bhi.s	label	; OP2 >  OP1
+	bcc.s	label	; OP2 >= OP1 - detto anche *"BHS"*
+	bls.w	label	; OP2 <= OP1
+	bcs.w	label	; OP2 <  OP1 - detto anche *"BLO"*
+
+	FLAG: eXtend non modificato, gli altri a seconda del confronto.
+
+	Consiglio: usate SEMPRE l'estensione .L
+
+	Es:
+
+	<ea>,An
+		cmpa.l	d1,a0		; nota: non e' possibile cmpa.b!!
+		cmpa.l	a1,a0
+		cmpa.l	(a1),a0
+		cmpa.l	(a1)+,a0
+		cmpa.l	-(a1),a0
+		cmpa.l	$1234(a1),a0
+		cmpa.l	$12(a1,d2.w),a0
+		cmpa.l	$12(a1,d2.l),a0
+		cmpa.l	$12(a1,a2.w),a0
+		cmpa.l	$12(a1,a2.l),a0
+		cmpa.l	$1234.w,a0
+		cmpa.l	$12345678,a0
+		cmpa.l	label(pc),a0
+		cmpa.l	label(pc,d2.w),a0
+		cmpa.l	label(pc,d2.l),a0
+		cmpa.l	label(pc,a2.w),a0
+		cmpa.l	label(pc,a2.l),a0
+
+		cmpa.l	#$1234,a1	; nota: per comparare un #immediato
+					; con un registro indirizzi Ax, esiste
+					; l'istruzione cmpa, non cmpi.
+
+	Attenzione al fatto che se si fa un CMPA.W xxxx,ax si comparano
+	32 bit, e non 16, come potrebbe sembrare per il .w che decidiamo.
+	L'operando sorgente a 16 bit viene esteso di segno a 32 bit, cioe'
+	il valore del bit di segno, il 15, verra' copiato sui bit dal 16 al 31.
+	Per esempio:
+
+		lea	$1234,a0
+		CMPA.W	#$1234,a0	; cmp $00001234 , a0
+		beq.s	SaltaLabel
+
+	In questo caso il numero e' positivo, in complemento a 2, per cui
+	il bit alto e' zero e tutti gli altri (dal 16 al 31) sono azzerati,
+	e saltoamo a saltalabel, essendo uguali.
+	In questo caso, invece:
+
+		lea	$9200,a0
+		CMPA.W	#$9200,a0	; cmp $FFFF9200 , a0, perche' $9200 in
+					; SIGNED .w e' negativo (-28672)
+		beq.s	SaltaLabel
+
+	In questo caso, $9200 e' esteso a longword, ed essendo negativo in
+	notazione signed, i bit alti sono riempiti con 1, dunque si compara
+	tra $FFFF9200 e $9200, e non si salta a SaltaLabel. Usando invece
+	un CMPA.L #$9200,a0 avremmo ottenuto il salto.
+	Come si puo' vedere, per i numeri sotto $7fff non ci sono differenze
+	tra CMPA.L e CMPA.W, mentre ci sono per numeri superiori. ATTENZIONE!
+
+***************************************************************** X N Z V C ***
+CMPI     CoMPare Immediate              #<data>,<ea>   BWL        - * * * *
+
+	Questa istruzione e' come il CMP, ma e' dedicata alla comparazione
+	di un #immediato (un numero costante) con la destinazione.
+	Questo e' fatto sottraendo l'operando #Immediato alla destinazione,
+	il risultato di tale operazione modifica i flag di conseguenza.
+	FLAG: eXtend non modificato, gli altri a seconda del confronto.
+
+	Es:
+
+	<data>,<ea>
+		cmpi.w	#$1234,		d1	; le destinazioni sono state
+		cmpi.l	#$12345678,	(a1)	; distanziate per maggiore
+		cmpi.b	#$12,		(a1)+	; leggibilita'
+		cmpi.w	#$1234,		-(a1)
+		cmpi.l	#$12345678,	$1234(a1)
+		cmpi.b	#$12,		$12(a1,d2.w)
+		cmpi.w	#$1234,		$12(a1,d2.l)
+		cmpi.b	#$12,		$12(a1,a2.w)
+		cmpi.l	#$12345678,	$12(a1,a2.l)
+		cmpi.w	#$1234,		$1234.w
+		cmpi.b	#$12,		$12345678
+
+		cmpa.w	#$1234,a1	; nota: per comparare un #immediato
+					; con un registro indirizzi Ax, esiste
+					; l'istruzione cmpa, non cmpi.
+
+***************************************************************** X N Z V C ***
+CMPM     CoMPare Memory                  (Ay)+,(Ax)+   BWL        - * * * *
+
+	Questa istruzione serve per il confronto tra locazioni di memoria.
+	FLAG: l'eXtend non viene modificato, gli altri modif. secondo l'operaz.
+
+	Es:
+
+	(Ay)+,(Ax)+
+		cmpm.w	(a0)+,(a1)+	; possibile cmpm.b, cmpm.w e cmpm.l
+
+	Puo' servire per sostituire una routine di questo tipo:
+
+	move.w	(a0)+,d0
+	cmp.w	(a1)+,d0
+
+***************************************************************** X N Z V C ***
+DBcc     Looping Instruction          DBcc Dn,<label>  -W-        - - - - -
+
+	Questa istruzione serve sostanzialmente a creare dei LOOP, ossia
+	dei cicli, in cui il numero di cicli e' regolato da un registro
+	DATI che viene decrementato per ogni ciclo.
+	l'istruzione permette l'uso di tutti i cc come Bcc, ma quasi sempre
+	e' usata nella forma DBRA (detta anche DBF), che fa eseguire il loop
+	ogni volta senza controllare i codici di condizione.
+	Per fare loop complicati si puo' comunque usufruire di tutti i cc.
+	Attenzione al fatto che, al contrario di Bcc, il DBcc salta alla
+	label solo se la condizione e' FALSA!
+	FLAG: Nessun flag viene modificato
+
+
+	Es:	(Consultate Bcc per la descrizione dei cc)
+
+	DBcc Dn,<label>
+		dbra	d0,label	; detto anche DBF, indica di saltare
+					; a label ogni volta, fino a che il
+					; contatore d0 non e' esaurito
+
+		dbhi	d0,label ; > per numeri senza segno
+		dbgt	d0,label ; > per num. con segno
+		dbcc	d0,label ; >= per num. senza segno - detto anche DBHS
+		dbge	d0,label ; >= per num. con segno
+		dbeq	d0,label ; = per tutti i numeri
+		dbne	d0,label ; >< per tutti i numeri
+		dbls	d0,label ; <= per num. senza segno
+		dble	d0,label ; <= per num. con segno
+		dbcs	d0,label ; < per num. senza segno - detto anche DBLO
+		dblt	d0,label ; < per num. con segno
+		dbpl	d0,label ; Se Negative = 0 (PLus)
+		dbmi	d0,label ; Se Negative = 1, (Minus) num. con segno
+		dbvc	d0,label ; V=0, no OVERFLOW
+		dbvs	d0,label ; V=1 OVERFLOW
+
+***************************************************************** X N Z V C ***
+DIVS     DIVide Signed                     <ea>,Dn     -W-        - * * * 0
+
+	Divisione binaria con segno. Una delle istruzioni piu' LENTE.
+	L'operando Destinazione, il dividendo a 32 bit, viene diviso
+	per la sorgente a 16 bit (divisore), proprio come il DIVU.
+	E' una divisione di numeri interi, dato che non e' disponibile la
+	virgola. Per esempio, se si esegue 5:2, il risultato e' 2, resto 1.
+	Il risultato, posto nel registro dati destinazione, e' una long
+	spezzata in 2 words, contenenti il quoziente e il resto.
+	Nei 16 bit piu' bassi (0-15) viene memorizzato il quoziente
+	Nei 16 bit piu' alti (16-31) il resto della divisione effettuata,
+	a cui viene attribuito il segno del dividendo.
+	La differenza con DIVU sta solo nel fatto che viene rispettata
+	l'aritmetica binaria con SEGNO (complemento a 2)
+	Nel caso di divisione per Zero il computer va in GURU, infatti viene
+	eseguita l'eccezione del vettore alla locazione $14
+	FLAG: L'eXtend non viene modificato, il Carry viene azzerato, mentre
+	gli altri sono modificati a seconda del quoziente.
+	Da notare che se il risultato e' troppo grande per essere contenuto
+	nella word bassa del registro (se il quoziente supera il limite +32767
+	-32768 dei numeri signed), viene settato il flag di oVerflow, dunque
+	occorre controllarlo dopo la divisione per essere sicuri che il
+	risultato sia esatto, dato che se non e' esatto gli operandi non sono
+	modificati.
+
+	Es:
+
+	<ea>,Dn
+		divs.w	d1,d0		; possibile solo .w
+		divs.w	(a1),d0
+		divs.w	(a1)+,d0
+		divs.w	-(a1),d0
+		divs.w	$1234(a1),d0
+		divs.w	$12(a1,d2.w),d0
+		divs.w	$12(a1,d2.l),d0
+		divs.w	$12(a1,a2.w),d0
+		divs.w	$12(a1,a2.l),d0
+		divs.w	$1234.w,d0
+		divs.w	$12345678,d0
+		divs.w	label(pc),d0
+		divs.w	label(pc,d2.w),d0
+		divs.w	label(pc,d2.l),d0
+		divs.w	label(pc,a2.w),d0
+		divs.w	label(pc,a2.l),d0
+		divs.w	#$1234,d0
+
+	nota: non e' possibile usare un registro indirizzi An come operando
+
+	Proviamo ad eseguire una divisione:
+
+	moveq	#-33,d0	; numero a 32 bit SIGNED da dividere
+	moveq	#5,d1	; divisore
+	divs	d1,d0	; dividiamo d0 in d1 parti, ossia 33/5
+
+	il risultato, in d0, e' $FFFDFFFA, dove $FFFD = -3, e $FFFA = -6,
+	infatti -33 diviso 5 fa -6, resto -3. Il resto e' negativo perche'
+	il segno del resto e' sempre quello del dividendo.
+
+***************************************************************** X N Z V C ***
+DIVU     DIVide Unsigned                   <ea>,Dn     -W-        - * * * 0
+
+	Divisione binaria senza segno. E' una delle piu' potenti, ma anche
+	delle piu' LENTE istruzioni. Esegue una divisione binaria tra un
+	operando destinazione a 32 bit (dividendo) e un operando sorgente
+	a 16 bit (divisore). La divisione viene fatta tra numeri senza segno,
+	ed e' una divisione di numeri interi, dato che non e' disponibile la
+	virgola. Per esempio, se si esegue 5:2, il risultato e' 2, resto 1.
+	Il risultato della divisione, con quoziente e resto, viene memorizzato
+	nel registro dati destinazione.
+	Nei 16 bit piu' bassi (0-15) viene memorizzato il quoziente
+	Nei 16 bit piu' alti (16-31) il resto della divisione effettuata
+	Nel caso di divisione per Zero il computer va in GURU, infatti viene
+	eseguita l'eccezione del vettore alla locazione $14
+	FLAG: L'eXtend non viene modificato, il Carry viene azzerato, mentre
+	gli altri sono modificati a seconda del quoziente.
+	Da notare che se il risultato e' troppo grande per essere contenuto
+	nella word bassa del registro, viene settato il flag di oVerflow,
+	dunque occorre controllarlo dopo la divisione per essere sicuri che
+	il risultato sia esatto. Se non e' esatto, gli operandi non sono
+	modificati e viene settato solamente il flag di oVerflow.
+
+	Es:
+
+	<ea>,Dn
+		divu.w	d1,d0		; possibile solo .w
+		divu.w	(a1),d0
+		divu.w	(a1)+,d0
+		divu.w	-(a1),d0
+		divu.w	$1234(a1),d0
+		divu.w	$12(a1,d2.w),d0
+		divu.w	$12(a1,d2.l),d0
+		divu.w	$12(a1,a2.w),d0
+		divu.w	$12(a1,a2.l),d0
+		divu.w	$1234.w,d0
+		divu.w	$12345678,d0
+		divu.w	label(pc),d0
+		divu.w	label(pc,d2.w),d0
+		divu.w	label(pc,d2.l),d0
+		divu.w	label(pc,a2.w),d0
+		divu.w	label(pc,a2.l),d0
+		divu.w	#$1234,d0
+
+	nota: non e' possibile usare un registro indirizzi An come operando
+
+	Proviamo ad eseguire una divisione:
+
+	moveq	#33,d0	; numero a 32 bit da dividere
+	moveq	#5,d1	; divisore
+	divu.w	d1,d0	; dividiamo d0 in d1 parti, ossia 33/5
+
+	il risultato, in d0, e' $00030006, infatti 33 diviso 5 fa 6, resto 3.
+
+***************************************************************** X N Z V C ***
+EOR      Exclusive OR                      Dn,<ea>     BWL        - * * 0 0
+
+	Questa istruzione esegue l'OR esclusivo bit per bit sulla destinazione.
+	In pratica il bit risultato e' 1 solo se gli operandi sono diversi.
+	Ecco la tabella dei risultati, che evidenzia la differenza con OR:
+
+	0 EOR 0 = 0
+	0 EOR 1 = 1
+	1 EOR 0 = 1
+	1 EOR 1 = 0	; Questa e' la differenza con l'OR! infatti 1 OR 1 = 1.
+
+	Alcuni esempi:
+
+	0000000001 EOR 1101011101 = 1101010000 - 1 bit azzerato
+	1000000000 EOR 0010011000 = 1010011000 - 1 bit settato
+
+	Dunque setta il bit solo quando e' ad 1 o il primo o il secondo bit,
+	non quando sono ad 1 entrambi, come invece fa l'OR.
+	FLAG: eXtend non modificato, oVerflow e Carry azzerati, Negative e Zero
+	modificati secondo l'esito dell'operazione
+
+	Es:
+
+	Dn,<ea>
+		eor.b	d1,d2		; possibile .b, .w, .l
+		eor.w	d1,(a1)
+		eor.b	d1,(a1)+
+		eor.w	d1,-(a1)
+		eor.l	d1,$1234(a1)
+		eor.w	d1,$12(a1,d2.w)
+		eor.l	d1,$12(a1,d2.l)
+		eor.w	d1,$12(a1,a2.w)
+		eor.b	d1,$12(a1,a2.l)
+		eor.l	d1,$1234.w
+		eor.w	d1,$12345678
+
+***************************************************************** X N Z V C ***
+EORI     Exclusive OR Immediate         #<data>,<ea>   BWL        - * * 0 0
+
+
+	Come EOR, ma specifico per gli #Immediati come sorgente.
+	FLAG: eXtend non modificato, oVerflow e Carry azzerati, Negative e Zero
+	modificati secondo l'esito dell'operazione
+
+	Es:
+
+	#<data>,<ea>
+		eori.w	#$1234,		d1	; le destinazioni sono state
+		eori.b	#$12,		(a1)	; distanziate per maggiore
+		eori.w	#$1234,		(a1)+	; leggibilita'
+		eori.b	#$12,		-(a1)
+		eori.l	#$12345678,	$1234(a1)
+		eori.w	#$1234,		$12(a1,d2.w)
+		eori.b	#$12,		$12(a1,d2.l)
+		eori.l	#$12345678,	$12(a1,a2.w)
+		eori.b	#$12,		$12(a1,a2.l)
+		eori.w	#$1234,		$1234.w
+		eori.l	#$12345678,	$12345678
+
+		eori.b	#$12,ccr
+		eori.w	#$1234,sr	; *** ISTRUZIONE PRIVILEGIATA ***
+
+***************************************************************** X N Z V C ***
+EXG      Exchange any two registers         Rx,Ry      --L        - - - - -
+
+	Scambia il contenuto di 2 registri, sia indirizzi che dati.
+	FLAG: nessuno viene modificato
+
+	Es:
+
+	Rx,Ry
+		exg	d0,d1
+		exg	d0,a1
+		exg	a0,a1
+
+***************************************************************** X N Z V C ***
+EXT      Sign EXTend                         Dn        -WL        - * * 0 0
+
+	Questa istruzione "ESTENDE" un numero con SEGNO contenuto in un
+	registro dati. Usato per i numeri negativi in particolar modo, in
+	quanto non fa altro che "riempire" i bit da 8 a 15 (se EXT.W) o i bit
+	da 16 a 31 (se EXT.L) "replicando" il bit del segno (il 7 se EXT.W, o
+	il 15 se EXT.L). EXT.W "trasforma" da .b a .w, EXT.L da .w a .l
+	Settando tutti i bit come il bit di segno, si ottiene
+	lo stesso numero (specialmente se negativo) anche in formato .w o .l,
+	partendo da uno .b. Facciamo un esempio: d0=$000000FB. Sappiamo che
+	$FB e' -5 se siamo in campo byte con segno, ma in campo .w o .l e'
+	semplicemente $FB=251 positivo. Con un EXT.W d0 otteniamo che
+	d0 = $0000FFFB, in questo modo $FFFB e' -5 in campo .w con segno.
+	con un EXT.L ora possiamo ottenere $FFFFFFFB, che e' -5 in campo .l
+	con segno!
+
+	Es:
+
+	Dn
+		ext.w	d0	; trasforma da .b a .w
+		ext.l	d0	; trasforma da .w a .l
+
+Per estendere un byte a longword bisogna prima effettuare un ext.w, poi un
+ext.l . ad esempio:
+
+	move.b	#$80,d0		; d0.b = -128
+	ext.w	d0		; d0.w = $ff80  (-128.w)
+	ext.l	d0		; d0.l = $ffffff80  (-128.l)
+
+***************************************************************** X N Z V C ***
+JMP      JuMP to Affective Address          <ea>                  - - - - -
+
+	Salta alla routine destinazione, analogamente al BRA.
+	FLAG: Nessuno viene modificato.
+
+	Es:
+
+	<ea>
+		jmp	(a1)
+		jmp	$1234(a1)
+		jmp	$12(a1,d2.w)
+		jmp	$12(a1,d2.l)
+		jmp	$12(a1,a2.w)
+		jmp	$12(a1,a2.l)
+		jmp	$1234.w
+		jmp	$12345678
+		jmp	label(pc)
+		jmp	label(pc,d2.w)
+		jmp	label(pc,d2.l)
+		jmp	label(pc,a2.w)
+		jmp	label(pc,a2.l)
+
+***************************************************************** X N Z V C ***
+JSR      Jump to SubRoutine                 <ea>                  - - - - -
+
+	Salto alla subroutine destinazione, e ritorno una volta terminata
+	tale subroutine (trovato l'RTS). Istruzione analoga al BSR
+	FLAG: Nessun flag viene modificato
+
+	Es:
+
+	<ea>
+		jsr	(a1)
+		jsr	$1234(a1)
+		jsr	$12(a1,d2.w)
+		jsr	$12(a1,d2.l)
+		jsr	$12(a1,a2.w)
+		jsr	$12(a1,a2.l)
+		jsr	$1234.w
+		jsr	$12345678
+		jsr	aa17(pc)
+		jsr	label(pc,d2.w)
+		jsr	label(pc,d2.l)
+		jsr	label(pc,a2.w)
+		jsr	label(pc,a2.l)
+
+***************************************************************** X N Z V C ***
+LEA      Load Effective Address            <ea>,An     --L        - - - - -
+
+	Carica un indirizzo in un registro indirizzi An.
+	Per esempio, dopo un "LEA $10000,a0", A0=$10000. In questo caso
+	l'istruzione funziona come un "MOVE.L #$10000,a0", ma e' piu' veloce.
+	ATTENZIONE: il comando LEA e' diverso dal MOVEA!! Infatti si puo'
+	confondere quando abbiamo un "LEA $12(a0),a1", ad esempio: in a1
+	va l'indirizzo contenuto in a0 piu' l'offset, ossia $12, e non
+	il contenuto di quell'indirizzo, come sarebbe avvenuto con
+	l'indirizzamento indiretto. Per esempio, scrivere "LEA $12(a0),a0" e'
+	equivalente ad un "ADDA.W #$12,a0".
+	FLAG: nessuno viene modificato
+
+	Es:
+
+	<ea>,An
+		lea	(a1),a0		; nota: in questo caso copia il valore
+					; di a1 in a0 come un MOVE.L a1,a0!!!
+					; da non confondere con il
+					; move.l (a1),a0 che e' invece un
+					; indirizzamento indiretto
+
+		lea	$1234(a1),a0	; In questo caso, in a0 va l'indirizzo
+					; contenuto in a0+$1234, non confondere
+					; con l'indirizzamento indiretto! e'
+					; un LEA e non un MOVE!!!!!!!!
+		lea	$12(a1,d2.w),a0
+		lea	$12(a1,d2.l),a0
+		lea	$12(a1,a2.w),a0
+		lea	$12(a1,a2.l),a0
+		lea	$1234.w,a0
+		lea	$12345678,a0
+		lea	label(pc),a0
+		lea	label(pc,d2.w),a0
+		lea	label(pc,d2.l),a0
+		lea	label(pc,a2.w),a0
+		lea	label(pc,a2.l),a0
+
+***************************************************************** X N Z V C ***
+LSL      Logical Shift Left                 Dx,Dy      BWL        * * * 0 *
+                                          #<1-8>,Dy
+                                            <ea>
+
+	Shift Logico a Sinistra. Per shift si intende uno "scorrimento"
+	di bits, in questo caso verso Sinistra, es: %0001 shiftato di 2: %0100
+	cioe' i bits che compongono il numero sono fatti scorrere, "shiftare"
+	verso sinistra; nel caso dell'LSL i bit bassi vengono "riempiti" con
+	degli zeri, mentre i bit "uscenti" dalla parte sinistra sono copiati
+	nei FLAG Carry ed Extend. E' praticamente uguale ad ASL, la differenza
+	tra shift LOGICO e shift ARITMETICO si nota tra ASR e LSR, non tra
+	ASL e LSL.
+	FLAG: l'oVerflow viene azzerato, l'eXtend e il Carry contengono il
+	bit alto "uscito fuori", Negative e Zero modificati secondo
+	l'operazione.
+			valore che shifta
+			verso sinistra
+			 ------------
+	   Flag X/C <-- |<- <- <- <- | <--- 0 - Entra uno zero da destra
+ 			 ------------
+
+	; Indirizzamenti come ASL,ASR,LSR,ROL,ROR,ROXL,ROXR
+
+	Es:
+
+	Dx,Dy
+		lsl.w	d0,d1	; possibile .b, .w e .l, lo shift massimo in
+				; questo caso e' 63 (sono usati i primi 6 bit
+				; del registro dati)
+
+	#<1-8>,Dy
+		lsl.w	#2,d1	; possibile .b, .w e .l, massimo lsl.x #8,Dy
+
+	<ea>
+		lsl.w	(a1)	; possibile solo .w, equivale a lsl.w #1,<ea>
+		lsl.w	(a1)+
+		lsl.w	-(a1)
+		lsl.w	$1234(a1)
+		lsl.w	$12(a1,d2.w)
+		lsl.w	$12(a1,d2.l)
+		lsl.w	$12(a1,a2.w)
+		lsl.w	$12(a1,a2.l)
+		lsl.w	$1234.w
+		lsl.w	$12345678
+
+***************************************************************** X N Z V C ***
+LSR      Logical Shift Right                Dx,Dy      BWL        * * * 0 *
+                                          #<1-8>,Dy
+                                            <ea>
+
+	Shift Logico a destra. Per shift si intende uno "scorrimento"
+	di bits, in questo caso verso Destra, es: %0100 shiftato di 2: %0001
+	cioe' i bits che compongono il numero sono fatti scorrere, "shiftare"
+	verso destra. In ogni shift, il bit basso del registro destinazione
+	viene copiato nei bit Carry ed eXtend, mentre il bit piu' alto
+	viene AZZERATO. (a differenza dell'ASR, ossia dello SHIFT ARITMETICO
+	a destra, dove il bit piu' alto rimane INVARIATO)
+	FLAG: l'oVerflow viene azzerato, l'eXtend e il Carry contengono il
+	bit basso "uscito fuori", Negative e Zero modificati secondo
+	l'operazione.
+				    valore che shifta
+				    verso destra
+				    ------------
+Entra uno zero da sinistra - 0 --->|-> -> -> ->| ---> Flag X/C
+			    	    ------------
+
+	; Indirizzamenti come ASL,ASR,LSL,ROL,ROR,ROXL,ROXR
+
+	Es:
+
+	Dx,Dy
+		lsr.w	d0,d1	; possibile .b, .w e .l, lo shift massimo in
+				; questo caso e' 63 (sono usati i primi 6 bit
+				; del registro dati)
+
+	#<1-8>,Dy
+		lsr.w	#2,d1	; possibile .b, .w e .l, massimo lsr.x #8,Dy
+
+	<ea>
+		lsr.w	(a1)	; possibile solo .w, equivale a lsr.w #1,<ea>
+		lsr.w	(a1)+
+		lsr.w	-(a1)
+		lsr.w	$1234(a1)
+		lsr.w	$12(a1,d2.w)
+		lsr.w	$12(a1,d2.l)
+		lsr.w	$12(a1,a2.w)
+		lsr.w	$12(a1,a2.l)
+		lsr.w	$1234.w
+		lsr.w	$12345678
+
+***************************************************************** X N Z V C ***
+MOVE     Between Effective Addresses      <ea>,<ea>    BWL        - * * 0 0
+
+	Copia il contenuto dell'operando sorgente in quello destinazione.
+	FLAG: l'eXtend rimane invariato, l'oVerflow e il Carry sono azzerati
+	il Negative e lo Zero sono modificati secondo l'operazione.
+	Qua la lista sarebbe troppo lunga, solo alcuni esempi:
+
+	<ea>,<ea>
+		move.w	$1234(a1),	(a0)	; le destinazioni sono state
+		move.w	$12(a1,a2.w),	(a0)	; distanziate per maggiore
+		move.w	$1234.w,	(a0)+	; leggibilita'
+		move.w	label(pc),	-(a0)
+		move.w	label(pc,d2.l),	$1234(a1)
+		move.w	$12(a1,a2.w),	$12(a1,d2.w)
+		move.w	d1,		$12(a1,a2.w)
+		move.w	(a1)+,		$12(a1,a2.l)
+		move.w	-(a1),		$1234.w
+
+	nota: per "muovere" in un registro indirizzi direttamente, esiste
+	il comando dedicato MOVEA (es. "movea.w d0,a0"). L'assemblatore
+	comunque accetta anche un semplice move per i registri indirizzo,
+	assemblera' MOVEA senza problemi.
+
+
+***************************************************************** X N Z V C ***
+MOVE     To CCR                           <ea>,CCR     -W-        I I I I I
+
+	Istruzione MOVE apposita per modificare il CCR, ossia il Condition
+	Code Register, che sono gli 8 bit bassi di SR, quelli dei codici di
+	condizione. Esegue una copia degli 8 bit bassi dell'operando sorgente
+	agli 8 bit piu' bassi dello SR.
+	FLAG: Chiaramente sono modificati tutti, dato che li riscriviamo!
+
+	Es:
+
+	<ea>,CCR
+		move.w	d1,ccr		; solo .w
+		...			; eccetera, come MOVE normale.
+	
+		move.w	#$0012,ccr	; solo il byte basso della sorgente
+					; e' copiato in CCR, che e' un BYTE!
+
+***************************************************************** X N Z V C ***
+MOVE     To SR                             <ea>,SR     -W-        I I I I I
+
+	*** ISTRUZIONE PRIVILEGIATA! Eseguire solo in modo supervisore! ***
+
+	Questo e' un move apposito per modificare lo Status Register.
+	FLAGS: Ovviamente cambiati, dato che il CCR e' il byte basso di SR!
+
+	Es:
+
+	<ea>,SR
+		move.w	d1,sr		; solo .w
+		...			; Eccetera, come il move
+
+		move.w	#$1234,SR
+
+***************************************************************** X N Z V C ***
+MOVE     From SR                           SR,<ea>     -W-        - - - - -
+
+	*** ISTRUZIONE PRIVILEGIATA! Eseguire solo in modo supervisore! ***
+
+	In realta' sul 68000 non e' privilegiata, ma su 68010/20/30/40/60 e'
+	stata resa privilegiata, dunque eseguirla in modo utente causerebbe
+	solo un GURU su a1200 o altri Amiga con 68010 o superiori.
+	Copia il contenuto dello Status Register nella destinazione.
+
+	Es:
+
+	SR,<ea>
+		move.w	sr,d1		; solo .w
+		move.w	sr,(a1)
+		move.w	sr,(a1)+
+		move.w	sr,-(a1)
+		move.w	sr,$1234(a1)
+		move.w	sr,$12(a1,d2.w)
+		move.w	sr,$12(a1,d2.l)
+		move.w	sr,$12(a1,a2.w)
+		move.w	sr,$12(a1,a2.l)
+		move.w	sr,$1234.w
+		move.w	sr,$12345678
+
+***************************************************************** X N Z V C ***
+MOVE     USP to/from Address Register      USP,An      --L        - - - - -
+                                           An,USP
+
+	*** ISTRUZIONE PRIVILEGIATA! Eseguire solo in modo supervisore! ***
+
+	Copia l'User Stack Pointer, ossia il puntatore allo stack del modo
+	utente (a7) in un registro indirizzi, o viceversa.
+
+	Es:
+
+	USP,An
+		move.l	usp,a0
+
+	An,USP
+		move.l	a0,usp
+
+***************************************************************** X N Z V C ***
+MOVEA    MOVE Address                      <ea>,An     -WL        - - - - -
+
+	Istruzione MOVE dedicata alla copia in registri indirizzi An.
+	Non e' dunque possibile la copia in lunghezza byte (.b).
+	nota: l'assemblatore accetta anche "move" per i "movea", per
+	cui "move.l d1,a0" e' assemblato correttamente senza errori
+	in "movea.l d1,a0". Dunque basta scrivere sempre "move", lasciando
+	il compito di assemblare correttamente secondo il caso all'ASMONE.
+	FLAG: Nessuno viene modificato
+
+	Consiglio: usate sempre l'estensione .L
+
+	Es:
+
+	<ea>,An
+		movea.l	d1,a0
+		movea.l	a1,a0
+		movea.l	(a1),a0
+		movea.l	(a1)+,a0
+		movea.l	-(a1),a0
+		movea.l	$1234(a1),a0
+		movea.l	$12(a1,d2.w),a0
+		movea.l	$12(a1,d2.l),a0
+		movea.l	$12(a1,a2.w),a0
+		movea.l	$12(a1,a2.l),a0
+		movea.l	$1234.w,a0
+		movea.l	$12345678,a0
+		movea.l	label(pc),a0
+		movea.l	label(pc,d2.w),a0
+		movea.l	label(pc,d2.l),a0
+		movea.l	label(pc,a2.w),a0
+		movea.l	label(pc,a2.l),a0
+
+		movea.l	#$1234,a0
+
+	Attenzione al fatto che se si fa un MOVEA.W xxxx,ax si copiano
+	tutti i 32 bit, e non 16, come potrebbe sembrare per il .w che
+	immettiamo. L'operando sorgente a 16 bit viene esteso di segno
+	a 32 bit, cioe' il valore del bit di segno, il 15, verra' copiato
+	sui bit dal 16 al 31. Per esempio:
+
+		MOVEA.W	#$1234,a0	; a0=$00001234
+		MOVEA.W	#$9200,a0	; a0=$FFFF9200, perche' $9200 in
+					; SIGNED .w e' negativo (-28672)
+		MOVEA.L	#$9200,a0	; a0=$00009200, ma allora conviene
+					; usare: LEA $9200,a0
+
+	Come si puo' vedere, per i numeri sotto $7fff non ci sono differenze
+	tra MOVEA.L e MOVEA.W, mentre ci sono per numeri superiori.
+	Conviene dunque usare il LEA xxxxx,ax per i valori sopra $7fff, dato
+	che non ci sono possibilita' di errori ed e' piu' veloce.
+	Attenzione anche in questo caso:
+
+	move.l	#$a000,d0	; indirizzo in d0
+	movea.w	d0,a0		; a0 = $FFFFa000
+
+	Conveniva dedisamente un movea.l!!!!
+
+***************************************************************** X N Z V C ***
+MOVEM    MOVE Multiple            <register list>,<ea> -WL        - - - - -
+                                  <ea>,<register list>
+
+	Questa istruzione viene usata per copiare una lista di registri, dati
+	e/o indirizzi, in una zona di memoria, o viceversa.
+	Per definire la lista degli indirizzi si usa la seguente sintassi: per
+	i registri consecutivi si scrivono il primo e l'ultimo della serie
+	separati da un "-", ad esempio d0-d5 significa d0,d1,d2,d3,d4,d5.
+	Per gli eventuali registri non in serie, si specificano separandoli
+	dagli altri registri "solitari" o dalle altre serie con una "/", per
+	esempio: d0/d3/d6 indica i registri d0,d3,d6. Facciamo un caso "misto":
+	d0/d2/d4-d7/a0-a3 indica i registri d0,d2,d4,d5,d6,d7,a0,a1,a2,a3.
+	Se l'istruzione e' .word, le word sono copiate nei registri dalla
+	memoria, ma vengono "estese" con segno a 32 bit, ossia il bit 15 del
+	segno viene ripetuto per riempire i bit dal 16 al 31.
+
+	Es:
+
+	<register list>,<ea>
+		movem.l	d0/d2/d4/d6/a0/a2,$12345678	; solo .w o .l
+		movem.w	d0-d3/d6-d7/a6-a7,(a1)
+		movem.l	d3-d4/d6-d7/a3-a4,-(a1)
+		movem.w	d0-d7/a0-a1/a3-a4,$1234(a1)
+		movem.w	d6-d7/a1/a3/a5/a7,$12(a1,d2.w)
+		movem.l	d0/d2/d4/a3-a4/a6,$12(a1,d2.l)
+		movem.l	a0-a1/a3-a4/a6-a7,$12(a1,a2.w)
+		movem.w	d0-d1/d3-d4/d6-d7,$12(a1,a2.l)
+		movem.l	d0-d1/d3-d4/d6-d7,$1234.w
+		movem.w	d0-d1/d3-d4/d6-d7,$12345678
+
+	<ea>,<register list>
+		movem.w	(a1),d0-d7/a0-a6
+		movem.l	(a1)+,d0-d7/a0-a6
+		movem.w	$1234(a1),d0-d7/a0-a6
+		movem.l	$12(a1,d2.w),d0-d7/a0-a6
+		movem.w	$12(a1,d2.l),d0-d7/a0-a6
+		movem.w	$12(a1,a2.w),d0-d7/a0-a6
+		movem.l	$12(a1,a2.l),d0-d7/a0-a6
+		movem.l	$1234.w,d0-d7/a0-a6
+		movem.w	$12345678,d0-d7/a0-a6
+		movem.w	label(pc),d0-d7/a0-a6
+		movem.l	label(pc,d2.w),d0-d7/a0-a6
+		movem.w	label(pc,d2.l),d0-d7/a0-a6
+		movem.l	label(pc,a2.w),d0-d7/a0-a6
+		movem.w	label(pc,a2.l),d0-d7/a0-a6
+
+	Un'utilizzo frequente e' quello di salvare e ripristinare tutti o
+	una parte di registri nello stack:
+
+	movem.l	d0-d7/a0-a6,-(SP)	; salva tutti i registri nello stack
+	....
+	movem.l	(SP)+,d0-d7/a0-a6	; riprende tutti i registri dallo stack
+
+	NOTA: l'ordine dei registri e' sempre lo stesso, prima i registri
+	dati, dal piu' piccolo a piu' grande, poi quelli indirizzi. Se si
+	scrive:
+
+		movem.l	a0/d2-d4/a6/a2/d7,-(SP)
+
+	In pratica viene assemblato nell'ordine giusto:
+
+		MOVEM.L	D2-D4/D7/A0/A2/A6,-(A7)
+
+	Occorre stare attenti a questo fatto, per non ripristinare i
+	registri "scambiati", convinti invece che siano ripristinati bene.
+
+***************************************************************** X N Z V C ***
+MOVEP    MOVE Peripheral                  Dn,x(An)     -WL        - - - - -
+                                          x(An),Dn
+
+	Questo MOVE copia i byte bassi dell'operando sorgente nell'operando
+	destinazione. Facciamo degli esempi PRATICI:
+
+	Es 1:
+
+	x(An),Dn
+		movep.w	$1234(a1),d0	; possibile .w e .l
+
+Word:
+	moveq	#0,d0
+	lea	dati(PC),a1
+	movep.w	0(a1),d0
+	rts			; d0 = $00001030
+
+LongWord:
+	lea	dati(PC),a1
+	movep.l	0(a1),d0
+	rts			; d0 = $10305070
+
+
+dati:
+	dc.l	$10203040
+	dc.l	$50607080
+
+	***	***	***	***
+
+	Es 2:
+
+	Dn,x(An)
+		movep.w	d0,$1234(a1)	; possibile .w e .l
+
+Word:
+	move.l	#$10203040,d0
+	lea	dati(PC),a1
+	movep.w	d0,0(a1)
+	rts			; 0(a1) = $30004000
+
+LongWord:
+	move.l	#$10203040,d0
+	lea	dati(PC),a1
+	movep.l	d0,0(a1)
+	rts			; 0(a1) = $10002000 , $30004000
+
+dati:
+	dc.l	$00000000
+	dc.l	$00000000
+
+	Questa istruzione non e' molto usata, la si usa soprattutto per
+	comunicare con le periferiche (pare). Comunque potrebbe servire
+	per qualche strano rimescolamento di bytes nei vostri programmi!
+	Se non avetre chiaro il tutto, eseguite il Debug sulle routines.
+
+***************************************************************** X N Z V C ***
+MOVEQ    MOVE 8-bit immediate         #<-128.+127>,Dn  --L        - * * 0 0
+
+	Move Quick, ossia MOVE VELOCE, istruzione dedicata al caricamento
+	di un registro dati di un valore #Immediato tra -128 e +127, che
+	e' piu' veloce del consueto "MOVE.L #Immediato,dn".
+	L'operazione e' come un MOVE.L, e conviene usarla sempre quando e'
+	possibile, data la sua maggiore velocita' di esecuzione.
+	FLAG: l'eXtend rimane invariato, l'oVerflow e il Carry sono azzerati
+	il Negative e lo Zero sono modificati secondo l'operazione.
+
+	Es:
+
+	#<-128.+127>,Dn
+		moveq	#10,d0
+		moveq	#-10,d0	; d0 = $FFFFFFF6
+
+***************************************************************** X N Z V C ***
+MULS     MULtiply Signed                   <ea>,Dn     -W-        - * * 0 0
+
+ 	Moltiplicazione con segno. Vengono moltiplicati due numeri a 16 bit
+ 	con segno, che possono andare da -32768 a +32767, per cui il massimo
+ 	valore positivo ottenibile e' 1073741824, quello negativo invece e'
+ 	-1073709056, per cui non si puo' presentare un Carry o un Overflow.
+	Viene letta soltanto la word bassa degli operandi sorgente, per cui
+	un numero, ad es. $00123456 viene letto come $00003456.
+	Il risultato a 32 bit viene memorizzato nel registro dati destinazione.
+	Il segno del risultato segue le regole +*+=+, +*-=-, -*+=-, -*-=+.
+	FLAG: l'eXtend rimane invariato, l'oVerflow e il Carry sono azzerati
+	il Negative e lo Zero sono modificati secondo l'operazione.
+
+	Es:
+
+	<ea>,Dn
+		muls.w	d1,d0
+		muls.w	(a1),d0
+		muls.w	(a1)+,d0
+		muls.w	-(a1),d0
+		muls.w	$1234(a1),d0
+		muls.w	$12(a1,d2.w),d0
+		muls.w	$12(a1,d2.l),d0
+		muls.w	$12(a1,a2.w),d0
+		muls.w	$12(a1,a2.l),d0
+		muls.w	$1234.w,d0
+		muls.w	$12345678,d0
+		muls.w	label(pc),d0
+		muls.w	label(pc,d2.w),d0
+		muls.w	label(pc,d2.l),d0
+		muls.w	label(pc,a2.w),d0
+		muls.w	label(pc,a2.l),d0
+		muls.w	#$1234,d0
+
+	nota: non e' possibile usare un registro indirizzi An come operando
+
+***************************************************************** X N Z V C ***
+MULU     MULtiply Unsigned                 <ea>,Dn     -W-        - * * 0 0
+
+	Moltiplicazione senza segno. Vengono moltiplicati due numeri a 16 bit,
+	il risultato a 32 bit viene memorizzato nel registro dati destinazione.
+	Su 68000 e' possibile solo il MULU.w, a differenza del 68020+.
+	Viene letta soltanto la word bassa degli operandi sorgente, per cui
+	un numero, ad es. $00123456 viene letto come $00003456.
+	Poiche' sia il moltiplicando che il moltiplicatore sono a 16 bit,
+	ossia max 65535, il prodotto non puo' superare 4294836225, la long
+	piena, pertanto non e' possibile alcuna condizione di overflow.
+	FLAG: l'eXtend rimane invariato, l'oVerflow e il Carry sono azzerati
+	il Negative e lo Zero sono modificati secondo l'operazione.
+
+	Es:
+
+	<ea>,Dn
+		mulu.w	d1,d0
+		mulu.w	(a1),d0
+		mulu.w	(a1)+,d0
+		mulu.w	-(a1),d0
+		mulu.w	$1234(a1),d0
+		mulu.w	$12(a1,d2.w),d0
+		mulu.w	$12(a1,d2.l),d0
+		mulu.w	$12(a1,a2.w),d0
+		mulu.w	$12(a1,a2.l),d0
+		mulu.w	$1234.w,d0
+		mulu.w	$12345678,d0
+		mulu.w	label(pc),d0
+		mulu.w	label(pc,d2.w),d0
+		mulu.w	label(pc,d2.l),d0
+		mulu.w	label(pc,a2.w),d0
+		mulu.w	label(pc,a2.l),d0
+		mulu.w	#$1234,d0
+
+	nota: non e' possibile usare un registro indirizzi An come operando
+
+***************************************************************** X N Z V C ***
+NEG      NEGate                             <ea>       BWL        * * * * *
+
+	Questa istruzione effettua la negazione, ossia sottrae l'operando
+	destinazione a 0, rendendolo quantomeno negativo. (es: 0-5 = -5!!!).
+
+	Es:
+
+	<ea>
+		neg.w	d1
+		neg.b	(a1)
+		neg.w	(a1)+
+		neg.l	-(a1)
+		neg.w	$1234(a1)
+		neg.b	$12(a1,d2.w)
+		neg.w	$12(a1,d2.l)
+		neg.b	$12(a1,a2.w)
+		neg.w	$12(a1,a2.l)
+		neg.l	$1234.w
+		neg.w	$12345678
+
+***************************************************************** X N Z V C ***
+NEGX     NEGate with eXtend                 <ea>       BWL        * * * * *
+
+	Unica differenza con NEG e' che viene sottratto da 0 anche il flag
+	eXtend.
+
+***************************************************************** X N Z V C ***
+NOP      No OPeration                        NOP                  - - - - -
+
+	Questa istruzione "balorda" serve solo ad occupare "spazio", per la
+	precisione una word ($4e71), dato che eseguendola non succede nulla,
+	e neppure i FLAG sono modificati. Per la verita' l'utilizzo maggiore
+	e' quello di "NOPPARE", ossia di copiare dei $4e71, ossia dei NOP,
+	sopra i vari SUBQ.W #1,VITE, per fare dei TRAINER.
+	GUAI a voi se pensate di generare dei ritardi mettendo una filata di
+	NOP o un ciclo DBRA di NOP!! Sui processori veloci tale ritardo
+	"scomparirebbe", temporizzate solo con il VBLANK o col timer del CIA!
+
+	Es:
+		nop
+
+***************************************************************** X N Z V C ***
+NOT      Complemento ad 1                   <ea>       BWL        - * * 0 0
+
+	NOT logico della destinazione. Il NOT inverte bit per bit la
+	destinazione:
+
+		NOT 0 = 1
+		NOT 1 = 0
+
+	Per sempio, $12, ossia %00010010, diventerebbe %11101101
+	FLAG: l'eXtend rimane invariato, l'oVerflow e il Carry sono azzerati
+	il Negative e lo Zero sono modificati secondo l'operazione.
+
+	Es:
+
+	<ea>
+		not.b	d1
+		not.w	(a1)
+		not.w	(a1)+
+		not.l	-(a1)
+		not.w	$1234(a1)
+		not.l	$12(a1,d2.w)
+		not.w	$12(a1,d2.l)
+		not.b	$12(a1,a2.w)
+		not.l	$12(a1,a2.l)
+		not.w	$1234.w
+		not.l	$12345678
+
+***************************************************************** X N Z V C ***
+OR       Bit-wise OR                       <ea>,Dn     BWL        - * * 0 0
+                                           Dn,<ea>
+
+	OR logico bit per bit della sorgente con la destinazione, risultato
+	nella destinazione. Ecco la tabella dell'OR:
+
+	0 OR 0 = 0
+	0 OR 1 = 1
+	1 OR 0 = 1
+	1 OR 1 = 1
+
+	O UNO O L'ALTRO BIT DEVONO ESSERE AD 1 PER DARE 1, in pratica.
+	Puo' essere usato per settare dei bits (al contrario dell'AND che
+	e' utile per azzerarli). Per esempio un OR.B #%00001111,d0 ha come
+	effetto di settare i 4 bit bassi, e lasciare inalterati i 4 bit alti.
+	FLAG: l'eXtend rimane invariato, l'oVerflow e il Carry sono azzerati
+	il Negative e lo Zero sono modificati secondo l'operazione.
+
+	Es:
+
+	Dn,<ea>
+		or.w	d0,d1
+		or.b	d0,(a1)
+		or.w	d0,(a1)+
+		or.b	d0,-(a1)
+		or.w	d0,$1234(a1)
+		or.l	d0,$12(a1,d2.w)
+		or.w	d0,$12(a1,d2.l)
+		or.b	d0,$12(a1,a2.w)
+		or.w	d0,$12(a1,a2.l)
+		or.l	d0,$1234.w
+		or.w	d0,$12345678
+
+	<ea>,Dn
+		or.l	d1,d0
+		or.w	(a1),d0
+		or.w	(a1)+,d0
+		or.b	-(a1),d0
+		or.w	$1234(a1),d0
+		or.b	$12(a1,d2.w),d0
+		or.w	$12(a1,d2.l),d0
+		or.l	$12(a1,a2.w),d0
+		or.w	$12(a1,a2.l),d0
+		or.l	$1234.w,d0
+		or.b	$12345678,d0
+		or.w	label(pc),d0
+		or.w	label(pc,d2.w),d0
+		or.l	label(pc,d2.l),d0
+		or.w	label(pc,a2.w),d0
+		or.b	label(pc,a2.l),d0
+
+***************************************************************** X N Z V C ***
+ORI      Bit-wise OR with Immediate     #<data>,<ea>   BWL        - * * 0 0
+
+
+	OR logico bit per bit della sorgente con la destinazione, risultato
+	nella destinazione. Ecco la tabella dell'OR:
+
+	0 OR 0 = 0
+	0 OR 1 = 1
+	1 OR 0 = 1
+	1 OR 1 = 1
+
+	O UNO O L'ALTRO BIT DEVONO ESSERE AD 1 PER DARE 1, in pratica.
+	Puo' essere usato per settare dei bits (al contrario dell'AND che
+	e' utile per azzerarli). Per esempio un OR.B #%00001111,d0 ha come
+	effetto di settare i 4 bit bassi, e lasciare inalterati i 4 bit alti.
+	FLAG: l'eXtend rimane invariato, l'oVerflow e il Carry sono azzerati
+	il Negative e lo Zero sono modificati secondo l'operazione.
+
+	Es:
+
+	#<data>,<ea>
+		ori.w	#$1234,		d1	; le destinazioni sono state
+		ori.b	#$12,		(a1)	; distanziate per maggiore
+		ori.w	#$1234,		(a1)+	; leggibilita'
+		ori.l	#$12345678,	-(a1)
+		ori.w	#$1234,		$1234(a1)
+		ori.b	#$12,		$12(a1,d2.w)
+		ori.w	#$1234,		$12(a1,d2.l)
+		ori.l	#$12345678,	$12(a1,a2.w)
+		ori.b	#$12,		$12(a1,a2.l)
+		ori.w	#$1234,		$1234.w
+		ori.b	#$12,		$12345678
+
+		ori.b	#$12,ccr
+		ori.w	#$1234,sr	; *** ISTRUZIONE PRIVILEGIATA
+
+***************************************************************** X N Z V C ***
+PEA      Push Effective Address             <ea>       --L        - - - - -
+
+	Carica un indirizzo nello stack. Come un MOVE.L #Ind,-(SP), per
+	intenderci. Attenzione al fatto che lo stack viene aggiornato a
+	4 bytes piu' indietro, come il MOVE.L #ind,-(SP).
+	Un utilizzo potrebbe essere questo, ad esempio:
+
+	PEA	Copperlist(PC)
+	MOVE.L	(SP)+,$dff080
+
+	Ma perche' mai scomodare lo Stack per puntare una copperlist?
+	Infatti questa istruzione non e' molto usata.
+
+	Es:
+
+	<ea>
+		pea	(a1)
+		pea	$1234(a1)
+		pea	$12(a1,d2.w)
+		pea	$12(a1,d2.l)
+		pea	$12(a1,a2.w)
+		pea	$12(a1,a2.l)
+		pea	$1234.w
+		pea	$12345678
+		pea	label(pc)
+		pea	label(pc,d2.w)
+		pea	label(pc,d2.l)
+		pea	label(pc,a2.w)
+		pea	label(pc,a2.l)
+
+***************************************************************** X N Z V C ***
+ROL      ROtate Left                      #<1-8>,Dy    BWL        - * * 0 *
+                                            Dx,Dy
+                                            <ea>
+
+	Rotazione a sinistra dei bit. Esegue uno shift come LSL, ma in questo
+	caso i bit vengono "ruotati", cioe' i bit che "escono" a sinistra
+	finiscono nel Carry, ma poi vengono copiati a destra nello spazio
+	vuoto, a differenza dell'LSL dove i "nuovi" bit a destra sono azzerati.
+	Per esempio, avendo %11100001, con un ROL #2 avremo %10000111.
+	(con LSL avremmo avuto %10000100).
+	FLAG: eXtend non mofidicato, oVerflow azzerato, gli altri modificati
+	a seconda dell'operazione. (Nel carry il bit alto)
+
+			    valore che shifta
+			    verso sinistra
+			     ------------
+	     Flag C <---+<--|<- <- <- <-|<-+
+		    	|    ------------  |
+		    	 \_>____>_____>___/
+	Il bit che esce a sinistra rientra da destra!
+
+	; Indirizzamenti come ASL,ASR,LSL,LSR,ROR,ROXL,ROXR
+
+	Es:
+
+	Dx,Dy
+		rol.w	d0,d1	; possibili .b, .w, .l, lo shift massimo in
+				; questo caso e' 63 (sono usati i primi 6 bit
+				; del registro dati)
+
+	#<1-8>,Dy
+		rol.w	#2,d1	; possibili .b, .w, .l, massimo rol.x #8,Dy
+
+	<ea>
+		rol.w	(a1)	; solo .w possibile; scrivere rol.w #1,<ea>
+		rol.w	(a1)+	; e' equivalente
+		rol.w	-(a1)
+		rol.w	$1234(a1)
+		rol.w	$12(a1,d2.w)
+		rol.w	$12(a1,d2.l)
+		rol.w	$12(a1,a2.w)
+		rol.w	$12(a1,a2.l)
+		rol.w	$1234.w
+		rol.w	$12345678
+
+***************************************************************** X N Z V C ***
+ROR      ROtate Right                     #<1-8>,Dy    BWL        - * * 0 *
+                                            Dx,Dy
+                                            <ea>
+
+	Rotazione a destra dei bit. Esegue uno shift come LSR, ma in questo
+	caso i bit vengono "ruotati", cioe' i bit che "escono" a destra
+	finiscono nel Carry, ma poi vengono copiati a sinistra nello spazio
+	vuoto, a differenza dell'LSR dove i nuovi bit a sinistra sono azzerati.
+	Per esempio, avendo %10000111, con un ROR #2 avremo %11100001.
+	(con LSR avremmo avuto %00100001).
+	FLAG: eXtend non mofidicato, oVerflow azzerato, gli altri modificati
+	a seconda dell'operazione. (Nel carry il bit alto)
+
+			    valore che shifta
+			    verso destra
+			     ------------
+			+-->|-> -> -> ->|--+--> Flag C
+		    	|    ------------  |
+		    	\_<____<_____<____/
+	Il bit che esce a destra rientra da sinistra!
+
+	; Indirizzamenti come ASL,ASR,LSL,LSR,ROL,ROXL,ROXR
+
+	; come sopra
+
+	Es:
+
+	Dx,Dy
+		ror.w	d0,d1	; possibili .b, .w, .l, lo shift massimo in
+				; questo caso e' 63 (sono usati i primi 6 bit
+				; del registro dati)
+
+	#<1-8>,Dy
+		ror.w	#2,d1	; possibili .b, .w, .l, massimo ror.x #8,Dy
+
+	<ea>
+		ror.w	(a1)	; possibile solo .w, equivale a ROR #1,<ea>
+		ror.w	(a1)+
+		ror.w	-(a1)
+		ror.w	$1234(a1)
+		ror.w	$12(a1,d2.w)
+		ror.w	$12(a1,d2.l)
+		ror.w	$12(a1,a2.w)
+		ror.w	$12(a1,a2.l)
+		ror.w	$1234.w
+		ror.w	$12345678
+
+***************************************************************** X N Z V C ***
+ROXL     ROtate Left with eXtend          #<1-8>,Dy    BWL        * * * 0 *
+                                            Dx,Dy
+                                            <ea>
+
+	Istruzione come ROL, solo che il bit piu' significativo che viene
+	shiftato va a finire nell'eXtend, oltre che nel Carry.
+	Usato per shift in precisione multipla, dato che il flag eXtend entra
+	da destra: basta avere l'eventuale riporto di uno shift precedente,
+	con un ROXL si continuera' tale shift considerando il flag eXtend
+	precedentemente generato.
+	Inoltre il flag X si comporta come il "nono" bit del registro (se .B)
+	o il "diciassettesimo" se in .w, o il "trentaduesimo" in .L, e
+	partecipa alla rotazione, rientrando nel registro.
+
+			    valore che shifta   il flag X viene aggiornato
+			    verso sinistra     /
+			     ------------     /
+	     Flag C <---+<--|<- <- <- <-|<--|X|-<-+
+		    	|    ------------	  |
+		    	 \_>____>_____>____>__>__/
+	Il bit che esce a sinistra rientra da destra!
+
+	; Indirizzamenti come ASL,ASR,LSL,LSR,ROL,ROR,ROXR
+
+***************************************************************** X N Z V C ***
+ROXR     ROtate Right with eXtend         #<1-8>,Dy    BWL        * * * 0 *
+                                            Dx,Dy
+                                            <ea>
+
+	Istruzione come ROR, solo che il bit meno significativo che viene
+	shiftato va a finire nell'eXtend, oltre che nel Carry.
+	Inoltre il flag X si comporta come il "nono" bit del registro (se .B)
+	o il "diciassettesimo" se in .w, o il "trentaduesimo" in .L, e
+	partecipa alla rotazione, rientrando nel registro.
+
+	Usato per shift in precisione multipla
+
+    flag X aggiornato	   valore che shifta
+		     \     verso destra
+		      \      ------------
+		  +->-|X|-->|-> -> -> ->|--+--> Flag C
+		  |  	     ------------  |
+		   \__<___<____<_____<____/
+	Il bit che esce a destra rientra da sinistra!
+
+***************************************************************** X N Z V C ***
+RTE      ReTurn from Exception               RTE                  I I I I I
+
+	Ritorna da una Exception, un trap o un Interrupt.
+	Flag modificati dal dato immediato
+
+	Es:
+		rte
+
+***************************************************************** X N Z V C ***
+RTR      ReTurn and Restore                  RTR                  I I I I I
+
+	Ritorno con ripristino del byte CCR
+
+	Es:
+		rtr
+
+***************************************************************** X N Z V C ***
+RTS      ReTurn from Subroutine              RTS                  - - - - -
+
+	Ritorna da un BSR o da un JSR. Nessun flag modificato
+
+	Es:
+		rts
+
+***************************************************************** X N Z V C ***
+Scc      Set to -1 if True, 0 if False      <ea>       B--        - - - - -
+
+	Questa istruzione SETTA tutti i bit di un byte, (lo trasforma in $FF),
+	a patto che le condizioni cc siano soddisfatte, altrimenti AZZERA
+	quel byte ($00). Ci sono 2 istruzioni che settano sempre o azzerano
+	sempre quel byte, sono ST la prima e SF la seconda.
+
+	Es:	(Consultate Bcc per la descrizione dei cc)
+
+	<ea>
+		st.b	d1	; Solo .b - Always set, SETTA SEMPRE
+		st.b	(a1)
+		st.b	(a1)+
+		st.b	-(a1)
+		st.b	$1234(a1)
+		st.b	$12(a1,d2.w)
+		st.b	$12(a1,d2.l)
+		st.b	$12(a1,a2.w)
+		st.b	$12(a1,a2.l)
+		st.b	$1234.w
+		st.b	$12345678
+
+	Gli stessi indirizzamenti per:
+
+		sf	<ea>	; solo .b, Never Set, AZZERA SEMPRE
+
+		shi.s	<ea>	; > per numeri senza segno
+		sgt.w	<ea>	; > per num. con segno
+		scc.s	<ea>	; >= per num. senza segno - detto anche SHS
+		sge.s	<ea>	; >= per num. con segno
+		seq.s	<ea>	; = per tutti i numeri
+		sne.w	<ea>	; >< per tutti i numeri
+		sls.w	<ea>	; <= per num. senza segno
+		sle.w	<ea>	; <= per num. con segno
+		scs.w	<ea>	; < per num. senza segno - detto anche SLO
+		slt.w	<ea>	; < per num. con segno
+		spl.w	<ea>	; Se Negative = 0 (PLus)
+		smi.s	<ea>	; Se Negative = 1, (Minus) num. con segno
+		svc.w	<ea>	; V=0, no OVERFLOW
+		svs.s	<ea>	; V=1 OVERFLOW
+
+***************************************************************** X N Z V C ***
+STOP     Enable & wait for interrupts      #<data>                I I I I I
+
+	Es:
+		stop	#$1234
+
+***************************************************************** X N Z V C ***
+SUB      SUBtract binary                   Dn,<ea>     BWL        * * * * *
+                                           <ea>,Dn
+
+	Questa istruzione esegue la sottrazione dell'operando sorgente
+	dall'operando destinazione e salva il risultato nell'operando
+	destinazione.
+	I flag sono modificati secondo l'esito dell'operazione.
+	Il flag C (Carry) viene settato se la sottrazione produce un prestito
+	(cioe' il risultato non "entra" nell'operando destinazione).
+
+
+	Es:
+
+	Dn,<ea>
+		sub.b	d0,d1
+		sub.w	d0,(a1)
+		sub.l	d0,(a1)+
+		sub.w	d0,-(a1)
+		sub.w	d0,$1234(a1)
+		sub.l	d0,$12(a1,d2.w)
+		sub.w	d0,$12(a1,d2.l)
+		sub.w	d0,$12(a1,a2.w)
+		sub.w	d0,$12(a1,a2.l)
+		sub.b	d0,$1234.w
+		sub.l	d0,$12345678
+
+	<ea>,Dn
+		sub.w	d1,d0
+		sub.l	a1,d0
+		sub.w	(a1),d0
+		sub.b	(a1)+,d0
+		sub.w	-(a1),d0
+		sub.b	$1234(a1),d0
+		sub.w	$12(a1,d2.w),d0
+		sub.l	$12(a1,d2.l),d0
+		sub.w	$12(a1,a2.w),d0
+		sub.l	$12(a1,a2.l),d0
+		sub.w	$1234.w,d0
+		sub.b	$12345678,d0
+		sub.w	label(pc),d0
+		sub.b	label(pc,d2.w),d0
+		sub.w	label(pc,d2.l),d0
+		sub.l	label(pc,a2.w),d0
+		sub.w	label(pc,a2.l),d0
+
+***************************************************************** X N Z V C ***
+SUBA     SUBtract binary from An           <ea>,An     -WL        - - - - -
+
+	Operazione SUB specifica per registri indirizzi. Non e' possibile
+	dunque usare l'estensione .b.
+	Nessun flag viene modificato
+
+	Consiglio: usate SEMPRE l'estensione .L
+
+	Es:
+
+	<ea>,An
+		suba.l	d1,a0
+		suba.l	a1,a0
+		suba.l	(a1),a0
+		suba.l	(a1)+,a0
+		suba.l	-(a1),a0
+		suba.l	$1234(a1),a0
+		suba.l	$12(a1,d2.w),a0
+		suba.l	$12(a1,d2.l),a0
+		suba.l	$12(a1,a2.w),a0
+		suba.l	$12(a1,a2.l),a0
+		suba.l	$1234.w,a0
+		suba.l	$12345678,a0
+		suba.l	label(pc),a0
+		suba.l	aa45(pc,d2.w),a0
+		suba.l	aa45(pc,d2.l),a0
+		suba.l	aa45(pc,a2.w),a0
+		suba.l	aa45(pc,a2.l),a0
+
+		suba.l	#$1234,a1	; nota: per la sottrazione di un
+					; #immediato a registri indirizzi Ax
+					; e' presente il SUBA e non il SUBI
+					; Vedere il commento ad ADDA per il
+					; significato che acquista .w e .l
+					; in questo caso.
+
+***************************************************************** X N Z V C ***
+SUBI     SUBtract Immediate                #x,<ea>     BWL        * * * * *
+
+	Versione di SUB specifica per la sottrazione di un #Immediato
+	I flag sono modificati secondo l'esito dell'operazione
+	Il flag C (Carry) viene settato se la sottrazione produce un prestito
+	(cioe' il risultato non "entra" nell'operando destinazione).
+
+	Es:
+
+	#x,<ea>
+		subi.l	#$12345678,	d1	; le destinazioni sono state
+		subi.b	#$12,		(a1)	; distanziate per maggiore
+		subi.w	#$1234,		(a1)+	; leggibilita'
+		subi.w	#$1234,		-(a1)
+		subi.b	#$12,		$1234(a1)
+		subi.l	#$12345678,	$12(a1,d2.w)
+		subi.w	#$1234,		$12(a1,d2.l)
+		subi.b	#$12,		$12(a1,a2.w)
+		subi.l	#$12345678,	$12(a1,a2.l)
+		subi.b	#$12,		$1234.w
+		subi.b	#$12,		$12345678
+
+		suba.w	#$1234,a1	; nota: per la sottrazione di un
+					; #immediato a registri indirizzi Ax
+					; e' presente il SUBA e non il SUBI
+
+***************************************************************** X N Z V C ***
+SUBQ     SUBtract 3-bit immediate       #<data>,<ea>   BWL        * * * * *
+
+	Significa SUB Quick, ossia sottrazione veloce di un numero da 1 a 8,
+	che funziona esattamente come il SUBI, dunque conviene usare sempre
+	il SUBQ anziche' il SUBI per la sottr. di numeri da 1 a 8, dato che
+	esiste questa istruzione dedicata. I Flag si comportano come l'ADD/SUB:
+	Il flag C (Carry) viene settato se la sottrazione produce un prestito
+	(cioe' il risultato non "entra" nell'operando destinazione).
+	Negative = 1 se il risultato e' negativo, Negative = 0 se e' positivo.
+	oVerflow = 1 se il risultato supera la dimensione .b, .w o .l dell'ADD
+	Zero = 1 se il risultato e' Zero
+
+	Es:
+
+	#<data>,<ea>
+		subq.b	#1,d1
+		subq.w	#1,a1	; non possibile in .b su registro indirizzi Ax!
+		subq.w	#1,(a1)
+		subq.b	#1,(a1)+
+		subq.w	#1,-(a1)
+		subq.l	#1,$1234(a1)
+		subq.w	#1,$12(a1,d2.w)
+		subq.b	#1,$12(a1,d2.l)
+		subq.w	#1,$12(a1,a2.w)
+		subq.b	#1,$12(a1,a2.l)
+		subq.w	#1,$1234.w
+		subq.l	#1,$12345678
+
+***************************************************************** X N Z V C ***
+SUBX     SUBtract eXtended                  Dy,Dx      BWL        * * * * *
+                                         -(Ay),-(Ax)
+
+	Istruzione SUB a precisione "estesa", dato che sottrae dall'operando
+	destinazione l'operando sorgente e il bit di eXtend. Vedere ADDX.
+
+
+	Es:
+
+	Dy,Dx
+		subx.w	d0,d1	; possibile .b, .w e .l
+
+	-(Ay),-(Ax)
+		subx.w	-(a0),-(a1)	; possibile .b, .w e .l
+
+
+***************************************************************** X N Z V C ***
+SWAP     SWAP words of Dn                    Dn        -W-        - * * 0 0
+
+	Scambio delle word di un registro dati. Se per esempio abbiamo
+	d0= $11223344, dopo uno swap, d0 = $33441122
+	La word ALTA (bits 16-31) e' scambiata con quella BASSA (bits 0-15)
+
+	Es:
+		swap	d0
+
+***************************************************************** X N Z V C ***
+TRAP     Execute TRAP Exception           #<vector>               - - - - -
+
+	Questa istruzione serve per generare Eccezioni, solitamente si
+	usa per eseguire istruzioni in modo supervisore.
+
+	Es:
+		trap	#0
+
+	Fa eseguire il vettore all'indirizzo $80.
+
+***************************************************************** X N Z V C ***
+TRAPV    TRAPV Exception if V-bit Set       TRAPV                 - - - - -
+
+	Questa istruzione genera una exxeccezione (vettore $1c), ma solo
+	se al momento della sua esecuzione il bit di oVerflow e' = 1
+
+	Es:
+		trapv
+
+***************************************************************** X N Z V C ***
+TST      TeST for negative or zero          <ea>       BWL        - * * 0 0
+
+	Questa istruzione testa la destinazione, aggiornando i flag di
+	Negative e Zero. Usata per controllare se l'operando e' zero o
+	se e' negativo. I Fag Carry e oVerflow sono azzerati.
+
+	Es:
+
+	<ea>
+		tst.w	d1	; nota: non si puo' fare un TST su un registro
+		tst.w	(a1)	; indirizzi Ax diretto. "TST.W a0" e' imposs.
+		tst.w	(a1)+
+		tst.w	-(a1)
+		tst.w	$1234(a1)
+		tst.w	$12(a1,d2.w)
+		tst.w	$12(a1,d2.l)
+		tst.w	$12(a1,a2.w)
+		tst.w	$12(a1,a2.l)
+		tst.w	$1234.w
+		tst.w	$12345678
+
+*******************************************************************************
+
+Ora un'elenco con i significati dei messaggi di GURU MEDITATION, nel caso
+che il computer vi si resetti all'esecuzione di un programma, almeno potete
+sapere come mai e quale istruzione e' stata:
+
+GURU $00000002	- BUS ERROR		($08)
+GURU $00000003	- ADDRESS ERROR		($0C)
+GURU $00000004	- ILLEGAL INSTRUCTION	($10)
+GURU $00000005	- DIVISION BY ZERO	($14)
+GURU $00000006	- CHK,CHK2		($18)	; su 68020+
+GURU $00000007	- TRAPV,TRAPCC		($1c)	; su 68020+
+GURU $00000008	- PRIVILEGE VIOLATION	($20)
+GURU $00000009	- TRACE			($24)
+GURU $0000000A	- LINEA EMULATOR 1010	($28)
+GURU $0000000B	- LINEF EMULATOR 1111	($2c)
+
+2) Bus error: l'errore di bus avviene quando si accede ad indirizzi strani
+	      e inesistenti, e spesso e' la MMU a causare questo errore,
+	      nei computer che la possiedono. (scrittura in memoria protetta)
+
+3) Address error: Se si tenta di eseguire o leggere una word o una longword
+		  memorizzata ad un indirizzo DISPARI. Ad esempio:
+
+	move.l	#$4e754e75,label ; scrivi.l ad indirizzo dispari (su 68020 e'
+				 ; possibile, questa passa...)
+	bra.s	label		 ; salta ad indirizzo dispari (questo GURA
+	rts			 ; anche su un 68020+, dato che dal 68020 in
+				 ; avanti e' stato reso possibile muovere
+				 ; anche long ad indirizzi dispari, ma e'
+				 ; sempre "proibito" saltare ad eseguire
+				 ; codice ad indirizzi dispari.
+
+	dc.b	0	; un byte di intralcio
+label:
+	dc.b	0,0,0,0	; indirizzo dispari!
+
+4) Illegal instruction: Se viene eseguito codice binario che non corrisponde
+			a nessuna istruzione del 680x0. Si puo' generare
+			anche con l'apposita istruzione "ILLEGAL".
+
+5) Division by 0: Non e' possibile dividere un numero per zero!!!
+
+8) Privilege Violation: Se si tenta di eseguire un'istruzione privilegiata
+			nel modo USER anziche' in quello SUPERVISOR.
+			Ad esempio operare con ANDI,ORI,MOVE sullo SR.
+
+A) Linef Emulator 1010: Se si esegue un codice binario sconosciuto che
+			comuncia con %1010, ossia $Axxx. Non esistono
+			istruzioni che iniziano in questo modo, per cui
+			viene generata questa eccezione.
+
+B) Linef Emulator 1111: Se si esegue binario che comuncia con $Fxxx.
+			Alcune delle istruzioni del coprocessore matematico
+			e della mmu comunque cominciano in questo modo,
+			per cui mentre su un computer senza mmu/fpu questi
+			codici genereranno un'eccezione LINE-F, in altri
+			potrebbero essere eseguite istruzioni 68882/68851.
+
+*******************************************************************************
+
+Una tabella con le potenze di 2 potrebbe servire... (max: una longword)
+
+       2^n		n
+  |_____________|_____________|
+	2		1
+	4		2
+	8		3
+	16		4
+	32		5
+	64		6
+	128		7
+	256		8
+	512		9
+	1024		10
+	2048		11
+	4096		12
+	8192		13
+	16384		14
+	32768		15
+	65536		16
+	131072		17
+	262144		18
+	524288		19
+	1048576		20
+	2097152		21
+	4194304		22
+	8388608		23
+	16777216	24
+	33554432	25
+	67108864	26
+	134217728	27
+	268435456	28
+	536870912	29
+	1073741824	30
+	2147483648	31
+	4294967296	32
+
+*******************************************************************************
+
+Ecco, infine, una breve tabella sulle ottimizzazioni e i consigli su quali
+istruzioni usare piuttosto che altre; un capitolo intero sara' fatto sulle
+ottimizzazioni, ma per ora IMPARATEVI A MEMORIA questo vangelo, dato che se
+vedo istruzioni tipo "MOVE.L #label,a0" oppure "add.w #4,d0" piango.
+
+ ISTRUZIONE esempio	| EQUIVALENTE, MA PIU' VELOCE
+------------------------|-----------------------------------------------
+add.X #6,XXX		| addq.X #6,XXX		(massimo 8)
+sub.X #7,XXX		| subq.X #7,XXX		(massimo 8)
+MOVE.X LABEL,XX		| MOVE.X LABEL(PC),XX	(se nella stessa SECTION)
+LEA LABEL,AX		| LEA LABEL(PC),AX	(se nella stessa SECTION)
+MOVE.L #30,d1		| moveq #30,d1		(min #-128, max #+127)
+CLR.L d4		| MOVEQ #0,d4		(solo per i registri dati)
+ADD.X/SUB.X #12000,a3	| LEA (+/-)12000(a3),A3	(min -32768, max 32767)
+MOVE.X #0,XXX		| CLR.X XXX		; muovere #0 e' stupido!
+CMP.X  #0,XXX		| TST.X XXX		; il TST dove lo lasci?
+Per azzerare un reg. Ax	| SUBA.L A0,A0		; meglio di "LEA 0,a0".
+JMP/JSR	XXX		| BRA/BSR XXX		(Se XXX e' vicino)
+MOVE.X #12345,AX	| LEA 12345,AX		(solo registri indirizzi!)
+MOVE.L 0(a0),d0		| MOVE.L (a0),d0	(togli l'offset se e' 0!!!)
+LEA	(A0),A0		| HAHAHAHA! Togli questa istruzione! non ha effetti!!
+LEA	4(A0),A0	| ADDQ.W #4,A0		; non si finisce mai di
+						; imparare e ottimizzare eh!?
+
+; Segue una tabella da prendere un po' con le pinze, dato che le istruzioni
+; date come equivalenti, non sono proprio equivalenti, soprattutto perche'
+; si perde il resto delle divisioni. Conviene comunque provare sempre se si
+; puo' sostituire una moltiplicazione o una divisione, dato che sono le
+; istruzioni piu' lente in assoluto. Potete verificare la "motivazione" della
+; uguaglianza consultando la tabella delle potenze del 2.
+
+MULU.w	#2,d0		| ADD.l d0,d0 ; mi pare chiaro!
+MULU.w	#4,d0		| LSL.l #2,d0 ; alle volte ci vuole un EXT.L D0 prima
+MULS.w	#4,d0		| ASL.l #2,d0 ; per eliminare eventuali "sporcizie"
+MULS.w	#8,d0		| ASL.l #3,d0 ; nella word alta, che nel caso del MULS
+MULS.w	#16,d0		| ASL.l #4,d0 ; non viene considerata, mentre
+MULS.w	#32,d0		| ASL.l #5,d0 ; con ASL viene shiftata assieme al
+MULS.w	#64,d0		| ASL.l #6,d0 ; resto.
+MULS.w	#128,d0		| ASL.l #7,d0
+MULS.w	#256,d0		| ASL.l #8,d0
+DIVS.w	#2,d0		| ASR.L #1,d0	; attenzione: IGNORA IL RESTO!!!!!!!
+DIVS.w	#4,d0		| ASR.L #2,d0
+DIVS.w	#8,d0		| ASR.L #3,d0
+DIVS.w	#16,d0		| ASR.L #4,d0
+DIVS.w	#32,d0		| ASR.L #5,d0
+DIVS.w	#64,d0		| ASR.L #6,d0
+DIVS.w	#128,d0		| ASR.L #7,d0
+DIVS.w	#256,d0		| ASR.L #8,d0
+DIVU.w	#2,d0		| LSR.L #1,d0	; attenzione: IGNORA IL RESTO!!!!!!!!
+DIVU.w	#4,d0		| LSR.L #2,d0
+DIVU.w	#8,d0		| LSR.L #3,d0
+DIVU.w	#16,d0		| LSR.L #4,d0
+DIVU.w	#32,d0		| LSR.L #5,d0
+DIVU.w	#64,d0		| LSR.L #6,d0
+DIVU.w	#128,d0		| LSR.L #7,d0
+DIVU.w	#256,d0		| LSR.L #8,d0
+
+Abbiamo usato con successo questa sostituzione nella routine di PRINT del
+testo nella lezione8b.s, per esempio:
+
+	MULU.W	#8,d2
+
+Che e' stato trasformato in:
+
+	LSL.W	#3,D2		; MOLTIPLICA PER 8 IL NUMERO PRECEDENTE,
+				; essendo i caratteri alti 8 pixel
+
+Facciamo degli esempi:
+
+	muls.w	#4,d0
+
+	si puo' sostituire con:
+
+	ext.l	d0
+	asl.l	#2,d0
+
+	Alle volte EXT non e' necessario, se la word alta di d0 e' azzerata.
+
+	-		-		-		-
+
+Infine, considerate che i REGISTRI Ax e Dx li hanno inventati proprio per
+usarli al massimo. Per esempio, ottimiziamo un loop di questo genere:
+
+
+	move.w	#2000-1,d7	; Numero loops
+Loop1:
+	move.w	#$0234,$dff180
+	move.w	#$0567,$dff182
+	move.w	#$089a,$dff184
+	move.w	#$0bcd,$dff186
+	dbra	d7,Loop1
+	rts
+
+Non fate caso all'inutilita' del loop, supponiamo serva a qualcosa, e che lo
+vogliamo velocizzare: ecco una discreta velocizzazione:
+
+
+	move.w	#$0234,d0
+	move.w	#$0567,d1
+	move.w	#$089a,d2
+	move.w	#$0bcd,d3
+	lea	$dff000,a0	; Base per offsets
+	move.w	#2000-1,d7	; Numero loops
+Loop1:
+	move.w	d0,$180(a0)
+	move.w	d1,$182(a0)
+	move.w	d2,$184(a0)
+	move.w	d3,$186(a0)
+	dbra	d7,Loop1
+	rts
+
+Questo loop e' MIGLIAIA di volte piu' veloce, perche' muovere un valore da un
+registro dati Dx e' piu' veloce che un "move #xxx,dest", inoltre accedere ad
+indirizzi tramite registri indirizzi e' piu' veloce che scrivendo l'indirizzo
+o la label. "Esagerando", si potrebbe ottimizzare di piu':
+
+
+	move.w	#$0234,d0
+	move.w	#$0567,d1
+	move.w	#$089a,d2
+	move.w	#$0bcd,d3
+	lea	$dff180,a0
+	lea	$dff182,a1
+	lea	$dff184,a2
+	lea	$dff186,a3
+	move.w	#2000-1,d7	; Numero loops
+Loop1:
+	move.w	d0,(a0)
+	move.w	d1,(a1)
+	move.w	d2,(a2)
+	move.w	d3,(a3)
+	dbra	d7,Loop1
+	rts
+
+Ora abbiamo impegnato altri 3 registri indirizzi, ma risparmiamo gli offset, il
+che aumenta ancora di piu' la velocita' e riduce la grandezza del codice!
+Ovviamente queste ottimizzazioni sono utili solo in loop o parti di codice
+che sono eseguite spessissimo.
+

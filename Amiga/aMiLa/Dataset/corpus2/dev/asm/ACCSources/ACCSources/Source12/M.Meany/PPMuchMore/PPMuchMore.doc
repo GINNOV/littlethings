@@ -1,0 +1,151 @@
+
+			PPMuchMore Users Manual
+
+				May 1991
+
+
+
+Preface
+=======
+
+     This program is freeware, this means that you can copy it freely as long
+as you don't ask any more money for it than a nominal fee for copying.  If
+you want to distribute this program you should keep this document with it.
+     If you have suggestions or remarks about this program, or if you find
+any bugs, please let me know.
+
+     Write to the following address:
+
+				M.Meany,
+				1 Cromwell Road,
+				Southampton,
+				Hant's.
+				England
+
+Function
+========
+
+ PPMuchMore is a text file viewer that allows the user to open multiple
+windows and view a unique file in each. To add to the programs flexability
+it can also decrunch files packed by PowerPacker ( written by Nico Francois
+) and has the option to save the decrunched text to disc.
+
+ When more than one window is open, click in the one you wish to browse.
+The windows may be closed in any order.
+
+*****************************************************************************
+
+			 WARNING
+
+
+ Closing multiple windows in quick succession may lead to a Guru
+Meditation. I am not sure why this is, but I have experienced the same
+result from other programs ( namely Argasm assembler ). If you can suggest
+a solution to this problem please write to me at the above address
+
+*****************************************************************************
+
+Usage
+=====
+
+ The program can be started from the WorkBench by 'Double-Clicking' on it's
+icon. The program may also be launched from the CLI by typing:
+
+	ppmuchmore
+or	ppmuchmore <filename>
+
+ If the second CLI option is used, the program attempts to load and display
+the text file specified.
+
+ The program starts by opening a blank window, you access the available
+commands by pressing keys on the keyboard. Below is a description of all
+implemented commands and the keys to press to invoke them.
+
+ KEY			COMMAND SUMMARY
+ ---			---------------
+  L			Load a text file. This option uses the ARP 
+			filerequester to obtain the name of the file to
+			load. NOTE that while the requester is being 
+			displayed, all PPMuchMore windows are disabled. If
+			you select a crunched file it will automatically be
+			decrunched.
+
+  S			This option saves the text file visible in the
+			currently active window. The file is always saved
+			as a standard ASCII file. Again the ARP
+			filerequester is used to obtain the name to save
+			the file as and all PPMuchMore windows are disabled
+			while this is displayed.
+
+  M			More. This option opens another window. You can
+			then load another file into this window. All
+			commands are available from the new window.
+
+  Q			Quit. Kills the currently active window. If this is
+			the only PPMuchMore window open the program ends.
+
+  T			Top. Displays the top page of the text file.
+
+  B			Bottom. Displays the last page of the text file.
+
+  F			Find. A window will open into which you must enter
+			a string to search the file for. While this window
+			is open all PPMuchMore windows are disabled.
+			 If the string is found, the line containing it is
+			displayed at the top of the PPMuchMore window.
+
+  N			Next. Finds the next occurence of a string in the 
+			text file and displays the line containing it at
+			the top of the PPMuchMore window.
+
+  P			Previous. Finds the previous occurence of a string
+			in the text file and displays the line containing 
+			it at the top of the PPMuchMore window.
+
+  G			Goto. This opens a window into which you enter a 
+			line number. While this window is open all
+			PPMuchMore windows are disabled.
+			 Providing a valid line number is given the line
+			specified will be displayed at the top of the
+			PPMuchMore window.
+
+  D			Dump File. Prints the contents of the file on the
+			printer using the PRT: device.
+
+ SHIFT PLUS D		Dump Page. Prints the contents of the PPMuchMore
+			window to the printer using the PRT: device.
+			{{{ NOT YET IMPLEMENTED }}}
+
+
+ CURSOR UP/DOWN		Scrolls the display through the text file one line
+			at a time in the required direction.
+
+   SHIFT PLUS		Moves the display through the text file one page at
+ CURSOR UP/DOWN		a time in the required direction.
+
+  HELP			Displays a window that details each available 
+			command. Note that all PPMuchMore windows remain
+			enabled with this window open, so you can view the
+			instructions while browsing a file. PPMuchMore will
+			not free itself if this window is left open. To
+			close this window click where it says 'CLICK HERE'.
+
+ This utility requires the arp.library and powerpacker.library. They should
+be in the libs directory of any bootable disc that you are going to use it
+from.
+
+Source
+======
+
+ The assembly language source code, Devpac compatable, is available from me
+at the above address. Send disc and sae.
+
+Credits
+=======
+
+ Thanks go to Nico Francois for producing PowerPacker and then releasing
+the support library.
+
+							Mark Meany.
+
+

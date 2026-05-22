@@ -1,0 +1,49 @@
+Short:    AMPlifier Software Development Kit
+Author:   Thorsten Hansen <hansen_t@informatik.fh-hamburg.de>
+Uploader: Thorsten Hansen <hansen_t@informatik.fh-hamburg.de>
+Version:  1.0
+Type:     dev/c
+
+
+Visualisation Plug-Ins for AMPlifier
+------------------------------------
+
+Everybody who was asking why to take a Melody1200
+with DSP if there is a 060 or PowerPC in the 
+machine should again become more silent now!
+
+AMPlifier got a powerfull Plug-In interface for 
+talking to external programms to perform 
+nice-to-see analyses of sound. This kind of 
+stuff is known from PC Player WinAMP.
+
+As we even want YOU to do the Plug-Ins, the code 
+for one nice Plug-In is available. It was spend 
+maximum energy to make Plug-Ins as easy as possible 
+to do without limiting their power. 
+
+The Plug-Ins are external programms or even 
+applications which are docking to a reentrant 
+cappable library activated by AMPlifier.
+Reentrant means it's possible to start 
+an unlimited number of effects if the CPU is 
+fast enough!
+
+If Melody1200 PRO or Plus is used, all the power 
+of the machine may be spend for rendering 
+hungry Plug-Ins. If the boards are used, 
+AMPlifier makes use of their feature to readback
+digital decoded MPEGs as RAW data to prevent 
+delays.
+
+When having a look at PC it's allready known some
+Plug-Ins are like Plasma-Demos and are eating tons
+of CPU-Power. The premium machine for Plug-Ins
+currently is PowerUP/BVision/Melody1200PRO 
+based A1200! Next you'll even be able to use
+Melody1200 at a Zorro-Machine, too.
+
+
+Kato Development Group
+WWW:http://kato.home.pages.de
+

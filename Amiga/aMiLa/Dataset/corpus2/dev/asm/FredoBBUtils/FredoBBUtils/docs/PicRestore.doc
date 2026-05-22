@@ -1,0 +1,46 @@
+PicRestore V1.0 - Documentation
+-------------------------------
+
+Author
+------
+
+Frédéric BASSALER	fbas@club-internet.fr
+La Serre
+19500 COLLONGES
+FRANCE
+
+
+What is this?
+-------------
+
+PicRestore is a small CLI only utility which works in combination with
+my special bootblock: SearchILBM.
+
+This bootblock allows you to find IFF-ILBM pictures in your memory. If any
+are found, they are written to the disk tracks.
+
+Thus, you need to use PicRestore to read these saved pics from the disk
+and to save them as AmigaDOS files.
+
+
+How to use
+----------
+
+Just insert the disk where the pics have been saved and run PicRestore from
+a CLI/Shell:
+
+PicRestore <destination path>
+e.g. PicRestore df1:	or PicRestore dh0:temp/
+
+Then follow the instructions.
+
+!!! BUG !!! DO NOT USE 'RAM:' FOR DESTINATION PATH AS IT WILL CRASH !!
+I DON'T KNOW WHY IT CRASHES. IF YOU FIND THE BUG PLEASE LET ME KNOW.
+
+The pics will then be saved as PIC00.IFF, PIC01.IFF, etc...
+
+
+See also
+--------
+
+SearchILBM.doc

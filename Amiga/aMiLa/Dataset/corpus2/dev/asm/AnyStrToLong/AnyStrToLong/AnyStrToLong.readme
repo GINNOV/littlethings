@@ -1,0 +1,21 @@
+Short:    Fix, Two routines ASCII<->Long. Dec/hex/bin.
+Author:   tadek@student.uci.agh.edu.pl (Tadek Knapik)
+Uploader: tadek@student.uci.agh.edu.pl (Tadek Knapik)
+Type:     dev/asm
+Replaces: dev/asm/AnyStrToLong
+
+	Here you have two routines for converting string<->long.
+The first one is similar to dos.library/StrToLong(), but it can handle
+hexadecimal and binary strings as well (prefixes '$', '0x' and '%'). The
+second one converts given longword to a string - you can select between
+decimal, signed decimal (minus when bit 31/15/7 is set), hexadecimal and
+binary.
+	AnyStrToLong remains the same as for the first relase.
+	AnyLongToStr - fixed bad handling of 10, 100, 1000 etc. (was
+'bhi' instead if 'bpl', sorry!!!), optimized dividing by ten routine for
+68000 (thanks to Simon N Goodwin for this!), added handling of signed
+words and bytes.
+
+	Tadek Knapik (tadek@student.uci.agh.edu.pl)
+
+

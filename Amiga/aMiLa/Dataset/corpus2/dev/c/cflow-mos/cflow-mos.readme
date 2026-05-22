@@ -1,0 +1,81 @@
+Short:        Generate a program flowgraph
+Author:       gray@gnu.org (Sergey Poznyakoff), port by uploader
+Uploader:     polluks+aminet sdf lonestar org (Stefan Haubenthal)
+Type:         dev/c
+Version:      1.6
+Architecture: ppc-morphos
+URL:          https://www.gnu.org/software/cflow/
+
+Usage: cflow [OPTION...] [FILE]...
+generate a program flowgraph
+
+ General options:
+  -d, --depth=NUMBER         Set the depth at which the flowgraph is cut off
+  -f, --format=NAME          Use given output format NAME. Valid names are
+                             `gnu' (default) and `posix'
+  -i, --include=CLASSES      Include specified classes of symbols (see below).
+                             Prepend CLASSES with ^ or - to exclude them from
+                             the output
+  -o, --output=FILE          Set output file name (default -, meaning stdout)
+  -r, --reverse              * Print reverse call tree
+  -x, --xref                 Produce cross-reference listing only
+
+ Symbols classes for --include argument
+
+    _                        symbols whose names begin with an underscore
+    s                        static symbols
+    t                        typedefs (for cross-references only)
+    x                        all data symbols, both external and static
+
+ Parser control:
+
+  -D, --define=NAME[=DEFN]   Predefine NAME as a macro
+  -I, --include-dir=DIR      Add the directory DIR to the list of directories
+                             to be searched for header files.
+  -S, --use-indentation      * Rely on indentation
+  -U, --undefine=NAME        Cancel any previous definition of NAME
+  -a, --ansi                 * Accept only sources in ANSI C
+  -m, --main=NAME            Assume main function to be called NAME
+      --no-main              There's no main function; print graphs for all
+                             functions in the program
+  -p, --pushdown=NUMBER      Set initial token stack size to NUMBER
+      --preprocess[=COMMAND], --cpp[=COMMAND]
+                             * Run the specified preprocessor command
+  -s, --symbol=SYMBOL:[=]TYPE   Register SYMBOL with given TYPE, or define an
+                             alias (if := is used). Valid types are: keyword
+                             (or kw), modifier, qualifier, identifier, type,
+                             wrapper. Any unambiguous abbreviation of the above
+                             is also accepted
+
+ Output control:
+
+  -A, --all                  Show all functions, not only those reachable from
+                             main
+  -T, --tree                 * Draw ASCII art tree
+  -b, --brief                * Brief output
+      --emacs                * Additionally format output for use with GNU
+                             Emacs
+      --level-indent=ELEMENT Control graph appearance
+  -l, --print-level          * Print nesting level along with the call tree
+  -n, --number               * Print line numbers
+      --omit-arguments       * Do not print argument lists in function
+                             declarations
+      --omit-symbol-names    * Do not print symbol names in declaration strings
+                            
+
+ Informational options:
+
+      --debug[=NUMBER]       Set debugging level
+  -v, --verbose              * Verbose error diagnostics
+
+  -?, --help                 give this help list
+  -V, --version              print program version
+      --usage                give a short usage message
+
+Mandatory or optional arguments to long options are also mandatory or optional
+for any corresponding short options.
+
+* The effect of each option marked with an asterisk is reversed if the option's
+long name is prefixed with `no-'. For example, --no-cpp cancels --cpp.
+
+Report bugs to <bug-cflow@gnu.org>.

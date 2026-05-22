@@ -1,0 +1,98 @@
+short: A kind of "resource tracking" makes cleanup easier.
+type: dev/c
+uploader: too@cs.hut.fi
+author: Tomi Ollila <too@cs.hut.fi>
+
+This library is public domain. Use it any way you want. I do :)
+No warranty of any kind is given.
+
+Rt library provides a way to "remember" what resources has been allocated 
+for the task a program is doing. Then, at the end of program execution, one
+`delete' -call will go through a stack of allocated stuff and call their
+corresponding deallocation functions.
+
+The initial and final procedures one must do are quite simple:
+
+First, create an rt memory space. Currently this space is statically bound
+to the value programmer gives. Programmer must know/quess a value high
+enough for all stuff that rt must remember: This is done the following way:
+
+	struct RT * rt;
+
+	unless (rt = rt_Create(100)) /* #define unless(x) if (!(x)) */
+	   return 20;
+
+This allocates memory for 100 items that rt can remember.
+
+...Now you can for example do the following thing (and then forget the
+thing alltogether):
+
+	void closeLib(struct Library * base) { CloseLibrary(base); }
+...
+
+	unless (DOSBase = (struct DosLibrary *)OpenLibrary("dos.library", 37))
+	   return 20;
+
+	rt_Add(rt, closeLib, DOSBase);
+
+but all this can be done easier by using the provided rt_CloseLib -function:
+
+	unless (rt_CloseLib(rt, &DOSBase, "dos.library", 37))
+	   return 20;
+
+
+As you see, the rt -system takes a pointer to deallocation function and a
+data pointer to be given as an argument to that function. At the end of
+program execution, the following call will do all these deallocation
+function calls in reverse order they were installed.
+
+rt_Delete(rt);
+
+
+The library in current state provides the following functions:
+
+/* rt.c */
+struct RT * rt_Create(int size); /* creates an rt instance */
+struct RTNode * rt_Add(struct RT * rt, void * func, void * data);
+struct RTNode * rt_Delete(struct RT * rt);
+
+/* rt_remnode.c -- the function below deletes one node */
+void rt_RemNode(struct RT * rt, struct RTNode * node);
+
+/* rt_remdata.c -- the function below deletes one node searched by data ptr */
+void rt_Remdata(struct RT * rt, void * data);
+
+/* rt_remsome.c -- function deletes multiple entries ... */
+void rt_Remdata(struct RT * rt, void * ptr, ULONG flags);
+
+/* rt_exec/rt_openlib.c -- void * as libptr reduces compiler warnings */
+struct RTNode * rt_OpenLib(struct RT * rt, void * libptr, 
+				char * name, int version); */
+
+/* rt_exec/rt_allocmem.c -- void * as memptr reduces compiler warnings */
+struct RTNode * rt_AllocMem(struct RT * rt, void * memptr,
+				ULONG size, ULONG flags);
+
+/* rt_dos/rt_open.c */
+struct RTNode * rt_Open(struct RT * rt, BPTR * file, char * name, int mode);
+
+
+See the test program in test directory of this archive. It demonstrates
+the way those rt_Rem* -functions work (1384 bytes long and it uses almost
+all the functions provided in the library). 
+
+If you want to add your own rt functions to this library, please follow the
+convention I've been using in rt_exec/ and rt_dos/ directories. I will gladly
+add all your "wrappers" you want to be included in this public distribution
+of this library.
+
+All sources and this library is compiled w/ gcc only, since it was so easy
+to use gcc cross compiler at sun sparcstation while developing this library
+(21" monitor, X and Emacs19 rules).
+
+Well, This documentation should give you a start of trying and using this
+library. Please send me comments about the usability and everything you
+could think about this piece of work to the address too@cs.hut.fi.
+
+Tomi
+

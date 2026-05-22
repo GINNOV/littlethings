@@ -1,0 +1,125 @@
+Short:     Assembly .i file for easy playing of sounds
+Author:    Blasio@kemmunet.net.mt   (Blasio Muscat)
+Uploader:  blasio@kemmunet.net.mt  (Blasio Muscat)
+Type:      dev/asm
+
+A set of macros to remove some of the hassle of playing sound samples.
+
+Very simple to use.
+
+PLEASE MAIL ME IF YOU USE THIS.
+
+
+Installing:     1) Move SimpleAudio.i to wherever you want,
+                preferably with the rest of the include files.
+                (I put it in misc/ with the rest of the includes)
+
+
+
+
+Usage:          1) At the top of you code insert 
+                <include WhereYouPutSimpleAudio/SimpleAudio.i>
+
+                SimpleAudio needs the standard include files, and
+                looks for an assign "include:" to the includes directory.
+                If you do not have this assign then edit the 6 th line of
+                SimpleAudio.i to point to your includes.
+
+                NOTE:  If you do not have the standard includes but would
+                like to use this include then please MailMe and I will make 
+                a version that does not need the standard includes.  One
+                mail is enough.
+
+
+                There are 3 Commands available from simple audio:
+
+                a) ALLOCAUDIO   Channels, Priority
+
+                b) DEALLOCAUDIO
+
+                c) Play  Sample, Length, Frequency/Period, Volume, Flags, Repetitions
+
+
+a: ALLOCAUDIO   Channels:       YOU HAVE TO SUPPLY THIS.  One or more of:
+                                LEFT1, RIGHT1, LEFT2, RIGHT2
+
+                Priority:       A number between -128 and +127, or
+                                one of:
+
+                                *UNSTOPPABLE
+                                EMERGENCIES
+                                ATTENTION
+                                SPEECH
+                                INFORMATION
+                                MUSIC
+                                EFFECT
+                                BACKGROUND
+                                *SILENCE
+
+                * These should no be used unless you know what you are doing.
+
+                As you can probably tell the higher up the list that you select
+                the priority the more chances there are of the allocation will
+                succeed.  YOU CAN SAFELY LEAVE THIS AS 0
+
+                Eg.     ALLOCAUDIO      #LEFT1,MUSIC
+
+                or      ALLOCAUDIO      #LEFT1!RIGHT1,0
+
+      or      ALLOCAUDIO      #RIGHT2!,20
+
+
+                OUTPUT: 0 if successful or an error code otherwise.
+
+b) DEALLOCAUDIO         Needs no input.
+
+c) PLAY          Sample: Pointer to a Sample.  
+
+
+                Length: The length of the sample.
+
+
+                Frequence/Period:       The frequency or the period of the sample.
+                                        If you specify the period, then you set
+                                        the PERIOD flag in the flags field.
+
+                                        NOTE: if on specifying frequency the
+                                        frequency of the sound does not sound right
+                                        and your machine runs on NTSC then edit
+                                        SimpleAudio.i and change line 54 from
+                                        CLOCK = PAL_CLOCK    to
+                                        CLOCK = NTSC_CLOCK.
+
+                                        If it still does not sound right, then
+                                        mail me.
+
+                Volume: Easy to explain.  Set to any value from 0 to 64.
+
+                Flags:  Use these flags to specify which channel to play on,
+                        weather you are supplying frequency or period, and
+                        weather the routine should wait for the sound to finish
+                        playing or just return immediately.
+
+                        NOTE:  VERY IMPORTANT.  If after this routine returns
+                        you will immediately call DEALLOCAUDIO, then you MUST
+                        set the WAIT flag.
+
+                Repititions:  The number of times that the sample will be repeated.
+                              A value of 0 is ignored and the sample is played once.
+
+
+
+        Eg.     PLAY    #Sample, #Len, #22000, #64, #RIGHT1!WAIT
+
+                PLAY    _Sample, #1235, #124 , #53, #LEFT1!PERIOD!WAIT
+
+                PLAY    _Sample, Len, Freq, Vol, #LEFT1
+
+
+
+
+Final Notes:  Yes I know that I am lousy at documentation, so if you have any trouble
+              then please mailme, or you can send me a message by ICQ 16259448.
+
+      PLEASE PLEASE PLEASE         IF YOU USE THIS MAIL ME your comments.
+                                                   ¯¯¯¯¯¯¯

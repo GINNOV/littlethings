@@ -3,6 +3,128 @@ import XCTest
 
 class AmigaPlaygroundTests: XCTestCase {
 
+    func testChatBoingBallPreferenceDefaultsVisible() {
+        XCTAssertEqual(AppPreferenceDefaults.showChatBoingBallKey, "showChatBoingBall")
+        XCTAssertTrue(AppPreferenceDefaults.showChatBoingBall)
+    }
+
+    // MARK: - Assistant Chat Session Tests
+
+    func testAssistantChatSessionSubmitsPromptOnceAndIgnoresDuplicateWhileGenerating() {
+        let session = AssistantChatSession()
+        let prompt = "build an animated copper list"
+
+        let firstRequest = session.submit(prompt)
+        let duplicateRequest = session.submit(prompt)
+
+        XCTAssertNotNil(firstRequest)
+        XCTAssertNil(duplicateRequest)
+        XCTAssertTrue(session.isGenerating)
+        XCTAssertEqual(session.messages.map(\.role), ["user"])
+        XCTAssertEqual(session.messages.map(\.content), [prompt])
+        XCTAssertEqual(firstRequest?.messages.map(\.content), [prompt])
+    }
+
+    func testAssistantChatSessionDoesNotAppendBlankAssistantBubbleForEmptyCompletion() {
+        let session = AssistantChatSession()
+        _ = session.submit("build an animated copper list")
+
+        let result = session.complete(fullResponse: "", streamedResponse: "")
+
+        XCTAssertNil(result.injectedCode)
+        XCTAssertFalse(session.isGenerating)
+        XCTAssertEqual(session.messages.count, 2)
+        XCTAssertEqual(session.messages[0].role, "user")
+        XCTAssertEqual(session.messages[1].role, "assistant")
+        XCTAssertFalse(session.messages[1].content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        XCTAssertTrue(session.messages[1].content.contains("No response text"))
+    }
+
+    func testAssistantChatSessionExtractsGeneratedCodeForEditorInjection() {
+        let session = AssistantChatSession()
+        _ = session.submit("build an animated copper list")
+
+        let response = """
+        Here is the generated copper list:
+
+        ```asm
+        SECTION Code,CODE,CHIP
+        CopperList:
+            dc.w $180,$00f
+            dc.w $ffff,$fffe
+        ```
+        """
+
+        let result = session.complete(fullResponse: response, streamedResponse: "")
+
+        XCTAssertFalse(session.isGenerating)
+        XCTAssertEqual(session.messages.map(\.role), ["user", "assistant"])
+        XCTAssertEqual(result.injectedCode, """
+        SECTION Code,CODE,CHIP
+        CopperList:
+            dc.w $180,$00f
+            dc.w $ffff,$fffe
+        """)
+        XCTAssertEqual(result.consoleMessage, "Injected code block from Amiga Assistant.")
+    }
+
+    func testAssistantChatSessionUsesStreamedResponseWhenCompletionBodyIsEmpty() {
+        let session = AssistantChatSession()
+        _ = session.submit("build an animated copper list")
+        session.appendChunk("SECTION Code,CODE,CHIP\n")
+        session.appendChunk("CopperList:\n    dc.w $ffff,$fffe")
+
+        let result = session.complete(fullResponse: "", streamedResponse: session.currentGeneration)
+
+        XCTAssertEqual(session.messages.count, 2)
+        XCTAssertEqual(session.messages[1].content, "SECTION Code,CODE,CHIP\nCopperList:\n    dc.w $ffff,$fffe")
+        XCTAssertEqual(result.injectedCode, "SECTION Code,CODE,CHIP\nCopperList:\n    dc.w $ffff,$fffe")
+    }
+
+    func testAssistantChatSessionDoesNotInjectConnectionErrorContainingAmigaTokens() {
+        let session = AssistantChatSession()
+        _ = session.submit("write a custom animated copper list")
+
+        let response = """
+        +------------------------------------------------------------(0)
+        .ankey
+        +------------------------------------------------------------(0)
+        .copper
+        * Connection Error: model 'antigravity-amiga-68k' not found
+        * Ensure your LLM server (Ollama/LM Studio) is running on the specified port.
+        """
+
+        let result = session.complete(fullResponse: response, streamedResponse: "")
+
+        XCTAssertNil(result.injectedCode)
+        XCTAssertNil(result.consoleMessage)
+        XCTAssertFalse(session.isLikelyInjectableCode(response))
+    }
+
+    func testAssistantChatSessionAppendsConnectionErrorAndStopsGenerating() {
+        let session = AssistantChatSession()
+        _ = session.submit("build an animated copper list")
+
+        session.fail(NSError(domain: "TestLLM", code: 404, userInfo: [NSLocalizedDescriptionKey: "Repository Not Found"]))
+
+        XCTAssertFalse(session.isGenerating)
+        XCTAssertTrue(session.currentGeneration.isEmpty)
+        XCTAssertEqual(session.messages.map(\.role), ["user", "assistant"])
+        XCTAssertTrue(session.messages[1].content.contains("Connection Error: Repository Not Found"))
+    }
+
+    func testAssistantChatSessionReturnsOnlyUserPromptForReuse() {
+        let session = AssistantChatSession()
+        _ = session.submit("  write a custom animated copper list  ")
+        let userMessage = session.messages[0]
+
+        session.fail(NSError(domain: "TestLLM", code: 404, userInfo: [NSLocalizedDescriptionKey: "Repository Not Found"]))
+        let assistantMessage = session.messages[1]
+
+        XCTAssertEqual(session.reusablePrompt(from: userMessage), "write a custom animated copper list")
+        XCTAssertNil(session.reusablePrompt(from: assistantMessage))
+    }
+
     // MARK: - Emulator Service Tests
 
     func testMapRamToKb() {
@@ -555,7 +677,85 @@ class AmigaPlaygroundTests: XCTestCase {
         XCTAssertEqual(completedResponse, "Classic 68k")
     }
 
+    func testOpenAISSEStreamingParserBuffersFragmentedLines() {
+        var receivedChunks: [String] = []
+        var completedResponse = ""
+
+        let expectation = self.expectation(description: "Fragmented SSE chunks parsed")
+
+        let delegate = StreamingDelegate(
+            onChunk: { chunk in
+                receivedChunks.append(chunk)
+            },
+            onCompletion: { full in
+                completedResponse = full
+                expectation.fulfill()
+            },
+            onError: { error in
+                XCTFail("Unexpected error: \(error.localizedDescription)")
+            }
+        )
+
+        let firstChunk = #"data: {"choices":[{"delta":{"content":"Copper "}}"#
+        let secondChunk = """
+        ]}
+        data: {"choices":[{"delta":{"content":"list"}}]}
+
+        """
+
+        delegate.urlSession(URLSession.shared, dataTask: URLSessionDataTask(), didReceive: Data(firstChunk.utf8))
+        delegate.urlSession(URLSession.shared, dataTask: URLSessionDataTask(), didReceive: Data(secondChunk.utf8))
+        delegate.urlSession(URLSession.shared, task: URLSessionDataTask(), didCompleteWithError: nil as Error?)
+
+        waitForExpectations(timeout: 1.0)
+
+        XCTAssertEqual(receivedChunks, ["Copper ", "list"])
+        XCTAssertEqual(completedResponse, "Copper list")
+    }
+
+    func testOpenAIMessageStreamingParser() {
+        var receivedChunks: [String] = []
+        var completedResponse = ""
+
+        let expectation = self.expectation(description: "OpenAI message content parsed")
+
+        let delegate = StreamingDelegate(
+            onChunk: { chunk in
+                receivedChunks.append(chunk)
+            },
+            onCompletion: { full in
+                completedResponse = full
+                expectation.fulfill()
+            },
+            onError: { error in
+                XCTFail("Unexpected error: \(error.localizedDescription)")
+            }
+        )
+
+        let payload = """
+        data: {"choices":[{"message":{"content":"Generated 68k source"}}]}
+
+        """
+
+        delegate.urlSession(URLSession.shared, dataTask: URLSessionDataTask(), didReceive: Data(payload.utf8))
+        delegate.urlSession(URLSession.shared, task: URLSessionDataTask(), didCompleteWithError: nil as Error?)
+
+        waitForExpectations(timeout: 1.0)
+
+        XCTAssertEqual(receivedChunks, ["Generated 68k source"])
+        XCTAssertEqual(completedResponse, "Generated 68k source")
+    }
+
     // MARK: - Ollama/LM Studio Service Tests
+
+    func testOllamaServiceDefaultsToLocalMLXServer() {
+        let service = OllamaService()
+
+        XCTAssertEqual(service.provider, .lmStudio)
+        XCTAssertEqual(service.apiUrl, "http://localhost:1234")
+        XCTAssertEqual(service.requestModelName, "default_model")
+        XCTAssertEqual(service.provider.connectionStatusLabel, "LM Studio/MLX Connected")
+    }
 
     func testOllamaServiceApiUrl() {
         let service = OllamaService.shared
@@ -563,6 +763,7 @@ class AmigaPlaygroundTests: XCTestCase {
         // Save existing state to restore it later
         let originalProvider = service.provider
         let originalCustomUrl = service.customUrl
+        let originalModelName = service.modelName
 
         // Test Default Ollama URL
         service.provider = .ollama
@@ -581,5 +782,152 @@ class AmigaPlaygroundTests: XCTestCase {
         // Restore state
         service.provider = originalProvider
         service.customUrl = originalCustomUrl
+        service.modelName = originalModelName
     }
+
+    func testOllamaServiceRequestModelNameUsesMLXDefaultModel() {
+        let service = OllamaService.shared
+
+        let originalProvider = service.provider
+        let originalModelName = service.modelName
+
+        service.provider = .lmStudio
+        service.modelName = "antigravity-amiga-68k"
+        XCTAssertEqual(service.requestModelName, "default_model")
+
+        service.modelName = ""
+        XCTAssertEqual(service.requestModelName, "default_model")
+
+        service.modelName = "custom-local-model"
+        XCTAssertEqual(service.requestModelName, "custom-local-model")
+
+        service.provider = originalProvider
+        service.modelName = originalModelName
+    }
+
+    func testOllamaServiceSendsOpenAICompatibleRequestAndParsesResponse() {
+        let service = OllamaService()
+        service.provider = .lmStudio
+        service.customUrl = "http://local-mlx.test"
+        service.modelName = ""
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockLLMURLProtocol.self]
+        service.urlSessionConfiguration = configuration
+
+        let expectedPrompt = "write a custom animated copper list"
+        let expectation = self.expectation(description: "Mock LLM response parsed")
+        var receivedChunks: [String] = []
+        var completedResponse = ""
+
+        MockLLMURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.url?.absoluteString, "http://local-mlx.test/v1/chat/completions")
+            XCTAssertEqual(request.httpMethod, "POST")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/json")
+
+            let bodyData = try XCTUnwrap(request.testHTTPBodyData)
+            let body = try XCTUnwrap(JSONSerialization.jsonObject(with: bodyData) as? [String: Any])
+            XCTAssertEqual(body["model"] as? String, "default_model")
+            XCTAssertEqual(body["stream"] as? Bool, true)
+
+            let messages = try XCTUnwrap(body["messages"] as? [[String: String]])
+            XCTAssertEqual(messages, [["role": "user", "content": expectedPrompt]])
+
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "text/event-stream"]
+            ))
+            let data = Data("""
+            data: {"choices":[{"delta":{"content":"SECTION Code,CODE,CHIP\\n"}}]}
+            data: {"choices":[{"delta":{"content":"CopperList:\\n    dc.w $ffff,$fffe"}}]}
+            data: [DONE]
+
+            """.utf8)
+            return (response, data)
+        }
+
+        service.streamChat(
+            messages: [OllamaService.ChatMessage(role: "user", content: expectedPrompt)],
+            onChunk: { chunk in
+                receivedChunks.append(chunk)
+            },
+            onCompletion: { fullResponse in
+                completedResponse = fullResponse
+                expectation.fulfill()
+            },
+            onError: { error in
+                XCTFail("Unexpected error: \(error.localizedDescription)")
+            }
+        )
+
+        waitForExpectations(timeout: 2.0)
+
+        XCTAssertEqual(receivedChunks, [
+            "SECTION Code,CODE,CHIP\n",
+            "CopperList:\n    dc.w $ffff,$fffe"
+        ])
+        XCTAssertEqual(completedResponse, "SECTION Code,CODE,CHIP\nCopperList:\n    dc.w $ffff,$fffe")
+        MockLLMURLProtocol.requestHandler = nil
+    }
+}
+
+private extension URLRequest {
+    var testHTTPBodyData: Data? {
+        if let httpBody {
+            return httpBody
+        }
+
+        guard let httpBodyStream else {
+            return nil
+        }
+
+        httpBodyStream.open()
+        defer { httpBodyStream.close() }
+
+        var data = Data()
+        let bufferSize = 1024
+        var buffer = [UInt8](repeating: 0, count: bufferSize)
+
+        while httpBodyStream.hasBytesAvailable {
+            let read = httpBodyStream.read(&buffer, maxLength: bufferSize)
+            if read > 0 {
+                data.append(buffer, count: read)
+            } else {
+                break
+            }
+        }
+
+        return data
+    }
+}
+
+private final class MockLLMURLProtocol: URLProtocol {
+    static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+
+    override class func canInit(with request: URLRequest) -> Bool {
+        true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        request
+    }
+
+    override func startLoading() {
+        do {
+            guard let handler = Self.requestHandler else {
+                throw NSError(domain: "MockLLMURLProtocol", code: 1, userInfo: [NSLocalizedDescriptionKey: "Missing request handler"])
+            }
+
+            let (response, data) = try handler(request)
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
+        } catch {
+            client?.urlProtocol(self, didFailWithError: error)
+        }
+    }
+
+    override func stopLoading() {}
 }

@@ -1,0 +1,55 @@
+Short:    Part2 of How2UseGfxV39
+Author:   jschober@campusart.com (Jürgen Schober)
+Uploader: jschober@campusart.com (Jürgen Schober)
+Date:     96/11/30
+Type:     dev/src
+
+This archive contains some example material how scrolling
+bitmaps could be handled. It is just an example how things 
+could be done, because I am bretty sure, none of you will
+use ScollLayers() in a SuperBitmap window for a real application.
+But with a fast board (e.g. a PiccoloSD64) and a good driver
+(e.g. EGSPlus :) it shows what could be done if the Amiga
+would have the right chips.
+This demo opens a 320x256 window on any screen (currently a
+WB clone or the WB itself) with a 640x512 custom superbitmap
+attached to it. The backdrop is a 256 color image (640x512)
+which is scrolled thru the window. On top of it a green ball is
+jumping around. Both images where created in 24 bit and color
+reduced to 256 colors. The real colors are calculated on startup 
+using a shared palette. It looks best when run on a 256 color
+screen (but will reduce the colors if less). It should run on any
+board (ECS/AGA too) but isn't really useable on native amiga chips...
+I haven't tried CyberGraphics yet (but I should) but I think it
+would run more smoothly on EGS systems (with EGSPlus) since
+the SuperBitMap is held in boardmemory in this case which makes
+the scrolling easier :)
+
+It does no buffer blitting yet (e.g. double buffer, refresh buffer or such).
+And it does not use an custom scrolling code, which would sure
+help for slow boards...(e.g. a delta frame scrolling would be a lot
+faster).
+But maybe you find some things what would be intuitiv for your ideas.
+So check it out ... and if you have a fast EGS board enjoy :)
+
+PS.: I haven't included the Backdground image nor the Image source
+since this have about 1.2 MB...the object code should be ok if
+you want to recompile it.
+The colortableformat is a modified Amiga Colortable format
+and looks like this:
+
+struct Colors
+{
+    ULONG red,green,blue; // left justified 32 bits
+} colors[256];
+
+all other things should be clear from the source code. You should be
+able to hook another image in ...
+
+---
+Jürgen Schober
+Graz · Austria
+e-mail: point@sbox.tu-graz.ac.at (private)
+        jschober@campusart.com   (business)
+WWW:    http://www.sbox.tu-graz.ac.at/home/point/Welcome.html
+        http://www.pointdesign.campusart.com/

@@ -1,0 +1,51 @@
+Some comments about compiling the A++ Library with the GNU C++ compiler
+-----------------------------------------------------------------------
+
+A++ requests tow logical devices to be declared, "apphome:" and "appinclude:".
+"appinclude:" usually describes the "apphome:includes" directory while
+"apphome:" itself is directed to the "APlusPlus" root directory.
+Just start "Assign_A++" to make these assignments.
+
+I recently used GNU C++ 2.6.0 and it works fine. 
+
+Especially with the GNU compiler you will need a fast Amiga with at least 6MB.
+But DON'T get the idea to optimize with only 6MB. Either get yourself more
+RAM or a virtual memory manager (available in the Public Domain).
+
+A compiled version can be found in the A++GNU_bin.lha archive that should
+be available at the same place where you got this one.
+
+Makefiles for GNUMake have been provided. To start the Make just click on 
+the Build icons which use IconX to activate Make.
+
+
+
+The GNU2SCMSG utility (only for SAS/C® users)
+---------------------------------------------
+
+With the AREXX script "gnutoscmsg" which is executed by clicking GNU2SCMSG
+I created a way to direct the GNU error output to the SAS® SCMSG browser.
+You only have to make sure that the gcc output is redirected into
+"pipe:gnu_errors". On the CLI simply use
+
+   gcc <parameterlist> >pipe:gnu_errors
+
+For some reason this does not work with the GNUMake which uses "sh" to
+execute a command from the makefile. (I checked it out: only the gcc command
+together with the "sh" shell fails to redirect its output properly!?)
+
+OF COURSE, the SCMSG program is not distributed with A++ since it is part of
+the SAS/C® Development System!
+
+Credits
+-------
+
+Thanks are due to all those who helped improving this product,
+especially
+ - Antonio J. Gomez Gonzalez for detecting several bugs,
+ - Fred Fish for revising the GCC port,
+ - and each one who showed general interest.
+
+   Have fun,
+
+      Armin

@@ -1,0 +1,45 @@
+SerialClassV1.readme
+
+Short:    SAS 6.56 source code for an object oriented C++ Serial Port class
+Uploader: cimino@mdso.vf.ge.com (Paul Cimino)
+Author:   cimino@mdso.vf.ge.com (Paul Cimino)
+Type:     dev/src
+
+December 12, 1995
+
+This package contains the source code for an object oriented C++ serial port
+class.  The basic idea is to make simple access to the serial port trivial.
+The port can be instantiated with few parameters, allowing all else to 
+default.  Port parameters can be changed on the fly with Set functions.
+Simple character/ubyte or string input output.  Character and string IO also
+supported with overloaded stream functions.
+
+I wish I had time to be a full time developer for the Amiga, but can find
+little time as it is.  So I am very weak on Amiga specific interface
+programming.  This SerialClass program is an attempt to make (at least) one
+aspect of the Amiga easy to code, with little required knowledge of the machine.
+Simply look in the header file for port functionality and GO !
+
+Package contains SerialClass.cc, SerialClass.h and EXAMPLE.cc
+
+This is Version 1.0, and I don't plan on releasing another version, HOWEVER
+I am releasing this into the public domain (stipulations in the file)
+and hope that other people will improve upon and rerelease other versions
+of this code.   
+
+Someone may want to create a "DeviceClass" where the SerialClass is a sub-class.
+I started out this way, but got too bogged down.
+
+Comments, are welcome, also if anyone is working object oriented classes
+for the Amiga, I'd be interested in getting a copy.
+
+	Wish list :
+		Child process or fork class
+		Parallel port class
+		GUI classes (yes, I know some are available, but more are always
+			welcome !)
+		Floppy interface class
+		SCSI, CD, any and all hardware devices, etc !
+
+Paul Cimino
+cimino@mdso.vf.ge.com

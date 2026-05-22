@@ -1,0 +1,85 @@
+Short:    3d mesh writer library source, supports a lot of 3d file formats
+Uploader: stephan.bielmann@rega-sense.ch
+Author:   stephan.bielmann@rega-sense.ch
+Type:     dev/src
+
+meshwriter.library is to simplify the creation of a 3d mesh and to
+write it down to a file. The library supports already a few 3d file
+formats like Lightwave,Imagine,POV,Reflections,...
+
+I will not longer develop for this package. So I decided to release
+the sources for all those people who are interested in.
+
+I just hope that you wont use the results on other platforms than the
+Amiga!
+
+
+Listing of archive 'meshw02_src.lha':
+Original  Packed Ratio    Date     Time    Name
+-------- ------- ----- --------- --------  -------------
+  193991   29069 85.0% 13-Feb-99 20:04:40  Meshwriter02_src/AmmoniteTest/ammo.raw
+  472516   49757 89.4% 28-Mar-99 16:38:52  Meshwriter02_src/AmmoniteTest/ammonite.c
+    1823     599 67.1% 21-Feb-99 19:07:30  Meshwriter02_src/AmmoniteTest/ammonite.project
+     630     369 41.4% 28-Mar-99 16:28:16  Meshwriter02_src/AmmoniteTest/ammoniteLIB.project
+    1225     542 55.7% 09-Mar-99 21:36:46  Meshwriter02_src/BigThing/bigthing.c
+    2819     654 76.8% 09-Mar-99 21:30:38  Meshwriter02_src/BigThing/bigthing.project
+    5361    1664 68.9% 13-Feb-99 18:00:30  Meshwriter02_src/compiler.h
+    3860    1011 73.8% 27-Feb-99 17:55:38  Meshwriter02_src/ConverterTest/converter.c
+    2828     649 77.0% 27-Feb-99 17:19:42  Meshwriter02_src/ConverterTest/converter.project
+   13664    3309 75.7% 27-Mar-99 20:42:02  Meshwriter02_src/dxf.c
+    1754     491 72.0% 13-Feb-99 22:01:32  Meshwriter02_src/dxf.h
+   12446    2569 79.3% 27-Mar-99 22:14:22  Meshwriter02_src/geo.c
+    2877     527 81.6% 19-Feb-99 19:53:04  Meshwriter02_src/geo.h
+    6266    1889 69.8% 28-Mar-99 17:24:30  Meshwriter02_src/Geo2Any/geo2any.c
+    1912     610 68.0% 27-Mar-99 22:19:02  Meshwriter02_src/Geo2Any/geo2any.project
+     619     367 40.7% 28-Mar-99 16:48:58  Meshwriter02_src/Geo2Any/geo2anyLIB.project
+   29888    6479 78.3% 28-Mar-99 11:02:44  Meshwriter02_src/imagine.c
+    2894     563 80.5% 13-Feb-99 19:18:42  Meshwriter02_src/imagine.h
+    9206    2546 72.3% 27-Mar-99 20:43:16  Meshwriter02_src/lightwave.c
+    1916     541 71.7% 14-Feb-99 16:37:44  Meshwriter02_src/lightwave.h
+    6509     793 87.8% 28-Mar-99 15:55:06  Meshwriter02_src/meshlib.h
+    4860    1472 69.7% 05-Dec-99 15:50:34  Meshwriter02_src/meshw02_src.readme
+     464     223 51.9% 05-Dec-99 15:48:00  Meshwriter02_src/meshw02_src.readme.info
+  113500   17955 84.1% 02-Apr-99 15:45:00  Meshwriter02_src/meshwriter.c
+    4795    1393 70.9% 27-Mar-99 20:26:04  Meshwriter02_src/meshwriter_private.h
+    4547    1527 66.4% 14-Mar-99 18:54:30  Meshwriter02_src/meshwriter_public.h
+      52      47  9.6% 20-Mar-99 18:28:06  Meshwriter02_src/MeshWriterTest/meshwriterfuncs.h
+   19359    3078 84.1% 28-Mar-99 11:35:02  Meshwriter02_src/MeshWriterTest/MeshWriterGUI.c
+    1158     429 62.9% 28-Mar-99 11:32:34  Meshwriter02_src/MeshWriterTest/MeshWriterGUI.h
+   13471    2992 77.7% 28-Mar-99 16:34:06  Meshwriter02_src/MeshWriterTest/MeshWriterMain.c
+    5733     890 84.4% 28-Mar-99 11:28:42  Meshwriter02_src/MeshWriterTest/meshwritertest.project
+    1544     563 63.5% 28-Mar-99 16:15:20  Meshwriter02_src/MeshWriterTest/meshwritertestLIB.project
+    2813     837 70.2% 27-Mar-99 20:35:38  Meshwriter02_src/MeshWriterTest/modules/checkboard.c
+    2262     690 69.4% 27-Mar-99 21:33:08  Meshwriter02_src/MeshWriterTest/modules/circle.c
+    3681     820 77.7% 27-Mar-99 22:03:12  Meshwriter02_src/MeshWriterTest/modules/cube.c
+    4715    1062 77.4% 27-Mar-99 20:37:10  Meshwriter02_src/MeshWriterTest/modules/cubetower.c
+    3382    1018 69.8% 27-Mar-99 21:01:48  Meshwriter02_src/MeshWriterTest/modules/galaxy.c
+    2503     696 72.1% 27-Mar-99 20:35:30  Meshwriter02_src/MeshWriterTest/modules/ground.c
+    4924    1319 73.2% 27-Mar-99 20:58:14  Meshwriter02_src/MeshWriterTest/modules/landscape.c
+     725     292 59.7% 27-Mar-99 20:50:38  Meshwriter02_src/MeshWriterTest/modules/modules.h
+    3132     950 69.6% 27-Mar-99 20:34:36  Meshwriter02_src/MeshWriterTest/modules/pawn.c
+    3321     765 76.9% 27-Mar-99 20:35:06  Meshwriter02_src/MeshWriterTest/modules/pyramid.c
+    3398     865 74.5% 28-Mar-99 16:10:06  Meshwriter02_src/MeshWriterTest/modules/ripples.c
+    2816     795 71.7% 27-Mar-99 20:35:54  Meshwriter02_src/MeshWriterTest/modules/wave.c
+    4231     923 78.1% 28-Mar-99 15:01:24  Meshwriter02_src/PolygonTest/polygon.c
+    1946     623 67.9% 28-Mar-99 15:01:34  Meshwriter02_src/PolygonTest/polygon.project
+   25302    3887 84.6% 07-Mar-99 20:07:12  Meshwriter02_src/postscript.c
+    5026     719 85.6% 20-Feb-99 16:24:36  Meshwriter02_src/postscript.h
+    5234    1574 69.9% 27-Mar-99 20:51:12  Meshwriter02_src/pov3.c
+    1627     465 71.4% 13-Feb-99 21:35:42  Meshwriter02_src/pov3.h
+    6344    1460 76.9% 13-Feb-99 19:11:12  Meshwriter02_src/raw.c
+    2870     526 81.6% 13-Feb-99 19:18:28  Meshwriter02_src/raw.h
+   16500    3762 77.2% 13-Mar-99 17:55:30  Meshwriter02_src/real.c
+    1764     499 71.7% 13-Mar-99 17:24:40  Meshwriter02_src/real.h
+   14557    3796 73.9% 27-Mar-99 21:45:02  Meshwriter02_src/reflections.c
+    1852     538 70.9% 14-Feb-99 17:16:40  Meshwriter02_src/reflections.h
+    1233     592 51.9% 01-Feb-99 22:10:48  Meshwriter02_src/TestAll.info
+   11950    1651 86.1% 13-Feb-99 17:58:04  Meshwriter02_src/TestAll/testall.c
+    1766     576 67.3% 14-Feb-99 19:58:58  Meshwriter02_src/TestAll/testall.project
+    2773     697 74.8% 13-Feb-99 17:38:44  Meshwriter02_src/utilities.c
+    2623     632 75.9% 13-Feb-99 17:38:30  Meshwriter02_src/utilities.h
+    5753    1324 76.9% 20-Mar-99 19:25:36  Meshwriter02_src/vlist.c
+    7558    1660 78.0% 27-Mar-99 20:41:38  Meshwriter02_src/vrml1.c
+    1767     516 70.7% 13-Feb-99 21:37:20  Meshwriter02_src/vrml1.h
+-------- ------- ----- --------- --------
+ 1104835  172096 84.4% 05-Dec-99 15:50:58   64 files

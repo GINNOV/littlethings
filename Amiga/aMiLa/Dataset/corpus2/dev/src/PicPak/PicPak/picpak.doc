@@ -1,0 +1,895 @@
+                                  PIC_PAK
+                                   v1.4
+                Picture allocation/loading/manipulation routines
+                            written by Paul Miller
+
+
+
+DISCLAIMER:
+===========
+
+The code in this package is provided "as-is" and I make no guarantee that
+it will work for your application. It might blow up your computer, and you
+can't do anything to me if it does (however, it is unlikely that it will do
+anything of the sort, but if it does, you are warned).
+This code or derivatives may be used in your application, as long as you
+give me credit somewhere in the documentation, or in the code if source is
+present. This code is NOT in the public domain, and I'm allowing its free
+use because I'm a nice guy. Enjoy.
+
+
+   For those of you who are having trouble loading and using IFF ILBMs or
+other picture types in your programs, here is a little package (OK, so it's
+not so little any more) of functions which provides general-purpose picture
+allocation/loading/manipulation functions. Also included is support for color
+effects on ViewPorts, including color cycling (based on information returned
+from the picture file), fading, and SHAM images.
+
+
+
+FUNCTION DESCRIPTIONS
+=====================
+
+       NAME                     FI      LM
+       ----                     --      --
+
+PICPAK/AllocateFrame             ?       ?
+PICPAK/AllocatePic               ?       ?
+PICPAK/ClearViewPortColors       ?       ?
+PICPAK/FadeViewPortIn            ?       ?
+PICPAK/FadeViewPortOut           ?       ?
+PICPAK/FreeCycler                ?       ?
+PICPAK/FreeFrame                 ?       ?
+PICPAK/FreePic                   ?       ?
+PICPAK/FreeSHAM                  ?       ?
+PICPAK/GetPicAttrs               ?       ?
+PICPAK/InitCycler                ?       ?
+PICPAK/InitSHAM                  ?       ?
+PICPAK/IsCycling                 ?       ?
+PICPAK/Pic2BitMap                ?       ?
+PICPAK/LoadFrame                 ?       ?
+PICPAK/LoadPic                   ?       ?
+PICPAK/LoadPic2BitMap            ?       ?
+PICPAK/SetFadeSpeed              ?       ?
+PICPAK/SetPicReadBufSize         ?       ?
+PICPAK/SetViewPortPicColors      ?       ?
+PICPAK/StartCycling              ?       ?
+PICPAK/StopCycling               ?       ?
+PICPAK/ToggleCycling             ?       ?
+
+LEGEND :
+   FI = First Introduced (version number)
+   LM = Last Modified (version number)
+   ?  = unknown
+
+---------------------------------------------------------------------------
+
+PICPAK/AllocateFrame (1.3)
+
+   NAME
+      AllocateFrame -- Allocate a new Frame and BitMap.
+
+   SYNOPSIS
+      Frame = AllocateFrame(width, height, depth)
+
+      struct Frame *AllocateFrame(UWORD, UWORD, UBYTE);
+
+   FUNCTION
+      Allocate a Frame structure and BitMap memory of type CHIP.
+
+   INPUTS
+      width,height - size of BitMap in pixels
+      depth        - depth of BitMap in planes
+
+   RESULTS
+      result - pointer to a Frame structure if successful
+               NULL of not successful
+
+   BUGS
+
+   SEE ALSO
+      FreeFrame, LoadFrame, PICPAK/pic_pak.h
+
+---------------------------------------------------------------------------
+
+PICPAK/AllocatePic
+
+   NAME
+      AllocatePic -- Allocate a new Pic and BitMap.
+
+   SYNOPSIS
+      Pic = AllocatePic(width, height, depth, memtype)
+
+      struct Pic *AllocatePic(UWORD, UWORD, UBYTE, UBYTE);
+
+   FUNCTION
+      Allocate a Pic structure and BitMap memory of the specified type
+      and size. Memtypes can be of the following types:
+         MEMTYPE_NONE   - allocate no BitMap plane memory
+         MEMTYPE_CHIP   - allocate BitMap plane memory using CHIP RAM
+         MEMTYPE_FAST   - allocate BitMap plane memory using FAST RAM
+         MEMTYPE_ANY    - allocate BitMap plane memory for any available
+                           type of RAM, starting with CHIP
+
+   INPUTS
+      width,height - size of BitMap in pixels
+      depth        - depth of BitMap in planes
+      memtype      - memtype bit (see above)
+
+   RESULTS
+      result - pointer to a Pic structure if successful
+               NULL of not successful
+
+   BUGS
+
+   SEE ALSO
+      FreePic, LoadPic, PICPAK/pic_pak.h
+
+---------------------------------------------------------------------------
+
+PICPAK/ClearViewPortColors
+
+   NAME
+      ClearViewPortColors -- Set a ViewPort's color registers to black.
+
+   SYNOPSIS
+      ClearViewPortColors(vp, colors)
+
+      void ClearViewPortColors(struct ViewPort *, UWORD);
+
+   FUNCTION
+      Clear a ViewPort's color registers to black, usually used before a
+      ViewPort fade in.
+
+   INPUTS
+      vp     - pointer to the ViewPort to affect
+      colors - number of colors in the ViewPort's colortable
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      FadeViewPortIn
+
+---------------------------------------------------------------------------
+
+PICPAK/FadeViewPortIn
+
+   NAME
+      FadeViewPortIn -- Fade a ViewPort's colors in.
+
+   SYNOPSIS
+      FadeViewPortIn(vp, colormap, colors)
+
+      void FadeViewPortIn(struct ViewPort *, UWORD *, UWORD);
+
+   FUNCTION
+      Fades a ViewPort's colormap from black into the specified colormap's
+      colors. The speed of fade is specified in the global variable
+      fade_speed, and is set externally via SetFadeDelay().
+
+   INPUTS
+      vp       - pointer to ViewPort to affect
+      colormap - pointer to a filled-out array of UWORDs containing
+                 destination colors
+      colors   - number of colors in the colormap
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      FadeViewPortOut, SetFadeDelay
+
+---------------------------------------------------------------------------
+
+PICPAK/FadeViewPortOut
+
+   NAME
+      FadeViewPortOut -- Fade a ViewPort's colors out.
+
+   SYNOPSIS
+      FadeViewPortOut(vp, colors)
+
+      void FadeViewPortOut(struct ViewPort *, UWORD);
+
+   FUNCTION
+      Fades a ViewPort's colormap from the current colors to black.
+      The speed of fade is specified in the global variable fade_speed,
+      and is set externally via SetFadeDelay().
+
+   INPUTS
+      vp       - pointer to ViewPort to affect
+      colors   - number of colors in the ViewPort's colortable
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      FadeViewPortIn, SetFadeDelay
+
+---------------------------------------------------------------------------
+
+PICPAK/FreeCycler
+
+   NAME
+      FreeCycler -- Free memory allocated by InitCycler().
+
+   SYNOPSIS
+      FreeCycler()
+
+      void FreeCycler(void);
+
+   FUNCTION
+      Stops color cycling, if occuring, removes the vertical-blanking
+      interrupt installed via InitCycler(), and frees up memory used by
+      the color-cycling system, also initalized by InitCycler().
+
+   INPUTS
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      InitCycler, StartCycling, StopCycling
+
+---------------------------------------------------------------------------
+
+PICPAK/FreeFrame (1.3)
+
+   NAME
+      FreeFrame -- Free a Frame and its BitMap memory.
+
+   SYNOPSIS
+      FreeFrame(frame)
+
+      void FreeFrame(struct Frame *);
+
+   FUNCTION
+      Frees up a Frame structure and BitMap memory allocated by
+      AllocateFrame(). Use only with dynamic Frame structures allocated with
+      AllocateFrame().
+      NOTE: (1.4) - FreeFrame() also detects if an extra mask plane has been
+      added (possibly by MakeMask() in BITMAP_PAK), and frees that as well.
+
+   INPUTS
+      frame - pointer to a Frame structure returned by AllocateFrame()
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      AllocateFrame
+
+---------------------------------------------------------------------------
+
+PICPAK/FreePic
+
+   NAME
+      FreePic -- Free a Pic and its BitMap memory.
+
+   SYNOPSIS
+      FreePic(pic)
+
+      void FreePic(struct Pic *);
+
+   FUNCTION
+      Frees up a Pic structure and BitMap memory allocated by
+      AllocatePic(). Use only with dynamic Pic structures allocated with
+      AllocatePic().
+
+   INPUTS
+      pic - pointer to a Pic structure returned by AllocatePic()
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      AllocatePic
+
+---------------------------------------------------------------------------
+
+PICPAK/FreeSHAM (1.3)
+
+   NAME
+      FreeSHAM -- Free ViewPort copper-lists created by InitSHAM().
+
+   SYNOPSIS
+      FreeSHAM(vp)
+
+      void FreeSHAM(struct ViewPort *);
+
+   FUNCTION
+      Frees up the ViewPort copper-lists generated with InitSHAM(). This
+      routine need only be called if the ViewPort was created dynamically
+      instead of via OpenScreen(). If the SHAM is initialized on the ViewPort
+      of an opened custom Screen, then the call to CloseScreen() will free
+      the copper-lists, and this routine may safely be ignored.
+
+   INPUTS
+      vp - pointer to dynamic ViewPort to free the copper-lists from
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      InitSHAM
+
+---------------------------------------------------------------------------
+
+PICPAK/GetPicAttrs
+
+   NAME
+      GetPicAttrs -- Returns information about a picture file.
+
+   SYNOPSIS
+      success = GetPicAttrs(filename, *width, *height, *depth, *viewmodes)
+
+      int GetPicAttrs(UBYTE *, WORD *, WORD *, WORD *, ULONG *);
+
+   FUNCTION
+      Returns width, height, depth, and viewmodes of an IFF Pic file
+      in pointer variables. ViewModes are returned in a ULONG variable
+      compatible with both 1.3 and 2.0 display formats (use lower 16 bits
+      for 1.3-compatible ViewModes).
+
+   INPUTS
+      filename - name of IFF Pic file
+      width, height, depth - pointer to a WORD to return width, height, depth
+      viewmodes - pointer to a ULONG to return ViewModes in
+
+   RESULTS
+      result - TRUE if file exists and is an IFF ILBM
+               NULL if file is not an ILBM Pic or does not exist
+
+   BUGS
+
+   SEE ALSO
+
+---------------------------------------------------------------------------
+
+PICPAK/InitCycler
+
+   NAME
+      InitCycler -- Initialize the cycling system.
+
+   SYNOPSIS
+      success = InitCycler()
+
+      int InitCycler(void);
+
+   FUNCTION
+      Allocates memory used by the cycling system and installs a vertical-
+      blank interrupt to perform the color cycling, when active.
+
+   INPUTS
+
+   RESULTS
+      result - TRUE if memory was allocated successfully
+               NULL if unsuccessful
+
+   BUGS
+
+   SEE ALSO
+      FreeCycler, StartCycling, StopCycling
+
+---------------------------------------------------------------------------
+
+PICPAK/InitSHAM (1.3)
+
+   NAME
+      InitSHAM -- Initialize a SHAM color-palette into a ViewPort.
+
+   SYNOPSIS
+      success = InitSHAM(vp, pic)
+
+      int InitSHAM(struct ViewPort *, struct Pic *);
+
+   FUNCTION
+      Initializes the proper color-palettes and copper-lists required to
+      view a SHAM image into the specified ViewPort. If the SHAM is to be
+      viewed on a custom screen, then this function must be called only if
+      the screen is the front-most screen (call ScreenToFront(screen) to
+      make sure).
+
+   INPUTS
+      vp  - pointer to ViewPort to load the copper-lists into
+      pic - pointer to Pic structure containing the SHAM color packet
+
+   RESULTS
+      result - TRUE if copper-list memory was allocated successfully
+               NULL if unsuccessful
+
+   BUGS
+
+   SEE ALSO
+      FreeSHAM
+
+---------------------------------------------------------------------------
+
+PICPAK/IsCycling
+
+   NAME
+      IsCycling -- Determine whether color cycling is currently taking place.
+
+   SYNOPSIS
+      result = IsCycling()
+
+      int IsCycling(void);
+
+   FUNCTION
+      Determines whether or not color-cycling is currently being performed.
+
+
+   INPUTS
+
+   RESULTS
+      result - TRUE if color-cycling is being performed
+               NULL if not
+
+   BUGS
+
+   SEE ALSO
+      StartCycling, StopCycling, ToggleCycling
+
+---------------------------------------------------------------------------
+
+PICPAK/Pic2BitMap
+
+   NAME
+      Pic2BitMap -- download a Pic BitMap into a specified BitMap.
+
+   SYNOPSIS
+      success = Pic2BitMap(pic, bitmap)
+
+      int Pic2BitMap(struct Pic *, struct BitMap *);
+
+   FUNCTION
+      Copies the BitMap imagery in the Pic to the planes of a specified
+      BitMap. Both BitMaps must be the same size (use the size and depth
+      information in the Pic to initialize the destination BitMap). If
+      the source Pic BitMap imagery resides in CHIP memory, this routine
+      uses the Blitter to copy the imagery. If in FAST memory, standard
+      memory-block transfer will be used.
+      NOTE: This routine is useful in situations where it may be necessary
+      to load many images into memory, regardless of memory type. When it
+      is time to display the image, this will effectively place it into
+      a CHIP memory area that is displayable, such as an opened Screen.
+
+   INPUTS
+      pic - pointer to a Pic structure to be used as source BitMap
+      bitmap - pointer to an allocated destination BitMap
+
+   RESULTS
+      result - TRUE if BitMaps are same size and operation is successful
+               NULL otherwise
+
+   BUGS
+
+   SEE ALSO
+      AllocatePic, LoadPic, LoadPic2BitMap, PICPAK/pic_pak.h
+
+---------------------------------------------------------------------------
+
+PICPAK/LoadFrame (1.3)
+
+   NAME
+      LoadFrame -- Allocate and load an IFF Frame image.
+
+   SYNOPSIS
+      pic = LoadFrame(filename)
+
+      struct Frame *LoadFrame(UBYTE *);
+
+   FUNCTION
+      Calls AllocateFrame() with the proper information to allocate a Frame
+      of the proper size, then loads the specified IFF image (usually a
+      brush) file into the BitMap.
+
+   INPUTS
+      filename - pointer to filename string
+
+   RESULTS
+      result - pointer to a Frame if successful
+               NULL if not successful
+
+   BUGS
+
+   SEE ALSO
+      AllocateFrame, FreeFrame, PICPAK/pic_pak.h
+
+---------------------------------------------------------------------------
+
+PICPAK/LoadPic
+
+   NAME
+      LoadPic -- Allocate and load an IFF Pic image.
+
+   SYNOPSIS
+      pic = LoadPic(filename, memtype)
+
+      struct Pic *LoadPic(UBYTE *, UBYTE);
+
+   FUNCTION
+      Calls AllocatePic() with the proper information to allocate a Pic
+      of the proper size and memory type, then loads the specified IFF Pic
+      file into the BitMap (if allocated, and not of type MEMTYPE_NONE),
+      as well as colormap and color-cycling information.
+
+   INPUTS
+      filename - pointer to filename string
+      memtype - memtype bit (see AllocatePic())
+
+   RESULTS
+      result - pointer to a Pic if successful
+               NULL if not successful
+
+   BUGS
+
+   SEE ALSO
+      AllocatePic, FreePic, LoadPic2BitMap, Pic2BitMap, PICPAK/pic_pak.h
+
+---------------------------------------------------------------------------
+
+PICPAK/LoadPic2BitMap
+
+   NAME
+      LoadPic2BitMap -- Load an IFF Pic into a specified BitMap.
+
+   SYNOPSIS
+      pic = LoadPic2BitMap(filename, bitmap)
+
+      struct Pic *LoadPic2BitMap(UBYTE *, struct BitMap *);
+
+   FUNCTION
+      Loads the specified IFF Pic imagery into a specified BitMap, and
+      allocates a Pic structure containing size, depth, colormap, and
+      color-cycling information. No BitMap memory is allocated for Pic,
+      and the supplied BitMap must be the same dimensions as the IFF Pic
+      file. FreePic() must still be called on the returned Pic, when it
+      is through being used.
+      NOTE: This function is useful when loading an image into an already-
+      opened screen, by passing a pointer to the screen's BitMap.
+
+   INPUTS
+      filename - pointer to filename string
+      bitmap   - pointer to a supplied destination BitMap for the image
+
+   RESULTS
+      result - pointer to a filled-out Pic structure if successful
+               NULL if not successful
+
+   BUGS
+
+   SEE ALSO
+      FreePic, PICPAK/pic_pak.h
+
+---------------------------------------------------------------------------
+
+PICPAK/SetFadeDelay
+
+   NAME
+      SetFadeDelay -- Set the speed of FadeViewPortIn()/FadeViewPortOut().
+
+   SYNOPSIS
+      SetFadeDelay(delay)
+
+      void SetFadeDelay(UWORD);
+
+   FUNCTION
+      Sets the delay time (in ticks) that will ellapse between color shifts
+      during ViewPort fading, performed by FadeViewPortIn() and
+      FadeViewPortOut(). The higher the number, the slower the fade (note
+      that as the delay gets higher, the fade will also appear to be more
+      "jerky"). This function sets the global variable fade_speed directly.
+      The default delay time is 0, which provides the smoothest fade.
+
+   INPUTS
+      delay - delay (in ticks) to ellapse between successive color shifts
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      FadeViewPortIn, FadeViewPortOut
+
+---------------------------------------------------------------------------
+
+PICPAK/SetPicReadBufSize (1.4)
+
+   NAME
+      SetPicReadBufSize -- Sets the maximum image decompression buffer size.
+
+   SYNOPSIS
+      SetPicReadBufSize(size)
+
+      void SetPicReadBufSize(ULONG);
+
+   FUNCTION
+      Sets the current maximum size of decompressed image data to allocate
+      memory for, in order to allow decompression of run-byte-encoded image
+      files directly from RAM. In other words, if the compressed ILBM image
+      file is smaller than this value, memory will be allocated and the
+      image data will be loaded directly into the memory, where it will be
+      decompressed from there. Otherwise, the image is decompressed as it is
+      loaded from the file. Naturally, there is a speed of decompression
+      increase when image data is decompressed directly from RAM. The default
+      is 32K. If no memory can be spared in decompression, call this routine
+      with a value of zero.
+
+   INPUTS
+      size - new maximum image buffer size
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      LoadFrame, LoadPic
+
+---------------------------------------------------------------------------
+
+PICPAK/SetViewPortPicColors (1.3)
+
+   NAME
+      SetViewPortPicColors -- Initialize ViewPort for proper picture colors.
+
+   SYNOPSIS
+      SetViewPortPicColors(vp, pic)
+
+      void SetViewPortPicColors(struct ViewPort *, struct Pic *);
+
+   FUNCTION
+      Initializes the ViewPort with the Pic's color data, depending on what
+      type of image it is. Normal images will have the colormap loaded into
+      the ViewPort. If the Pic is a SHAM image, then InitSHAM() will be
+      called in order to set that up. Use this if not sure what type of image
+      the Pic is, and you don't want to check.
+
+   INPUTS
+      vp  - pointer to ViewPort to initialize colors into
+      pic - pointer to the initialized Pic structure to initialize with
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      PICPAK/pic_pak.h
+
+---------------------------------------------------------------------------
+
+PICPAK/StartCycling
+
+   NAME
+      StartCycling -- Begin cycling the cyclable colors in a Pic.
+
+   SYNOPSIS
+      StartCycling(vp, pic)
+
+      void StartCycling(struct ViewPort *vp, struct Pic *pic);
+
+   FUNCTION
+      Notifies the cycling system of the ViewPort, colormap, and color
+      ranges to use in the color cycling, and begins cycling the cyclable
+      color ranges defined within the specified Pic. You must call
+      InitCycler() before calling this function the first time.
+
+   INPUTS
+      vp  - pointer to the ViewPort containing the colors to cycle
+      pic - pointer to the source Pic containing the cycle ranges and
+            colormap
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      StopCycling, ToggleCycling
+
+---------------------------------------------------------------------------
+
+PICPAK/StopCycling
+
+   NAME
+      StopCycling -- Stop cycling the current ViewPort.
+
+   SYNOPSIS
+      StopCycling()
+
+      void StopCycling(void);
+
+   FUNCTION
+      Stops cycling the defined color ranges in the current ViewPort set
+      via StartCycling(). This routine is called by FreeCycler(), so there
+      is no need to call this if cycling is meant to be shut down for good.
+
+   INPUTS
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      StartCycling, ToggleCycling
+
+---------------------------------------------------------------------------
+
+PICPAK/ToggleCycling
+
+   NAME
+      ToggleCycling -- Turn cycling on if off, and vice versa.
+
+   SYNOPSIS
+      ToggleCycling()
+
+      void ToggleCycling(void);
+
+   FUNCTION
+      Turns color cycling off if it is on, and on and if it is off.
+      The current state of the cycling can be determined with IsCycling().
+
+   INPUTS
+
+   RESULTS
+
+   BUGS
+
+   SEE ALSO
+      StartCycling, StopCycling, IsCycling
+
+---------------------------------------------------------------------------
+
+
+MODIFICATION HISTORY
+====================
+
+11-25-90    v1.1 - limited release
+            Initial release, including support for normal/HAM/EHB images and
+               brushes, including color cycling and ViewPort fading. Plenty
+               of hooks for future image types.
+
+11-28-90    v1.2 - limited release
+            Improved image-type processing
+
+12-02-90    v1.3a - limited test release
+            Clean up IFF parsing into a dynamic chunk analysis loop.
+            Add SHAM ViewPort initialization code.
+            General-purpose SetViewPortPicColors() function for automatic
+               initialization of correct image colors for specific image
+               types (ie. automatically sets up for SHAM if pic->Type = SHAM)
+            Frame structure for simple positional information of brushes,
+               used for quick frame animation without overhead of Pic struct
+            Alternative frame allocation/loading used brush brush animation
+
+12-06-90    v1.3b - limited test release
+            Fixed a bug in the color palette loader. Wouldn't read enough
+               colors on non-EHB/HAM pictures.
+            Fixed horrible bug in standard image allocation.
+            v1.3c - sped up image decompression by loading entire BODY chunk
+               into memory, and decompressing from RAM - assumes chunk size
+               under 32K, so doesn't use up too much memory.
+
+12-31-91    v1.3c - alpha RELEASE
+            (just in time for the holidays!)
+
+06-Nov-95   v1.4
+            Adjusted extern struct Custom so that DICE correctly sets it
+               to __far.
+            In LoadImage(). Introduced CHECK_BMHD. The program is oriented 
+               towards NTSC. If the page height is >242 (oh dear - an 
+               embedded constant), the display flag is set to LACE. This is 
+               wrong for a PAL screen, whose usual page height is 256. 
+               Furthermore, it is nasty to assume that just because a bitmap 
+               is large, it should posses certain ViewMode properties. So I 
+               have wrapped the double-checking in a CHECK_BMHD. If you want 
+               to have the check feature in your compiled code (and I 
+               strongly suggest that you DON'T), then insert a 
+                  #define CHECK_BMHD
+               before
+                  #include "picpak.c"
+
+
+EXAMPLE PICPAK USAGE CODE:   A simple image-displayer
+==========================
+
+/* this image viewer supports SHAM-format images too */
+#include <exec/types.h>
+#include <intuition/intuition.h>
+#include "pic_pak.h"
+
+extern struct IntuitionBase *IntuitionBase;
+extern struct GfxBase *GfxBase;
+
+struct NewScreen ns;
+
+main(argc, argv)
+int argc;
+char *argv[];
+{
+   struct Screen *screen;
+   struct Pic *pic;
+
+   /* open up the ROM libs */
+   GfxBase = (struct GfxBase *)OpenLibrary("graphics.library", 0L);
+   IntuitionBase=(struct IntuitionBase *)OpenLibrary("intuition.library",0L);
+
+   /* attempt to load the Picture */
+   pic = LoadPic(argv[1], MEMTYPE_CHIP);
+   if (!pic)
+   {
+      CloseLibrary((struct Library *)IntuitionBase);
+      CloseLibrary((struct Library *)GfxBase);
+      puts("Couldn't open picture.");
+      exit(1);
+   }
+   /* clear out and initialize the NewScreen from the Pic data */
+   setmem(&ns, sizeof(struct NewScreen), 0L);
+   ns.Width = pic->Width;
+   ns.Height = pic->Height;
+   ns.Depth = pic->Depth;
+   ns.ViewModes = (UWORD)pic->ViewModes;
+   ns.Type = CUSTOMSCREEN | CUSTOMBITMAP | SCREENQUIET | SCREENBEHIND;
+   ns.CustomBitMap = &pic->BitMap;
+
+   screen = OpenScreen(&ns);
+   if (screen)
+   {
+      ClearViewPortColors(&screen->ViewPort, pic->Colors);
+
+      /* SHAM pics must be on top when initialized with InitSHAM() */
+      ScreenToFront(screen);
+
+      /* test for special image types */
+      if (pic->Type == PICTYPE_SHAM)
+         InitSHAM(&screen->ViewPort, pic);   /* can't fade SHAMs (yet) */
+      else
+         FadeViewPortIn(&screen->ViewPort, &pic->Colormap[0], pic->Colors);
+
+      /* NOTE: SetViewPortPicColors(&screen->ViewPort, pic);
+          will accomplish the above test and color palette initialization */
+
+      ScreenToFront(screen);
+
+      Delay(120);                   /* ... pause.... */
+
+      if (pic->Type != PICTYPE_SHAM)         /* can't fade a SHAMs (yet) */
+         FadeViewPortOut(&screen->ViewPort, pic->Colors);
+
+      ScreenToBack(screen);
+      CloseScreen(screen);          /* close up the Screen */
+   }
+   if (pic) FreePic(pic);           /* free up the Pic */
+
+   CloseLibrary((struct Library *)IntuitionBase);
+   CloseLibrary((struct Library *)GfxBase);
+}
+
+---------------------------------------------------------------------------
+
+
+FINALLY
+=======
+
+Version 1.3c of this document contains the lines :
+
+   "Please report any bugs, suggestions, or comments to me, Paul Miller, 
+    via my internet address:
+
+        pmiller@csugrad.cs.vt.edu"
+
+I tried to e-mail him during October 1995. He did not reply. I think it is 
+safe to assume that he is no longer contactable, given the age of this 
+archive.
+
+You might like to contact me instead.
+
+Mark Carter 
+06-Nov-95

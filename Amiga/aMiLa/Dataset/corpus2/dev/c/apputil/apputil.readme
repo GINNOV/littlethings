@@ -1,0 +1,10 @@
+Short:        Source code for apputil.lib
+Author:       lorens@hem.passagen.se
+Uploader:     lorens hem passagen se
+Type:         dev/c
+Version:      1.0
+Requires:     SAS/C
+Architecture: m68k-amigaos
+
+This is the source code for apputil.lib -- a custom link library with
+auxiliary functions useful for application writers.

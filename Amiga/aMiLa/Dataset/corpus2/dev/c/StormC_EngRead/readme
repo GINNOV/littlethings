@@ -1,0 +1,304 @@
+Welcome to the demo version  of StormC 2.0
+==========================================
+
+Here it is: NEW version 2.0 of StormC - The programming system for the future of the AMIGA. There are a lot of enhancements and improvements.
+Most of them were big wishes of our customers and users of the demo 
+version 1.0. For that reason we want to thank everyone who supported 
+the development of StormC.
+
+
+CONTENTS
+========
+I.   Ratings of the Press
+II.  Features of StormC 2.0
+III. Restraints of the demo
+IV.  Include Licences / How to get the original Includes
+V.   MagicMenu and SUN-Mouse-Utilities
+VI.  How to contact HAAGE & PARTNER
+
+
+
+I. Ratings of the Press
+=======================
+
+StormC 1.1 now got rating 
+
+"VERY GOOD" 
+
+in the biggest magazine, called AMIGA MAGAZIN (Publisher: Magna Media).
+
+Some impressions of articles of the German press regarding the Preview 
+version 0.9: (I will try to translate it as close to the original as 
+possible)
+
+Amiga Plus 1 / 96
+
+  New concepts of development and quality assurance... 
+  The first remarkable feature is the project management...
+
+Amiga magazine 1 / 96
+
+  The project management: At last there is a tool that does not feel 
+  like a "ball and chain", but is really useful.
+
+Amiga Special 2 / 96
+
+  A fast compiler, a powerful debugger and a comfortable
+  development system are an interesting mixture, if we talk about
+  professional software engineering..
+
+
+With the enclosed demo you can convince yourself of these statements.
+
+
+II. Features of StormC 2.0
+==========================
+
+StormC 2.0 [NEW]
+The Advanced C/C++ Development System for the Future of the AMIGA !
+
+StormC is an integrated development system which contains all 
+development tools imperative for efficient engineering: editor, 
+compiler, linker, debugger and RunShell with many outstanding 
+features.
+
+The heart of StormC is its visual project manager which manages every 
+part of the project, e.g. sources, headers, libraries, documents, 
+binaries.
+
+The very fast editor displays key-words colourfully to get a better
+readability and a syntax check.
+
+The StormC compiler handles ANSI C and C++ sources and generates 
+optimised code for the whole Motorola 68xxx family (including 68060 
+and 68881/882).
+
+The RunShell is a powerful run-time system that monitors the running
+application and prevents it from crashing the system. It also offers
+resource tracking and it can start the source-level debugger 
+during (!) run-time of the program.
+
+([NEW]Features marked by this are new in version 2.0.)
+
+StormShell - Visual Project Manager
+
+ - Management of Multiple Projects
+ - Hierarchical Projects with Section Folding
+ - Drag & Drop
+ - Automatic File Type Recognition (Sources, Headers, Libraries,
+   Docs, AmigaGuide, Binaries ...)
+ - Toolbar with Tooltips (Help Function)
+ - Full Configurable (>50 Option Requesters)
+ - GoldED Support [NEW]
+ - New Options [NEW]
+ - New GUI [NEW]
+
+StormED - Fast Source Editor
+
+ - Multiple Window Editor
+ - Syntax Colouring
+ - User Defined Dictionary
+ - Perfect Source Structuring
+ - Unlimited Undo/Redo
+ - Fast Search & Replace
+ - Bracket Matching [NEW]
+ - New Colour Controls [NEW]
+ - New Project Template [NEW]
+
+StormC - Very Fast ANSI-C & C++ Compiler
+
+ - 2-in-1 Compiler: ANSI-C & C++ (AT&T 3.0)
+ - Exception Handling
+ - Templates
+ - High-Speed Compiler
+ - Fast Turn-Around
+ - Code Generation for all Motorola 68xxx (incl. 68060, 68881/68882)
+ - Single-Pass Compiler
+ - Powerful Inlining
+ - Highly Compatible with SAS/C, DICE, Aztec C, MaxonC, GCC
+ - Pre-Compiled Headers
+ - Multiple-Pass Optimiser
+ - New Key-word "__saveds" [NEW]
+
+StormLINK - Optimising Linker
+
+ - Very Fast Linking
+ - Near-Code Optimiser
+ - Type-Save Linking
+ - Generates ROM Code
+ - Easy Generation of Shared Libraries
+ - Compatible to SAS/C- and MaxonC Libraries
+ - Code Folding (Optimisation at Linking)
+ - Linking of Binaries [NEW]
+
+StormLibrarian [NEW]
+
+ - Simple Creation of Linker Libraries [NEW]
+ - Easy Generation of Library Sets [NEW]
+
+RunShell - Outstanding Run-time system
+
+ - Resource Tracking
+ - Controlled Program Interrupt
+ - Any Time Start of Debugger
+ - New GUI [NEW]
+
+StormDEBUG - Comfortable Source-Level Debugger
+
+ - Output into Editor Window
+ - Easy Breakpoint Settings
+ - Automatic Value Refresh
+ - Comfortable Inspect Windows for Variables, Structs, Classes etc.
+ - History and Breakpoint Window
+ - Editable Type Casting
+ - HEX Editor
+ - History and Breakpoint Window [NEW]
+ - Improved GUI [NEW]
+
+Further Features
+
+ - Full StormWIZARD Support (optional GUI Editor) [NEW]
+ - Fully Localised (German, English, French, Italian)
+ - Full Multitasking
+ - Customised Environment
+ - Extensive Libraries for ANSI-C, C++, Amiga OS
+ - OS 3.1 System Include Files
+
+Requirements
+
+ - Any Amiga Model with Hard Drive
+ - AmigaOS 2.0 or better
+ - 3 MB RAM (some functions need at least 6 MB RAM)
+ - CyberGraphX compatible
+
+
+III. Restraints of the demo
+===========================
+
+The enclosed compiler will compile your large sources but he will however 
+write a maximum of 10 KB of object code. But you can get the assurance 
+that your large projects can be compiled too.
+
+The linker can write programs with a maximum of 20 KB of 
+size.
+
+All parts of StormC can NOT be started from CLI. They can be used only 
+with the integrated environment.
+
+The Storm demo ends automaticaly after 10 minutes.
+
+Important
+=========
+
+This demo is optimised for installation from CD-ROM. If you have copied 
+the files to your hard disk already you need not to do the installation. 
+You should then enter solely an assign to StormC into the "user-startup",
+so the demo programs and the pre-sets of StormC can be used unchanged.
+
+
+IV. Include Licences
+====================
+
+If you have got the demo from a mailbox or from the Aminet, only our 
+includes and libraries are included. For programming you will soon 
+need the complete system includes of Kickstart/Workbench 3.1.
+
+How to get these includes?
+--------------------------
+
+1. We can send you a demo of StormC with all includes, but you have 
+   to pay a charge of 20 $ (30 DM). You have to pay in advance.
+
+2. You will find the complete includes and libraries on the CD 1/96
+   of the German "Amiga Magazin".
+
+3. If you have got our Preview of StormC you have already got these 
+   files too.
+
+You only have to add the following files:
+
+In the includes drawer the directories:
+
+  datatypes
+  devices
+  diskfont
+  dos
+  exec
+  gadgets
+  graphics
+  hardware
+  intuition
+  libraries
+  prefs
+  resources
+  rexx
+  utility
+  workbench
+
+In the libs drawer the libraries:
+
+  amiga.lib
+  small.lib
+  debug.lib
+  ddebug.lib
+
+Please do not use the includes of other compilers or directly these 
+of other compilers or our Preview. We have altered some of them, 
+so they will only work the way we told you.
+
+
+V. MagicMenu and SUN-Mouse-Utilities
+====================================
+
+If you use MagicMenu the mouse pointer freezes up to 10 seconds if you 
+are pressing the right mouse button over an icon of the icon bar. This 
+is because MagicMenu is not very OS compliant.
+
+The same problem can appear with other SUN mouse utilities too.
+
+
+VI. How to contact HAAGE & PARTNER
+==================================
+
+If you have any questions please feel free to contact us:
+
+   HAAGE & PARTNER Computer GmbH
+   Mainzer Strasse 10 A
+   61191 Rosbach
+   Germany
+
+   Tel: +49 6007 93 00 50
+   Fax: +49 6007 75 43
+
+   Internet: 100654.3133@compuserve.com
+   Compuserve: 100654,3133
+
+   Please visit our home page to get the newest information on StormC:
+
+   http://ourworld.compuserve.com/homepages/HAAGE_PARTNER
+
+
+Now we want to thank our testers, esepically:
+
+        Dietmar Augustin
+        Olaf Barthel
+        Holger Burkarth
+        Thomas Bayen
+        Bernhard Büchter
+        David Göhler
+        Mario Kettenberger
+        Alexander Pratsch
+        Andreas Pfohl
+        Constantin Rack
+        Michael Rock
+        Jürgen Schildmann
+        Stephan Schüerholz
+        Thomas Wilhelmi
+
+Special thanks to Jeroen T. Vermeulen.
+
+
+(c) 1997 HAAGE & PARTNER Computer GmbH
+
+
+

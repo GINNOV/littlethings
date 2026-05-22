@@ -1,0 +1,19 @@
+MACHINE:A1200 if you degrade it (all progs written for 1.3)
+CODE:Andyrew &BANGERS & MASH & Wile Coyote & Hack & Bosh 
+GFX:OJ
+
+LEFT MOUSE QUITS IF YOU ARE LUCKY
+
+Here is a collection of programs i wrote in my old 1.2 kickstart days
+They have all been tried on the A1200 but some of them need to be
+degraded (using TUDE or whatever) before they run correctly.
+Some of them may even crash your system.
+Definately some of them STEAL memory, so make sure that you have
+nothing running in the background before you try them
+
+Sadly i have not got any source for these little gems (maybe thats a good thing)
+They are purely for my own reminiscence of the good old days
+when all my buddies would pack up their amigas and pile around my place
+for a good old sesh with too much beer and food.  We would code
+hack, crack and generally enjoy all that the amiga had to offer.
+Still here you are.

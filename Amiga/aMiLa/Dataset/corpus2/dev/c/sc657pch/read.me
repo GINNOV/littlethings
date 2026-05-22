@@ -1,0 +1,247 @@
+This patch contains a number of bug fixes (listed below),
+and few enhancements to the SAS/C Developement System.
+This patch will use the original 6.50 disks to perform
+the patch. You should have 6.56 installed BEFORE applying
+this patch.
+
+
+
+To install this patch, type
+
+   execute install
+
+
+
+Enhancements:
+
+1) CPU=68060 option. This option will tell the compiler to generate
+   code optimized for the 68060. Code compiled with this option will
+   run on 68020-68060 processors. It is equivalent to the CPU=68040
+   option, with a few exceptions:
+   
+      1) FSCC instruction will not be generated.
+
+      2) FINTRZ instruction WILL be used when converting double to 
+         ints, instead of a CX math routine.
+
+      3) MULS is used for more often for constant multiplies than
+         on the 040.
+
+   Also, the preprocessor symbol _M68060 will be defined if this option
+   is used.
+
+2) The multiply by constant code has been tuned to use MULS when
+   it is faster than the shift/add method for 040/060.
+
+3) New 68040 math library. SCM040.LIB contains replacement math 
+   routines that do not use any of the floating point instructions 
+   that are emulated in software on the 040/060, ie FCOS, FSIN, etc.
+   However, timings on a 68040 indicate that this library executes
+   slower than the emualted instructions, so SC does not add it
+   to the link line. It may still be usefull if you want domain checking.
+   To use it, add it to the link line BEFORE SCM881.LIB.
+
+4) Enhanced scheduler should allow more re-ordering of code, and
+   potentially better performance on higher processors.
+
+
+5) Some new Global optimizer warnings have been added. Warning 317 for
+   example is one that you'll probably notice first. One note about
+   the warning: it's not perfect, and will warn in some cases when it
+   probably shouldn't. If you don't like it, just add IGNORE 317 to
+   your SCOPTIONS.
+
+6) Added support to SLINK so a variable _LibID can be used in place of 
+   the LIBID keyword. This allows the _AMIGADATE_ define to be used
+   in library version strings.
+
+7) CPR has been updated so it should work fully on a 68060, including
+   CyberGuard support.
+
+
+Bugs Fixed in 6.57
+
+
+1) CXERR loading A4 in a pragma call in some cases.    More prevalent in 6.56.
+                                                       Fixed.
+                                                       
+2) Function prolog for __asm function has parms for    Fixed.
+   EXG backward if exchanging a data and address reg. 
+
+3) CPR and OMD get enforcer hits dissassemmbling       Fixed.
+   $0e7c0ea6.
+
+4) ASM doesn't allow move.w (32323232).l,(1616).w      Fixed.
+   etc.
+
+5) OMD doesn't handle HUNK_ABS.                        Fixed.
+
+6) SE has terrible performance when adding a character Fixed.
+   to the same line as a marked block.
+
+7) ctime() adds 1 hour for daylight instead of         Fixed.
+   subtracting one.
+
+8) CPR will no longer allow single stepping a process Done.
+   that has been stopped in a WAIT state
+
+9) Avoid CXERR calling #pragma function but not        Done.
+   using advanced addressing mode for loading
+   parameters. Peep optimize it anyway.
+
+10) Fix CXERR calling ASM function pointers that       New in 6.56. Fixed.
+    return float.
+
+11) The stackextion code was attempting to free        Added in 6.55. Fixed.
+    bad memory or the current stack pointer.
+
+12) SE refreshes incorrectly if DEL hit on last        Fixed.
+    char and next line is preproc. continuation.
+
+13) Builtin Memset doesn't work for negative chars     Fixed.
+    for example '\xb7'
+
+14) fseek could fail in two cases                      Fixed.
+      1) O_XLAT mode      
+      2) If buffer was in low mem, and a large
+         backwards seek happened.
+
+15) Autoincrement on VOLATILE variables could cause    Fixed.
+    CXERR.
+
+16) SLINK reported bad line number for some messages.  Fixed.
+
+17) Unsignedness was lost on result of OR during a     Fixed.
+    check in an IF statement   
+
+18) CXERR in scgo for exposed temporaries.             Fixed.
+
+19) ASM fails on forward references in DC.B's          Fixed.
+
+20) mktime(), getclk(), and chgclk()                   Fixed.
+    calculate leap year wrong at 2000.
+
+21) fwrite(), fputc() can't write to "r+" file         Fixed.
+    after a read, without fflush()
+
+22) Enforcer hit and extra MOVE's (possibly bad)       Fix for 6.55 wasn't correct.
+    for tail recursion if doubles used.                Fixed.
+
+23) Debug info offsets needed to be adjusted for       Fixed.
+    static BSS items if COMMON was on.
+
+24) Struct copies from constant address 0 generated    Fixed.
+    bad code.  
+
+25) Scheduler was to conservative with condition codes Improved.
+
+26) Crossjump optimization did not examine CC's        Fixed.
+    properly, causing reads of uninit memory and 
+    potentially bad code.
+
+27) Increased STRING size for macro arguments in ASM.  Done.
+
+28) ASM was missing CMP.B (An)+,(Am)+                  Fixed.
+
+29) Make message 63 a warning for duplicate structs    Fixed.
+    defs when possible.
+
+30) SMAKE did not set up it's CommandName and SetName  Fixed.
+    field in the CLI structure properly.
+
+31) Removed use of CMPI to nullify next instruction    Done.
+    (if it's BCC or BSR) because it causes a buserror 
+    on the 060, which will either cause a crash, or 
+    slower code.
+
+32) SE didn't update colors properly on BLOCK INSERT   Fixed.
+    or BLOCK READ.
+
+33) Compiler went into infinite loop on CTRL-Z.        Attempt to handle CTRL-Z
+                                                       in 6.55 was incorrect. Fixed.
+
+34) Fixed pcrel reference of form [foo,pc] in ASM      Fixed.
+
+35) Allow FP reg list to be in decending order, ie     Fixed.
+    FP7-FP1. (Also fixed OMD to disassemble this).
+    
+36) Phase 2 was not respecting the volatile keyword    Fixed.
+    for indirect acceses.
+
+37) Fix C++ tellg(), streampos->int conversion.        Fixed.
+
+38) gcount isn't implemented in C++ library.           Fixed.
+
+39) SLINK could leave temporary files in t: if         Fixed.
+    interrupted with CTRL-C. 
+
+40) OMD would crash if more than 32 sections were      Fixed.
+    found in .o file. Fixed crash and bumped limit
+    to 64.
+
+41) timedelay() function in SC.LIB was incorrect.      Fixed.
+
+42) Sparse case switch could use an inappropriate      Fixed.
+    register in rare cases.
+    
+43) GENPROTO could get enforcer hits for cases like    Fixed.
+    void test(char *test){}
+
+44) Fixed problem with LISTSYM in CPR giving up too    Fixed.
+    soon.
+
+45) Fixed debug generation problem with GST's and      Fixed.
+    typedefs for function returns.
+
+46) Added 'AFF_68060' #define.                         Done.
+
+47) Crossjump optimization (in peephole opt) was       Fixed.
+    done improperly if opt covered 32-bit references
+    (CODE=FAR) to local functions. 
+
+48) Generate the default LIBID string from LIBVERSION/ Done.
+    LIBREVISION, so the version command works on 
+    libraries that are not loaded into memory.
+
+49) Fix %n if a space preceeds it, and EOS/EOF is      Fixed.
+    deteceted, ie "%s %n".
+    
+
+50) SLINK would crash if an OML-style library          Fixed.
+    contained a module that had more than 256 symbol
+    definitions.
+    
+    
+51) ASM would generate an improper floating point      Fixed.
+    number for negation, ie fmove.d  #-3.1,fp0.
+    Also give errors for other operations on fp 
+    numbers that ASM doesn't support, ie #3.1*2
+
+52) In rare situations, sc2 would not properly         Fixed.
+    reassign offsets to auto variables if OPT
+    was on.
+
+53) Allow auto initializers of string constants        Fixed.
+    where the null character exceeds the size
+    if the array, is char a[2] = "ab";
+
+
+
+    
+Bugs NOT fixed in 6.57.
+
+
+1) ASM doesn't report illegal addressing mode for
+   PC-rel mode for CMPI.
+
+2) sekeymap doesn't handle escaped quotes properly.
+
+3) Make __open() look at protection bits before 
+    calling Open to prevent fopen(, "a") on readonly
+    file.
+
+4) const in union generates improper warning.
+
+5) Type of 'sizeof' is unsigned int. With the SHORTINT
+   option, bad results are returned for cases like
+   char a[70000]; x = sizeof(a);

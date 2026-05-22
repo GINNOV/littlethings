@@ -1,0 +1,60 @@
+              Assembler program examples.
+
+   These are two examples for aspiring assembler programmers. They came
+into being in frustration over the lack of examples and documentation for
+assembly language programmers. A couple of pages in the AmigaDOS Manual and
+in the Exec Manual was about all I could find, and none of these included
+examples.
+   The Commodore include files are heavily commented, thank God, but the
+structures confused me. After a while, I figured they might provide offsets
+to acces the structures defined in C language, and sure enough this is
+right.
+   So these examples show how to OpenLibrary, OpenWindow, access to
+UserPort of a window, waiting for a close gadget, Delay, interface to
+graphics, writing numbers and a bit more. The calls to the system routines
+are easy once you know how, and you have no trouble with return values
+being truncated to 16 bits and the like.
+   Interface with WorkBench is not quite right. These programs do not care
+about the startup message provided, and they will lose some ram when run
+from WorkBench. From the CLI, they behave nicely returning every byte with
+no trouble. I call these CLI-mostly programs.
+   The CPU itself is very nice to programmers. It provides you with an
+elegant instruction set, many 32 bit registers, and an appealing straight
+design. This at least compared with other I've seen, like Z80 and 8086 (Did
+you get this, IBM users?)
+
+   The examples are:
+
+   Screen.a opens Intuition, opens a LORES screen, a window, and waits for
+you to press the close gadget. A very basic example of how to get to the
+system routines and the user port of a window.
+
+   MemTool.a is actually useful. It opens a little window on WorkBench with
+display of remaining Fast and Chip memory, updating every two seconds. If
+it finds that we're running out of ram, it will flash EVERY screen and
+exit, leaving it's ram for other users. Try running ten of these and then
+fill your ram disk! Note that it only checks the ram counts every two
+seconds, and the close gadget at the same time. When you press the close
+gadget, it may take up to two seconds for it to close. It will not display
+correct figures on Amigas with more than 99 Megabytes of free ram, so
+beware, superusers! When it states that assembly language is fun, I mean
+it, but to be sure, the major programs I do are written with Manx C.
+Assembly language is to me mostly for fun and for those special lowlevel
+hacks where C is too slow or troublesome.
+
+   These examples are assembled with Asm68k Version 1.1.0, and linked with
+BLink V6.5 and small.lib, all high quality PD software.
+   The commands to make the MemTool are:
+
+   Asm68k MemTool.a -NS -RM -Idf0:include
+   BLink MemTool.o df0:lib/Small.lib NODEBUG TO MemTool
+
+   These programs are yours for free to hack every way you want.
+Enjoy, have fun Guru'ing your way into this fine CPU. Actually, these did
+not create many red flashes for me.
+
+                                            Henrik Clausen
+                                            Spobjergvej 125
+                                            DK 8220 Brabrand
+                                            Denmark
+

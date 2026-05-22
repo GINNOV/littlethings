@@ -1,0 +1,552 @@
+MC680x0 exception vectors.
+
+Written by Kyzer/CSG, based in parts on material in 'Programming the 68000'
+and 'The AMIGA Hardware Reference Manual', both published by Addison-Wesley.
+
+COPYRIGHT: The copyright on this work as a whole is retained by the author.
+This document is freeware. It may be distributed freely, provided it remains
+unedited and no profit ensues. Commercial bodies are permitted to use the
+information in here as a reference, but may not use it in an article or
+otherwise reproduce the information without the author's permission.
+All trademarks should be considered acknowledged. Anyone unsure of the
+exact implications of this statement must ask the author for more specific
+information. All definitions are decided by the author. You may not attempt
+to 'pick legal holes' in this statement in an effort to legally contravene
+any of the above. If you want to modify this document do NOT distribute the
+modified copy, send a list of the changes to the author and he will ensure
+the changes are made himself. You are permitted to translate this document
+into another language, but the same rules above still apply.
+
+DISCLAIMER: No warranty or guarantee is made for this information, use of the
+information is entirely at your own risk. The information herein is correct
+to best of the author's knowledge.
+
+All that just to stop Americans from making a fast buck, is it worth it?
+
+$VER: Exceptions.txt 1.0 (12/03/96)
+
+Contents
+~~~~~~~~
+0. Conventions
+1. What is an exception?
+2. What does the MC680x0 do when there is an exception?
+3. What is in the exception table?
+4. Autovectors - external causes
+5. Traps
+6. Examples of usage
+7. End
+
+
+0. Conventions
+~~~~~~~~~~~~~~
+A lowercase "x" will stand for any correct value. Correct values are not
+usually given, the "x" simply represents there is more than one value
+possible.
+
+All numbers beginning with the dollar sign "$" are in hexadecimal.
+
+MC680x0 means all the Motorola 68000 series. That is the MC68000, MC68010,
+MC68EC020, MC68020, MC68EC030, MC68030, MC68EC040, MC68040 and MC68060.
+
+68000 means the MC68000 alone
+
+680x0 means all of the Motorola 68000 series except the 68000 itself.
+
+Assembly mnemonics, registers and hardware pins are given in uppercase.
+
+A slash "/" between two assembly mnemonics represents a seperate line.
+
+
+1. What is an exception?
+~~~~~~~~~~~~~~~~~~~~~~~~
+An exception is when the processor (which we assume is a MC680x0) is halted
+and made to do something else. It can be halted by either the processor
+itself, when it errors or a TRAP command is run, or an external force, on
+the processor's INTx pins. This is the definition of internal and external
+interrupts. External sources do not have to be outside the Amiga! The main
+external source is from the Paula chip.
+
+
+2. What does the MC680x0 do when there is an exception?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+First, the MC680x0 finishes processing the instruction it was on, eg if it
+was a MOVEQ #1,D0 instruction, then D0 will have 1 in it when the exception
+takes place. If it is a JMP $123456 instruction then the program counter will
+be at $123456 before the exception starts.
+
+Next, the MC680x0 puts sets the supervisor flag in the status register SR.
+It is the equivalent of executing the instruction ORI.W #1<<13,SR but it is
+a lot faster. This tells another part of the MC680x0 to put A7, the stack
+pointer, into a special safe place, then take out the supervisor stack
+pointer and put it in A7 instead.
+
+Now, the MC680x0 pushes the program counter on the stack, eg MOVE.L PC,-(SP)
+and then the status register, eg MOVE.W SR,-(SP).
+
+This is now where the 68000 and the 680x0s differ. The next thing that the
+the processor must do is get the address of the exception handler. On the
+68000 this is in a page of addresses called zeropage. It is the first 1024
+bytes of memory, from $0 to $100, in the Amiga's Chip RAM.
+
+=== INTERESTED PARTIES ONLY ===
+Traditionally, this area of memory is called zeropage, due to the fact 8-bit
+processors like the BBC's 6502 could access it with half the address, only 8
+bits. The first 256 bytes were very special, as they could be looked up
+faster. The 680x0 has the equivalent 'word addressing', eg MOVE.L $4.W,A6 but
+this is no fun as the whole first 65536 bytes would be classed as zeropage.
+So we call the first 1024 bytes zeropage instead, as this is most important.
+=== INTERESTED PARTIES ONLY ===
+
+Anyway, the 68000 looks up a table in zeropage for an address. The 680x0
+(68010, 68020, 68030, 68040, 68060 and so on) is more advanced. It has a
+little internal control register called VBR, and this register contains the
+base address of the table. It is usually zero and therefore still in zeropage
+but with a utility like FastVBR, the base can be shifted out of Chip RAM and
+into Fast RAM, for a significant speed-up, about 1%-4%, more if you are using
+a program with FPU or 68040 specific instructions.
+
+Once the address is got from the table, the processor jumps to it. It only
+knows the exception has finished when it gives an RTE - return from exception
+command. You should note that 68060 accelerator makers say you should put
+one NOP instruction before the RTE, so as not to smash the 060's pipeline.
+
+After this, the 680x0 pops the SR and PC off the supervisor stack, switches
+back into user mode with user stack, then continues on it's merry way.
+
+ONE FINAL WARNING: EXCEPTIONS DO NOT SAVE THE DATA AND ADDRESS REGISTERS!
+YOU MUST DO THIS YOURSELF, OTHERWISE YOU WILL TOTALLY CORRUPT THE NORMAL
+PROGRAM EXCECUTION!
+
+
+3. What is in the exception table?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The table is a list of addresses. It is split into 3 sections:
+
+1. Error exceptions. These occur when the processor can't continue.
+2. Autovectors. These occur when the processor's INTx pins are touched.
+3. Trap vectors. These occur when a TRAP #x command occurs.
+
+=== INTERESTED PARTIES ONLY ===
+You will recognize the error exceptions below as directly corresponding
+to software failures $8000000x that the Amiga throws up from time to time.
+You may also have got a bus error, or address error on a 680x0. It's not
+impossible, as there is actually an entry in ExecBase describing what the
+last error was. Any program can write a value to this then reset to 'fake' a
+software failure. OK?
+=== INTERESTED PARTIES ONLY ===
+
+The table looks like this:
+
+Off. Name
+$08  BUS ERROR, when the address bus malfunctions. VERY SERIOUS!
+
+$0C  ADDRESS ERROR, when a 68000 tries to access a word or longword
+     from an odd address, "odd" meaning "not even", not "queer"! 680x0
+     processors don't cause this, they can write to odd addresses, but
+     it's a lot slower, about 10 cycles more!
+
+$10  ILLEGAL INSTRUCTION, when the ILLEGAL instruction is run. Other non-
+     instructions can cause this, but if you are deliberately wanting to
+     cause this exception, only the ILLEGAL instruction is supported
+     officially by Motorola, others may be turned into an instruction on
+     newer processors.
+
+$14  DIVIDE BY ZERO, when you try to divide with 0. Try CLR D0 / DIVU D0,D1
+
+$18  CHK: OUT OF BOUNDS, when the CHK or CHK2 instruction tests a data
+     register against an upper (and a lower in CHK2) boundary in memory
+     and finds the data register outwith those bounds. You shouldn't be
+     using the CHK instruction anyway. It's not designed for general use
+     on multitasking computers like the Amiga. They get upset.
+
+$1C  TRAPV: OVERFLOW BIT SET, when you do a TRAPV instruction, and the V
+     flag is set. Like BVS, only a bit more serious. Yet again, it's not
+     designed for a multitasking operating system.
+
+$20  PRIVILLEDGE VIOLATION, when you do a 'privilledged' command, like
+     MOVEC, or MOVE.W #$xxxx,SR but you are not in supervisor mode.
+
+$24  TRACE: If you set bit 15 of the status register, the TRACE bit, then
+     this exception willbe caused after every instruction has been run.
+     Great for debugging.
+
+$28  LINE A EXCEPTION: Any instruction that is $Axxx will cause this
+     exception. It's to allow new instructions, from $Axxx, to be used
+     easily. It didn't catch on.
+
+$2C  LINE F EXCEPTION: This is the same idea as the line A, but this is
+     caused for any $Fxxx instruction. It's used to emulate an FPU, or
+     start an external FPU, all of whose instructions start $Fxxx.
+     
+$30 and $34 are reserved. Leave them as they are.
+
+$38  FORMAT ERROR: This occurs on 680x0s only. I don't know why.
+
+$3C  UNINITIALISED VECTOR: If the table entry for an exception is not set (ie
+     it is $0) then this exception will run instead. If this isn't set either
+     then the MC680x0 will come to a complete halt, and requires restarting.
+
+$40-5C are reserved. Leave them as they are.
+
+$60  UNKNOWN ERROR: If you were to snap the MC680x0 chip in half while it
+     was was working, thus halting it, it would be unable to determine what
+     went wrong, so it would run this exception. (Possibly you could write
+     a function like _GlueProcessorTogether: or something :)
+
+$64  Autovector 1 - see below.
+$68  Autovector 2 - see below. This handles CIA A.
+$6C  Autovector 3 - see below. This handles the display and blitter ints.
+$70  Autovector 4 - see below. This handles the audio interrupts.
+$74  Autovector 5 - see below.
+$78  Autovector 6 - see below. This handles CIA B.
+$7C  Autovector 7 - see below. This is the Non Maskable Interrupt.
+
+$80  TRAP #0 exception - see below.
+$84  TRAP #1 exception - see below.
+$88  TRAP #2 exception - see below.
+$8C  TRAP #3 exception - see below.
+$90  TRAP #4 exception - see below.
+$94  TRAP #5 exception - see below.
+$98  TRAP #6 exception - see below.
+$9C  TRAP #7 exception - see below.
+$A0  TRAP #8 exception - see below.
+$A4  TRAP #9 exception - see below.
+$A8  TRAP #10 exception - see below.
+$AC  TRAP #11 exception - see below.
+$B0  TRAP #12 exception - see below.
+$B4  TRAP #13 exception - see below.
+$B8  TRAP #14 exception - see below.
+$BC  TRAP #15 exception - see below.
+
+$C0 to $FC are reserved. Leave them as they are.
+
+$100 to $3FC are designated by Motorola for computer manufacters to use as
+        input/output ports. But on the Amiga all they are is more RAM :)
+
+
+4. Autovectors - external causes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The autovectors are the only source of interrupts external to the MC680x0.
+They are prioritised, so if a level 1 interrupt is occuring and a level 2
+requires processing in the middle of this, the lev1 is stopped and the lev2
+is handled. This can go on up to lev7 - the non maskable interrupt. The lev
+7 cannot be turned off and cannot be stopped once it starts. This is how
+the Action Replay works.
+
+The autovectors on the MC680x0 can be caused by one of two things. The
+first is a hardware hacker banging on the processor's INTx pins. This is
+more commonly caused by something like an Action Replay cartridge.
+
+=== INTERESTED PARTIES ONLY ===
+You may like to know that if you disable all interrupts and write code that
+doesn't use exception processing at all, then you can place the 68000's
+stack pointer on an odd address. If a user uses an Action Replay cartridge,
+when they press the button it will generate an exception, so the 68000 will
+push the PC and SR onto the stack - except it can't because it's an ODD
+stack, so it'll have to generate an address error. Now that is also an
+exception, so it'll have to push PC and SR onto the odd stack, which again
+it can't do! So the 68000 will just halt and need to be restarted, thus
+denying the Action Replay user any chance of halting your code.
+=== INTERESTED PARTIES ONLY ===
+
+The other way autovectors get called is via the Paula chip. Paula is very
+clever, and she does some multiplexing to turn the 7 interrupts into 14!
+Basically, of the 14 possible system interrupts, anything between 1 and 4 are
+handled by a single autovector. The interrupts generated can be set by the
+INTENA custom register. An interrupt is started by either hard or software
+writing into Paula's INTREQ register. Paula sees this and checks from her
+INTENAR register to see if the interrupt is meant to be on. If it is she
+causes the correct autovector exception to happen. This autovector should
+check which interrupt caused it, then turn off the correct INTREQ flag.
+Here is a table of interrupts:
+
+Vec. Int. Name     Means this has happened
+ 1    0   TBE      Generated by the CIA B chip - the serial port's transmit
+                   buffer is empty and needs refilling/restarting.
+ 1    1   DSKBLK   Generated by Paula when the disk hardware has finished
+                   reading the specified disk track into memory
+ 1    2   SOFTINT  Generated by exec - ie in software. Read the RKMs! A
+                   software interrupt is used to do lots of work that needs
+                   a higher priority than tasks but not interrupts.
+ 2    3   PORTS    Generated by the CIA A timer chip
+ 3    4   COPER    Generated by the copper at a specific screen location.
+                   This is a cheat - the copper is programmed by the coder
+                   to write $10 into INTREQ, but it allows the copper to
+                   identify itself as the source of the interrupt.
+ 3    5   VERTB    Generated by Denise/Lisa when the vertical blank starts.
+                   The vertical blank is when the bottom of the screen is
+                   reached by the electron beam in the telly and it has to
+                   flick back up to the top of the screen.
+ 3    6   BLIT     Generated by Agnus/Alice when the blitter finishes
+                   drawing.
+ 4    7   AUD0     Generated by Paula when she finishes playing a sound on
+                   audio channel 2
+ 4    8   AUD1     Generated by Paula when she finishes playing a sound on
+                   audio channel 0
+ 4    9   AUD2     Generated by Paula when she finishes playing a sound on
+                   audio channel 3
+ 4   10   AUD3     Generated by Paula when she finishes playing a sound on
+                   audio channel 1
+ 5   11   RBF      Generated by the CIA B chip - the serial port's recieve
+                   buffer is full, and you should empty it for more data to
+                   get in.
+ 5   12   DSKSYNC  Generated by Paula, when the disk hardware finds a disk
+                   syncword to indicate the start of a track. The reason
+                   this is such a high priority if because you only have a
+                   few microseconds to start the disk hardware reading or
+                   writing data before the disk has spun too far.
+ 6   13   EXTER    Generated by the CIA B timer chip. This is more precise
+                   than the CIA A timer because it is guaranteed not to be
+                   preempted by another Amiga interrupt. Only the NMI can
+                   stop it, and that's not likely as only external hardware
+                   can cause one.
+
+The interrupts are set by setting the interrupt flags affected, and the
+15th bit to 1 - SETCLR. This sets the interrupts on. To turn them off,
+you must clear to 15th bit to 0. Eg. MOVE.W #INTF_SETCLR!INTF_RBF,intena(A5)
+
+There is also a rumour that the master enable bit, bit 14, must also be set
+otherwise no interrupts take place. I firmly believe this is only valid in
+the Amiga's multitasking environment, where the exec interrupt handler
+disallows any interrupts that do not have the 14th bit set in INTENAR.
+You, however, may want to err on the side of caution.
+
+
+5. Traps
+~~~~~~~~
+Traps aren't really much use in the Amiga's multitasking environment.
+In other operating systems, the 16 traps represent up to 16 code libraries.
+The Amiga as you know has libraries, called by jumping to a negative offset
+from the start of the libraries base. The base is given to you by the exec
+function OpenLibrary. The execbase itself is available at $4.w. On the
+Apple Macintosh computer, you do a call something like this.
+
+	MOVE.W	#0,-(SP)
+	MOVE.W	#0,-(SP)
+	MOVE.W	#200,-(SP)
+	MOVE.W	#128,-(SP)
+	MOVE.L	#GFX_DrawLine,-(SP)
+	TRAP	#1	; graphics call
+
+=== INTERESTED PARTIES ONLY ===
+It's main advantage on the Macintosh is that it allows EVERY operating system
+call to be in supervisor mode. This is EXTREMELY anti-multitasking, but this
+is how the Mac works. This is also how the Acorn RISC machines work, and how
+PCs call MS-DOS. I'm not sure about Windows '95, though - it may not work
+that way, it _is_ pre-emptively multitasking, even if it does need 4 megs to
+do it.
+=== INTERESTED PARTIES ONLY ===
+
+A trap itself is very simple to do. All you do is make an exception handler,
+put it's address into the right trapvector (from $80 to $BC) and to call it
+you use the TRAP #x command. For example, TRAP #0 calls the $80 handler,
+TRAP #1 calls the $84 handler, TRAP #2 calls the $88 handler, etc.
+
+The Sanity Operating System uses this method as well as the Amiga style
+method, for speed.
+
+Did I mention the TRAPV command? It causes the TRAPV exception ($1C) if the
+overflow bit is set. I think it's silly, but who cares?
+
+=== INTERESTED PARTIES ONLY ===
+The most popular method in demos to get to supervisor mode is to do this:
+
+	MOVE.L	mydemo,$80.W
+	TRAP	#0
+mydemo	...
+
+Sadly, for reasons that I've already mentioned, this doesn't work on 680x0s
+with their VBR moved. Stand up and take a bow BIG TIME SENSUALITY, TURMOIL
+ENIGMA, ELYSIUM, DESERT DREAM, MISERY, ALPHA AND OMEGA, VECTORKILLER,
+TECHNOLOGICAL DEATH, 242, STATE OF THE ART, JESUS ON E'S, HUMANTARGET,
+CLARIVOYANCE, HELIOPOLIS and a million other demos that I haven't had the
+misfortune to have a hack at.
+
+You might like to know that I have written my own operating system called
+CadOS for AGA/020+ demos to use. Amongst other clever stuff like resource
+tracking, interrupt checking, fileloading with invisible decompression, iff
+viewing and screen making, it has built in code to move the VBR to Fast RAM,
+and back again for a speedup. It also allocates chip memory on 64bit
+boundaries, has sine and cosine wave creation, has user requesters before it
+starts, runs from an icon, deallocates all unfreed memory, has a seperate
+stack, has macros to pop from anywhere in the demo, even in an interrupt,
+halts the demo and returns safely to the user if you crash, has copper code
+creation, makes it easy to write to the AGA chipset, guarantees 100%
+detachment from the operating system and various other niceities. It should
+be distributed and available on Aminet by about mid-May.
+=== INTERESTED PARTIES ONLY ===
+
+6. Examples of usage
+~~~~~~~~~~~~~~~~~~~~
+This is only for coders who want to get low. The Amiga OS has plenty of good
+routines for using traps and interrupts, you don't _have_ to get your hands
+dirty if you don't want to. Read the AMIGA ROM Kernal manuals for more
+information about this, especially the LIBRARIES volume.
+
+First, do this before _any_ low-level work:
+
+	include	exec/exec_lib.i
+	include	hardware/custom.i
+	move.l	$4.w,a6
+	jsr	_LVOForbid(a6)
+	jsr	_LVODisable(a6)
+	lea	super(pc),a5
+	jsr	_LVOSupervisor(a6)
+	move.l	$4.w,a6
+	jsr	_LVOEnable(a6)
+	jsr	_LVOPermit(a6)
+	rts
+super	lea	_custom,a5
+	move.w	intenar(a5),-(sp)
+	or.w	#$c000,(sp)
+	move.w	dmaconr(a5),-(sp)
+	or.w	#$8200,(sp)
+	move.w	#$7fff,d0
+	move.w	d0,intena(a5)
+	move.w	d0,dmacon(a5)
+
+	jsr	GetVBR
+	move.l	a0,vbrbase
+	moveq	#$100/4-1,d0
+.copy	move.l	(a0)+,-(sp)
+	dbra	d0,.copy
+
+	jsr	begin
+
+	lea	_custom,a5
+	move.w	#$7fff,d0
+	move.w	d0,dmacon(a5)
+	move.w	d0,intena(a5)
+
+	move.l	vbrbase,a0
+	moveq	#$100/4-1,d0
+.copy2	move.l	(sp)+,(a0)+
+	dbra	d0,.copy2
+
+	move.w	(sp)+,dmacon(a5)
+	move.w	(sp)+,intena(a5)
+	rte
+vbrbase	dc.l	0
+
+begin	...
+
+This protects you from most things, but if you want REAL compatibility then
+get hold of my demo operating system, called CadOS. It's on Aminet as
+dev/asm/CadOS1_0.lha, and it contains a million beautiful things, including
+100% compatibility with any AGA machine. It needs a 68020 or better.
+Anyway...
+
+First, test ExecBase's AttnFlags to see if you are running on a 68010 or
+higher. If so, get the VBR. Otherwise, just use a pointer to $0.
+
+GetVBR	;returns VBR in a0
+	lea	$0.w,a0
+	move.l	4.w,a6
+	move.w	296(a6),d0
+	btst	#1,d0
+	beq.s	is68000
+	movec	VBR,a0
+is68000	rts
+
+This next routine divides by any number, including zero. For zero, it returns
+near infinity, the biggest positive word-sized number the MC680x0 can handle.
+
+Divide	; does x/y where d0.w=x, d1.w=y
+	move.l	vbrbase,a0
+	lea	mydiv(pc),a1
+	move.l	a1,$14(a0)
+	divu	d1,d0
+	rts
+mydiv	move.l	#$7fff,d0	; 65535, no remainder.
+	nop
+	rte
+
+This next routine show how to multiplex a vertical blank based protracker
+routine, an interrupt queued blitter list and CIA A keyboard routine.
+(The routines for blitting, keyboard reading and protracker are not
+given themselves, they're just examples!)
+All the while the main processor task is waiting for the mouse button.
+
+	include	hardware/intbits.i
+	include	hardware/dmabits.i
+main	jsr	pt_init
+	jsr	keyb_init
+	jsr	setup_blitterlist
+
+	move.l	vbrbase(pc),a0
+	lea	lev2(pc),a1
+	move.l	a1,$68(a0)
+	lea	lev3(pc),a1
+	move.l	a1,$6C(a0)	; install interrupt routines
+
+	lea	_custom,a5
+	move.w	#INTF_SETCLR!INTF_INTEN!INTF_BLIT!INTF_VERTB!INTF_PORTS,intena(a5)
+	move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_BLITTER!DMAF_RASTER!DMAF_COPPER,dmacon(a5)
+
+	jsr	otherinitstuff	; like the screen
+waitmb	btst.b	#6,$bfe001
+	bne.s	waitmb
+
+	move.w	#INTF_BLIT!INTF_VERTB!INTF_PORTS,intena(a5)
+	move.w	#DMAF_BLITTER!DMAF_RASTER!DMAF_COPPER,dmacon(a5)
+
+	jsr	pt_end
+	jsr	blit_stop
+	jsr	keyb_stop
+
+	rts
+
+lev2	jsr	keyb_routine
+	move.w	#INTF_PORTS,intreq(a5)
+	nop
+	rte
+
+lev3	move.l	d0,-(sp)
+	move.w	intreqr(a5),d0
+	btst	#INTB_VERTB,d0
+	beq.s	.notvb
+	jsr	pt_play
+	move.w	#INTF_VERTB,intreq(a5)
+	bra.s	.exit
+.notvb	;btst	#INTB_BLIT,d0	; we know inherently that it is a blitter
+	;beq.s	.exit	; interrupt, because only 2 sources cause us
+	jsr	next_blit
+	move.w	#INTF_BLIT,intreq(a5)
+.exit	move.l	(sp)+,d0
+	rte
+
+Finally, to forcefully cause a blitter interrupt
+
+	move.w	#INTF_SETCLR!INTF_BLIT,intreq(a5)
+
+
+7. End
+~~~~~~
+This document could do with more information about the alledged extra
+exceptions handled by the 68040 and others. I'm hoping this document will
+become the definitive resource for exception programming, like asp68k is
+for optimising. Contact Kyzer/CSG at 49 Fairview Road, AB22 8ZG, Scotland.
+Or phone (01224) 704117 in the UK after 7pm GMT. I am available for Amiga
+programming. EMail available in September. CSG's first AGA demo available
+eventually! Titled "Interesting Perversion". Also being written is the
+ultimate in Tetris experiences - Tertis v1.0!
+
+Modules on Aminet by Kyzer/CSG:
+mods/rock/Magnetism.lha
+mods/techn/DivineFruits.lha
+mods/chip/KyzerzTchyppaz.lha
+mods/pro/RentShopBoys.lha
+mods/voice/sad-trod_remix.lha
+
+I also upload a lot of other stuff, not by me. Examples include Owlz/CSG's
+saddistic collection. Give it a try!
+
+mods/voice/sad-song.lha
+mods/voice/sad-tech.lha
+mods/voice/sad-frog.lha
+mods/voice/sad-trod.lha
+
+|)/-\ |<¥z/-\ | A12002MbChip+0MbFast/NoHD/1DiskDrive/FuckedPRT | Swap/Code |
+Awesome coder | 600MbWarezClxn/250disk/LhA/DiskSpare/CøølIndex | Mus/Arcs/ |
+#1 CSG memba! | 49FairviewRoad/AB228ZG/SCOTLAND./(01224)704117 | Demos!!!! |
+

@@ -1,0 +1,76 @@
+
+
+Welcome to the sadness zone...
+
+This program has been converted from an Archimedes program which for some
+sad reason has become the only use for the aforesaid computer at school
+(I suppose they can't do much else anyway).  It is totally pointless, but it
+can be annoyingly addictive.
+
+The program basically pours a particularly frothy liquid over a structure
+you build with the mouse.  Like real water, it will go up a tube if it is
+thin enough (1 pixel wide) and impressive fountains can be made.  There are
+three modes: normal blue water, a mixture of red and blue water and blue
+water followed by red water.
+
+The left mouse button draws a thin line and the right mouse button draws
+thicker.  DEL toggles the delete mode on/off and the right shift button will
+also change it when pressed.  The mouse can be restricted to vertical
+movement by pressing the up/down keys and horizontally by the left/right
+arrow keys.  Other keys are:
+
+Q - Quit (the most important!)
+S - Start water
+R - Reset: remove water from screen, S will restart
+F - Freeze water
+T - Thaw water
+W - Wipe structure (well, wipe screen, but water is redisplayed)
+I - Invert screen (try scribbling thick lines everywhere and pressing this
+     for a bit of variety)
+
+A red dot at the top of the screen marks the place the water springs from
+
+To change the set-up you have to alter labels in source:
+XORIGIN		- X coord of water start position (must be divisible by 8
+		   Range is 8-312
+YORIGIN 	- Y coord of water, range 1-254
+NOOFDROPS	- As many as you like
+STYLE		- Types of water:
+		   0=Normal
+		   1=Red/blue mixture
+		   2=Red/blue seperate
+
+Enjoy - if you can!
+
+THE SOURCE
+~~~~~~~~~~
+First a note on the mouse pointer.  If you have run the program you will
+have seen that when you are drawing the water stops.  This is because
+putting the mouse controller in interrupts is too infrequent for drawing
+unless the mouse moves VERY slowly (gaps appear otherwise).  The solution
+is to move the mouse by interrupts only when moving liquid and when drawing
+to call the routine as often as possible.  This change is not noticeable
+when using the program.
+
+The algorithm (nice word!) for the drop control is more or less copied from
+the Archimedes version, the order is this:
+
+	1. Move down if nothing is obstructing it
+	2. If can't move down, check left and right
+	   - If it is only possible to move in one direction, move that way
+	   - If it could move either way use a bit of randomness to decide
+	     which way to go.
+	3. If it can't move either way, move up if possible (this produces
+	   the froth and makes the water go up capillaries)
+
+The randomness is acheived by using one of the four hardware times, timer A
+of CIA-B.  If the timer is put into continuous mode then it will keep
+counting down from a set number (it doesn't matter what).  The lowest bit
+of this number will be random, or at the very least changes a lot - this bit
+is bit 0 of CIABTALO (CIA-B Timer A LOw).
+
+Each drop is stored individually in the following format:
+DropAddr	LONG	Address of byte in 1st bitplane that drop is in
+DropShift	BYTE	Bit number in that byte the drop is in (7-0)
+DropFlags	BYTE	At the moment only bit 0 is used.  If bit 0=0 the
+			drop is blue, if it=1 the drop is red.

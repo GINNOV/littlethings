@@ -1,0 +1,57 @@
+(17.6.94)
+
+      NOTE: You cannot compile the examples in the 'AMIGA' directory without
+            the Commodore Include files.
+
+      Brief Intructions on how to make one of the examples.
+      -----------------------------------------------------
+
+         If the example you want to make has only one source file then 
+         use the other instructions which follow.
+
+      FROM HCE:
+
+      1) Select 'Load (c/a-source)' from the 'Disk' menu and then 
+         load this document (if you haven`t already).
+         You can then view the instructions from the editor.      
+      2) Select 'Lock?' from the 'Other' menu and then Lock the directory
+         which contains the example.
+      3) Select 'Compiler-options' from the 'Compile' menu.
+      4) Select 'Load Compile List' and load the file with a '.CL' extension.
+      5) Click on the 'Compile' gadget until it shows 'FROM-LIST'.
+      6) Exit the options window.
+      7) Set the 'Outpath' gadget in the 'Assembler-options' window to
+         a path of your choice. (Default is, RAM:)
+      8) Select the 'Compile+Optimize+Assemble' gadget.
+      9) Wait until all files have been compiled.
+     10) Select 'Linker-options' from the 'Link' menu.
+     11) Select 'Load Link List' and load the file with a '.LL' extension.
+     12) Click the 'Link' gadget until it shows 'FROM-LIST'.
+     13) Exit options window.
+     14) Select the 'Link' gadget (under editor window) and wait.
+     15) After testing the example you can delete the object files if not
+         wanted by selecting the 'Cleanup' gadget.
+
+
+     IF ONLY ONE SOURCE FILE TO EXAMPLE:
+
+     1) Write these instructions down.
+     2) Select 'Load. (lock......)' from the 'Disk' menu and then load the
+        source code file for this example.
+     3) Select 'Compiler-options' from the 'Compile' menu.
+     4) Click on the 'Compile' gadget until it shows 'FROM-EDITOR'.
+     5) Exit the options window.
+     6) Set the 'Outpath' gadget in the  'Assembler-options' window to
+        a path of your choice. (Default is, RAM:)
+     7) Select 'Linker-options' from the 'Link' menu.
+     8) Click the 'Link' gadget until it shows 'FROM-ASSEM'.
+     9) Click 'Clear List' to clear the OutName and Link List gadgets.
+    10) Exit options window.
+    11) Select the 'Compile+O+A+Link' gadget and wait.
+
+
+     TO RUN THE EXAMPLE:
+
+     1) Press 'Right-Amiga + K'
+     2) or select the 'Run' gadget.
+

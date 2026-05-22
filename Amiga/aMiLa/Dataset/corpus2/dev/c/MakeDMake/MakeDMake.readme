@@ -1,0 +1,12 @@
+Short:        Creates DMakefiles. V0.22
+Architecture: m68k-amigaos
+Source:       Fred Fish
+
+MakeDMake	An automated DMake file generator.  You give it the names of
+		all the C-files used to produce your executable (except
+		#include'd .c or .h files), and it will automatically scan
+		them to find all dependencies, and produce a ready to use
+		(in many cases) DMakeFile calling DCC with options you will
+		need for normal compilation and linking.  Version 0.22, an
+		update to version 0.19 on disk 810.  Includes source.
+		Author:  Piotr Obminski, from original code by Tim McGrath

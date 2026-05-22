@@ -1,0 +1,24 @@
+Short:        code colored text lines in C
+Author:       mbergmann-sh@web.de (Michael Bergmann)
+Uploader:     Michael Bergmann <mbergmann-sh web de>
+Type:         dev/c
+Version:      1.0
+Requires:     ixemul.library
+Architecture: m68k-amigaos
+Distribution: Aminet
+Kurz:         programmiere farbige Textzeilen in C
+
+ShellColors demonstrates how to set certain text attributes in C.
+
+Tested C-Compilers:
+===================
+SAS/C v6.58
+VBCC v0.9h
+Bebbo's amiga-gcc
+
+USAGE
+=====
+simply include shellattrs.h in your project. Look at
+color.c for a usage example.
+
+Micha B 05/2023

@@ -1,0 +1,118 @@
+
+                          FDConvert Version 1.00
+                              By Tom Bampton
+
+                           © 1996 Eden Software
+
+                                    ---
+
+Introduction
+~~~~~~~~~~~~
+FDConvert is a utility to convert standard FD files to assembler includes.
+There is also a number of options you can use to customize the output a bit.
+All other FD converters i've seen are CLI only with no options at all. So,
+i wrote this one and i hope you like it.
+
+Features
+~~~~~~~~
+
+ o Very quick
+ 
+ o Optionally copies comments from the FD file
+ 
+ o Optionally writes extra info to make the comments make sense with the
+   Commodore FD's
+ 
+ o Optionally writes macros for accessing the library and the library name
+ 
+ o Full Workbench utility
+ 
+ o Small.. only 15K
+ 
+ o Has a nice gui :)
+ 
+ o And probably more i haven't thought of
+ 
+System Requirements
+~~~~~~~~~~~~~~~~~~~
+FDConvert requires Workbench 2.04+ and asl.library in libs. Memory usage
+is minimal and FD's are read a line at a time so even the largest FD should
+convert with no trouble on a 1Mb machine.
+
+Useage
+~~~~~~
+FDConvert can be run from the CLI or the Workbench. Currently, there is no
+CLI interface so the GUI just opens when run from the CLI.
+
+The GUI is split into two parts, Main and Options.
+
+Main
+----
+The two string gadgets are for the filenames, top one is the FD one and the
+bottom one is the filename of the file FDConvert will generate. The two
+GetFile gadgets next to the string gadgets are for selecting files using a
+asl file requester.
+
+Underneath the string gadgets, you'll see a row of button gadgets. They're
+all pretty obvious.
+
+Options
+-------
+This section contains 4 CheckBox gadgets. These are as follows:
+
+  Gadget Name             Does
+  Copy Comments           When ticked, comments will be copied from the FD
+                          file to the generated file
+
+  Copy extra info         This will create some extra comments in the
+                          generated file. They'll inform you of changes
+                          between private and public functions, also bias
+                          changes. This was included so some FD files make
+                          more sense when Copy Comments is ticked.
+  
+  Access Macro            When ticked, FDConvert will make a library access
+                          macro for you.
+
+  Name Macro              When ticked, FDConvert will make a library name
+                          macro for you.
+
+All the options default to off. If you want just a LVO include without any
+trimmings then dont tick any options. The filesize of the generated file
+will normally be considerably smaller when none of the options are ticked
+(this, of course, depends entirely on the FD file you're converting).
+
+Copy Comments can be usefull when using the Commodore FD files as they
+normally tell you the version of the library the LVO's are in.
+
+When using the macro options, you may notice some descrepencies in the
+names. This is NOT a bug. FDConvert works out the name of the library by
+taking the characters between the leading _ and the word Base as the name
+of the library. If someone desides to call their library base 'fubar' then
+the macro functions WONT work.
+
+The underscored letters on some of the gadgets denote a keyboard shortcut.
+
+Distribution
+~~~~~~~~~~~~
+FDConvert is freely redistributable as long as all files remain intact and
+are unchanged. You may not charge anything for FDConvert except a small
+copying fee which can be no more then the cost of 1 blank DSDD floppy disk.
+
+Disclaimer
+~~~~~~~~~~
+This package is provided 'as is' with no warranties of any kind, either
+expressed or implied. You use this software entirely at your own risk.
+
+Bugs (shock horror!)
+~~~~~~~~~~~~~~~~~~~~
+As far as i know, there are no bugs in FDConvert. If you find one, please
+contact me!
+
+Contact
+~~~~~~~
+Email eden@aworld.demon.co.uk with your bug reports and comments.
+
+History
+~~~~~~~
+1.00 : 7/2/96
+   First release.

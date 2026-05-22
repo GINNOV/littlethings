@@ -1,0 +1,481 @@
+;******************************************************************
+;******************************************************************
+;***								***
+;***	8-Way-Tile-Scroller					***
+;***								***
+;***    $VER: 8-Way-Tile-Scroller V1.04 (14.06.93)		***
+;***								***
+;***								***
+;***	Coding: Gonzo, Green Rabbits Inc.  (no scene-group)	***
+;***								***
+;***	Contact me via EMail: hollosi@fm11ap01.tu-graz.ac.at	***
+;***			      (until 1.7.1993)			***
+;***	or via snail mail:  Arno Hollosi			***
+;***			    Oberndorf 313			***
+;***			    A-6322 Kirchbichl			***
+;***			    AUSTRIA				***
+;***								***
+;******************************************************************
+;******************************************************************
+
+
+
+===========
+DISCLAIMER:
+===========
+
+  All rights of this archive are owned by me, Arno Hollosi.
+You are allowed to use and change the provided source, but only
+for your personel purposes.
+Any commercial usage without the written permission of the author
+is prohibited. Using these routines in any commercial product is
+forbidden.
+  Only PD and FreeWare authors are allowed to use these routines
+in their products, if they mention me in the credits.
+
+Copying this archive is allowed, if ALL files are provided and
+were not modified.
+
+YOU USE THIS SOURCE AT YOUR OWN RISK.
+Never will I be liable for any damage caused by using this code;
+direct or indirect.
+
+
+
+=================
+WHAT DO YOU NEED?
+=================
+
+* You should be able to code in assembler.
+  (68000 assembler of course, or what did you think :-)
+
+* You should know what the COPPER and the BLITTER are.
+  And ofcourse how to use them.
+
+* You should own any assembler. No executable provided.
+  The source was written with MasterSeka V1.76 by GEORGE II / BUDDHA.
+  Don't worry. The code doesn't contain any specific SEKA-features.
+  I've tried to assemble it with AsmOne, and it worked, so I don't
+  think, that you'll have any problems with other assemblers.
+  From V1.04 on it could be assembled with MACRO68 too (did cost me
+  about 3 hours of work! Tip: don't use the resident maclibs, or
+  many symbols will be redefind->Error. Start Macro68 with:
+  '1> macro68 8wayscroll.asm exeobj objfile 8wayscroll' ).
+
+
+BTW, my English isn't perfect at all. But I hope, that I didn't make
+to many mistakes :-)
+
+
+======================
+FILES IN THIS ARCHIVE:
+======================
+
+  8wayscroll.asm	the source itself
+  scroll_tiles.raw	graphic-data in RAW-Format
+  scroll_tiles.pic	graphic-data in IFF/ILBM-format
+  8wayscroll.readme	this file
+
+
+
+
+
+=================
+HOW DOES IT WORK?
+=================
+
+  As the name says, the graphic is build of tiles. Usually these
+tiles are 16pixel * 16pixel big. Have a look at the SCROLL_TILES.PIC,
+if you don't understand what I mean.
+
+If you have got a big level with, let's say 1600pixel * 1600pixel
+you would need 1.6 MByte of CHIPMEM.
+If you use the tiles-method, you only have to remember the number
+of each tile, thus following: 100tiles * 100tiles * 2byte/tile = 20 KByte.
+That's really a difference, isn't it ??
+
+An 8-way-tile-scroller is splitted into TWO parts:
+
+  * the hardware-scrolling, via BPLCON1 (softscrolling).
+    Usually the copper will do the work for us.
+
+  * the blitter scrolling. Yep, nothing works without our mighty friend.
+    The blitter blits the 16*16 tiles into our buffer.
+
+To understand how the scrolling works, I will describe the methods for
+vertical and horizontal scrolling seperatly.
+
+Let me define some display-values used to describe the scrolling.
+(The values are the same as in the source).
+
+	visible SCREEN-WIDTH:  288 pixel, or 36 bytes or 18 tiles
+	visible SCREEN-HEIGHT: 192 pixel, or 12 tiles
+
+BTW, if anywhere in the text I'm talking of THE SCREEN, I mean the
+visible area. If I'm talking of THE BUFFER, I mean the complete
+memory (visible and hidden area).
+
+If anywhere in the text you see something like (->run), then
+you should take a look at the source and jump to this label to
+see more.
+
+Tline means line of tiles. A Tline is 16 pixel-lines high.
+Tcolumn means column of tiles. A Tcolumn is 16-pixel wide.
+
+
+
+
+============================================
+THE VERTICAL SCROLLING  (Copper-Wrap-Method)
+============================================
+
+For the vertical scrolling we need 3 extra-tiles.
+This means: buffer_height = screen_height + 3
+Therefor our buffer_height is 15 tiles.
+
+Imagine that we want to scroll down.
+The soft line by line scrolling will be done by the copper.
+This means, the copper must set the BPL-pointers at the beginning
+of the screen to the proper values (->origcopper,off_plane).
+
+During this soft-scrolling we use the blitter to blit a new Tline
+at the bottom of the buffer.
+The blitting is ofcouse done into a hidden area, so that the user
+can't see it. In our case, Tlines 0-11 are visible, Tline 12 gets
+visible line by line (soft-scrolling), and we blit into Tline 13.
+
+Doing this, we are not able to scroll down forever, because we are
+always blitting at the bottom of the screen.
+
+There the copper creeps in.
+Have a look at this diagram:
+
+
+   Phase 0  |  Ph 1 |  Ph 2 |  Ph 3 |  Ph 4 |  Ph 5 |  Ph 6
+------------+-------+-------+-------+-------+-------+---------
+	 <s			 <w	 <w	 <w	 <s
+	A|	x	*G	G|	G|	G|	G|
+	 |	 <s		 <e	 |	 |	 |
+	B|	B|	x	*H	H|	H|	H|
+	 |	 |	 <s		 <e	 |	 |
+	C|	C|	C|	x	*I	I|	I|
+	 |	 |	 |	 <s		 <e	 |
+	D|	D|	D|	D|	x	*J	J|
+	 <e	 |	 |	 |	 <s		 <e
+	*E	E|	E|	E|	E|	x	*K
+		 <e	 |	 |	 |	 <s
+	x	*F	F|	F|	F|	F|	x
+			 <e	 <w	 <w	 <w
+------------+-------+-------+-------+-------+-------+---------
+
+Symbols:	<s .. start of visible area
+		<e .. end of visible area
+		<w .. Copper-wrap; the copper sets the
+		      BPL-pointers to a new value
+
+		A-K .. Tlines
+		x  ... content of this Tline doesn't matter.
+		* .... blitter is blitting into this Tline
+
+		for the diagram following dimensions are given:
+		SCREEN-WIDTH: doesn't matter, SCREEN-HEIGHT: 3 tiles
+
+Did you catch the point ??
+If no, then I'm sorry. Either I'm too silly to explain this, or you
+are too ..... :-)
+
+
+Advantages:
+===========
+
+	* We only need 3 extra Tlines instead of SCREEN-HEIGHT*2.
+	  This safes a lot of CHIPMEM.
+
+	* We only blit ONE Tline per Tline on screen. If you don't
+	  use the copper-wrap-method it wold be blitting TWO Tlines
+	  per Tline on screen.
+
+Disadvantage:
+=============
+
+	* The buffer is splitted into 2 parts. This split can be
+	  (and is the most time) somewhere in the visible area.
+
+	  Have a look at Phase 4. The copper sets new BPL-pointers
+	  at the end of Tline 'F', which is approx. the middle of
+	  the screen.
+	  If you want to blit a BOB into the buffer, which should
+	  appear in the middle of the screen, you would have to
+	  split this BOB into TWO parts. Into an upper half, which
+	  is blitted somewhere into Tline 'F' and a lower half,
+	  which gets blitted somewhere into Tline 'G'.
+
+	Some people think, that this splitting would cost a lot of
+	time, but this isn't true. Try it out yourself.
+	(or use sprites :-)
+
+
+Have a look at:		-> scroll
+			-> copper_scroll, blitter_scroll
+			-> blit_y
+
+For very clever readers only:
+-----------------------------
+You surely have recognized, that this method could be done with only
+TWO extra-Tlines too. But we use THREE Tlines because:
+ * THREE is easier for down AND up scrolling plus
+ * THREE is easier for combination with horizontal scrolling.
+Why ??
+Let me explain:
+  Each phase of the diagram is 4 frames (1/50 sec) long.
+  4 Frames because of:  MaxSpeed of scrolling down: 4 pixel / frame
+			Tline-Height: 16 pixel.
+  If we have got a BUFFER-WIDTH of e.g. 20 tiles, we must blit
+  20 tiles per phase. Ofcourse we don't blit this 20 tiles at once.
+  So we spread our work over 4 frames. Therfor we blit 5 tiles
+  per frame (->blt_taby).
+  If you don't want to go through hell as I did, then you blit this
+  new Tcolumn completly. This means: if the user only goes down 1 pixel
+  you blit the whole Tcolumn within 4 frames (->blt_nx, blt_cnty).
+  But what happens, if the user changes the direction, just after moving
+  down 1 pixel ?? If we had only TWO extra-Tcolumns, we would have to
+  blit all 20 tiles in 1 frame !! This would cost too much time.
+  Therefor we add a THIRD extra-Tcolumn to avoid such problems.
+  Just try to think over it a little bit (tip: use paper&pen :-).
+  Why don't we blit accordingly to the Y-position (e.g. user moves two
+  pixel -> we blit only 3 (20/16*2) tiles. If he moves back two pixel,
+  we only have to restore 3 tiles.) ? Why ??
+  Because you'll run into the biggest problems, if you want to combine
+  it with horizontal scrolling. Believe me, I've tried it.
+
+
+
+=========================
+THE HORIZONTAL SCROLLING:
+=========================
+
+Uff. I've tried to explain this one on comp.sys.amiga.programmers
+and discovered that noone seems to understand me. Sniff, sniff.
+
+So let's try it again.
+
+Your buffer-width must be: 4 extra Tcolumns + SCREEN_WIDTH
+
+Four extra-Tcolumns does seem much to you ??
+Yes and no. If you compare it to conventionally methods it
+is better (other ones need 2*SCREEN_WIDTH).
+If you don't combine it with vertical scrolling you can reduce it
+to THREE extra Tcolumns. If you only scroll in ONE direction you
+only need TWO extra Tcolumns.
+
+OK, let's go on.
+If we are moving right, then we blit into the right border of the
+buffer (invisible). Soft-scrolling will be done with BPLCON1.
+After 16 pixels scrolling you'll have to increase the BPL-Pointers
+by 2. Never reset the pointers.
+
+Swallowed that ??
+Some of you are crying, that if we never reset the pointers, then
+they are going through the whole memory. For every 16 pixel-scroll
+the pointers increase by 2, and therfor if we never reset them, they
+will increase until doomsday.
+
+Yep. This is exactly right. WE CAN'T SCROLL RIGHT FOREVER.
+But it isn't as bad as you think.
+We only need 2 bytes more for every 16 pixel-scroll.
+Only 2 byte ?? Not more ?
+Almost noone realizes why we need only 2 bytes more, and not
+16 pixel*BUFFER_HEIGHT*SCREEN_DEPTH bytes more.
+
+
+So look at the following diagram:
+---------------------------------
+(the diagram only uses 3 extra-words)
+
+Imagine we've got a screen with 2 pixel-lines height and
+3 words width.
+The buffer would look like:
+
+   xABCDx	<-first line
+   xABCDx	<-second line
+
+If we have a look into memory, it should look like:
+
+   xABCDxxABCDx
+    ^     ^
+    |    start of second line
+   start of first line
+
+Diagram:
+--------
+
+phase	|  memory
+--------+------------------------------------------------------
+    0	|  xABCD*xABCD*eeee		;strat phase
+	|   ^  !E ^  !E			;blit column E
+--------+------------------------------------------------------
+    1	|  xABCDE*ABCDE*eee
+        |    ^  !F ^  !F		;blit column F
+--------+------------------------------------------------------
+    2   |  xxBCDEF*BCDEF*ee
+	|     ^  !G ^  !G		;blit column G
+--------+------------------------------------------------------
+    3   |  xxxCDEFG*CDEFG*e
+	|      ^  !H ^  !H		;blit column H
+--------+------------------------------------------------------
+    4   |  xxxxDEFGH*DEFGH*
+	|       ^  !I ^  !I		;blit column I
+--------+------------------------------------------------------
+
+Symbols:	^  ... start of visible area
+		!  ... end of visible area
+		A-I .. columns of level
+		x  ... content of this tile doesn't matter
+		e .... extra words at the end of the buffer
+		       (extra words, NOT extra tiles or extra Tcolumns!!)
+
+Dimensions:	height:		2 lines  (but doesn't really matter)
+		SCREEN-WIDTH:	3 tiles
+		BUFFER-WIDTH:	6 tiles
+
+Either you understand it now, or never!
+If you have a closer look you should realise:
+  * For every 16 pixel we need one more EXTRA-WORD.
+  * It doesn't matter how much lines (Tlines) we have got.
+Try to understand it. think it over and over again.
+
+Did you get the point ??
+GREAT!
+So if you want to scroll e.g. 20 screens to the right, then you
+should allocate 800 bytes more for your buffer.
+(800 bytes = 20 screens * 320 pixel/screen).
+That isn't much memory, is it ?
+
+Advantages:
+===========
+
+	* You only have to blit 1 Tcolumn per 16 pixel move,
+	  instead of 2 TColumns with other methods.
+
+	* This method can be easy combined with the vertical scrolling.
+
+	* Need less memory than any other method.
+
+Disadvantages:
+==============
+
+	* You can't scroll right/left forever.
+	  This doesn't really matter. Even if you scroll
+	  100 screens (never seen such a game) you only need
+	  4000 bytes more memory.
+
+Have a closer look at:		->scroll
+				->copper_scroll
+				->blitter_scroll
+				->blit_x
+
+
+
+=================
+ABOUT THE SOURCE:
+=================
+
+
+First we allocate memory for our purposes (->run).
+Following memory is needed:
+	* LEVEL_ADR:	Buffer for level area  (number for each tile)
+	* PLNE_ADR:	Buffer for our BUFFER (screen-area visible/invisible)
+	* COPPER_ADR:	Buffer for our copperlist
+
+After this we load the default view (NULL), which is very important for
+AGA-Computers, otherwise the display would be trashed.
+Then the system gets killed and we ->init_all.
+Then we do our important stuff ->main.
+After returning ->delete_all and free memory, wake system from ist
+deep sleep.
+
+->Init_Level	initializes the LEVEL-buffer.
+->Init_Copper	builds the copperlist (->origcopper)
+->Print_Lev	prints the LEVEL_DATA the first time, because scrolling
+		doesn't fill the visible area at the beginning.
+
+->Get_Joy	reads out the joystick and computes the new
+		X & Y values.
+
+->Scroll	just calls copper_scroll and blitter_scroll
+->Copper_Scroll	makes the work for soft-scrolling, which is to set
+		BPLCON1, and the BPL-Pointers to proper values.
+
+->Blitter_Scroll
+	This is the biggie.
+	The first part (until ->blt_done) sets the blt_tab's
+	and the blt_cnt's (see vertical scrolling, part: clever readers)
+	Look at the macros ->bltxmc,->bltymc. They do the main-work.
+
+	After this, blit_x and blit_y are called.
+
+	The ->blt_fldy - table is for the blit_x routine.
+	blit_x must know, which level-Tline must be blitted into the
+	according buffer-Tline.
+
+	blit_x, blit_y do the whole work.
+	Just have a closer look at them.
+
+->Main		waits for every new frame
+		calls ->get_joy and ->scroll
+		computes time in rasterlines, used by ->scroll.
+		(On an A4000 ->scroll needs max. 10 rasterlines,
+		 with an A500 I think it shouldn't use more than
+		 30 rasterlines;  REALLY FAST, DON'T YOU THINK SO? ).
+		You can get the used time, after running 8wayscroll.asm
+		if you look at <big> with your assembler.
+
+
+BTW, the code is not optimized for speed.
+There are a lot mulu's and some divu's, that were not avoided
+with using tables. And so on...
+
+
+On screen you'll see a dark blue moving up/down as you move
+up/down with the joystick. At this border the COPPER-WRAP is performed.
+The grey-color at the bottom shows you how long it takes the computer
+to scroll the screen.
+So enjoy !!  (DON'T FORGET THE FIRE-BUTTON)
+
+
+
+
+=======
+HISTORY
+=======
+
+V1.04 (14.06.93)
+  Corrected bug in 'initcopper'. (MOVE #0,COPJMP1, instead of CLR COPJMP1,
+  because CLR does a READ and WRITE cycle on an 68000. Therefor it crashed
+  on Amigas with a CPU lower than '020).
+  Removed last spaces, that annoyed MACRO68.
+  Waitblitter-Macro was changed from 'btst #14' to 'btst #6'.
+
+V1.00 (10.06,93)
+  First public release
+
+
+
+
+=======
+THE END
+=======
+
+
+I hope, that you find this archive usefull, and that I didn't make
+to many mistakes.
+If you like this source, or if you discover a bug, then don't be
+to shy to contact me. I love to get mail.
+If you use it in your own production (nothing commercial, remember)
+then I would appreciate it very much, if you would send me a copy
+of your game.
+Look at the addresses in the header.
+
+
+CHEERS
+Arno

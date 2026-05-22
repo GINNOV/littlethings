@@ -1,0 +1,456 @@
+
+
+                             C2Local V1.0
+                             ============
+
+                      © 1994-95 by Matthias Meixner
+
+
+
+                              Copyright
+                              ---------
+
+C2Local, CComp, CTMerge, StrMerge (C) Copyright 1994-95 by Matthias Meixner.
+All rights reserved.
+
+For legal issues read the readme file.
+
+
+
+                           Background
+                           ----------
+From version 2.1 of the Amiga operatingsystem on, it is possible to generate
+programs that support more than one language. One language is compiled into
+the program and the other languages are stored in the so called catalogs.
+The operatingsystem determines the language on runtime and loads the corres-
+ponding catalog. If you want to write a program that supports catalogs, you
+must replace all strings by a localizeable version, since the strings are not
+the same in all languages. The goal of C2Local was to allow the programmer to
+continue programming in the old way, using normal strings, since such source-
+code is more readable, and then automatically generate a localized version of
+this program. C2Local allows this for nearly all C and C++ sourcecodes. Pro-
+grams like CatComp generate sourcecode to access localized strings, but the
+programmer must adapt his program by hand. "Localize" is able to patch source-
+codes to support locale.library, but it leaves many cases, which cannot be
+automatically localized, e.g. the static initialization of structures. Now
+C2Local can even localize most of these cases. There is only one exception:
+the static initialization of char-arrays.
+
+e.g.
+
+   char a[]="test";
+
+cannot be localized automatically, but the more important case
+
+   char *a="test"
+
+can be localized using C2Local. This latter case is far more often used, e.g.
+it is required for static initialization of menus. Therefore one can localize
+menus or gadgets without any problems using C2Local.
+
+
+
+
+                        System requirements
+                        -------------------
+The programs require at least OS2.0 (V37) as operatingsystem. The programs
+that were localized by c2local do not need another version of the operating-
+system than the original, but localization only takes effect from OS2.1 on.
+
+
+
+
+                              Programs
+                              --------
+This package contains the following programs:
+
+   C2Local:    program for generating localized sourcecodes
+   CComp:      program for generating catalogs
+   CTMerge:    programm for mixing of catalog-translation files
+   StrMerge:   programm for mixing of stringfiles
+
+They can be found in the "Bin" directory.
+
+
+
+                             Installation
+                             ------------
+Just copy the C2Local-directory to the preferred location and add the
+Bin-directory to the searchpath. If you want to copy the programs to a
+different location, make sure that you do not forget to copy also the
+catalogs-directory to the same path, or the programs will not find their
+translated strings of the localization and will use the builtin english
+strings. This is also the case, if you are working with a version of the
+operating system, that does not support localization yet.
+
+
+
+
+                                Usage
+                                -----
+
+C2Local Scan/S,Patch/S,Compile/S,Pattern/M,Ign=Ignore/K,Lab=Labels/K,
+        Cat=Catalog/K,Lang=Language/K,Ver=Version/N,Name/A/K
+
+Name serves as a basename, all needed filenames are derived from this name.
+
+
+C2Local has three differend modes: Scan, Patch and Compile.
+
+'Scan' checks all files, whose name match the given pattern for strings and
+writes a stringfile <Name>_locale.str, which contains all strings of the
+program except those given in the file selected via the IGNORE option.
+The lines of this file have the following format:
+
+<Label> <String> [<Size>]
+
+                  ^^^^^^  This field is not generated in this stage, but it
+                          can be added using an editor. It is used in the
+                          compile pass to select a new maximum stringlength.
+
+'+' at the end of a string indicates that the string is continuated in the
+next line, e.g.:
+
+label "a string "+
+      "that needs two lines"
+
+You can use IGNORE to supply a file, which contains strings that should not
+be localized. The file given by LABEL is used to assign specific labels to
+the strings. If no labels are given C2Local generates its own labels. These
+two files have the same structure mentioned above, although you can ommit
+the field <Label> in the file for IGNORE.
+Typically you would use 'Scan' to get a file containig all strings and edit
+this one to generate the ignore-file or the label-file. In the rare case
+that the selection of strings, that shall not be localized, is not exact
+enough, you may exclude them by writing '/*-' directly after the string
+without whitespace. E.g.:
+
+       char *a="will not be localized"/*-*/;
+
+Comments in stringfiles begin with '//' and mark the rest of the line as
+comment.
+
+
+'Patch' does the same as 'Scan' in the first step, but additionally
+generates the localized sourcecode in the directory 'Localized'.
+IMPORTANT: You cannot edit <Name>_locale.str to get new labels or ignore
+certain strings, since it is overwritten by 'Patch', you have to use the
+IGNORE and LABEL options instead. If you already have a file that contains
+the strings, that shall not be localized, then you can ommit the 'Scan'
+pass.
+
+'Compile' generates from <Name>_locale.str, the following files:
+
+   Localized/<Name>_locale.cd   catalog-description file
+   Localized/<Name>_locale.ct   empty catalog-translation file
+   Localized/<Name>_locale.h    headerfile, which is #included in every
+                                patched sourcecodefile.
+   Localized/<Name>_locale.c    C-sourcecode which contains all builtin
+                                strings and the function InitStrings();
+
+'Compile' requires the following options:
+   Catalog: this is the name of the catalog that shall be used.
+   Version: versionnumber of the catalog (IMPORTANT the versionnumber must
+            match exactly the one in the catalog, if it is not 0)
+            (default: 0)
+   Language: builtin language (default: english)
+
+These values get hardcoded into InitStrings()!
+The function InitStrings() must be called within your program as early as
+possible (i.e. in main() ) to activate the localized strings. You can do
+this in the original sourcecode using the following method:
+
+
+#ifdef __LOCALIZED
+   InitStrings();
+#endif
+
+
+__LOCALIZED is defined in Localized/<Name>_locale.h. Since this file is
+included in the patched files, InitStrings() is automatically activated in
+the localized version of your program.
+
+
+
+                           Localizing
+                           ----------
+Requirement for a successful localization of your program is, that you do
+not write to strings, because equal strings are only stored once in the
+program. If you would write to one string, then you would modify all
+instances of this string. If your program compiles using StringMerge of the
+SAS C-Compiler, then you should not get problems with this.
+BTW, that is exactly how the strings are localized by InitStrings(), they get
+overwritten by their translated versions.
+
+Typically you would proceed in the following way to localize your program:
+
+First you would want to get a list of all strings in your program:
+
+C2Local SCAN #?.c #?.h NAME test
+
+Then you delete all strings from test_locale.str, that should be localized
+and rename this file, that now contains all strings to be ignored by the
+localization, to ignore.str. Since you normally would not want to read the
+generated sourcecode, you need not worry about the labels.
+
+Now you can generate the localized sourcecode:
+
+C2Local PATCH #?.c #?.h NAME test IGNORE ignore.str
+
+If you get the message, that the catalog-translation file was not newly
+generated, then delete or rename this file and repeat this step. This was
+implemented this way, that you do not accidently overwrite a translation of
+your program.
+
+C2Local COMPILE NAME test VERSION 1 CATALOG test.catalog
+
+generates the last missing files, and after this you can recompile your
+program:
+
+cd Localized
+sc #?.c link  // e.g. for SAS-C
+
+If you get errors, then there is one of the above mentioned exceptions in
+your program.
+
+Now comes the part, that requires the most work: translate the strings :)
+First you should copy the catalog-translation file <Name>_locale.ct, to keep
+it for other translations, and fill in the translated strings in the copied
+file. The comments that begin with ';' contain the strings of the builtin
+language. One entry in this file looks like that:
+
+Label
+deutscher String
+; english string
+;
+
+IMPORTANT: You must not modify the comments, if you want to use CTMerge.
+
+You can use the standard C escape-sequences plus some additional ones in
+the translation file (see table).
+
+'\' at the end of a line indicates, that the string is continued in the next
+line.
+
+Hint: Some editors remove trailing whitespaces from the end of the line. Then
+      you can add '\' to the end of the line after the whitespace and add an
+      empty line in the next line.
+
+Comments begin whith ';' in the first column.
+
+When you fill in your translations, you should not forget to add the language
+of this translation after '## language' and the versionnumber after
+'## version'. The versionnumber must be given as a standard versionstring.
+
+
+From this file you can generate the catalog-file:
+
+CComp <name>_locale.cd translation.ct Catalogs/deutsch/test.catalog
+
+If you get the errormessage, that a translated string is too long, then you
+can change the maximum length that is reserved for a string by editing the
+stringfile. Just add the required maximum length after the string
+
+msg_0 "Teststring" 20
+
+Default is twice the length of the builtin string. You can also use this to
+reduce the amount of reserved memory used for long strings, but remember,
+that translated strings can be significant longer.
+
+If you have modified the stringfile in this case, then you need to repeat all
+steps from 'C2Local COMPILE' on (including 'Compile'). Don't forget that you
+have to recompile your program after this to activate the modifications.
+
+IMPORTANT: The name of the catalog must be the same as that, that you have
+used in the 'Compile' pass of C2Local.
+
+Instead of CComp you can also use CatComp, FlexCat, KitCat, MakeCat or one
+of the other catalog-tools.
+
+That's it!
+
+
+If your Program does not use other languages even, if you selected it with
+preferences:
+
+- is the catalog in the right directory ?
+- is the name of the catalog correct ?
+- is the version of the catalog correct ?
+- did you fill in the correct language in the .ct-file?
+- is there an old version of the catalog in memory (-> "avail flush") ?
+- did you call InitStrings() ?
+
+
+
+                          How things work
+                          ---------------
+C2Local searches for all strings within the sourcecode and replaces them by
+a label which is a reference to this string. Every string is stored in
+a char-array. Therefore strings cannot be longer than a specific length and
+the other translations are limited by this length. The advantage of this is
+that they can be overwritten on startup and they do not change their
+address. InitStrings searches for the catalog and replaces the strings by
+simply overwriting them with their localized versions.
+
+Since strings are stored in arrays, you cannot initialize other arrays with
+them. These are the above mentioned restrictions. However there are some
+workarounds for these cases. If the array is read-only, then it can be
+replaced by a pointer:
+
+   char a[]="test";                -> char *a="test";
+
+For local arrays:
+
+   test() {                        ->  test() {
+      char a[10]="String";         ->     char a[10];
+   }                               ->     strcpy(a,"String");
+                                   ->  }
+
+Global arrays must be initialized by hand.
+
+   char a[10]="String";            ->  char a[10];
+                                   ->
+   main() {                        ->  main() {
+   }                               ->     strcpy(a,"String");
+                                   ->  }
+
+
+For static local arrays there are two ways:
+1) Make it a global variable
+
+2)
+   test() {                        ->  test() {
+      static char a[10]="String";  ->     char a[10];
+   }                               ->     static int init=0;
+                                   ->     if(!init) {
+                                   ->        strcpy(a,"String");
+                                   ->        init=1;
+                                   ->     }
+                                   ->  }
+
+
+
+                  The other programs in the package
+                  ---------------------------------
+
+CComp Catalogdescription/A,Translation/A,Catalog/A
+
+CComp generates catalog-files. It needs three parameters: A catalogdescrip-
+tion-file (.cd), the catalogtranslation (.ct) and the name of the catalog
+that should be generated.
+
+
+CTMerge From/A,Merge/A/M,To/K/A
+
+CTMerge takes the catalogtranslation-file 'From', replaces the translations
+with the ones found in the 'Merge' files and writes the result to 'To'.
+'From' and 'To' must be different files! CTMerge uses the comment-lines to
+find already known translations. Labelnames are not changed. This is very
+useful, if you modify existing programs, since you need not translate the
+texts, that have not changed. You cannot directly use the old translation-
+file if you have used labels, that were automatically generated, since they
+may have changed. That's why you must use CTMerge for this purpose, if you
+do not want to retranslate all texts.
+
+
+StrMerge From/A,Merge/A/M,To/K/A
+
+StrMerge merges size-fields in stringfiles. One can assign new max-lengths
+for strings by editing the file <name>_locale.str before calling c2local
+with the 'Compile' option. But this file is destroyed by every call to
+c2local with 'Scan' or 'Patch'. With StrMerge you can copy the edited file
+and merge it to the file <name>_locale.str after every 'Scan'- or 'Patch'-
+run. 'From' and 'To' may be the same filename.
+
+
+
+                 Additional information for the file-formats
+                 -------------------------------------------
+Suffix:  Description:
+
+.cd      'Catalog Description'-file
+
+         It contains the number, ID and the original text and the length-
+         restrictions for the translations.
+
+         E.g.         Text1_STR (22/7/80)
+                      Hallo Leute, ein deutscher String !
+
+         string no. 22, minimal length: 7, maximal length: 80
+         These values are optional, (//) would be valid.
+         Comment-lines begin with ';'.
+         '\' means that the line is continued in the next line.
+         Escape-codes: see table
+
+.ct:     'Catalog Translation'-file
+
+         It contains the translation in a specific language
+
+         E.g.:     Text1_STR
+                   C'est français !
+                   ; Hallo Leute, ein deutscher String !
+
+         The header contains some additional informations:
+
+         ## version $VER: name.catalog ver.rev (10.09.92)
+         ## language français
+
+         Comment-lines begin with ';'.
+         You should not delete comment-lines, since CTMerge requires them to
+         identify translations.
+         '\' means that the line is continued in the next line.
+         Escape-codes: see table
+
+
+.str     Stringfile
+
+         It contains the strings:
+
+         <Label> <String> [<Size>]
+
+         E.g.:     msg_0 "String" 10
+
+         Strings may span over several lines:
+
+         E.G.:     msg_0 "Str"+
+                         "ing"
+
+         <Label> is optional for ignore-files or for files that are merged
+         to another file using StrMerge. <Size> is always optional,
+         (default: 2*length of the string).
+
+
+
+                        Table of escape-codes
+                        ---------------------
+
+  \a    Beep            (ASCII 7)
+  \b    Backspace       (ASCII 8)
+  \c    Control Sequence Introducer CSI (ASCII 155)
+  \e    ESC             (ASCII 27)
+  \f    Formfeed        (ASCII 12)
+  \n    Newline         (ASCII 10)
+  \r    Carriage Return (ASCII 13)
+  \t    Tab             (ASCII 9)
+  \v    Vertical Tab    (ASCII 11)
+  \xNN  ASCII-Code NN (Hexadezimal)
+  \NNN  ASCII-Code NNN (Oktal)
+  \\    Backslash (\)
+
+'\' at the end of the line indicates that the line should be continued in
+the next line.
+
+
+
+                              The Author
+                              ----------
+Send questions or bug-reports to:
+
+   Matthias Meixner
+   Sandberg 13
+   36145 Schwarzbach
+   Germay
+
+or EMail:
+   meixner@rbg.informatik.th-darmstadt.de
+

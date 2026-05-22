@@ -1,0 +1,215 @@
+
+                      Table of Contents
+
+   Copyright                    - Copyright information
+   Disclaimer                   - Legal Information
+   Distribution                 - Copying conditions
+   Support/Updates              - How to get updates and support
+   Author                       - How to reach the author
+
+   Description                  - What is the PhoneLog standard?
+   Implementation		- How to implement PhoneLog support
+
+   History                      - Revision history of the PhoneLog standard
+
+
+
+This software is copyright 1996 by Kai Hofmann. All rights reserved!
+
+- Permission is hereby granted, without written agreement and without license,
+  to USE this software and its documentation for any purpose, provided that
+  the above copyright notice and the following paragraph appear in all copies
+  of this software.
+
+  You "must" send me a full version of your product at no cost including free
+  updates!
+
+
+DISCLAIMER
+
+THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE
+LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDER AND/OR OTHER
+PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE
+QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE
+DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY
+COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY REDISTRIBUTE THE PROGRAM AS
+PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL,
+INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE
+THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED
+INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE
+PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER
+PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+THE AUTHOR HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,
+ENHANCEMENTS, OR MODIFICATIONS.
+
+
+
+Permission is hereby granted, without written agreement and without license or
+royalty fees, to copy and distribute this software and its documentation for
+any purpose, provided that the above copyright notice appear in all copies
+of this software.
+
+
+
+Support/Updates
+---------------
+
+- Updates will be available via Aminet®
+- Support will be available via the authors email address
+
+
+
+Author
+------
+
+Kai Hofmann
+Arberger Heerstraße 92
+28307 Bremen
+Germany
+
+Phone: (+49)-(0)421/480780
+EMail: i07m@zfn.uni-bremen.de
+       i07m@informatik.uni-bremen.de
+IRC  : PowerStat@#AmigaGer
+WWW  : http://www.informatik.uni-bremen.de/~i07m
+
+
+
+Description
+-----------
+
+It seems that there was no standard for log files that are used
+to log modem connections etc. As you can see programs like PhoneBill (by
+Raymond Penners) support very much different log file formats.
+So I decided to create a standard based on SGML (Standard Generalized Markup
+Language) which is defined in ISO8879 and on ISO8601 which defines date/time
+representations.
+
+SGML uses the ASCII characterset as base, so it can be used on every
+platform. On the other hand SGML gives the log file a real structure
+that is defined by the DTD (Document Type Definition).
+
+The advantage of using SGML is that these log files have a structure, so they
+can be easily interchanged with other SGML applications like databases,
+wordprocessors or calculation software.
+
+By supporting this standard with your software you give the user the
+possibility to create or evaluate log files with software from
+different platforms; and you get a standard that is easily extended
+should a need occur.
+
+To make this standard widely used, I provide a generator and a parser for
+this log file standard for free!
+
+
+Implementation
+--------------
+
+The format of PhoneLog log files is defined by the DTD that you can find in
+the SGML directory - there you will also find an example of a log file
+(PhoneLog.sgm) and a EBNF.
+
+For those of you who are not familar with SGML I will try to explain the
+basics:
+
+In the DTD the elements for a document type will be defined. Normally all
+elements have a start-tag and an end-tag.
+
+<!ELEMENT PHONELOG	- O ((ENTRY | MARK)*)>
+
+descibes the element <PHONELOG> that consist of zero or more elements of the
+type <ENTRY>...</ENTRY> or <MARK>...</MARK>.
+
+Each element can consist of other subelements or it is a final element that
+contains character data (CDATA).
+If an element has subelements, these will be defined as follows:
+
+() : Expressions within a group are treated as a unit for other operations.
+,  : All of the connected elements must occur in the same sequence as defined.
+|  : One and only one of the connected elements must occur.
+*  : Unit can occur 0 or more times.
+?  : Unit can occur 0 or 1 time.
+
+Optional some elements may have their own attributes:
+
+<!ATTLIST PHONELOG	version		NUMBER	1
+			revision	NUMBER	2>
+
+<PHONELOG> means that the defined default version/revision will be used.
+<PHONELOG version=1 revision=5> defines version/revision 1.5.
+
+
+A log-file entry can be freely formated:
+
+<ENTRY><HOST><NUMBER>2187550</NUMBER></HOST><START><DATE>1995-02-15</DATE><TIME>16:30:00</TIME></START><END><TIME>17:45:10</TIME></END></ENTRY>
+
+
+<ENTRY>
+<HOST><NUMBER>2187550</NUMBER></HOST>
+<START><DATE>1995-02-15</DATE><TIME>16:30:00</TIME></START>
+<END><TIME>17:45:10</TIME></END>
+</ENTRY>
+
+
+<ENTRY>
+<HOST>
+<NUMBER>
+2187550
+</NUMBER>
+</HOST>
+<START>
+<DATE>
+1995-02-15
+</DATE>
+<TIME>
+16:30:00
+</TIME>
+</START>
+<END>
+<TIME>
+17:45:10
+</TIME>
+</END>
+</ENTRY>
+
+
+But this formating is preferred:
+
+<ENTRY>
+  <HOST>
+    <NUMBER>2187550</NUMBER>
+  </HOST>
+  <START>
+    <DATE>1995-02-15</DATE>
+    <TIME>16:30:00</TIME>
+  </START>
+  <END>
+    <TIME>17:45:10</TIME>
+  </END>
+</ENTRY>
+
+
+The format for date/time is taken from ISO8601 and has the following form:
+
+Time  : hh:mm:ss
+Date  : yyyy-mm-dd
+Period: hhHmmMssS
+
+
+Hopefully this is enought information for you to understand the format.
+For questions please feel free to send email.
+
+
+
+History
+-------
+
+08.03.1996 : V1.0 -	First release on Aminet
+15.03.1996 : v1.1 -	Second Aminet release (bug fixes)
+07.05.1996 : V1.2 -	Third Aminet release (support for busy and
+                        unanswered calls + documentation)

@@ -1,0 +1,24 @@
+Short:        OpenGL cube demo from O'Reilly Net
+Author:       Chris Halsall (chalsall@chalsall.com)
+Uploader:     polluks sdf lonestar org (Stefan Haubenthal)
+Type:         dev/src
+Version:      1.0
+Requires:     StormMesa libraries, Warp3D or Wazp3D library, 68020+
+Architecture: m68k-amigaos >= 3.0.0; ppc-morphos
+
+DESCRIPTION 
+O'Reilly Net OpenGL cube demo . Author C.Halsall
+Written by Chris Halsall (chalsall@chalsall.com) for the
+O'Reilly Network on Linux.com (oreilly.linux.com).
+May 2000.
+Released into the Public Domain; do with it as you wish.
+We would like to hear about interesting uses.
+Coded to the groovy tunes of Yello: Pocket Universe.
+
+LICENSE 
+Public Domain.
+
+INSTALLATION 
+Install StormMesa libraries
+Install Warp3D or Wazp3D library
+copy oreilly-cube where you want
