@@ -5,12 +5,19 @@ import AppKit
 
 struct AmigaPlaygroundActions {
     let assemble: () -> Void
+    let fixCompileErrors: () -> Void
+    let openPromptLibrary: () -> Void
+    let saveCode: () -> Void
+    let indentCode: () -> Void
     let runDefaultEmulator: () -> Void
     let validateVAmiga: () -> Void
     let runWebEmulator: () -> Void
     let exportADF: () -> Void
+    let newChat: () -> Void
     let clearEditor: () -> Void
     let canRun: Bool
+    let canChat: Bool
+    let canFixCompileErrors: Bool
 }
 
 private struct AmigaPlaygroundActionsKey: FocusedValueKey {
@@ -41,10 +48,37 @@ struct AmigaPlaygroundCommands: Commands {
                 .disabled(!actions.canRun)
                 .keyboardShortcut("r", modifiers: .command)
 
+                Button("Fix Compile Errors with Assistant") {
+                    actions.fixCompileErrors()
+                }
+                .disabled(!actions.canFixCompileErrors)
+                .keyboardShortcut("f", modifiers: [.command, .option])
+
+                Button("Prompt Library") {
+                    actions.openPromptLibrary()
+                }
+                .keyboardShortcut("l", modifiers: [.command, .option])
+
+                Button("Save Code...") {
+                    actions.saveCode()
+                }
+                .keyboardShortcut("s", modifiers: .command)
+
+                Button("Indent Code") {
+                    actions.indentCode()
+                }
+                .keyboardShortcut("i", modifiers: [.command, .option])
+
                 Button("Export Bootable ADF...") {
                     actions.exportADF()
                 }
                 .disabled(!actions.canRun)
+
+                Button("New Chat") {
+                    actions.newChat()
+                }
+                .disabled(!actions.canChat)
+                .keyboardShortcut("n", modifiers: [.command, .shift])
 
                 Button("Clear Editor") {
                     actions.clearEditor()
@@ -77,8 +111,17 @@ struct AmigaPlaygroundCommands: Commands {
     }
 }
 
+enum OutputTab: String, CaseIterable, Identifiable {
+    case console = "Console"
+    case thinking = "Thinking Process"
+    case emulator = "Web Emulator"
+    
+    var id: String { self.rawValue }
+}
+
 struct ContentView: View {
     @StateObject private var llm = OllamaService.shared
+    @Environment(\.openWindow) private var openWindow
 
     enum BuildStatus {
         case idle
@@ -258,7 +301,9 @@ CopperList:
     @State private var isExportingADF: Bool = false
     @State private var buildStatus: BuildStatus = .idle
     @State private var adfTrigger: Int = 0
-    @State private var isShowingWebEmulator: Bool = false
+    @State private var activeOutputTab: OutputTab = .console
+    @State private var didCopyConsole: Bool = false
+    @State private var lastSavedCodeURL: URL?
 
     private var selectedBackend: EmulatorBackend {
         EmulatorBackend(rawValue: emulatorBackend) ?? .fsUAE
@@ -278,10 +323,33 @@ CopperList:
         )
     }
 
+    private var llmConnectionTint: Color {
+        switch llm.connectionStatus {
+        case .connected:
+            return .green
+        case .disconnected:
+            return .red
+        case .checking:
+            return .orange
+        case .unchecked:
+            return .gray
+        }
+    }
+
     // Chat Panel State
     @StateObject private var assistantChat = AssistantChatSession()
     @State private var currentMessage: String = ""
     @State private var copiedPromptMessageID: UUID?
+    @State private var currentChatTask: URLSessionDataTask?
+
+    private var canFixCompileErrors: Bool {
+        buildStatus == .failure &&
+            !isCompiling &&
+            !isExportingADF &&
+            !assistantChat.isGenerating &&
+            !codeText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            !outputConsole.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
 
     // Examples Database
     static let examples: [String: String] = [
@@ -431,12 +499,19 @@ SineWave:
     private var playgroundActions: AmigaPlaygroundActions {
         AmigaPlaygroundActions(
             assemble: runCompilation,
+            fixCompileErrors: fixCompileErrorsWithAssistant,
+            openPromptLibrary: openPromptLibrary,
+            saveCode: saveCode,
+            indentCode: indentCode,
             runDefaultEmulator: runInEmulator,
             validateVAmiga: validateInVAmiga,
             runWebEmulator: runInWebEmulator,
             exportADF: exportToADF,
+            newChat: startNewChat,
             clearEditor: clearEditor,
-            canRun: !isCompiling && !isExportingADF
+            canRun: !isCompiling && !isExportingADF,
+            canChat: !assistantChat.isGenerating,
+            canFixCompileErrors: canFixCompileErrors
         )
     }
 
@@ -457,6 +532,47 @@ SineWave:
                         .buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("assembleButton")
                         .help("Assemble the current source")
+
+                        Button(action: fixCompileErrorsWithAssistant) {
+                            HStack {
+                                Image(systemName: "wand.and.stars")
+                                Text("Fix")
+                            }
+                        }
+                        .disabled(!canFixCompileErrors)
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("fixCompileErrorsButton")
+                        .help("Ask the assistant to fix the current VASM errors")
+
+                        Button(action: openPromptLibrary) {
+                            HStack {
+                                Image(systemName: "text.quote")
+                                Text("Prompts")
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("promptLibraryButton")
+                        .help("Open the prompt library")
+
+                        Button(action: saveCode) {
+                            HStack {
+                                Image(systemName: "square.and.arrow.down")
+                                Text("Save")
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("saveCodeButton")
+                        .help("Save the current source code")
+
+                        Button(action: indentCode) {
+                            HStack {
+                                Image(systemName: "text.alignleft")
+                                Text("Indent")
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("indentCodeButton")
+                        .help("Indent assembly or C source for vasm")
 
                         Button(action: runInEmulator) {
                             HStack {
@@ -506,6 +622,15 @@ SineWave:
                         .help("Clear editor")
                         .accessibilityLabel("Clear editor")
                         .accessibilityIdentifier("clearEditorButton")
+
+                        Button(action: startNewChat) {
+                            Image(systemName: "plus.message")
+                        }
+                        .disabled(assistantChat.isGenerating)
+                        .buttonStyle(.bordered)
+                        .help("Start a new chat")
+                        .accessibilityLabel("Start a new chat")
+                        .accessibilityIdentifier("newChatButton")
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -522,10 +647,17 @@ SineWave:
                             Text("Assistant")
                                 .font(.headline)
                                 .foregroundStyle(.primary)
-                            Text(llm.provider.connectionStatusLabel)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .accessibilityIdentifier("assistantConnectionStatusLabel")
+                            HStack(spacing: 5) {
+                                Circle()
+                                    .fill(llmConnectionTint)
+                                    .frame(width: 8, height: 8)
+                                    .accessibilityHidden(true)
+
+                                Text(llm.connectionStatusLabel)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .accessibilityIdentifier("assistantConnectionStatusLabel")
+                            }
                         }
 
                         Spacer()
@@ -535,7 +667,7 @@ SineWave:
                             .accessibilityHidden(true)
                     }
                     .padding(.horizontal, 12)
-                    .padding(.vertical, 10)
+                    .frame(height: 52)
                     .background(Color(nsColor: .controlBackgroundColor))
 
                     ScrollViewReader { proxy in
@@ -662,12 +794,12 @@ SineWave:
                             .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.orange.opacity(0.35), lineWidth: 1))
                             .disabled(assistantChat.isGenerating)
 
-                        Button(action: sendMessage) {
-                            Text("Send")
+                        Button(action: assistantChat.isGenerating ? stopMessageGeneration : sendMessage) {
+                            Text(assistantChat.isGenerating ? "Stop" : "Send")
                         }
-                        .disabled(assistantChat.isGenerating)
                         .buttonStyle(.borderedProminent)
                         .controlSize(.regular)
+                        .tint(assistantChat.isGenerating ? .red : .accentColor)
                         .accessibilityIdentifier("sendMessageButton")
                     }
                     .padding(10)
@@ -679,49 +811,104 @@ SineWave:
                 // RIGHT: Split Code Editor + VASM Console output
                 VSplitView {
                     // UPPER: Retro Custom Assembly Code Editor
-                    HStack(alignment: .top, spacing: 0) {
-                        // Custom Synchronized Line Numbers column
-                        VStack(alignment: .trailing, spacing: 4) {
-                            ForEach(1...max(codeText.components(separatedBy: "\n").count, 1), id: \.self) { line in
-                                Text("\(line)")
-                                    .font(.system(.body, design: .monospaced))
-                                    .foregroundColor(.gray)
-                                    .frame(height: 18)
-                            }
+                    VStack(spacing: 0) {
+                        HStack(spacing: 12) {
+                            Label(selectedBackendName, systemImage: "display")
+                            Divider()
+                                .frame(height: 12)
+                            Text("Chip \(emulatorChipRam)")
+                            Text("Fast \(emulatorFastRam)")
+                            Text(emulatorCpu)
+                            Spacer()
                         }
-                        .padding(.leading, 6)
-                        .padding(.trailing, 10)
-                        .padding(.vertical, 8)
-                        .background(Color(red: 0.05, green: 0.12, blue: 0.25))
-                        .frame(maxHeight: .infinity, alignment: .top)
-                        .clipped()
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .padding(.horizontal, 10)
+                        .frame(height: 52)
+                        .background(Color(nsColor: .controlBackgroundColor))
+                        .accessibilityIdentifier("hardwareStatusLabel")
 
-                        // Text Editor with Deep Amiga Blue theme
-                        TextEditor(text: $codeText)
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundColor(.white)
-                            .padding(.vertical, 4)
-                            .scrollContentBackground(.hidden)
-                            .background(Color(red: 0.0, green: 0.18, blue: 0.35)) // Deep Classic Blue
-                            .cornerRadius(4)
-                            .accessibilityIdentifier("assemblyEditor")
+                        HStack(alignment: .top, spacing: 0) {
+                            // Custom Synchronized Line Numbers column
+                            VStack(alignment: .trailing, spacing: 4) {
+                                ForEach(1...max(codeText.components(separatedBy: "\n").count, 1), id: \.self) { line in
+                                    Text("\(line)")
+                                        .font(.system(.body, design: .monospaced))
+                                        .foregroundColor(.gray)
+                                        .frame(height: 18)
+                                }
+                            }
+                            .padding(.leading, 6)
+                            .padding(.trailing, 10)
+                            .padding(.vertical, 8)
+                            .background(Color(red: 0.05, green: 0.12, blue: 0.25))
+                            .frame(maxHeight: .infinity, alignment: .top)
+                            .clipped()
+
+                            // Text Editor with Deep Amiga Blue theme
+                            TextEditor(text: $codeText)
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.white)
+                                .padding(.vertical, 4)
+                                .scrollContentBackground(.hidden)
+                                .background(Color(red: 0.0, green: 0.18, blue: 0.35)) // Deep Classic Blue
+                                .cornerRadius(4)
+                                .accessibilityIdentifier("assemblyEditor")
+                        }
+                        .clipped()
                     }
                     .frame(minHeight: 250, maxHeight: .infinity, alignment: .top)
                     .clipped()
 
-                    // LOWER: Dual-mode VASM Console or WebEmulatorView
+                    // LOWER: Multi-mode VASM Console, Thinking Process, or WebEmulatorView
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(spacing: 12) {
-                            Picker("Output", selection: $isShowingWebEmulator) {
-                                Label("Console", systemImage: "terminal.fill").tag(false)
-                                Label("Web Emulator", systemImage: "safari.fill").tag(true)
+                            Picker("Output", selection: $activeOutputTab) {
+                                Label("Console", systemImage: "terminal.fill").tag(OutputTab.console)
+                                Label("Thinking Process", systemImage: "brain").tag(OutputTab.thinking)
+                                Label("Web Emulator", systemImage: "safari.fill").tag(OutputTab.emulator)
                             }
                             .pickerStyle(.segmented)
                             .labelsHidden()
-                            .frame(width: 260)
+                            .frame(width: 380)
                             .accessibilityIdentifier("outputPanePicker")
 
                             Spacer()
+
+                            if activeOutputTab == .console {
+                                Button {
+                                    fixCompileErrorsWithAssistant()
+                                } label: {
+                                    Image(systemName: "wand.and.stars")
+                                }
+                                .buttonStyle(.borderless)
+                                .help("Fix compile errors with assistant")
+                                .disabled(!canFixCompileErrors)
+                                .accessibilityIdentifier("fixConsoleErrorsButton")
+                                .accessibilityLabel("Fix compile errors with assistant")
+
+                                Button {
+                                    copyConsoleToClipboard()
+                                } label: {
+                                    Image(systemName: didCopyConsole ? "checkmark" : "doc.on.doc")
+                                }
+                                .buttonStyle(.borderless)
+                                .help("Copy console output")
+                                .disabled(outputConsole.isEmpty)
+                                .accessibilityIdentifier("copyConsoleButton")
+                                .accessibilityLabel("Copy console output to clipboard")
+
+                                Button {
+                                    clearConsole()
+                                } label: {
+                                    Image(systemName: "trash")
+                                }
+                                .buttonStyle(.borderless)
+                                .help("Clear console")
+                                .accessibilityIdentifier("clearConsoleButton")
+                                .accessibilityLabel("Clear console")
+                            }
 
                             HStack(spacing: 6) {
                                 Circle()
@@ -740,7 +927,8 @@ SineWave:
                         .padding(.vertical, 6)
                         .background(Color(nsColor: .controlBackgroundColor))
 
-                        if !isShowingWebEmulator {
+                        switch activeOutputTab {
+                        case .console:
                             ScrollView {
                                 Text(outputConsole)
                                     .font(.system(.body, design: .monospaced))
@@ -749,7 +937,24 @@ SineWave:
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .background(Color.black)
-                        } else {
+                        case .thinking:
+                            ScrollViewReader { scrollViewProxy in
+                                ScrollView {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text(assistantChat.currentThinking.isEmpty ? "No active thinking process recorded." : assistantChat.currentThinking)
+                                            .font(.system(.body, design: .monospaced))
+                                            .foregroundColor(.orange)
+                                            .padding(10)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .id("thinkingText")
+                                    }
+                                }
+                                .background(Color(red: 0.0, green: 0.1, blue: 0.2))
+                                .onChange(of: assistantChat.currentThinking) {
+                                    scrollViewProxy.scrollTo("thinkingText", anchor: .bottom)
+                                }
+                            }
+                        case .emulator:
                             WebEmulatorView(adfTrigger: $adfTrigger, adfPath: "/tmp/amiga_playground_temp.adf")
                                 .background(Color.black)
                         }
@@ -760,29 +965,24 @@ SineWave:
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            HStack(spacing: 10) {
-                Label(selectedBackendName, systemImage: "display")
-                Divider()
-                    .frame(height: 12)
-                Text("Chip \(emulatorChipRam)")
-                Text("Fast \(emulatorFastRam)")
-                Text(emulatorCpu)
-                Spacer()
-                Label(llm.provider.connectionStatusLabel, systemImage: "sparkles")
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 5)
-            .frame(height: 28)
-            .background(Color(nsColor: .windowBackgroundColor))
-            .accessibilityIdentifier("hardwareStatusLabel")
         }
         .frame(minWidth: 760, minHeight: 650)
         .background(Color.black)
         .accessibilityIdentifier("mainWindowContent")
         .focusedSceneValue(\.amigaPlaygroundActions, playgroundActions)
+        .onAppear {
+            llm.refreshConnectionStatus()
+        }
+        .onChange(of: llm.provider) {
+            llm.refreshConnectionStatus()
+        }
+        .onChange(of: llm.customUrl) {
+            llm.refreshConnectionStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .pastePromptIntoAssistant)) { notification in
+            guard let prompt = notification.userInfo?["prompt"] as? String else { return }
+            currentMessage = prompt
+        }
     }
 
     // Assemble the code using VASM Process helper
@@ -794,6 +994,7 @@ SineWave:
 
         isCompiling = true
         buildStatus = .running
+        activeOutputTab = .console
         outputConsole = "Assembling code using vasmm68k_mot...\n"
 
         CompilerService.shared.compile(assemblyCode: codeText) { success, output in
@@ -813,6 +1014,32 @@ SineWave:
         outputConsole = "Loaded '\(key)' example assembly source code."
     }
 
+    private func startNewChat() {
+        if assistantChat.isGenerating {
+            stopMessageGeneration()
+        }
+        assistantChat.reset()
+        currentMessage = ""
+        outputConsole = "Started a new assistant chat."
+    }
+
+    private func indentCode() {
+        codeText = AssemblySourceFormatter.indentedSource(from: codeText)
+        outputConsole = "Indented editor source."
+    }
+
+    private func openPromptLibrary() {
+        openWindow(id: "prompt-library")
+    }
+
+    private func fixCompileErrorsWithAssistant() {
+        guard canFixCompileErrors else { return }
+
+        activeOutputTab = .thinking
+        let repairPrompt = compileRepairPrompt(source: codeText, compilerOutput: outputConsole)
+        submitAssistantPrompt(repairPrompt, clearComposer: false)
+    }
+
     private func runInEmulator() {
         runNativeEmulator(
             backend: selectedBackend,
@@ -825,7 +1052,7 @@ SineWave:
     private func validateInVAmiga() {
         isCompiling = true
         buildStatus = .running
-        isShowingWebEmulator = false
+        activeOutputTab = .console
         outputConsole = "Validating code by building a bootable ADF and collecting vAmiga debug evidence...\n"
 
         let tempADFPath = "/tmp/amiga_playground_temp.adf"
@@ -872,7 +1099,7 @@ SineWave:
     private func runNativeEmulator(backend: EmulatorBackend, label: String, openingMessage: String) {
         isCompiling = true
         buildStatus = .running
-        isShowingWebEmulator = false
+        activeOutputTab = .console
         outputConsole = openingMessage
 
         let tempADFPath = "/tmp/amiga_playground_temp.adf"
@@ -941,7 +1168,7 @@ SineWave:
     private func runInWebEmulator() {
         isCompiling = true
         buildStatus = .running
-        isShowingWebEmulator = true
+        activeOutputTab = .console
         outputConsole = "Assembling code and packaging bootable ADF for Web Emulator...\n"
 
         let tempADFPath = "/tmp/amiga_playground_temp.adf"
@@ -960,31 +1187,89 @@ SineWave:
 
     // Interfacing with local LLM APIs
     private func sendMessage() {
-        guard let request = assistantChat.submit(currentMessage) else { return }
+        submitAssistantPrompt(currentMessage, clearComposer: true)
+    }
 
-        currentMessage = ""
+    private func submitAssistantPrompt(_ rawPrompt: String, clearComposer: Bool) {
+        guard let request = assistantChat.submit(rawPrompt) else { return }
+        let submittedPrompt = rawPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        OllamaService.shared.streamChat(
+        if clearComposer {
+            currentMessage = ""
+        }
+
+        currentChatTask = OllamaService.shared.streamChat(
             messages: request.messages,
-            onChunk: { chunk in
-                assistantChat.appendChunk(chunk)
+            onContentChunk: { chunk in
+                llm.markConnected()
+                assistantChat.appendContentChunk(chunk)
             },
-            onCompletion: { fullResponse in
+            onReasoningChunk: { chunk in
+                llm.markConnected()
+                if activeOutputTab != .thinking {
+                    activeOutputTab = .thinking
+                }
+                assistantChat.appendReasoningChunk(chunk)
+            },
+            onCompletion: { contentResponse, reasoningResponse in
+                currentChatTask = nil
+                llm.markConnected()
                 let completion = assistantChat.complete(
-                    fullResponse: fullResponse,
-                    streamedResponse: assistantChat.currentGeneration
+                    fullResponse: contentResponse,
+                    streamedResponse: assistantChat.currentGeneration,
+                    reasoningResponse: reasoningResponse
                 )
                 if let injectedCode = completion.injectedCode {
-                    codeText = injectedCode
+                    injectGeneratedCode(
+                        injectedCode,
+                        prompt: submittedPrompt,
+                        consoleMessage: completion.consoleMessage ?? "Injected code from Amiga Assistant."
+                    )
                 }
-                if let consoleMessage = completion.consoleMessage {
+                if completion.injectedCode == nil, let consoleMessage = completion.consoleMessage {
                     outputConsole = consoleMessage
                 }
             },
             onError: { error in
+                currentChatTask = nil
+                let nsError = error as NSError
+                if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
+                    return
+                }
+
+                llm.markDisconnected(error)
                 assistantChat.fail(error)
             }
         )
+    }
+
+    private func compileRepairPrompt(source: String, compilerOutput: String) -> String {
+        """
+        Fix the current Amiga Motorola 68000 source so it compiles with vasmm68k_mot using Motorola syntax.
+
+        Requirements:
+        - Return one complete corrected source file in a single fenced code block.
+        - Fix only the compiler errors and the minimum directly related syntax needed for VASM.
+        - Preserve the program behavior and labels unless a change is required to compile.
+        - Add an inline comment on every amended code line so it is obvious what changed. Use this format for assembly: `; amended: <short reason>`. Use this format for C: `/* amended: <short reason> */`.
+        - Do not include prose outside the code block.
+
+        VASM output:
+        ```text
+        \(compilerOutput)
+        ```
+
+        Current editor source:
+        ```asm
+        \(source)
+        ```
+        """
+    }
+
+    private func stopMessageGeneration() {
+        currentChatTask?.cancel()
+        currentChatTask = nil
+        assistantChat.cancel()
     }
 
     private func copyPromptToClipboard(_ prompt: String, messageID: UUID) {
@@ -999,21 +1284,158 @@ SineWave:
         }
     }
 
+    private func copyConsoleToClipboard() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(outputConsole, forType: .string)
+        didCopyConsole = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            didCopyConsole = false
+        }
+    }
+
+    private func clearConsole() {
+        outputConsole = ""
+        didCopyConsole = false
+    }
+
     // Simple helper to isolate block between markdown fences and overwrite the editor
     private func injectCodeBlock(from responseText: String) {
+        let prompt = assistantChat.promptPrecedingAssistantMessage(responseText) ?? "Manual assistant code injection"
         if let range = responseText.range(of: "```[a-zA-Z0-9]*\n", options: .regularExpression) {
             let codeStart = responseText.index(range.upperBound, offsetBy: 0)
             if let endRange = responseText[codeStart...].range(of: "```") {
                 let codeContent = responseText[codeStart..<endRange.lowerBound]
-                self.codeText = String(codeContent).trimmingCharacters(in: .whitespacesAndNewlines)
-                self.outputConsole = "Injected code block from Amiga Assistant."
+                injectGeneratedCode(
+                    AssemblySourceFormatter.vasmReadySource(
+                        from: String(codeContent).trimmingCharacters(in: .whitespacesAndNewlines)
+                    ),
+                    prompt: prompt,
+                    consoleMessage: "Injected code block from Amiga Assistant."
+                )
                 return
             }
         }
 
         // Fallback if no code fences are found
-        self.codeText = responseText
-        self.outputConsole = "Injected full assistant text block."
+        injectGeneratedCode(
+            AssemblySourceFormatter.vasmReadySource(from: responseText),
+            prompt: prompt,
+            consoleMessage: "Injected full assistant text block."
+        )
+    }
+
+    private func injectGeneratedCode(_ source: String, prompt: String, consoleMessage: String) {
+        guard confirmReplacingEditorIfNeeded() else {
+            outputConsole = "Code injection cancelled. Existing editor content was kept."
+            return
+        }
+
+        let proposedFileName = proposedSourceFileName(for: source)
+        codeText = sourceWithInjectionHeader(source, proposedFileName: proposedFileName, prompt: prompt)
+        playCodeInjectedSound()
+        outputConsole = "\(consoleMessage)\nProposed file name: \(proposedFileName)"
+    }
+
+    private func confirmReplacingEditorIfNeeded() -> Bool {
+        guard !codeText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return true }
+
+        let alert = NSAlert()
+        alert.messageText = "Replace editor contents?"
+        alert.informativeText = "The editor already contains code. Injecting new code will replace it."
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "Replace")
+        alert.addButton(withTitle: "Cancel")
+        return alert.runModal() == .alertFirstButtonReturn
+    }
+
+    private func sourceWithInjectionHeader(_ source: String, proposedFileName: String, prompt: String) -> String {
+        let user = NSFullUserName().isEmpty ? NSUserName() : NSFullUserName()
+        let timestamp = Self.injectionDateFormatter.string(from: Date())
+
+        if proposedFileName.hasSuffix(".c") {
+            return """
+            /*
+             User: \(user)
+             Date: \(timestamp)
+             Proposed file name: \(proposedFileName)
+             Prompt:
+            \(prompt.split(separator: "\n", omittingEmptySubsequences: false).map { " \(String($0))" }.joined(separator: "\n"))
+             */
+
+            \(source)
+            """
+        }
+
+        let promptLines = prompt
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map { ";   \(String($0))" }
+            .joined(separator: "\n")
+
+        return """
+        ; ==========================================================
+        ; User: \(user)
+        ; Date: \(timestamp)
+        ; Proposed file name: \(proposedFileName)
+        ; Prompt:
+        \(promptLines)
+        ; ==========================================================
+
+        \(source)
+        """
+    }
+
+    private func proposedSourceFileName(for source: String) -> String {
+        AssemblySourceFormatter.looksLikeC(source) ? "assistant_generated.c" : "assistant_generated.s"
+    }
+
+    private func playCodeInjectedSound() {
+        if let saddle = NSSound(named: NSSound.Name("Saddle")) {
+            saddle.play()
+        } else {
+            NSSound(named: NSSound.Name("Tink"))?.play()
+        }
+    }
+
+    private static let injectionDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .medium
+        return formatter
+    }()
+
+    private func saveCode() {
+        if let lastSavedCodeURL {
+            writeCode(to: lastSavedCodeURL)
+            return
+        }
+
+        saveCodeAs()
+    }
+
+    private func saveCodeAs() {
+        let savePanel = NSSavePanel()
+        savePanel.allowedContentTypes = ["s", "asm", "c"]
+            .compactMap { UTType(filenameExtension: $0) } + [.plainText]
+        savePanel.nameFieldStringValue = proposedSourceFileName(for: codeText)
+        savePanel.title = "Save Source Code"
+        savePanel.message = "Choose where to save the current editor source."
+
+        savePanel.begin { response in
+            if response == .OK, let targetURL = savePanel.url {
+                self.lastSavedCodeURL = targetURL
+                self.writeCode(to: targetURL)
+            }
+        }
+    }
+
+    private func writeCode(to url: URL) {
+        do {
+            try codeText.write(to: url, atomically: true, encoding: .utf8)
+            outputConsole = "Saved source code to:\n\(url.path)"
+        } catch {
+            outputConsole = "Failed to save source code:\n\(error.localizedDescription)"
+        }
     }
 
     // ADF Generation Helpers
@@ -1034,6 +1456,7 @@ SineWave:
     private func generateADF(at url: URL) {
         self.isExportingADF = true
         self.buildStatus = .running
+        self.activeOutputTab = .console
         self.outputConsole = "Generating bootable ADF disk image at:\n\(url.path)...\n"
 
         CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: url.path) { success, resultMessage in
@@ -1079,6 +1502,20 @@ struct SettingsView: View {
         formatter.maximum = 65535
         formatter.allowsFloats = false
         return formatter
+    }
+
+    private var contextWindowFormatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.minimum = 1
+        formatter.allowsFloats = false
+        return formatter
+    }
+
+    private var contextWindowSliderValue: Binding<Double> {
+        Binding(
+            get: { Double(llm.contextWindow) },
+            set: { llm.contextWindow = Int($0.rounded()) }
+        )
     }
 
     private var selectedRomDisplayName: String {
@@ -1142,7 +1579,7 @@ struct SettingsView: View {
                 .accessibilityIdentifier("settingsVAmigaTab")
         }
         .padding(20)
-        .frame(width: 680, height: 520)
+        .frame(width: 680, height: 620)
         .onAppear {
             self.availableRoms = EmulatorService.shared.getAvailableRoms()
             if !selectedRomFilename.isEmpty && !availableRoms.contains(where: { $0.relativePath == selectedRomFilename }) {
@@ -1173,26 +1610,55 @@ struct SettingsView: View {
 
     private var aiSettings: some View {
         Form {
-            Picker("Provider", selection: $llm.provider) {
-                ForEach(OllamaService.Provider.allCases) { provider in
-                    Text(provider.rawValue).tag(provider)
+            Section("Connection") {
+                Picker("Provider", selection: $llm.provider) {
+                    ForEach(OllamaService.Provider.allCases) { provider in
+                        Text(provider.rawValue).tag(provider)
+                    }
                 }
+
+                TextField("Model name", text: $llm.modelName)
+                    .textFieldStyle(.roundedBorder)
+
+                TextField("Custom API URL", text: $llm.customUrl)
+                    .textFieldStyle(.roundedBorder)
+
+                Text("Active endpoint: \(llm.apiUrl)")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("activeEndpointLabel")
+
+                Text("Request model: \(llm.requestModelName)")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
             }
 
-            TextField("Model name", text: $llm.modelName)
-                .textFieldStyle(.roundedBorder)
+            Section("Instruction") {
+                VStack(alignment: .leading, spacing: 8) {
+                    TextField("Context window", value: $llm.contextWindow, formatter: contextWindowFormatter)
+                        .textFieldStyle(.roundedBorder)
+                        .accessibilityIdentifier("assistantContextWindowField")
 
-            TextField("Custom API URL", text: $llm.customUrl)
-                .textFieldStyle(.roundedBorder)
+                    HStack(spacing: 10) {
+                        Slider(value: contextWindowSliderValue, in: 1024...32768, step: 512)
+                            .accessibilityIdentifier("assistantContextWindowSlider")
 
-            Text("Active endpoint: \(llm.apiUrl)")
-                .font(.caption.monospaced())
-                .foregroundStyle(.secondary)
-                .accessibilityIdentifier("activeEndpointLabel")
+                        Text("\(llm.contextWindow)")
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                            .frame(width: 52, alignment: .trailing)
+                    }
+                }
 
-            Text("Request model: \(llm.requestModelName)")
-                .font(.caption.monospaced())
-                .foregroundStyle(.secondary)
+                TextEditor(text: $llm.systemPrompt)
+                    .font(.body.monospaced())
+                    .frame(minHeight: 120)
+                    .accessibilityIdentifier("assistantSystemPromptEditor")
+
+                Text("System prompt is sent as a system message before the chat history.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .padding()
@@ -1444,7 +1910,7 @@ private extension View {
     }
 }
 
-struct ChatTextInput: NSViewRepresentable {
+struct ChatTextInput: View {
     let placeholder: String
     @Binding var text: String
     let onCommit: () -> Void
@@ -1462,58 +1928,104 @@ struct ChatTextInput: NSViewRepresentable {
         self.accessibilityIdentifier = accessibilityIdentifier
     }
 
-    func makeNSView(context: Context) -> NSTextField {
-        let field = NSTextField()
-        field.delegate = context.coordinator
-        field.isBordered = false
-        field.isBezeled = false
-        field.drawsBackground = false
-        field.textColor = .white
-        field.placeholderAttributedString = NSAttributedString(
-            string: placeholder,
-            attributes: [.foregroundColor: NSColor.secondaryLabelColor]
-        )
-        field.font = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .regular)
-        field.focusRingType = .none
-        field.cell?.sendsActionOnEndEditing = false
-        field.target = context.coordinator
-        field.action = #selector(Coordinator.commit)
-        field.setAccessibilityIdentifier(accessibilityIdentifier)
-        field.setAccessibilityLabel(placeholder)
-        return field
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            if text.isEmpty {
+                Text(placeholder)
+                    .foregroundStyle(.white.opacity(0.68))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 7)
+                    .allowsHitTesting(false)
+            }
+
+            CommandSubmittingTextView(
+                text: $text,
+                onCommandReturn: onCommit,
+                accessibilityIdentifier: accessibilityIdentifier
+            )
+            .accessibilityLabel(placeholder)
+        }
+        .frame(height: 72)
+    }
+}
+
+struct CommandSubmittingTextView: NSViewRepresentable {
+    @Binding var text: String
+    let onCommandReturn: () -> Void
+    let accessibilityIdentifier: String?
+
+    func makeNSView(context: Context) -> NSScrollView {
+        let scrollView = NSScrollView()
+        scrollView.drawsBackground = false
+        scrollView.borderType = .noBorder
+        scrollView.hasVerticalScroller = true
+        scrollView.autohidesScrollers = true
+
+        let textView = SubmitOnCommandReturnTextView()
+
+        textView.delegate = context.coordinator
+        textView.onCommandReturn = onCommandReturn
+        textView.string = text
+        textView.drawsBackground = false
+        textView.textColor = .white
+        textView.insertionPointColor = .white
+        textView.font = .systemFont(ofSize: NSFont.systemFontSize)
+        textView.isRichText = false
+        textView.isAutomaticQuoteSubstitutionEnabled = false
+        textView.isAutomaticDashSubstitutionEnabled = false
+        textView.isAutomaticTextReplacementEnabled = false
+        textView.textContainerInset = NSSize(width: 4, height: 4)
+        textView.minSize = NSSize(width: 0, height: 0)
+        textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        textView.isVerticallyResizable = true
+        textView.isHorizontallyResizable = false
+        textView.autoresizingMask = [.width]
+        textView.textContainer?.containerSize = NSSize(width: scrollView.contentSize.width, height: CGFloat.greatestFiniteMagnitude)
+        textView.textContainer?.widthTracksTextView = true
+        textView.setAccessibilityIdentifier(accessibilityIdentifier)
+        scrollView.documentView = textView
+
+        return scrollView
     }
 
-    func updateNSView(_ field: NSTextField, context: Context) {
-        if field.stringValue != text {
-            field.stringValue = text
+    func updateNSView(_ scrollView: NSScrollView, context: Context) {
+        guard let textView = scrollView.documentView as? SubmitOnCommandReturnTextView else { return }
+        textView.onCommandReturn = onCommandReturn
+        textView.setAccessibilityIdentifier(accessibilityIdentifier)
+        if textView.string != text {
+            textView.string = text
         }
-        field.textColor = .white
-        field.setAccessibilityIdentifier(accessibilityIdentifier)
-        field.setAccessibilityLabel(placeholder)
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text, onCommit: onCommit)
+        Coordinator(text: $text)
     }
 
-    final class Coordinator: NSObject, NSTextFieldDelegate {
+    final class Coordinator: NSObject, NSTextViewDelegate {
         @Binding var text: String
-        let onCommit: () -> Void
 
-        init(text: Binding<String>, onCommit: @escaping () -> Void) {
+        init(text: Binding<String>) {
             _text = text
-            self.onCommit = onCommit
         }
 
-        func controlTextDidChange(_ notification: Notification) {
-            guard let field = notification.object as? NSTextField else { return }
-            text = field.stringValue
+        func textDidChange(_ notification: Notification) {
+            guard let textView = notification.object as? NSTextView else { return }
+            text = textView.string
+        }
+    }
+}
+
+final class SubmitOnCommandReturnTextView: NSTextView {
+    var onCommandReturn: (() -> Void)?
+
+    override func keyDown(with event: NSEvent) {
+        if event.modifierFlags.contains(.command),
+           event.charactersIgnoringModifiers == "\r" {
+            onCommandReturn?()
+            return
         }
 
-        @objc func commit(_ sender: NSTextField) {
-            text = sender.stringValue
-            onCommit()
-        }
+        super.keyDown(with: event)
     }
 }
 

@@ -3,6 +3,21 @@ import Combine
 
 class OllamaService: ObservableObject {
     static let shared = OllamaService()
+
+    enum PreferenceKey {
+        static let contextWindow = "assistantContextWindow"
+        static let systemPrompt = "assistantSystemPrompt"
+    }
+
+    static let defaultSystemPrompt = """
+You are AntigravityAmiga, an elite Amiga 68000 Motorola assembly programmer. Write highly optimized, clean, and 100% compilable Motorola 68k assembly code.
+
+CRITICAL DIRECTIVES:
+- DO NOT leak C-style preprocessor directives (#define, #include, #ifdef) into assembly code.
+- DO NOT use C-style comments (// or /* */). All assembly comments MUST start with a semicolon (;).
+- Use VASM-compatible include statements (e.g., 'include "exec/types.i"') instead of C header includes like "amiga.h".
+- Ensure all directives (SECTION, MOVE, DC, DS, RTS) have leading spaces so they are not treated as compiler labels.
+"""
     
     enum Provider: String, CaseIterable, Identifiable {
         case ollama = "Ollama (Port 11434)"
@@ -24,10 +39,37 @@ class OllamaService: ObservableObject {
             }
         }
 
-        var connectionStatusLabel: String {
+        var displayName: String {
             switch self {
-            case .ollama: return "Ollama Connected"
-            case .lmStudio: return "LM Studio/MLX Connected"
+            case .ollama: return "Ollama"
+            case .lmStudio: return "LM Studio"
+            }
+        }
+
+        var healthCheckPath: String {
+            switch self {
+            case .ollama: return "/api/tags"
+            case .lmStudio: return "/v1/models"
+            }
+        }
+    }
+
+    enum ConnectionStatus: Equatable {
+        case unchecked
+        case checking
+        case connected
+        case disconnected(String)
+
+        func label(for provider: Provider) -> String {
+            switch self {
+            case .unchecked:
+                return "\(provider.displayName) Not Checked"
+            case .checking:
+                return "\(provider.displayName) Checking..."
+            case .connected:
+                return "\(provider.displayName) Connected"
+            case .disconnected:
+                return "\(provider.displayName) Not Connected"
             }
         }
     }
@@ -35,7 +77,31 @@ class OllamaService: ObservableObject {
     @Published var provider: Provider = .lmStudio
     @Published var customUrl: String = ""
     @Published var modelName: String = Provider.lmStudio.defaultModelName
+    @Published var contextWindow: Int {
+        didSet {
+            if contextWindow < 1 {
+                contextWindow = 1
+            } else {
+                userDefaults.set(contextWindow, forKey: PreferenceKey.contextWindow)
+            }
+        }
+    }
+    @Published var systemPrompt: String {
+        didSet {
+            userDefaults.set(systemPrompt, forKey: PreferenceKey.systemPrompt)
+        }
+    }
+    @Published private(set) var connectionStatus: ConnectionStatus = .unchecked
     var urlSessionConfiguration: URLSessionConfiguration = .default
+
+    private let userDefaults: UserDefaults
+
+    init(userDefaults: UserDefaults = .standard) {
+        self.userDefaults = userDefaults
+        let storedContextWindow = userDefaults.object(forKey: PreferenceKey.contextWindow) as? Int ?? 4096
+        self.contextWindow = max(1, storedContextWindow)
+        self.systemPrompt = userDefaults.string(forKey: PreferenceKey.systemPrompt) ?? Self.defaultSystemPrompt
+    }
     
     var apiUrl: String {
         if !customUrl.isEmpty { return customUrl }
@@ -54,25 +120,106 @@ class OllamaService: ObservableObject {
 
         return trimmedName
     }
-    
+
+    var connectionStatusLabel: String {
+        connectionStatus.label(for: provider)
+    }
+
+    var sanitizedContextWindow: Int {
+        max(1, contextWindow)
+    }
+
+    func refreshConnectionStatus() {
+        let providerSnapshot = provider
+        let apiUrlSnapshot = apiUrl
+        let configurationSnapshot = urlSessionConfiguration
+
+        guard let url = URL(string: apiUrlSnapshot + providerSnapshot.healthCheckPath) else {
+            connectionStatus = .disconnected("Invalid API URL")
+            return
+        }
+
+        connectionStatus = .checking
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 2.0
+
+        let session = URLSession(configuration: configurationSnapshot)
+        session.dataTask(with: request) { _, response, error in
+            DispatchQueue.main.async {
+                guard self.provider == providerSnapshot, self.apiUrl == apiUrlSnapshot else {
+                    return
+                }
+
+                if let error {
+                    self.connectionStatus = .disconnected(error.localizedDescription)
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    self.connectionStatus = .disconnected("No HTTP response")
+                    return
+                }
+
+                if (200..<300).contains(httpResponse.statusCode) {
+                    self.connectionStatus = .connected
+                } else {
+                    self.connectionStatus = .disconnected("HTTP \(httpResponse.statusCode)")
+                }
+            }
+        }.resume()
+    }
+
+    func markConnected() {
+        connectionStatus = .connected
+    }
+
+    func markDisconnected(_ error: Error) {
+        connectionStatus = .disconnected(error.localizedDescription)
+    }
+
     // For normal chat history
     struct ChatMessage: Identifiable, Codable {
         let id: UUID
         let role: String
         var content: String
+        var reasoning: String?
         
-        init(id: UUID = UUID(), role: String, content: String) {
+        init(id: UUID = UUID(), role: String, content: String, reasoning: String? = nil) {
             self.id = id
             self.role = role
             self.content = content
+            self.reasoning = reasoning
         }
     }
     
-    func streamChat(messages: [ChatMessage], onChunk: @escaping (String) -> Void, onCompletion: @escaping (String) -> Void, onError: @escaping (Error) -> Void) {
+    @discardableResult
+    func streamChat(messages: [ChatMessage], onChunk: @escaping (String) -> Void, onCompletion: @escaping (String) -> Void, onError: @escaping (Error) -> Void) -> URLSessionDataTask? {
+        return streamChat(
+            messages: messages,
+            onContentChunk: onChunk,
+            onReasoningChunk: onChunk,
+            onCompletion: { content, reasoning in
+                let combined = content.isEmpty ? reasoning : content
+                onCompletion(combined)
+            },
+            onError: onError
+        )
+    }
+
+    @discardableResult
+    func streamChat(
+        messages: [ChatMessage],
+        onContentChunk: @escaping (String) -> Void,
+        onReasoningChunk: @escaping (String) -> Void,
+        onCompletion: @escaping (String, String) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> URLSessionDataTask? {
         let endpoint = provider == .ollama ? "\(apiUrl)/api/chat" : "\(apiUrl)/v1/chat/completions"
         guard let url = URL(string: endpoint) else {
             onError(NSError(domain: "OllamaService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid API URL"]))
-            return
+            return nil
         }
         
         var request = URLRequest(url: url)
@@ -82,20 +229,24 @@ class OllamaService: ObservableObject {
         // Format body depending on API spec
         var body: [String: Any] = [:]
         
+        let formattedMessages = requestMessages(from: messages)
+
         if provider == .ollama {
-            let formattedMessages = messages.map { ["role": $0.role, "content": $0.content] }
             body = [
                 "model": requestModelName,
                 "messages": formattedMessages,
-                "stream": true
+                "stream": true,
+                "options": [
+                    "num_ctx": sanitizedContextWindow
+                ]
             ]
         } else {
             // LM Studio (OpenAI Compatible)
-            let formattedMessages = messages.map { ["role": $0.role, "content": $0.content] }
             body = [
                 "model": requestModelName,
                 "messages": formattedMessages,
-                "stream": true
+                "stream": true,
+                "max_tokens": sanitizedContextWindow
             ]
         }
         
@@ -103,30 +254,65 @@ class OllamaService: ObservableObject {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
         } catch {
             onError(error)
-            return
+            return nil
         }
         
-        let session = URLSession(configuration: urlSessionConfiguration, delegate: StreamingDelegate(onChunk: onChunk, onCompletion: onCompletion, onError: onError), delegateQueue: nil)
+        let delegate = StreamingDelegate(
+            onContentChunk: onContentChunk,
+            onReasoningChunk: onReasoningChunk,
+            onCompletion: onCompletion,
+            onError: onError
+        )
+        let session = URLSession(configuration: urlSessionConfiguration, delegate: delegate, delegateQueue: nil)
         let task = session.dataTask(with: request)
         task.resume()
+        return task
+    }
+
+    private func requestMessages(from messages: [ChatMessage]) -> [[String: String]] {
+        var formattedMessages: [[String: String]] = []
+        let trimmedSystemPrompt = systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if !trimmedSystemPrompt.isEmpty {
+            formattedMessages.append(["role": "system", "content": trimmedSystemPrompt])
+        }
+
+        formattedMessages.append(contentsOf: messages.map { ["role": $0.role, "content": $0.content] })
+        return formattedMessages
     }
 }
 
 // Delegate helper to handle event-driven SSE streaming
 class StreamingDelegate: NSObject, URLSessionDataDelegate {
-    let onChunk: (String) -> Void
-    let onCompletion: (String) -> Void
+    let onContentChunk: (String) -> Void
+    let onReasoningChunk: (String) -> Void
+    let onCompletion: (String, String) -> Void
     let onError: (Error) -> Void
     
-    var fullResponse = ""
+    var fullContentResponse = ""
+    var fullReasoningResponse = ""
+    var fullResponse = "" // For backwards compatibility
     private var lineBuffer = ""
     private var didFinish = false
     private var didFail = false
     
-    init(onChunk: @escaping (String) -> Void, onCompletion: @escaping (String) -> Void, onError: @escaping (Error) -> Void) {
-        self.onChunk = onChunk
+    init(onContentChunk: @escaping (String) -> Void, onReasoningChunk: @escaping (String) -> Void, onCompletion: @escaping (String, String) -> Void, onError: @escaping (Error) -> Void) {
+        self.onContentChunk = onContentChunk
+        self.onReasoningChunk = onReasoningChunk
         self.onCompletion = onCompletion
         self.onError = onError
+    }
+    
+    convenience init(onChunk: @escaping (String) -> Void, onCompletion: @escaping (String) -> Void, onError: @escaping (Error) -> Void) {
+        self.init(
+            onContentChunk: onChunk,
+            onReasoningChunk: onChunk,
+            onCompletion: { content, reasoning in
+                let combined = content.isEmpty ? reasoning : content
+                onCompletion(combined)
+            },
+            onError: onError
+        )
     }
     
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
@@ -154,7 +340,7 @@ class StreamingDelegate: NSObject, URLSessionDataDelegate {
             }
             if !didFail {
                 DispatchQueue.main.async {
-                    self.onCompletion(self.fullResponse)
+                    self.onCompletion(self.fullContentResponse, self.fullReasoningResponse)
                 }
             }
         }
@@ -195,30 +381,50 @@ class StreamingDelegate: NSObject, URLSessionDataDelegate {
 
         if let choices = dict["choices"] as? [[String: Any]],
            let first = choices.first {
-            if let delta = first["delta"] as? [String: Any],
-               let content = delta["content"] as? String {
-                appendChunk(content)
-            } else if let message = first["message"] as? [String: Any],
-                      let content = message["content"] as? String {
-                appendChunk(content)
+            if let delta = first["delta"] as? [String: Any] {
+                if let content = delta["content"] as? String {
+                    appendContentChunk(content)
+                } else if let reasoning = delta["reasoning"] as? String {
+                    appendReasoningChunk(reasoning)
+                } else if let reasoningContent = delta["reasoning_content"] as? String {
+                    appendReasoningChunk(reasoningContent)
+                }
+            } else if let message = first["message"] as? [String: Any] {
+                if let content = message["content"] as? String {
+                    appendContentChunk(content)
+                } else if let reasoning = message["reasoning"] as? String {
+                    appendReasoningChunk(reasoning)
+                } else if let reasoningContent = message["reasoning_content"] as? String {
+                    appendReasoningChunk(reasoningContent)
+                }
             } else if let text = first["text"] as? String {
-                appendChunk(text)
+                appendContentChunk(text)
             }
         } else if let message = dict["message"] as? [String: Any],
                   let content = message["content"] as? String {
-            appendChunk(content)
+            appendContentChunk(content)
         } else if let response = dict["response"] as? String {
-            appendChunk(response)
+            appendContentChunk(response)
         } else if let content = dict["content"] as? String {
-            appendChunk(content)
+            appendContentChunk(content)
         }
     }
 
-    private func appendChunk(_ content: String) {
+    private func appendContentChunk(_ content: String) {
         guard !content.isEmpty else { return }
+        fullContentResponse += content
         fullResponse += content
         DispatchQueue.main.async {
-            self.onChunk(content)
+            self.onContentChunk(content)
+        }
+    }
+
+    private func appendReasoningChunk(_ content: String) {
+        guard !content.isEmpty else { return }
+        fullReasoningResponse += content
+        fullResponse += content
+        DispatchQueue.main.async {
+            self.onReasoningChunk(content)
         }
     }
 }
