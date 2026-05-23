@@ -979,6 +979,9 @@ SineWave:
         .onChange(of: llm.customUrl) {
             llm.refreshConnectionStatus()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.willTerminateNotification)) { _ in
+            MLXServerController.shared.stop()
+        }
         .onReceive(NotificationCenter.default.publisher(for: .pastePromptIntoAssistant)) { notification in
             guard let prompt = notification.userInfo?["prompt"] as? String else { return }
             currentMessage = prompt
@@ -1469,6 +1472,7 @@ SineWave:
 
 struct SettingsView: View {
     @StateObject private var llm = OllamaService.shared
+    @StateObject private var mlxServer = MLXServerController.shared
 
     @AppStorage("emulatorModel") private var emulatorModel: String = "A500"
     @AppStorage("emulatorCpu") private var emulatorCpu: String = "68000"
@@ -1516,6 +1520,21 @@ struct SettingsView: View {
             get: { Double(llm.contextWindow) },
             set: { llm.contextWindow = Int($0.rounded()) }
         )
+    }
+
+    private var mlxServerStatusColor: Color {
+        switch mlxServer.status {
+        case .running:
+            return .green
+        case .runningExternally:
+            return .orange
+        case .starting, .stopping:
+            return .yellow
+        case .failed:
+            return .red
+        case .stopped:
+            return .secondary
+        }
     }
 
     private var selectedRomDisplayName: String {
@@ -1633,6 +1652,73 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section("Local MLX Server") {
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(mlxServerStatusColor)
+                        .frame(width: 8, height: 8)
+                        .accessibilityHidden(true)
+
+                    Text(mlxServer.status.label)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("mlxServerStatusLabel")
+                }
+
+                if let detail = mlxServer.status.detail {
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
+                HStack {
+                    Button {
+                        llm.provider = .lmStudio
+                        llm.customUrl = ""
+                        llm.modelName = OllamaService.Provider.lmStudio.defaultModelName
+                        mlxServer.start()
+                    } label: {
+                        Label("Start MLX Server", systemImage: "play.fill")
+                    }
+                    .disabled(!mlxServer.canStart)
+                    .accessibilityIdentifier("startMLXServerButton")
+
+                    Button {
+                        mlxServer.stop()
+                        llm.refreshConnectionStatus()
+                    } label: {
+                        Label("Stop", systemImage: "stop.fill")
+                    }
+                    .disabled(!mlxServer.canStop)
+                    .accessibilityIdentifier("stopMLXServerButton")
+
+                    Button {
+                        mlxServer.refreshStatus()
+                        llm.refreshConnectionStatus()
+                    } label: {
+                        Label("Refresh", systemImage: "arrow.clockwise")
+                    }
+                    .accessibilityIdentifier("refreshMLXServerButton")
+
+                    Button {
+                        NSWorkspace.shared.open(mlxServer.configuration.workingDirectory)
+                    } label: {
+                        Label("Folder", systemImage: "folder")
+                    }
+                    .accessibilityIdentifier("openMLXServerFolderButton")
+                }
+
+                Text("Endpoint: \(mlxServer.endpointDescription)")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+
+                Text("Log: \(mlxServer.logFilePath)")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .truncationMode(.middle)
+            }
+
             Section("Instruction") {
                 VStack(alignment: .leading, spacing: 8) {
                     TextField("Context window", value: $llm.contextWindow, formatter: contextWindowFormatter)
@@ -1663,6 +1749,9 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .padding()
         .accessibilityIdentifier("aiSettingsPane")
+        .onAppear {
+            mlxServer.refreshStatus()
+        }
     }
 
     private var hardwareSettings: some View {

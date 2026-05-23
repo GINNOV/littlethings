@@ -60,11 +60,11 @@ class AmigaPlaygroundTests: XCTestCase {
         XCTAssertFalse(session.isGenerating)
         XCTAssertEqual(session.messages.map(\.role), ["user", "assistant"])
         XCTAssertEqual(result.injectedCode, """
-        SECTION Code,CODE,CHIP
-        CopperList:
-            dc.w $180,$00f
-            dc.w $ffff,$fffe
-        """)
+            SECTION Code,CODE,CHIP
+CopperList:
+    dc.w $180,$00f
+    dc.w $ffff,$fffe
+""")
         XCTAssertEqual(result.consoleMessage, "Injected code block from Amiga Assistant.")
     }
 
@@ -78,7 +78,22 @@ class AmigaPlaygroundTests: XCTestCase {
 
         XCTAssertEqual(session.messages.count, 2)
         XCTAssertEqual(session.messages[1].content, "SECTION Code,CODE,CHIP\nCopperList:\n    dc.w $ffff,$fffe")
-        XCTAssertEqual(result.injectedCode, "SECTION Code,CODE,CHIP\nCopperList:\n    dc.w $ffff,$fffe")
+        XCTAssertEqual(result.injectedCode, "            SECTION Code,CODE,CHIP\nCopperList:\n    dc.w $ffff,$fffe")
+    }
+
+    func testAssistantChatSessionHandlesEmptyContentWithReasoningGracefully() {
+        let session = AssistantChatSession()
+        _ = session.submit("build an animated copper list")
+        session.appendReasoningChunk("Thinking about copper lists...")
+        session.appendReasoningChunk(" Deciding to output later.")
+
+        let result = session.complete(fullResponse: "", streamedResponse: "")
+
+        XCTAssertEqual(session.messages.count, 2)
+        XCTAssertTrue(session.messages[1].content.contains("Thinking process completed, but no clean code"))
+        XCTAssertEqual(session.messages[1].reasoning, "Thinking about copper lists... Deciding to output later.")
+        XCTAssertNil(result.injectedCode)
+        XCTAssertNil(result.consoleMessage)
     }
 
     func testAssistantChatSessionDoesNotInjectConnectionErrorContainingAmigaTokens() {
@@ -111,6 +126,32 @@ class AmigaPlaygroundTests: XCTestCase {
         XCTAssertTrue(session.currentGeneration.isEmpty)
         XCTAssertEqual(session.messages.map(\.role), ["user", "assistant"])
         XCTAssertTrue(session.messages[1].content.contains("Connection Error: Repository Not Found"))
+    }
+
+    func testAssistantChatSessionCancelStopsGenerationAndKeepsPartialResponse() {
+        let session = AssistantChatSession()
+        _ = session.submit("build an animated copper list")
+        session.appendChunk("SECTION Code,CODE,CHIP\n")
+        session.appendChunk("CopperList:")
+
+        session.cancel()
+
+        XCTAssertFalse(session.isGenerating)
+        XCTAssertTrue(session.currentGeneration.isEmpty)
+        XCTAssertEqual(session.messages.map(\.role), ["user", "assistant"])
+        XCTAssertEqual(session.messages[1].content, "SECTION Code,CODE,CHIP\nCopperList:\n\n[Stopped]")
+    }
+
+    func testAssistantChatSessionCancelWithoutPartialResponseAddsStoppedMessage() {
+        let session = AssistantChatSession()
+        _ = session.submit("build an animated copper list")
+
+        session.cancel()
+
+        XCTAssertFalse(session.isGenerating)
+        XCTAssertTrue(session.currentGeneration.isEmpty)
+        XCTAssertEqual(session.messages.map(\.role), ["user", "assistant"])
+        XCTAssertEqual(session.messages[1].content, "Generation stopped.")
     }
 
     func testAssistantChatSessionReturnsOnlyUserPromptForReuse() {
@@ -713,6 +754,51 @@ class AmigaPlaygroundTests: XCTestCase {
         XCTAssertEqual(completedResponse, "Copper list")
     }
 
+    func testOpenAISSEReasoningStreamingParser() {
+        var receivedChunks: [String] = []
+        var completedResponse = ""
+
+        let expectation = self.expectation(description: "OpenAI SSE reasoning chunks parsed")
+
+        let delegate = StreamingDelegate(
+            onChunk: { chunk in
+                receivedChunks.append(chunk)
+            },
+            onCompletion: { full in
+                completedResponse = full
+                expectation.fulfill()
+            },
+            onError: { error in
+                XCTFail("Unexpected error: \(error.localizedDescription)")
+            }
+        )
+
+        // Mock OpenAI SSE reasoning payload
+        let sampleSSE = """
+        data: {"choices":[{"delta":{"reasoning":"Thinking "}}]}
+
+        data: {"choices":[{"delta":{"reasoning":"process"}}]}
+
+        data: [DONE]
+        """
+
+        guard let data = sampleSSE.data(using: .utf8) else {
+            XCTFail("Failed to convert mock SSE payload to data")
+            return
+        }
+
+        // Simulate receive
+        delegate.urlSession(URLSession.shared, dataTask: URLSessionDataTask(), didReceive: data)
+        delegate.urlSession(URLSession.shared, task: URLSessionDataTask(), didCompleteWithError: nil as Error?)
+
+        waitForExpectations(timeout: 1.0)
+
+        XCTAssertEqual(receivedChunks.count, 2)
+        XCTAssertEqual(receivedChunks.first, "Thinking ")
+        XCTAssertEqual(receivedChunks.last, "process")
+        XCTAssertEqual(completedResponse, "Thinking process")
+    }
+
     func testOpenAIMessageStreamingParser() {
         var receivedChunks: [String] = []
         var completedResponse = ""
@@ -746,6 +832,56 @@ class AmigaPlaygroundTests: XCTestCase {
         XCTAssertEqual(completedResponse, "Generated 68k source")
     }
 
+    func testOpenAISSEContentAndReasoningStreamingParser() {
+        var receivedContent: [String] = []
+        var receivedReasoning: [String] = []
+        var completedContent = ""
+        var completedReasoning = ""
+
+        let expectation = self.expectation(description: "OpenAI SSE content and reasoning chunks parsed separately")
+
+        let delegate = StreamingDelegate(
+            onContentChunk: { chunk in
+                receivedContent.append(chunk)
+            },
+            onReasoningChunk: { chunk in
+                receivedReasoning.append(chunk)
+            },
+            onCompletion: { content, reasoning in
+                completedContent = content
+                completedReasoning = reasoning
+                expectation.fulfill()
+            },
+            onError: { error in
+                XCTFail("Unexpected error: \(error.localizedDescription)")
+            }
+        )
+
+        // Mock OpenAI SSE combined content and reasoning payload
+        let sampleSSE = """
+        data: {"choices":[{"delta":{"reasoning":"Thinking "}}]}
+        data: {"choices":[{"delta":{"reasoning":"process"}}]}
+        data: {"choices":[{"delta":{"content":"Hello "}}]}
+        data: {"choices":[{"delta":{"content":"World!"}}]}
+        data: [DONE]
+        """
+
+        guard let data = sampleSSE.data(using: .utf8) else {
+            XCTFail("Failed to convert mock SSE payload to data")
+            return
+        }
+
+        delegate.urlSession(URLSession.shared, dataTask: URLSessionDataTask(), didReceive: data)
+        delegate.urlSession(URLSession.shared, task: URLSessionDataTask(), didCompleteWithError: nil as Error?)
+
+        waitForExpectations(timeout: 1.0)
+
+        XCTAssertEqual(receivedReasoning, ["Thinking ", "process"])
+        XCTAssertEqual(receivedContent, ["Hello ", "World!"])
+        XCTAssertEqual(completedReasoning, "Thinking process")
+        XCTAssertEqual(completedContent, "Hello World!")
+    }
+
     // MARK: - Ollama/LM Studio Service Tests
 
     func testOllamaServiceDefaultsToLocalMLXServer() {
@@ -754,7 +890,7 @@ class AmigaPlaygroundTests: XCTestCase {
         XCTAssertEqual(service.provider, .lmStudio)
         XCTAssertEqual(service.apiUrl, "http://localhost:1234")
         XCTAssertEqual(service.requestModelName, "default_model")
-        XCTAssertEqual(service.provider.connectionStatusLabel, "LM Studio/MLX Connected")
+        XCTAssertEqual(service.connectionStatusLabel, "LM Studio Not Checked")
     }
 
     func testOllamaServiceApiUrl() {
@@ -805,11 +941,121 @@ class AmigaPlaygroundTests: XCTestCase {
         service.modelName = originalModelName
     }
 
-    func testOllamaServiceSendsOpenAICompatibleRequestAndParsesResponse() {
+    func testOllamaServiceMarksLMStudioConnectedOnlyAfterHealthCheckSucceeds() {
         let service = OllamaService()
         service.provider = .lmStudio
         service.customUrl = "http://local-mlx.test"
+        service.modelName = "mlx-community/antigravity"
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockLLMURLProtocol.self]
+        service.urlSessionConfiguration = configuration
+
+        let expectation = self.expectation(description: "Connection status updated")
+
+        MockLLMURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.url?.absoluteString, "http://local-mlx.test/v1/models")
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            ))
+            return (response, Data(#"{"data":[{"id":"mlx-community/antigravity"}]}"#.utf8))
+        }
+
+        service.refreshConnectionStatus()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            XCTAssertEqual(service.connectionStatus, .connected)
+            XCTAssertEqual(service.connectionStatusLabel, "LM Studio Connected")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 1.0)
+        MockLLMURLProtocol.requestHandler = nil
+    }
+
+    func testOllamaServiceMarksLMStudioConnectedWhenConfiguredModelIsMissing() {
+        let service = OllamaService()
+        service.provider = .lmStudio
+        service.customUrl = "http://local-mlx.test"
+        service.modelName = "missing-model"
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockLLMURLProtocol.self]
+        service.urlSessionConfiguration = configuration
+
+        let expectation = self.expectation(description: "Connected status updated")
+
+        MockLLMURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.url?.absoluteString, "http://local-mlx.test/v1/models")
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            ))
+            return (response, Data(#"{"data":[{"id":"available-model"}]}"#.utf8))
+        }
+
+        service.refreshConnectionStatus()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            XCTAssertEqual(service.connectionStatus, .connected)
+            XCTAssertEqual(service.connectionStatusLabel, "LM Studio Connected")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 1.0)
+        MockLLMURLProtocol.requestHandler = nil
+    }
+
+    func testOllamaServiceMarksProviderDisconnectedWhenHealthCheckFails() {
+        let service = OllamaService()
+        service.provider = .ollama
+        service.customUrl = "http://local-ollama.test"
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockLLMURLProtocol.self]
+        service.urlSessionConfiguration = configuration
+
+        let expectation = self.expectation(description: "Disconnected status updated")
+
+        MockLLMURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.url?.absoluteString, "http://local-ollama.test/api/tags")
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 503,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            ))
+            return (response, Data())
+        }
+
+        service.refreshConnectionStatus()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            XCTAssertEqual(service.connectionStatus, .disconnected("HTTP 503"))
+            XCTAssertEqual(service.connectionStatusLabel, "Ollama Not Connected")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 1.0)
+        MockLLMURLProtocol.requestHandler = nil
+    }
+
+    func testOllamaServiceSendsOpenAICompatibleRequestAndParsesResponse() {
+        let defaultsName = "AmigaPlaygroundTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: defaultsName)!
+        defer { defaults.removePersistentDomain(forName: defaultsName) }
+
+        let service = OllamaService(userDefaults: defaults)
+        service.provider = .lmStudio
+        service.customUrl = "http://local-mlx.test"
         service.modelName = ""
+        service.contextWindow = 4096
+        service.systemPrompt = ""
 
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [MockLLMURLProtocol.self]
@@ -829,6 +1075,7 @@ class AmigaPlaygroundTests: XCTestCase {
             let body = try XCTUnwrap(JSONSerialization.jsonObject(with: bodyData) as? [String: Any])
             XCTAssertEqual(body["model"] as? String, "default_model")
             XCTAssertEqual(body["stream"] as? Bool, true)
+            XCTAssertEqual(body["max_tokens"] as? Int, 4096)
 
             let messages = try XCTUnwrap(body["messages"] as? [[String: String]])
             XCTAssertEqual(messages, [["role": "user", "content": expectedPrompt]])
@@ -870,6 +1117,166 @@ class AmigaPlaygroundTests: XCTestCase {
         ])
         XCTAssertEqual(completedResponse, "SECTION Code,CODE,CHIP\nCopperList:\n    dc.w $ffff,$fffe")
         MockLLMURLProtocol.requestHandler = nil
+    }
+
+    func testOllamaServiceSendsSystemPromptAndContextWindowToOpenAICompatibleProvider() {
+        let defaultsName = "AmigaPlaygroundTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: defaultsName)!
+        defer { defaults.removePersistentDomain(forName: defaultsName) }
+
+        let service = OllamaService(userDefaults: defaults)
+        service.provider = .lmStudio
+        service.customUrl = "http://local-mlx.test"
+        service.modelName = "mlx-community/antigravity"
+        service.contextWindow = 8192
+        service.systemPrompt = "  Keep answers focused on Amiga 68k assembly.  "
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockLLMURLProtocol.self]
+        service.urlSessionConfiguration = configuration
+
+        let expectation = self.expectation(description: "OpenAI-compatible request includes AI settings")
+
+        MockLLMURLProtocol.requestHandler = { request in
+            let bodyData = try XCTUnwrap(request.testHTTPBodyData)
+            let body = try XCTUnwrap(JSONSerialization.jsonObject(with: bodyData) as? [String: Any])
+
+            XCTAssertEqual(body["max_tokens"] as? Int, 8192)
+
+            let messages = try XCTUnwrap(body["messages"] as? [[String: String]])
+            XCTAssertEqual(messages, [
+                ["role": "system", "content": "Keep answers focused on Amiga 68k assembly."],
+                ["role": "user", "content": "draw a copper gradient"]
+            ])
+
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "text/event-stream"]
+            ))
+            return (response, Data("data: [DONE]\n\n".utf8))
+        }
+
+        service.streamChat(
+            messages: [OllamaService.ChatMessage(role: "user", content: "draw a copper gradient")],
+            onChunk: { _ in },
+            onCompletion: { _ in expectation.fulfill() },
+            onError: { error in
+                XCTFail("Unexpected error: \(error.localizedDescription)")
+            }
+        )
+
+        waitForExpectations(timeout: 2.0)
+        MockLLMURLProtocol.requestHandler = nil
+    }
+
+    func testOllamaServiceSendsSystemPromptAndContextWindowToOllamaProvider() {
+        let defaultsName = "AmigaPlaygroundTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: defaultsName)!
+        defer { defaults.removePersistentDomain(forName: defaultsName) }
+
+        let service = OllamaService(userDefaults: defaults)
+        service.provider = .ollama
+        service.customUrl = "http://local-ollama.test"
+        service.modelName = "antigravity-amiga-68k"
+        service.contextWindow = 2048
+        service.systemPrompt = "Prefer concise code."
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockLLMURLProtocol.self]
+        service.urlSessionConfiguration = configuration
+
+        let expectation = self.expectation(description: "Ollama request includes AI settings")
+
+        MockLLMURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.url?.absoluteString, "http://local-ollama.test/api/chat")
+
+            let bodyData = try XCTUnwrap(request.testHTTPBodyData)
+            let body = try XCTUnwrap(JSONSerialization.jsonObject(with: bodyData) as? [String: Any])
+
+            let options = try XCTUnwrap(body["options"] as? [String: Any])
+            XCTAssertEqual(options["num_ctx"] as? Int, 2048)
+
+            let messages = try XCTUnwrap(body["messages"] as? [[String: String]])
+            XCTAssertEqual(messages, [
+                ["role": "system", "content": "Prefer concise code."],
+                ["role": "user", "content": "read joystick state"]
+            ])
+
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/x-ndjson"]
+            ))
+            return (response, Data(#"{"done":true}"#.utf8))
+        }
+
+        service.streamChat(
+            messages: [OllamaService.ChatMessage(role: "user", content: "read joystick state")],
+            onChunk: { _ in },
+            onCompletion: { _ in expectation.fulfill() },
+            onError: { error in
+                XCTFail("Unexpected error: \(error.localizedDescription)")
+            }
+        )
+
+        waitForExpectations(timeout: 2.0)
+        MockLLMURLProtocol.requestHandler = nil
+    }
+
+    // MARK: - MLX Server Control Tests
+
+    func testMLXServerBuildsExpectedLaunchInvocation() throws {
+        let tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let modelDirectory = tempDirectory.appendingPathComponent("fused_model", isDirectory: true)
+        try FileManager.default.createDirectory(at: modelDirectory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let config = MLXServerController.Configuration(
+            workingDirectory: tempDirectory,
+            modelDirectoryName: "fused_model",
+            port: 1234,
+            logFileName: "server.log"
+        )
+
+        let invocation = MLXServerController.buildInvocation(configuration: config)
+
+        XCTAssertEqual(invocation.executableURL.path, "/usr/bin/env")
+        XCTAssertEqual(invocation.arguments, [
+            "uv", "run", "python", "-m", "mlx_lm.server",
+            "--model", "fused_model",
+            "--port", "1234"
+        ])
+        XCTAssertEqual(invocation.workingDirectory, tempDirectory)
+        XCTAssertEqual(invocation.logFile, tempDirectory.appendingPathComponent("server.log"))
+    }
+
+    func testMLXServerStartFailsWhenModelDirectoryIsMissing() {
+        let tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try? FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let controller = MLXServerController(
+            configuration: MLXServerController.Configuration(
+                workingDirectory: tempDirectory,
+                modelDirectoryName: "fused_model",
+                port: 1234,
+                logFileName: "server.log"
+            )
+        )
+
+        controller.start()
+
+        guard case .failed(let message) = controller.status else {
+            XCTFail("Expected missing model directory to fail startup.")
+            return
+        }
+
+        XCTAssertTrue(message.contains("fused_model"))
     }
 }
 

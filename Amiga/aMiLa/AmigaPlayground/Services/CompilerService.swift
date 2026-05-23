@@ -4,7 +4,7 @@ class CompilerService {
     static let shared = CompilerService()
     
     let vasmPath = "/usr/local/bin/vasmm68k_mot"
-    let ndkInclude = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/amiga_sources/amiga-dev/targets/m68k-amigaos/ndk/include_i"
+    let ndkInclude = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/Dataset/corpus3/amiga-dev/targets/m68k-amigaos/ndk/include_i"
     
     func compile(assemblyCode: String, completion: @escaping (Bool, String) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
@@ -13,7 +13,8 @@ class CompilerService {
             let outputFile = tempDir.appendingPathComponent("playground_bin")
             
             do {
-                try assemblyCode.write(to: sourceFile, atomically: true, encoding: .utf8)
+                let normalizedAssemblyCode = AssemblySourceFormatter.vasmReadySource(from: assemblyCode)
+                try normalizedAssemblyCode.write(to: sourceFile, atomically: true, encoding: .utf8)
             } catch {
                 DispatchQueue.main.async {
                     completion(false, "Failed to write source code to temp file: \(error.localizedDescription)")
@@ -76,7 +77,8 @@ class CompilerService {
             
             // 1. Write assembly source code
             do {
-                try assemblyCode.write(to: sourceFile, atomically: true, encoding: .utf8)
+                let normalizedAssemblyCode = AssemblySourceFormatter.vasmReadySource(from: assemblyCode)
+                try normalizedAssemblyCode.write(to: sourceFile, atomically: true, encoding: .utf8)
             } catch {
                 DispatchQueue.main.async {
                     completion(false, "Failed to write temp source code: \(error.localizedDescription)")

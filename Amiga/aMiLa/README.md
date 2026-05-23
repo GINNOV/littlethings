@@ -142,8 +142,8 @@ If you want to re-run the LoRA adapter fine-tuning sequence on your custom ASM/C
    ./finetune.sh
    ```
    MLX-LM utilizes Apple Silicon unified memory GPUs to perform LoRA training.
-   * **Base Model**: `mlx-community/Huihui-gemma-3-270m-it-abliterated-6bit`
-   * **Final Fused Weights**: Saved inside `fine_tuning/fused_model/`.
+    * **Base Model**: `mlx-community/gemma-4-e4b-it-4bit`
+    * **Final Fused Weights**: Saved inside `fine_tuning/fused_model/`.
    * **Model Card**: [`fine_tuning/fused_model/README.md`](fine_tuning/fused_model/README.md)
 
 #### 3. Host the Fused Model Locally

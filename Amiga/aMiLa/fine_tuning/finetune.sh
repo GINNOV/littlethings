@@ -7,7 +7,7 @@ if ! command -v uv >/dev/null 2>&1; then
 fi
 
 # Define directories and model names
-BASE_MODEL="mlx-community/Huihui-gemma-3-270m-it-abliterated-6bit"
+BASE_MODEL="mlx-community/gemma-4-e4b-it-4bit"
 ADAPTER_PATH="adapters/"
 FUSED_MODEL_PATH="fused_model/"
 GGUF_OUTPUT_PATH="antigravity-amiga-68k.gguf"
@@ -18,32 +18,37 @@ echo "Starting MLX Amiga 68k Assembly Fine-Tuning"
 echo "Base Model: $BASE_MODEL"
 echo "=========================================================="
 
+# Clean up previous training checkpoints to prevent weight pollution
+rm -rf "$ADAPTER_PATH" "$FUSED_MODEL_PATH"
+
 # Run the LoRA training
-# We use 400 iterations for a highly targeted fast convergence on the tiny model
-# We set learning rate to 2e-5, optimizer as adamw
+# We use 300 iterations for a highly targeted fast convergence on the model
+# We set learning rate to a safe 2e-5 to prevent weight collapse
 uv run python -m mlx_lm.lora \
   --model "$BASE_MODEL" \
   --train \
   --data "$DATA_DIR" \
-  --iters 400 \
-  --batch-size 4 \
+  --iters 1500 \
+  --batch-size 2 \
   --learning-rate 2e-5 \
   --adapter-path "$ADAPTER_PATH" \
   --save-every 100 \
-  --steps-per-report 20
+  --steps-per-report 10 \
+  --max-seq-length 1024 \
+  --grad-checkpoint
 
 echo ""
 echo "=========================================================="
 echo "Training Complete! Fusing adapters and exporting to GGUF..."
 echo "=========================================================="
 
-# Fuse adapters and export directly to GGUF format for Ollama/LM Studio
+# Fuse adapters and save to fused_model
+# Note: quantized models and gemma4 are not supported by mlx_lm's primitive GGUF converter.
+# For LM Studio GGUF, convert the unquantized fused weights using llama.cpp.
 uv run python -m mlx_lm.fuse \
   --model "$BASE_MODEL" \
   --adapter-path "$ADAPTER_PATH" \
-  --save-path "$FUSED_MODEL_PATH" \
-  --export-gguf \
-  --gguf-path "$GGUF_OUTPUT_PATH"
+  --save-path "$FUSED_MODEL_PATH"
 
 echo "=========================================================="
 echo "Process Finished Successfully!"
