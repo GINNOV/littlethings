@@ -52,10 +52,23 @@ uv sync
 
 ## Where The Model Is
 
-The primary model output is the fused MLX model directory:
+The generated model is stored on Hugging Face, not in GitHub:
+
+```text
+https://huggingface.co/bmove/antigravity-amiga-68k
+```
+
+The local MLX model directory is restored into:
 
 ```text
 aMiLa/fine_tuning/fused_model/
+```
+
+Download it with:
+
+```bash
+cd aMiLa/fine_tuning
+./download_model.sh
 ```
 
 Use that path with MLX-LM:
@@ -67,9 +80,19 @@ uv run mlx_lm.server --model fused_model/ --port 1234
 
 For AmigaPlayground, choose `LM Studio (Port 1234)` and leave the model name as `antigravity-amiga-68k` or use `default_model`. The app maps the default MLX-LM server model to `default_model` for LM Studio-compatible requests.
 
+## Model Artifacts And GitHub
+
+Generated model artifacts are intentionally ignored by Git:
+
+- `adapters/`
+- `fused_model/`
+- `antigravity-amiga-68k.gguf`
+
+Publish regenerated model artifacts to `bmove/antigravity-amiga-68k` and keep GitHub limited to source, scripts, data prep, and app code.
+
 ## LM Studio And Ollama
 
-The current checked-in model is an MLX fused model, not a checked-in GGUF. LM Studio and Ollama usually expect a GGUF file for local manual loading. The training script attempts to export one here:
+The current model is an MLX fused model on Hugging Face, not a checked-in GGUF. LM Studio and Ollama usually expect a GGUF file for local manual loading. The training script attempts to export one here:
 
 ```text
 aMiLa/fine_tuning/antigravity-amiga-68k.gguf

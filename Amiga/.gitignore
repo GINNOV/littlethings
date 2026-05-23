@@ -1,0 +1,5 @@
+aMiLa/fine_tuning/adapters/
+aMiLa/fine_tuning/fused_model/
+aMiLa/fine_tuning/*.gguf
+aMiLa/fine_tuning/server.log
+aMiLa/Dataset/corpus1/corpus_manifest.jsonl

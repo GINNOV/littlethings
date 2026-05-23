@@ -1244,11 +1244,10 @@ CopperList:
 
         let invocation = MLXServerController.buildInvocation(configuration: config)
 
-        XCTAssertEqual(invocation.executableURL.path, "/usr/bin/env")
+        XCTAssertEqual(invocation.executableURL.path, "/bin/zsh")
         XCTAssertEqual(invocation.arguments, [
-            "uv", "run", "python", "-m", "mlx_lm.server",
-            "--model", "fused_model",
-            "--port", "1234"
+            "-lc",
+            "cd '\(tempDirectory.path)' && exec uv run python -m mlx_lm.server --model 'fused_model' --port '1234'"
         ])
         XCTAssertEqual(invocation.workingDirectory, tempDirectory)
         XCTAssertEqual(invocation.logFile, tempDirectory.appendingPathComponent("server.log"))

@@ -90,16 +90,23 @@ final class MLXServerController: ObservableObject {
     }
 
     static func buildInvocation(configuration: Configuration) -> Invocation {
-        Invocation(
-            executableURL: URL(fileURLWithPath: "/usr/bin/env"),
-            arguments: [
-                "uv", "run", "python", "-m", "mlx_lm.server",
-                "--model", configuration.modelDirectoryName,
-                "--port", "\(configuration.port)"
-            ],
+        let command = [
+            "cd", shellQuoted(configuration.workingDirectory.path), "&&",
+            "exec", "uv", "run", "python", "-m", "mlx_lm.server",
+            "--model", shellQuoted(configuration.modelDirectoryName),
+            "--port", shellQuoted("\(configuration.port)")
+        ].joined(separator: " ")
+
+        return Invocation(
+            executableURL: URL(fileURLWithPath: "/bin/zsh"),
+            arguments: ["-lc", command],
             workingDirectory: configuration.workingDirectory,
             logFile: configuration.workingDirectory.appendingPathComponent(configuration.logFileName)
         )
+    }
+
+    private static func shellQuoted(_ value: String) -> String {
+        "'\(value.replacingOccurrences(of: "'", with: "'\\''"))'"
     }
 
     var endpointDescription: String {

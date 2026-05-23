@@ -341,6 +341,8 @@ CopperList:
     @State private var currentMessage: String = ""
     @State private var copiedPromptMessageID: UUID?
     @State private var currentChatTask: URLSessionDataTask?
+    @State private var selfCorrectionAttempts: Int = 0
+    @State private var originalUserPrompt: String = ""
 
     private var canFixCompileErrors: Bool {
         buildStatus == .failure &&
@@ -1023,6 +1025,8 @@ SineWave:
         }
         assistantChat.reset()
         currentMessage = ""
+        selfCorrectionAttempts = 0
+        originalUserPrompt = ""
         outputConsole = "Started a new assistant chat."
     }
 
@@ -1201,6 +1205,10 @@ SineWave:
             currentMessage = ""
         }
 
+        if selfCorrectionAttempts == 0 {
+            originalUserPrompt = submittedPrompt
+        }
+
         currentChatTask = OllamaService.shared.streamChat(
             messages: request.messages,
             onContentChunk: { chunk in
@@ -1222,15 +1230,63 @@ SineWave:
                     streamedResponse: assistantChat.currentGeneration,
                     reasoningResponse: reasoningResponse
                 )
-                if let injectedCode = completion.injectedCode {
+                
+                guard let injectedCode = completion.injectedCode else {
+                    self.selfCorrectionAttempts = 0
+                    if let consoleMessage = completion.consoleMessage {
+                        outputConsole = consoleMessage
+                    }
+                    return
+                }
+                
+                // If it is C code, we inject it directly (since this editor compiles assembly only)
+                if AssemblySourceFormatter.looksLikeC(injectedCode) {
+                    self.selfCorrectionAttempts = 0
                     injectGeneratedCode(
                         injectedCode,
-                        prompt: submittedPrompt,
+                        prompt: self.originalUserPrompt.isEmpty ? submittedPrompt : self.originalUserPrompt,
                         consoleMessage: completion.consoleMessage ?? "Injected code from Amiga Assistant."
                     )
+                    return
                 }
-                if completion.injectedCode == nil, let consoleMessage = completion.consoleMessage {
-                    outputConsole = consoleMessage
+                
+                // Perform compiler gate on generated 68k assembly
+                outputConsole = "Running compiler gate on generated 68k assembly..."
+                CompilerService.shared.compile(assemblyCode: injectedCode) { success, compilerOutput in
+                    if success {
+                        self.selfCorrectionAttempts = 0
+                        injectGeneratedCode(
+                            injectedCode,
+                            prompt: self.originalUserPrompt.isEmpty ? submittedPrompt : self.originalUserPrompt,
+                            consoleMessage: "Injected compiler-verified 68k assembly (passed VASM gate!)."
+                        )
+                    } else {
+                        if self.selfCorrectionAttempts < 2 {
+                            self.selfCorrectionAttempts += 1
+                            outputConsole = "Compiler gate failed!\n\(compilerOutput)\n\nTriggering automatic self-correction (Attempt \(self.selfCorrectionAttempts)/2)..."
+                            
+                            let repairPrompt = """
+                            Your generated 68k assembly code failed to compile with the following error from vasmm68k_mot:
+                            
+                            ```text
+                            \(compilerOutput)
+                            ```
+                            
+                            Please fix the compilation errors. Retain all original functionality, labels, and logic, but ensure the syntax is 100% correct and compilable.
+                            Return ONLY the entire corrected code block in a fenced code block (```assembly ... ```). Do not include any explanation outside the code block.
+                            """
+                            
+                            submitAssistantPrompt(repairPrompt, clearComposer: false)
+                        } else {
+                            self.selfCorrectionAttempts = 0
+                            injectGeneratedCode(
+                                injectedCode,
+                                prompt: self.originalUserPrompt.isEmpty ? submittedPrompt : self.originalUserPrompt,
+                                consoleMessage: "Injected code after maximum self-correction attempts (failed VASM gate)."
+                            )
+                            outputConsole = "VASM Compiler Gate Error:\n\(compilerOutput)"
+                        }
+                    }
                 }
             },
             onError: { error in
