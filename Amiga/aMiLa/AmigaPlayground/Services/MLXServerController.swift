@@ -39,6 +39,34 @@ final class MLXServerController: ObservableObject {
         let logFile: URL
     }
 
+    struct HelperStatus: Decodable, Equatable {
+        enum Event: String, Decodable {
+            case ready
+            case preflight
+            case started
+            case running
+            case stopped
+            case failed
+        }
+
+        let event: Event
+        let message: String
+        let code: String?
+        let action: String?
+
+        static func parse(line: String) throws -> HelperStatus {
+            try JSONDecoder().decode(HelperStatus.self, from: Data(line.utf8))
+        }
+
+        var userFacingMessage: String {
+            guard let action, !action.isEmpty else {
+                return message
+            }
+
+            return "\(message)\n\n\(action)"
+        }
+    }
+
     enum Status: Equatable {
         case stopped
         case starting
@@ -52,15 +80,15 @@ final class MLXServerController: ObservableObject {
             case .stopped:
                 return "Stopped"
             case .starting:
-                return "Starting..."
+                return "Starting MLX Server"
             case .running:
-                return "Running"
+                return "MLX Server Running"
             case .runningExternally:
-                return "Already running outside app"
+                return "MLX Running Outside App"
             case .stopping:
-                return "Stopping..."
+                return "Stopping MLX Server"
             case .failed:
-                return "Failed"
+                return "MLX Setup Needed"
             }
         }
 
@@ -79,6 +107,7 @@ final class MLXServerController: ObservableObject {
     private var process: Process?
     private var logFileHandle: FileHandle?
     private let urlSession: URLSession
+    private var helperOutputBuffer = ""
 
     init(configuration: Configuration = .default, urlSession: URLSession = .shared) {
         self.configuration = configuration
@@ -90,23 +119,31 @@ final class MLXServerController: ObservableObject {
     }
 
     static func buildInvocation(configuration: Configuration) -> Invocation {
-        let command = [
-            "cd", shellQuoted(configuration.workingDirectory.path), "&&",
-            "exec", "uv", "run", "python", "-m", "mlx_lm.server",
-            "--model", shellQuoted(configuration.modelDirectoryName),
-            "--port", shellQuoted("\(configuration.port)")
-        ].joined(separator: " ")
+        let modelDirectory = configuration.workingDirectory.appendingPathComponent(configuration.modelDirectoryName, isDirectory: true)
+        let logFile = configuration.workingDirectory.appendingPathComponent(configuration.logFileName)
 
         return Invocation(
-            executableURL: URL(fileURLWithPath: "/bin/zsh"),
-            arguments: ["-lc", command],
+            executableURL: defaultHelperURL(),
+            arguments: [
+                "--model", modelDirectory.path,
+                "--port", "\(configuration.port)",
+                "--log-file", logFile.path,
+                "--runtime-command", "uv run python -m mlx_lm.server"
+            ],
             workingDirectory: configuration.workingDirectory,
-            logFile: configuration.workingDirectory.appendingPathComponent(configuration.logFileName)
+            logFile: logFile
         )
     }
 
-    private static func shellQuoted(_ value: String) -> String {
-        "'\(value.replacingOccurrences(of: "'", with: "'\\''"))'"
+    static func defaultHelperURL() -> URL {
+        if let helper = Bundle.main.url(forAuxiliaryExecutable: "MLXServerHelper") {
+            return helper
+        }
+
+        return URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent(".build/debug/MLXServerHelper")
     }
 
     var endpointDescription: String {
@@ -155,7 +192,7 @@ final class MLXServerController: ObservableObject {
         let invocation = Self.buildInvocation(configuration: configuration)
         let modelDirectory = configuration.workingDirectory.appendingPathComponent(configuration.modelDirectoryName, isDirectory: true)
         guard FileManager.default.fileExists(atPath: modelDirectory.path) else {
-            status = .failed("Model directory not found: \(modelDirectory.path)")
+            status = .failed("MLX model directory was not found: \(modelDirectory.path)\n\nBuild or copy the fused MLX model to \(modelDirectory.path), then start the server again.")
             return
         }
 
@@ -196,38 +233,79 @@ final class MLXServerController: ObservableObject {
 
     private func launch(invocation: Invocation) {
         do {
-            let logDirectory = invocation.logFile.deletingLastPathComponent()
-            try FileManager.default.createDirectory(at: logDirectory, withIntermediateDirectories: true)
-            _ = FileManager.default.createFile(atPath: invocation.logFile.path, contents: nil)
-
-            let handle = try FileHandle(forWritingTo: invocation.logFile)
             let process = Process()
+            let outputPipe = Pipe()
+            let errorPipe = Pipe()
             process.executableURL = invocation.executableURL
             process.arguments = invocation.arguments
             process.currentDirectoryURL = invocation.workingDirectory
-            process.standardOutput = handle
-            process.standardError = handle
+            process.standardOutput = outputPipe
+            process.standardError = errorPipe
             process.terminationHandler = { [weak self] launchedProcess in
                 DispatchQueue.main.async {
                     guard let self, self.process === launchedProcess else { return }
                     self.process = nil
-                    self.closeLogFile()
+                    outputPipe.fileHandleForReading.readabilityHandler = nil
+                    errorPipe.fileHandleForReading.readabilityHandler = nil
                     if case .stopping = self.status {
                         self.status = .stopped
+                    } else if case .failed = self.status {
+                        return
+                    } else if case .stopped = self.status {
+                        return
                     } else {
                         self.status = .failed("MLX server exited with status \(launchedProcess.terminationStatus). See \(invocation.logFile.path)")
                     }
                 }
             }
 
-            logFileHandle = handle
             self.process = process
+            helperOutputBuffer = ""
+            outputPipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
+                let data = handle.availableData
+                guard !data.isEmpty, let text = String(data: data, encoding: .utf8) else { return }
+                DispatchQueue.main.async {
+                    self?.handleHelperOutput(text)
+                }
+            }
+            errorPipe.fileHandleForReading.readabilityHandler = { handle in
+                _ = handle.availableData
+            }
             try process.run()
-            waitUntilHealthy(remainingAttempts: 30)
         } catch {
             closeLogFile()
             process = nil
             status = .failed(error.localizedDescription)
+        }
+    }
+
+    private func handleHelperOutput(_ text: String) {
+        helperOutputBuffer += text
+
+        while let newlineRange = helperOutputBuffer.range(of: "\n") {
+            let line = String(helperOutputBuffer[..<newlineRange.lowerBound])
+            helperOutputBuffer.removeSubrange(...newlineRange.lowerBound)
+            handleHelperLine(line)
+        }
+    }
+
+    private func handleHelperLine(_ line: String) {
+        let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedLine.isEmpty else { return }
+
+        guard let helperStatus = try? HelperStatus.parse(line: trimmedLine) else {
+            return
+        }
+
+        switch helperStatus.event {
+        case .ready, .preflight, .started:
+            status = .starting
+        case .running:
+            status = .running
+        case .stopped:
+            status = .stopped
+        case .failed:
+            status = .failed(helperStatus.userFacingMessage)
         }
     }
 

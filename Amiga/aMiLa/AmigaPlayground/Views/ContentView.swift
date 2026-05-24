@@ -7,6 +7,7 @@ struct AmigaPlaygroundActions {
     let assemble: () -> Void
     let fixCompileErrors: () -> Void
     let openPromptLibrary: () -> Void
+    let openExampleLibrary: () -> Void
     let saveCode: () -> Void
     let indentCode: () -> Void
     let runDefaultEmulator: () -> Void
@@ -34,6 +35,8 @@ extension FocusedValues {
 enum AppPreferenceDefaults {
     static let showChatBoingBallKey = "showChatBoingBall"
     static let showChatBoingBall = true
+    static let autoInjectGeneratedCodeKey = "autoInjectGeneratedCode"
+    static let autoInjectGeneratedCode = false
 }
 
 struct AmigaPlaygroundCommands: Commands {
@@ -58,6 +61,11 @@ struct AmigaPlaygroundCommands: Commands {
                     actions.openPromptLibrary()
                 }
                 .keyboardShortcut("l", modifiers: [.command, .option])
+
+                Button("Example Library") {
+                    actions.openExampleLibrary()
+                }
+                .keyboardShortcut("e", modifiers: [.command, .option])
 
                 Button("Save Code...") {
                     actions.saveCode()
@@ -121,6 +129,7 @@ enum OutputTab: String, CaseIterable, Identifiable {
 
 struct ContentView: View {
     @StateObject private var llm = OllamaService.shared
+    @StateObject private var mlxServer = MLXServerController.shared
     @Environment(\.openWindow) private var openWindow
 
     enum BuildStatus {
@@ -294,6 +303,7 @@ CopperList:
     @AppStorage("vAmigaSerialPort") private var vAmigaSerialPort: Int = 8085
     @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
     @AppStorage(AppPreferenceDefaults.showChatBoingBallKey) private var showChatBoingBall: Bool = AppPreferenceDefaults.showChatBoingBall
+    @AppStorage(AppPreferenceDefaults.autoInjectGeneratedCodeKey) private var autoInjectGeneratedCode: Bool = AppPreferenceDefaults.autoInjectGeneratedCode
 
     // Compilation & Output State
     @State private var outputConsole: String = "VASM compiler idle.\nPress Assemble to build the program."
@@ -304,6 +314,14 @@ CopperList:
     @State private var activeOutputTab: OutputTab = .console
     @State private var didCopyConsole: Bool = false
     @State private var lastSavedCodeURL: URL?
+
+    private var looksLikeC: Bool {
+        if let url = lastSavedCodeURL {
+            let ext = url.pathExtension.lowercased()
+            return ext == "c" || ext == "h"
+        }
+        return AssemblySourceFormatter.looksLikeC(codeText)
+    }
 
     private var selectedBackend: EmulatorBackend {
         EmulatorBackend(rawValue: emulatorBackend) ?? .fsUAE
@@ -324,16 +342,54 @@ CopperList:
     }
 
     private var llmConnectionTint: Color {
+        switch mlxServer.status {
+        case .running:
+            return .green
+        case .runningExternally, .starting, .stopping:
+            return .accentColor
+        case .failed:
+            return .red
+        case .stopped:
+            break
+        }
+
         switch llm.connectionStatus {
         case .connected:
             return .green
         case .disconnected:
             return .red
         case .checking:
-            return .orange
+            return .accentColor
         case .unchecked:
             return .gray
         }
+    }
+
+    private var assistantConnectionStatusLabel: String {
+        switch mlxServer.status {
+        case .running:
+            return "MLX Server Running"
+        case .runningExternally:
+            return "MLX Running Outside App"
+        case .starting, .stopping:
+            return mlxServer.status.label
+        case .failed:
+            return "MLX Setup Needed"
+        case .stopped:
+            return llm.connectionStatusLabel
+        }
+    }
+
+    private var mlxServerToggleIcon: String {
+        mlxServer.canStop ? "stop.fill" : "play.fill"
+    }
+
+    private var mlxServerToggleHelp: String {
+        mlxServer.canStop ? "Stop local MLX model server" : "Start local MLX model server"
+    }
+
+    private var canToggleMLXServer: Bool {
+        mlxServer.canStart || mlxServer.canStop
     }
 
     // Chat Panel State
@@ -495,7 +551,7 @@ SineWave:
     ]
 
     var examples: [String: String] {
-        ContentView.examples
+        ExampleLibraryStore.defaultExamplesByName
     }
 
     private var playgroundActions: AmigaPlaygroundActions {
@@ -503,6 +559,7 @@ SineWave:
             assemble: runCompilation,
             fixCompileErrors: fixCompileErrorsWithAssistant,
             openPromptLibrary: openPromptLibrary,
+            openExampleLibrary: openExampleLibrary,
             saveCode: saveCode,
             indentCode: indentCode,
             runDefaultEmulator: runInEmulator,
@@ -566,16 +623,6 @@ SineWave:
                         .accessibilityIdentifier("saveCodeButton")
                         .help("Save the current source code")
 
-                        Button(action: indentCode) {
-                            HStack {
-                                Image(systemName: "text.alignleft")
-                                Text("Indent")
-                            }
-                        }
-                        .buttonStyle(.bordered)
-                        .accessibilityIdentifier("indentCodeButton")
-                        .help("Indent assembly or C source for vasm")
-
                         Button(action: runInEmulator) {
                             HStack {
                                 Image(systemName: "play.tv")
@@ -598,22 +645,15 @@ SineWave:
                         .accessibilityIdentifier("exportADFButton")
                         .help("Export a bootable ADF")
 
-                        Menu {
-                            ForEach(Array(examples.keys).sorted(), id: \.self) { key in
-                                Button(key) {
-                                    loadExample(named: key)
-                                }
-                            }
-                        } label: {
+                        Button(action: openExampleLibrary) {
                             HStack(spacing: 8) {
                                 Image(systemName: "books.vertical")
                                 Text("Examples")
                             }
                         }
-                        .menuStyle(.button)
                         .buttonStyle(.bordered)
                         .accessibilityIdentifier("goldExamplesMenu")
-                        .help("Load an example assembly program")
+                        .help("Open the example library")
 
                         Button(role: .destructive) {
                             clearEditor()
@@ -655,7 +695,7 @@ SineWave:
                                     .frame(width: 8, height: 8)
                                     .accessibilityHidden(true)
 
-                                Text(llm.connectionStatusLabel)
+                                Text(assistantConnectionStatusLabel)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .accessibilityIdentifier("assistantConnectionStatusLabel")
@@ -664,8 +704,21 @@ SineWave:
 
                         Spacer()
 
+                        Button {
+                            toggleMLXServerFromAssistantHeader()
+                        } label: {
+                            Image(systemName: mlxServerToggleIcon)
+                        }
+                        .disabled(!canToggleMLXServer)
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                        .tint(.accentColor)
+                        .help(mlxServerToggleHelp)
+                        .accessibilityLabel(mlxServerToggleHelp)
+                        .accessibilityIdentifier("assistantToggleMLXServerButton")
+
                         Image(systemName: "sparkles")
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(.tint)
                             .accessibilityHidden(true)
                     }
                     .padding(.horizontal, 12)
@@ -725,17 +778,15 @@ SineWave:
                                                 Button(action: {
                                                     injectCodeBlock(from: msg.content)
                                                 }) {
-                                                    HStack {
+                                                    HStack(spacing: 8) {
                                                         Image(systemName: "arrow.right.doc.on.clipboard")
                                                         Text("Inject Code into Editor")
                                                     }
                                                     .font(.caption)
-                                                    .padding(.horizontal, 8)
-                                                    .padding(.vertical, 4)
-                                                    .background(Color.orange)
-                                                    .cornerRadius(4)
-                                                    .foregroundColor(.black)
                                                 }
+                                                .buttonStyle(ChatInjectButtonStyle())
+                                                .accessibilityIdentifier("injectCodeButton")
+                                                .help("Confirm and inject this assistant code into the editor")
                                             }
                                         }
                                         .padding(.horizontal, 10)
@@ -974,6 +1025,10 @@ SineWave:
         .focusedSceneValue(\.amigaPlaygroundActions, playgroundActions)
         .onAppear {
             llm.refreshConnectionStatus()
+            mlxServer.refreshStatus()
+        }
+        .onChange(of: mlxServer.status) {
+            llm.refreshConnectionStatus()
         }
         .onChange(of: llm.provider) {
             llm.refreshConnectionStatus()
@@ -987,6 +1042,12 @@ SineWave:
         .onReceive(NotificationCenter.default.publisher(for: .pastePromptIntoAssistant)) { notification in
             guard let prompt = notification.userInfo?["prompt"] as? String else { return }
             currentMessage = prompt
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .loadExampleIntoEditor)) { notification in
+            guard let code = notification.userInfo?["code"] as? String else { return }
+            let name = notification.userInfo?["name"] as? String ?? "Example"
+            codeText = code
+            outputConsole = "Loaded '\(name)' example source code."
         }
     }
 
@@ -1037,6 +1098,10 @@ SineWave:
 
     private func openPromptLibrary() {
         openWindow(id: "prompt-library")
+    }
+
+    private func openExampleLibrary() {
+        openWindow(id: "example-library")
     }
 
     private func fixCompileErrorsWithAssistant() {
@@ -1209,8 +1274,10 @@ SineWave:
             originalUserPrompt = submittedPrompt
         }
 
+        let adapterPath = looksLikeC ? "adapters_c" : "adapters_asm"
         currentChatTask = OllamaService.shared.streamChat(
             messages: request.messages,
+            adapterPath: adapterPath,
             onContentChunk: { chunk in
                 llm.markConnected()
                 assistantChat.appendContentChunk(chunk)
@@ -1242,10 +1309,11 @@ SineWave:
                 // If it is C code, we inject it directly (since this editor compiles assembly only)
                 if AssemblySourceFormatter.looksLikeC(injectedCode) {
                     self.selfCorrectionAttempts = 0
-                    injectGeneratedCode(
+                    handleGeneratedCodeReady(
                         injectedCode,
                         prompt: self.originalUserPrompt.isEmpty ? submittedPrompt : self.originalUserPrompt,
-                        consoleMessage: completion.consoleMessage ?? "Injected code from Amiga Assistant."
+                        autoInjectConsoleMessage: completion.consoleMessage ?? "Injected code from Amiga Assistant.",
+                        readyConsoleMessage: "Assistant generated C code. Review it in chat, then click Inject Code into Editor to replace the editor contents."
                     )
                     return
                 }
@@ -1255,36 +1323,67 @@ SineWave:
                 CompilerService.shared.compile(assemblyCode: injectedCode) { success, compilerOutput in
                     if success {
                         self.selfCorrectionAttempts = 0
-                        injectGeneratedCode(
+                        handleGeneratedCodeReady(
                             injectedCode,
                             prompt: self.originalUserPrompt.isEmpty ? submittedPrompt : self.originalUserPrompt,
-                            consoleMessage: "Injected compiler-verified 68k assembly (passed VASM gate!)."
+                            autoInjectConsoleMessage: "Injected compiler-verified 68k assembly (passed VASM gate!).",
+                            readyConsoleMessage: "Generated 68k assembly passed the VASM gate. Review it in chat, then click Inject Code into Editor to replace the editor contents."
                         )
                     } else {
                         if self.selfCorrectionAttempts < 2 {
                             self.selfCorrectionAttempts += 1
                             outputConsole = "Compiler gate failed!\n\(compilerOutput)\n\nTriggering automatic self-correction (Attempt \(self.selfCorrectionAttempts)/2)..."
-                            
-                            let repairPrompt = """
-                            Your generated 68k assembly code failed to compile with the following error from vasmm68k_mot:
-                            
-                            ```text
-                            \(compilerOutput)
-                            ```
-                            
-                            Please fix the compilation errors. Retain all original functionality, labels, and logic, but ensure the syntax is 100% correct and compilable.
-                            Return ONLY the entire corrected code block in a fenced code block (```assembly ... ```). Do not include any explanation outside the code block.
-                            """
-                            
+
+                            let repairPrompt: String
+                            if self.selfCorrectionAttempts == 1 {
+                                repairPrompt = """
+                                Your generated 68k assembly code failed to compile with the following error from vasmm68k_mot:
+
+                                ```text
+                                \(compilerOutput)
+                                ```
+
+                                Please fix the compilation errors. Retain all original functionality, labels, and logic, but ensure the syntax is 100% correct and compilable.
+
+                                CRITICAL MOTOROLA 68000 SYNTAX RULES:
+                                1. 68k branches (BNE, BEQ, BLT, BGT, BPL, BMI) ONLY take a single label as an operand (e.g. 'bne label'). They DO NOT compare registers directly (e.g. NEVER write 'bne d0,#0,label').
+                                   To compare and branch, you must use TST or CMP first:
+                                   - Instead of: bne d0,#0,label
+                                     Use:        tst.w d0
+                                                 bne.s label
+                                2. Set-on-condition instructions (SLT, SEQ, SNE) ONLY take a single destination register or memory location as an operand (e.g. 'slt d0'). They DO NOT compare three operands. Use CMP first.
+                                3. The 'LOOP' mnemonic does not exist on the 68000. Use DBRA (dbf) or manual subtraction and branches (SUBQ / BNE) for loops.
+
+                                Return ONLY the entire corrected code block in a fenced code block (```assembly ... ```). Do not include any explanation outside the code block.
+                                """
+                            } else {
+                                repairPrompt = """
+                                Your previous repair attempt STILL failed to compile with the following error from vasmm68k_mot:
+
+                                ```text
+                                \(compilerOutput)
+                                ```
+
+                                You are stuck in a loop trying to preserve invalid pseudo-code instructions (like register-comparison branches or three-operand sets).
+
+                                ESCAPE STRATEGY:
+                                - Please completely REWRITE the failing logic using only standard, basic 68k instructions: MOVE, ADD, SUB, CMP, TST, BRA, BSR, BNE, BEQ, RTS.
+                                - Absolutely DO NOT use register-comparison branches (e.g. do not write 'bne d0,#0,label'). Use 'tst.w d0' followed by 'bne label'.
+                                - Absolutely DO NOT use the 'LOOP' mnemonic or three-operand instructions.
+
+                                Return ONLY the entire corrected code block in a fenced code block (```assembly ... ```). Do not include any explanation outside the code block.
+                                """
+                            }
+
                             submitAssistantPrompt(repairPrompt, clearComposer: false)
                         } else {
                             self.selfCorrectionAttempts = 0
-                            injectGeneratedCode(
+                            handleGeneratedCodeReady(
                                 injectedCode,
                                 prompt: self.originalUserPrompt.isEmpty ? submittedPrompt : self.originalUserPrompt,
-                                consoleMessage: "Injected code after maximum self-correction attempts (failed VASM gate)."
+                                autoInjectConsoleMessage: "Injected code after maximum self-correction attempts (failed VASM gate).",
+                                readyConsoleMessage: "VASM Compiler Gate Error:\n\(compilerOutput)\n\nGenerated code is available in chat. Review it before using Inject Code into Editor."
                             )
-                            outputConsole = "VASM Compiler Gate Error:\n\(compilerOutput)"
                         }
                     }
                 }
@@ -1329,6 +1428,18 @@ SineWave:
         currentChatTask?.cancel()
         currentChatTask = nil
         assistantChat.cancel()
+    }
+
+    private func toggleMLXServerFromAssistantHeader() {
+        if mlxServer.canStop {
+            mlxServer.stop()
+            llm.refreshConnectionStatus()
+        } else if mlxServer.canStart {
+            llm.provider = .lmStudio
+            llm.customUrl = ""
+            llm.modelName = OllamaService.publishedModelID
+            mlxServer.start()
+        }
     }
 
     private func copyPromptToClipboard(_ prompt: String, messageID: UUID) {
@@ -1394,6 +1505,15 @@ SineWave:
         codeText = sourceWithInjectionHeader(source, proposedFileName: proposedFileName, prompt: prompt)
         playCodeInjectedSound()
         outputConsole = "\(consoleMessage)\nProposed file name: \(proposedFileName)"
+    }
+
+    private func handleGeneratedCodeReady(_ source: String, prompt: String, autoInjectConsoleMessage: String, readyConsoleMessage: String) {
+        guard autoInjectGeneratedCode else {
+            outputConsole = readyConsoleMessage
+            return
+        }
+
+        injectGeneratedCode(source, prompt: prompt, consoleMessage: autoInjectConsoleMessage)
     }
 
     private func confirmReplacingEditorIfNeeded() -> Bool {
@@ -1526,6 +1646,21 @@ SineWave:
     }
 }
 
+private struct ChatInjectButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .foregroundColor(.orange.opacity(configuration.isPressed ? 0.72 : 0.95))
+            .background(Color(red: 0.18, green: 0.18, blue: 0.22).opacity(configuration.isPressed ? 0.85 : 1.0))
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(Color.orange.opacity(configuration.isPressed ? 0.95 : 0.55), lineWidth: 1)
+            )
+    }
+}
+
 struct SettingsView: View {
     @StateObject private var llm = OllamaService.shared
     @StateObject private var mlxServer = MLXServerController.shared
@@ -1547,6 +1682,7 @@ struct SettingsView: View {
     @AppStorage("vAmigaSerialPort") private var vAmigaSerialPort: Int = 8085
     @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
     @AppStorage(AppPreferenceDefaults.showChatBoingBallKey) private var showChatBoingBall: Bool = AppPreferenceDefaults.showChatBoingBall
+    @AppStorage(AppPreferenceDefaults.autoInjectGeneratedCodeKey) private var autoInjectGeneratedCode: Bool = AppPreferenceDefaults.autoInjectGeneratedCode
     @AppStorage("romsDirectoryPath") private var romsDirectoryPath: String = "/Users/megov/code/GitHub/littlethings/Amiga/commodore-amiga-firmware"
 
     @State private var availableRoms: [RomEntry] = []
@@ -1578,18 +1714,42 @@ struct SettingsView: View {
         )
     }
 
+    private var mlxServerToggleLabel: String {
+        mlxServer.canStop ? "Stop MLX Server" : "Start MLX Server"
+    }
+
+    private var mlxServerToggleIcon: String {
+        mlxServer.canStop ? "stop.fill" : "play.fill"
+    }
+
+    private var canToggleMLXServer: Bool {
+        mlxServer.canStart || mlxServer.canStop
+    }
+
     private var mlxServerStatusColor: Color {
         switch mlxServer.status {
         case .running:
             return .green
         case .runningExternally:
-            return .orange
+            return .accentColor
         case .starting, .stopping:
-            return .yellow
+            return .accentColor
         case .failed:
             return .red
         case .stopped:
             return .secondary
+        }
+    }
+
+    private func toggleMLXServerFromSettings() {
+        if mlxServer.canStop {
+            mlxServer.stop()
+            llm.refreshConnectionStatus()
+        } else if mlxServer.canStart {
+            llm.provider = .lmStudio
+            llm.customUrl = ""
+            llm.modelName = OllamaService.publishedModelID
+            mlxServer.start()
         }
     }
 
@@ -1678,6 +1838,13 @@ struct SettingsView: View {
 
             Toggle("Show Boing Ball animation in chat", isOn: $showChatBoingBall)
                 .accessibilityIdentifier("showChatBoingBallToggle")
+
+            Toggle("Automatically inject generated code", isOn: $autoInjectGeneratedCode)
+                .accessibilityIdentifier("autoInjectGeneratedCodeToggle")
+
+            Text("When enabled, assistant code is inserted after generation and compiler checks finish. If the editor already contains code, the replacement confirmation still appears.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .formStyle(.grouped)
         .padding()
@@ -1694,6 +1861,10 @@ struct SettingsView: View {
 
                 TextField("Model name", text: $llm.modelName)
                     .textFieldStyle(.roundedBorder)
+
+                Link("Open Hugging Face model card", destination: OllamaService.modelCardURL)
+                    .font(.caption)
+                    .accessibilityIdentifier("huggingFaceModelCardLink")
 
                 TextField("Custom API URL", text: $llm.customUrl)
                     .textFieldStyle(.roundedBorder)
@@ -1721,32 +1892,34 @@ struct SettingsView: View {
                         .accessibilityIdentifier("mlxServerStatusLabel")
                 }
 
+                Text("Managed by bundled helper")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
                 if let detail = mlxServer.status.detail {
                     Text(detail)
                         .font(.caption)
                         .foregroundStyle(.red)
+                        .textSelection(.enabled)
+
+                    Button {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(detail, forType: .string)
+                    } label: {
+                        Label("Copy Setup Instructions", systemImage: "doc.on.doc")
+                    }
+                    .accessibilityIdentifier("copyMLXSetupInstructionsButton")
                 }
 
                 HStack {
                     Button {
-                        llm.provider = .lmStudio
-                        llm.customUrl = ""
-                        llm.modelName = OllamaService.Provider.lmStudio.defaultModelName
-                        mlxServer.start()
+                        toggleMLXServerFromSettings()
                     } label: {
-                        Label("Start MLX Server", systemImage: "play.fill")
+                        Label(mlxServerToggleLabel, systemImage: mlxServerToggleIcon)
                     }
-                    .disabled(!mlxServer.canStart)
-                    .accessibilityIdentifier("startMLXServerButton")
-
-                    Button {
-                        mlxServer.stop()
-                        llm.refreshConnectionStatus()
-                    } label: {
-                        Label("Stop", systemImage: "stop.fill")
-                    }
-                    .disabled(!mlxServer.canStop)
-                    .accessibilityIdentifier("stopMLXServerButton")
+                    .disabled(!canToggleMLXServer)
+                    .tint(.accentColor)
+                    .accessibilityIdentifier("toggleMLXServerButton")
 
                     Button {
                         mlxServer.refreshStatus()
