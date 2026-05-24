@@ -19,11 +19,17 @@ let package = Package(
                 "AmigaPlayground.app",
                 "AmigaPlaygroundTests",
                 "AmigaPlayground.xcodeproj",
+                "Helpers",
                 "script"
             ],
             resources: [
                 .process("Resources")
             ]
+        ),
+        .executableTarget(
+            name: "MLXServerHelper",
+            dependencies: [],
+            path: "Helpers/MLXServerHelper"
         ),
         .testTarget(
             name: "AmigaPlaygroundTests",

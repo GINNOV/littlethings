@@ -8,6 +8,11 @@ class AmigaPlaygroundTests: XCTestCase {
         XCTAssertTrue(AppPreferenceDefaults.showChatBoingBall)
     }
 
+    func testAutoInjectGeneratedCodePreferenceDefaultsOff() {
+        XCTAssertEqual(AppPreferenceDefaults.autoInjectGeneratedCodeKey, "autoInjectGeneratedCode")
+        XCTAssertFalse(AppPreferenceDefaults.autoInjectGeneratedCode)
+    }
+
     // MARK: - Assistant Chat Session Tests
 
     func testAssistantChatSessionSubmitsPromptOnceAndIgnoresDuplicateWhileGenerating() {
@@ -554,6 +559,109 @@ CopperList:
         waitForExpectations(timeout: 5.0)
     }
 
+    func testDefaultExampleLibraryContainsTenExamples() {
+        XCTAssertEqual(ExampleLibraryStore.defaultExamples.count, 10)
+        XCTAssertTrue(ExampleLibraryStore.defaultExamples.contains { $0.language == .assembly })
+        XCTAssertTrue(ExampleLibraryStore.defaultExamples.contains { $0.language == .c })
+        XCTAssertTrue(ExampleLibraryStore.defaultExamples.contains { $0.language == .mixed })
+    }
+
+    func testDefaultAssemblyAndMixedExamplesCompileWithVASM() throws {
+        let compiler = CompilerService.shared
+
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            XCTFail("VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+
+        for example in ExampleLibraryStore.defaultExamples where example.language != .c {
+            let result = try runExampleCompiler(
+                executablePath: compiler.vasmPath,
+                sourceExtension: "s",
+                source: AssemblySourceFormatter.vasmReadySource(from: example.code),
+                arguments: { sourceURL, outputURL in
+                    [
+                        "-kick1hunks",
+                        "-Fhunkexe",
+                        "-I\(compiler.ndkInclude)",
+                        "-o", outputURL.path,
+                        "-nosym",
+                        sourceURL.path
+                    ]
+                }
+            )
+
+            XCTAssertEqual(
+                result.status,
+                0,
+                "\(example.name) must compile with VASM.\n\(result.output)"
+            )
+        }
+    }
+
+    func testDefaultCExamplesPassClangSyntaxCheck() throws {
+        let clangPath = "/usr/bin/clang"
+        guard FileManager.default.fileExists(atPath: clangPath) else {
+            XCTFail("clang not found at \(clangPath)")
+            return
+        }
+
+        for example in ExampleLibraryStore.defaultExamples where example.language == .c {
+            let result = try runExampleCompiler(
+                executablePath: clangPath,
+                sourceExtension: "c",
+                source: example.code,
+                arguments: { sourceURL, _ in
+                    [
+                        "-std=c89",
+                        "-Wall",
+                        "-Werror",
+                        "-fsyntax-only",
+                        sourceURL.path
+                    ]
+                }
+            )
+
+            XCTAssertEqual(
+                result.status,
+                0,
+                "\(example.name) must pass C syntax validation.\n\(result.output)"
+            )
+        }
+    }
+
+    private func runExampleCompiler(
+        executablePath: String,
+        sourceExtension: String,
+        source: String,
+        arguments: (URL, URL) -> [String]
+    ) throws -> (status: Int32, output: String) {
+        let tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("AmigaPlaygroundExampleTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let sourceURL = tempDirectory.appendingPathComponent("example.\(sourceExtension)")
+        let outputURL = tempDirectory.appendingPathComponent("example.bin")
+        try source.write(to: sourceURL, atomically: true, encoding: .utf8)
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: executablePath)
+        process.arguments = arguments(sourceURL, outputURL)
+
+        let outputPipe = Pipe()
+        let errorPipe = Pipe()
+        process.standardOutput = outputPipe
+        process.standardError = errorPipe
+
+        try process.run()
+        process.waitUntilExit()
+
+        let stdout = String(data: outputPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        let stderr = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        return (process.terminationStatus, (stdout + "\n" + stderr).trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
     func testVasmCompilerFailure() {
         let compiler = CompilerService.shared
 
@@ -889,6 +997,7 @@ CopperList:
 
         XCTAssertEqual(service.provider, .lmStudio)
         XCTAssertEqual(service.apiUrl, "http://localhost:1234")
+        XCTAssertEqual(service.modelName, "bmove/antigravity-amiga-68k")
         XCTAssertEqual(service.requestModelName, "default_model")
         XCTAssertEqual(service.connectionStatusLabel, "LM Studio Not Checked")
     }
@@ -928,6 +1037,9 @@ CopperList:
         let originalModelName = service.modelName
 
         service.provider = .lmStudio
+        service.modelName = "bmove/antigravity-amiga-68k"
+        XCTAssertEqual(service.requestModelName, "default_model")
+
         service.modelName = "antigravity-amiga-68k"
         XCTAssertEqual(service.requestModelName, "default_model")
 
@@ -1228,6 +1340,46 @@ CopperList:
 
     // MARK: - MLX Server Control Tests
 
+    func testMLXHelperTargetExistsInPackageManifest() throws {
+        let packageURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("Package.swift")
+        let packageText = try String(contentsOf: packageURL)
+
+        XCTAssertTrue(packageText.contains(#"name: "MLXServerHelper""#))
+        XCTAssertTrue(packageText.contains(#"path: "Helpers/MLXServerHelper""#))
+    }
+
+    func testMLXHelperInvocationBuildsExpectedArguments() {
+        let config = MLXServerController.Configuration(
+            workingDirectory: URL(fileURLWithPath: "/tmp/fine_tuning", isDirectory: true),
+            modelDirectoryName: "fused_model",
+            port: 1234,
+            logFileName: "server.log"
+        )
+
+        let invocation = MLXServerController.buildInvocation(configuration: config)
+
+        XCTAssertEqual(invocation.arguments, [
+            "--model", "/tmp/fine_tuning/fused_model",
+            "--port", "1234",
+            "--log-file", "/tmp/fine_tuning/server.log",
+            "--runtime-command", "uv run python -m mlx_lm.server"
+        ])
+    }
+
+    func testMLXHelperFailureMessageIncludesSetupAction() throws {
+        let line = #"{"event":"failed","message":"uv was not found.","code":"missing_uv","action":"Install uv with `curl -LsSf https://astral.sh/uv/install.sh | sh`, then restart Amiga Playground. If uv is already installed, make sure it is available at /opt/homebrew/bin/uv, /usr/local/bin/uv, or ~/.local/bin/uv."}"#
+
+        let status = try MLXServerController.HelperStatus.parse(line: line)
+
+        XCTAssertEqual(status.event, .failed)
+        XCTAssertEqual(status.code, "missing_uv")
+        XCTAssertEqual(status.message, "uv was not found.")
+        XCTAssertTrue(status.action?.contains("Install uv") == true)
+    }
+
     func testMLXServerBuildsExpectedLaunchInvocation() throws {
         let tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -1244,10 +1396,12 @@ CopperList:
 
         let invocation = MLXServerController.buildInvocation(configuration: config)
 
-        XCTAssertEqual(invocation.executableURL.path, "/bin/zsh")
+        XCTAssertEqual(invocation.executableURL.lastPathComponent, "MLXServerHelper")
         XCTAssertEqual(invocation.arguments, [
-            "-lc",
-            "cd '\(tempDirectory.path)' && exec uv run python -m mlx_lm.server --model 'fused_model' --port '1234'"
+            "--model", tempDirectory.appendingPathComponent("fused_model").path,
+            "--port", "1234",
+            "--log-file", tempDirectory.appendingPathComponent("server.log").path,
+            "--runtime-command", "uv run python -m mlx_lm.server"
         ])
         XCTAssertEqual(invocation.workingDirectory, tempDirectory)
         XCTAssertEqual(invocation.logFile, tempDirectory.appendingPathComponent("server.log"))
