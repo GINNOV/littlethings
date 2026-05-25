@@ -22,7 +22,7 @@ echo "=========================================================="
 rm -rf "$ADAPTER_PATH" "$FUSED_MODEL_PATH"
 
 # Run the LoRA training
-# We use 300 iterations for a highly targeted fast convergence on the model
+# We use 1500 iterations for a focused convergence pass on the model
 # We set learning rate to a safe 2e-5 to prevent weight collapse
 uv run python -m mlx_lm.lora \
   --model "$BASE_MODEL" \
@@ -39,7 +39,7 @@ uv run python -m mlx_lm.lora \
 
 echo ""
 echo "=========================================================="
-echo "Training Complete! Fusing adapters and exporting to GGUF..."
+echo "Training Complete! Fusing adapters into an MLX checkpoint..."
 echo "=========================================================="
 
 # Fuse adapters and save to fused_model
@@ -53,5 +53,5 @@ uv run python -m mlx_lm.fuse \
 echo "=========================================================="
 echo "Process Finished Successfully!"
 echo "Fused Model saved at: $FUSED_MODEL_PATH"
-echo "GGUF Model saved at: $GGUF_OUTPUT_PATH"
+echo "GGUF conversion is not performed by this script. Optional path: $GGUF_OUTPUT_PATH"
 echo "=========================================================="

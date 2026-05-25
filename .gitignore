@@ -36,6 +36,7 @@ fastlane/test_output
 
 # Archive files
 *.xcarchive
+*.bundle
 
 # Node
 **/node_modules/

@@ -3,6 +3,9 @@ import Combine
 
 class OllamaService: ObservableObject {
     static let shared = OllamaService()
+    static let publishedModelID = "bmove/antigravity-amiga-68k"
+    static let modelCardURL = URL(string: "https://huggingface.co/bmove/antigravity-amiga-68k")!
+    static let mlxServerRequestModelName = "default_model"
 
     enum PreferenceKey {
         static let contextWindow = "assistantContextWindow"
@@ -16,7 +19,34 @@ CRITICAL DIRECTIVES:
 - DO NOT leak C-style preprocessor directives (#define, #include, #ifdef) into assembly code.
 - DO NOT use C-style comments (// or /* */). All assembly comments MUST start with a semicolon (;).
 - Use VASM-compatible include statements (e.g., 'include "exec/types.i"') instead of C header includes like "amiga.h".
-- Ensure all directives (SECTION, MOVE, DC, DS, RTS) have leading spaces so they are not treated as compiler labels.
+- Ensure all instructions and directives (SECTION, MOVE, DC, DS, RTS) have leading spaces so they are not treated as compiler labels. Only labels may start in column 1.
+"""
+
+    static let generationContractPrompt = """
+When the user asks you to generate Amiga code, return exactly one fenced code block tagged assembly and no prose outside the code block. The code block must contain complete VASM-compatible source, not a fragment.
+
+General VASM/68000 rules learned from compiler validation:
+- Include SECTION Code,CODE and XDEF _Start for runnable AmigaDOS executables. Do not split SECTION Code,CODE across separate SECTION and CODE lines.
+- Every CPU instruction and assembler directive must start with whitespace. Only labels may start in column 1.
+- Use $00ff style hexadecimal constants. Do not emit C-style 0x00ff constants.
+- Do not invent symbols such as BLUE unless they are defined with EQU or labels in the same source.
+- Use $dff000,a6 plus register offsets such as $180(a6), $80(a6), $88(a6), and $96(a6) when touching custom chip registers. Do not write dff000(a6), DFF180, or other bare custom-chip names as operands.
+- Do not emit dec.l, wait.l, and.t, BPUSH, OUT, $fp, v0, or other non-68000/pseudo instructions. Use subq/dbf/tst/cmp/bra/beq/bne instead.
+- Branches must target labels. Do not use register-comparison branches or bne.l/bra.l for simple 68000 local loops; prefer bne.s, beq.s, bra.s, or dbf.
+
+For copper-list requests:
+- Include SECTION Code,CODE,CHIP and XDEF _Start.
+- Install the copper list through COP1LC ($80 from $dff000), strobe COPJMP1 ($88), and enable copper DMA with DMACON.
+- Include a main loop that waits for vertical blank and exits on the left mouse button.
+- For bouncing or animated copper bars, update copper wait/color words each frame; do not output only static DC.W data.
+- Use real 68000/VASM instructions and copper list words only. Do not use WAIT(...) pseudocode, MOVE(...) pseudocode, COLOR_A placeholders, COLOR_B placeholders, or symbolic color placeholders.
+- Use concrete Amiga 12-bit color values such as $0f00, $00f0, $000f, $0ff0, $00ff, and $0f0f.
+- End every copper list with dc.w $ffff,$fffe.
+
+For blitter requests:
+- Use the canonical DMACONR byte busy wait: btst #6,$02(a6), followed by bne.s back to the wait label.
+- Do not output a wait-only routine. A valid blitter routine must set BLTCON0 at $40(a6), configure source/destination pointers or destination-only clear state, configure needed modulos, start the operation through BLTSIZE at $58(a6), and wait again after BLTSIZE.
+- Prefer concrete $dff000 offsets such as $40(a6), $42(a6), $44(a6), $50(a6), $54(a6), $64(a6), $66(a6), and $58(a6). Do not use bare BLTCON0 or BLTSIZE unless you define them.
 """
     
     enum Provider: String, CaseIterable, Identifiable {
@@ -35,7 +65,7 @@ CRITICAL DIRECTIVES:
         var defaultModelName: String {
             switch self {
             case .ollama: return "antigravity-amiga-68k"
-            case .lmStudio: return "default_model"
+            case .lmStudio: return OllamaService.publishedModelID
             }
         }
 
@@ -111,11 +141,16 @@ CRITICAL DIRECTIVES:
     var requestModelName: String {
         let trimmedName = modelName.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedName.isEmpty {
+            if provider == .lmStudio {
+                return Self.mlxServerRequestModelName
+            }
+
             return provider.defaultModelName
         }
 
-        if provider == .lmStudio && trimmedName == Provider.ollama.defaultModelName {
-            return provider.defaultModelName
+        if provider == .lmStudio &&
+            (trimmedName == Provider.ollama.defaultModelName || trimmedName == Self.publishedModelID) {
+            return Self.mlxServerRequestModelName
         }
 
         return trimmedName
@@ -195,9 +230,10 @@ CRITICAL DIRECTIVES:
     }
     
     @discardableResult
-    func streamChat(messages: [ChatMessage], onChunk: @escaping (String) -> Void, onCompletion: @escaping (String) -> Void, onError: @escaping (Error) -> Void) -> URLSessionDataTask? {
+    func streamChat(messages: [ChatMessage], adapterPath: String? = nil, onChunk: @escaping (String) -> Void, onCompletion: @escaping (String) -> Void, onError: @escaping (Error) -> Void) -> URLSessionDataTask? {
         return streamChat(
             messages: messages,
+            adapterPath: adapterPath,
             onContentChunk: onChunk,
             onReasoningChunk: onChunk,
             onCompletion: { content, reasoning in
@@ -211,6 +247,7 @@ CRITICAL DIRECTIVES:
     @discardableResult
     func streamChat(
         messages: [ChatMessage],
+        adapterPath: String? = nil,
         onContentChunk: @escaping (String) -> Void,
         onReasoningChunk: @escaping (String) -> Void,
         onCompletion: @escaping (String, String) -> Void,
@@ -242,13 +279,18 @@ CRITICAL DIRECTIVES:
             ]
         } else {
             // LM Studio (OpenAI Compatible)
-            body = [
+            var lmStudioBody: [String: Any] = [
                 "model": requestModelName,
                 "messages": formattedMessages,
                 "stream": true,
                 "max_tokens": sanitizedContextWindow
             ]
+            if let adapterPath, !adapterPath.isEmpty {
+                lmStudioBody["adapters"] = adapterPath
+            }
+            body = lmStudioBody
         }
+
         
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -276,6 +318,8 @@ CRITICAL DIRECTIVES:
         if !trimmedSystemPrompt.isEmpty {
             formattedMessages.append(["role": "system", "content": trimmedSystemPrompt])
         }
+
+        formattedMessages.append(["role": "system", "content": Self.generationContractPrompt])
 
         formattedMessages.append(contentsOf: messages.map { ["role": $0.role, "content": $0.content] })
         return formattedMessages
@@ -411,20 +455,31 @@ class StreamingDelegate: NSObject, URLSessionDataDelegate {
     }
 
     private func appendContentChunk(_ content: String) {
-        guard !content.isEmpty else { return }
-        fullContentResponse += content
-        fullResponse += content
+        let sanitizedContent = Self.sanitizedModelText(content)
+        guard !sanitizedContent.isEmpty else { return }
+        fullContentResponse += sanitizedContent
+        fullResponse += sanitizedContent
         DispatchQueue.main.async {
-            self.onContentChunk(content)
+            self.onContentChunk(sanitizedContent)
         }
     }
 
     private func appendReasoningChunk(_ content: String) {
-        guard !content.isEmpty else { return }
-        fullReasoningResponse += content
-        fullResponse += content
+        let sanitizedContent = Self.sanitizedModelText(content)
+        guard !sanitizedContent.isEmpty else { return }
+        fullReasoningResponse += sanitizedContent
+        fullResponse += sanitizedContent
         DispatchQueue.main.async {
-            self.onReasoningChunk(content)
+            self.onReasoningChunk(sanitizedContent)
         }
+    }
+
+    static func sanitizedModelText(_ text: String) -> String {
+        String(text.unicodeScalars.filter { scalar in
+            scalar.value == 9 ||
+                scalar.value == 10 ||
+                scalar.value == 13 ||
+                (scalar.value >= 32 && scalar.value != 127)
+        })
     }
 }

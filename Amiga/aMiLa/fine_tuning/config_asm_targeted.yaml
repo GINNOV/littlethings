@@ -1,0 +1,16 @@
+# Targeted corrective pass for app/eval golden-ladder ASM failures.
+model: "mlx-community/gemma-4-e4b-it-4bit"
+train: true
+data: "data_asm"
+iters: 500
+batch_size: 2
+learning_rate: 2e-5
+adapter_path: "adapters_asm"
+save_every: 100
+max_seq_length: 1024
+grad_checkpoint: true
+num_layers: -1
+lora_parameters:
+  rank: 32
+  scale: 64.0
+  dropout: 0.05

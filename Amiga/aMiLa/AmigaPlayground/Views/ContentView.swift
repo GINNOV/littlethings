@@ -36,7 +36,7 @@ enum AppPreferenceDefaults {
     static let showChatBoingBallKey = "showChatBoingBall"
     static let showChatBoingBall = true
     static let autoInjectGeneratedCodeKey = "autoInjectGeneratedCode"
-    static let autoInjectGeneratedCode = false
+    static let autoInjectGeneratedCode = true
 }
 
 struct AmigaPlaygroundCommands: Commands {
@@ -1274,7 +1274,22 @@ SineWave:
             originalUserPrompt = submittedPrompt
         }
 
+        if selfCorrectionAttempts == 0,
+           let localSource = AssistantPromptTemplate.source(for: submittedPrompt) {
+            let response = """
+            ```assembly
+            \(localSource)
+            ```
+            """
+            let completion = assistantChat.complete(fullResponse: response, streamedResponse: "")
+            guard let injectedCode = completion.injectedCode else { return }
+
+            runAssemblyReliabilityGate(injectedCode, submittedPrompt: submittedPrompt)
+            return
+        }
+
         let adapterPath = looksLikeC ? "adapters_c" : "adapters_asm"
+        outputConsole = "Generating"
         currentChatTask = OllamaService.shared.streamChat(
             messages: request.messages,
             adapterPath: adapterPath,
@@ -1318,75 +1333,7 @@ SineWave:
                     return
                 }
                 
-                // Perform compiler gate on generated 68k assembly
-                outputConsole = "Running compiler gate on generated 68k assembly..."
-                CompilerService.shared.compile(assemblyCode: injectedCode) { success, compilerOutput in
-                    if success {
-                        self.selfCorrectionAttempts = 0
-                        handleGeneratedCodeReady(
-                            injectedCode,
-                            prompt: self.originalUserPrompt.isEmpty ? submittedPrompt : self.originalUserPrompt,
-                            autoInjectConsoleMessage: "Injected compiler-verified 68k assembly (passed VASM gate!).",
-                            readyConsoleMessage: "Generated 68k assembly passed the VASM gate. Review it in chat, then click Inject Code into Editor to replace the editor contents."
-                        )
-                    } else {
-                        if self.selfCorrectionAttempts < 2 {
-                            self.selfCorrectionAttempts += 1
-                            outputConsole = "Compiler gate failed!\n\(compilerOutput)\n\nTriggering automatic self-correction (Attempt \(self.selfCorrectionAttempts)/2)..."
-
-                            let repairPrompt: String
-                            if self.selfCorrectionAttempts == 1 {
-                                repairPrompt = """
-                                Your generated 68k assembly code failed to compile with the following error from vasmm68k_mot:
-
-                                ```text
-                                \(compilerOutput)
-                                ```
-
-                                Please fix the compilation errors. Retain all original functionality, labels, and logic, but ensure the syntax is 100% correct and compilable.
-
-                                CRITICAL MOTOROLA 68000 SYNTAX RULES:
-                                1. 68k branches (BNE, BEQ, BLT, BGT, BPL, BMI) ONLY take a single label as an operand (e.g. 'bne label'). They DO NOT compare registers directly (e.g. NEVER write 'bne d0,#0,label').
-                                   To compare and branch, you must use TST or CMP first:
-                                   - Instead of: bne d0,#0,label
-                                     Use:        tst.w d0
-                                                 bne.s label
-                                2. Set-on-condition instructions (SLT, SEQ, SNE) ONLY take a single destination register or memory location as an operand (e.g. 'slt d0'). They DO NOT compare three operands. Use CMP first.
-                                3. The 'LOOP' mnemonic does not exist on the 68000. Use DBRA (dbf) or manual subtraction and branches (SUBQ / BNE) for loops.
-
-                                Return ONLY the entire corrected code block in a fenced code block (```assembly ... ```). Do not include any explanation outside the code block.
-                                """
-                            } else {
-                                repairPrompt = """
-                                Your previous repair attempt STILL failed to compile with the following error from vasmm68k_mot:
-
-                                ```text
-                                \(compilerOutput)
-                                ```
-
-                                You are stuck in a loop trying to preserve invalid pseudo-code instructions (like register-comparison branches or three-operand sets).
-
-                                ESCAPE STRATEGY:
-                                - Please completely REWRITE the failing logic using only standard, basic 68k instructions: MOVE, ADD, SUB, CMP, TST, BRA, BSR, BNE, BEQ, RTS.
-                                - Absolutely DO NOT use register-comparison branches (e.g. do not write 'bne d0,#0,label'). Use 'tst.w d0' followed by 'bne label'.
-                                - Absolutely DO NOT use the 'LOOP' mnemonic or three-operand instructions.
-
-                                Return ONLY the entire corrected code block in a fenced code block (```assembly ... ```). Do not include any explanation outside the code block.
-                                """
-                            }
-
-                            submitAssistantPrompt(repairPrompt, clearComposer: false)
-                        } else {
-                            self.selfCorrectionAttempts = 0
-                            handleGeneratedCodeReady(
-                                injectedCode,
-                                prompt: self.originalUserPrompt.isEmpty ? submittedPrompt : self.originalUserPrompt,
-                                autoInjectConsoleMessage: "Injected code after maximum self-correction attempts (failed VASM gate).",
-                                readyConsoleMessage: "VASM Compiler Gate Error:\n\(compilerOutput)\n\nGenerated code is available in chat. Review it before using Inject Code into Editor."
-                            )
-                        }
-                    }
-                }
+                runAssemblyReliabilityGate(injectedCode, submittedPrompt: submittedPrompt)
             },
             onError: { error in
                 currentChatTask = nil
@@ -1399,6 +1346,63 @@ SineWave:
                 assistantChat.fail(error)
             }
         )
+    }
+
+    private func runAssemblyReliabilityGate(_ source: String, submittedPrompt: String) {
+        let requestedPrompt = originalUserPrompt.isEmpty ? submittedPrompt : originalUserPrompt
+        activeOutputTab = .console
+        outputConsole = "Compiling"
+
+        CompilerService.shared.compile(assemblyCode: source) { success, compilerOutput in
+            let semanticResult = AssemblySemanticValidator.validate(source: source, prompt: requestedPrompt)
+
+            if success && semanticResult.passed {
+                self.selfCorrectionAttempts = 0
+                self.outputConsole = "Passed"
+                handleGeneratedCodeReady(
+                    source,
+                    prompt: requestedPrompt,
+                    autoInjectConsoleMessage: "Passed",
+                    readyConsoleMessage: "Passed"
+                )
+                return
+            }
+
+            let gateFailures = self.reliabilityGateFailures(
+                compilerSucceeded: success,
+                compilerOutput: compilerOutput,
+                semanticFailures: semanticResult.failures
+            )
+
+            if self.selfCorrectionAttempts < 2 {
+                self.selfCorrectionAttempts += 1
+                outputConsole = "Repairing"
+                let repairPrompt = AssemblyRepairPromptBuilder.prompt(
+                    originalRequest: requestedPrompt,
+                    source: source,
+                    compilerOutput: compilerOutput,
+                    semanticFailures: semanticResult.failures,
+                    attempt: self.selfCorrectionAttempts
+                )
+                submitAssistantPrompt(repairPrompt, clearComposer: false)
+                return
+            }
+
+            self.selfCorrectionAttempts = 0
+            outputConsole = "Failed: \(gateFailures.first ?? "reliability gate failed")"
+        }
+    }
+
+    private func reliabilityGateFailures(compilerSucceeded: Bool, compilerOutput: String, semanticFailures: [String]) -> [String] {
+        var failures: [String] = []
+
+        if !compilerSucceeded {
+            let trimmedCompilerOutput = compilerOutput.trimmingCharacters(in: .whitespacesAndNewlines)
+            failures.append(trimmedCompilerOutput.isEmpty ? "compiler failed" : trimmedCompilerOutput)
+        }
+
+        failures.append(contentsOf: semanticFailures)
+        return failures
     }
 
     private func compileRepairPrompt(source: String, compilerOutput: String) -> String {

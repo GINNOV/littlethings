@@ -17,7 +17,8 @@ NDK_INCLUDE = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/Dataset/corpus3
 NDK_C_INCLUDE_1 = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/Dataset/corpus3/amiga-dev/targets/m68k-amigaos/ndk/include_h"
 NDK_C_INCLUDE_2 = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/Dataset/corpus3/amiga-dev/targets/m68k-amigaos/include"
 VASM_PATH = "/usr/local/bin/vasmm68k_mot"
-OUTPUT_FILE = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/fine_tuning/dataset.jsonl"
+OUTPUT_ASM_FILE = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/fine_tuning/dataset_asm.jsonl"
+OUTPUT_C_FILE = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/fine_tuning/dataset_c.jsonl"
 
 SYSTEM_PROMPT = (
     "You are AntigravityAmiga, an elite Amiga 68000 Motorola assembly programmer. "
@@ -278,13 +279,13 @@ def process_sources():
     asm_compiled_count = 0
     c_compiled_count = 0
     
-    MAX_ASM_EXAMPLES = 100
-    MAX_C_EXAMPLES = 100
+    MAX_ASM_EXAMPLES = 500
+    MAX_C_EXAMPLES = 500
     
     # We want to curate a solid set of working examples
     for file_path in tqdm(source_files):
         if asm_compiled_count >= MAX_ASM_EXAMPLES and c_compiled_count >= MAX_C_EXAMPLES:
-            print("\nReached max caps for both ASM (25) and C (25) compiled examples. Breaking early!")
+            print(f"\nReached max caps for both ASM ({MAX_ASM_EXAMPLES}) and C ({MAX_C_EXAMPLES}) compiled examples. Breaking early!")
             break
             
         try:
@@ -305,9 +306,11 @@ def process_sources():
             if is_c:
                 compiles, log = verify_c_code(content)
                 sys_prompt = C_SYSTEM_PROMPT
+                target_output_file = OUTPUT_C_FILE
             else:
                 compiles, log = verify_code_compiles(content)
                 sys_prompt = SYSTEM_PROMPT
+                target_output_file = OUTPUT_ASM_FILE
             
             # For fine-tuning, compilable code is GOLD
             if compiles:
@@ -329,18 +332,20 @@ def process_sources():
                 dataset_records.append(record)
                 
                 # Write progressively so we don't lose data
-                with open(OUTPUT_FILE, "a" if os.path.exists(OUTPUT_FILE) else "w", encoding="utf-8") as out:
+                with open(target_output_file, "a" if os.path.exists(target_output_file) else "w", encoding="utf-8") as out:
                     out.write(json.dumps(record) + "\n")
         except Exception as e:
             print(f"Error processing {file_path}: {e}")
 
     print(f"\nProcessing complete!")
     print(f"Validated and compiled successfully: {compiled_count} total (ASM: {asm_compiled_count}, C: {c_compiled_count}).")
-    print(f"Dataset generated at: {OUTPUT_FILE}")
+    print(f"Datasets generated at:\n- Assembly: {OUTPUT_ASM_FILE}\n- C: {OUTPUT_C_FILE}")
 
 if __name__ == "__main__":
-    # Clear output file first if it exists
-    if os.path.exists(OUTPUT_FILE):
-        os.remove(OUTPUT_FILE)
+    # Clear output files first if they exist
+    if os.path.exists(OUTPUT_ASM_FILE):
+        os.remove(OUTPUT_ASM_FILE)
+    if os.path.exists(OUTPUT_C_FILE):
+        os.remove(OUTPUT_C_FILE)
     
     process_sources()

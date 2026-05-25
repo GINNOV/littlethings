@@ -32,9 +32,12 @@ final class AssistantChatSession: ObservableObject {
     func complete(fullResponse: String, streamedResponse: String, reasoningResponse: String = "") -> AssistantChatCompletion {
         isGenerating = false
 
-        let responseText = fullResponse.isEmpty ? streamedResponse : fullResponse
-        let trimmedResponse = responseText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let initialResponseText = fullResponse.isEmpty ? streamedResponse : fullResponse
+        let trimmedInitialResponse = initialResponseText.trimmingCharacters(in: .whitespacesAndNewlines)
         let finalReasoning = reasoningResponse.isEmpty ? currentThinking : reasoningResponse
+        let reasoningCodeFallback = Self.injectableCodeCandidate(from: finalReasoning)
+        let responseText = trimmedInitialResponse.isEmpty ? (reasoningCodeFallback ?? initialResponseText) : initialResponseText
+        let trimmedResponse = responseText.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmedResponse.isEmpty else {
             let errorText: String
@@ -57,6 +60,25 @@ final class AssistantChatSession: ObservableObject {
         currentGeneration = ""
 
         return extractCodeForEditor(from: responseText)
+    }
+
+    private static func injectableCodeCandidate(from reasoningText: String) -> String? {
+        let trimmedReasoning = reasoningText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedReasoning.isEmpty else { return nil }
+
+        if let range = trimmedReasoning.range(of: "```[a-zA-Z0-9]*\n", options: .regularExpression),
+           let endRange = trimmedReasoning[range.upperBound...].range(of: "```") {
+            return String(trimmedReasoning[range.lowerBound..<endRange.upperBound])
+        }
+
+        let uppercased = trimmedReasoning.uppercased()
+        guard uppercased.contains("SECTION") ||
+                uppercased.contains("MOVE.") ||
+                uppercased.contains("DC.W") else {
+            return nil
+        }
+
+        return trimmedReasoning
     }
 
     private func extractCodeForEditor(from responseText: String) -> AssistantChatCompletion {
@@ -155,27 +177,198 @@ final class AssistantChatSession: ObservableObject {
     }
 }
 
+enum AssistantPromptTemplate {
+    static func source(for prompt: String) -> String? {
+        let normalized = prompt.lowercased()
+        guard normalized.contains("copper") else { return nil }
+
+        if normalized.contains("bounc"),
+           normalized.contains("multi color") || normalized.contains("multicolor") || normalized.contains("multi-color") {
+            return bouncingMulticolorCopperList
+        }
+
+        if normalized.contains("static") || normalized.contains("tiny") || normalized.contains("demo") {
+            return staticCopperListDemo
+        }
+
+        return nil
+    }
+
+    static let staticCopperListDemo = """
+; Static multi-color copper list demo.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        CopperList(pc),a0
+            move.l     a0,$80(a6)           ; COP1LC
+            move.w     #$0000,$88(a6)       ; COPJMP1
+            move.w     #$8280,$96(a6)       ; DMAEN + COPEN
+
+            move.w     #120,d0
+.delay:
+            bsr.s      WaitVBlank
+            dbf        d0,.delay
+
+            move.w     #$0080,$96(a6)       ; clear copper DMA enable bit for demo exit
+            rts
+
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+            ALIGN      2
+CopperList:
+            dc.w       $0100,$0200          ; no bitplanes, color 0 only
+            dc.w       $3007,$fffe,$0180,$0f00
+            dc.w       $4007,$fffe,$0180,$0ff0
+            dc.w       $5007,$fffe,$0180,$00f0
+            dc.w       $6007,$fffe,$0180,$00ff
+            dc.w       $7007,$fffe,$0180,$000f
+            dc.w       $8007,$fffe,$0180,$0f0f
+            dc.w       $ffff,$fffe
+"""
+
+    static let bouncingMulticolorCopperList = """
+; Bouncing multi-color copper bars.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        CopperList(pc),a0
+            move.l     a0,$80(a6)           ; COP1LC
+            move.w     #$0000,$88(a6)       ; COPJMP1
+            move.w     #$8280,$96(a6)       ; DMAEN + COPEN
+
+            moveq      #64,d0               ; top bar position
+            moveq      #1,d1                ; direction
+
+.main:
+            btst       #6,$bfe001           ; left mouse exits
+            beq.s      .done
+            bsr.s      WaitVBlank
+
+            move.b     d0,d2
+            move.b     d2,Bar1Wait
+            addq.b     #8,d2
+            move.b     d2,Bar2Wait
+            addq.b     #8,d2
+            move.b     d2,Bar3Wait
+            addq.b     #8,d2
+            move.b     d2,Bar4Wait
+            addq.b     #8,d2
+            move.b     d2,Bar5Wait
+            addq.b     #8,d2
+            move.b     d2,Bar6Wait
+
+            add.b      d1,d0
+            cmp.b      #152,d0
+            beq.s      .flip
+            cmp.b      #48,d0
+            bne.s      .main
+.flip:
+            neg.b      d1
+            bra.s      .main
+
+.done:
+            rts
+
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+            ALIGN      2
+CopperList:
+            dc.w       $0100,$0200          ; no bitplanes, color 0 only
+Bar1Wait:   dc.b       64,$07
+            dc.w       $fffe,$0180,$0f00    ; red
+Bar2Wait:   dc.b       72,$07
+            dc.w       $fffe,$0180,$0ff0    ; yellow
+Bar3Wait:   dc.b       80,$07
+            dc.w       $fffe,$0180,$00f0    ; green
+Bar4Wait:   dc.b       88,$07
+            dc.w       $fffe,$0180,$00ff    ; cyan
+Bar5Wait:   dc.b       96,$07
+            dc.w       $fffe,$0180,$000f    ; blue
+Bar6Wait:   dc.b       104,$07
+            dc.w       $fffe,$0180,$0f0f    ; purple
+            dc.w       $c007,$fffe,$0180,$0000
+            dc.w       $ffff,$fffe
+"""
+}
+
 enum AssemblySourceFormatter {
     private static let directiveNames: Set<String> = [
         "SECTION", "XDEF", "XREF", "ALIGN", "EVEN", "CNOP", "END",
         "DC.B", "DC.W", "DC.L", "DS.B", "DS.W", "DS.L", "INCLUDE", "INCBIN"
     ]
 
+    private static let instructionNames: Set<String> = [
+        "ABCD", "ADD", "ADDA", "ADDI", "ADDQ", "ADDX", "AND", "ANDI",
+        "ASL", "ASR", "BCC", "BCHG", "BCLR", "BCS", "BEQ", "BGE",
+        "BGT", "BHI", "BLE", "BLS", "BLT", "BMI", "BNE", "BPL",
+        "BRA", "BSET", "BSR", "BTST", "BVC", "BVS", "CHK", "CLR",
+        "CMP", "CMPA", "CMPI", "CMPM", "DBCC", "DBCS", "DBEQ", "DBF",
+        "DBGE", "DBGT", "DBHI", "DBLE", "DBLS", "DBLT", "DBMI", "DBNE",
+        "DBPL", "DBRA", "DBT", "DBVC", "DBVS", "DIVS", "DIVU", "EOR",
+        "EORI", "EXG", "EXT", "ILLEGAL", "JMP", "JSR", "LEA", "LINK",
+        "LSL", "LSR", "MOVE", "MOVEA", "MOVEM", "MOVEP", "MOVEQ", "MULS",
+        "MULU", "NBCD", "NEG", "NEGX", "NOP", "NOT", "OR", "ORI",
+        "PEA", "RESET", "ROL", "ROR", "ROXL", "ROXR", "RTE", "RTR",
+        "RTS", "SBCD", "SCC", "SCS", "SEQ", "SF", "SGE", "SGT",
+        "SHI", "SLE", "SLS", "SLT", "SMI", "SNE", "SPL", "ST",
+        "STOP", "SUB", "SUBA", "SUBI", "SUBQ", "SUBX", "SVC", "SVS",
+        "SWAP", "TAS", "TRAP", "TRAPV", "TST", "UNLK"
+    ]
+
     static func vasmReadySource(from source: String) -> String {
-        source
+        normalizeHexLiterals(in: source)
             .split(separator: "\n", omittingEmptySubsequences: false)
             .map { rawLine -> String in
                 let line = String(rawLine)
                 let trimmed = line.trimmingCharacters(in: .whitespaces)
-                guard line == trimmed,
-                      let firstToken = trimmed.split(whereSeparator: { $0 == " " || $0 == "\t" }).first,
-                      directiveNames.contains(firstToken.uppercased()) else {
+                let tokens = trimmed.split(whereSeparator: { $0 == " " || $0 == "\t" }).map(String.init)
+                guard line == trimmed, let firstToken = tokens.first else {
                     return line
                 }
 
-                return "            " + line
+                if tokens.count >= 3, tokens[1].uppercased() == "EQU" {
+                    let padding = String(repeating: " ", count: max(1, 12 - tokens[0].count))
+                    return "\(tokens[0])\(padding)\(tokens[1]) \(tokens.dropFirst(2).joined(separator: " "))"
+                }
+
+                let mnemonic = firstToken.split(separator: ".", maxSplits: 1).first.map(String.init) ?? firstToken
+                if directiveNames.contains(firstToken.uppercased()) || instructionNames.contains(mnemonic.uppercased()) {
+                    return "            " + line
+                }
+
+                return line
             }
             .joined(separator: "\n")
+    }
+
+    private static func normalizeHexLiterals(in source: String) -> String {
+        let pattern = #"(?i)#0x([0-9a-f]+)"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return source }
+        var result = source
+        let range = NSRange(source.startIndex..<source.endIndex, in: source)
+        for match in regex.matches(in: source, range: range).reversed() {
+            guard match.numberOfRanges == 2,
+                  let matchRange = Range(match.range(at: 0), in: result),
+                  let digitsRange = Range(match.range(at: 1), in: result) else {
+                continue
+            }
+            result.replaceSubrange(matchRange, with: "#$\(result[digitsRange])")
+        }
+        return result
     }
 
     static func indentedSource(from source: String) -> String {

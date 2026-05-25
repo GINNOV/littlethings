@@ -1,30 +1,164 @@
+---
+library_name: mlx
+pipeline_tag: text-generation
+tags:
+- mlx
+- m68k
+- assembly
+- retrocomputing
+- amiga
+- c
+- vasm
+- multi-adapter
+---
+
 # aMiLa Fine-Tuning
 
-This directory contains the local MLX-LM LoRA pipeline for rebuilding the Antigravity Amiga 68k model after adding new Amiga assembly content.
+This directory contains the local MLX-LM LoRA workflow for rebuilding and serving the Antigravity Amiga 68k model.
+
+The current published model is hosted on Hugging Face:
+
+```text
+https://huggingface.co/bmove/antigravity-amiga-68k
+```
+
+Generated model artifacts are intentionally ignored by GitHub and should be downloaded from, or uploaded to, Hugging Face.
+
+---
+
+## Current Model & Architecture
+
+- **Hub Repo**: [`bmove/antigravity-amiga-68k`](https://huggingface.co/bmove/antigravity-amiga-68k)
+- **Base Foundation Model**: `mlx-community/gemma-4-e4b-it-4bit` (Google Gemma 4, 4-billion parameters)
+- **Fine-Tuning Method**: Dual Specialized High-Capacity LoRA Adapters
+  - **Motorola 68k Assembly Specialist (`adapters_asm/`)**: High-capacity LoRA adapter targeting all layer projections (rank 32, scale 64.0, 1,500 iterations) trained on 500 VASM-compilable retro assembly examples.
+  - **Amiga C Specialist (`adapters_c/`)**: High-capacity LoRA adapter targeting all layer projections (rank 32, scale 64.0, 1,500 iterations) trained on 500 Clang-verified C examples.
+- **Dynamic Hot-Swapping**: Supported out-of-the-box! Pass `"adapters": "adapters_asm"` or `"adapters": "adapters_c"` in the OpenAI completions request body to dynamically swap adapter weights instantly.
+- **Hub Tags**: `mlx`, `m68k`, `assembly`, `retrocomputing`, `amiga`, `c`, `vasm`, `multi-adapter`
+
+The adapters reduce language interference, but reliability comes from the compiler, semantic validator, repair loop, and promotion ladder. Do not promote a new ASM adapter based on loss alone.
+
+---
+
+## Download The Published Model
+
+Run from this directory:
+
+```bash
+./download_model.sh
+```
+
+This downloads `bmove/antigravity-amiga-68k` into:
+
+```text
+fused_model/
+```
+
+You can override the repo or target directory:
+
+```bash
+HF_MODEL_REPO=bmove/antigravity-amiga-68k ./download_model.sh fused_model
+```
+
+The script requires the Hugging Face CLI:
+
+```bash
+hf auth whoami
+```
+
+Authentication is optional for the current public model, but required if you publish updated artifacts.
+
+---
+
+## Serve Locally
+
+Start the OpenAI-compatible MLX server:
+
+```bash
+uv run python -m mlx_lm.server --model fused_model --port 1234
+```
+
+Or use the helper script:
+
+```bash
+./deploy.sh
+```
+
+The server exposes:
+
+```text
+http://localhost:1234/v1/models
+http://localhost:1234/v1/chat/completions
+```
+
+In Amiga Playground, use the `LM Studio (Port 1234)` provider. The app can also start and stop the local MLX server from **Settings > Local MLX Server** when `fused_model/` is present.
+
+---
+
+## ASM Promotion Ladder
+
+Run the ASM capability ladder against the same OpenAI-compatible request shape used by the app:
+
+```bash
+uv run python eval_ladder.py \
+  --base-url http://localhost:1234 \
+  --model default_model \
+  --adapter adapters_asm \
+  --ladder asm_capability_ladder.yaml \
+  --package-adf \
+  --output evaluation_debug/asm_eval_ladder_summary.json
+```
+
+For the strict gate, add `--require-emulator` to require FS-UAE to stay alive during the smoke window. The ladder intentionally avoids regex cleanup before compiling: it extracts the model's code block, compiles that source with VASM, applies semantic checks for the prompt family, optionally packages an ADF, and records both first-shot and pass-after-repair rates. Treat an ASM adapter as promotable only when every golden scenario passes after the bounded repair loop.
+
+Blitter code should use the canonical Amiga DMACONR byte busy test:
+
+```asm
+            btst    #6,$02(a6)
+            bne.s   .waitBlitter
+```
+
+The validators can recognize the older bit-14 wording as a blitter wait, but training examples and repair prompts should rewrite to `btst #6,$02(a6)`.
+
+---
 
 ## When To Retrain
 
-Retrain when you add meaningful new `.s` or `.asm` examples under `../amiga_sources/` and want the model to learn those patterns. Prefer source files that are clear, legal to use, representative of real Amiga workflows, and compilable with `vasmm68k_mot`.
+Retrain when you add meaningful new `.s`, `.asm`, or curated Amiga C examples and want the model to learn those patterns.
 
-Do not add generated model outputs back into the training corpus unless they were manually reviewed, corrected, and validated. Training on unreviewed generated code will reinforce mistakes.
+Prefer examples that are:
+
+- legal to redistribute or use for training,
+- representative of real Amiga workflows,
+- clear enough to teach a pattern,
+- compiler-reviewed where practical,
+- not raw generated model output.
+
+Do not add unreviewed generated outputs back into the corpus. That reinforces model mistakes.
+
+---
 
 ## Retraining Checklist
 
-Run these commands from this directory:
+Run from this directory:
 
 ```bash
-cd aMiLa/fine_tuning
 uv sync
 ```
 
-1. Add or update source files under `../amiga_sources/`.
-2. Regenerate the dataset:
+1. Add or update source material in the appropriate local corpus/source directories.
+
+2. Regenerate the supervised dataset:
 
    ```bash
    uv run python prepare_dataset.py
    ```
 
-   This scans `.s` and `.asm` files, filters unsuitable files, verifies candidates with `vasmm68k_mot`, and writes `dataset.jsonl`.
+   `prepare_dataset.py` scans candidate files, filters unsuitable material, checks assembly candidates with `vasmm68k_mot` where supported, and writes:
+
+   ```text
+   dataset.jsonl
+   ```
 
 3. Rebuild the train/validation split:
 
@@ -32,109 +166,122 @@ uv sync
    uv run python split_dataset.py
    ```
 
-   This writes `data/train.jsonl` and `data/valid.jsonl` using a fixed 90/10 split.
+   This writes:
 
-4. Run LoRA fine-tuning and fuse the model:
+   ```text
+   data/train.jsonl
+   data/valid.jsonl
+   ```
+
+4. Run a fresh clean ASM LoRA rebuild when changing the broad ASM capability data:
+
+   ```bash
+   uv run python -m mlx_lm.lora --config config_asm_clean.yaml
+   ```
+
+   This writes a clean adapter to:
+
+   ```text
+   adapters_asm_clean/
+   ```
+
+5. Run LoRA fine-tuning and fuse the model:
 
    ```bash
    ./finetune.sh
    ```
 
-   The script trains adapters into `adapters/`, fuses them into `fused_model/`, and attempts to export `antigravity-amiga-68k.gguf`.
+   The script:
 
-5. Serve the fused model locally:
+   - trains LoRA adapters into `adapters/`,
+   - saves checkpoints every 100 iterations,
+   - runs 1,500 iterations by default,
+   - fuses the final adapters into `fused_model/`.
+
+6. Smoke-test the fused model locally:
 
    ```bash
-   mlx_lm.server --model fused_model/ --port 1234
+   uv run python -m mlx_lm.server --model fused_model --port 1234
+   curl http://localhost:1234/v1/models
    ```
 
-   The AmigaPlayground app can then use the OpenAI-compatible endpoint at `http://localhost:1234/v1/chat/completions`.
+7. Publish regenerated artifacts to Hugging Face:
 
-## Where The Model Is
+   ```bash
+   hf upload-large-folder bmove/antigravity-amiga-68k fused_model --type model --num-workers 4
+   hf upload bmove/antigravity-amiga-68k adapters adapters --type model --commit-message "Update LoRA adapter checkpoints"
+   ```
 
-The generated model is stored on Hugging Face, not in GitHub:
+Update the Hugging Face model card when training parameters, dataset scope, or intended usage changes.
+
+---
+
+## GGUF, LM Studio, And Ollama
+
+The current published artifact is an MLX fused model, not a checked-in GGUF.
+
+LM Studio and Ollama typically expect GGUF for manual model loading. `finetune.sh` no longer performs a GGUF conversion itself because the current quantized Gemma 4 MLX checkpoint is not handled by MLX-LM's primitive GGUF converter.
+
+If you need GGUF:
+
+- fuse the model with `./finetune.sh`,
+- convert from compatible unquantized weights using a current `llama.cpp` conversion path,
+- store the resulting `.gguf` outside Git or upload it to Hugging Face as a generated artifact.
+
+If a GGUF exists locally, it is ignored by Git:
 
 ```text
-https://huggingface.co/bmove/antigravity-amiga-68k
+*.gguf
 ```
 
-The local MLX model directory is restored into:
+---
 
-```text
-aMiLa/fine_tuning/fused_model/
-```
+## Artifact Policy
 
-Download it with:
+GitHub should contain source code, scripts, data preparation logic, lightweight dataset splits, and documentation.
 
-```bash
-cd aMiLa/fine_tuning
-./download_model.sh
-```
-
-Use that path with MLX-LM:
-
-```bash
-cd aMiLa/fine_tuning
-uv run mlx_lm.server --model fused_model/ --port 1234
-```
-
-For AmigaPlayground, choose `LM Studio (Port 1234)` and leave the model name as `antigravity-amiga-68k` or use `default_model`. The app maps the default MLX-LM server model to `default_model` for LM Studio-compatible requests.
-
-## Model Artifacts And GitHub
-
-Generated model artifacts are intentionally ignored by Git:
+GitHub should not contain generated model artifacts:
 
 - `adapters/`
 - `fused_model/`
-- `antigravity-amiga-68k.gguf`
+- `*.gguf`
+- `server.log`
 
-Publish regenerated model artifacts to `bmove/antigravity-amiga-68k` and keep GitHub limited to source, scripts, data prep, and app code.
-
-## LM Studio And Ollama
-
-The current model is an MLX fused model on Hugging Face, not a checked-in GGUF. LM Studio and Ollama usually expect a GGUF file for local manual loading. The training script attempts to export one here:
+The parent repo also ignores the large generated corpus manifest:
 
 ```text
-aMiLa/fine_tuning/antigravity-amiga-68k.gguf
+aMiLa/Dataset/corpus1/corpus_manifest.jsonl
 ```
 
-If that file is present after `./finetune.sh`, load it in LM Studio by adding or opening the local GGUF file from that path.
+Publish model artifacts to Hugging Face instead.
 
-For Ollama, create a local model from the GGUF with a `Modelfile` such as:
+---
 
-```text
-FROM ./aMiLa/fine_tuning/antigravity-amiga-68k.gguf
-```
+## PDF And Manual Material
 
-Then run:
+Amiga manuals and PDFs can help the broader system, but they should not be dumped directly into this supervised fine-tuning dataset.
 
-```bash
-ollama create antigravity-amiga-68k -f Modelfile
-ollama run antigravity-amiga-68k
-```
+Raw PDF text is usually prose-heavy, noisy, table-oriented, and license-sensitive. It can make the model more verbose and less likely to emit clean, compiler-friendly code.
 
-If the GGUF file is missing, rerun `./finetune.sh` or use the MLX-LM server directly from `fused_model/`.
+Better uses:
 
-## PDF Material
+- Use manuals as a retrieval corpus at prompt time.
+- Extract small, source-backed examples into clean `.s`, `.asm`, or `.c` files.
+- Admit examples only after review and compiler/toolchain checks where practical.
+- Convert selected manual sections into curated instruction/answer records only when they teach a concrete Amiga programming concept.
 
-Amiga PDFs can improve the overall system, but they should not be dumped directly into the current code-generation fine-tuning dataset.
+For this model, reviewed source examples are usually more valuable than large volumes of raw manual text.
 
-The current pipeline is built for assembly source files and compiler-verified assistant responses. Raw PDF text is usually prose, tables, OCR noise, examples with broken formatting, and license-sensitive manual content. Mixing that directly into this supervised fine-tune can make the model more verbose, less code-focused, and less likely to emit compilable assembly.
+---
 
-Recommended uses for PDFs:
+## Outputs
 
-- Use PDFs as a retrieval corpus for documentation lookup at prompt time.
-- Extract small, source-backed examples from PDFs into clean `.s` or `.asm` files, then let `prepare_dataset.py` admit only examples that assemble.
-- Convert selected manual sections into curated instruction/answer records only when the answer teaches a concrete Amiga concept and does not replace compiler-verified code examples.
-- Keep the original PDFs out of normal Git history unless they are redistributable and tracked intentionally, ideally with Git LFS for large files.
+Common local files and directories:
 
-For this model, high-quality verified source examples will usually help more than large volumes of raw manual text.
-
-## Current Outputs
-
-- `dataset.jsonl`: full generated supervised fine-tuning dataset
-- `data/train.jsonl`: training split consumed by `finetune.sh`
-- `data/valid.jsonl`: validation split consumed by `finetune.sh`
-- `adapters/`: LoRA adapter checkpoints
-- `fused_model/`: fused MLX model and model card
-- `antigravity-amiga-68k.gguf`: optional GGUF export produced by `finetune.sh`
+- `dataset.jsonl`: generated supervised fine-tuning dataset.
+- `data/train.jsonl`: training split.
+- `data/valid.jsonl`: validation split.
+- `adapters/`: LoRA adapter checkpoints, ignored by Git.
+- `fused_model/`: fused MLX checkpoint, ignored by Git.
+- `evaluation_debug/`: local debug outputs from evaluation workflows.
+- `server.log`: local MLX server log, ignored by Git.

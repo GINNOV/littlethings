@@ -22,6 +22,11 @@ struct AmigaPlaygroundApp: App {
                     openWindow(id: "prompt-library")
                 }
                 .keyboardShortcut("l", modifiers: [.command, .option])
+
+                Button("Example Library") {
+                    openWindow(id: "example-library")
+                }
+                .keyboardShortcut("e", modifiers: [.command, .option])
             }
 
             AmigaPlaygroundCommands()
@@ -40,6 +45,11 @@ struct AmigaPlaygroundApp: App {
             PromptLibraryView()
         }
         .defaultSize(width: 820, height: 520)
+
+        Window("Example Library", id: "example-library") {
+            ExampleLibraryView()
+        }
+        .defaultSize(width: 860, height: 560)
     }
 }
 

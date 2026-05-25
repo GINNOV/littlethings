@@ -8,9 +8,9 @@ class AmigaPlaygroundTests: XCTestCase {
         XCTAssertTrue(AppPreferenceDefaults.showChatBoingBall)
     }
 
-    func testAutoInjectGeneratedCodePreferenceDefaultsOff() {
+    func testAutoInjectGeneratedCodePreferenceDefaultsOn() {
         XCTAssertEqual(AppPreferenceDefaults.autoInjectGeneratedCodeKey, "autoInjectGeneratedCode")
-        XCTAssertFalse(AppPreferenceDefaults.autoInjectGeneratedCode)
+        XCTAssertTrue(AppPreferenceDefaults.autoInjectGeneratedCode)
     }
 
     // MARK: - Assistant Chat Session Tests
@@ -99,6 +99,302 @@ CopperList:
         XCTAssertEqual(session.messages[1].reasoning, "Thinking about copper lists... Deciding to output later.")
         XCTAssertNil(result.injectedCode)
         XCTAssertNil(result.consoleMessage)
+    }
+
+    func testAssistantChatSessionExtractsCodeWhenProviderReturnsReasoningOnly() {
+        let session = AssistantChatSession()
+        _ = session.submit("generate a bouncing multi color copper list")
+
+        let reasoning = """
+        ```assembly
+        SECTION Code,CODE,CHIP
+        CopperList:
+            dc.w $5007,$fffe,$0180,$0f00
+            dc.w $ffff,$fffe
+        ```
+        """
+
+        let result = session.complete(fullResponse: "", streamedResponse: "", reasoningResponse: reasoning)
+
+        XCTAssertEqual(result.injectedCode, """
+            SECTION Code,CODE,CHIP
+CopperList:
+    dc.w $5007,$fffe,$0180,$0f00
+    dc.w $ffff,$fffe
+""")
+        XCTAssertEqual(result.consoleMessage, "Injected code block from Amiga Assistant.")
+        XCTAssertTrue(session.messages[1].content.contains("CopperList"))
+        XCTAssertEqual(session.messages[1].reasoning, reasoning)
+    }
+
+    func testAssistantPromptTemplateMatchesBouncingMulticolorCopperList() {
+        let source = AssistantPromptTemplate.source(for: "generate a bouncing multi color copper list")
+
+        XCTAssertNotNil(source)
+        XCTAssertTrue(source?.contains("CopperList:") == true)
+        XCTAssertTrue(source?.contains("Bar6Wait") == true)
+        XCTAssertFalse(source?.contains("COLOR_A") == true)
+        XCTAssertFalse(source?.contains("WAIT (") == true)
+    }
+
+    func testAssistantPromptTemplateBouncingMulticolorCopperListCompiles() {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping prompt template compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+
+        let source = try! XCTUnwrap(AssistantPromptTemplate.source(for: "generate a bouncing multi color copper list"))
+        let expectation = self.expectation(description: "Bouncing multicolor copper list template compiles")
+
+        compiler.compile(assemblyCode: source) { success, output in
+            XCTAssertTrue(success, "Prompt template compilation failed:\n\(output)")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 5.0)
+    }
+
+    func testAssistantPromptTemplateMatchesStaticCopperList() {
+        let source = AssistantPromptTemplate.source(for: "generate a static copper list demo")
+
+        XCTAssertNotNil(source)
+        XCTAssertTrue(source?.contains("CopperList:") == true)
+        XCTAssertTrue(source?.contains("$80(a6)") == true)
+        XCTAssertFalse(source?.contains("dff000(a6)") == true)
+        XCTAssertFalse(source?.contains("dec.l") == true)
+    }
+
+    func testAssistantPromptTemplateStaticCopperListCompiles() {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping static copper template compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+
+        let source = try! XCTUnwrap(AssistantPromptTemplate.source(for: "generate a static copper list demo"))
+        let expectation = self.expectation(description: "Static copper list template compiles")
+
+        compiler.compile(assemblyCode: source) { success, output in
+            XCTAssertTrue(success, "Static copper list template compilation failed:\n\(output)")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 5.0)
+    }
+
+    func testAssemblySourceFormatterRepairsCommonModelSyntaxDrift() {
+        let source = """
+        SECTION Code,CODE
+        CONST EQU $1234
+        _Start:
+        moveq.l #0,d0
+        MOVE #0x00F,d1
+        rts
+        """
+
+        let formatted = AssemblySourceFormatter.vasmReadySource(from: source)
+
+        XCTAssertTrue(formatted.contains("            SECTION Code,CODE"))
+        XCTAssertTrue(formatted.contains("CONST       EQU $1234"))
+        XCTAssertTrue(formatted.contains("            moveq.l #0,d0"))
+        XCTAssertTrue(formatted.contains("            MOVE #$00F,d1"))
+        XCTAssertTrue(formatted.contains("            rts"))
+    }
+
+    func testAssemblySemanticValidatorRejectsKnownModelFailurePatterns() {
+        let source = """
+                    SECTION Code,CODE
+                    XDEF _Start
+        _Start:
+                    move.w #0x00f,d8
+                    move.w #BLUE,DFF180
+                    dc.w #$fffe,$0180
+                    dec.l d0
+                    rts
+        """
+
+        let result = AssemblySemanticValidator.validate(source: source, prompt: "set background color")
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.summary.contains("invalid register d8"))
+        XCTAssertTrue(result.summary.contains("C-style hex literal 0x00f"))
+        XCTAssertTrue(result.summary.contains("bare custom-chip register DFF180"))
+        XCTAssertTrue(result.summary.contains("undefined symbolic color BLUE"))
+        XCTAssertTrue(result.summary.contains("immediate marker # is invalid in dc data directives"))
+        XCTAssertTrue(result.summary.contains("invalid pseudo instruction dec.l"))
+    }
+
+    func testAssemblySemanticValidatorRequiresCompleteExecutableStructure() {
+        let source = """
+        SECTION CODE
+        exit:
+            rts
+            bra exit
+        """
+
+        let result = AssemblySemanticValidator.validate(source: source, prompt: "Generate a minimal Amiga 68000 assembly program that exits cleanly.")
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.summary.contains("missing SECTION Code,CODE"))
+        XCTAssertTrue(result.summary.contains("missing XDEF _Start"))
+        XCTAssertTrue(result.summary.contains("missing _Start label"))
+    }
+
+    func testAssemblySemanticValidatorRequiresCopperBehaviorForBouncingPrompt() {
+        let source = """
+                    SECTION Code,CODE,CHIP
+                    XDEF _Start
+        _Start:
+                    lea $dff000,a6
+                    lea CopperList(pc),a0
+                    move.l a0,$80(a6)
+                    move.w #$0000,$88(a6)
+                    move.w #$8280,$96(a6)
+                    rts
+        CopperList:
+                    dc.w $0180,$0f00
+                    dc.w $ffff,$fffe
+        """
+
+        let result = AssemblySemanticValidator.validate(source: source, prompt: "generate a bouncing multi color copper list")
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.summary.contains("vertical blank wait"))
+        XCTAssertTrue(result.summary.contains("left mouse exit"))
+        XCTAssertTrue(result.summary.contains("animated copper wait words"))
+    }
+
+    func testAssemblySemanticValidatorAcceptsBouncingCopperTemplate() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "generate a bouncing multi color copper list"))
+
+        let result = AssemblySemanticValidator.validate(source: source, prompt: "generate a bouncing multi color copper list")
+
+        XCTAssertTrue(result.passed, result.summary)
+    }
+
+    func testAssemblySemanticValidatorRejectsWaitOnlyBlitter() {
+        let source = """
+                    SECTION Code,CODE,CHIP
+                    XDEF _Start
+        _Start:
+                    lea $dff000,a6
+        .wait:
+                    btst #6,$02(a6)
+                    bne.s .wait
+                    rts
+        """
+
+        let result = AssemblySemanticValidator.validate(source: source, prompt: "Generate a blitter clear routine")
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.summary.contains("missing blitter wait after BLTSIZE"))
+        XCTAssertTrue(result.summary.contains("missing BLTCON0 $40(a6) setup"))
+        XCTAssertTrue(result.summary.contains("missing BLTSIZE $58(a6) start"))
+    }
+
+    func testAssemblySemanticValidatorPrefersCanonicalBlitterWait() {
+        let source = """
+                    SECTION Code,CODE,CHIP
+                    XDEF _Start
+        _Start:
+                    lea $dff000,a6
+        .waitBefore:
+                    btst #14,$02(a6)
+                    bne.s .waitBefore
+                    move.w #$0100,$40(a6)
+                    move.l a0,$54(a6)
+                    move.w #$0000,$66(a6)
+                    move.w #$0401,$58(a6)
+        .waitAfter:
+                    btst #14,$02(a6)
+                    bne.s .waitAfter
+                    rts
+        """
+
+        let result = AssemblySemanticValidator.validate(source: source, prompt: "Generate a blitter clear routine")
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.summary.contains("non-canonical blitter wait"))
+    }
+
+    func testAssemblySemanticValidatorChecksAudioDMA() {
+        let source = """
+                    SECTION Code,CODE,CHIP
+                    XDEF _Start
+        _Start:
+                    lea $dff000,a6
+                    move.w #$0001,$a4(a6)
+                    move.w #$00c0,$a6(a6)
+                    move.w #$0040,$a8(a6)
+                    move.w #$8201,$96(a6)
+                    rts
+        """
+
+        let result = AssemblySemanticValidator.validate(source: source, prompt: "Generate an audio DMA routine")
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.summary.contains("missing AUD0LCH setup"))
+    }
+
+    func testAssemblySemanticValidatorChecksSpriteSetup() {
+        let source = """
+                    SECTION Code,CODE,CHIP
+                    XDEF _Start
+        _Start:
+                    lea $dff000,a6
+                    rts
+        """
+
+        let result = AssemblySemanticValidator.validate(source: source, prompt: "Generate a sprite routine")
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.summary.contains("missing sprite 0 pointer/setup"))
+        XCTAssertTrue(result.summary.contains("missing sprite data terminator"))
+    }
+
+    func testAssemblySemanticValidatorChecksInputRead() {
+        let source = """
+                    SECTION Code,CODE
+                    XDEF _Start
+        _Start:
+                    moveq #0,d0
+                    rts
+        """
+
+        let result = AssemblySemanticValidator.validate(source: source, prompt: "Generate a joystick input routine")
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.summary.contains("missing CIA/joystick/mouse hardware read"))
+    }
+
+    func testAssemblyRepairPromptIncludesSemanticFailuresAndSource() {
+        let prompt = AssemblyRepairPromptBuilder.prompt(
+            originalRequest: "Generate a blitter clear routine",
+            source: "move.w #0x00f,d8",
+            compilerOutput: "unknown mnemonic",
+            semanticFailures: ["invalid register d8", "C-style hex literal 0x00f"],
+            attempt: 2
+        )
+
+        XCTAssertTrue(prompt.contains("Attempt 2"))
+        XCTAssertTrue(prompt.contains("unknown mnemonic"))
+        XCTAssertTrue(prompt.contains("invalid register d8"))
+        XCTAssertTrue(prompt.contains("C-style hex literal 0x00f"))
+        XCTAssertTrue(prompt.contains("move.w #0x00f,d8"))
+        XCTAssertTrue(prompt.contains("Generate a blitter clear routine"))
+        XCTAssertTrue(prompt.contains("btst #6,$02(a6)"))
+        XCTAssertTrue(prompt.contains("Return ONLY the entire corrected code block"))
+    }
+
+    func testGenerationContractNamesObservedInvalidModelPatterns() {
+        let prompt = OllamaService.generationContractPrompt
+
+        XCTAssertTrue(prompt.contains("Do not split SECTION Code,CODE"))
+        XCTAssertTrue(prompt.contains("Use $dff000,a6 plus register offsets"))
+        XCTAssertTrue(prompt.contains("Do not emit dec.l"))
+        XCTAssertTrue(prompt.contains("Use $00ff style hexadecimal constants"))
+        XCTAssertTrue(prompt.contains("Do not invent symbols such as BLUE"))
     }
 
     func testAssistantChatSessionDoesNotInjectConnectionErrorContainingAmigaTokens() {
@@ -826,6 +1122,42 @@ CopperList:
         XCTAssertEqual(completedResponse, "Classic 68k")
     }
 
+    func testOpenAISSEStreamingParserStripsNulControlCharacters() {
+        var receivedChunks: [String] = []
+        var completedResponse = ""
+
+        let expectation = self.expectation(description: "NUL control characters stripped from SSE chunks")
+
+        let delegate = StreamingDelegate(
+            onChunk: { chunk in
+                receivedChunks.append(chunk)
+            },
+            onCompletion: { full in
+                completedResponse = full
+                expectation.fulfill()
+            },
+            onError: { error in
+                XCTFail("Unexpected error: \(error.localizedDescription)")
+            }
+        )
+
+        let sampleSSE = """
+        data: {"choices":[{"delta":{"content":"\\u0000SECTION Code,CODE,CHIP\\n"}}]}
+
+        data: {"choices":[{"delta":{"content":"Copper\\u0000List"}}]}
+
+        data: [DONE]
+        """
+
+        delegate.urlSession(URLSession.shared, dataTask: URLSessionDataTask(), didReceive: Data(sampleSSE.utf8))
+        delegate.urlSession(URLSession.shared, task: URLSessionDataTask(), didCompleteWithError: nil as Error?)
+
+        waitForExpectations(timeout: 1.0)
+
+        XCTAssertEqual(receivedChunks, ["SECTION Code,CODE,CHIP\n", "CopperList"])
+        XCTAssertEqual(completedResponse, "SECTION Code,CODE,CHIP\nCopperList")
+    }
+
     func testOpenAISSEStreamingParserBuffersFragmentedLines() {
         var receivedChunks: [String] = []
         var completedResponse = ""
@@ -1190,7 +1522,10 @@ CopperList:
             XCTAssertEqual(body["max_tokens"] as? Int, 4096)
 
             let messages = try XCTUnwrap(body["messages"] as? [[String: String]])
-            XCTAssertEqual(messages, [["role": "user", "content": expectedPrompt]])
+            XCTAssertEqual(messages, [
+                ["role": "system", "content": OllamaService.generationContractPrompt],
+                ["role": "user", "content": expectedPrompt]
+            ])
 
             let response = try XCTUnwrap(HTTPURLResponse(
                 url: try XCTUnwrap(request.url),
@@ -1231,6 +1566,53 @@ CopperList:
         MockLLMURLProtocol.requestHandler = nil
     }
 
+    func testOllamaServiceSendsAdapterPathToOpenAICompatibleProvider() {
+        let defaultsName = "AmigaPlaygroundTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: defaultsName)!
+        defer { defaults.removePersistentDomain(forName: defaultsName) }
+
+        let service = OllamaService(userDefaults: defaults)
+        service.provider = .lmStudio
+        service.customUrl = "http://local-mlx.test"
+        service.modelName = ""
+        service.systemPrompt = ""
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockLLMURLProtocol.self]
+        service.urlSessionConfiguration = configuration
+
+        let expectation = self.expectation(description: "OpenAI-compatible request includes adapter")
+
+        MockLLMURLProtocol.requestHandler = { request in
+            let bodyData = try XCTUnwrap(request.testHTTPBodyData)
+            let body = try XCTUnwrap(JSONSerialization.jsonObject(with: bodyData) as? [String: Any])
+
+            XCTAssertEqual(body["model"] as? String, "default_model")
+            XCTAssertEqual(body["adapters"] as? String, "adapters_asm")
+
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "text/event-stream"]
+            ))
+            return (response, Data("data: [DONE]\n\n".utf8))
+        }
+
+        service.streamChat(
+            messages: [OllamaService.ChatMessage(role: "user", content: "draw a copper gradient")],
+            adapterPath: "adapters_asm",
+            onChunk: { _ in },
+            onCompletion: { _ in expectation.fulfill() },
+            onError: { error in
+                XCTFail("Unexpected error: \(error.localizedDescription)")
+            }
+        )
+
+        waitForExpectations(timeout: 2.0)
+        MockLLMURLProtocol.requestHandler = nil
+    }
+
     func testOllamaServiceSendsSystemPromptAndContextWindowToOpenAICompatibleProvider() {
         let defaultsName = "AmigaPlaygroundTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: defaultsName)!
@@ -1258,6 +1640,7 @@ CopperList:
             let messages = try XCTUnwrap(body["messages"] as? [[String: String]])
             XCTAssertEqual(messages, [
                 ["role": "system", "content": "Keep answers focused on Amiga 68k assembly."],
+                ["role": "system", "content": OllamaService.generationContractPrompt],
                 ["role": "user", "content": "draw a copper gradient"]
             ])
 
@@ -1313,6 +1696,7 @@ CopperList:
             let messages = try XCTUnwrap(body["messages"] as? [[String: String]])
             XCTAssertEqual(messages, [
                 ["role": "system", "content": "Prefer concise code."],
+                ["role": "system", "content": OllamaService.generationContractPrompt],
                 ["role": "user", "content": "read joystick state"]
             ])
 

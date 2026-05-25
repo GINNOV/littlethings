@@ -1,170 +1,279 @@
-# Amiga Gemma-4 LoRA Fine-Tuning & Serving Walkthrough
+# Antigravity Amiga 68k Fine-Tuning Walkthrough
 
-This document walks through the design, implementation, and results of the complete Commodore Amiga C and Motorola 68000 assembly language development environment pipelines. We have successfully retired the legacy Gemma-3 model, cleaned up all legacy weight checkouts, and fully migrated to Google's state-of-the-art **Gemma-4-E4B-it** model.
+This walkthrough describes the current local MLX fine-tuning, serving, evaluation, and publishing workflow for the Antigravity Amiga 68k model.
 
-Our automated data-curation system, MLX LoRA fine-tuning runner, specialized syntax check gates, and background serving REST server are fully integrated, verified, and operational.
+The published model artifact lives on Hugging Face:
+
+```text
+https://huggingface.co/bmove/antigravity-amiga-68k
+```
+
+Large generated artifacts such as `fused_model/`, `adapters/`, optional `.gguf` files, and `server.log` are intentionally ignored by GitHub.
 
 ---
 
 ## 1. Pipeline Architecture
 
-The end-to-end pipeline consists of modular steps designed to run locally on Apple Silicon (M-series GPUs), ensuring deterministic, highly efficient execution:
-
 ```mermaid
 graph TD
-    A[Dataset Directories] -->|os.walk + folder pruning| B[prepare_dataset.py]
-    B -->|vasm / clang compiler syntax gates| C[dataset.jsonl]
-    C -->|split_dataset.py| D[data/train.jsonl & data/valid.jsonl]
-    D -->|finetune.sh MLX-LM LoRA 300 steps| E[adapters/]
-    E -->|mlx_lm.fuse| F[fused_model/]
-    F -->|deploy.sh| G[MLX Serving Server port 1234]
-    F -->|evaluate.py| H[Test Compilation Success Reports]
+    A[Curated Amiga ASM/C sources] --> B[prepare_dataset.py]
+    B --> C[dataset.jsonl]
+    C --> D[split_dataset.py]
+    D --> E[data/train.jsonl + data/valid.jsonl]
+    E --> F[finetune.sh: MLX-LM LoRA, 1500 iterations]
+    F --> G[adapters/]
+    G --> H[mlx_lm.fuse]
+    H --> I[fused_model/]
+    I --> J[deploy.sh or app MLX server controls]
+    J --> K[OpenAI-compatible server on port 1234]
+    I --> L[Hugging Face model repo]
+    I --> M[evaluate.py smoke/evaluation runs]
 ```
 
 ---
 
-## 2. Walkthrough of Components
+## 2. Component Walkthrough
 
-### A. Data Curation & Syntax Verification (`prepare_dataset.py`)
-- **Aggressive Folder Pruning**: Walks the root `./Dataset` directory by dynamically pruning virtual environments (`.venv`), compiler binaries, and unneeded parts of the NDK to filter out more than $1,079,920$ files, reducing parsing times from hours to under 30 seconds.
-- **Multilingual Support**: Collects and validates both Motorola 68k assembly (`.s`/`.asm`) and Amiga C (`.c`/`.h`) files.
-- **Static Compilation Gates**: Enforces syntax validity before including code in the dataset:
-  - **Assembly**: Validates syntax using `vasmm68k_mot` targeting the Amiga Kickstart headers.
-  - **C Code**: Checks syntax using `clang -fsyntax-only` targeting the Amiga NDK header paths.
+### Data Curation: `prepare_dataset.py`
 
-### B. Fast Data Splitting (`split_dataset.py`)
-- Standardizes dataset curation by splitting the curated `dataset.jsonl` into `data/train.jsonl` (90%) and `data/valid.jsonl` (10%) splits using a stable random seed of 42.
+`prepare_dataset.py` builds the supervised fine-tuning dataset from local Amiga-oriented source material.
 
-### C. Gemma-4 LoRA Fine-Tuning & Adapter Fusing (`finetune.sh`)
-- Fine-tunes Google's advanced **Gemma-4-E4B-it** model (`mlx-community/gemma-4-e4b-it-4bit`) for 300 training steps.
-- Fuses the resulting LoRA adapters directly into the `fused_model/` directory, outputting a fully independent `model.safetensors` structure compatible with the local MLX-LM server.
+Current behavior:
 
-### D. Model Generation stop-token & VASM Indentation Gates
-To ensure zero-defect generations, we solved two critical retro-compiler limitations:
-- **Prompt-Lock & Infinite Loops**: Gemma-4's instruction-tuned generation can loop infinitely or produce trailing markdown garbage due to empty string tokenizer decoding of special stop tokens (like `<turn|>` or `<turn_end|>`). We implemented a custom token-ID interceptor in `evaluate.py` targeting token IDs `[1, 106, 107, 50, 258883, 258882]`.
-- **VASM Column-1 Directive Quirk**: Directives starting at the absolute first column of a line are interpreted by `vasm` as labels, resulting in syntax errors. We dynamically inject 4 leading spaces before directives like `SECTION`, `MOVE`, `DC`, `DS`, and `RTS` to ensure perfect assembly compilation.
+- scans candidate source files,
+- filters unsuitable or noisy material,
+- validates supported assembly candidates with `vasmm68k_mot`,
+- writes the generated supervised dataset to `dataset.jsonl`.
 
-### E. Compilation Success Rate Evaluation (`evaluate.py`)
-- Standardizes 10 vintage Amiga scenarios (VBLANK polling, copper lists, memory allocation, drawing lines/rectangles) in both C and Motorola 68000 Assembly.
-- Compiles the generated output dynamically against standard compiler systems to report the overall success rate.
+The current checked-in local dataset has 200 records:
 
-### F. Serving REST Server Deployment (`deploy.sh`)
-- Spawns an OpenAI-compatible serving server on port `1234` hosting our fused Gemma-4 weights, enabling standard prompt-completion interfaces for the companion SwiftUI IDE.
-
----
-
-## 3. Visual Verification & Metrics Log
-
-### A. Evaluation Suite Results (10/10 Compilability)
-Running the automated `evaluate.py` test suite against the fused Gemma-4 model produced a perfect **10/10 (100%) compilability rate** across all retro programming scenarios:
-
-```
-============================================================
-EVALUATION REPORT SUMMARY
-============================================================
-Overall Success Rate: 10/10 (100.00%)
-- [asm_vblank] Write a Motorola 68k assembly routine us... -> PASSED
-- [asm_copper] Create a basic Amiga Copper list in Moto... -> PASSED
-- [asm_alloc_mem] Write a Motorola 68k assembly routine us... -> PASSED
-- [asm_draw_line] Write an Amiga assembly function to call... -> PASSED
-- [asm_disable_dma] Write a Motorola 68000 assembly routine ... -> PASSED
-- [c_open_library] Write a Commodore Amiga C program that o... -> PASSED
-- [c_alloc_mem] Write an Amiga C routine that allocates ... -> PASSED
-- [c_open_screen] Write a simple Amiga C program to create... -> PASSED
-- [c_draw_rect] Write an Amiga C function that draws a r... -> PASSED
-- [c_wait_tof] Write an Amiga C program that waits for ... -> PASSED
-============================================================
+```text
+dataset.jsonl       200 records
+data/train.jsonl    180 records
+data/valid.jsonl     20 records
 ```
 
-### B. SwiftUI IDE Integration Tests (33/33 Green)
-We executed the entire companion playground's testing suite inside `AmigaPlayground`:
+Do not treat those counts as a permanent benchmark. They reflect the local dataset at the time this walkthrough was refreshed.
+
+### Split Builder: `split_dataset.py`
+
+`split_dataset.py` creates deterministic training and validation splits:
+
 ```bash
-swift test --filter AmigaPlaygroundTests
+uv run python split_dataset.py
 ```
-**Results**:
-- **33 executed tests, 0 failures**.
-- Confirms compile engines, emulator drag-and-drop adapters, rom scanner paths, and open-source parser systems operate flawlessly.
 
-### C. Server Endpoint Health Probe
-Probing the served model endpoint on port `1234`:
+Outputs:
+
+```text
+data/train.jsonl
+data/valid.jsonl
+```
+
+### LoRA Training And Fusion: `finetune.sh`
+
+`finetune.sh` trains adapters and fuses them into an MLX checkpoint.
+
+Current training settings:
+
+- base model: `mlx-community/gemma-4-e4b-it-4bit`
+- iterations: `1500`
+- batch size: `2`
+- learning rate: `2e-5`
+- max sequence length: `1024`
+- adapter path: `adapters/`
+- fused output: `fused_model/`
+
+Run:
+
 ```bash
-curl -s http://localhost:1234/v1/models
+uv sync
+./finetune.sh
 ```
-**Results**:
-```json
-{
-  "object": "list",
-  "data": [
-    {
-      "id": "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/fine_tuning/fused_model",
-      "object": "model"
-    }
-  ]
-}
+
+The script removes previous `adapters/` and `fused_model/` before retraining to avoid mixing old checkpoints with a new run.
+
+### Serving: `deploy.sh`
+
+`deploy.sh` starts an OpenAI-compatible MLX server on port `1234`:
+
+```bash
+./deploy.sh
 ```
-The local server is fully active, listening, and serving the custom fused model.
+
+Equivalent direct command:
+
+```bash
+uv run python -m mlx_lm.server --model fused_model --port 1234
+```
+
+Health check:
+
+```bash
+curl http://localhost:1234/v1/models
+```
+
+Amiga Playground can also start and stop this server from **Settings > Local MLX Server** when `fused_model/` is present.
+
+### Evaluation: `evaluate.py`
+
+`evaluate.py` is used for smoke/evaluation scenarios around Amiga C and Motorola 68k assembly generation.
+
+Run it only after a local server is available:
+
+```bash
+uv run python evaluate.py
+```
+
+Treat evaluation results as run-specific. Do not keep old success rates in this walkthrough unless they were just regenerated with the current model, current prompts, current compiler setup, and current dataset.
 
 ---
 
-## 4. Serving Deliverables Directory Structure
+## 3. Downloading The Published Model
 
-Our complete, standalone fine-tuning directory is structured as follows:
+To restore the published model locally without retraining:
+
+```bash
+./download_model.sh
 ```
+
+Default behavior:
+
+- repo: `bmove/antigravity-amiga-68k`
+- destination: `fused_model/`
+
+Override options:
+
+```bash
+HF_MODEL_REPO=bmove/antigravity-amiga-68k ./download_model.sh fused_model
+```
+
+The Hugging Face CLI is required:
+
+```bash
+hf auth whoami
+```
+
+The current model is public, so authentication is not required for download, but it is required for publishing updates.
+
+---
+
+## 4. Publishing Updated Artifacts
+
+We have provided a streamlined, automated script `publish.sh` to handle publishing the high-capacity dual adapters and fused weights to Hugging Face:
+
+```bash
+# Set credentials (if not already logged in)
+hf auth login
+
+# Run the automated publisher
+./publish.sh
+```
+
+By default, the script uploads `adapters_asm/`, `adapters_c/`, and `fused_model/` to `bmove/antigravity-amiga-68k`. You can override the target repository using the `HF_MODEL_REPO` environment variable:
+
+```bash
+HF_MODEL_REPO=my-username/my-amiga-model ./publish.sh
+```
+
+Update the Hugging Face model card when any of these change:
+
+- base model,
+- dataset scope,
+- training iterations,
+- learning rate,
+- recommended prompts,
+- intended usage,
+- known limitations.
+
+The public model card currently advertises:
+
+- `library_name: mlx`
+- `pipeline_tag: text-generation`
+- `base_model: mlx-community/gemma-4-e4b-it-4bit`
+- tags including `mlx`, `m68k`, `assembly`, `retrocomputing`, `amiga`, `c`, `vasm`
+
+---
+
+## 5. Local Directory Structure
+
+Common files after setup, training, and serving:
+
+```text
 fine_tuning/
 ├── data/
 │   ├── train.jsonl
 │   └── valid.jsonl
-├── fused_model/
-│   ├── model.safetensors
-│   ├── model.safetensors.index.json
-│   ├── config.json
-│   ├── generation_config.json
-│   ├── tokenizer.json
-│   ├── tokenizer_config.json
-│   └── chat_template.jinja
-├── adapters/
-│   ├── adapters.safetensors
-│   └── adapter_config.json
+├── adapters/                 # generated, ignored by Git
+├── fused_model/              # generated/downloaded, ignored by Git
+├── evaluation_debug/         # local evaluation/debug outputs
 ├── dataset.jsonl
 ├── prepare_dataset.py
 ├── split_dataset.py
 ├── finetune.sh
 ├── evaluate.py
 ├── deploy.sh
-└── server.log
+├── download_model.sh
+├── pyproject.toml
+├── uv.lock
+└── server.log                # generated, ignored by Git
 ```
+
+`fused_model/` typically contains:
+
+```text
+chat_template.jinja
+config.json
+generation_config.json
+model.safetensors
+model.safetensors.index.json
+tokenizer.json
+tokenizer_config.json
+```
+
+`adapters/` contains intermediate LoRA checkpoints and final adapter files.
 
 ---
 
-## 5. Automated Copper List Swinging Animation Verification
+## 6. GGUF Notes
 
-To validate that the model was successfully fine-tuned on custom Amiga hardware routines, we executed an automated end-to-end integration test. 
+The current published artifact is an MLX fused model, not a GGUF.
 
-### Integration Test Steps:
-1. **Prompt Injection**: Injected the prompt `"generate an animated copper list that swings up and down the screen."` to the OpenAI-compatible REST server serving the fused model on port `1234`.
-2. **Robust Syntax Extraction & Cleaning**: Extracted the generated Motorola 68k assembly code and applied robust compiler adapters inside `/Users/megov/.gemini/antigravity/scratch/test_copper_swing.py` to fix address-register limitations (e.g. converting `moveq #0xFFFF,A0` to `move.l #0xFFFF,A0`), strip register-immediate typos (`#D0` -> `D0`), and map `.h` references to standard `.i` assembly NDK includes.
-3. **VASM Native Compilation**: Spawned the local cross-assembler `vasmm68k_mot` against the generated and cleaned assembly.
+`finetune.sh` does not currently perform GGUF conversion. The current quantized Gemma 4 MLX checkpoint is not handled by MLX-LM's primitive GGUF converter.
 
-### Test Result:
+If GGUF is required for LM Studio or Ollama:
+
+1. produce compatible fused weights,
+2. convert with a current `llama.cpp` conversion workflow,
+3. keep the `.gguf` out of Git,
+4. optionally upload it to Hugging Face as a generated artifact.
+
+---
+
+## 7. Recommended Validation Before Release
+
+From the repository root:
+
+```bash
+xcodebuild -project Amiga/aMiLa/AmigaPlayground/AmigaPlayground.xcodeproj \
+  -scheme AmigaPlayground \
+  -destination 'platform=macOS' \
+  build
 ```
-Sending prompt to the fine-tuned model served on port 1234...
-Prompt: "generate an animated copper list that swings up and down the screen."
 
-Model response received successfully!
-Attempting compilation with VASM cross-assembler...
-Compilation command return code: 0
+From this directory:
 
---- VASM Compiler Output ---
-vasm 2.0e (c) in 2002-2026 Volker Barthelmann
-vasm M68k/CPU32/ColdFire cpu backend 2.8 (c) 2002-2025 Frank Wille
-vasm motorola syntax module 3.19d (c) 2002-2025 Frank Wille
-vasm hunk format output module 2.17f (c) 2002-2025 Frank Wille
-
-text(acrx2):	          28 bytes
-
-----------------------------
-
-✅ SUCCESS: The generated copper list code compiles 100% cleanly!
+```bash
+uv run python -m mlx_lm.server --model fused_model --port 1234
+curl http://localhost:1234/v1/models
+uv run python evaluate.py
 ```
-This confirms that our fine-tuned Gemma-4 model successfully generates valid, highly optimized, and 100% compilable Amiga hardware custom-register Motorola 68000 assembly instructions.
 
+For the TypeScript web emulator MCP server:
+
+```bash
+cd ../mcp-server-vamigaweb
+npm run build
+```
+
+Record fresh metrics in `status_repo.md` only after running the corresponding checks.

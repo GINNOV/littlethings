@@ -1,0 +1,123 @@
+[
+  {
+    "id": "minimal_executable",
+    "prompt": "Generate a minimal Amiga 68000 assembly program that exits cleanly.",
+    "families": [],
+    "max_tokens": 500
+  },
+  {
+    "id": "register_color_write",
+    "prompt": "Generate an Amiga 68000 assembly program that sets COLOR00 to red and exits cleanly.",
+    "families": ["register_color"],
+    "max_tokens": 600
+  },
+  {
+    "id": "vblank_wait",
+    "prompt": "Generate an Amiga 68000 assembly program that waits for vertical blank using VPOSR or VHPOSR and exits cleanly.",
+    "families": ["vblank"],
+    "max_tokens": 800
+  },
+  {
+    "id": "static_copper",
+    "prompt": "Generate a static Amiga copper list that changes the background color across several raster lines.",
+    "families": ["copper"],
+    "max_tokens": 1200
+  },
+  {
+    "id": "bouncing_copper",
+    "prompt": "Generate a bouncing multi color copper list with animated bars that exits on left mouse.",
+    "families": ["animated_copper"],
+    "max_tokens": 1400,
+    "require_emulator": true
+  },
+  {
+    "id": "blitter_clear",
+    "prompt": "Generate an Amiga 68000 assembly program that clears a CHIP memory bitplane with the blitter and waits for completion.",
+    "families": ["blitter", "bitplane"],
+    "max_tokens": 1400,
+    "require_emulator": true
+  },
+  {
+    "id": "blitter_copy",
+    "prompt": "Generate an Amiga 68000 assembly program that copies a small CHIP memory block with the blitter and waits for completion.",
+    "families": ["blitter"],
+    "max_tokens": 1400
+  },
+  {
+    "id": "blitter_masked_bob",
+    "prompt": "Generate an Amiga 68000 assembly routine that sets up a masked bob blit using source and mask data and waits for completion.",
+    "families": ["blitter", "subroutine"],
+    "max_tokens": 1600
+  },
+  {
+    "id": "blitter_fill",
+    "prompt": "Generate an Amiga 68000 assembly program that starts a simple blitter fill operation and waits for completion.",
+    "families": ["blitter"],
+    "max_tokens": 1400
+  },
+  {
+    "id": "bitplane_display",
+    "prompt": "Generate an Amiga 68000 assembly program that sets up a one-bitplane display and points BPL1 to CHIP memory.",
+    "families": ["bitplane"],
+    "max_tokens": 1400,
+    "require_emulator": true
+  },
+  {
+    "id": "sprite_setup",
+    "prompt": "Generate an Amiga 68000 assembly program that displays sprite 0 from CHIP memory and exits on left mouse.",
+    "families": ["sprite", "input"],
+    "max_tokens": 1400,
+    "require_emulator": true
+  },
+  {
+    "id": "audio_dma",
+    "prompt": "Generate an Amiga 68000 assembly program that plays a short sample on audio channel 0 using audio DMA.",
+    "families": ["audio"],
+    "max_tokens": 1400,
+    "require_emulator": true
+  },
+  {
+    "id": "cia_input",
+    "prompt": "Generate an Amiga 68000 assembly program that polls the left mouse button through CIAA and exits when pressed.",
+    "families": ["input"],
+    "max_tokens": 900
+  },
+  {
+    "id": "joystick_poll",
+    "prompt": "Generate an Amiga 68000 assembly routine that reads joystick port 1 state from the custom chip registers.",
+    "families": ["input", "subroutine"],
+    "max_tokens": 900
+  },
+  {
+    "id": "keyboard_poll",
+    "prompt": "Generate an Amiga 68000 assembly routine that polls keyboard/CIA input and returns the raw value in d0.",
+    "families": ["input", "subroutine"],
+    "max_tokens": 900
+  },
+  {
+    "id": "vblank_interrupt",
+    "prompt": "Generate an Amiga 68000 assembly program that installs a simple vertical blank interrupt handler and acknowledges INTREQ.",
+    "families": ["interrupt"],
+    "max_tokens": 1600
+  },
+  {
+    "id": "exec_graphics_call",
+    "prompt": "Generate an Amiga 68000 assembly program that opens graphics.library through Exec, calls LoadView with null, closes the library, and exits.",
+    "families": ["exec"],
+    "max_tokens": 1500
+  },
+  {
+    "id": "bootblock_skeleton",
+    "prompt": "Generate an Amiga bootblock skeleton with a DOS signature, checksum placeholder, root block longword, and a clean boot entry.",
+    "families": ["bootblock"],
+    "package_adf": false,
+    "max_tokens": 1000
+  },
+  {
+    "id": "reusable_memclear_subroutine",
+    "prompt": "Generate a reusable Amiga 68000 assembly subroutine that clears a word-aligned memory range passed in a0/d0 and returns.",
+    "families": ["subroutine"],
+    "package_adf": false,
+    "max_tokens": 900
+  }
+]
