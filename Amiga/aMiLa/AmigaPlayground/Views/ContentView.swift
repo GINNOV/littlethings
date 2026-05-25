@@ -710,16 +710,25 @@ SineWave:
                                     .foregroundStyle(.secondary)
                                     .accessibilityIdentifier("assistantConnectionStatusLabel")
                             }
-
-                            Text(lastTokenUsage?.displayText ?? "Token usage unavailable")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.75)
-                                .accessibilityIdentifier("assistantTokenUsageStatusLabel")
                         }
 
                         Spacer()
+
+                        HStack(spacing: 4) {
+                            Image(systemName: "number")
+                                .font(.caption2.weight(.semibold))
+                                .accessibilityHidden(true)
+
+                            Text(lastTokenUsage?.compactDisplayText ?? "Token usage unavailable")
+                                .font(.caption2)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                        }
+                        .foregroundColor(.secondary)
+                        .help(lastTokenUsage?.displayText ?? "Token usage unavailable")
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel(lastTokenUsage?.displayText ?? "Token usage unavailable")
+                        .accessibilityIdentifier("assistantTokenUsageStatusLabel")
 
                         Button {
                             toggleMLXServerFromAssistantHeader()
