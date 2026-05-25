@@ -395,6 +395,10 @@ CopperList:
         XCTAssertTrue(prompt.contains("Do not emit dec.l"))
         XCTAssertTrue(prompt.contains("Use $00ff style hexadecimal constants"))
         XCTAssertTrue(prompt.contains("Do not invent symbols such as BLUE"))
+        XCTAssertTrue(prompt.contains("Never append size specifiers as a third operand"))
+        XCTAssertTrue(prompt.contains("Do not emit a write pseudo-instruction"))
+        XCTAssertTrue(prompt.contains("Never make PC-relative writes"))
+        XCTAssertTrue(prompt.contains("Copper lists must live in Chip RAM"))
     }
 
     func testAssistantChatSessionDoesNotInjectConnectionErrorContainingAmigaTokens() {

@@ -1783,6 +1783,15 @@ struct SettingsView: View {
         }
     }
 
+    private func revealMLXServerLog() {
+        let logURL = URL(fileURLWithPath: mlxServer.logFilePath)
+        if FileManager.default.fileExists(atPath: logURL.path) {
+            NSWorkspace.shared.activateFileViewerSelecting([logURL])
+        } else {
+            NSWorkspace.shared.open(logURL.deletingLastPathComponent())
+        }
+    }
+
     private var selectedRomDisplayName: String {
         if selectedRomFilename.isEmpty {
             return "Default / vAmiga configured ROM"
@@ -1965,17 +1974,34 @@ struct SettingsView: View {
                         Label("Folder", systemImage: "folder")
                     }
                     .accessibilityIdentifier("openMLXServerFolderButton")
+
+                    Link(destination: OllamaService.modelCardURL) {
+                        Label("Model Card", systemImage: "link")
+                    }
+                    .accessibilityIdentifier("mlxServerModelCardLink")
                 }
 
                 Text("Endpoint: \(mlxServer.endpointDescription)")
                     .font(.caption.monospaced())
                     .foregroundStyle(.secondary)
 
-                Text("Log: \(mlxServer.logFilePath)")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .truncationMode(.middle)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("Log: \(mlxServer.logFilePath)")
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .truncationMode(.middle)
+
+                    Button {
+                        revealMLXServerLog()
+                    } label: {
+                        Image(systemName: "folder")
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Open log location in Finder")
+                    .accessibilityLabel("Open MLX server log location")
+                    .accessibilityIdentifier("openMLXServerLogLocationButton")
+                }
             }
 
             Section("Instruction") {

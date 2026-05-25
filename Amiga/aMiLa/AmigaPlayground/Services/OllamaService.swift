@@ -20,6 +20,10 @@ CRITICAL DIRECTIVES:
 - DO NOT use C-style comments (// or /* */). All assembly comments MUST start with a semicolon (;).
 - Use VASM-compatible include statements (e.g., 'include "exec/types.i"') instead of C header includes like "amiga.h".
 - Ensure all instructions and directives (SECTION, MOVE, DC, DS, RTS) have leading spaces so they are not treated as compiler labels. Only labels may start in column 1.
+- Never append size specifiers as an extra operand. Use 'move.w #0,d0', never 'move.w #0,d0,W'.
+- Use real 68000 instructions only. For custom-chip or memory-mapped register writes, use standard move.b, move.w, or move.l; never emit pseudo-instructions such as 'write'.
+- Never write through PC-relative operands and never rely on PC-relative offsets across separate sections. Use labels with lea label,aN or absolute/custom-chip base registers such as lea $dff000,a6.
+- For copper-list programs, the copper list itself must live in Chip RAM. Configure display colors and copper timing strictly with copper WAIT/MOVE words such as dc.w $YY01,$fffe and dc.w $0180,$0f00; do not emit CPU-style writes inside the copper list.
 """
 
     static let generationContractPrompt = """
@@ -32,6 +36,9 @@ General VASM/68000 rules learned from compiler validation:
 - Do not invent symbols such as BLUE unless they are defined with EQU or labels in the same source.
 - Use $dff000,a6 plus register offsets such as $180(a6), $80(a6), $88(a6), and $96(a6) when touching custom chip registers. Do not write dff000(a6), DFF180, or other bare custom-chip names as operands.
 - Do not emit dec.l, wait.l, and.t, BPUSH, OUT, $fp, v0, or other non-68000/pseudo instructions. Use subq/dbf/tst/cmp/bra/beq/bne instead.
+- Never append size specifiers as a third operand. Use move.w #0,d0, never move.w #0,d0,W.
+- All register and memory-mapped hardware writes must use standard move.b, move.w, or move.l instructions. Do not emit a write pseudo-instruction.
+- Never make PC-relative writes and never use PC-relative offsets across separate sections. Use labels with lea label,aN or $dff000-relative custom-chip offsets.
 - Branches must target labels. Do not use register-comparison branches or bne.l/bra.l for simple 68000 local loops; prefer bne.s, beq.s, bra.s, or dbf.
 
 For copper-list requests:
@@ -40,6 +47,7 @@ For copper-list requests:
 - Include a main loop that waits for vertical blank and exits on the left mouse button.
 - For bouncing or animated copper bars, update copper wait/color words each frame; do not output only static DC.W data.
 - Use real 68000/VASM instructions and copper list words only. Do not use WAIT(...) pseudocode, MOVE(...) pseudocode, COLOR_A placeholders, COLOR_B placeholders, or symbolic color placeholders.
+- Copper lists must live in Chip RAM and must configure copper timing/colors with dc.w WAIT/MOVE pairs such as dc.w $2c01,$fffe and dc.w $0180,$0f00. Do not emit CPU-style register writes inside the copper list.
 - Use concrete Amiga 12-bit color values such as $0f00, $00f0, $000f, $0ff0, $00ff, and $0f0f.
 - End every copper list with dc.w $ffff,$fffe.
 
