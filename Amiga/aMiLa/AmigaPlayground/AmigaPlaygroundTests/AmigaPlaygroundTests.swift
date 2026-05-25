@@ -1835,6 +1835,22 @@ CopperList:
         )
     }
 
+    func testMLXServerResolvesAdapterPathInsideModelDirectory() {
+        let controller = MLXServerController(
+            configuration: MLXServerController.Configuration(
+                workingDirectory: URL(fileURLWithPath: "/tmp/fine_tuning", isDirectory: true),
+                modelDirectoryName: "fused_model",
+                port: 1234,
+                logFileName: "server.log"
+            )
+        )
+
+        XCTAssertEqual(
+            controller.adapterDirectory(named: "adapters_asm").path,
+            "/tmp/fine_tuning/fused_model/adapters_asm"
+        )
+    }
+
     func testMLXModelDownloadedDetectionRequiresModelAndAdapters() throws {
         let tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)

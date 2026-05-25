@@ -1296,7 +1296,8 @@ SineWave:
             return
         }
 
-        let adapterPath = looksLikeC ? "adapters_c" : "adapters_asm"
+        let adapterName = looksLikeC ? "adapters_c" : "adapters_asm"
+        let adapterPath = mlxServer.adapterDirectory(named: adapterName).path
         outputConsole = "Generating"
         currentChatTask = OllamaService.shared.streamChat(
             messages: request.messages,

@@ -176,10 +176,14 @@ final class MLXServerController: ObservableObject {
             return helper
         }
 
-        return URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
+        return packageDirectory()
             .appendingPathComponent(".build/debug/MLXServerHelper")
+    }
+
+    static func packageDirectory() -> URL {
+        URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
     }
 
     var endpointDescription: String {
@@ -192,6 +196,10 @@ final class MLXServerController: ObservableObject {
 
     var modelDirectory: URL {
         configuration.workingDirectory.appendingPathComponent(configuration.modelDirectoryName, isDirectory: true)
+    }
+
+    func adapterDirectory(named adapterName: String) -> URL {
+        modelDirectory.appendingPathComponent(adapterName, isDirectory: true)
     }
 
     var modelIsDownloaded: Bool {
@@ -360,6 +368,8 @@ final class MLXServerController: ObservableObject {
 
     private func launch(invocation: Invocation) {
         do {
+            try Self.ensureHelperExecutableExists(at: invocation.executableURL)
+
             let process = Process()
             let outputPipe = Pipe()
             let errorPipe = Pipe()
@@ -403,6 +413,54 @@ final class MLXServerController: ObservableObject {
             closeLogFile()
             process = nil
             status = .failed(error.localizedDescription)
+        }
+    }
+
+    private static func ensureHelperExecutableExists(at helperURL: URL) throws {
+        let helperPath = helperURL.path
+        if FileManager.default.isExecutableFile(atPath: helperPath) {
+            return
+        }
+
+        guard helperURL.path.hasSuffix("/.build/debug/MLXServerHelper") else {
+            throw NSError(
+                domain: "MLXServerController.Helper",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "The MLX server helper was not found at \(helperPath)."]
+            )
+        }
+
+        let buildProcess = Process()
+        buildProcess.executableURL = URL(fileURLWithPath: "/usr/bin/swift")
+        buildProcess.arguments = ["build", "--product", "MLXServerHelper"]
+        buildProcess.currentDirectoryURL = packageDirectory()
+
+        let outputPipe = Pipe()
+        let errorPipe = Pipe()
+        buildProcess.standardOutput = outputPipe
+        buildProcess.standardError = errorPipe
+
+        do {
+            try buildProcess.run()
+            buildProcess.waitUntilExit()
+        } catch {
+            throw NSError(
+                domain: "MLXServerController.Helper",
+                code: 2,
+                userInfo: [NSLocalizedDescriptionKey: "Could not build MLXServerHelper with `/usr/bin/swift build --product MLXServerHelper`: \(error.localizedDescription)"]
+            )
+        }
+
+        guard buildProcess.terminationStatus == 0,
+              FileManager.default.isExecutableFile(atPath: helperPath) else {
+            let output = String(data: outputPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+            let error = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+            let details = (output + "\n" + error).trimmingCharacters(in: .whitespacesAndNewlines)
+            throw NSError(
+                domain: "MLXServerController.Helper",
+                code: Int(buildProcess.terminationStatus),
+                userInfo: [NSLocalizedDescriptionKey: "Could not build MLXServerHelper.\n\n\(details)"]
+            )
         }
     }
 
