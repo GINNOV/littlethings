@@ -1818,6 +1818,115 @@ struct SettingsView: View {
         }
     }
 
+    private var hardwarePresetSelection: Binding<String> {
+        Binding(
+            get: { selectedHardwarePresetID },
+            set: { presetID in
+                guard
+                    presetID != HardwarePreset.customID,
+                    let preset = HardwarePreset.presets.first(where: { $0.id == presetID })
+                else {
+                    return
+                }
+
+                applyHardwarePreset(preset)
+            }
+        )
+    }
+
+    private var selectedHardwarePresetID: String {
+        HardwarePreset.presets.first(where: { hardwareMatches($0) })?.id ?? HardwarePreset.customID
+    }
+
+    private func hardwareMatches(_ preset: HardwarePreset) -> Bool {
+        guard emulatorModel == preset.model,
+              emulatorCpu == preset.cpu,
+              emulatorChipRam == preset.chipRam,
+              emulatorFastRam == preset.fastRam,
+              emulatorJit == preset.jit
+        else {
+            return false
+        }
+
+        guard let presetRom = bestRom(for: preset) else {
+            return true
+        }
+
+        return selectedRomFilename == presetRom
+    }
+
+    private func applyHardwarePreset(_ preset: HardwarePreset) {
+        emulatorModel = preset.model
+        emulatorCpu = preset.cpu
+        emulatorChipRam = preset.chipRam
+        emulatorFastRam = preset.fastRam
+        emulatorJit = preset.jit
+
+        if let rom = bestRom(for: preset) {
+            selectedRomFilename = rom
+        }
+    }
+
+    private func bestRom(for preset: HardwarePreset) -> String? {
+        let matches = availableRoms.compactMap { rom -> (rom: RomEntry, score: Int)? in
+            let searchableName = rom.relativePath.lowercased()
+
+            guard preset.requiredRomTerms.allSatisfy({ searchableName.contains($0) }) else {
+                return nil
+            }
+
+            guard preset.anyRomTerms.isEmpty || preset.anyRomTerms.contains(where: { searchableName.contains($0) }) else {
+                return nil
+            }
+
+            guard !preset.excludedRomTerms.contains(where: { searchableName.contains($0) }) else {
+                return nil
+            }
+
+            let fileSize = romFileSize(rom)
+            if let minimumRomSize = preset.minimumRomSize, fileSize < minimumRomSize {
+                return nil
+            }
+
+            var score = preset.preferredRomTerms.reduce(0) { partialResult, term in
+                partialResult + (searchableName.contains(term) ? 10 : 0)
+            }
+
+            if fileSize == preset.idealRomSize {
+                score += 5
+            }
+
+            if searchableName.contains("[!]") {
+                score += 2
+            }
+
+            return (rom, score)
+        }
+
+        return matches
+            .sorted {
+                if $0.score == $1.score {
+                    return $0.rom.displayName.localizedStandardCompare($1.rom.displayName) == .orderedAscending
+                }
+
+                return $0.score > $1.score
+            }
+            .first?
+            .rom
+            .relativePath
+    }
+
+    private func romFileSize(_ rom: RomEntry) -> Int {
+        guard
+            let attributes = try? FileManager.default.attributesOfItem(atPath: rom.absolutePath),
+            let size = attributes[.size] as? NSNumber
+        else {
+            return 0
+        }
+
+        return size.intValue
+    }
+
     private func chooseRomsDirectory() {
         let panel = NSOpenPanel()
         panel.title = "Select Kickstart ROM Directory"
@@ -2046,6 +2155,25 @@ struct SettingsView: View {
 
     private var hardwareSettings: some View {
         Form {
+            Section("Ideal Configuration") {
+                Picker("Preset", selection: hardwarePresetSelection) {
+                    Text("Custom").tag(HardwarePreset.customID)
+                    ForEach(HardwarePreset.presets) { preset in
+                        Text(preset.name).tag(preset.id)
+                    }
+                }
+
+                if let selectedPreset = HardwarePreset.presets.first(where: { $0.id == selectedHardwarePresetID }) {
+                    Text(selectedPreset.summary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Manual ROM, model, CPU, memory, or JIT settings are active.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             Section("Kickstart ROM") {
                 Text("Directory: \(romsDirectoryPath)")
                     .font(.caption.monospaced())
@@ -2147,6 +2275,106 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .padding()
     }
+}
+
+private struct HardwarePreset: Identifiable {
+    static let customID = "custom"
+
+    let id: String
+    let name: String
+    let model: String
+    let cpu: String
+    let chipRam: String
+    let fastRam: String
+    let jit: Bool
+    let anyRomTerms: [String]
+    let requiredRomTerms: [String]
+    let preferredRomTerms: [String]
+    let excludedRomTerms: [String]
+    let minimumRomSize: Int?
+    let idealRomSize: Int
+
+    var summary: String {
+        "\(model), CPU \(cpu), Chip RAM \(chipRam), Fast RAM \(fastRam), JIT \(jit ? "On" : "Off")"
+    }
+
+    static let presets: [HardwarePreset] = [
+        HardwarePreset(
+            id: "a500-kickstart-13",
+            name: "A500 Kickstart 1.3",
+            model: "A500",
+            cpu: "68000",
+            chipRam: "512 KB",
+            fastRam: "0 MB",
+            jit: false,
+            anyRomTerms: ["kick13", "1.3", "34.5", "315093-02"],
+            requiredRomTerms: [],
+            preferredRomTerms: ["34.5", "315093-02", "[!]"],
+            excludedRomTerms: ["a3000", "beta", "proto", "[h]", "[o]"],
+            minimumRomSize: nil,
+            idealRomSize: 262_144
+        ),
+        HardwarePreset(
+            id: "a500-plus-kickstart-204",
+            name: "A500+ Kickstart 2.04",
+            model: "A500+",
+            cpu: "68000",
+            chipRam: "1 MB",
+            fastRam: "0 MB",
+            jit: false,
+            anyRomTerms: ["a500+", "a500 plus", "390979"],
+            requiredRomTerms: ["2.04"],
+            preferredRomTerms: ["37.175", "390979", "[!]"],
+            excludedRomTerms: ["beta", "proto", "[h]", "[o]"],
+            minimumRomSize: 524_288,
+            idealRomSize: 524_288
+        ),
+        HardwarePreset(
+            id: "a600-kickstart-205",
+            name: "A600 Kickstart 2.05",
+            model: "A600",
+            cpu: "68000",
+            chipRam: "1 MB",
+            fastRam: "0 MB",
+            jit: false,
+            anyRomTerms: ["a600", "391304", "391388"],
+            requiredRomTerms: ["2.05"],
+            preferredRomTerms: ["37.350", "37.300", "391304", "391388", "[!]"],
+            excludedRomTerms: ["beta", "proto", "[h]", "[o]"],
+            minimumRomSize: 524_288,
+            idealRomSize: 524_288
+        ),
+        HardwarePreset(
+            id: "a1200-kickstart-31",
+            name: "A1200 Kickstart 3.1",
+            model: "A1200",
+            cpu: "68020",
+            chipRam: "2 MB",
+            fastRam: "0 MB",
+            jit: false,
+            anyRomTerms: ["a1200"],
+            requiredRomTerms: ["3.1"],
+            preferredRomTerms: ["40.68", "kick31", "[!]"],
+            excludedRomTerms: ["391773", "391774", "rom0", "rom1", "odd", "even", "beta", "proto", "[h]", "[o]"],
+            minimumRomSize: 524_288,
+            idealRomSize: 524_288
+        ),
+        HardwarePreset(
+            id: "a4000-kickstart-31",
+            name: "A4000 Kickstart 3.1",
+            model: "A4000",
+            cpu: "68040",
+            chipRam: "2 MB",
+            fastRam: "8 MB",
+            jit: false,
+            anyRomTerms: ["a4000"],
+            requiredRomTerms: ["3.1"],
+            preferredRomTerms: ["40.70", "40.68", "kick31", "[!]"],
+            excludedRomTerms: ["391657", "391773", "391774", "rom0", "rom1", "odd", "even", "beta", "proto", "[h]", "[o]"],
+            minimumRomSize: 524_288,
+            idealRomSize: 524_288
+        )
+    ]
 }
 
 struct SettingsPickerField<SelectionValue: Hashable, Content: View>: View {

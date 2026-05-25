@@ -599,6 +599,65 @@ CopperList:
         ])
     }
 
+    func testBuildFSUAEArgumentsUsesA1200MinimumChipRam() {
+        let service = EmulatorService.shared
+        let config = EmulatorLaunchConfig(
+            backend: .fsUAE,
+            adfPath: "/tmp/test.adf",
+            romRelativePath: "",
+            model: "A1200",
+            chipRamMb: "512 KB",
+            fastRamMb: "0 MB",
+            cpu: "68020",
+            jit: false,
+            customArgs: "",
+            vAmigaExecutablePath: service.defaultVAmigaPath,
+            vAmigaCustomArgs: ""
+        )
+
+        XCTAssertTrue(service.buildFSUAEArguments(config: config).contains("--chip_memory=2048"))
+    }
+
+    func testBuildFSUAEArgumentsFallsBackToFullA1200Rom() throws {
+        let service = EmulatorService.shared
+        let originalPath = UserDefaults.standard.string(forKey: "romsDirectoryPath")
+        let tempRoot = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("AmigaPlaygroundRomFallback-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempRoot, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.removeItem(at: tempRoot)
+            if let originalPath {
+                UserDefaults.standard.set(originalPath, forKey: "romsDirectoryPath")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "romsDirectoryPath")
+            }
+        }
+
+        let splitRom = tempRoot.appendingPathComponent("Kickstart - 391774-01 (USA, Europe) (v3.1 Rev 40.068) (A1200).rom")
+        let fullRom = tempRoot.appendingPathComponent("Kickstart v3.1 rev 40.68 (1993)(Commodore)(A1200).rom")
+        try Data(repeating: 0, count: 262_144).write(to: splitRom)
+        try Data(repeating: 0, count: 524_288).write(to: fullRom)
+        UserDefaults.standard.set(tempRoot.path, forKey: "romsDirectoryPath")
+
+        let config = EmulatorLaunchConfig(
+            backend: .fsUAE,
+            adfPath: "/tmp/test.adf",
+            romRelativePath: splitRom.lastPathComponent,
+            model: "A1200",
+            chipRamMb: "2 MB",
+            fastRamMb: "0 MB",
+            cpu: "68020",
+            jit: false,
+            customArgs: "",
+            vAmigaExecutablePath: service.defaultVAmigaPath,
+            vAmigaCustomArgs: ""
+        )
+
+        let arguments = service.buildFSUAEArguments(config: config)
+        XCTAssertTrue(arguments.contains { $0.hasPrefix("--kickstart_file=") && $0.contains(fullRom.lastPathComponent) })
+        XCTAssertFalse(arguments.contains { $0.hasPrefix("--kickstart_file=") && $0.contains(splitRom.lastPathComponent) })
+    }
+
     func testBuildVAmigaArgumentsPrioritizesRetroShellValidationScript() {
         let service = EmulatorService.shared
         let config = EmulatorLaunchConfig(

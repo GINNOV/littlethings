@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 enum EmulatorBackend: String, CaseIterable, Identifiable {
@@ -99,6 +100,7 @@ class EmulatorService {
         return UserDefaults.standard.string(forKey: "romsDirectoryPath") ?? "/Users/megov/code/GitHub/littlethings/Amiga/commodore-amiga-firmware"
     }
     let defaultEmulatorPath = "/opt/homebrew/bin/fs-uae"
+    let defaultEmulatorAppPath = "/Applications/FS-UAE.app"
     let defaultVAmigaPath = "/Applications/vAmiga.app/Contents/MacOS/vAmiga"
 
     func getAvailableRoms(in directory: String? = nil) -> [RomEntry] {
@@ -166,7 +168,7 @@ class EmulatorService {
     }
 
     func buildFSUAEArguments(config: EmulatorLaunchConfig) -> [String] {
-        let chipMemKb = mapRamToKb(ramStr: config.chipRamMb, isChip: true)
+        let chipMemKb = effectiveChipMemoryKb(for: config)
         let fastMemKb = mapRamToKb(ramStr: config.fastRamMb, isChip: false)
 
         var args = [
@@ -178,7 +180,7 @@ class EmulatorService {
             "--jit=\(config.jit ? "1" : "0")"
         ]
 
-        if let romPath = resolveRomPath(config.romRelativePath) {
+        if let romPath = resolveRomPath(config.romRelativePath, model: config.model) {
             args.append("--kickstart_file=\(romPath)")
         }
 
@@ -301,29 +303,52 @@ class EmulatorService {
         DispatchQueue.global(qos: .userInitiated).async {
             let fileManager = FileManager.default
 
-            guard fileManager.fileExists(atPath: self.defaultEmulatorPath) else {
+            guard fileManager.fileExists(atPath: self.defaultEmulatorAppPath) || fileManager.fileExists(atPath: self.defaultEmulatorPath) else {
                 DispatchQueue.main.async {
                     completion(EmulatorLaunchResult(
                         success: false,
                         backend: .fsUAE,
-                        message: "FS-UAE emulator not found at \(self.defaultEmulatorPath).\nPlease install it via 'brew install fs-uae' to run your ADF files.",
+                        message: "FS-UAE emulator not found at \(self.defaultEmulatorAppPath) or \(self.defaultEmulatorPath).\nPlease install FS-UAE to run your ADF files.",
                         tracePath: nil
                     ))
                 }
                 return
             }
 
+            let launchedChipRam = self.formatRam(kilobytes: self.effectiveChipMemoryKb(for: config))
             let process = Process()
-            process.executableURL = URL(fileURLWithPath: self.defaultEmulatorPath)
-            process.arguments = self.buildFSUAEArguments(config: config)
+            if fileManager.fileExists(atPath: self.defaultEmulatorAppPath) {
+                process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+                process.arguments = ["-n", "-a", self.defaultEmulatorAppPath, "--args"] + self.buildFSUAEArguments(config: config)
+            } else {
+                process.executableURL = URL(fileURLWithPath: self.defaultEmulatorPath)
+                process.arguments = self.buildFSUAEArguments(config: config)
+            }
 
             do {
                 try process.run()
+                if process.executableURL?.path == "/usr/bin/open" {
+                    process.waitUntilExit()
+                    guard process.terminationStatus == 0 else {
+                        DispatchQueue.main.async {
+                            completion(EmulatorLaunchResult(
+                                success: false,
+                                backend: .fsUAE,
+                                message: "Failed to open FS-UAE app bundle with status \(process.terminationStatus).",
+                                tracePath: nil
+                            ))
+                        }
+                        return
+                    }
+                    self.activateFSUAEApp()
+                } else {
+                    self.activate(process: process)
+                }
                 DispatchQueue.main.async {
                     completion(EmulatorLaunchResult(
                         success: true,
                         backend: .fsUAE,
-                        message: "Successfully launched FS-UAE with Amiga \(config.model), CPU \(config.cpu), Chip RAM \(config.chipRamMb), Fast RAM \(config.fastRamMb), JIT: \(config.jit ? "Enabled" : "Disabled").",
+                        message: "Successfully launched FS-UAE with Amiga \(config.model), CPU \(config.cpu), Chip RAM \(launchedChipRam), Fast RAM \(config.fastRamMb), JIT: \(config.jit ? "Enabled" : "Disabled").",
                         tracePath: nil
                     ))
                 }
@@ -337,6 +362,40 @@ class EmulatorService {
                     ))
                 }
             }
+        }
+    }
+
+    private func activateFSUAEApp() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            NSRunningApplication.runningApplications(withBundleIdentifier: "no.fengestad.fs-uae")
+                .last?
+                .activate(options: [.activateAllWindows])
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            NSRunningApplication.runningApplications(withBundleIdentifier: "no.fengestad.fs-uae")
+                .last?
+                .activate(options: [.activateAllWindows])
+        }
+    }
+
+    private func activate(process: Process) {
+        let processIdentifier = process.processIdentifier
+        let activationOptions: NSApplication.ActivationOptions
+        if #available(macOS 14.0, *) {
+            activationOptions = [.activateAllWindows]
+        } else {
+            activationOptions = [.activateAllWindows, .activateIgnoringOtherApps]
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            NSRunningApplication(processIdentifier: processIdentifier)?
+                .activate(options: activationOptions)
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            NSRunningApplication(processIdentifier: processIdentifier)?
+                .activate(options: activationOptions)
         }
     }
 
@@ -427,6 +486,25 @@ class EmulatorService {
         return num
     }
 
+    private func effectiveChipMemoryKb(for config: EmulatorLaunchConfig) -> Int {
+        let requestedKb = mapRamToKb(ramStr: config.chipRamMb, isChip: true)
+
+        switch config.model {
+        case "A1200", "A4000":
+            return max(requestedKb, 2048)
+        default:
+            return requestedKb
+        }
+    }
+
+    private func formatRam(kilobytes: Int) -> String {
+        if kilobytes >= 1024, kilobytes % 1024 == 0 {
+            return "\(kilobytes / 1024) MB"
+        }
+
+        return "\(kilobytes) KB"
+    }
+
     private static func relativePath(for url: URL, rootURL: URL) -> String {
         let rootPath = rootURL.standardizedFileURL.path
         let path = url.standardizedFileURL.path
@@ -441,8 +519,75 @@ class EmulatorService {
         return FileManager.default.fileExists(atPath: path) ? path : nil
     }
 
+    private func resolveRomPath(_ relativePath: String, model: String) -> String? {
+        let selectedPath = resolveRomPath(relativePath)
+
+        if let selectedPath, isCompatibleRom(atPath: selectedPath, model: model) {
+            return selectedPath
+        }
+
+        return findCompatibleRom(for: model) ?? selectedPath
+    }
+
+    private func isCompatibleRom(atPath path: String, model: String) -> Bool {
+        guard ["A1200", "A4000"].contains(model) else {
+            return true
+        }
+
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: path),
+              let size = attributes[.size] as? NSNumber else {
+            return true
+        }
+
+        return size.intValue >= 524_288
+    }
+
+    private func findCompatibleRom(for model: String) -> String? {
+        guard ["A1200", "A4000"].contains(model) else {
+            return nil
+        }
+
+        let rootURL = URL(fileURLWithPath: romsDirectory, isDirectory: true)
+        guard let enumerator = FileManager.default.enumerator(
+            at: rootURL,
+            includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey],
+            options: [.skipsHiddenFiles, .skipsPackageDescendants]
+        ) else {
+            return nil
+        }
+
+        let candidates = enumerator.compactMap { item -> URL? in
+            guard let url = item as? URL,
+                  url.pathExtension.lowercased() == "rom",
+                  let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey]),
+                  values.isRegularFile == true,
+                  (values.fileSize ?? 0) >= 524_288 else {
+                return nil
+            }
+
+            let name = url.lastPathComponent.lowercased()
+            return name.contains(model.lowercased()) ? url : nil
+        }
+
+        return candidates.sorted { lhs, rhs in
+            romCandidateScore(lhs) == romCandidateScore(rhs)
+                ? lhs.lastPathComponent.localizedStandardCompare(rhs.lastPathComponent) == .orderedAscending
+                : romCandidateScore(lhs) > romCandidateScore(rhs)
+        }
+        .first?
+        .path
+    }
+
+    private func romCandidateScore(_ url: URL) -> Int {
+        let name = url.lastPathComponent.lowercased()
+        var score = 0
+        if name.contains("3.1") { score += 2 }
+        if !name.contains("[") { score += 1 }
+        return score
+    }
+
     func resolveRomPathForValidation(_ relativePath: String) -> String? {
-        resolveRomPath(relativePath)
+        resolveRomPath(relativePath, model: "A500")
     }
 
     private func vAmigaAppBundlePath(from executablePath: String) -> String? {
