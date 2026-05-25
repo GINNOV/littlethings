@@ -1815,6 +1815,51 @@ CopperList:
 
         XCTAssertTrue(message.contains("fused_model"))
     }
+
+    func testMLXModelDownloadManifestContainsAppCompatibleAdapter() {
+        let paths = MLXServerController.modelDownloadFiles.map(\.relativePath)
+
+        XCTAssertTrue(paths.contains("model.safetensors"))
+        XCTAssertTrue(paths.contains("tokenizer.json"))
+        XCTAssertTrue(paths.contains("adapters_asm/adapter_config.json"))
+        XCTAssertTrue(paths.contains("adapters_asm/adapters.safetensors"))
+        XCTAssertTrue(paths.contains("adapters_c/adapter_config.json"))
+        XCTAssertTrue(paths.contains("adapters_c/adapters.safetensors"))
+        XCTAssertTrue(
+            MLXServerController.modelDownloadFiles
+                .allSatisfy { $0.remoteURL.absoluteString.hasPrefix("https://huggingface.co/bmove/antigravity-amiga-68k/resolve/main/") }
+        )
+    }
+
+    func testMLXModelDownloadedDetectionRequiresModelAndAdapters() throws {
+        let tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let controller = MLXServerController(
+            configuration: MLXServerController.Configuration(
+                workingDirectory: tempDirectory,
+                modelDirectoryName: "fused_model",
+                port: 1234,
+                logFileName: "server.log"
+            )
+        )
+
+        XCTAssertFalse(controller.modelIsDownloaded)
+        for path in [
+            "config.json",
+            "model.safetensors",
+            "tokenizer.json",
+            "adapters_asm/adapters.safetensors",
+            "adapters_c/adapters.safetensors"
+        ] {
+            let url = controller.modelDirectory.appendingPathComponent(path)
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data().write(to: url)
+        }
+
+        XCTAssertTrue(controller.modelIsDownloaded)
+    }
 }
 
 private extension URLRequest {

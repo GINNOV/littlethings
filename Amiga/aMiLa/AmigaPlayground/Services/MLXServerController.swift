@@ -39,6 +39,19 @@ final class MLXServerController: ObservableObject {
         let logFile: URL
     }
 
+    struct ModelDownloadFile: Equatable {
+        let relativePath: String
+
+        var remoteURL: URL {
+            let escapedPath = relativePath
+                .split(separator: "/")
+                .map { String($0).addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? String($0) }
+                .joined(separator: "/")
+
+            return URL(string: "https://huggingface.co/\(OllamaService.publishedModelID)/resolve/main/\(escapedPath)")!
+        }
+    }
+
     struct HelperStatus: Decodable, Equatable {
         enum Event: String, Decodable {
             case ready
@@ -73,6 +86,7 @@ final class MLXServerController: ObservableObject {
         case running
         case runningExternally
         case stopping
+        case downloading(completed: Int, total: Int, currentFile: String)
         case failed(String)
 
         var label: String {
@@ -87,6 +101,8 @@ final class MLXServerController: ObservableObject {
                 return "MLX Running Outside App"
             case .stopping:
                 return "Stopping MLX Server"
+            case .downloading(let completed, let total, _):
+                return "Downloading Model \(completed)/\(total)"
             case .failed:
                 return "MLX Setup Needed"
             }
@@ -105,9 +121,28 @@ final class MLXServerController: ObservableObject {
 
     let configuration: Configuration
     private var process: Process?
+    private var downloadProcess: Process?
     private var logFileHandle: FileHandle?
     private let urlSession: URLSession
     private var helperOutputBuffer = ""
+
+    static let modelDownloadFiles: [ModelDownloadFile] = [
+        ModelDownloadFile(relativePath: "README.md"),
+        ModelDownloadFile(relativePath: "chat_template.jinja"),
+        ModelDownloadFile(relativePath: "config.json"),
+        ModelDownloadFile(relativePath: "generation_config.json"),
+        ModelDownloadFile(relativePath: "model.safetensors"),
+        ModelDownloadFile(relativePath: "model.safetensors.index.json"),
+        ModelDownloadFile(relativePath: "model_version.json"),
+        ModelDownloadFile(relativePath: "tokenizer.json"),
+        ModelDownloadFile(relativePath: "tokenizer_config.json"),
+        ModelDownloadFile(relativePath: "adapters_asm/adapter_config.json"),
+        ModelDownloadFile(relativePath: "adapters_asm/adapters.safetensors"),
+        ModelDownloadFile(relativePath: "adapters_c/adapter_config.json"),
+        ModelDownloadFile(relativePath: "adapters_c/adapters.safetensors"),
+        ModelDownloadFile(relativePath: "docs/asm_capability_ladder.yaml"),
+        ModelDownloadFile(relativePath: "docs/model_learnings.md")
+    ]
 
     init(configuration: Configuration = .default, urlSession: URLSession = .shared) {
         self.configuration = configuration
@@ -115,6 +150,7 @@ final class MLXServerController: ObservableObject {
     }
 
     deinit {
+        downloadProcess?.terminate()
         stop()
     }
 
@@ -154,11 +190,32 @@ final class MLXServerController: ObservableObject {
         Self.buildInvocation(configuration: configuration).logFile.path
     }
 
+    var modelDirectory: URL {
+        configuration.workingDirectory.appendingPathComponent(configuration.modelDirectoryName, isDirectory: true)
+    }
+
+    var modelIsDownloaded: Bool {
+        Self.modelDownloadFiles
+            .filter { $0.relativePath.hasSuffix(".safetensors") || $0.relativePath == "config.json" || $0.relativePath == "tokenizer.json" }
+            .allSatisfy { FileManager.default.fileExists(atPath: modelDirectory.appendingPathComponent($0.relativePath).path) }
+    }
+
+    var canDownload: Bool {
+        guard !modelIsDownloaded else { return false }
+
+        switch status {
+        case .stopped, .failed:
+            return true
+        case .starting, .running, .runningExternally, .stopping, .downloading:
+            return false
+        }
+    }
+
     var canStart: Bool {
         switch status {
         case .stopped, .failed:
             return true
-        case .starting, .running, .runningExternally, .stopping:
+        case .starting, .running, .runningExternally, .stopping, .downloading:
             return false
         }
     }
@@ -167,7 +224,7 @@ final class MLXServerController: ObservableObject {
         switch status {
         case .running, .starting:
             return process != nil
-        case .stopped, .runningExternally, .stopping, .failed:
+        case .stopped, .runningExternally, .stopping, .downloading, .failed:
             return false
         }
     }
@@ -190,9 +247,8 @@ final class MLXServerController: ObservableObject {
         guard canStart else { return }
 
         let invocation = Self.buildInvocation(configuration: configuration)
-        let modelDirectory = configuration.workingDirectory.appendingPathComponent(configuration.modelDirectoryName, isDirectory: true)
-        guard FileManager.default.fileExists(atPath: modelDirectory.path) else {
-            status = .failed("MLX model directory was not found: \(modelDirectory.path)\n\nBuild or copy the fused MLX model to \(modelDirectory.path), then start the server again.")
+        guard modelIsDownloaded else {
+            status = .failed("MLX model files were not found in \(modelDirectory.path)\n\nUse Download Model in Amiga Playground, or run `cd \(configuration.workingDirectory.path) && ./download_model.sh`, then start the server again.")
             return
         }
 
@@ -229,6 +285,77 @@ final class MLXServerController: ObservableObject {
             }
         }
         process.terminate()
+    }
+
+    func downloadModel(startAfterDownload: Bool = false) {
+        guard canDownload else { return }
+
+        let files = Self.modelDownloadFiles
+        status = .downloading(completed: 0, total: files.count, currentFile: files.first?.relativePath ?? "model")
+
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            guard let self else { return }
+
+            do {
+                try FileManager.default.createDirectory(at: self.modelDirectory, withIntermediateDirectories: true)
+
+                for (index, file) in files.enumerated() {
+                    DispatchQueue.main.async {
+                        self.status = .downloading(completed: index, total: files.count, currentFile: file.relativePath)
+                    }
+
+                    try self.download(file: file)
+                }
+
+                DispatchQueue.main.async {
+                    self.downloadProcess = nil
+                    self.status = .stopped
+                    if startAfterDownload {
+                        self.start()
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.downloadProcess = nil
+                    self.status = .failed("Model download failed: \(error.localizedDescription)\n\nCheck your internet connection and make sure `/usr/bin/curl` is available, then try Download Model again.")
+                }
+            }
+        }
+    }
+
+    private func download(file: ModelDownloadFile) throws {
+        let destination = modelDirectory.appendingPathComponent(file.relativePath)
+        try FileManager.default.createDirectory(
+            at: destination.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
+        process.arguments = [
+            "--fail",
+            "--location",
+            "--continue-at", "-",
+            "--output", destination.path,
+            file.remoteURL.absoluteString
+        ]
+        process.standardOutput = Pipe()
+        process.standardError = Pipe()
+
+        DispatchQueue.main.sync {
+            self.downloadProcess = process
+        }
+
+        try process.run()
+        process.waitUntilExit()
+
+        if process.terminationStatus != 0 {
+            throw NSError(
+                domain: "MLXServerController.ModelDownload",
+                code: Int(process.terminationStatus),
+                userInfo: [NSLocalizedDescriptionKey: "Could not download \(file.relativePath)"]
+            )
+        }
     }
 
     private func launch(invocation: Invocation) {

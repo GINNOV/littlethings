@@ -345,7 +345,7 @@ CopperList:
         switch mlxServer.status {
         case .running:
             return .green
-        case .runningExternally, .starting, .stopping:
+        case .runningExternally, .starting, .stopping, .downloading:
             return .accentColor
         case .failed:
             return .red
@@ -371,7 +371,7 @@ CopperList:
             return "MLX Server Running"
         case .runningExternally:
             return "MLX Running Outside App"
-        case .starting, .stopping:
+        case .starting, .stopping, .downloading:
             return mlxServer.status.label
         case .failed:
             return "MLX Setup Needed"
@@ -381,15 +381,23 @@ CopperList:
     }
 
     private var mlxServerToggleIcon: String {
-        mlxServer.canStop ? "stop.fill" : "play.fill"
+        if mlxServer.canStop {
+            return "stop.fill"
+        }
+
+        return mlxServer.canDownload ? "arrow.down.circle.fill" : "play.fill"
     }
 
     private var mlxServerToggleHelp: String {
-        mlxServer.canStop ? "Stop local MLX model server" : "Start local MLX model server"
+        if mlxServer.canStop {
+            return "Stop local MLX model server"
+        }
+
+        return mlxServer.canDownload ? "Download local MLX model" : "Start local MLX model server"
     }
 
     private var canToggleMLXServer: Bool {
-        mlxServer.canStart || mlxServer.canStop
+        mlxServer.canDownload || mlxServer.canStart || mlxServer.canStop
     }
 
     // Chat Panel State
@@ -1438,6 +1446,11 @@ SineWave:
         if mlxServer.canStop {
             mlxServer.stop()
             llm.refreshConnectionStatus()
+        } else if mlxServer.canDownload {
+            llm.provider = .lmStudio
+            llm.customUrl = ""
+            llm.modelName = OllamaService.publishedModelID
+            mlxServer.downloadModel(startAfterDownload: true)
         } else if mlxServer.canStart {
             llm.provider = .lmStudio
             llm.customUrl = ""
@@ -1719,15 +1732,23 @@ struct SettingsView: View {
     }
 
     private var mlxServerToggleLabel: String {
-        mlxServer.canStop ? "Stop MLX Server" : "Start MLX Server"
+        if mlxServer.canStop {
+            return "Stop MLX Server"
+        }
+
+        return mlxServer.canDownload ? "Download Model" : "Start MLX Server"
     }
 
     private var mlxServerToggleIcon: String {
-        mlxServer.canStop ? "stop.fill" : "play.fill"
+        if mlxServer.canStop {
+            return "stop.fill"
+        }
+
+        return mlxServer.canDownload ? "arrow.down.circle.fill" : "play.fill"
     }
 
     private var canToggleMLXServer: Bool {
-        mlxServer.canStart || mlxServer.canStop
+        mlxServer.canDownload || mlxServer.canStart || mlxServer.canStop
     }
 
     private var mlxServerStatusColor: Color {
@@ -1736,7 +1757,7 @@ struct SettingsView: View {
             return .green
         case .runningExternally:
             return .accentColor
-        case .starting, .stopping:
+        case .starting, .stopping, .downloading:
             return .accentColor
         case .failed:
             return .red
@@ -1749,6 +1770,11 @@ struct SettingsView: View {
         if mlxServer.canStop {
             mlxServer.stop()
             llm.refreshConnectionStatus()
+        } else if mlxServer.canDownload {
+            llm.provider = .lmStudio
+            llm.customUrl = ""
+            llm.modelName = OllamaService.publishedModelID
+            mlxServer.downloadModel(startAfterDownload: true)
         } else if mlxServer.canStart {
             llm.provider = .lmStudio
             llm.customUrl = ""
