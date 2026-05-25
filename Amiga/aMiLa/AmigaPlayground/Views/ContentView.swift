@@ -407,6 +407,8 @@ CopperList:
     @State private var currentChatTask: URLSessionDataTask?
     @State private var selfCorrectionAttempts: Int = 0
     @State private var originalUserPrompt: String = ""
+    @State private var assistantGenerationPhase: AssistantGenerationPhase = .idle
+    @State private var lastTokenUsage: TokenUsage?
 
     private var canFixCompileErrors: Bool {
         buildStatus == .failure &&
@@ -708,6 +710,13 @@ SineWave:
                                     .foregroundStyle(.secondary)
                                     .accessibilityIdentifier("assistantConnectionStatusLabel")
                             }
+
+                            Text(lastTokenUsage?.displayText ?? "Token usage unavailable")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
+                                .accessibilityIdentifier("assistantTokenUsageStatusLabel")
                         }
 
                         Spacer()
@@ -751,26 +760,29 @@ SineWave:
                                 } else {
                                     ForEach(assistantChat.messages) { msg in
                                         VStack(alignment: .leading, spacing: 4) {
-                                            HStack(spacing: 6) {
-                                                Text(msg.role == "user" ? "You" : "Assistant")
-                                                    .font(.caption)
-                                                    .fontWeight(.semibold)
-                                                    .foregroundColor(msg.role == "user" ? .cyan : .orange)
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                HStack(spacing: 6) {
+                                                    Text(msg.role == "user" ? "You" : "Assistant")
+                                                        .font(.caption)
+                                                        .fontWeight(.semibold)
+                                                        .foregroundColor(msg.role == "user" ? .cyan : .orange)
 
-                                                if let prompt = assistantChat.reusablePrompt(from: msg) {
-                                                    Button {
-                                                        copyPromptToClipboard(prompt, messageID: msg.id)
-                                                    } label: {
-                                                        Image(systemName: copiedPromptMessageID == msg.id ? "checkmark" : "doc.on.doc")
-                                                            .font(.caption)
-                                                            .frame(width: 18, height: 18)
+                                                    if let prompt = assistantChat.reusablePrompt(from: msg) {
+                                                        Button {
+                                                            copyPromptToClipboard(prompt, messageID: msg.id)
+                                                        } label: {
+                                                            Image(systemName: copiedPromptMessageID == msg.id ? "checkmark" : "doc.on.doc")
+                                                                .font(.caption)
+                                                                .frame(width: 18, height: 18)
+                                                        }
+                                                        .buttonStyle(.plain)
+                                                        .foregroundColor(copiedPromptMessageID == msg.id ? .green : .cyan.opacity(0.9))
+                                                        .help("Copy prompt")
+                                                        .accessibilityLabel("Copy prompt to clipboard")
+                                                        .accessibilityIdentifier("copyPromptButton")
                                                     }
-                                                    .buttonStyle(.plain)
-                                                    .foregroundColor(copiedPromptMessageID == msg.id ? .green : .cyan.opacity(0.9))
-                                                    .help("Copy prompt")
-                                                    .accessibilityLabel("Copy prompt to clipboard")
-                                                    .accessibilityIdentifier("copyPromptButton")
                                                 }
+
                                             }
 
                                             Text(msg.content)
@@ -780,13 +792,6 @@ SineWave:
                                                 .background(msg.role == "user" ? Color.blue.opacity(0.2) : Color.orange.opacity(0.12))
                                                 .cornerRadius(6)
                                                 .textSelection(.enabled)
-
-                                            if msg.role == "assistant" {
-                                                Text(msg.tokenUsage?.displayText ?? "Token usage unavailable")
-                                                    .font(.caption2)
-                                                    .foregroundColor(.white.opacity(0.55))
-                                                    .accessibilityIdentifier("assistantTokenUsageFooter")
-                                            }
 
                                             // Quick Code Inject Button
                                             if msg.role == "assistant" && assistantChat.isLikelyInjectableCode(msg.content) {
@@ -811,10 +816,19 @@ SineWave:
 
                                 if assistantChat.isGenerating {
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text("Assistant")
-                                            .font(.caption)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(.orange)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(assistantGenerationPhase.title)
+                                                .font(.caption)
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(.orange)
+
+                                            if let detail = assistantGenerationPhase.detail {
+                                                Text(detail)
+                                                    .font(.caption2)
+                                                    .foregroundColor(.white.opacity(0.62))
+                                            }
+                                        }
+
                                         Text(assistantChat.currentGeneration)
                                             .font(.system(.body, design: .monospaced))
                                             .foregroundColor(.white)
@@ -1103,6 +1117,8 @@ SineWave:
         currentMessage = ""
         selfCorrectionAttempts = 0
         originalUserPrompt = ""
+        assistantGenerationPhase = .idle
+        lastTokenUsage = nil
         outputConsole = "Started a new assistant chat."
     }
 
@@ -1280,6 +1296,7 @@ SineWave:
     private func submitAssistantPrompt(_ rawPrompt: String, clearComposer: Bool) {
         guard let request = assistantChat.submit(rawPrompt) else { return }
         let submittedPrompt = rawPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        assistantGenerationPhase = selfCorrectionAttempts == 0 ? .generating : .repairing(attempt: selfCorrectionAttempts)
 
         if clearComposer {
             currentMessage = ""
@@ -1305,7 +1322,7 @@ SineWave:
 
         let adapterName = looksLikeC ? "adapters_c" : "adapters_asm"
         let adapterPath = mlxServer.adapterDirectory(named: adapterName).path
-        outputConsole = "Generating"
+        outputConsole = assistantGenerationPhase.consoleMessage
         currentChatTask = OllamaService.shared.streamChat(
             messages: request.messages,
             adapterPath: adapterPath,
@@ -1323,6 +1340,7 @@ SineWave:
             onCompletion: { contentResponse, reasoningResponse, tokenUsage in
                 currentChatTask = nil
                 llm.markConnected()
+                lastTokenUsage = tokenUsage
                 let completion = assistantChat.complete(
                     fullResponse: contentResponse,
                     streamedResponse: assistantChat.currentGeneration,
@@ -1332,6 +1350,7 @@ SineWave:
                 
                 guard let injectedCode = completion.injectedCode else {
                     self.selfCorrectionAttempts = 0
+                    self.assistantGenerationPhase = .idle
                     if let consoleMessage = completion.consoleMessage {
                         outputConsole = consoleMessage
                     }
@@ -1341,6 +1360,7 @@ SineWave:
                 // If it is C code, we inject it directly (since this editor compiles assembly only)
                 if AssemblySourceFormatter.looksLikeC(injectedCode) {
                     self.selfCorrectionAttempts = 0
+                    self.assistantGenerationPhase = .idle
                     handleGeneratedCodeReady(
                         injectedCode,
                         prompt: self.originalUserPrompt.isEmpty ? submittedPrompt : self.originalUserPrompt,
@@ -1360,6 +1380,7 @@ SineWave:
                 }
 
                 llm.markDisconnected(error)
+                assistantGenerationPhase = .idle
                 assistantChat.fail(error)
             }
         )
@@ -1367,14 +1388,16 @@ SineWave:
 
     private func runAssemblyReliabilityGate(_ source: String, submittedPrompt: String) {
         let requestedPrompt = originalUserPrompt.isEmpty ? submittedPrompt : originalUserPrompt
+        assistantGenerationPhase = .validating
         activeOutputTab = .console
-        outputConsole = "Compiling"
+        outputConsole = assistantGenerationPhase.consoleMessage
 
         CompilerService.shared.compile(assemblyCode: source) { success, compilerOutput in
             let semanticResult = AssemblySemanticValidator.validate(source: source, prompt: requestedPrompt)
 
             if success && semanticResult.passed {
                 self.selfCorrectionAttempts = 0
+                self.assistantGenerationPhase = .idle
                 self.outputConsole = "Passed"
                 handleGeneratedCodeReady(
                     source,
@@ -1393,7 +1416,8 @@ SineWave:
 
             if self.selfCorrectionAttempts < 2 {
                 self.selfCorrectionAttempts += 1
-                outputConsole = "Repairing"
+                assistantGenerationPhase = .repairing(attempt: self.selfCorrectionAttempts)
+                outputConsole = assistantGenerationPhase.consoleMessage
                 let repairPrompt = AssemblyRepairPromptBuilder.prompt(
                     originalRequest: requestedPrompt,
                     source: source,
@@ -1406,6 +1430,7 @@ SineWave:
             }
 
             self.selfCorrectionAttempts = 0
+            assistantGenerationPhase = .idle
             outputConsole = "Failed: \(gateFailures.first ?? "reliability gate failed")"
         }
     }
@@ -1448,6 +1473,7 @@ SineWave:
     private func stopMessageGeneration() {
         currentChatTask?.cancel()
         currentChatTask = nil
+        assistantGenerationPhase = .idle
         assistantChat.cancel()
     }
 
@@ -2375,6 +2401,50 @@ private struct HardwarePreset: Identifiable {
             idealRomSize: 524_288
         )
     ]
+}
+
+private enum AssistantGenerationPhase: Equatable {
+    case idle
+    case generating
+    case validating
+    case repairing(attempt: Int)
+
+    var title: String {
+        switch self {
+        case .idle, .generating:
+            return "Assistant"
+        case .validating:
+            return "Checking generated code"
+        case .repairing(let attempt):
+            return "Self-repair pass \(attempt) of 2"
+        }
+    }
+
+    var detail: String? {
+        switch self {
+        case .idle:
+            return nil
+        case .generating:
+            return "Generating code from your prompt."
+        case .validating:
+            return "Compiling and validating before editor injection."
+        case .repairing:
+            return "The previous code failed validation, so the assistant is correcting it."
+        }
+    }
+
+    var consoleMessage: String {
+        switch self {
+        case .idle:
+            return ""
+        case .generating:
+            return "Generating"
+        case .validating:
+            return "Compiling and validating generated code"
+        case .repairing(let attempt):
+            return "Self-repair pass \(attempt) of 2: correcting generated code after validation failed"
+        }
+    }
 }
 
 struct SettingsPickerField<SelectionValue: Hashable, Content: View>: View {
