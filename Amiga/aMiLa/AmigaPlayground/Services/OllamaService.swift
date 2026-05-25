@@ -1,6 +1,16 @@
 import Foundation
 import Combine
 
+struct TokenUsage: Codable, Equatable {
+    let inputTokens: Int
+    let outputTokens: Int
+    let totalTokens: Int
+
+    var displayText: String {
+        "Tokens: in \(inputTokens) / out \(outputTokens) / total \(totalTokens)"
+    }
+}
+
 class OllamaService: ObservableObject {
     static let shared = OllamaService()
     static let publishedModelID = "bmove/antigravity-amiga-68k"
@@ -228,12 +238,14 @@ For blitter requests:
         let role: String
         var content: String
         var reasoning: String?
+        var tokenUsage: TokenUsage?
         
-        init(id: UUID = UUID(), role: String, content: String, reasoning: String? = nil) {
+        init(id: UUID = UUID(), role: String, content: String, reasoning: String? = nil, tokenUsage: TokenUsage? = nil) {
             self.id = id
             self.role = role
             self.content = content
             self.reasoning = reasoning
+            self.tokenUsage = tokenUsage
         }
     }
     
@@ -244,7 +256,7 @@ For blitter requests:
             adapterPath: adapterPath,
             onContentChunk: onChunk,
             onReasoningChunk: onChunk,
-            onCompletion: { content, reasoning in
+            onCompletion: { content, reasoning, _ in
                 let combined = content.isEmpty ? reasoning : content
                 onCompletion(combined)
             },
@@ -259,6 +271,27 @@ For blitter requests:
         onContentChunk: @escaping (String) -> Void,
         onReasoningChunk: @escaping (String) -> Void,
         onCompletion: @escaping (String, String) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> URLSessionDataTask? {
+        streamChat(
+            messages: messages,
+            adapterPath: adapterPath,
+            onContentChunk: onContentChunk,
+            onReasoningChunk: onReasoningChunk,
+            onCompletion: { content, reasoning, _ in
+                onCompletion(content, reasoning)
+            },
+            onError: onError
+        )
+    }
+
+    @discardableResult
+    func streamChat(
+        messages: [ChatMessage],
+        adapterPath: String? = nil,
+        onContentChunk: @escaping (String) -> Void,
+        onReasoningChunk: @escaping (String) -> Void,
+        onCompletion: @escaping (String, String, TokenUsage?) -> Void,
         onError: @escaping (Error) -> Void
     ) -> URLSessionDataTask? {
         let endpoint = provider == .ollama ? "\(apiUrl)/api/chat" : "\(apiUrl)/v1/chat/completions"
@@ -338,28 +371,40 @@ For blitter requests:
 class StreamingDelegate: NSObject, URLSessionDataDelegate {
     let onContentChunk: (String) -> Void
     let onReasoningChunk: (String) -> Void
-    let onCompletion: (String, String) -> Void
+    let onCompletion: (String, String, TokenUsage?) -> Void
     let onError: (Error) -> Void
     
     var fullContentResponse = ""
     var fullReasoningResponse = ""
     var fullResponse = "" // For backwards compatibility
+    var tokenUsage: TokenUsage?
     private var lineBuffer = ""
     private var didFinish = false
     private var didFail = false
     
-    init(onContentChunk: @escaping (String) -> Void, onReasoningChunk: @escaping (String) -> Void, onCompletion: @escaping (String, String) -> Void, onError: @escaping (Error) -> Void) {
+    init(onContentChunk: @escaping (String) -> Void, onReasoningChunk: @escaping (String) -> Void, onCompletion: @escaping (String, String, TokenUsage?) -> Void, onError: @escaping (Error) -> Void) {
         self.onContentChunk = onContentChunk
         self.onReasoningChunk = onReasoningChunk
         self.onCompletion = onCompletion
         self.onError = onError
+    }
+
+    convenience init(onContentChunk: @escaping (String) -> Void, onReasoningChunk: @escaping (String) -> Void, onCompletion: @escaping (String, String) -> Void, onError: @escaping (Error) -> Void) {
+        self.init(
+            onContentChunk: onContentChunk,
+            onReasoningChunk: onReasoningChunk,
+            onCompletion: { content, reasoning, _ in
+                onCompletion(content, reasoning)
+            },
+            onError: onError
+        )
     }
     
     convenience init(onChunk: @escaping (String) -> Void, onCompletion: @escaping (String) -> Void, onError: @escaping (Error) -> Void) {
         self.init(
             onContentChunk: onChunk,
             onReasoningChunk: onChunk,
-            onCompletion: { content, reasoning in
+            onCompletion: { content, reasoning, _ in
                 let combined = content.isEmpty ? reasoning : content
                 onCompletion(combined)
             },
@@ -392,7 +437,7 @@ class StreamingDelegate: NSObject, URLSessionDataDelegate {
             }
             if !didFail {
                 DispatchQueue.main.async {
-                    self.onCompletion(self.fullContentResponse, self.fullReasoningResponse)
+                    self.onCompletion(self.fullContentResponse, self.fullReasoningResponse, self.tokenUsage)
                 }
             }
         }
@@ -429,6 +474,10 @@ class StreamingDelegate: NSObject, URLSessionDataDelegate {
                 self.onError(NSError(domain: "OllamaService", code: 502, userInfo: [NSLocalizedDescriptionKey: "\(error)"]))
             }
             return
+        }
+
+        if let parsedTokenUsage = Self.parseTokenUsage(from: dict) {
+            tokenUsage = parsedTokenUsage
         }
 
         if let choices = dict["choices"] as? [[String: Any]],
@@ -489,5 +538,34 @@ class StreamingDelegate: NSObject, URLSessionDataDelegate {
                 scalar.value == 13 ||
                 (scalar.value >= 32 && scalar.value != 127)
         })
+    }
+
+    static func parseTokenUsage(from dict: [String: Any]) -> TokenUsage? {
+        if let usage = dict["usage"] as? [String: Any],
+           let inputTokens = integerValue(for: "prompt_tokens", in: usage),
+           let outputTokens = integerValue(for: "completion_tokens", in: usage) {
+            let totalTokens = integerValue(for: "total_tokens", in: usage) ?? inputTokens + outputTokens
+            return TokenUsage(inputTokens: inputTokens, outputTokens: outputTokens, totalTokens: totalTokens)
+        }
+
+        if let inputTokens = integerValue(for: "prompt_eval_count", in: dict),
+           let outputTokens = integerValue(for: "eval_count", in: dict) {
+            return TokenUsage(inputTokens: inputTokens, outputTokens: outputTokens, totalTokens: inputTokens + outputTokens)
+        }
+
+        return nil
+    }
+
+    private static func integerValue(for key: String, in dict: [String: Any]) -> Int? {
+        if let value = dict[key] as? Int {
+            return value
+        }
+        if let value = dict[key] as? Double {
+            return Int(value)
+        }
+        if let value = dict[key] as? String {
+            return Int(value)
+        }
+        return nil
     }
 }

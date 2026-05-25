@@ -73,6 +73,31 @@ CopperList:
         XCTAssertEqual(result.consoleMessage, "Injected code block from Amiga Assistant.")
     }
 
+    func testAssistantChatSessionStoresTokenUsageOnAssistantMessage() {
+        let session = AssistantChatSession()
+        _ = session.submit("build an animated copper list")
+        let tokenUsage = TokenUsage(inputTokens: 12, outputTokens: 34, totalTokens: 46)
+
+        _ = session.complete(
+            fullResponse: "Generated answer",
+            streamedResponse: "",
+            tokenUsage: tokenUsage
+        )
+
+        XCTAssertEqual(session.messages.last?.tokenUsage, tokenUsage)
+        XCTAssertEqual(session.messages.last?.tokenUsage?.displayText, "Tokens: in 12 / out 34 / total 46")
+    }
+
+    func testAssistantChatSessionAllowsAssistantMessageWithoutTokenUsage() {
+        let session = AssistantChatSession()
+        _ = session.submit("build an animated copper list")
+
+        _ = session.complete(fullResponse: "Generated answer", streamedResponse: "")
+
+        XCTAssertEqual(session.messages.last?.role, "assistant")
+        XCTAssertNil(session.messages.last?.tokenUsage)
+    }
+
     func testAssistantChatSessionUsesStreamedResponseWhenCompletionBodyIsEmpty() {
         let session = AssistantChatSession()
         _ = session.submit("build an animated copper list")
@@ -1124,6 +1149,67 @@ CopperList:
         XCTAssertEqual(receivedChunks.first, "Classic ")
         XCTAssertEqual(receivedChunks.last, "68k")
         XCTAssertEqual(completedResponse, "Classic 68k")
+    }
+
+    func testStreamingDelegateParsesOpenAITokenUsage() {
+        var completedUsage: TokenUsage?
+
+        let expectation = self.expectation(description: "OpenAI SSE usage parsed")
+
+        let delegate = StreamingDelegate(
+            onContentChunk: { _ in },
+            onReasoningChunk: { _ in },
+            onCompletion: { _, _, usage in
+                completedUsage = usage
+                expectation.fulfill()
+            },
+            onError: { error in
+                XCTFail("Unexpected error: \(error.localizedDescription)")
+            }
+        )
+
+        let sampleSSE = """
+        data: {"choices":[{"delta":{"content":"Classic 68k"}}]}
+        data: {"choices":[],"usage":{"prompt_tokens":123,"completion_tokens":45,"total_tokens":168}}
+        data: [DONE]
+        """
+
+        delegate.urlSession(URLSession.shared, dataTask: URLSessionDataTask(), didReceive: Data(sampleSSE.utf8))
+        delegate.urlSession(URLSession.shared, task: URLSessionDataTask(), didCompleteWithError: nil as Error?)
+
+        waitForExpectations(timeout: 1.0)
+
+        XCTAssertEqual(completedUsage, TokenUsage(inputTokens: 123, outputTokens: 45, totalTokens: 168))
+    }
+
+    func testStreamingDelegateParsesOllamaTokenUsage() {
+        var completedUsage: TokenUsage?
+
+        let expectation = self.expectation(description: "Ollama usage parsed")
+
+        let delegate = StreamingDelegate(
+            onContentChunk: { _ in },
+            onReasoningChunk: { _ in },
+            onCompletion: { _, _, usage in
+                completedUsage = usage
+                expectation.fulfill()
+            },
+            onError: { error in
+                XCTFail("Unexpected error: \(error.localizedDescription)")
+            }
+        )
+
+        let sampleNDJSON = """
+        {"model":"antigravity-amiga-68k","message":{"role":"assistant","content":"Hello"},"done":false}
+        {"model":"antigravity-amiga-68k","done":true,"prompt_eval_count":88,"eval_count":22}
+        """
+
+        delegate.urlSession(URLSession.shared, dataTask: URLSessionDataTask(), didReceive: Data(sampleNDJSON.utf8))
+        delegate.urlSession(URLSession.shared, task: URLSessionDataTask(), didCompleteWithError: nil as Error?)
+
+        waitForExpectations(timeout: 1.0)
+
+        XCTAssertEqual(completedUsage, TokenUsage(inputTokens: 88, outputTokens: 22, totalTokens: 110))
     }
 
     func testOpenAISSEStreamingParserStripsNulControlCharacters() {

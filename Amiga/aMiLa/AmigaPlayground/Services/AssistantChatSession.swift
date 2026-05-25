@@ -29,7 +29,7 @@ final class AssistantChatSession: ObservableObject {
         return AssistantChatRequest(messages: messages)
     }
 
-    func complete(fullResponse: String, streamedResponse: String, reasoningResponse: String = "") -> AssistantChatCompletion {
+    func complete(fullResponse: String, streamedResponse: String, reasoningResponse: String = "", tokenUsage: TokenUsage? = nil) -> AssistantChatCompletion {
         isGenerating = false
 
         let initialResponseText = fullResponse.isEmpty ? streamedResponse : fullResponse
@@ -49,15 +49,17 @@ final class AssistantChatSession: ObservableObject {
             messages.append(OllamaService.ChatMessage(
                 role: "assistant",
                 content: errorText,
-                reasoning: finalReasoning
+                reasoning: finalReasoning,
+                tokenUsage: tokenUsage
             ))
             currentGeneration = ""
             currentThinking = ""
             return AssistantChatCompletion(injectedCode: nil, consoleMessage: nil)
         }
 
-        messages.append(OllamaService.ChatMessage(role: "assistant", content: responseText, reasoning: finalReasoning))
+        messages.append(OllamaService.ChatMessage(role: "assistant", content: responseText, reasoning: finalReasoning, tokenUsage: tokenUsage))
         currentGeneration = ""
+        currentThinking = ""
 
         return extractCodeForEditor(from: responseText)
     }

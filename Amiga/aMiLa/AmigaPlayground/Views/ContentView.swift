@@ -781,6 +781,13 @@ SineWave:
                                                 .cornerRadius(6)
                                                 .textSelection(.enabled)
 
+                                            if msg.role == "assistant" {
+                                                Text(msg.tokenUsage?.displayText ?? "Token usage unavailable")
+                                                    .font(.caption2)
+                                                    .foregroundColor(.white.opacity(0.55))
+                                                    .accessibilityIdentifier("assistantTokenUsageFooter")
+                                            }
+
                                             // Quick Code Inject Button
                                             if msg.role == "assistant" && assistantChat.isLikelyInjectableCode(msg.content) {
                                                 Button(action: {
@@ -1313,13 +1320,14 @@ SineWave:
                 }
                 assistantChat.appendReasoningChunk(chunk)
             },
-            onCompletion: { contentResponse, reasoningResponse in
+            onCompletion: { contentResponse, reasoningResponse, tokenUsage in
                 currentChatTask = nil
                 llm.markConnected()
                 let completion = assistantChat.complete(
                     fullResponse: contentResponse,
                     streamedResponse: assistantChat.currentGeneration,
-                    reasoningResponse: reasoningResponse
+                    reasoningResponse: reasoningResponse,
+                    tokenUsage: tokenUsage
                 )
                 
                 guard let injectedCode = completion.injectedCode else {
@@ -1901,10 +1909,6 @@ struct SettingsView: View {
 
                 TextField("Model name", text: $llm.modelName)
                     .textFieldStyle(.roundedBorder)
-
-                Link("Open Hugging Face model card", destination: OllamaService.modelCardURL)
-                    .font(.caption)
-                    .accessibilityIdentifier("huggingFaceModelCardLink")
 
                 TextField("Custom API URL", text: $llm.customUrl)
                     .textFieldStyle(.roundedBorder)
