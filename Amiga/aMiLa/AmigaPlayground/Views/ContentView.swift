@@ -408,7 +408,6 @@ CopperList:
     @State private var selfCorrectionAttempts: Int = 0
     @State private var originalUserPrompt: String = ""
     @State private var assistantGenerationPhase: AssistantGenerationPhase = .idle
-    @State private var lastTokenUsage: TokenUsage?
 
     private var canFixCompileErrors: Bool {
         buildStatus == .failure &&
@@ -714,22 +713,6 @@ SineWave:
 
                         Spacer()
 
-                        HStack(spacing: 4) {
-                            Image(systemName: "number")
-                                .font(.caption2.weight(.semibold))
-                                .accessibilityHidden(true)
-
-                            Text(lastTokenUsage?.compactDisplayText ?? "Token usage unavailable")
-                                .font(.caption2)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
-                        }
-                        .foregroundColor(.secondary)
-                        .help(lastTokenUsage?.displayText ?? "Token usage unavailable")
-                        .accessibilityElement(children: .combine)
-                        .accessibilityLabel(lastTokenUsage?.displayText ?? "Token usage unavailable")
-                        .accessibilityIdentifier("assistantTokenUsageStatusLabel")
-
                         Button {
                             toggleMLXServerFromAssistantHeader()
                         } label: {
@@ -801,6 +784,23 @@ SineWave:
                                                 .background(msg.role == "user" ? Color.blue.opacity(0.2) : Color.orange.opacity(0.12))
                                                 .cornerRadius(6)
                                                 .textSelection(.enabled)
+
+                                            if msg.role == "assistant", let tokenUsage = msg.tokenUsage {
+                                                HStack(spacing: 4) {
+                                                    Image(systemName: "number")
+                                                        .font(.caption2.weight(.semibold))
+                                                        .accessibilityHidden(true)
+
+                                                    Text(tokenUsage.displayText)
+                                                        .font(.caption2)
+                                                        .lineLimit(1)
+                                                        .minimumScaleFactor(0.75)
+                                                }
+                                                .foregroundColor(.white.opacity(0.62))
+                                                .accessibilityElement(children: .combine)
+                                                .accessibilityLabel(tokenUsage.displayText)
+                                                .accessibilityIdentifier("assistantMessageTokenUsageLabel")
+                                            }
 
                                             // Quick Code Inject Button
                                             if msg.role == "assistant" && assistantChat.isLikelyInjectableCode(msg.content) {
@@ -1127,7 +1127,6 @@ SineWave:
         selfCorrectionAttempts = 0
         originalUserPrompt = ""
         assistantGenerationPhase = .idle
-        lastTokenUsage = nil
         outputConsole = "Started a new assistant chat."
     }
 
@@ -1349,7 +1348,6 @@ SineWave:
             onCompletion: { contentResponse, reasoningResponse, tokenUsage in
                 currentChatTask = nil
                 llm.markConnected()
-                lastTokenUsage = tokenUsage
                 let completion = assistantChat.complete(
                     fullResponse: contentResponse,
                     streamedResponse: assistantChat.currentGeneration,

@@ -10,9 +10,6 @@ struct TokenUsage: Codable, Equatable {
         "Tokens: in \(inputTokens) / out \(outputTokens) / total \(totalTokens)"
     }
 
-    var compactDisplayText: String {
-        "in \(inputTokens) / out \(outputTokens) / total \(totalTokens)"
-    }
 }
 
 class OllamaService: ObservableObject {
