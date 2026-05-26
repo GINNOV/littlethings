@@ -3,6 +3,9 @@ aMiLa/fine_tuning/fused_model/
 aMiLa/fine_tuning/*.gguf
 aMiLa/fine_tuning/server.log
 aMiLa/Dataset/corpus1/corpus_manifest.jsonl
+aMiLa/Dataset/corpus1/curated/*/
+!aMiLa/Dataset/corpus1/curated/hardware_templates/
+aMiLa/Dataset/corpus1/github/*/
 aMiLa/fine_tuning/adapters/
 aMiLa/fine_tuning/adapters_asm/
 aMiLa/fine_tuning/adapters_asm_clean/
