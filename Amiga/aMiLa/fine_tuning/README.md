@@ -36,7 +36,36 @@ Generated model artifacts are intentionally ignored by GitHub and should be down
 - **Dynamic Hot-Swapping**: Supported out-of-the-box! Pass `"adapters": "adapters_asm"` or `"adapters": "adapters_c"` in the OpenAI completions request body to dynamically swap adapter weights instantly.
 - **Hub Tags**: `mlx`, `m68k`, `assembly`, `retrocomputing`, `amiga`, `c`, `vasm`, `multi-adapter`
 
-The adapters reduce language interference, but reliability comes from the compiler, semantic validator, repair loop, and promotion ladder. Do not promote a new ASM adapter based on loss alone.
+The adapters reduce language interference, but reliability comes from the compiler, semantic validator, template router, repair loop, runtime smoke checks, and promotion ladder. Do not promote a new ASM adapter based on loss alone.
+
+---
+
+## Current Reliability Status
+
+As of the May 2026 app-side validation update, the best user outcomes come from a hybrid path:
+
+1. route supported prompts to deterministic Amiga templates,
+2. extract visible parameters such as text, color, speed, direction, object type, and counts,
+3. compile with VASM,
+4. run semantic validation,
+5. package a bootable ADF,
+6. launch FS-UAE and validate a captured frame for visible pixels.
+
+This substantially improves the practical result users see from the model: common prompts no longer depend entirely on free-form generation, and the UI now reports when a template is being used.
+
+Current benchmark evidence:
+
+| prompt | template | compile | semantic | ADF | emulator smoke | result |
+| --- | --- | --- | --- | --- | --- | --- |
+| generate static copper bars | Static copper bars | pass | pass | pass | pass | pass |
+| generate bouncing copper bars | Bouncing copper bars | pass | pass | pass | pass | pass |
+| generate a starfield demo | Starfield | pass | pass | pass | pass | pass |
+| generate a bouncing sprite object | Bouncing sprite | pass | pass | pass | pass | pass |
+| make a color-cycling logo that says "amiga" | Color-cycling text | pass | pass | pass | pass | pass |
+
+The runtime smoke benchmark stores per-prompt artifacts, including the generated ADF, captured emulator screenshot, manifest JSON, and a markdown scorecard. Text-oriented prompts also require bright pixels in the expected central region instead of merely accepting a non-crashing emulator launch.
+
+Important caveat: this scorecard measures the integrated local app path, not raw model weights in isolation. Unsupported prompts still fall back to model generation with warnings and nearest supported template suggestions.
 
 ---
 

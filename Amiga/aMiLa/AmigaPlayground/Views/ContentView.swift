@@ -408,6 +408,8 @@ CopperList:
     @State private var selfCorrectionAttempts: Int = 0
     @State private var originalUserPrompt: String = ""
     @State private var assistantGenerationPhase: AssistantGenerationPhase = .idle
+    @State private var activeTemplateMatch: AssistantPromptTemplateMatch?
+    @State private var generatedCodeTemplateMatch: AssistantPromptTemplateMatch?
 
     private var canFixCompileErrors: Bool {
         buildStatus == .failure &&
@@ -1085,6 +1087,7 @@ SineWave:
             guard let code = notification.userInfo?["code"] as? String else { return }
             let name = notification.userInfo?["name"] as? String ?? "Example"
             codeText = code
+            generatedCodeTemplateMatch = nil
             outputConsole = "Loaded '\(name)' example source code."
         }
     }
@@ -1099,22 +1102,24 @@ SineWave:
         isCompiling = true
         buildStatus = .running
         activeOutputTab = .console
-        outputConsole = "Assembling code using vasmm68k_mot...\n"
+        outputConsole = templateConsoleMessage(validation: "compiling", fallback: "Assembling code using vasmm68k_mot...\n")
 
         CompilerService.shared.compile(assemblyCode: codeText) { success, output in
             self.isCompiling = false
             self.buildStatus = success ? .success : .failure
-            self.outputConsole = output
+            self.outputConsole = self.templateConsoleMessage(validation: success ? "passed" : "failed", details: output, fallback: output)
         }
     }
 
     private func clearEditor() {
         codeText = ""
+        generatedCodeTemplateMatch = nil
         outputConsole = "Editor Cleared."
     }
 
     private func loadExample(named key: String) {
         codeText = examples[key] ?? ""
+        generatedCodeTemplateMatch = nil
         outputConsole = "Loaded '\(key)' example assembly source code."
     }
 
@@ -1127,6 +1132,8 @@ SineWave:
         selfCorrectionAttempts = 0
         originalUserPrompt = ""
         assistantGenerationPhase = .idle
+        activeTemplateMatch = nil
+        generatedCodeTemplateMatch = nil
         outputConsole = "Started a new assistant chat."
     }
 
@@ -1164,7 +1171,10 @@ SineWave:
         isCompiling = true
         buildStatus = .running
         activeOutputTab = .console
-        outputConsole = "Validating code by building a bootable ADF and collecting vAmiga debug evidence...\n"
+        outputConsole = templateConsoleMessage(
+            validation: "generating ADF",
+            fallback: "Validating code by building a bootable ADF and collecting vAmiga debug evidence...\n"
+        )
 
         let tempADFPath = "/tmp/amiga_playground_temp.adf"
 
@@ -1172,12 +1182,13 @@ SineWave:
             if !success {
                 self.isCompiling = false
                 self.buildStatus = .failure
-                self.outputConsole = resultMessage
+                self.outputConsole = self.templateConsoleMessage(validation: "failed", details: resultMessage, fallback: resultMessage)
                 self.writeCompileFailureValidationArtifact(message: resultMessage)
                 return
             }
 
-            self.outputConsole = resultMessage + "\n\nLaunching vAmiga and connecting to RPC/Prometheus servers..."
+            let launchMessage = resultMessage + "\n\nLaunching vAmiga and connecting to RPC/Prometheus servers..."
+            self.outputConsole = self.templateConsoleMessage(validation: "generated ADF", details: launchMessage, fallback: launchMessage)
 
             let launchConfig = EmulatorLaunchConfig(
                 backend: .vAmiga,
@@ -1211,7 +1222,7 @@ SineWave:
         isCompiling = true
         buildStatus = .running
         activeOutputTab = .console
-        outputConsole = openingMessage
+        outputConsole = templateConsoleMessage(validation: "generating ADF", details: openingMessage, fallback: openingMessage)
 
         let tempADFPath = "/tmp/amiga_playground_temp.adf"
 
@@ -1219,11 +1230,12 @@ SineWave:
             if !success {
                 self.isCompiling = false
                 self.buildStatus = .failure
-                self.outputConsole = resultMessage
+                self.outputConsole = self.templateConsoleMessage(validation: "failed", details: resultMessage, fallback: resultMessage)
                 return
             }
 
-            self.outputConsole = resultMessage + "\n\nLaunching \(label) with selected ROM and configuration..."
+            let launchMessage = resultMessage + "\n\nLaunching \(label) with selected ROM and configuration..."
+            self.outputConsole = self.templateConsoleMessage(validation: "generated ADF", details: launchMessage, fallback: launchMessage)
 
             let launchConfig = EmulatorLaunchConfig(
                 backend: backend,
@@ -1280,14 +1292,17 @@ SineWave:
         isCompiling = true
         buildStatus = .running
         activeOutputTab = .console
-        outputConsole = "Assembling code and packaging bootable ADF for Web Emulator...\n"
+        outputConsole = templateConsoleMessage(
+            validation: "generating ADF",
+            fallback: "Assembling code and packaging bootable ADF for Web Emulator...\n"
+        )
 
         let tempADFPath = "/tmp/amiga_playground_temp.adf"
 
         CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: tempADFPath) { success, resultMessage in
             self.isCompiling = false
             self.buildStatus = success ? .success : .failure
-            self.outputConsole = resultMessage
+            self.outputConsole = self.templateConsoleMessage(validation: success ? "generated ADF" : "failed", details: resultMessage, fallback: resultMessage)
 
             if success {
                 // Increment trigger to notify WKWebView updateNSView to inject ADF file
@@ -1315,10 +1330,14 @@ SineWave:
         }
 
         if selfCorrectionAttempts == 0,
-           let localSource = AssistantPromptTemplate.source(for: submittedPrompt) {
+           let templateMatch = AssistantPromptTemplate.match(for: submittedPrompt) {
+            activeTemplateMatch = templateMatch
+            generatedCodeTemplateMatch = nil
+            activeOutputTab = .console
+            outputConsole = "\(templateMatch.consoleSummary)\nValidation: preparing generated source"
             let response = """
             ```assembly
-            \(localSource)
+            \(templateMatch.source)
             ```
             """
             let completion = assistantChat.complete(fullResponse: response, streamedResponse: "")
@@ -1328,9 +1347,18 @@ SineWave:
             return
         }
 
+        if selfCorrectionAttempts == 0 {
+            activeTemplateMatch = nil
+            generatedCodeTemplateMatch = nil
+            activeOutputTab = .console
+            outputConsole = AssistantPromptTemplate.fallbackMessage(for: submittedPrompt)
+        }
+
         let adapterName = looksLikeC ? "adapters_c" : "adapters_asm"
         let adapterPath = mlxServer.adapterDirectory(named: adapterName).path
-        outputConsole = assistantGenerationPhase.consoleMessage
+        if selfCorrectionAttempts > 0 {
+            outputConsole = assistantGenerationPhase.consoleMessage
+        }
         currentChatTask = OllamaService.shared.streamChat(
             messages: request.messages,
             adapterPath: adapterPath,
@@ -1397,7 +1425,11 @@ SineWave:
         let requestedPrompt = originalUserPrompt.isEmpty ? submittedPrompt : originalUserPrompt
         assistantGenerationPhase = .validating
         activeOutputTab = .console
-        outputConsole = assistantGenerationPhase.consoleMessage
+        if let activeTemplateMatch {
+            outputConsole = "\(activeTemplateMatch.consoleSummary)\nValidation: compiling"
+        } else {
+            outputConsole = assistantGenerationPhase.consoleMessage
+        }
 
         CompilerService.shared.compile(assemblyCode: source) { success, compilerOutput in
             let semanticResult = AssemblySemanticValidator.validate(source: source, prompt: requestedPrompt)
@@ -1405,13 +1437,20 @@ SineWave:
             if success && semanticResult.passed {
                 self.selfCorrectionAttempts = 0
                 self.assistantGenerationPhase = .idle
-                self.outputConsole = "Passed"
+                if let activeTemplateMatch {
+                    self.outputConsole = "\(activeTemplateMatch.consoleSummary)\nValidation: passed"
+                    self.generatedCodeTemplateMatch = activeTemplateMatch
+                } else {
+                    self.outputConsole = "Passed"
+                    self.generatedCodeTemplateMatch = nil
+                }
                 handleGeneratedCodeReady(
                     source,
                     prompt: requestedPrompt,
-                    autoInjectConsoleMessage: "Passed",
-                    readyConsoleMessage: "Passed"
+                    autoInjectConsoleMessage: activeTemplateMatch.map { "\($0.consoleSummary)\nValidation: passed" } ?? "Passed",
+                    readyConsoleMessage: activeTemplateMatch.map { "\($0.consoleSummary)\nValidation: passed" } ?? "Passed"
                 )
+                self.activeTemplateMatch = nil
                 return
             }
 
@@ -1438,6 +1477,8 @@ SineWave:
 
             self.selfCorrectionAttempts = 0
             assistantGenerationPhase = .idle
+            activeTemplateMatch = nil
+            generatedCodeTemplateMatch = nil
             outputConsole = "Failed: \(gateFailures.first ?? "reliability gate failed")"
         }
     }
@@ -1481,6 +1522,8 @@ SineWave:
         currentChatTask?.cancel()
         currentChatTask = nil
         assistantGenerationPhase = .idle
+        activeTemplateMatch = nil
+        generatedCodeTemplateMatch = nil
         assistantChat.cancel()
     }
 
@@ -1531,6 +1574,7 @@ SineWave:
     // Simple helper to isolate block between markdown fences and overwrite the editor
     private func injectCodeBlock(from responseText: String) {
         let prompt = assistantChat.promptPrecedingAssistantMessage(responseText) ?? "Manual assistant code injection"
+        generatedCodeTemplateMatch = nil
         if let range = responseText.range(of: "```[a-zA-Z0-9]*\n", options: .regularExpression) {
             let codeStart = responseText.index(range.upperBound, offsetBy: 0)
             if let endRange = responseText[codeStart...].range(of: "```") {
@@ -1556,6 +1600,7 @@ SineWave:
 
     private func injectGeneratedCode(_ source: String, prompt: String, consoleMessage: String) {
         guard confirmReplacingEditorIfNeeded() else {
+            generatedCodeTemplateMatch = nil
             outputConsole = "Code injection cancelled. Existing editor content was kept."
             return
         }
@@ -1695,13 +1740,26 @@ SineWave:
         self.isExportingADF = true
         self.buildStatus = .running
         self.activeOutputTab = .console
-        self.outputConsole = "Generating bootable ADF disk image at:\n\(url.path)...\n"
+        self.outputConsole = templateConsoleMessage(
+            validation: "generating ADF",
+            details: "Generating bootable ADF disk image at:\n\(url.path)...",
+            fallback: "Generating bootable ADF disk image at:\n\(url.path)...\n"
+        )
 
         CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: url.path) { success, resultMessage in
             self.isExportingADF = false
             self.buildStatus = success ? .success : .failure
-            self.outputConsole = resultMessage
+            self.outputConsole = self.templateConsoleMessage(validation: success ? "generated ADF" : "failed", details: resultMessage, fallback: resultMessage)
         }
+    }
+
+    private func templateConsoleMessage(validation: String, details: String? = nil, fallback: String) -> String {
+        guard let generatedCodeTemplateMatch else { return fallback }
+        let detailText = details?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let detailText, !detailText.isEmpty {
+            return "\(generatedCodeTemplateMatch.consoleSummary)\nValidation: \(validation)\n\n\(detailText)"
+        }
+        return "\(generatedCodeTemplateMatch.consoleSummary)\nValidation: \(validation)"
     }
 }
 
@@ -1742,7 +1800,7 @@ struct SettingsView: View {
     @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
     @AppStorage(AppPreferenceDefaults.showChatBoingBallKey) private var showChatBoingBall: Bool = AppPreferenceDefaults.showChatBoingBall
     @AppStorage(AppPreferenceDefaults.autoInjectGeneratedCodeKey) private var autoInjectGeneratedCode: Bool = AppPreferenceDefaults.autoInjectGeneratedCode
-    @AppStorage("romsDirectoryPath") private var romsDirectoryPath: String = "/Users/megov/code/GitHub/littlethings/Amiga/commodore-amiga-firmware"
+    @AppStorage("romsDirectoryPath") private var romsDirectoryPath: String = EmulatorService.defaultRomsDirectory
 
     @State private var availableRoms: [RomEntry] = []
 
@@ -2220,7 +2278,7 @@ struct SettingsView: View {
                     }
 
                     Button("Reset to Default") {
-                        romsDirectoryPath = "/Users/megov/code/GitHub/littlethings/Amiga/commodore-amiga-firmware"
+                        romsDirectoryPath = EmulatorService.defaultRomsDirectory
                         availableRoms = EmulatorService.shared.getAvailableRoms()
                         if !selectedRomFilename.isEmpty && !availableRoms.contains(where: { $0.relativePath == selectedRomFilename }) {
                             selectedRomFilename = ""
@@ -2810,6 +2868,8 @@ struct SettingsNumberInput: NSViewRepresentable {
     }
 }
 
+#if !CODEX_CLI_TEST
 #Preview {
     ContentView()
 }
+#endif

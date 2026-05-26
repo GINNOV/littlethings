@@ -116,7 +116,9 @@ struct BoingBallView: View {
     }
 }
 
+#if !CODEX_CLI_TEST
 #Preview {
     BoingBallView()
         .background(Color.blue)
 }
+#endif

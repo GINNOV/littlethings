@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 
 struct VAmigaServerConfig: Equatable {
@@ -28,9 +29,17 @@ struct VAmigaServerConfig: Equatable {
     }
 
     static var defaultConfigPath: String {
-        URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true)
+        URL(fileURLWithPath: hostHomeDirectory, isDirectory: true)
             .appendingPathComponent("Library/Application Support/vAmiga/vAmiga.ini")
             .path
+    }
+
+    private static var hostHomeDirectory: String {
+        if let passwd = getpwuid(getuid()),
+           let home = passwd.pointee.pw_dir {
+            return String(cString: home)
+        }
+        return FileManager.default.homeDirectoryForCurrentUser.path
     }
 }
 
@@ -90,14 +99,24 @@ struct VAmigaServerConfigPatcher {
         )
     }
 
+    func restore(config: VAmigaServerConfig) {
+        guard let backupPath = config.backupPath else { return }
+        try? FileManager.default.removeItem(atPath: config.configPath)
+        try? FileManager.default.copyItem(
+            at: URL(fileURLWithPath: backupPath),
+            to: URL(fileURLWithPath: config.configPath)
+        )
+    }
+
     private func patchServerSection(in text: String, config: VAmigaServerConfig) -> String {
         let normalized = text.replacingOccurrences(of: "\r\n", with: "\n")
         var lines = normalized.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
         let serverKeys: [String: String] = [
-            "AUTORUN0": "1",
-            "AUTORUN1": "1",
-            "AUTORUN3": "1",
-            "AUTORUN4": "1",
+            // vAmiga 4.4+: RSH=0, RPC=1, GDB=2, PROM=3, SER=4.
+            "ENABLE0": "1",
+            "ENABLE1": "1",
+            "ENABLE3": "1",
+            "ENABLE4": "1",
             "PORT0": "\(config.remoteShellPort)",
             "PORT1": "\(config.rpcPort)",
             "PORT3": "\(config.prometheusPort)",
@@ -109,7 +128,14 @@ struct VAmigaServerConfigPatcher {
             "VERBOSE0": "1",
             "VERBOSE1": "1",
             "VERBOSE3": "1",
-            "VERBOSE4": "1"
+            "VERBOSE4": "1",
+
+            // vAmiga 4.2.x: SER=0, RSH=1, PROM=2, GDB=3 and enable is named AUTORUN.
+            "AUTORUN1": "1",
+            "AUTORUN2": "1",
+            "PORT2": "\(config.prometheusPort)",
+            "PROTOCOL2": "0",
+            "VERBOSE2": "1"
         ]
 
         guard let sectionStart = lines.firstIndex(where: { $0.trimmingCharacters(in: .whitespaces) == "[SRV]" }) else {

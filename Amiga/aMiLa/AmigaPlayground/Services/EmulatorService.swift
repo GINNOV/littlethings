@@ -39,6 +39,8 @@ struct EmulatorLaunchConfig {
     let vAmigaExecutablePath: String
     let vAmigaCustomArgs: String
     let vAmigaServerConfig: VAmigaServerConfig
+    let vAmigaScriptScreenshotBasePath: String?
+    let vAmigaScriptWaitSeconds: Int
 
     init(
         backend: EmulatorBackend,
@@ -52,7 +54,9 @@ struct EmulatorLaunchConfig {
         customArgs: String,
         vAmigaExecutablePath: String,
         vAmigaCustomArgs: String,
-        vAmigaServerConfig: VAmigaServerConfig = VAmigaServerConfig()
+        vAmigaServerConfig: VAmigaServerConfig = VAmigaServerConfig(),
+        vAmigaScriptScreenshotBasePath: String? = nil,
+        vAmigaScriptWaitSeconds: Int = 4
     ) {
         self.backend = backend
         self.adfPath = adfPath
@@ -66,6 +70,8 @@ struct EmulatorLaunchConfig {
         self.vAmigaExecutablePath = vAmigaExecutablePath
         self.vAmigaCustomArgs = vAmigaCustomArgs
         self.vAmigaServerConfig = vAmigaServerConfig
+        self.vAmigaScriptScreenshotBasePath = vAmigaScriptScreenshotBasePath
+        self.vAmigaScriptWaitSeconds = vAmigaScriptWaitSeconds
     }
 }
 
@@ -95,9 +101,14 @@ struct CpuTraceRecord: Equatable {
 
 class EmulatorService {
     static let shared = EmulatorService()
+    static var defaultRomsDirectory: String {
+        FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Documents/FS-UAE/Kickstarts", isDirectory: true)
+            .path
+    }
 
     var romsDirectory: String {
-        return UserDefaults.standard.string(forKey: "romsDirectoryPath") ?? "/Users/megov/code/GitHub/littlethings/Amiga/commodore-amiga-firmware"
+        return UserDefaults.standard.string(forKey: "romsDirectoryPath") ?? Self.defaultRomsDirectory
     }
     let defaultEmulatorPath = "/opt/homebrew/bin/fs-uae"
     let defaultEmulatorAppPath = "/Applications/FS-UAE.app"
@@ -190,26 +201,32 @@ class EmulatorService {
 
     func buildVAmigaArguments(config: EmulatorLaunchConfig, scriptPath: String) -> [String] {
         var args: [String] = []
-        args.append(scriptPath)
+        args.append("-source \(retroShellQuotedPath(scriptPath))")
         args.append(contentsOf: splitCommandLine(config.vAmigaCustomArgs))
         return args
     }
 
     func buildVAmigaInvocation(executablePath: String, config: EmulatorLaunchConfig, scriptPath: String) -> VAmigaProcessInvocation {
-        let customArgs = splitCommandLine(config.vAmigaCustomArgs)
-        if let appBundlePath = vAmigaAppBundlePath(from: executablePath) {
-            var args = ["-n", "-a", appBundlePath, scriptPath]
-            if !customArgs.isEmpty {
-                args.append("--args")
-                args.append(contentsOf: customArgs)
-            }
-            return VAmigaProcessInvocation(executablePath: "/usr/bin/open", arguments: args)
+        if let appBundlePath = vAmigaAppBundlePath(for: executablePath) {
+            return VAmigaProcessInvocation(
+                executablePath: "/usr/bin/open",
+                arguments: ["-n", "-a", appBundlePath, scriptPath]
+            )
         }
 
         return VAmigaProcessInvocation(
             executablePath: executablePath,
             arguments: buildVAmigaArguments(config: config, scriptPath: scriptPath)
         )
+    }
+
+    private func vAmigaAppBundlePath(for executablePath: String) -> String? {
+        let url = URL(fileURLWithPath: executablePath).standardizedFileURL
+        let components = url.pathComponents
+        guard let appIndex = components.firstIndex(where: { $0.hasSuffix(".app") }) else {
+            return nil
+        }
+        return NSString.path(withComponents: Array(components[0...appIndex]))
     }
 
     func createVAmigaRetroShellScript(config: EmulatorLaunchConfig, tracePath: String) throws -> String {
@@ -225,6 +242,23 @@ class EmulatorService {
             romBootstrap = "# No explicit ROM selected; vAmiga will use its configured default ROM."
         }
 
+        let screenshotCapture: String
+        if config.vAmigaScriptScreenshotBasePath != nil {
+            screenshotCapture = """
+            # Runtime smoke capture is requested later with a second RetroShell document.
+            """
+        } else {
+            screenshotCapture = """
+            help
+            config
+            cpu
+            regs
+            disassemble
+            break
+            watch
+            """
+        }
+
         let script = """
         # AmigaPlayground vAmiga CPU trace bootstrap
         # Trace file target: \(tracePath)
@@ -232,23 +266,29 @@ class EmulatorService {
         # It explicitly inserts the generated ADF into DF0 and starts execution,
         # which is more reliable than opening an ADF document and relying on the
         # previous desktop power/run state.
+        try amiga init \(vAmigaInitPreset(for: config.model))
         \(romBootstrap)
-        try df0 connect
+        try df0 eject
         try df0 insert \(retroShellQuotedPath(config.adfPath))
         try amiga power on
-        try amiga run
-        try power on
-        try run
-        help
-        config
-        cpu
-        regs
-        disassemble
-        break
-        watch
+        try amiga reset
+        \(screenshotCapture)
         """
         try script.write(to: scriptURL, atomically: true, encoding: .utf8)
         return scriptURL.path
+    }
+
+    func vAmigaInitPreset(for model: String) -> String {
+        switch model.uppercased().replacingOccurrences(of: " ", with: "") {
+        case "A1000":
+            return "A1000_OCS_1MB"
+        case "A500":
+            return "A500_OCS_1MB"
+        case "A500+", "A500PLUS":
+            return "A500_PLUS_1MB"
+        default:
+            return "A500_ECS_1MB"
+        }
     }
 
     func parseCpuTrace(_ text: String) -> [CpuTraceRecord] {
@@ -456,7 +496,7 @@ class EmulatorService {
                     completion(EmulatorLaunchResult(
                         success: true,
                         backend: .vAmiga,
-                        message: "Successfully launched vAmiga Desktop through the app bundle with an explicit RetroShell validation script.\nTrace output will be captured at:\n\(tracePath)\n\nRetroShell script:\n\(scriptPath)",
+                        message: "Successfully launched vAmiga Desktop with an explicit RetroShell validation script.\nTrace output will be captured at:\n\(tracePath)\n\nRetroShell script:\n\(scriptPath)",
                         tracePath: tracePath
                     ))
                 }

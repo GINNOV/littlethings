@@ -1,7 +1,53 @@
 import XCTest
+import AppKit
 @testable import AmigaPlayground
 
 class AmigaPlaygroundTests: XCTestCase {
+    private struct PromptBenchmark {
+        let name: String
+        let prompt: String
+        let markers: [String]
+    }
+
+    private var goal2BenchmarkPrompts: [PromptBenchmark] {
+        [
+            PromptBenchmark(
+                name: "static copper bars",
+                prompt: "generate static copper bars",
+                markers: ["Static multi-color copper list demo.", "CopperList:", "$0180,$0f00"]
+            ),
+            PromptBenchmark(
+                name: "bouncing copper bars",
+                prompt: "generate bouncing copper bars",
+                markers: ["Bouncing multi-color copper bars.", "Bar6Wait", "btst       #6,$bfe001"]
+            ),
+            PromptBenchmark(
+                name: "starfield",
+                prompt: "generate a starfield demo",
+                markers: ["Starfield template.", "Effect: starfield", "StarOffsets:", "TwinkleStars:"]
+            ),
+            PromptBenchmark(
+                name: "bouncing sprite object",
+                prompt: "generate a bouncing sprite object",
+                markers: ["Bouncing sprite template.", "Effect: bouncing sprite object", "SpriteData:", "$120(a5)", "$0000,$0000"]
+            ),
+            PromptBenchmark(
+                name: "color-cycling logo",
+                prompt: #"make a color-cycling logo that says "amiga""#,
+                markers: ["Color-cycling text template.", "Requested text: amiga", #"dc.b       "AMIGA",0"#, "ColorTable:", "TextColor:"]
+            ),
+            PromptBenchmark(
+                name: "sinusoidal flying saucer text",
+                prompt: #"make the words "flying saucer" scroll across the screen in a sinusoidal patternmake the words "flying saucer" scroll across the screen in a sinusoidal pattern"#,
+                markers: ["Sinusoidal scrolling text template.", "Requested text: flying saucer", #"dc.b       "FLYING SAUCER",0"#, "DrawSineText:", "SineOffsets:", "ScrollX:"]
+            ),
+            PromptBenchmark(
+                name: "centered flying saucer text",
+                prompt: "write in the center of the screen with fancy font the words “flying saucer”",
+                markers: ["Centered fancy text template.", "Requested text: flying saucer", #"dc.b       "FLYING SAUCER",0"#, "DrawCenteredText:", "GlyphF:"]
+            )
+        ]
+    }
 
     func testChatBoingBallPreferenceDefaultsVisible() {
         XCTAssertEqual(AppPreferenceDefaults.showChatBoingBallKey, "showChatBoingBall")
@@ -206,6 +252,610 @@ CopperList:
         }
 
         waitForExpectations(timeout: 5.0)
+    }
+
+    func testAssistantPromptTemplateMatchesSinusoidalFlyingSaucerText() {
+        let source = AssistantPromptTemplate.source(for: #"make the words "flying saucer" scroll across the screen in a sinusoidal patternmake the words "flying saucer" scroll across the screen in a sinusoidal pattern"#)
+
+        XCTAssertNotNil(source)
+        XCTAssertTrue(source?.contains("Requested text: flying saucer") == true)
+        XCTAssertTrue(source?.contains("TextString:") == true)
+        XCTAssertTrue(source?.contains(#"dc.b       "FLYING SAUCER",0"#) == true)
+        XCTAssertTrue(source?.contains("DrawSineText:") == true)
+        XCTAssertTrue(source?.contains("SineOffsets:") == true)
+        XCTAssertTrue(source?.contains("ScrollX:") == true)
+    }
+
+    func testAssistantPromptTemplateSinusoidalFlyingSaucerTextCompiles() {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping sinusoidal text template compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+
+        let source = try! XCTUnwrap(AssistantPromptTemplate.source(for: #"make the words "flying saucer" scroll across the screen in a sinusoidal patternmake the words "flying saucer" scroll across the screen in a sinusoidal pattern"#))
+        let expectation = self.expectation(description: "Sinusoidal flying saucer text template compiles")
+
+        compiler.compile(assemblyCode: source) { success, output in
+            XCTAssertTrue(success, "Sinusoidal text template compilation failed:\n\(output)")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 5.0)
+    }
+
+    func testAssistantPromptTemplateMatchesCenteredFancyFlyingSaucerText() {
+        let source = AssistantPromptTemplate.source(for: "write in the center of the screen with fancy font the words “flying saucer”")
+
+        XCTAssertNotNil(source)
+        XCTAssertTrue(source?.contains("Requested text: flying saucer") == true)
+        XCTAssertTrue(source?.contains("TextString:") == true)
+        XCTAssertTrue(source?.contains(#"dc.b       "FLYING SAUCER",0"#) == true)
+        XCTAssertTrue(source?.contains("DrawCenteredText:") == true)
+        XCTAssertTrue(source?.contains("GlyphF:") == true)
+        XCTAssertTrue(source?.contains(".hold:") == true)
+    }
+
+    func testAssistantPromptTemplateCenteredFancyFlyingSaucerTextCompiles() {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping centered text template compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+
+        let source = try! XCTUnwrap(AssistantPromptTemplate.source(for: "write in the center of the screen with fancy font the words “flying saucer”"))
+        let expectation = self.expectation(description: "Centered flying saucer text template compiles")
+
+        compiler.compile(assemblyCode: source) { success, output in
+            XCTAssertTrue(success, "Centered text template compilation failed:\n\(output)")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 5.0)
+    }
+
+    func testAssistantPromptTemplateFlyingSaucerTextTemplatesGenerateBootableADFs() {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping flying saucer ADF generation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            print("Skipping flying saucer ADF generation test: xdftool not found at \(compiler.xdftoolPath)")
+            return
+        }
+
+        let cases = [
+            ("sine", #"make the words "flying saucer" scroll across the screen in a sinusoidal patternmake the words "flying saucer" scroll across the screen in a sinusoidal pattern"#),
+            ("centered", "write in the center of the screen with fancy font the words “flying saucer”")
+        ]
+
+        for testCase in cases {
+            let source = try! XCTUnwrap(AssistantPromptTemplate.source(for: testCase.1))
+            let targetADF = FileManager.default.temporaryDirectory
+                .appendingPathComponent("flying_saucer_\(testCase.0)_\(UUID().uuidString).adf")
+            let expectation = self.expectation(description: "\(testCase.0) flying saucer text template generates bootable ADF")
+
+            compiler.generateBootableADF(assemblyCode: source, targetADFPath: targetADF.path) { success, output in
+                XCTAssertTrue(success, "\(testCase.0) flying saucer ADF generation failed:\n\(output)")
+                XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+                if let attributes = try? FileManager.default.attributesOfItem(atPath: targetADF.path),
+                   let size = attributes[.size] as? NSNumber {
+                    XCTAssertGreaterThan(size.intValue, 0)
+                } else {
+                    XCTFail("Could not read generated ADF size for \(testCase.0)")
+                }
+                try? FileManager.default.removeItem(at: targetADF)
+                expectation.fulfill()
+            }
+
+            waitForExpectations(timeout: 10.0)
+        }
+    }
+
+    func testAssistantPromptTemplateFlyingSaucerTextTemplatesPassSemanticGate() {
+        let cases = [
+            #"make the words "flying saucer" scroll across the screen in a sinusoidal patternmake the words "flying saucer" scroll across the screen in a sinusoidal pattern"#,
+            "write in the center of the screen with fancy font the words “flying saucer”"
+        ]
+
+        for prompt in cases {
+            let source = try! XCTUnwrap(AssistantPromptTemplate.source(for: prompt))
+            let result = AssemblySemanticValidator.validate(source: source, prompt: prompt)
+
+            XCTAssertTrue(result.passed, "Flying saucer text template should pass semantic gate for prompt:\n\(prompt)\nFailures:\n\(result.summary)")
+        }
+    }
+
+    func testAssistantPromptTemplateGoal2BenchmarkPromptsClassifyAndContainParameters() {
+        for benchmark in goal2BenchmarkPrompts {
+            let source = AssistantPromptTemplate.source(for: benchmark.prompt)
+
+            XCTAssertNotNil(source, "\(benchmark.name) should route to a deterministic template")
+            for marker in benchmark.markers {
+                XCTAssertTrue(source?.contains(marker) == true, "\(benchmark.name) should contain marker \(marker)")
+            }
+        }
+    }
+
+    func testAssistantPromptTemplateGoal2BenchmarkPromptsCompile() {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping Goal 2 benchmark compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+
+        for benchmark in goal2BenchmarkPrompts {
+            let source = try! XCTUnwrap(AssistantPromptTemplate.source(for: benchmark.prompt))
+            let expectation = self.expectation(description: "\(benchmark.name) compiles")
+
+            compiler.compile(assemblyCode: source) { success, output in
+                XCTAssertTrue(success, "\(benchmark.name) compilation failed:\n\(output)")
+                expectation.fulfill()
+            }
+
+            waitForExpectations(timeout: 5.0)
+        }
+    }
+
+    func testAssistantPromptTemplateGoal2BenchmarkPromptsGenerateBootableADFs() {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping Goal 2 benchmark ADF generation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            print("Skipping Goal 2 benchmark ADF generation test: xdftool not found at \(compiler.xdftoolPath)")
+            return
+        }
+
+        for benchmark in goal2BenchmarkPrompts {
+            let source = try! XCTUnwrap(AssistantPromptTemplate.source(for: benchmark.prompt))
+            let safeName = benchmark.name.replacingOccurrences(of: " ", with: "_")
+            let targetADF = FileManager.default.temporaryDirectory
+                .appendingPathComponent("goal2_\(safeName)_\(UUID().uuidString).adf")
+            let expectation = self.expectation(description: "\(benchmark.name) generates bootable ADF")
+
+            compiler.generateBootableADF(assemblyCode: source, targetADFPath: targetADF.path) { success, output in
+                XCTAssertTrue(success, "\(benchmark.name) ADF generation failed:\n\(output)")
+                XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+                if let attributes = try? FileManager.default.attributesOfItem(atPath: targetADF.path),
+                   let size = attributes[.size] as? NSNumber {
+                    XCTAssertGreaterThan(size.intValue, 0)
+                } else {
+                    XCTFail("Could not read generated ADF size for \(benchmark.name)")
+                }
+                try? FileManager.default.removeItem(at: targetADF)
+                expectation.fulfill()
+            }
+
+            waitForExpectations(timeout: 10.0)
+        }
+    }
+
+    func testAssistantPromptTemplateGoal2BenchmarkPromptsPassSemanticGate() {
+        for benchmark in goal2BenchmarkPrompts {
+            let source = try! XCTUnwrap(AssistantPromptTemplate.source(for: benchmark.prompt))
+            let result = AssemblySemanticValidator.validate(source: source, prompt: benchmark.prompt)
+
+            XCTAssertTrue(result.passed, "\(benchmark.name) should pass semantic gate. Failures:\n\(result.summary)")
+        }
+    }
+
+    func testAssistantPromptTemplateMetadataAndFallbackPolicy() {
+        let match = AssistantPromptTemplate.match(for: #"make a fast blue color-cycling logo that says "amiga""#)
+
+        XCTAssertEqual(match?.id, "color-cycling-text")
+        XCTAssertEqual(match?.name, "Color-cycling text")
+        XCTAssertEqual(match?.parameters["text"], "amiga")
+        XCTAssertEqual(match?.parameters["color"], "blue")
+        XCTAssertEqual(match?.parameters["mode"], "centered")
+        XCTAssertEqual(match?.parameters["speed"], "fast")
+        XCTAssertTrue(match?.consoleSummary.contains("Using template: Color-cycling text") == true)
+        XCTAssertTrue(match?.consoleSummary.contains("Text: amiga") == true)
+        XCTAssertTrue(match?.consoleSummary.contains("Color: blue") == true)
+        XCTAssertTrue(match?.consoleSummary.contains("Mode: centered") == true)
+        XCTAssertTrue(match?.consoleSummary.contains("Speed: fast") == true)
+
+        let fallback = AssistantPromptTemplate.fallbackMessage(for: "write a ray traced text teapot demo")
+        XCTAssertTrue(fallback.contains("No deterministic template matched"))
+        XCTAssertTrue(fallback.contains("Using model generation"))
+        XCTAssertTrue(fallback.contains("may still need repair"))
+        XCTAssertTrue(fallback.contains("Nearest supported templates: Centered text, Sinusoidal text, Color-cycling text."))
+    }
+
+    func testAssistantPromptTemplateExtractsGeneralizedParameters() {
+        let sine = AssistantPromptTemplate.match(for: #"make the words "flying saucer" scroll left across the screen in a slow sinusoidal pattern"#)
+        XCTAssertEqual(sine?.id, "sinusoidal-text")
+        XCTAssertEqual(sine?.parameters["text"], "flying saucer")
+        XCTAssertEqual(sine?.parameters["mode"], "scrolling")
+        XCTAssertEqual(sine?.parameters["direction"], "left")
+        XCTAssertEqual(sine?.parameters["speed"], "slow")
+
+        let centered = AssistantPromptTemplate.match(for: "write in the center of the screen with fancy font the words “flying saucer”")
+        XCTAssertEqual(centered?.id, "centered-text")
+        XCTAssertEqual(centered?.parameters["text"], "flying saucer")
+        XCTAssertEqual(centered?.parameters["mode"], "centered")
+        XCTAssertEqual(centered?.parameters["position"], "center")
+        XCTAssertEqual(centered?.parameters["font"], "bitmap fancy")
+
+        let stars = AssistantPromptTemplate.match(for: "generate a fast starfield with twenty stars")
+        XCTAssertEqual(stars?.id, "starfield")
+        XCTAssertEqual(stars?.parameters["mode"], "scrolling")
+        XCTAssertEqual(stars?.parameters["stars"], "20")
+        XCTAssertEqual(stars?.parameters["speed"], "fast")
+
+        let bars = AssistantPromptTemplate.match(for: "generate bouncing copper bars: 12 moving horizontal fast")
+        XCTAssertEqual(bars?.id, "bouncing-copper-bars")
+        XCTAssertEqual(bars?.parameters["mode"], "bouncing")
+        XCTAssertEqual(bars?.parameters["bars"], "12")
+        XCTAssertEqual(bars?.parameters["direction"], "horizontal")
+        XCTAssertEqual(bars?.parameters["speed"], "fast")
+
+        let sprite = AssistantPromptTemplate.match(for: "generate a slow bouncing saucer sprite moving vertical")
+        XCTAssertEqual(sprite?.id, "bouncing-sprite")
+        XCTAssertEqual(sprite?.parameters["mode"], "bouncing")
+        XCTAssertEqual(sprite?.parameters["object"], "saucer")
+        XCTAssertEqual(sprite?.parameters["direction"], "vertical")
+        XCTAssertEqual(sprite?.parameters["speed"], "slow")
+    }
+
+    func testPromptTemplateVisualSmokeArtifactsForGoal2BenchmarkPrompts() throws {
+        let outputRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("goal2_visual_smoke_tests_\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: outputRoot) }
+
+        for benchmark in goal2BenchmarkPrompts {
+            let match = try XCTUnwrap(AssistantPromptTemplate.match(for: benchmark.prompt))
+            let result = try PromptTemplateVisualSmokeValidator.validate(match: match, prompt: benchmark.prompt, outputRoot: outputRoot)
+
+            XCTAssertTrue(result.success, "\(benchmark.name) visual smoke should pass")
+            XCTAssertGreaterThan(result.nonBlackPixels, 0)
+            XCTAssertTrue(FileManager.default.fileExists(atPath: result.framePath))
+            XCTAssertTrue(FileManager.default.fileExists(atPath: URL(fileURLWithPath: result.artifactDirectory).appendingPathComponent("manifest.json").path))
+            XCTAssertTrue(FileManager.default.fileExists(atPath: URL(fileURLWithPath: result.artifactDirectory).appendingPathComponent("summary.md").path))
+        }
+    }
+
+    func testPromptTemplateBenchmarkReportWritesMarkdownTable() throws {
+        let outputURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("goal2_benchmark_report_\(UUID().uuidString)")
+            .appendingPathComponent("benchmark.md")
+        defer { try? FileManager.default.removeItem(at: outputURL.deletingLastPathComponent()) }
+
+        let rows = try goal2BenchmarkPrompts.map { benchmark -> PromptTemplateBenchmarkRow in
+            let match = try XCTUnwrap(AssistantPromptTemplate.match(for: benchmark.prompt))
+            let visualSmoke = try PromptTemplateVisualSmokeValidator.validate(match: match, prompt: benchmark.prompt)
+            return PromptTemplateBenchmarkRow(
+                prompt: benchmark.prompt,
+                template: match.name,
+                compile: "pass",
+                semantic: "pass",
+                adf: "pass",
+                emulatorSmoke: visualSmoke.success ? "frame-pass" : "frame-fail",
+                result: visualSmoke.success ? "pass" : "fail"
+            )
+        }
+
+        try PromptTemplateBenchmarkReporter.write(rows: rows, to: outputURL)
+
+        let markdown = try String(contentsOf: outputURL)
+        XCTAssertTrue(markdown.contains("| prompt | template | compile | semantic | ADF | emulator smoke | result |"))
+        XCTAssertTrue(markdown.contains("static copper bars"))
+        XCTAssertTrue(markdown.contains("Starfield"))
+        XCTAssertTrue(markdown.contains("Bouncing sprite"))
+        XCTAssertTrue(markdown.contains("Color-cycling text"))
+    }
+
+    func testPromptTemplateRuntimeSmokeAnalyzesScreenshotPixels() throws {
+        let screenshotURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("runtime_smoke_screenshot_\(UUID().uuidString).png")
+        defer { try? FileManager.default.removeItem(at: screenshotURL) }
+
+        let width = 80
+        let height = 60
+        let bitmap = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: width,
+            pixelsHigh: height,
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bytesPerRow: 0,
+            bitsPerPixel: 0
+        )
+        let black = NSColor.black
+        let yellow = NSColor(calibratedRed: 1.0, green: 1.0, blue: 0.0, alpha: 1.0)
+        for y in 0..<height {
+            for x in 0..<width {
+                bitmap?.setColor(black, atX: x, y: y)
+            }
+        }
+        for y in 24..<34 {
+            for x in 25..<55 {
+                bitmap?.setColor(yellow, atX: x, y: y)
+            }
+        }
+        let pngData = try XCTUnwrap(bitmap?.representation(using: .png, properties: [:]))
+        try pngData.write(to: screenshotURL)
+
+        let analysis = try PromptTemplateRuntimeSmokeValidator.analyzeScreenshot(at: screenshotURL, expectsTextBand: true)
+
+        XCTAssertGreaterThan(analysis.nonBlackPixels, 0)
+        XCTAssertGreaterThan(analysis.brightBandPixels, 0)
+    }
+
+    func testPromptTemplateRuntimeSmokeAnalyzesVAmigaRawFramePixels() throws {
+        let frameURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("runtime_smoke_vamiga_frame_\(UUID().uuidString).raw")
+        defer { try? FileManager.default.removeItem(at: frameURL) }
+
+        let width = 716
+        let height = 285
+        var bytes = [UInt8](repeating: 0x10, count: width * height * 3)
+        for y in 105..<150 {
+            for x in 240..<470 {
+                let offset = (y * width + x) * 3
+                bytes[offset] = 0xff
+                bytes[offset + 1] = 0xff
+                bytes[offset + 2] = 0xd0
+            }
+        }
+        try Data(bytes).write(to: frameURL)
+
+        let analysis = try PromptTemplateRuntimeSmokeValidator.analyzeScreenshot(at: frameURL, expectsTextBand: true)
+
+        XCTAssertGreaterThan(analysis.nonBlackPixels, 0)
+        XCTAssertGreaterThan(analysis.brightBandPixels, 0)
+    }
+
+    func testPromptTemplateRuntimeSmokeLaunchesFSUAEWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_EMULATOR_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_EMULATOR_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_EMULATOR_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_EMULATOR_SMOKE=1 or create \(enableFlagPath) to launch FS-UAE and capture runtime screenshots.")
+        }
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: "/Applications/FS-UAE.app") else {
+            throw XCTSkip("FS-UAE app not found at /Applications/FS-UAE.app")
+        }
+
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or write /private/tmp/AMIGA_SMOKE_ROM_DIR before launching the emulator smoke test.")
+        }
+        guard let romFilename = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM", fileName: "AMIGA_SMOKE_ROM") else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM or write /private/tmp/AMIGA_SMOKE_ROM before launching the emulator smoke test.")
+        }
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/runtime-smoke-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        UserDefaults.standard.set(romDirectory, forKey: "romsDirectoryPath")
+
+        var rows: [PromptTemplateBenchmarkRow] = []
+        for benchmark in goal2BenchmarkPrompts {
+            let match = try XCTUnwrap(AssistantPromptTemplate.match(for: benchmark.prompt))
+            let source = match.source
+            let semantic = AssemblySemanticValidator.validate(source: source, prompt: benchmark.prompt)
+            XCTAssertTrue(semantic.passed, "\(benchmark.name) should pass semantic gate before emulator launch: \(semantic.summary)")
+
+            let adfURL = artifactRoot.appendingPathComponent("\(match.id).adf")
+            let adfExpectation = expectation(description: "\(benchmark.name) ADF")
+            var adfSucceeded = false
+            var adfMessage = ""
+            compiler.generateBootableADF(assemblyCode: source, targetADFPath: adfURL.path) { success, output in
+                adfSucceeded = success
+                adfMessage = output
+                adfExpectation.fulfill()
+            }
+            wait(for: [adfExpectation], timeout: 10.0)
+            XCTAssertTrue(adfSucceeded, "\(benchmark.name) ADF generation failed:\n\(adfMessage)")
+
+            let config = EmulatorLaunchConfig(
+                backend: .fsUAE,
+                adfPath: adfURL.path,
+                romRelativePath: romFilename,
+                model: "A1200",
+                chipRamMb: "2 MB",
+                fastRamMb: "0 MB",
+                cpu: "68020",
+                jit: false,
+                customArgs: "--fullscreen=0 --window_width=724 --window_height=566 --audio_output=none",
+                vAmigaExecutablePath: EmulatorService.shared.defaultVAmigaPath,
+                vAmigaCustomArgs: ""
+            )
+            let runtimeResult = try PromptTemplateRuntimeSmokeValidator.runEmulatorSmoke(
+                config: config,
+                match: match,
+                prompt: benchmark.prompt,
+                outputRoot: artifactRoot,
+                captureDelay: 5.0
+            )
+
+            XCTAssertTrue(runtimeResult.success, "\(benchmark.name) runtime smoke failed:\n\(runtimeResult.summary)\n\(runtimeResult.launchSummary)\nArtifacts: \(runtimeResult.artifactDirectory)")
+            rows.append(PromptTemplateBenchmarkRow(
+                prompt: benchmark.prompt,
+                template: match.name,
+                compile: "pass",
+                semantic: semantic.passed ? "pass" : "fail",
+                adf: adfSucceeded ? "pass" : "fail",
+                emulatorSmoke: runtimeResult.success ? "pass" : "fail",
+                result: runtimeResult.success ? "pass" : "fail"
+            ))
+        }
+
+        let reportURL = artifactRoot.appendingPathComponent("benchmark.md")
+        try PromptTemplateBenchmarkReporter.write(rows: rows, to: reportURL)
+        print("Runtime smoke artifacts: \(artifactRoot.path)")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: reportURL.path))
+    }
+
+    func testPromptTemplateRuntimeSmokeLaunchesVAmigaWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_VAMIGA_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_VAMIGA_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_VAMIGA_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_VAMIGA_SMOKE=1 or create \(enableFlagPath) to launch vAmiga and capture runtime raw frames.")
+        }
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: EmulatorService.shared.defaultVAmigaPath) else {
+            throw XCTSkip("vAmiga executable not found at \(EmulatorService.shared.defaultVAmigaPath)")
+        }
+
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or write /private/tmp/AMIGA_SMOKE_ROM_DIR before launching the vAmiga smoke test.")
+        }
+        let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
+        guard let smokeHardware = vAmigaSmokeHardware(from: roms) else {
+            throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in \(romDirectory).")
+        }
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/vamiga-runtime-smoke-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        UserDefaults.standard.set(romDirectory, forKey: "romsDirectoryPath")
+
+        var rows: [PromptTemplateBenchmarkRow] = []
+        for benchmark in goal2BenchmarkPrompts {
+            let match = try XCTUnwrap(AssistantPromptTemplate.match(for: benchmark.prompt))
+            let source = match.source
+            let semantic = AssemblySemanticValidator.validate(source: source, prompt: benchmark.prompt)
+            XCTAssertTrue(semantic.passed, "\(benchmark.name) should pass semantic gate before vAmiga launch: \(semantic.summary)")
+
+            let adfURL = artifactRoot.appendingPathComponent("\(match.id).adf")
+            let adfExpectation = expectation(description: "\(benchmark.name) vAmiga ADF")
+            var adfSucceeded = false
+            var adfMessage = ""
+            compiler.generateBootableADF(assemblyCode: source, targetADFPath: adfURL.path) { success, output in
+                adfSucceeded = success
+                adfMessage = output
+                adfExpectation.fulfill()
+            }
+            wait(for: [adfExpectation], timeout: 10.0)
+            XCTAssertTrue(adfSucceeded, "\(benchmark.name) ADF generation failed:\n\(adfMessage)")
+
+            let config = EmulatorLaunchConfig(
+                backend: .vAmiga,
+                adfPath: adfURL.path,
+                romRelativePath: smokeHardware.rom.relativePath,
+                model: smokeHardware.model,
+                chipRamMb: smokeHardware.chipRam,
+                fastRamMb: "0 MB",
+                cpu: "68000",
+                jit: false,
+                customArgs: "",
+                vAmigaExecutablePath: EmulatorService.shared.defaultVAmigaPath,
+                vAmigaCustomArgs: ""
+            )
+            let runtimeResult = try PromptTemplateRuntimeSmokeValidator.runEmulatorSmoke(
+                config: config,
+                match: match,
+                prompt: benchmark.prompt,
+                outputRoot: artifactRoot,
+                captureDelay: 6.0
+            )
+
+            XCTAssertTrue(runtimeResult.success, "\(benchmark.name) vAmiga runtime smoke failed:\n\(runtimeResult.summary)\n\(runtimeResult.launchSummary)\nArtifacts: \(runtimeResult.artifactDirectory)")
+            rows.append(PromptTemplateBenchmarkRow(
+                prompt: benchmark.prompt,
+                template: match.name,
+                compile: "pass",
+                semantic: semantic.passed ? "pass" : "fail",
+                adf: adfSucceeded ? "pass" : "fail",
+                emulatorSmoke: runtimeResult.success ? "pass" : "fail",
+                result: runtimeResult.success ? "pass" : "fail"
+            ))
+            Thread.sleep(forTimeInterval: 1.0)
+        }
+
+        let reportURL = artifactRoot.appendingPathComponent("benchmark-vamiga.md")
+        try PromptTemplateBenchmarkReporter.write(rows: rows, to: reportURL)
+        print("vAmiga runtime smoke artifacts: \(artifactRoot.path)")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: reportURL.path))
+    }
+
+    private func runtimeSmokeValue(envKey: String, fileName: String) -> String? {
+        if let value = ProcessInfo.processInfo.environment[envKey]?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty {
+            return value
+        }
+
+        let configURL = URL(fileURLWithPath: "/private/tmp", isDirectory: true).appendingPathComponent(fileName)
+        guard let fileValue = try? String(contentsOf: configURL).trimmingCharacters(in: .whitespacesAndNewlines),
+              !fileValue.isEmpty else {
+            return nil
+        }
+        return fileValue
+    }
+
+    private func vAmigaSmokeHardware(from roms: [RomEntry]) -> (rom: RomEntry, model: String, chipRam: String)? {
+        let sortedCandidates = roms.compactMap { rom -> (rom: RomEntry, score: Int, model: String, chipRam: String)? in
+            let name = rom.displayName.lowercased()
+            if ["bootstrap", "cdtv", "cd32", "extended", "a3000", "beta", "proto", "[h]", "[o]"].contains(where: name.contains) {
+                return nil
+            }
+
+            let attributes = try? FileManager.default.attributesOfItem(atPath: rom.absolutePath)
+            let fileSize = (attributes?[.size] as? NSNumber)?.intValue ?? 0
+            var score = 0
+            var model = "A500"
+            var chipRam = "1 MB"
+
+            if name.contains("a500+") || name.contains("a500 plus") || name.contains("390979") || name.contains("2.04") || name.contains("37.175") {
+                score += 30
+                model = "A500+"
+            }
+            if name.contains("kick13") || name.contains("1.3") || name.contains("34.5") || name.contains("34.005") || name.contains("315093-02") {
+                score += 60
+                model = "A500"
+            }
+            if name.contains("a500") || name.contains("a2000") {
+                score += 20
+            }
+            if fileSize == 262_144 {
+                score += model == "A500" ? 20 : 0
+            }
+            if fileSize == 524_288 {
+                score += model == "A500+" ? 15 : 0
+            }
+            if name.contains("[!]") {
+                score += 10
+            }
+            if score < 50 {
+                return nil
+            }
+
+            if model == "A500+" {
+                chipRam = "1 MB"
+            }
+            return (rom, score, model, chipRam)
+        }
+
+        return sortedCandidates.max { lhs, rhs in
+            lhs.score < rhs.score
+        }.map { ($0.rom, $0.model, $0.chipRam) }
     }
 
     func testAssemblySourceFormatterRepairsCommonModelSyntaxDrift() {
@@ -675,13 +1325,13 @@ CopperList:
         )
 
         XCTAssertEqual(service.buildVAmigaArguments(config: config, scriptPath: "/tmp/session.retrosh"), [
-            "/tmp/session.retrosh",
+            "-source \"/tmp/session.retrosh\"",
             "-help",
             "--debug"
         ])
     }
 
-    func testBuildVAmigaInvocationUsesOpenForAppBundleContext() {
+    func testBuildVAmigaInvocationUsesApplicationBundleDocumentLaunch() {
         let service = EmulatorService.shared
         let config = EmulatorLaunchConfig(
             backend: .vAmiga,
@@ -708,9 +1358,7 @@ CopperList:
             "-n",
             "-a",
             "/Applications/vAmiga.app",
-            "/tmp/session.retrosh",
-            "--args",
-            "--debug"
+            "/tmp/session.retrosh"
         ])
     }
 
@@ -736,11 +1384,46 @@ CopperList:
 
         XCTAssertTrue(script.contains("AmigaPlayground vAmiga CPU trace bootstrap"))
         XCTAssertTrue(script.contains("No explicit ROM selected"))
+        XCTAssertTrue(script.contains("try amiga init A500_OCS_1MB"))
         XCTAssertTrue(script.contains("try df0 insert \"/tmp/test.adf\""))
-        XCTAssertTrue(script.contains("try amiga run"))
-        XCTAssertTrue(script.contains("try run"))
+        XCTAssertTrue(script.contains("try amiga power on"))
+        XCTAssertTrue(script.contains("try amiga reset"))
+        XCTAssertFalse(script.contains("try df0 connect"))
+        XCTAssertFalse(script.contains("try amiga run"))
+        XCTAssertFalse(script.contains("try run"))
         XCTAssertTrue(script.contains("regs"))
         XCTAssertTrue(script.contains("disassemble"))
+    }
+
+    func testCreateVAmigaRetroShellScriptCanCaptureRawFrame() throws {
+        let service = EmulatorService.shared
+        let config = EmulatorLaunchConfig(
+            backend: .vAmiga,
+            adfPath: "/tmp/test.adf",
+            romRelativePath: "",
+            model: "A500",
+            chipRamMb: "512 KB",
+            fastRamMb: "0 MB",
+            cpu: "68000",
+            jit: false,
+            customArgs: "",
+            vAmigaExecutablePath: service.defaultVAmigaPath,
+            vAmigaCustomArgs: "",
+            vAmigaScriptScreenshotBasePath: "/tmp/amiga-smoke-frame",
+            vAmigaScriptWaitSeconds: 5
+        )
+
+        let scriptPath = try service.createVAmigaRetroShellScript(config: config, tracePath: "/tmp/trace.jsonl")
+        defer { try? FileManager.default.removeItem(atPath: scriptPath) }
+        let script = try String(contentsOfFile: scriptPath, encoding: .utf8)
+
+        XCTAssertTrue(script.contains("try amiga init A500_OCS_1MB"))
+        XCTAssertTrue(script.contains("try df0 insert \"/tmp/test.adf\""))
+        XCTAssertTrue(script.contains("Runtime smoke capture is requested later"))
+        XCTAssertFalse(script.contains("wait 5"))
+        XCTAssertFalse(script.contains("screenshot save \"/tmp/amiga-smoke-frame\""))
+        XCTAssertFalse(script.contains("disassemble"))
+        XCTAssertFalse(script.contains("break"))
     }
 
     func testCpuTraceParserExtractsDebuggerFields() {
@@ -790,12 +1473,15 @@ CopperList:
         XCTAssertTrue(text.contains("[MEM]\nCHIP_RAM=512"))
         XCTAssertTrue(text.contains("[VID]\nWHITE_NOISE=1"))
         XCTAssertTrue(text.contains("[SRV]"))
-        XCTAssertTrue(text.contains("AUTORUN0=1"))
+        XCTAssertTrue(text.contains("ENABLE0=1"))
+        XCTAssertTrue(text.contains("ENABLE1=1"))
+        XCTAssertTrue(text.contains("ENABLE3=1"))
+        XCTAssertTrue(text.contains("ENABLE4=1"))
         XCTAssertTrue(text.contains("AUTORUN1=1"))
-        XCTAssertTrue(text.contains("AUTORUN3=1"))
-        XCTAssertTrue(text.contains("AUTORUN4=1"))
+        XCTAssertTrue(text.contains("AUTORUN2=1"))
         XCTAssertTrue(text.contains("PORT0=8080"))
         XCTAssertTrue(text.contains("PORT1=8081"))
+        XCTAssertTrue(text.contains("PORT2=8083"))
         XCTAssertTrue(text.contains("PORT3=8083"))
         XCTAssertTrue(text.contains("PORT4=8085"))
     }
