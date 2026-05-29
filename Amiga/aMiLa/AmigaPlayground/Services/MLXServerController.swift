@@ -102,7 +102,8 @@ final class MLXServerController: ObservableObject {
             case .stopping:
                 return "Stopping MLX Server"
             case .downloading(let completed, let total, _):
-                return "Downloading Model \(completed)/\(total)"
+                let current = min(completed + 1, total)
+                return "Downloading Model \(current)/\(total)"
             case .failed:
                 return "MLX Setup Needed"
             }
@@ -111,6 +112,10 @@ final class MLXServerController: ObservableObject {
         var detail: String? {
             if case .failed(let message) = self {
                 return message
+            }
+
+            if case .downloading(_, _, let currentFile) = self {
+                return "Downloading \(currentFile)"
             }
 
             return nil
@@ -344,6 +349,8 @@ final class MLXServerController: ObservableObject {
             "--fail",
             "--location",
             "--continue-at", "-",
+            "--silent",
+            "--show-error",
             "--output", destination.path,
             file.remoteURL.absoluteString
         ]
