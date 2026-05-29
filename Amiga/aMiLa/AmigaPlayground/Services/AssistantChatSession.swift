@@ -268,11 +268,71 @@ enum AssistantPromptTemplate {
     static func match(for prompt: String) -> AssistantPromptTemplateMatch? {
         let normalized = prompt.lowercased()
 
-        if let textEffectSource = textEffectSource(for: prompt, normalized: normalized) {
-            return makeMatch(prompt: prompt, source: textEffectSource)
+        if isMinimalExecutablePrompt(normalized) {
+            return makeMatch(
+                prompt: prompt,
+                source: minimalExecutableDemo,
+                id: "minimal-executable",
+                name: "Minimal executable",
+                parameters: [
+                    "mode": "minimal"
+                ]
+            )
         }
 
-        if normalized.contains("starfield") || normalized.contains("star field") {
+        if normalized.contains("blitter") || normalized.contains("blit") {
+            return makeMatch(
+                prompt: prompt,
+                source: blitterClearDemo,
+                id: "blitter-clear",
+                name: "Blitter clear",
+                parameters: [
+                    "mode": "hardware sample",
+                    "object": "screen buffer"
+                ]
+            )
+        }
+
+        if normalized.contains("audio") || normalized.contains("sound") || normalized.contains("beep") || normalized.contains("tone") {
+            if normalized.contains("frame") || normalized.contains("music") || normalized.contains("intro") {
+                return makeMatch(
+                    prompt: prompt,
+                    source: frameSyncedAudioIntroDemo,
+                    id: "frame-synced-audio-intro",
+                    name: "Frame-synced audio intro",
+                    parameters: [
+                        "mode": "frame-synced",
+                        "object": "Paula channel 0"
+                    ]
+                )
+            }
+
+            return makeMatch(
+                prompt: prompt,
+                source: audioPulseDemo,
+                id: "audio-pulse",
+                name: "Audio pulse",
+                parameters: [
+                    "mode": "hardware sample",
+                    "object": "Paula channel 0"
+                ]
+            )
+        }
+
+        if normalized.contains("raster split") || normalized.contains("raster splits") {
+            return makeMatch(
+                prompt: prompt,
+                source: rasterSplitDemo,
+                id: "raster-splits",
+                name: "Raster splits",
+                parameters: [
+                    "mode": "copper raster splits",
+                    "bars": requestedCount(from: prompt, fallback: 6)
+                ]
+            )
+        }
+
+        if normalized.contains("starfield") || normalized.contains("star field") || normalized.contains("stars") {
             return makeMatch(
                 prompt: prompt,
                 source: starfieldDemo,
@@ -301,33 +361,89 @@ enum AssistantPromptTemplate {
             )
         }
 
-        guard normalized.contains("copper") else { return nil }
-
-        if normalized.contains("bounc"),
-           normalized.contains("bar") || normalized.contains("multi color") || normalized.contains("multicolor") || normalized.contains("multi-color") {
+        if normalized.contains("double buffer") || normalized.contains("double-buffer") || normalized.contains("double buffered") {
             return makeMatch(
                 prompt: prompt,
-                source: bouncingMulticolorCopperList,
-                id: "bouncing-copper-bars",
-                name: "Bouncing copper bars",
+                source: doubleBufferedBitplaneDemo,
+                id: "double-buffer-bitplane",
+                name: "Double-buffered bitplane animation",
                 parameters: [
-                    "mode": "bouncing",
-                    "bars": requestedCount(from: prompt, fallback: 6),
-                    "direction": requestedDirection(from: prompt, fallback: "vertical"),
-                    "speed": requestedSpeed(from: prompt)
+                    "mode": "double buffered",
+                    "object": "bitplane"
                 ]
             )
         }
 
-        if normalized.contains("static") || normalized.contains("tiny") || normalized.contains("demo") {
+        if let textEffectSource = textEffectSource(for: prompt, normalized: normalized) {
+            return makeMatch(prompt: prompt, source: textEffectSource)
+        }
+
+        if isBackgroundColorPrompt(normalized) {
             return makeMatch(
                 prompt: prompt,
-                source: staticCopperListDemo,
-                id: "static-copper-bars",
-                name: "Static copper bars",
+                source: backgroundColorDemo(prompt: prompt),
+                id: "background-color",
+                name: "Background color",
                 parameters: [
                     "mode": "static",
-                    "bars": requestedCount(from: prompt, fallback: 6)
+                    "color": requestedColorName(from: prompt) ?? "yellow"
+                ]
+            )
+        }
+
+        if normalized.contains("copper") {
+            if normalized.contains("bounc"),
+               normalized.contains("bar") || normalized.contains("band") || normalized.contains("multi color") || normalized.contains("multicolor") || normalized.contains("multi-color") {
+                return makeMatch(
+                    prompt: prompt,
+                    source: bouncingMulticolorCopperList,
+                    id: "bouncing-copper-bars",
+                    name: "Bouncing copper bars",
+                    parameters: [
+                        "mode": "bouncing",
+                        "bars": requestedCount(from: prompt, fallback: 6),
+                        "direction": requestedDirection(from: prompt, fallback: "vertical"),
+                        "speed": requestedSpeed(from: prompt)
+                    ]
+                )
+            }
+
+            if normalized.contains("static") || normalized.contains("tiny") || normalized.contains("demo") || normalized.contains("sample") || normalized.contains("bar") || normalized.contains("band") || normalized.contains("stripe") {
+                return makeMatch(
+                    prompt: prompt,
+                    source: staticCopperListDemo,
+                    id: "static-copper-bars",
+                    name: "Static copper bars",
+                    parameters: [
+                        "mode": "static",
+                        "bars": requestedCount(from: prompt, fallback: 6)
+                    ]
+                )
+            }
+        }
+
+        if isWaitOrMouseExitPrompt(normalized) {
+            return makeMatch(
+                prompt: prompt,
+                source: waitForVBlankMouseExitDemo,
+                id: "wait-vblank-mouse-exit",
+                name: "VBlank mouse exit",
+                parameters: [
+                    "mode": "wait loop",
+                    "object": "left mouse button"
+                ]
+            )
+        }
+
+        if isInputReaderPrompt(normalized) {
+            return makeMatch(
+                prompt: prompt,
+                source: inputReaderDemo,
+                id: "input-reader",
+                name: "Input reader",
+                parameters: [
+                    "mode": "hardware sample",
+                    "object": normalized.contains("joystick") ? "joystick" : "mouse"
                 ]
             )
         }
@@ -399,6 +515,39 @@ enum AssistantPromptTemplate {
             "text": requestedText(from: prompt),
             "color": requestedColorName(from: prompt) ?? "yellow"
         ]
+    }
+
+    private static func isMinimalExecutablePrompt(_ normalized: String) -> Bool {
+        (normalized.contains("minimal") || normalized.contains("smallest") || normalized.contains("empty")) &&
+            (normalized.contains("program") || normalized.contains("executable") || normalized.contains("sample") || normalized.contains("amiga"))
+    }
+
+    private static func isBackgroundColorPrompt(_ normalized: String) -> Bool {
+        let asksForColor = normalized.contains("background") || normalized.contains("screen color") || normalized.contains("screen colour") || normalized.contains("set color") || normalized.contains("set colour")
+        return asksForColor && !normalized.contains("text") && !normalized.contains("logo") && !normalized.contains("star")
+    }
+
+    private static func isInputReaderPrompt(_ normalized: String) -> Bool {
+        normalized.contains("joystick") ||
+            normalized.contains("read mouse") ||
+            normalized.contains("mouse button") ||
+            (normalized.contains("input") && !normalized.contains("copper") && !normalized.contains("sprite"))
+    }
+
+    private static func isWaitOrMouseExitPrompt(_ normalized: String) -> Bool {
+        let asksForWait = normalized.contains("wait loop") ||
+            normalized.contains("vblank") ||
+            normalized.contains("vertical blank") ||
+            normalized.contains("wait for raster") ||
+            normalized.contains("wait for frame")
+        let asksForExit = normalized.contains("exit") ||
+            normalized.contains("quit") ||
+            normalized.contains("stop") ||
+            normalized.contains("until")
+        let asksForMouse = normalized.contains("left mouse") ||
+            normalized.contains("mouse click") ||
+            normalized.contains("mouse button")
+        return asksForWait || (asksForExit && asksForMouse)
     }
 
     private static func requestedCount(from prompt: String, fallback: Int) -> String {
@@ -650,6 +799,328 @@ enum AssistantPromptTemplate {
             """
         )
     }
+
+    private static let minimalExecutableDemo = """
+; Minimal runnable AmigaDOS executable template.
+            SECTION    Code,CODE
+            XDEF       _Start
+_Start:
+            moveq      #0,d0
+            rts
+"""
+
+    private static func backgroundColorDemo(prompt: String) -> String {
+        """
+; Background color hardware sample.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            movem.l    d2/a0/a6,-(sp)
+            lea        $dff000,a6
+            lea        Bitplane,a0
+            move.l     a0,$e0(a6)           ; BPL1PT
+            move.w     #$1200,$100(a6)      ; BPLCON0: one low-res bitplane
+            move.w     #$0000,$102(a6)      ; BPLCON1
+            move.w     #$0000,$104(a6)      ; BPLCON2
+            move.w     #\(requestedColorValue(from: prompt)),$180(a6)
+            move.w     #$0fff,$182(a6)
+            move.w     #$8300,$96(a6)       ; master DMA + bitplane DMA
+
+            move.w     #300,d2
+.hold:
+            bsr.s      WaitVBlank
+            dbf        d2,.hold
+
+            move.w     #$0100,$96(a6)       ; clear bitplane DMA
+            movem.l    (sp)+,d2/a0/a6
+            moveq      #0,d0
+            rts
+
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+            SECTION    ChipData,DATA,CHIP
+Bitplane:   ds.b       40*256
+"""
+    }
+
+    private static let blitterClearDemo = """
+; Blitter clear screen hardware sample.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        Bitplane,a0
+            move.l     a0,$e0(a6)           ; BPL1PT
+            move.w     #$1200,$100(a6)      ; BPLCON0: one low-res bitplane
+            move.w     #$0000,$102(a6)      ; BPLCON1
+            move.w     #$0000,$104(a6)      ; BPLCON2
+
+.waitBefore:
+            btst       #6,$02(a6)           ; DMACONR blitter busy
+            bne.s      .waitBefore
+
+            move.w     #$0100,$40(a6)       ; BLTCON0: D channel clear/fill
+            move.w     #$0000,$42(a6)       ; BLTCON1
+            move.w     #$0000,$66(a6)       ; BLTDMOD
+            move.l     a0,$54(a6)           ; BLTDPTH
+            move.w     #(256*64)+20,$58(a6) ; BLTSIZE: 256 lines, 40 bytes
+
+.waitAfter:
+            btst       #6,$02(a6)
+            bne.s      .waitAfter
+            moveq      #0,d0
+            rts
+
+            SECTION    ChipData,DATA,CHIP
+Bitplane:   ds.b       40*256
+"""
+
+    private static let audioPulseDemo = """
+; Paula audio channel 0 pulse sample.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            movem.l    d2/a0/a6,-(sp)
+            lea        $dff000,a6
+            lea        Pulse(pc),a0
+            move.l     a0,$a0(a6)           ; AUD0LC
+            move.w     #8,$a4(a6)           ; AUD0LEN in words
+            move.w     #214,$a6(a6)         ; AUD0PER
+            move.w     #64,$a8(a6)          ; AUD0VOL
+            move.w     #$8201,$96(a6)       ; master DMA + AUD0EN
+
+            move.w     #120,d2
+.hold:
+            bsr.s      WaitVBlank
+            dbf        d2,.hold
+
+            move.w     #$0001,$96(a6)       ; clear AUD0EN
+            movem.l    (sp)+,d2/a0/a6
+            moveq      #0,d0
+            rts
+
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+            ALIGN      4
+Pulse:
+            dc.b       127,127,127,127,0,0,0,0
+            dc.b       -127,-127,-127,-127,0,0,0,0
+"""
+
+    private static let waitForVBlankMouseExitDemo = """
+; VBlank wait loop with left mouse exit sample.
+            SECTION    Code,CODE
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+.main:
+            bsr.s      WaitVBlank
+            btst       #6,$bfe001           ; left mouse button, 0 when pressed
+            bne.s      .main
+            moveq      #0,d0
+            rts
+
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+"""
+
+    private static let inputReaderDemo = """
+; Joystick and mouse input reader sample.
+            SECTION    Code,CODE
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            move.w     $0c(a6),d0           ; JOY1DAT
+            move.w     d0,d1
+            lsr.w      #1,d1
+            eor.w      d1,d0
+            and.w      #$0303,d0            ; direction bits
+            btst       #6,$bfe001           ; left mouse button state
+            moveq      #0,d0
+            rts
+"""
+
+    private static let rasterSplitDemo = """
+; Raster split copper list template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        CopperList(pc),a0
+            move.l     a0,$80(a6)           ; COP1LC
+            move.w     #$0000,$88(a6)       ; COPJMP1
+            move.w     #$8280,$96(a6)       ; DMAEN + COPEN
+
+            move.w     #300,d0
+.hold:
+            bsr.s      WaitVBlank
+            dbf        d0,.hold
+
+            move.w     #$0080,$96(a6)       ; clear copper DMA
+            moveq      #0,d0
+            rts
+
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+            ALIGN      2
+CopperList:
+            dc.w       $0100,$0200          ; no bitplanes, COLOR00 only
+            dc.w       $2c07,$fffe,$0180,$0000
+            dc.w       $3807,$fffe,$0180,$0222
+            dc.w       $4807,$fffe,$0180,$0444
+            dc.w       $5807,$fffe,$0180,$0666
+            dc.w       $6807,$fffe,$0180,$0888
+            dc.w       $7807,$fffe,$0180,$0aaa
+            dc.w       $8807,$fffe,$0180,$0ccc
+            dc.w       $9807,$fffe,$0180,$0eee
+            dc.w       $ffff,$fffe
+"""
+
+    private static let doubleBufferedBitplaneDemo = """
+; Double-buffered bitplane animation template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            movem.l    d2/a2-a3/a6,-(sp)
+            lea        $dff000,a6
+            lea        BufferA,a2
+            lea        BufferB,a3
+            move.w     #$1200,$100(a6)      ; BPLCON0: one low-res bitplane
+            move.w     #$0000,$102(a6)      ; BPLCON1
+            move.w     #$0000,$104(a6)      ; BPLCON2
+            move.w     #$0000,$108(a6)      ; BPL1MOD
+            move.w     #$0000,$10a(a6)      ; BPL2MOD
+            move.w     #$0000,$180(a6)
+            move.w     #$0fff,$182(a6)
+            move.w     #$8300,$96(a6)       ; master DMA + bitplane DMA
+
+            moveq      #0,d2
+.main:
+            btst       #6,$bfe001
+            beq.s      .done
+            bsr.s      WaitVBlank
+            tst.b      d2
+            bne.s      .showB
+.showA:
+            move.l     a2,$e0(a6)           ; BPL1PT
+            bsr.s      DrawBufferB
+            moveq      #1,d2
+            bra.s      .main
+.showB:
+            move.l     a3,$e0(a6)           ; BPL1PT
+            bsr.s      DrawBufferA
+            moveq      #0,d2
+            bra.s      .main
+
+.done:
+            move.w     #$0100,$96(a6)
+            movem.l    (sp)+,d2/a2-a3/a6
+            moveq      #0,d0
+            rts
+
+DrawBufferA:
+            lea        BufferA,a0
+            lea        PatternA,a1
+            bra.s      CopyPattern
+
+DrawBufferB:
+            lea        BufferB,a0
+            lea        PatternB,a1
+
+CopyPattern:
+            moveq      #31,d0
+.copy:
+            move.l     (a1)+,(a0)+
+            dbf        d0,.copy
+            rts
+
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+            SECTION    ChipData,DATA,CHIP
+BufferA:    ds.b       40*256
+BufferB:    ds.b       40*256
+PatternA:
+            dcb.l      32,$aaaaaaaa
+PatternB:
+            dcb.l      32,$55555555
+"""
+
+    private static let frameSyncedAudioIntroDemo = """
+; Frame-synced audio intro loop template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            movem.l    d2/a0/a6,-(sp)
+            lea        $dff000,a6
+            lea        Pulse(pc),a0
+            move.l     a0,$a0(a6)           ; AUD0LC
+            move.w     #8,$a4(a6)           ; AUD0LEN
+            move.w     #214,$a6(a6)         ; AUD0PER
+            move.w     #48,$a8(a6)          ; AUD0VOL
+            move.w     #$8201,$96(a6)       ; master DMA + AUD0EN
+            move.w     #$0000,$180(a6)
+
+            moveq      #0,d2
+.main:
+            btst       #6,$bfe001
+            beq.s      .done
+            bsr.s      WaitVBlank
+            addq.w     #2,d2
+            and.w      #$000e,d2
+            lea        ColorTable(pc),a0
+            move.w     0(a0,d2.w),$180(a6)
+            bra.s      .main
+
+.done:
+            move.w     #$0001,$96(a6)       ; clear AUD0EN
+            movem.l    (sp)+,d2/a0/a6
+            moveq      #0,d0
+            rts
+
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+            ALIGN      2
+ColorTable:
+            dc.w       $0000,$0003,$0006,$0009,$000c,$000f,$033f,$066f
+Pulse:
+            dc.b       127,127,127,127,0,0,0,0
+            dc.b       -127,-127,-127,-127,0,0,0,0
+"""
 
     private static func textDisplayTemplate(title: String, requestedText: String, textLiteral: String, textColor: String, drawRoutineCall: String, mainLoop: String) -> String {
         """
@@ -1182,6 +1653,9 @@ HardwareStart:
             bsr        TakeOverDisplay
             tst.l      GfxBase
             beq        ExitProgram
+            lea        EmptyBitplane,a0
+            move.l     a0,$e0(a5)           ; BPL1PT
+            move.w     #$1200,$100(a5)      ; BPLCON0: one blank bitplane behind sprite
             lea        SpriteData,a0
             move.l     a0,d0
             move.w     d0,Spr0PTLValue
@@ -1321,6 +1795,8 @@ SpriteDY:
             dc.b       1
             EVEN
             SECTION    ChipData,DATA,CHIP
+EmptyBitplane:
+            ds.b       40*256
 SpriteData:
             dc.b       80,$80              ; VSTART, HSTART
 SpriteEnd:
@@ -2349,6 +2825,16 @@ enum PromptTemplateVisualSmokeValidator {
             for row in [10, 16, 22, 28, 34, 40] {
                 fillBand(row: row, height: 2, value: 220, pixels: &pixels)
             }
+        case "raster-splits":
+            for row in stride(from: 4, through: 40, by: 6) {
+                fillBand(row: row, height: 4, value: 140 + row, pixels: &pixels)
+            }
+        case "background-color":
+            for y in 0..<height {
+                for x in 0..<width {
+                    pixels[y][x] = 96
+                }
+            }
         case "starfield":
             for (x, y) in [(6, 5), (18, 9), (45, 7), (12, 18), (30, 20), (52, 22), (8, 34), (39, 37), (58, 42)] {
                 pixels[y][x] = 255
@@ -2359,6 +2845,18 @@ enum PromptTemplateVisualSmokeValidator {
                     if x == 26 || x == 37 || y == 16 || y == 27 || (x + y).isMultiple(of: 5) {
                         pixels[y][x] = 240
                     }
+                }
+            }
+        case "double-buffer-bitplane":
+            for y in 10..<38 {
+                for x in 8..<56 where (x / 4 + y / 4).isMultiple(of: 2) {
+                    pixels[y][x] = 230
+                }
+            }
+        case "frame-synced-audio-intro":
+            for y in 18..<30 {
+                for x in 0..<width {
+                    pixels[y][x] = (x / 8).isMultiple(of: 2) ? 210 : 80
                 }
             }
         default:

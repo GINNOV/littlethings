@@ -9,6 +9,341 @@ class AmigaPlaygroundTests: XCTestCase {
         let markers: [String]
     }
 
+    private enum PromptEvalLevel: Int, CaseIterable {
+        case level1 = 1
+        case level2 = 2
+        case level3 = 3
+
+        var requiredPassRate: Double {
+            switch self {
+            case .level1, .level2:
+                return 0.90
+            case .level3:
+                return 0.75
+            }
+        }
+    }
+
+    private struct PromptEvalCase {
+        let level: PromptEvalLevel
+        let name: String
+        let prompt: String
+        let expectedTemplateID: String
+        let markers: [String]
+        let expectsVisualEvidence: Bool
+    }
+
+    private struct PromptEvalResult {
+        let evalCase: PromptEvalCase
+        let templateID: String?
+        let failures: [String]
+
+        var passed: Bool {
+            failures.isEmpty
+        }
+    }
+
+    private var defaultPromptEvalCases: [PromptEvalCase] {
+        PromptLibraryStore.defaultPrompts.map { item in
+            let name = item.name
+            let prompt = item.prompt
+            let expectedID: String
+            let markers: [String]
+            let visual: Bool
+
+            switch name {
+            case "Demo 01 Copper Bars":
+                expectedID = "static-copper-bars"
+                markers = ["Static multi-color copper list demo.", "CopperList:"]
+                visual = true
+            case "Demo 02 Bouncing Copper Bars":
+                expectedID = "bouncing-copper-bars"
+                markers = ["Bouncing multi-color copper bars.", "Bar6Wait"]
+                visual = true
+            case "Demo 03 Raster Splits":
+                expectedID = "raster-splits"
+                markers = ["Raster split copper list template.", "CopperList:"]
+                visual = true
+            case "Demo 04 Sinusoidal Text Scroller":
+                expectedID = "sinusoidal-text"
+                markers = ["Sinusoidal scrolling text template.", "DrawSineText:", "SineOffsets:"]
+                visual = true
+            case "Demo 05 Starfield":
+                expectedID = "starfield"
+                markers = ["Starfield template.", "TwinkleStars:"]
+                visual = true
+            case "Demo 06 Hardware Sprite Motion":
+                expectedID = "bouncing-sprite"
+                markers = ["Bouncing sprite template.", "SpriteData:"]
+                visual = true
+            case "Demo 07 Blitter Bitplane Clear":
+                expectedID = "blitter-clear"
+                markers = ["Blitter clear screen hardware sample.", "$58(a6)"]
+                visual = false
+            case "Demo 08 Color-Cycling Logo":
+                expectedID = "color-cycling-text"
+                markers = ["Color-cycling text template.", "ColorTable:"]
+                visual = true
+            case "Demo 09 Double Buffered Bitplane":
+                expectedID = "double-buffer-bitplane"
+                markers = ["Double-buffered bitplane animation template.", "BufferA:", "BufferB:"]
+                visual = true
+            case "Demo 10 Frame-Synced Audio Intro":
+                expectedID = "frame-synced-audio-intro"
+                markers = ["Frame-synced audio intro loop template.", "$a0(a6)", "ColorTable:"]
+                visual = true
+            case "01 Minimal Executable":
+                expectedID = "minimal-executable"
+                markers = ["Minimal runnable AmigaDOS executable template.", "XDEF       _Start"]
+                visual = false
+            case "02 Background Color":
+                expectedID = "background-color"
+                markers = ["Background color hardware sample.", "$180(a6)"]
+                visual = true
+            case "03 VBlank Mouse Exit":
+                expectedID = "wait-vblank-mouse-exit"
+                markers = ["VBlank wait loop with left mouse exit sample.", "WaitVBlank:", "$bfe001"]
+                visual = false
+            case "04 Static Copper Bars":
+                expectedID = "static-copper-bars"
+                markers = ["Static multi-color copper list demo.", "CopperList:"]
+                visual = true
+            case "05 Bouncing Copper Bars":
+                expectedID = "bouncing-copper-bars"
+                markers = ["Bouncing multi-color copper bars.", "Bar6Wait"]
+                visual = true
+            case "06 Centered Fancy Text":
+                expectedID = "centered-text"
+                markers = ["Centered fancy text template.", "DrawCenteredText:"]
+                visual = true
+            case "07 Sinusoidal Text Scroll":
+                expectedID = "sinusoidal-text"
+                markers = ["Sinusoidal scrolling text template.", "DrawSineText:", "SineOffsets:"]
+                visual = true
+            case "08 Color-Cycling Logo":
+                expectedID = "color-cycling-text"
+                markers = ["Color-cycling text template.", "ColorTable:"]
+                visual = true
+            case "09 Bouncing Saucer Sprite":
+                expectedID = "bouncing-sprite"
+                markers = ["Bouncing sprite template.", "SpriteData:"]
+                visual = true
+            case "10 Starfield":
+                expectedID = "starfield"
+                markers = ["Starfield template.", "TwinkleStars:"]
+                visual = true
+            default:
+                expectedID = ""
+                markers = []
+                visual = false
+            }
+
+            return PromptEvalCase(
+                level: .level3,
+                name: name,
+                prompt: prompt,
+                expectedTemplateID: expectedID,
+                markers: markers,
+                expectsVisualEvidence: visual
+            )
+        }
+    }
+
+    private var strategicEvalPrompts: [PromptEvalCase] {
+        var cases: [PromptEvalCase] = []
+
+        func add(
+            _ level: PromptEvalLevel,
+            _ name: String,
+            _ prompts: [String],
+            expectedTemplateID: String,
+            markers: [String],
+            expectsVisualEvidence: Bool
+        ) {
+            for prompt in prompts {
+                cases.append(PromptEvalCase(
+                    level: level,
+                    name: name,
+                    prompt: prompt,
+                    expectedTemplateID: expectedTemplateID,
+                    markers: markers,
+                    expectsVisualEvidence: expectsVisualEvidence
+                ))
+            }
+        }
+
+        add(.level1, "minimal executable", [
+            "generate a minimal Amiga program",
+            "make the smallest amiga executable",
+            "create an empty Amiga sample",
+            "write a minimal executable sample",
+            "produce a minimal program for Amiga",
+            "give me the smallest Amiga program",
+            "generate a minimal runnable sample",
+            "make an empty executable for Amiga",
+            "write the smallest executable sample",
+            "create a minimal 68000 Amiga program"
+        ], expectedTemplateID: "minimal-executable", markers: ["Minimal runnable AmigaDOS executable template.", "XDEF       _Start"], expectsVisualEvidence: false)
+
+        add(.level1, "background color", [
+            "set the screen background color to blue",
+            "set background color to red",
+            "make the background green",
+            "screen colour cyan",
+            "set colour purple for the screen",
+            "set color orange for the display",
+            "change the background to white",
+            "make the screen color magenta",
+            "set background to yellow",
+            "screen color blue sample"
+        ], expectedTemplateID: "background-color", markers: ["Background color hardware sample.", "$180(a6)"], expectsVisualEvidence: true)
+
+        add(.level1, "vblank and mouse exit", [
+            "write a wait loop that exits on left mouse click",
+            "wait for vertical blank then exit on left mouse",
+            "make a vblank loop",
+            "wait for frame until mouse button",
+            "stop when the left mouse button is pressed",
+            "quit on mouse click after a wait loop",
+            "wait for raster and exit on left mouse",
+            "make a vertical blank wait sample",
+            "loop until left mouse button",
+            "wait for frame and quit on mouse click"
+        ], expectedTemplateID: "wait-vblank-mouse-exit", markers: ["VBlank wait loop with left mouse exit sample.", "WaitVBlank:", "$bfe001"], expectsVisualEvidence: false)
+
+        add(.level1, "input reader", [
+            "read joystick input",
+            "read mouse button",
+            "make an input sample",
+            "poll joystick and mouse button",
+            "read joystick directions",
+            "show a joystick input reader",
+            "make a mouse button input test",
+            "sample the joystick port",
+            "read game controller input",
+            "create an input polling routine"
+        ], expectedTemplateID: "input-reader", markers: ["Joystick and mouse input reader sample.", "$0c(a6)", "$bfe001"], expectsVisualEvidence: false)
+
+        add(.level2, "centered text", [
+            #"write in the center with fancy font the words "hello""#,
+            #"center the words "amiga rocks" with a fancy font"#,
+            #"write centered text "ready" in yellow"#,
+            #"make fancy font words "demo time" in the centre"#,
+            #"put the words "code works" in the center"#,
+            #"write text "system ok" with fancy font"#,
+            #"center text "hello amiga""#,
+            #"write in the centre of the screen the words "bootable""#,
+            #"make a centered fancy text sample that says "pass""#,
+            #"write the words "level two" in the center"#,
+        ], expectedTemplateID: "centered-text", markers: ["Centered fancy text template.", "DrawCenteredText:"], expectsVisualEvidence: true)
+
+        add(.level2, "static copper bars", [
+            "generate static copper bars",
+            "make copper bars",
+            "draw static copper bands",
+            "create a copper bar demo",
+            "generate a tiny copper list demo",
+            "make horizontal copper bands",
+            "show six static copper bars",
+            "generate a static multi color copper list",
+            "make a copper stripe sample",
+            "draw copper color bars"
+        ], expectedTemplateID: "static-copper-bars", markers: ["Static multi-color copper list demo.", "CopperList:"], expectsVisualEvidence: true)
+
+        add(.level2, "bouncing copper bars", [
+            "generate bouncing copper bars",
+            "make bouncing copper bands",
+            "create slow bouncing copper bars",
+            "generate fast bouncing copper bars",
+            "bounce multi color copper bars",
+            "make copper bars bounce vertically",
+            "create horizontal bouncing copper bands",
+            "generate bouncing multicolor copper bars",
+            "make a copper bar bounce demo",
+            "draw bouncing copper color bars"
+        ], expectedTemplateID: "bouncing-copper-bars", markers: ["Bouncing multi-color copper bars.", "Bar6Wait"], expectsVisualEvidence: true)
+
+        add(.level2, "blitter clear", [
+            "clear the screen with the blitter",
+            "make a blitter clear sample",
+            "blit clear the bitplane",
+            "use the blitter to clear memory",
+            "write a blitter screen clear",
+            "clear a screen buffer via blit",
+            "generate blitter clear code",
+            "make a hardware blitter clear demo",
+            "use blitter D channel to clear the screen",
+            "show a blit based clear routine"
+        ], expectedTemplateID: "blitter-clear", markers: ["Blitter clear screen hardware sample.", "$58(a6)"], expectsVisualEvidence: false)
+
+        add(.level2, "audio pulse", [
+            "play a short audio beep",
+            "make a Paula audio pulse",
+            "generate a tone sample",
+            "play a simple sound",
+            "create audio channel zero beep",
+            "make a short sound effect",
+            "generate Paula channel 0 audio",
+            "write a beep using audio DMA",
+            "play a quick tone",
+            "make an audio pulse demo"
+        ], expectedTemplateID: "audio-pulse", markers: ["Paula audio channel 0 pulse sample.", "$a0(a6)", "$a8(a6)"], expectsVisualEvidence: false)
+
+        add(.level3, "starfield", [
+            "generate a starfield demo",
+            "make a fast starfield",
+            "create a star field effect",
+            "draw twenty moving stars",
+            "make a scrolling starfield",
+            "generate a slow starfield sample",
+            "show a starfield with twinkle",
+            "create a deep space star field",
+            "make fast stars on a black background",
+            "generate twenty bright stars"
+        ], expectedTemplateID: "starfield", markers: ["Starfield template.", "TwinkleStars:"], expectsVisualEvidence: true)
+
+        add(.level3, "bouncing sprite", [
+            "generate a bouncing sprite object",
+            "make a slow bouncing saucer sprite",
+            "create a bouncing ball sprite",
+            "make a sprite bounce vertically",
+            "generate a bouncing ufo object",
+            "draw a bouncing ship sprite",
+            "make an object bounce on screen",
+            "create a fast bouncing sprite",
+            "generate a sprite object bouncing horizontally",
+            "show a bouncing saucer object"
+        ], expectedTemplateID: "bouncing-sprite", markers: ["Bouncing sprite template.", "SpriteData:"], expectsVisualEvidence: true)
+
+        add(.level3, "sinusoidal scrolling text", [
+            #"make the words "flying saucer" scroll across the screen in a sinusoidal pattern"#,
+            #"scroll text "hello amiga" in a sine wave"#,
+            #"make the words "demo scene" scroll left with sinus motion"#,
+            #"write text "wave rider" scrolling in a sine pattern"#,
+            #"make the words "space run" scroll with sinusoidal motion"#,
+            #"scroll the words "amiga forever" across in a sine wave"#,
+            #"create sine scrolling text "level three""#,
+            #"make text "ship incoming" scroll sinusoidally"#,
+            #"write the words "flying saucer" scrolling with sine motion"#,
+            #"scroll text "copper dreams" across the screen in a sinus pattern"#
+        ], expectedTemplateID: "sinusoidal-text", markers: ["Sinusoidal scrolling text template.", "DrawSineText:", "SineOffsets:"], expectsVisualEvidence: true)
+
+        add(.level3, "color cycling text", [
+            #"make a color-cycling logo that says "amiga""#,
+            #"make a fast blue color-cycling logo that says "amiga""#,
+            #"write color cycling text "demo""#,
+            #"create a colour-cycling logo that says "intro""#,
+            #"make color cycling words "hello""#,
+            #"write a centered color-cycling text "shine""#,
+            #"make a colour cycling logo saying "ocs""#,
+            #"generate color-cycling text "bright""#,
+            #"create a fast color cycling logo "amila""#,
+            #"make color cycling text that says "done""#
+        ], expectedTemplateID: "color-cycling-text", markers: ["Color-cycling text template.", "ColorTable:"], expectsVisualEvidence: true)
+
+        return cases
+    }
+
     private var goal2BenchmarkPrompts: [PromptBenchmark] {
         [
             PromptBenchmark(
@@ -57,6 +392,74 @@ class AmigaPlaygroundTests: XCTestCase {
     func testAutoInjectGeneratedCodePreferenceDefaultsOn() {
         XCTAssertEqual(AppPreferenceDefaults.autoInjectGeneratedCodeKey, "autoInjectGeneratedCode")
         XCTAssertTrue(AppPreferenceDefaults.autoInjectGeneratedCode)
+    }
+
+    @MainActor
+    func testPromptLibrarySeedsIncreasinglyComplexDefaultPrompts() {
+        let suiteName = "PromptLibraryDefaults-\(UUID().uuidString)"
+        let defaults = try! XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defaults.removePersistentDomain(forName: suiteName)
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let store = PromptLibraryStore(userDefaults: defaults)
+
+        XCTAssertEqual(store.prompts.count, 20)
+        XCTAssertEqual(store.prompts.map(\.name), [
+            "Demo 01 Copper Bars",
+            "Demo 02 Bouncing Copper Bars",
+            "Demo 03 Raster Splits",
+            "Demo 04 Sinusoidal Text Scroller",
+            "Demo 05 Starfield",
+            "Demo 06 Hardware Sprite Motion",
+            "Demo 07 Blitter Bitplane Clear",
+            "Demo 08 Color-Cycling Logo",
+            "Demo 09 Double Buffered Bitplane",
+            "Demo 10 Frame-Synced Audio Intro",
+            "01 Minimal Executable",
+            "02 Background Color",
+            "03 VBlank Mouse Exit",
+            "04 Static Copper Bars",
+            "05 Bouncing Copper Bars",
+            "06 Centered Fancy Text",
+            "07 Sinusoidal Text Scroll",
+            "08 Color-Cycling Logo",
+            "09 Bouncing Saucer Sprite",
+            "10 Starfield"
+        ])
+        XCTAssertTrue(store.prompts[0].prompt.contains("static copper bars"))
+        XCTAssertTrue(store.prompts[2].prompt.contains("raster split"))
+        XCTAssertTrue(store.prompts[8].prompt.contains("double-buffered"))
+        XCTAssertTrue(store.prompts[9].prompt.contains("Paula audio"))
+    }
+
+    @MainActor
+    func testPromptLibraryMergesDefaultsWithExistingPromptsOnce() {
+        let suiteName = "PromptLibraryMerge-\(UUID().uuidString)"
+        let defaults = try! XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defaults.removePersistentDomain(forName: suiteName)
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let customPrompt = PromptLibraryItem(
+            name: "Custom Saved Prompt",
+            prompt: "Generate an audio DMA routine with clear register setup.",
+            createdAt: Date(timeIntervalSinceReferenceDate: 2_000_000),
+            updatedAt: Date(timeIntervalSinceReferenceDate: 2_000_000)
+        )
+        let encoded = try! JSONEncoder().encode([customPrompt])
+        defaults.set(encoded, forKey: "promptLibraryItems")
+
+        let seededStore = PromptLibraryStore(userDefaults: defaults)
+        XCTAssertEqual(seededStore.prompts.count, 21)
+        XCTAssertTrue(seededStore.prompts.contains(where: { $0.name == "Custom Saved Prompt" }))
+        XCTAssertTrue(seededStore.prompts.contains(where: { $0.name == "Demo 10 Frame-Synced Audio Intro" }))
+
+        let promptToDelete = try! XCTUnwrap(seededStore.prompts.first { $0.name == "01 Minimal Executable" })
+        seededStore.deletePrompt(id: promptToDelete.id)
+
+        let reloadedStore = PromptLibraryStore(userDefaults: defaults)
+        XCTAssertEqual(reloadedStore.prompts.count, 20)
+        XCTAssertFalse(reloadedStore.prompts.contains(where: { $0.name == "01 Minimal Executable" }))
+        XCTAssertTrue(reloadedStore.prompts.contains(where: { $0.name == "Custom Saved Prompt" }))
     }
 
     // MARK: - Assistant Chat Session Tests
@@ -500,6 +903,473 @@ CopperList:
         XCTAssertEqual(sprite?.parameters["speed"], "slow")
     }
 
+    func testAssistantPromptTemplateRoutesBasicSamplesAwayFromModelFallback() {
+        let cases: [(prompt: String, id: String, name: String, markers: [String])] = [
+            (
+                "generate a minimal Amiga program",
+                "minimal-executable",
+                "Minimal executable",
+                ["Minimal runnable AmigaDOS executable template.", "XDEF       _Start", "_Start:"]
+            ),
+            (
+                "set the screen background color to blue",
+                "background-color",
+                "Background color",
+                ["Background color hardware sample.", "$100(a6)", "$180(a6)", "Bitplane:"]
+            ),
+            (
+                "clear the screen with the blitter",
+                "blitter-clear",
+                "Blitter clear",
+                ["Blitter clear screen hardware sample.", "$40(a6)", "$58(a6)", ".waitAfter:"]
+            ),
+            (
+                "play a short audio beep",
+                "audio-pulse",
+                "Audio pulse",
+                ["Paula audio channel 0 pulse sample.", "$a0(a6)", "$a4(a6)", "$a8(a6)"]
+            ),
+            (
+                "write a wait loop that exits on left mouse click",
+                "wait-vblank-mouse-exit",
+                "VBlank mouse exit",
+                ["VBlank wait loop with left mouse exit sample.", "WaitVBlank:", "$bfe001"]
+            ),
+            (
+                "read joystick input",
+                "input-reader",
+                "Input reader",
+                ["Joystick and mouse input reader sample.", "$0c(a6)", "$bfe001"]
+            )
+        ]
+
+        for testCase in cases {
+            let match = AssistantPromptTemplate.match(for: testCase.prompt)
+            XCTAssertEqual(match?.id, testCase.id, "\(testCase.prompt) should route to a deterministic basic template")
+            XCTAssertEqual(match?.name, testCase.name)
+            XCTAssertTrue(match?.consoleSummary.contains("Using template: \(testCase.name)") == true)
+            for marker in testCase.markers {
+                XCTAssertTrue(match?.source.contains(marker) == true, "\(testCase.name) should contain marker \(marker)")
+            }
+        }
+    }
+
+    func testAssistantPromptTemplateBasicSamplesPassSemanticGate() {
+        let prompts = [
+            "generate a minimal Amiga program",
+            "set the screen background color to blue",
+            "clear the screen with the blitter",
+            "play a short audio beep",
+            "write a wait loop that exits on left mouse click",
+            "read joystick input"
+        ]
+
+        for prompt in prompts {
+            let source = try! XCTUnwrap(AssistantPromptTemplate.source(for: prompt))
+            let result = AssemblySemanticValidator.validate(source: source, prompt: prompt)
+
+            XCTAssertTrue(result.passed, "\(prompt) should pass semantic gate. Failures:\n\(result.summary)")
+        }
+    }
+
+    func testAssistantPromptTemplateBasicSamplesCompile() {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping basic sample template compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+
+        let prompts = [
+            "generate a minimal Amiga program",
+            "set the screen background color to blue",
+            "clear the screen with the blitter",
+            "play a short audio beep",
+            "write a wait loop that exits on left mouse click",
+            "read joystick input"
+        ]
+
+        for prompt in prompts {
+            let source = try! XCTUnwrap(AssistantPromptTemplate.source(for: prompt))
+            let expectation = self.expectation(description: "\(prompt) compiles")
+
+            compiler.compile(assemblyCode: source) { success, output in
+                XCTAssertTrue(success, "\(prompt) compilation failed:\n\(output)")
+                expectation.fulfill()
+            }
+
+            waitForExpectations(timeout: 5.0)
+        }
+    }
+
+    func testStrategicEvalSuiteDefinesLevelOneThroughThreeCoverage() {
+        let prompts = strategicEvalPrompts
+
+        XCTAssertEqual(prompts.count, 130)
+        XCTAssertEqual(prompts.filter { $0.level == .level1 }.count, 40)
+        XCTAssertEqual(prompts.filter { $0.level == .level2 }.count, 50)
+        XCTAssertEqual(prompts.filter { $0.level == .level3 }.count, 40)
+        XCTAssertEqual(Set(prompts.map(\.prompt)).count, prompts.count)
+        XCTAssertTrue(prompts.allSatisfy { !$0.markers.isEmpty })
+    }
+
+    func testStrategicEvalSuiteRoutesLevelOneThroughThreePromptsAtTargetPassRates() {
+        let results = strategicEvalPrompts.map { evalCase in
+            routeAndMarkerResult(for: evalCase)
+        }
+
+        assertStrategicPassRates(results, context: "routing and marker coverage")
+    }
+
+    func testStrategicEvalSuiteToolchainPassRatesForLevelOneThroughThreePrompts() throws {
+        let results = try evaluateStrategicToolchainCases(strategicEvalPrompts)
+        let reportURL = try writeStrategicEvalReport(results, suffix: "toolchain")
+
+        print("Strategic eval report: \(reportURL.path)")
+        assertStrategicPassRates(results, context: "semantic + compile + ADF + expected visual coverage")
+    }
+
+    func testStrategicEvalSuiteVAmigaRuntimePassRatesWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_STRATEGIC_VAMIGA_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_STRATEGIC_VAMIGA_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_STRATEGIC_VAMIGA_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_STRATEGIC_VAMIGA_SMOKE=1 or create \(globalEnableFlagPath) to run full strategic vAmiga runtime pass-rate validation.")
+        }
+
+        let results = try evaluateStrategicVAmigaRuntimeCases(strategicEvalPrompts)
+        let reportURL = try writeStrategicEvalReport(results, suffix: "vamiga-runtime")
+
+        print("Strategic vAmiga runtime eval report: \(reportURL.path)")
+        assertStrategicPassRates(results, context: "semantic + compile + ADF + vAmiga runtime frame coverage")
+    }
+
+    func testDefaultPromptLibraryPromptsRouteAndCompile() throws {
+        let results = try evaluateStrategicToolchainCases(defaultPromptEvalCases)
+        let reportURL = try writeStrategicEvalReport(results, suffix: "default-prompts-toolchain")
+
+        print("Default prompt toolchain eval report: \(reportURL.path)")
+        XCTAssertTrue(results.allSatisfy(\.passed), defaultPromptFailureSummary(results))
+    }
+
+    func testDefaultPromptLibraryPromptsRunInVAmigaWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.fileExists(atPath: FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_DEFAULT_PROMPT_VAMIGA_SMOKE").path)
+        let globalEnableFlagPath = FileManager.default.fileExists(atPath: "/private/tmp/AMIGA_RUN_DEFAULT_PROMPT_VAMIGA_SMOKE")
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_DEFAULT_PROMPT_VAMIGA_SMOKE"] == "1" || enableFlagPath || globalEnableFlagPath
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_DEFAULT_PROMPT_VAMIGA_SMOKE=1 or create /private/tmp/AMIGA_RUN_DEFAULT_PROMPT_VAMIGA_SMOKE to run default prompt vAmiga validation.")
+        }
+
+        let results = try evaluateStrategicVAmigaRuntimeCases(defaultPromptEvalCases)
+        let reportURL = try writeStrategicEvalReport(results, suffix: "default-prompts-vamiga-runtime")
+
+        print("Default prompt vAmiga runtime eval report: \(reportURL.path)")
+        XCTAssertTrue(results.allSatisfy(\.passed), defaultPromptFailureSummary(results))
+    }
+
+    private func routeAndMarkerResult(for evalCase: PromptEvalCase) -> PromptEvalResult {
+        guard let match = AssistantPromptTemplate.match(for: evalCase.prompt) else {
+            return PromptEvalResult(evalCase: evalCase, templateID: nil, failures: ["no deterministic template matched"])
+        }
+
+        var failures: [String] = []
+        if match.id != evalCase.expectedTemplateID {
+            failures.append("expected template \(evalCase.expectedTemplateID), got \(match.id)")
+        }
+
+        let missingMarkers = evalCase.markers.filter { !match.source.contains($0) }
+        if !missingMarkers.isEmpty {
+            failures.append("missing markers: \(missingMarkers.joined(separator: ", "))")
+        }
+
+        return PromptEvalResult(evalCase: evalCase, templateID: match.id, failures: failures)
+    }
+
+    private func evaluateStrategicToolchainCases(_ evalCases: [PromptEvalCase]) throws -> [PromptEvalResult] {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+
+        let outputRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("strategic_eval_\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: outputRoot, withIntermediateDirectories: true)
+
+        var compileCache: [String: (success: Bool, output: String)] = [:]
+        var adfCache: [String: (success: Bool, output: String)] = [:]
+        var results: [PromptEvalResult] = []
+
+        for evalCase in evalCases {
+            guard let match = AssistantPromptTemplate.match(for: evalCase.prompt) else {
+                results.append(PromptEvalResult(evalCase: evalCase, templateID: nil, failures: ["no deterministic template matched"]))
+                continue
+            }
+
+            var failures = routeAndMarkerResult(for: evalCase).failures
+            let semantic = AssemblySemanticValidator.validate(source: match.source, prompt: evalCase.prompt)
+            if !semantic.passed {
+                failures.append("semantic validation failed: \(semantic.summary)")
+            }
+
+            let compileResult: (success: Bool, output: String)
+            if let cached = compileCache[match.source] {
+                compileResult = cached
+            } else {
+                compileResult = compileSource(match.source, compiler: compiler, description: "\(evalCase.name) compiles")
+                compileCache[match.source] = compileResult
+            }
+            if !compileResult.success {
+                failures.append("compile failed: \(compileResult.output)")
+            }
+
+            let adfResult: (success: Bool, output: String)
+            if let cached = adfCache[match.source] {
+                adfResult = cached
+            } else {
+                let adfURL = outputRoot.appendingPathComponent("\(match.id)-\(UUID().uuidString).adf")
+                adfResult = generateADF(source: match.source, compiler: compiler, targetADF: adfURL, description: "\(evalCase.name) ADF")
+                adfCache[match.source] = adfResult
+            }
+            if !adfResult.success {
+                failures.append("ADF generation failed: \(adfResult.output)")
+            }
+
+            if evalCase.expectsVisualEvidence {
+                do {
+                    let visual = try PromptTemplateVisualSmokeValidator.validate(
+                        match: match,
+                        prompt: evalCase.prompt,
+                        outputRoot: outputRoot.appendingPathComponent("expected-frames", isDirectory: true)
+                    )
+                    if !visual.success {
+                        failures.append("expected visual evidence failed: \(visual.summary)")
+                    }
+                } catch {
+                    failures.append("expected visual evidence threw: \(error.localizedDescription)")
+                }
+            }
+
+            results.append(PromptEvalResult(evalCase: evalCase, templateID: match.id, failures: failures))
+        }
+
+        return results
+    }
+
+    private func evaluateStrategicVAmigaRuntimeCases(_ evalCases: [PromptEvalCase]) throws -> [PromptEvalResult] {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: EmulatorService.shared.defaultVAmigaPath) else {
+            throw XCTSkip("vAmiga executable not found at \(EmulatorService.shared.defaultVAmigaPath)")
+        }
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") ?? strategicDefaultRomDirectory() else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or configure the app ROM directory before running strategic vAmiga runtime validation.")
+        }
+
+        let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
+        guard let smokeHardware = vAmigaSmokeHardware(from: roms) else {
+            throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in the configured ROM directory.")
+        }
+
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/strategic-vamiga-runtime-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        UserDefaults.standard.set(romDirectory, forKey: "romsDirectoryPath")
+
+        var compileCache: [String: (success: Bool, output: String)] = [:]
+        var adfCache: [String: (success: Bool, output: String, adfURL: URL)] = [:]
+        var runtimeCache: [String: PromptTemplateRuntimeSmokeResult] = [:]
+        var results: [PromptEvalResult] = []
+
+        for evalCase in evalCases {
+            guard let match = AssistantPromptTemplate.match(for: evalCase.prompt) else {
+                results.append(PromptEvalResult(evalCase: evalCase, templateID: nil, failures: ["no deterministic template matched"]))
+                continue
+            }
+
+            var failures = routeAndMarkerResult(for: evalCase).failures
+            let semantic = AssemblySemanticValidator.validate(source: match.source, prompt: evalCase.prompt)
+            if !semantic.passed {
+                failures.append("semantic validation failed: \(semantic.summary)")
+            }
+
+            let compileResult: (success: Bool, output: String)
+            if let cached = compileCache[match.source] {
+                compileResult = cached
+            } else {
+                compileResult = compileSource(match.source, compiler: compiler, description: "\(evalCase.name) vAmiga runtime compile")
+                compileCache[match.source] = compileResult
+            }
+            if !compileResult.success {
+                failures.append("compile failed: \(compileResult.output)")
+            }
+
+            let adfResult: (success: Bool, output: String, adfURL: URL)
+            if let cached = adfCache[match.source] {
+                adfResult = cached
+            } else {
+                let adfURL = artifactRoot.appendingPathComponent("\(match.id)-\(UUID().uuidString).adf")
+                let generatedADF = generateADF(source: match.source, compiler: compiler, targetADF: adfURL, description: "\(evalCase.name) vAmiga runtime ADF")
+                adfResult = (generatedADF.success, generatedADF.output, adfURL)
+                adfCache[match.source] = adfResult
+            }
+            if !adfResult.success {
+                failures.append("ADF generation failed: \(adfResult.output)")
+            }
+
+            if compileResult.success && adfResult.success {
+                let runtimeResult: PromptTemplateRuntimeSmokeResult
+                if let cached = runtimeCache[match.source] {
+                    runtimeResult = cached
+                } else {
+                    let config = EmulatorLaunchConfig(
+                        backend: .vAmiga,
+                        adfPath: adfResult.adfURL.path,
+                        romRelativePath: smokeHardware.rom.relativePath,
+                        model: smokeHardware.model,
+                        chipRamMb: smokeHardware.chipRam,
+                        fastRamMb: "0 MB",
+                        cpu: "68000",
+                        jit: false,
+                        customArgs: "",
+                        vAmigaExecutablePath: EmulatorService.shared.defaultVAmigaPath,
+                        vAmigaCustomArgs: ""
+                    )
+                    runtimeResult = try PromptTemplateRuntimeSmokeValidator.runEmulatorSmoke(
+                        config: config,
+                        match: match,
+                        prompt: evalCase.prompt,
+                        outputRoot: artifactRoot,
+                        captureDelay: 6.0
+                    )
+                    runtimeCache[match.source] = runtimeResult
+                    Thread.sleep(forTimeInterval: 0.5)
+                }
+
+                if !runtimeResult.success {
+                    failures.append("vAmiga runtime smoke failed: \(runtimeResult.summary)")
+                }
+                if runtimeResult.nonBlackPixels <= 0 {
+                    failures.append("vAmiga frame was black")
+                }
+                if evalCase.expectsVisualEvidence && match.id.contains("text") && runtimeResult.brightBandPixels <= 0 {
+                    failures.append("vAmiga frame missing bright text-band evidence")
+                }
+            }
+
+            results.append(PromptEvalResult(evalCase: evalCase, templateID: match.id, failures: failures))
+        }
+
+        return results
+    }
+
+    private func compileSource(_ source: String, compiler: CompilerService, description: String) -> (success: Bool, output: String) {
+        let compileExpectation = expectation(description: description)
+        var compileSucceeded = false
+        var compileOutput = ""
+
+        compiler.compile(assemblyCode: source) { success, output in
+            compileSucceeded = success
+            compileOutput = output
+            compileExpectation.fulfill()
+        }
+
+        wait(for: [compileExpectation], timeout: 10.0)
+        return (compileSucceeded, compileOutput)
+    }
+
+    private func generateADF(source: String, compiler: CompilerService, targetADF: URL, description: String) -> (success: Bool, output: String) {
+        let adfExpectation = expectation(description: description)
+        var adfSucceeded = false
+        var adfOutput = ""
+
+        compiler.generateBootableADF(assemblyCode: source, targetADFPath: targetADF.path) { success, output in
+            adfSucceeded = success
+            adfOutput = output
+            adfExpectation.fulfill()
+        }
+
+        wait(for: [adfExpectation], timeout: 10.0)
+        return (adfSucceeded, adfOutput)
+    }
+
+    private func assertStrategicPassRates(_ results: [PromptEvalResult], context: String) {
+        for level in PromptEvalLevel.allCases {
+            let levelResults = results.filter { $0.evalCase.level == level }
+            guard !levelResults.isEmpty else { continue }
+            let passed = levelResults.filter(\.passed).count
+            let rate = Double(passed) / Double(levelResults.count)
+            let failures = levelResults
+                .filter { !$0.passed }
+                .prefix(10)
+                .map { "- \($0.evalCase.prompt): \($0.failures.joined(separator: "; "))" }
+                .joined(separator: "\n")
+
+            XCTAssertGreaterThanOrEqual(
+                rate,
+                level.requiredPassRate,
+                "Level \(level.rawValue) \(context) pass rate \(formattedPercent(rate)) is below target \(formattedPercent(level.requiredPassRate)).\n\(failures)"
+            )
+        }
+    }
+
+    private func defaultPromptFailureSummary(_ results: [PromptEvalResult]) -> String {
+        results
+            .filter { !$0.passed }
+            .map { "- \($0.evalCase.name): \($0.failures.joined(separator: "; "))" }
+            .joined(separator: "\n")
+    }
+
+    private func writeStrategicEvalReport(_ results: [PromptEvalResult], suffix: String) throws -> URL {
+        let reportRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("AmigaPlayground/strategic-eval", isDirectory: true)
+        let reportURL = reportRoot.appendingPathComponent("strategic-eval-\(suffix)-\(UUID().uuidString).md")
+        try FileManager.default.createDirectory(at: reportRoot, withIntermediateDirectories: true)
+
+        let summary = PromptEvalLevel.allCases.map { level -> String in
+            let levelResults = results.filter { $0.evalCase.level == level }
+            let passed = levelResults.filter(\.passed).count
+            let rate = Double(passed) / Double(levelResults.count)
+            return "- Level \(level.rawValue): \(passed)/\(levelResults.count) passed (\(formattedPercent(rate))), target \(formattedPercent(level.requiredPassRate))"
+        }.joined(separator: "\n")
+
+        let rows = results.map { result in
+            "| \(result.evalCase.level.rawValue) | \(markdownCell(result.evalCase.name)) | \(markdownCell(result.evalCase.prompt)) | \(markdownCell(result.templateID ?? "none")) | \(result.passed ? "pass" : "fail") | \(markdownCell(result.failures.joined(separator: "; "))) |"
+        }.joined(separator: "\n")
+
+        let markdown = """
+        # Strategic Prompt Eval
+
+        \(summary)
+
+        | level | category | prompt | template | result | failures |
+        | --- | --- | --- | --- | --- | --- |
+        \(rows)
+        """
+        try markdown.write(to: reportURL, atomically: true, encoding: .utf8)
+        return reportURL
+    }
+
+    private func formattedPercent(_ value: Double) -> String {
+        String(format: "%.1f%%", value * 100)
+    }
+
+    private func markdownCell(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "\n", with: " ")
+            .replacingOccurrences(of: "|", with: "\\|")
+    }
+
     func testPromptTemplateVisualSmokeArtifactsForGoal2BenchmarkPrompts() throws {
         let outputRoot = FileManager.default.temporaryDirectory
             .appendingPathComponent("goal2_visual_smoke_tests_\(UUID().uuidString)", isDirectory: true)
@@ -808,6 +1678,19 @@ CopperList:
             return nil
         }
         return fileValue
+    }
+
+    private func strategicDefaultRomDirectory() -> String? {
+        let configuredPath = UserDefaults.standard.string(forKey: "romsDirectoryPath")?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let configuredPath, !configuredPath.isEmpty, FileManager.default.fileExists(atPath: configuredPath) {
+            return configuredPath
+        }
+
+        let defaultPath = EmulatorService.defaultRomsDirectory
+        guard FileManager.default.fileExists(atPath: defaultPath) else {
+            return nil
+        }
+        return defaultPath
     }
 
     private func vAmigaSmokeHardware(from roms: [RomEntry]) -> (rom: RomEntry, model: String, chipRam: String)? {
