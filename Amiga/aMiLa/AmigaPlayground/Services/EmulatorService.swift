@@ -41,6 +41,7 @@ struct EmulatorLaunchConfig {
     let vAmigaServerConfig: VAmigaServerConfig
     let vAmigaScriptScreenshotBasePath: String?
     let vAmigaScriptWaitSeconds: Int
+    let vAmigaTraceCommandsEnabled: Bool
 
     init(
         backend: EmulatorBackend,
@@ -56,7 +57,8 @@ struct EmulatorLaunchConfig {
         vAmigaCustomArgs: String,
         vAmigaServerConfig: VAmigaServerConfig = VAmigaServerConfig(),
         vAmigaScriptScreenshotBasePath: String? = nil,
-        vAmigaScriptWaitSeconds: Int = 4
+        vAmigaScriptWaitSeconds: Int = 4,
+        vAmigaTraceCommandsEnabled: Bool = true
     ) {
         self.backend = backend
         self.adfPath = adfPath
@@ -72,6 +74,7 @@ struct EmulatorLaunchConfig {
         self.vAmigaServerConfig = vAmigaServerConfig
         self.vAmigaScriptScreenshotBasePath = vAmigaScriptScreenshotBasePath
         self.vAmigaScriptWaitSeconds = vAmigaScriptWaitSeconds
+        self.vAmigaTraceCommandsEnabled = vAmigaTraceCommandsEnabled
     }
 }
 
@@ -243,9 +246,9 @@ class EmulatorService {
         }
 
         let screenshotCapture: String
-        if config.vAmigaScriptScreenshotBasePath != nil {
+        if config.vAmigaScriptScreenshotBasePath != nil || !config.vAmigaTraceCommandsEnabled {
             screenshotCapture = """
-            # Runtime smoke capture is requested later with a second RetroShell document.
+            # Runtime smoke capture is requested later through the remote RetroShell.
             """
         } else {
             screenshotCapture = """
@@ -259,6 +262,7 @@ class EmulatorService {
             """
         }
 
+        let serverBootstrap = vAmigaServerBootstrapCommands(config: config)
         let script = """
         # AmigaPlayground vAmiga CPU trace bootstrap
         # Trace file target: \(tracePath)
@@ -267,6 +271,7 @@ class EmulatorService {
         # which is more reliable than opening an ADF document and relying on the
         # previous desktop power/run state.
         try amiga init \(vAmigaInitPreset(for: config.model))
+        \(serverBootstrap)
         \(romBootstrap)
         try df0 eject
         try df0 insert \(retroShellQuotedPath(config.adfPath))
@@ -276,6 +281,49 @@ class EmulatorService {
         """
         try script.write(to: scriptURL, atomically: true, encoding: .utf8)
         return scriptURL.path
+    }
+
+    private func vAmigaServerBootstrapCommands(config: EmulatorLaunchConfig) -> String {
+        if isLegacyVAmigaServerLayout(executablePath: config.vAmigaExecutablePath) {
+            return """
+            try server rshell set PORT \(config.vAmigaServerConfig.remoteShellPort)
+            try server rshell start
+            """
+        }
+
+        return """
+        try server rshell set PORT \(config.vAmigaServerConfig.remoteShellPort)
+        try server rshell start
+        try server rsh set port \(config.vAmigaServerConfig.remoteShellPort)
+        try server rsh set enable true
+        try server rpc set port \(config.vAmigaServerConfig.rpcPort)
+        try server rpc set enable true
+        """
+    }
+
+    private func isLegacyVAmigaServerLayout(executablePath: String) -> Bool {
+        guard let version = installedVAmigaVersion(executablePath: executablePath) else {
+            return false
+        }
+        let components = version.split(separator: ".").compactMap { Int($0) }
+        guard components.count >= 2 else { return false }
+        return components[0] == 4 && components[1] < 4
+    }
+
+    private func installedVAmigaVersion(executablePath: String) -> String? {
+        guard let appBundlePath = vAmigaAppBundlePath(for: executablePath) else {
+            return nil
+        }
+        let plistURL = URL(fileURLWithPath: appBundlePath, isDirectory: true)
+            .appendingPathComponent("Contents/Info.plist")
+        guard
+            let data = try? Data(contentsOf: plistURL),
+            let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil),
+            let dictionary = plist as? [String: Any]
+        else {
+            return nil
+        }
+        return dictionary["CFBundleShortVersionString"] as? String
     }
 
     func vAmigaInitPreset(for model: String) -> String {
@@ -459,6 +507,16 @@ class EmulatorService {
             do {
                 let tracePath = try self.createTraceFilePath()
                 let scriptPath = try self.createVAmigaRetroShellScript(config: config, tracePath: tracePath)
+                if let appBundlePath = self.vAmigaAppBundlePath(for: executablePath) {
+                    self.launchVAmigaApplicationBundle(
+                        appBundlePath: appBundlePath,
+                        scriptPath: scriptPath,
+                        tracePath: tracePath,
+                        completion: completion
+                    )
+                    return
+                }
+
                 let invocation = self.buildVAmigaInvocation(executablePath: executablePath, config: config, scriptPath: scriptPath)
                 let process = Process()
                 process.executableURL = URL(fileURLWithPath: invocation.executablePath)
@@ -511,6 +569,221 @@ class EmulatorService {
                 }
             }
         }
+    }
+
+    private func launchVAmigaApplicationBundle(
+        appBundlePath: String,
+        scriptPath: String,
+        tracePath: String,
+        completion: @escaping (EmulatorLaunchResult) -> Void
+    ) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let documentOpenResult = self.launchVAmigaScriptDocument(appBundlePath: appBundlePath, scriptPath: scriptPath)
+
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 1.0) {
+                self.writeTraceSnapshot(
+                    path: tracePath,
+                    scriptPath: scriptPath,
+                    processArguments: ["/bin/zsh", "-lc", self.vAmigaDocumentOpenCommand(appBundlePath: appBundlePath, scriptPath: scriptPath)],
+                    capturedOutput: documentOpenResult.output
+                )
+            }
+
+            if !documentOpenResult.success {
+                DispatchQueue.main.async {
+                    completion(EmulatorLaunchResult(
+                        success: false,
+                        backend: .vAmiga,
+                        message: "Failed to launch vAmiga RetroShell script document: \(documentOpenResult.output)",
+                        tracePath: tracePath
+                    ))
+                }
+                return
+            }
+
+            DispatchQueue.main.async {
+                completion(EmulatorLaunchResult(
+                    success: true,
+                    backend: .vAmiga,
+                    message: "Successfully launched vAmiga Desktop with an explicit RetroShell validation script.\nTrace output will be captured at:\n\(tracePath)\n\nRetroShell script:\n\(scriptPath)",
+                    tracePath: tracePath
+                ))
+            }
+        }
+    }
+
+    private func launchVAmigaScriptDocument(appBundlePath: String, scriptPath: String) -> (success: Bool, output: String) {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/zsh")
+        process.arguments = ["-lc", vAmigaDocumentOpenCommand(appBundlePath: appBundlePath, scriptPath: scriptPath)]
+        process.environment = sanitizedLaunchEnvironment()
+        let outputPipe = Pipe()
+        let errorPipe = Pipe()
+        process.standardOutput = outputPipe
+        process.standardError = errorPipe
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+            let output = [outputPipe, errorPipe]
+                .compactMap { try? $0.fileHandleForReading.readToEnd() }
+                .compactMap { String(data: $0, encoding: .utf8) }
+                .joined()
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let summary = output.isEmpty
+                ? "Document delivery exited with status \(process.terminationStatus)."
+                : "Document delivery exited with status \(process.terminationStatus): \(output)"
+            if process.terminationStatus == 0 {
+                return (true, summary)
+            }
+            let workspaceBridgeResult = launchVAmigaScriptDocumentWithWorkspaceBridge(appBundlePath: appBundlePath, scriptPath: scriptPath)
+            if workspaceBridgeResult.success {
+                return (true, "\(summary)\n\(workspaceBridgeResult.output)")
+            }
+            let directWorkspaceResult = launchVAmigaScriptDocumentWithWorkspace(appBundlePath: appBundlePath, scriptPath: scriptPath)
+            return directWorkspaceResult.success
+                ? (true, "\(summary)\n\(workspaceBridgeResult.output)\n\(directWorkspaceResult.output)")
+                : (false, "\(summary)\n\(workspaceBridgeResult.output)\n\(directWorkspaceResult.output)")
+        } catch {
+            let workspaceBridgeResult = launchVAmigaScriptDocumentWithWorkspaceBridge(appBundlePath: appBundlePath, scriptPath: scriptPath)
+            if workspaceBridgeResult.success {
+                return (true, "\(error.localizedDescription)\n\(workspaceBridgeResult.output)")
+            }
+            let directWorkspaceResult = launchVAmigaScriptDocumentWithWorkspace(appBundlePath: appBundlePath, scriptPath: scriptPath)
+            return directWorkspaceResult.success
+                ? (true, "\(workspaceBridgeResult.output)\n\(error.localizedDescription)\n\(directWorkspaceResult.output)")
+                : (false, "\(workspaceBridgeResult.output)\n\(error.localizedDescription)\n\(directWorkspaceResult.output)")
+        }
+    }
+
+    private func sanitizedLaunchEnvironment() -> [String: String] {
+        [
+            "HOME": NSHomeDirectory(),
+            "USER": NSUserName(),
+            "LOGNAME": NSUserName(),
+            "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+            "TMPDIR": NSTemporaryDirectory()
+        ]
+    }
+
+    private func launchVAmigaScriptDocumentWithWorkspace(appBundlePath: String, scriptPath: String) -> (success: Bool, output: String) {
+        let appURL = URL(fileURLWithPath: appBundlePath, isDirectory: true)
+        let scriptURL = URL(fileURLWithPath: scriptPath)
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        configuration.createsNewApplicationInstance = true
+
+        let semaphore = DispatchSemaphore(value: 0)
+        var result: (success: Bool, output: String) = (false, "NSWorkspace document delivery did not complete.")
+
+        DispatchQueue.main.async {
+            NSWorkspace.shared.open(
+                [scriptURL],
+                withApplicationAt: appURL,
+                configuration: configuration
+            ) { application, error in
+                if let error {
+                    result = (false, "NSWorkspace document delivery failed: \(error.localizedDescription)")
+                } else {
+                    let pidDescription = application.map { " pid \($0.processIdentifier)" } ?? ""
+                    result = (true, "NSWorkspace delivered RetroShell document to vAmiga\(pidDescription).")
+                }
+                semaphore.signal()
+            }
+        }
+
+        _ = semaphore.wait(timeout: .now() + 8)
+        return result
+    }
+
+    private func launchVAmigaScriptDocumentWithWorkspaceBridge(appBundlePath: String, scriptPath: String) -> (success: Bool, output: String) {
+        let appURL = URL(fileURLWithPath: appBundlePath, isDirectory: true)
+        let scriptURL = URL(fileURLWithPath: scriptPath)
+        let appConfiguration = NSWorkspace.OpenConfiguration()
+        appConfiguration.activates = true
+        appConfiguration.createsNewApplicationInstance = true
+
+        let appSemaphore = DispatchSemaphore(value: 0)
+        var output: [String] = []
+        var launchedApplication: NSRunningApplication?
+        var launchError: Error?
+
+        DispatchQueue.main.async {
+            NSWorkspace.shared.openApplication(at: appURL, configuration: appConfiguration) { application, error in
+                launchedApplication = application
+                launchError = error
+                appSemaphore.signal()
+            }
+        }
+
+        if appSemaphore.wait(timeout: .now() + 8) == .timedOut {
+            return (false, "NSWorkspace bridge timed out launching visible vAmiga app.")
+        }
+        if let launchError {
+            return (false, "NSWorkspace bridge failed to launch visible vAmiga app: \(launchError.localizedDescription)")
+        }
+        output.append("NSWorkspace bridge launched visible vAmiga app\(launchedApplication.map { " pid \($0.processIdentifier)" } ?? "").")
+
+        Thread.sleep(forTimeInterval: 3.0)
+
+        let documentConfiguration = NSWorkspace.OpenConfiguration()
+        documentConfiguration.activates = true
+        documentConfiguration.createsNewApplicationInstance = false
+
+        let documentSemaphore = DispatchSemaphore(value: 0)
+        var documentResult: (success: Bool, output: String) = (false, "NSWorkspace bridge document delivery did not complete.")
+
+        DispatchQueue.main.async {
+            NSWorkspace.shared.open(
+                [scriptURL],
+                withApplicationAt: appURL,
+                configuration: documentConfiguration
+            ) { application, error in
+                if let error {
+                    documentResult = (false, "NSWorkspace bridge document delivery failed: \(error.localizedDescription)")
+                } else {
+                    let pidDescription = application.map { " pid \($0.processIdentifier)" } ?? ""
+                    documentResult = (true, "NSWorkspace bridge delivered RetroShell document to visible vAmiga\(pidDescription).")
+                }
+                documentSemaphore.signal()
+            }
+        }
+
+        if documentSemaphore.wait(timeout: .now() + 8) == .timedOut {
+            return (false, (output + ["NSWorkspace bridge timed out delivering RetroShell document."]).joined(separator: "\n"))
+        }
+
+        output.append(documentResult.output)
+        return (documentResult.success, output.joined(separator: "\n"))
+    }
+
+    private func shellQuoted(_ value: String) -> String {
+        "'\(value.replacingOccurrences(of: "'", with: "'\\''"))'"
+    }
+
+    private func vAmigaDocumentOpenCommand(appBundlePath: String, scriptPath: String) -> String {
+        // vAmiga 4.2 can accept a .retrosh file without creating a visible,
+        // control-ready document. Launch the GUI first, then deliver the script
+        // to that running app through the interactive user launch session.
+        let environment = sanitizedLaunchEnvironment()
+            .sorted { $0.key < $1.key }
+            .map { "\($0.key)=\(shellQuoted($0.value))" }
+            .joined(separator: " ")
+        let bundleIdentifier = vAmigaBundleIdentifier(appBundlePath: appBundlePath) ?? "dirkwhoffmann.vAmiga"
+        let escapedScriptPath = scriptPath
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+        let openScript = "tell application id \"\(bundleIdentifier)\" to open POSIX file \"\(escapedScriptPath)\""
+        let activateScript = "tell application id \"\(bundleIdentifier)\" to activate"
+        return [
+            "/usr/bin/open -n -a \(shellQuoted(appBundlePath))",
+            "/bin/sleep 3.0",
+            "/usr/bin/env -i \(environment) /usr/bin/osascript -e \(shellQuoted(openScript)) -e \(shellQuoted(activateScript))"
+        ].joined(separator: " && ")
+    }
+
+    private func vAmigaBundleIdentifier(appBundlePath: String) -> String? {
+        Bundle(url: URL(fileURLWithPath: appBundlePath, isDirectory: true))?.bundleIdentifier
     }
 
     func mapRamToKb(ramStr: String, isChip: Bool) -> Int {

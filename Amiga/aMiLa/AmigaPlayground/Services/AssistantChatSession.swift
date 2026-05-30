@@ -1129,9 +1129,7 @@ Pulse:
             SECTION    Code,CODE,CHIP
             XDEF       _Start
 _Start:
-            bsr        WriteConsoleMessage  ; runtime-visible fallback for AmigaDOS launch smoke
-.consoleHold:
-            bra.s      .consoleHold
+            bra        HardwareStart
 
 HardwareStart:
             movem.l    d2-d7/a2-a6,-(sp)
@@ -1431,9 +1429,7 @@ ScreenBuffer:
             SECTION    Code,CODE,CHIP
             XDEF       _Start
 _Start:
-            bsr        WriteConsoleMessage  ; runtime-visible fallback for AmigaDOS launch smoke
-.consoleHold:
-            bra.s      .consoleHold
+            bra        HardwareStart
 
 HardwareStart:
             movem.l    d2-d7/a2-a6,-(sp)
@@ -1644,9 +1640,7 @@ ScreenBuffer:
             SECTION    Code,CODE,CHIP
             XDEF       _Start
 _Start:
-            bsr        WriteConsoleMessage  ; runtime-visible fallback for AmigaDOS launch smoke
-.consoleHold:
-            bra.s      .consoleHold
+            bra        HardwareStart
 
 HardwareStart:
             movem.l    d2-d7/a2-a6,-(sp)
@@ -1777,7 +1771,7 @@ ConsoleMessageEnd:
             EVEN
 
 CopperList:
-            dc.w       $008e,$2c81,$0090,$2cc1
+            dc.w       $008e,$2c81,$0090,$f4c1
             dc.w       $0092,$0038,$0094,$00d0
             dc.w       $0120
 Spr0PTHValue:
@@ -1939,7 +1933,23 @@ struct PromptTemplateRuntimeSmokeResult: Equatable {
     let launchSummary: String
     let nonBlackPixels: Int
     let brightBandPixels: Int
+    let darkPixels: Int
+    let brightnessRange: Int
+    let uniqueColorBuckets: Int
+    let maxChannelSpread: Int
     let summary: String
+}
+
+struct PromptTemplateFrameAnalysis: Equatable {
+    let nonBlackPixels: Int
+    let brightBandPixels: Int
+    let darkPixels: Int
+    let brightnessRange: Int
+    let uniqueColorBuckets: Int
+    let maxChannelSpread: Int
+    let neutralGrayPixels: Int
+    let workbenchBluePixels: Int
+    let sampledPixels: Int
 }
 
 enum PromptTemplateRuntimeSmokeValidator {
@@ -1984,7 +1994,7 @@ enum PromptTemplateRuntimeSmokeValidator {
         var vAmigaTranscript = ""
         if launchResult.success, launchConfig.backend == .vAmiga {
             if let scriptedCapturePath = launchConfig.vAmigaScriptScreenshotBasePath {
-                vAmigaTranscript = "vAmiga scripted capture enabled: boot document first, then request screenshot save \(scriptedCapturePath) after the capture delay."
+                vAmigaTranscript = "vAmiga scripted capture enabled: the launch RetroShell script boots the ADF and saves \(scriptedCapturePath) after the capture delay."
             } else {
                 vAmigaTranscript = try prepareVAmigaRuntime(config: launchConfig)
             }
@@ -1997,7 +2007,7 @@ enum PromptTemplateRuntimeSmokeValidator {
             config: launchConfig
         )
         let analysis = try analyzeFrame(at: screenshotURL, expectsTextBand: match.id.contains("text"))
-        let success = launchResult.success && analysis.nonBlackPixels > 0 && (!match.id.contains("text") || analysis.brightBandPixels > 0)
+        let success = launchResult.success && hasRuntimeVisualEvidence(analysis, expectsTextBand: match.id.contains("text"))
         let summary = success
             ? "Runtime visual smoke passed: emulator launched, screenshot captured, and visible pixels were detected."
             : "Runtime visual smoke failed: emulator launch or screenshot visibility evidence was insufficient."
@@ -2013,6 +2023,15 @@ enum PromptTemplateRuntimeSmokeValidator {
           "vAmigaTranscript": "\(jsonEscaped(vAmigaTranscript))",
           "nonBlackPixels": \(analysis.nonBlackPixels),
           "brightBandPixels": \(analysis.brightBandPixels),
+          "darkPixels": \(analysis.darkPixels),
+          "brightnessRange": \(analysis.brightnessRange),
+          "uniqueColorBuckets": \(analysis.uniqueColorBuckets),
+          "maxChannelSpread": \(analysis.maxChannelSpread),
+          "neutralGrayPixels": \(analysis.neutralGrayPixels),
+          "workbenchBluePixels": \(analysis.workbenchBluePixels),
+          "sampledPixels": \(analysis.sampledPixels),
+          "likelyCheckerboardPlaceholder": \(isLikelyCheckerboardPlaceholder(analysis)),
+          "likelyWorkbenchOrAmigaDOS": \(isLikelyWorkbenchOrAmigaDOS(analysis)),
           "success": \(success)
         }
         """
@@ -2028,6 +2047,14 @@ enum PromptTemplateRuntimeSmokeValidator {
         - Screenshot: `\(screenshotURL.path)`
         - Non-black pixels: \(analysis.nonBlackPixels)
         - Bright band pixels: \(analysis.brightBandPixels)
+        - Dark pixels: \(analysis.darkPixels)
+        - Brightness range: \(analysis.brightnessRange)
+        - Unique color buckets: \(analysis.uniqueColorBuckets)
+        - Max channel spread: \(analysis.maxChannelSpread)
+        - Neutral gray pixels: \(analysis.neutralGrayPixels)
+        - Workbench blue pixels: \(analysis.workbenchBluePixels)
+        - Likely checkerboard placeholder: \(isLikelyCheckerboardPlaceholder(analysis) ? "yes" : "no")
+        - Likely Workbench/AmigaDOS: \(isLikelyWorkbenchOrAmigaDOS(analysis) ? "yes" : "no")
         - Result: \(success ? "passed" : "failed")
 
         \(summary)
@@ -2047,15 +2074,19 @@ enum PromptTemplateRuntimeSmokeValidator {
             launchSummary: launchResult.message,
             nonBlackPixels: analysis.nonBlackPixels,
             brightBandPixels: analysis.brightBandPixels,
+            darkPixels: analysis.darkPixels,
+            brightnessRange: analysis.brightnessRange,
+            uniqueColorBuckets: analysis.uniqueColorBuckets,
+            maxChannelSpread: analysis.maxChannelSpread,
             summary: summary
         )
     }
 
-    static func analyzeScreenshot(at url: URL, expectsTextBand: Bool) throws -> (nonBlackPixels: Int, brightBandPixels: Int) {
+    static func analyzeScreenshot(at url: URL, expectsTextBand: Bool) throws -> PromptTemplateFrameAnalysis {
         try analyzeFrame(at: url, expectsTextBand: expectsTextBand)
     }
 
-    static func analyzeFrame(at url: URL, expectsTextBand: Bool) throws -> (nonBlackPixels: Int, brightBandPixels: Int) {
+    static func analyzeFrame(at url: URL, expectsTextBand: Bool) throws -> PromptTemplateFrameAnalysis {
         if url.pathExtension.lowercased() == "raw" {
             return try analyzeRawFrame(at: url, expectsTextBand: expectsTextBand)
         }
@@ -2068,6 +2099,14 @@ enum PromptTemplateRuntimeSmokeValidator {
 
         var nonBlack = 0
         var brightBand = 0
+        var dark = 0
+        var minBrightness = Int.max
+        var maxBrightness = 0
+        var maxChannelSpread = 0
+        var colorBuckets = Set<Int>()
+        var neutralGray = 0
+        var workbenchBlue = 0
+        var sampledPixels = 0
         let minY = expectsTextBand ? bitmap.pixelsHigh / 3 : 0
         let maxY = expectsTextBand ? (bitmap.pixelsHigh * 2) / 3 : bitmap.pixelsHigh
         let minX = expectsTextBand ? bitmap.pixelsWide / 4 : 0
@@ -2079,19 +2118,83 @@ enum PromptTemplateRuntimeSmokeValidator {
                 let red = color.redComponent
                 let green = color.greenComponent
                 let blue = color.blueComponent
-                if red + green + blue > 0.55 {
+                let redByte = max(0, min(255, Int((red * 255.0).rounded())))
+                let greenByte = max(0, min(255, Int((green * 255.0).rounded())))
+                let blueByte = max(0, min(255, Int((blue * 255.0).rounded())))
+                let brightness = redByte + greenByte + blueByte
+                sampledPixels += 1
+                minBrightness = min(minBrightness, brightness)
+                maxBrightness = max(maxBrightness, brightness)
+                let channelSpread = max(redByte, greenByte, blueByte) - min(redByte, greenByte, blueByte)
+                maxChannelSpread = max(maxChannelSpread, channelSpread)
+                colorBuckets.insert(((redByte / 32) << 16) | ((greenByte / 32) << 8) | (blueByte / 32))
+                if channelSpread <= 12 && brightness >= 96 && brightness <= 690 {
+                    neutralGray += 1
+                }
+                if blueByte >= 120 && blueByte > redByte + 35 && blueByte >= greenByte + 8 && redByte <= 150 && greenByte <= 190 {
+                    workbenchBlue += 1
+                }
+                if brightness > 90 {
                     nonBlack += 1
                 }
-                if x >= minX, x < maxX, y >= minY, y < maxY, red + green + blue > 1.6 {
+                if brightness < 90 {
+                    dark += 1
+                }
+                if x >= minX, x < maxX, y >= minY, y < maxY, brightness > 420 {
                     brightBand += 1
                 }
             }
         }
 
-        return (nonBlack, brightBand)
+        return PromptTemplateFrameAnalysis(
+            nonBlackPixels: nonBlack,
+            brightBandPixels: brightBand,
+            darkPixels: dark,
+            brightnessRange: maxBrightness - (minBrightness == Int.max ? 0 : minBrightness),
+            uniqueColorBuckets: colorBuckets.count,
+            maxChannelSpread: maxChannelSpread,
+            neutralGrayPixels: neutralGray,
+            workbenchBluePixels: workbenchBlue,
+            sampledPixels: sampledPixels
+        )
     }
 
-    private static func analyzeRawFrame(at url: URL, expectsTextBand: Bool) throws -> (nonBlackPixels: Int, brightBandPixels: Int) {
+    static func hasRuntimeVisualEvidence(_ analysis: PromptTemplateFrameAnalysis, expectsTextBand: Bool) -> Bool {
+        guard !isLikelyCheckerboardPlaceholder(analysis), !isLikelyWorkbenchOrAmigaDOS(analysis) else {
+            return false
+        }
+
+        let hasContrast = analysis.brightnessRange >= 80 && analysis.uniqueColorBuckets >= 2
+        let hasSolidColor = analysis.maxChannelSpread >= 32
+        if expectsTextBand {
+            return analysis.nonBlackPixels > 0
+                && analysis.brightBandPixels > 0
+                && analysis.darkPixels > 0
+                && hasContrast
+        }
+        return analysis.nonBlackPixels > 0 && (hasSolidColor || (analysis.darkPixels > 0 && hasContrast))
+    }
+
+    static func isLikelyWorkbenchOrAmigaDOS(_ analysis: PromptTemplateFrameAnalysis) -> Bool {
+        guard analysis.sampledPixels > 0 else { return false }
+        let neutralRatio = Double(analysis.neutralGrayPixels) / Double(analysis.sampledPixels)
+        let blueRatio = Double(analysis.workbenchBluePixels) / Double(analysis.sampledPixels)
+        return neutralRatio >= 0.42
+            && blueRatio >= 0.01
+            && analysis.darkPixels > 20
+            && analysis.brightnessRange >= 120
+    }
+
+    static func isLikelyCheckerboardPlaceholder(_ analysis: PromptTemplateFrameAnalysis) -> Bool {
+        guard analysis.sampledPixels > 0 else { return false }
+        let neutralRatio = Double(analysis.neutralGrayPixels) / Double(analysis.sampledPixels)
+        return neutralRatio >= 0.90
+            && analysis.uniqueColorBuckets <= 2
+            && analysis.maxChannelSpread <= 12
+            && analysis.darkPixels == 0
+    }
+
+    private static func analyzeRawFrame(at url: URL, expectsTextBand: Bool) throws -> PromptTemplateFrameAnalysis {
         let data = try Data(contentsOf: url)
         guard let frame = inferRawFrameFormat(byteCount: data.count) else {
             throw NSError(domain: "PromptTemplateRuntimeSmokeValidator", code: 5, userInfo: [NSLocalizedDescriptionKey: "Could not infer raw vAmiga frame dimensions for \(url.path)"])
@@ -2099,6 +2202,14 @@ enum PromptTemplateRuntimeSmokeValidator {
 
         var nonBlack = 0
         var brightBand = 0
+        var dark = 0
+        var minBrightness = Int.max
+        var maxBrightness = 0
+        var maxChannelSpread = 0
+        var colorBuckets = Set<Int>()
+        var neutralGray = 0
+        var workbenchBlue = 0
+        var sampledPixels = 0
         let width = frame.width
         let height = frame.height
         let bytesPerPixel = frame.bytesPerPixel
@@ -2112,9 +2223,27 @@ enum PromptTemplateRuntimeSmokeValidator {
             for x in stride(from: 0, to: width, by: 2) {
                 let offset = (y * width + x) * bytesPerPixel
                 guard offset + 2 < bytes.count else { continue }
-                let brightness = Int(bytes[offset]) + Int(bytes[offset + 1]) + Int(bytes[offset + 2])
+                let redByte = Int(bytes[offset])
+                let greenByte = Int(bytes[offset + 1])
+                let blueByte = Int(bytes[offset + 2])
+                let brightness = redByte + greenByte + blueByte
+                sampledPixels += 1
+                minBrightness = min(minBrightness, brightness)
+                maxBrightness = max(maxBrightness, brightness)
+                let channelSpread = max(redByte, greenByte, blueByte) - min(redByte, greenByte, blueByte)
+                maxChannelSpread = max(maxChannelSpread, channelSpread)
+                colorBuckets.insert(((redByte / 32) << 16) | ((greenByte / 32) << 8) | (blueByte / 32))
+                if channelSpread <= 12 && brightness >= 96 && brightness <= 690 {
+                    neutralGray += 1
+                }
+                if blueByte >= 120 && blueByte > redByte + 35 && blueByte >= greenByte + 8 && redByte <= 150 && greenByte <= 190 {
+                    workbenchBlue += 1
+                }
                 if brightness > 90 {
                     nonBlack += 1
+                }
+                if brightness < 90 {
+                    dark += 1
                 }
                 if x >= minX, x < maxX, y >= minY, y < maxY, brightness > 420 {
                     brightBand += 1
@@ -2122,7 +2251,17 @@ enum PromptTemplateRuntimeSmokeValidator {
             }
         }
 
-        return (nonBlack, brightBand)
+        return PromptTemplateFrameAnalysis(
+            nonBlackPixels: nonBlack,
+            brightBandPixels: brightBand,
+            darkPixels: dark,
+            brightnessRange: maxBrightness - (minBrightness == Int.max ? 0 : minBrightness),
+            uniqueColorBuckets: colorBuckets.count,
+            maxChannelSpread: maxChannelSpread,
+            neutralGrayPixels: neutralGray,
+            workbenchBluePixels: workbenchBlue,
+            sampledPixels: sampledPixels
+        )
     }
 
     private static func inferRawFrameFormat(byteCount: Int) -> (width: Int, height: Int, bytesPerPixel: Int)? {
@@ -2186,7 +2325,6 @@ enum PromptTemplateRuntimeSmokeValidator {
         if config.backend == .vAmiga {
             let serverConfig = try VAmigaServerConfigPatcher().apply(config: config.vAmigaServerConfig)
             patchedVAmigaConfig = serverConfig
-            let screenshotBasePath = preferredScreenshotURL.deletingPathExtension().path
             return EmulatorLaunchConfig(
                 backend: config.backend,
                 adfPath: config.adfPath,
@@ -2200,8 +2338,9 @@ enum PromptTemplateRuntimeSmokeValidator {
                 vAmigaExecutablePath: config.vAmigaExecutablePath,
                 vAmigaCustomArgs: config.vAmigaCustomArgs,
                 vAmigaServerConfig: serverConfig,
-                vAmigaScriptScreenshotBasePath: screenshotBasePath,
-                vAmigaScriptWaitSeconds: max(1, Int(ceil(captureDelay)))
+                vAmigaScriptScreenshotBasePath: nil,
+                vAmigaScriptWaitSeconds: config.vAmigaScriptWaitSeconds,
+                vAmigaTraceCommandsEnabled: false
             )
         }
 
@@ -2229,7 +2368,8 @@ enum PromptTemplateRuntimeSmokeValidator {
             vAmigaCustomArgs: config.vAmigaCustomArgs,
             vAmigaServerConfig: config.vAmigaServerConfig,
             vAmigaScriptScreenshotBasePath: config.vAmigaScriptScreenshotBasePath,
-            vAmigaScriptWaitSeconds: config.vAmigaScriptWaitSeconds
+            vAmigaScriptWaitSeconds: config.vAmigaScriptWaitSeconds,
+            vAmigaTraceCommandsEnabled: config.vAmigaTraceCommandsEnabled
         )
     }
 
@@ -2263,9 +2403,6 @@ enum PromptTemplateRuntimeSmokeValidator {
         let rawURL = baseURL.appendingPathExtension("raw")
         if let scriptedBasePath = config.vAmigaScriptScreenshotBasePath {
             let scriptedRawURL = URL(fileURLWithPath: scriptedBasePath).deletingPathExtension().appendingPathExtension("raw")
-            try? FileManager.default.removeItem(at: scriptedRawURL)
-            try requestVAmigaRetroShellScreenshot(basePath: scriptedBasePath, config: config)
-
             let deadline = Date().addingTimeInterval(Double(max(2, config.vAmigaScriptWaitSeconds)) + 8.0)
             while Date() < deadline {
                 if FileManager.default.fileExists(atPath: scriptedRawURL.path) {
@@ -2423,11 +2560,8 @@ enum PromptTemplateRuntimeSmokeValidator {
             for port in retroShellCandidatePorts(config: config) {
                 let client = VAmigaRawRetroShellClient(port: port, timeout: 2.0)
                 do {
-                    let response = try client.send(command: "help", readDuration: 0.4)
-                    if response.contains("vAmiga RetroShell") || response.contains("Commands:") || response.contains("Usage:") {
-                        return client
-                    }
-                    lastError = NSError(domain: "PromptTemplateRuntimeSmokeValidator", code: 9, userInfo: [NSLocalizedDescriptionKey: "Port \(port) did not respond like RetroShell: \(cleanedRetroShellResponse(response))"])
+                    try client.connect()
+                    return client
                 } catch {
                     lastError = error
                 }
@@ -2616,6 +2750,24 @@ final class VAmigaRawRetroShellClient {
         self.host = host
         self.port = port
         self.timeout = timeout
+    }
+
+    func connect() throws {
+        var inputStream: InputStream?
+        var outputStream: OutputStream?
+        Stream.getStreamsToHost(withName: host, port: port, inputStream: &inputStream, outputStream: &outputStream)
+        guard let inputStream, let outputStream else {
+            throw NSError(domain: "VAmigaRawRetroShellClient", code: 1, userInfo: [NSLocalizedDescriptionKey: "Unable to create RetroShell streams for \(host):\(port)"])
+        }
+
+        inputStream.open()
+        outputStream.open()
+        defer {
+            inputStream.close()
+            outputStream.close()
+        }
+
+        try waitUntilOpen(inputStream: inputStream, outputStream: outputStream)
     }
 
     func send(command: String, readDuration: TimeInterval = 2.0) throws -> String {

@@ -1,5 +1,6 @@
 import XCTest
 import AppKit
+import Darwin
 @testable import AmigaPlayground
 
 class AmigaPlaygroundTests: XCTestCase {
@@ -42,6 +43,42 @@ class AmigaPlaygroundTests: XCTestCase {
             failures.isEmpty
         }
     }
+
+    private struct StandaloneVAmigaRuntimeResult {
+        let success: Bool
+        let summary: String
+        let nonBlackPixels: Int
+        let brightPixels: Int
+        let changedRatio: Double
+    }
+
+    private static let handcraftedSentinelSource = """
+; Handcrafted sentinel: unmistakable hardware display, never returns to AmigaDOS.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            move.w     #$7fff,$9a(a6)       ; disable interrupts
+            move.w     #$7fff,$9c(a6)       ; clear interrupt requests
+            move.w     #$7fff,$96(a6)       ; clear DMA channels
+            move.w     #$00f,$180(a6)       ; immediate blue background
+            lea        CopperList(pc),a0
+            move.l     a0,$80(a6)           ; COP1LC
+            move.w     #$0000,$88(a6)       ; COPJMP1
+            move.w     #$8280,$96(a6)       ; DMAEN + COPEN
+.forever:
+            bra.s      .forever
+
+            ALIGN      2
+CopperList:
+            dc.w       $0100,$0200          ; no bitplanes, color 0 only
+            dc.w       $2c07,$fffe,$0180,$00f
+            dc.w       $5007,$fffe,$0180,$0f0
+            dc.w       $7407,$fffe,$0180,$f00
+            dc.w       $9807,$fffe,$0180,$ff0
+            dc.w       $bc07,$fffe,$0180,$0ff
+            dc.w       $ffff,$fffe
+"""
 
     private var defaultPromptEvalCases: [PromptEvalCase] {
         PromptLibraryStore.defaultPrompts.map { item in
@@ -717,6 +754,21 @@ CopperList:
         waitForExpectations(timeout: 5.0)
     }
 
+    func testDisplayEffectTemplatesEnterHardwareDemoInsteadOfConsoleFallback() throws {
+        let prompts = [
+            #"make the words "flying saucer" scroll across the screen in a sinusoidal pattern"#,
+            "write in the center of the screen with fancy font the words “flying saucer”",
+            "generate a fast starfield with twenty stars",
+            "generate a slow bouncing saucer sprite moving vertical"
+        ]
+
+        for prompt in prompts {
+            let source = try XCTUnwrap(AssistantPromptTemplate.source(for: prompt), "Prompt should route: \(prompt)")
+            XCTAssertTrue(source.contains("_Start:\n            bra        HardwareStart"), "Display template should enter HardwareStart immediately for prompt: \(prompt)")
+            XCTAssertFalse(source.contains(".consoleHold:"), "Display template must not park forever in an AmigaDOS console fallback for prompt: \(prompt)")
+        }
+    }
+
     func testAssistantPromptTemplateFlyingSaucerTextTemplatesGenerateBootableADFs() {
         let compiler = CompilerService.shared
         guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
@@ -1175,7 +1227,7 @@ CopperList:
         }
 
         let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
-        guard let smokeHardware = vAmigaSmokeHardware(from: roms) else {
+        guard vAmigaSmokeHardware(from: roms) != nil else {
             throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in the configured ROM directory.")
         }
 
@@ -1188,7 +1240,7 @@ CopperList:
 
         var compileCache: [String: (success: Bool, output: String)] = [:]
         var adfCache: [String: (success: Bool, output: String, adfURL: URL)] = [:]
-        var runtimeCache: [String: PromptTemplateRuntimeSmokeResult] = [:]
+        var runtimeCache: [String: StandaloneVAmigaRuntimeResult] = [:]
         var results: [PromptEvalResult] = []
 
         for evalCase in evalCases {
@@ -1227,43 +1279,28 @@ CopperList:
                 failures.append("ADF generation failed: \(adfResult.output)")
             }
 
-            if compileResult.success && adfResult.success {
-                let runtimeResult: PromptTemplateRuntimeSmokeResult
+            if compileResult.success && adfResult.success, let expectation = standaloneRuntimeExpectation(for: match, evalCase: evalCase) {
+                let runtimeResult: StandaloneVAmigaRuntimeResult
                 if let cached = runtimeCache[match.source] {
                     runtimeResult = cached
                 } else {
-                    let config = EmulatorLaunchConfig(
-                        backend: .vAmiga,
-                        adfPath: adfResult.adfURL.path,
-                        romRelativePath: smokeHardware.rom.relativePath,
-                        model: smokeHardware.model,
-                        chipRamMb: smokeHardware.chipRam,
-                        fastRamMb: "0 MB",
-                        cpu: "68000",
-                        jit: false,
-                        customArgs: "",
-                        vAmigaExecutablePath: EmulatorService.shared.defaultVAmigaPath,
-                        vAmigaCustomArgs: ""
-                    )
-                    runtimeResult = try PromptTemplateRuntimeSmokeValidator.runEmulatorSmoke(
-                        config: config,
+                    runtimeResult = try validateADFWithStandaloneVAmiga(
+                        adfURL: adfResult.adfURL,
                         match: match,
-                        prompt: evalCase.prompt,
-                        outputRoot: artifactRoot,
-                        captureDelay: 6.0
+                        evalCase: evalCase,
+                        expectation: expectation,
+                        romDirectory: romDirectory,
+                        artifactRoot: artifactRoot
                     )
                     runtimeCache[match.source] = runtimeResult
                     Thread.sleep(forTimeInterval: 0.5)
                 }
 
                 if !runtimeResult.success {
-                    failures.append("vAmiga runtime smoke failed: \(runtimeResult.summary)")
+                    failures.append("vAmiga standalone runtime failed: \(runtimeResult.summary)")
                 }
                 if runtimeResult.nonBlackPixels <= 0 {
                     failures.append("vAmiga frame was black")
-                }
-                if evalCase.expectsVisualEvidence && match.id.contains("text") && runtimeResult.brightBandPixels <= 0 {
-                    failures.append("vAmiga frame missing bright text-band evidence")
                 }
             }
 
@@ -1271,6 +1308,123 @@ CopperList:
         }
 
         return results
+    }
+
+    private func standaloneRuntimeExpectation(for match: AssistantPromptTemplateMatch, evalCase: PromptEvalCase) -> String? {
+        guard evalCase.expectsVisualEvidence else { return nil }
+
+        switch match.id {
+        case "sinusoidal-text",
+             "bouncing-sprite",
+             "bouncing-copper-bars",
+             "starfield",
+             "color-cycling-text",
+             "double-buffer-bitplane",
+             "frame-synced-audio-intro":
+            return "motion"
+        case "centered-text":
+            return "text"
+        case "static-copper-bars",
+             "raster-splits",
+             "background-color":
+            return "any-visual"
+        default:
+            return "any-visual"
+        }
+    }
+
+    private func validateADFWithStandaloneVAmiga(
+        adfURL: URL,
+        match: AssistantPromptTemplateMatch,
+        evalCase: PromptEvalCase,
+        expectation: String,
+        romDirectory: String,
+        artifactRoot: URL
+    ) throws -> StandaloneVAmigaRuntimeResult {
+        let repoRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let validator = repoRoot.appendingPathComponent("scripts/validate_emulator_runtime.py")
+        guard FileManager.default.fileExists(atPath: validator.path) else {
+            throw XCTSkip("Standalone emulator runtime validator not found at \(validator.path)")
+        }
+
+        let runDirectory = artifactRoot
+            .appendingPathComponent("standalone-\(match.id)-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: runDirectory, withIntermediateDirectories: true)
+
+        let rawCaptures = "1"
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        process.currentDirectoryURL = repoRoot
+        var validatorArguments = [
+            validator.path,
+            "--adf", adfURL.path,
+            "--expectation", expectation,
+            "--label", evalCase.name,
+            "--template-id", match.id,
+            "--output-dir", runDirectory.path,
+            "--rom-dir", romDirectory,
+            "--raw-captures", rawCaptures
+        ]
+        if ProcessInfo.processInfo.environment["AMIGA_SMOKE_HOST_SCREEN_CAPTURE"] != "1" {
+            validatorArguments.append("--skip-gui")
+        }
+        process.arguments = ["asuser", "\(getuid())", "/usr/bin/python3"] + validatorArguments
+        process.environment = ProcessInfo.processInfo.environment
+
+        let outputPipe = Pipe()
+        let errorPipe = Pipe()
+        process.standardOutput = outputPipe
+        process.standardError = errorPipe
+
+        try process.run()
+        process.waitUntilExit()
+
+        let stdout = String(data: outputPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        let stderr = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        let payload = [stdout, stderr]
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .first { !$0.isEmpty } ?? ""
+        guard let data = payload.data(using: .utf8),
+              let manifest = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return StandaloneVAmigaRuntimeResult(
+                success: false,
+                summary: "validator did not produce parseable JSON; status \(process.terminationStatus); stderr: \(stderr)",
+                nonBlackPixels: 0,
+                brightPixels: 0,
+                changedRatio: 0
+            )
+        }
+
+        let success = manifest["success"] as? Bool ?? false
+        let failures = manifest["failures"] as? [String] ?? []
+        let validatorError = manifest["error"] as? String
+        let analyses = manifest["analyses"] as? [[String: Any]] ?? []
+        let firstAnalysis = analyses.first ?? [:]
+        let differences = manifest["differences"] as? [[String: Any]] ?? []
+        let maxChangedRatio = differences
+            .compactMap { $0["changedRatio"] as? Double }
+            .max() ?? 0
+        let summary: String
+        if success {
+            summary = "passed expectation \(expectation); artifact: \(runDirectory.path)"
+        } else if !failures.isEmpty {
+            summary = failures.joined(separator: "; ") + "; artifact: \(runDirectory.path)"
+        } else if let validatorError {
+            summary = validatorError + "; artifact: \(runDirectory.path)"
+        } else {
+            summary = "validator exited with status \(process.terminationStatus); artifact: \(runDirectory.path)"
+        }
+
+        return StandaloneVAmigaRuntimeResult(
+            success: success,
+            summary: summary,
+            nonBlackPixels: firstAnalysis["nonBlackPixels"] as? Int ?? 0,
+            brightPixels: firstAnalysis["brightPixels"] as? Int ?? 0,
+            changedRatio: maxChangedRatio
+        )
     }
 
     private func compileSource(_ source: String, compiler: CompilerService, description: String) -> (success: Bool, output: String) {
@@ -1455,6 +1609,11 @@ CopperList:
 
         XCTAssertGreaterThan(analysis.nonBlackPixels, 0)
         XCTAssertGreaterThan(analysis.brightBandPixels, 0)
+        XCTAssertGreaterThan(analysis.darkPixels, 0)
+        XCTAssertGreaterThanOrEqual(analysis.brightnessRange, 80)
+        XCTAssertGreaterThanOrEqual(analysis.uniqueColorBuckets, 2)
+        XCTAssertGreaterThanOrEqual(analysis.maxChannelSpread, 32)
+        XCTAssertTrue(PromptTemplateRuntimeSmokeValidator.hasRuntimeVisualEvidence(analysis, expectsTextBand: true))
     }
 
     func testPromptTemplateRuntimeSmokeAnalyzesVAmigaRawFramePixels() throws {
@@ -1479,6 +1638,141 @@ CopperList:
 
         XCTAssertGreaterThan(analysis.nonBlackPixels, 0)
         XCTAssertGreaterThan(analysis.brightBandPixels, 0)
+        XCTAssertGreaterThan(analysis.darkPixels, 0)
+        XCTAssertGreaterThanOrEqual(analysis.brightnessRange, 80)
+        XCTAssertGreaterThanOrEqual(analysis.uniqueColorBuckets, 2)
+        XCTAssertGreaterThanOrEqual(analysis.maxChannelSpread, 32)
+        XCTAssertTrue(PromptTemplateRuntimeSmokeValidator.hasRuntimeVisualEvidence(analysis, expectsTextBand: true))
+    }
+
+    func testPromptTemplateRuntimeSmokeRejectsFlatVAmigaRawFrameForText() throws {
+        let frameURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("runtime_smoke_flat_vamiga_frame_\(UUID().uuidString).raw")
+        defer { try? FileManager.default.removeItem(at: frameURL) }
+
+        let width = 716
+        let height = 285
+        let bytes = [UInt8](repeating: 0xf0, count: width * height * 3)
+        try Data(bytes).write(to: frameURL)
+
+        let analysis = try PromptTemplateRuntimeSmokeValidator.analyzeScreenshot(at: frameURL, expectsTextBand: true)
+
+        XCTAssertGreaterThan(analysis.nonBlackPixels, 0)
+        XCTAssertGreaterThan(analysis.brightBandPixels, 0)
+        XCTAssertEqual(analysis.darkPixels, 0)
+        XCTAssertEqual(analysis.brightnessRange, 0)
+        XCTAssertEqual(analysis.uniqueColorBuckets, 1)
+        XCTAssertEqual(analysis.maxChannelSpread, 0)
+        XCTAssertFalse(PromptTemplateRuntimeSmokeValidator.hasRuntimeVisualEvidence(analysis, expectsTextBand: true))
+        XCTAssertFalse(PromptTemplateRuntimeSmokeValidator.hasRuntimeVisualEvidence(analysis, expectsTextBand: false))
+    }
+
+    func testPromptTemplateRuntimeSmokeRejectsVAmigaCheckerboardPlaceholder() throws {
+        let frameURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("runtime_smoke_checkerboard_vamiga_frame_\(UUID().uuidString).raw")
+        defer { try? FileManager.default.removeItem(at: frameURL) }
+
+        let width = 716
+        let height = 285
+        var bytes = [UInt8](repeating: 0, count: width * height * 3)
+        for y in 0..<height {
+            for x in 0..<width {
+                let value: UInt8 = ((x / 8) + (y / 8)).isMultiple(of: 2) ? 34 : 68
+                let offset = (y * width + x) * 3
+                bytes[offset] = value
+                bytes[offset + 1] = value
+                bytes[offset + 2] = value
+            }
+        }
+        try Data(bytes).write(to: frameURL)
+
+        let analysis = try PromptTemplateRuntimeSmokeValidator.analyzeScreenshot(at: frameURL, expectsTextBand: false)
+
+        XCTAssertTrue(PromptTemplateRuntimeSmokeValidator.isLikelyCheckerboardPlaceholder(analysis))
+        XCTAssertFalse(PromptTemplateRuntimeSmokeValidator.hasRuntimeVisualEvidence(analysis, expectsTextBand: false))
+    }
+
+    func testPromptTemplateRuntimeSmokeRejectsWorkbenchLikeConsoleFrame() throws {
+        let frameURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("runtime_smoke_workbench_like_\(UUID().uuidString).raw")
+        defer { try? FileManager.default.removeItem(at: frameURL) }
+
+        let width = 716
+        let height = 285
+        var bytes = [UInt8](repeating: 0, count: width * height * 3)
+        for y in 0..<height {
+            for x in 0..<width {
+                let offset = (y * width + x) * 3
+                if y < 28 {
+                    bytes[offset] = 84
+                    bytes[offset + 1] = 143
+                    bytes[offset + 2] = 204
+                } else {
+                    bytes[offset] = 174
+                    bytes[offset + 1] = 174
+                    bytes[offset + 2] = 174
+                }
+                if (46..<118).contains(y), (40..<600).contains(x), (x / 7).isMultiple(of: 2), (y / 8).isMultiple(of: 2) {
+                    bytes[offset] = 0
+                    bytes[offset + 1] = 0
+                    bytes[offset + 2] = 0
+                }
+            }
+        }
+        try Data(bytes).write(to: frameURL)
+
+        let analysis = try PromptTemplateRuntimeSmokeValidator.analyzeScreenshot(at: frameURL, expectsTextBand: false)
+
+        XCTAssertTrue(PromptTemplateRuntimeSmokeValidator.isLikelyWorkbenchOrAmigaDOS(analysis))
+        XCTAssertFalse(PromptTemplateRuntimeSmokeValidator.hasRuntimeVisualEvidence(analysis, expectsTextBand: false))
+    }
+
+    func testVAmigaRuntimeSmokeHandcraftedSentinelWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_VAMIGA_SENTINEL_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_VAMIGA_SENTINEL_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_VAMIGA_SENTINEL_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_VAMIGA_SENTINEL_SMOKE=1 or create \(globalEnableFlagPath) to run the handcrafted vAmiga sentinel validation.")
+        }
+
+        let repoRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let validator = repoRoot.appendingPathComponent("scripts/validate_emulator_runtime.py")
+        guard FileManager.default.fileExists(atPath: validator.path) else {
+            throw XCTSkip("Standalone emulator runtime validator not found at \(validator.path)")
+        }
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/python3")
+        process.arguments = [validator.path]
+        process.currentDirectoryURL = repoRoot
+        process.environment = ProcessInfo.processInfo.environment
+
+        let outputPipe = Pipe()
+        let errorPipe = Pipe()
+        process.standardOutput = outputPipe
+        process.standardError = errorPipe
+
+        try process.run()
+        process.waitUntilExit()
+
+        let stdout = String(data: outputPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        let stderr = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        let payload = [stdout, stderr]
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .first { !$0.isEmpty } ?? ""
+        let data = try XCTUnwrap(payload.data(using: .utf8), "Validator produced no JSON output.\nSTDERR:\n\(stderr)")
+        let manifest = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        if let error = manifest["error"] as? String, error.contains("not allowed assistive access") {
+            throw XCTSkip("Standalone vAmiga validator requires assistive access for System Events in this host process: \(error)")
+        }
+
+        XCTAssertEqual(process.terminationStatus, 0, "Validator failed.\nSTDOUT:\n\(stdout)\nSTDERR:\n\(stderr)")
+        XCTAssertEqual(manifest["success"] as? Bool, true, "Validator manifest did not report success.\nSTDOUT:\n\(stdout)\nSTDERR:\n\(stderr)")
     }
 
     func testPromptTemplateRuntimeSmokeLaunchesFSUAEWhenEnabled() throws {
@@ -1695,8 +1989,11 @@ CopperList:
 
     private func vAmigaSmokeHardware(from roms: [RomEntry]) -> (rom: RomEntry, model: String, chipRam: String)? {
         let sortedCandidates = roms.compactMap { rom -> (rom: RomEntry, score: Int, model: String, chipRam: String)? in
-            let name = rom.displayName.lowercased()
+            let name = URL(fileURLWithPath: rom.absolutePath).lastPathComponent.lowercased()
             if ["bootstrap", "cdtv", "cd32", "extended", "a3000", "beta", "proto", "[h]", "[o]"].contains(where: name.contains) {
+                return nil
+            }
+            if ["1.0", "1.1", "1.2", "1.3", "33.", "34.", "315093", "kick13"].contains(where: name.contains) {
                 return nil
             }
 
@@ -1706,13 +2003,19 @@ CopperList:
             var model = "A500"
             var chipRam = "1 MB"
 
+            if (name.contains("3.1") || name.contains("40.063") || name.contains("40.63")),
+               name.contains("a500") || name.contains("a600") || name.contains("a2000") {
+                score += 120
+                model = "A500"
+            }
             if name.contains("a500+") || name.contains("a500 plus") || name.contains("390979") || name.contains("2.04") || name.contains("37.175") {
-                score += 30
+                score += 100
                 model = "A500+"
             }
-            if name.contains("kick13") || name.contains("1.3") || name.contains("34.5") || name.contains("34.005") || name.contains("315093-02") {
-                score += 60
-                model = "A500"
+            if (name.contains("2.05") || name.contains("37.299") || name.contains("37.300")),
+               name.contains("a600") {
+                score += 90
+                model = "A500+"
             }
             if name.contains("a500") || name.contains("a2000") {
                 score += 20
@@ -1726,7 +2029,7 @@ CopperList:
             if name.contains("[!]") {
                 score += 10
             }
-            if score < 50 {
+            if score < 10 {
                 return nil
             }
 
@@ -2268,6 +2571,12 @@ CopperList:
         XCTAssertTrue(script.contains("AmigaPlayground vAmiga CPU trace bootstrap"))
         XCTAssertTrue(script.contains("No explicit ROM selected"))
         XCTAssertTrue(script.contains("try amiga init A500_OCS_1MB"))
+        XCTAssertTrue(script.contains("try server rshell set PORT 8080"))
+        XCTAssertTrue(script.contains("try server rshell start"))
+        XCTAssertFalse(script.contains("try server rsh set port 8080"))
+        XCTAssertFalse(script.contains("try server rsh set enable true"))
+        XCTAssertFalse(script.contains("try server rpc set port 8081"))
+        XCTAssertFalse(script.contains("try server rpc set enable true"))
         XCTAssertTrue(script.contains("try df0 insert \"/tmp/test.adf\""))
         XCTAssertTrue(script.contains("try amiga power on"))
         XCTAssertTrue(script.contains("try amiga reset"))
@@ -2301,6 +2610,8 @@ CopperList:
         let script = try String(contentsOfFile: scriptPath, encoding: .utf8)
 
         XCTAssertTrue(script.contains("try amiga init A500_OCS_1MB"))
+        XCTAssertTrue(script.contains("try server rshell start"))
+        XCTAssertFalse(script.contains("try server rsh set enable true"))
         XCTAssertTrue(script.contains("try df0 insert \"/tmp/test.adf\""))
         XCTAssertTrue(script.contains("Runtime smoke capture is requested later"))
         XCTAssertFalse(script.contains("wait 5"))
@@ -2349,7 +2660,7 @@ CopperList:
         """.write(to: iniURL, atomically: true, encoding: .utf8)
 
         let config = VAmigaServerConfig(configPath: iniURL.path)
-        let patched = try VAmigaServerConfigPatcher().apply(config: config)
+        let patched = try VAmigaServerConfigPatcher(vAmigaVersion: "4.4.0").apply(config: config)
         let text = try String(contentsOf: iniURL, encoding: .utf8)
 
         XCTAssertTrue(FileManager.default.fileExists(atPath: patched.backupPath ?? ""))
@@ -2367,6 +2678,22 @@ CopperList:
         XCTAssertTrue(text.contains("PORT2=8083"))
         XCTAssertTrue(text.contains("PORT3=8083"))
         XCTAssertTrue(text.contains("PORT4=8085"))
+    }
+
+    func testVAmigaServerConfigPatcherMapsLegacyRshellPortForV42() throws {
+        let tempRoot = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: tempRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempRoot) }
+
+        let iniURL = tempRoot.appendingPathComponent("vAmiga.ini")
+        try "[SRV]\nPORT1=9001\nAUTORUN1=0\n".write(to: iniURL, atomically: true, encoding: .utf8)
+
+        _ = try VAmigaServerConfigPatcher(vAmigaVersion: "4.2.1").apply(config: VAmigaServerConfig(configPath: iniURL.path))
+        let text = try String(contentsOf: iniURL, encoding: .utf8)
+
+        XCTAssertTrue(text.contains("AUTORUN1=1"))
+        XCTAssertTrue(text.contains("PORT1=8080"))
     }
 
     func testVAmigaRPCClientBuildsAndParsesRetroShellRequests() throws {
