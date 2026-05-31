@@ -115,7 +115,6 @@ graph TD
 - `AmigaPlayground/Services/`: compiler, assistant streaming, prompt storage, MLX server control, emulator launching, and vAmiga validation services.
 - `AmigaPlayground/AmigaPlaygroundTests/`: unit tests for compiler, ADF, streaming, prompt library, MLX server invocation, and related services.
 - `fine_tuning/`: MLX-LoRA training, dataset preparation, model download helper, and local generated model output.
-- `mcp-server-vamigaweb/`: TypeScript/Playwright MCP server for automated web emulator validation.
 - `Dataset/`: local source corpora. Some nested corpus directories are independent Git working trees.
 
 Generated artifacts ignored by Git include:

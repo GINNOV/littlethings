@@ -93,9 +93,8 @@ The app includes multiple emulator paths:
 - FS-UAE/default emulator launch through `EmulatorService`.
 - vAmiga validation support through `VAmigaValidationService`.
 - Web emulator view through `WebEmulatorView`.
-- TypeScript/Playwright MCP server under `mcp-server-vamigaweb/` for automated browser/emulator workflows.
 
-The TypeScript MCP server was not revalidated during the latest model-history cleanup pass.
+The standalone vAmigaWeb MCP server was removed; the app keeps direct embedded web emulator support.
 
 ---
 
@@ -126,11 +125,6 @@ xcodebuild -project Amiga/aMiLa/AmigaPlayground/AmigaPlayground.xcodeproj \
   -scheme AmigaPlayground \
   -destination 'platform=macOS' \
   test
-```
-
-```bash
-cd Amiga/aMiLa/mcp-server-vamigaweb
-npm run build
 ```
 
 ---
