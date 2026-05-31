@@ -89,86 +89,126 @@ CopperList:
             let visual: Bool
 
             switch name {
-            case "Demo 01 Copper Bars":
-                expectedID = "static-copper-bars"
-                markers = ["Static multi-color copper list demo.", "CopperList:"]
-                visual = true
-            case "Demo 02 Bouncing Copper Bars":
-                expectedID = "bouncing-copper-bars"
-                markers = ["Bouncing multi-color copper bars.", "Bar6Wait"]
-                visual = true
-            case "Demo 03 Raster Splits":
-                expectedID = "raster-splits"
-                markers = ["Raster split copper list template.", "CopperList:"]
-                visual = true
-            case "Demo 04 Sinusoidal Text Scroller":
-                expectedID = "sinusoidal-text"
-                markers = ["Sinusoidal scrolling text template.", "DrawSineText:", "SineOffsets:"]
-                visual = true
-            case "Demo 05 Starfield":
-                expectedID = "starfield"
-                markers = ["Starfield template.", "TwinkleStars:"]
-                visual = true
-            case "Demo 06 Hardware Sprite Motion":
-                expectedID = "bouncing-sprite"
-                markers = ["Bouncing sprite template.", "SpriteData:"]
-                visual = true
-            case "Demo 07 Blitter Bitplane Clear":
-                expectedID = "blitter-clear"
-                markers = ["Blitter clear screen hardware sample.", "$58(a6)"]
-                visual = false
-            case "Demo 08 Color-Cycling Logo":
-                expectedID = "color-cycling-text"
-                markers = ["Color-cycling text template.", "ColorTable:"]
-                visual = true
-            case "Demo 09 Double Buffered Bitplane":
-                expectedID = "double-buffer-bitplane"
-                markers = ["Double-buffered bitplane animation template.", "BufferA:", "BufferB:"]
-                visual = true
-            case "Demo 10 Frame-Synced Audio Intro":
-                expectedID = "frame-synced-audio-intro"
-                markers = ["Frame-synced audio intro loop template.", "$a0(a6)", "ColorTable:"]
-                visual = true
-            case "01 Minimal Executable":
+            case "01 Foundations - Minimal Executable":
                 expectedID = "minimal-executable"
                 markers = ["Minimal runnable AmigaDOS executable template.", "XDEF       _Start"]
                 visual = false
-            case "02 Background Color":
-                expectedID = "background-color"
-                markers = ["Background color hardware sample.", "$180(a6)"]
-                visual = true
-            case "03 VBlank Mouse Exit":
+            case "02 Foundations - Registers and Stack":
+                expectedID = "registers-stack"
+                markers = ["Registers and stack foundation template.", "AddWords:"]
+                visual = false
+            case "03 Foundations - Addressing and Memory":
+                expectedID = "memory-addressing"
+                markers = ["Memory and addressing modes foundation template.", "ChipWords:", "FastScratch:"]
+                visual = false
+            case "04 System - VBlank Mouse Exit":
                 expectedID = "wait-vblank-mouse-exit"
                 markers = ["VBlank wait loop with left mouse exit sample.", "WaitVBlank:", "$bfe001"]
                 visual = false
-            case "04 Static Copper Bars":
+            case "05 System - Clean Takeover Skeleton":
+                expectedID = "clean-takeover"
+                markers = ["Clean takeover skeleton template.", "LoadView(oldView)", "OldView:"]
+                visual = false
+            case "06 Custom Chips - Register Map Tour":
+                expectedID = "custom-chip-register-map"
+                markers = ["Custom chip register map tour template.", "DMACON", "COLOR00"]
+                visual = false
+            case "07 Copper - Static Rainbow Bars":
                 expectedID = "static-copper-bars"
                 markers = ["Static multi-color copper list demo.", "CopperList:"]
                 visual = true
-            case "05 Bouncing Copper Bars":
+            case "08 Copper - Raster Splits":
+                expectedID = "raster-splits"
+                markers = ["Raster split copper list template.", "CopperList:"]
+                visual = true
+            case "09 Copper - Runtime Patching":
                 expectedID = "bouncing-copper-bars"
                 markers = ["Bouncing multi-color copper bars.", "Bar6Wait"]
                 visual = true
-            case "06 Centered Fancy Text":
-                expectedID = "centered-text"
-                markers = ["Centered fancy text template.", "DrawCenteredText:"]
+            case "10 Copper - Double-Buffered Lists":
+                expectedID = "double-buffered-copper"
+                markers = ["Double-buffered copper list template.", "CopperListA:", "CopperListB:"]
+                visual = false
+            case "11 Display - One-Bitplane Screen":
+                expectedID = "background-color"
+                markers = ["Background color hardware sample.", "$180(a6)"]
                 visual = true
-            case "07 Sinusoidal Text Scroll":
-                expectedID = "sinusoidal-text"
-                markers = ["Sinusoidal scrolling text template.", "DrawSineText:", "SineOffsets:"]
+            case "12 Display - Four-Bitplane Palette":
+                expectedID = "four-bitplane-display"
+                markers = ["Four-bitplane 16-color display template.", "$4200", "Plane3:"]
+                visual = false
+            case "13 Display - Double Buffer Flip":
+                expectedID = "double-buffer-bitplane"
+                markers = ["Double-buffered bitplane animation template.", "BufferA:", "BufferB:"]
                 visual = true
-            case "08 Color-Cycling Logo":
-                expectedID = "color-cycling-text"
-                markers = ["Color-cycling text template.", "ColorTable:"]
-                visual = true
-            case "09 Bouncing Saucer Sprite":
+            case "14 Blitter - Clear and Fill":
+                expectedID = "blitter-clear"
+                markers = ["Blitter clear screen hardware sample.", "$58(a6)"]
+                visual = false
+            case "15 Blitter - Masked Copy":
+                expectedID = "blitter-masked-copy"
+                markers = ["Blitter masked copy cookie-cut template.", "$0fca"]
+                visual = false
+            case "16 Blitter - Line Mode":
+                expectedID = "blitter-line-mode"
+                markers = ["Blitter line mode template.", "$0bca", "BLTCON1 octant"]
+                visual = false
+            case "17 Sprites - Bouncing Hardware Sprite":
                 expectedID = "bouncing-sprite"
                 markers = ["Bouncing sprite template.", "SpriteData:"]
                 visual = true
-            case "10 Starfield":
+            case "18 Sprites - Attached Sprite Logo":
+                expectedID = "attached-sprite-logo"
+                markers = ["Attached sprite pair logo template.", "Sprite0:", "Sprite1:"]
+                visual = false
+            case "19 Audio - Paula Pulse":
+                expectedID = "audio-pulse"
+                markers = ["Paula audio channel 0 pulse sample.", "$a0(a6)"]
+                visual = false
+            case "20 Audio - Four-Channel Waveform":
+                expectedID = "four-channel-paula"
+                markers = ["Four-channel Paula waveform template.", "$d0(a6)", "$8780"]
+                visual = false
+            case "21 Audio - CIA-Timed MOD Scaffold":
+                expectedID = "mod-replay-scaffold"
+                markers = ["CIA-timed MOD replay scaffold template.", "ModPattern:", "$bfdd00"]
+                visual = false
+            case "22 Math - Fixed-Point Sine Motion":
+                expectedID = "sinusoidal-text"
+                markers = ["Sinusoidal scrolling text template.", "DrawSineText:", "SineOffsets:"]
+                visual = true
+            case "23 Math - Interpolation and Scaling":
+                expectedID = "interpolation-math"
+                markers = ["Fixed-point interpolation and perspective scaling template.", "ScaleTable:"]
+                visual = false
+            case "24 Effects - Starfield and Parallax":
                 expectedID = "starfield"
                 markers = ["Starfield template.", "TwinkleStars:"]
                 visual = true
+            case "25 Effects - Plasma Palette":
+                expectedID = "plasma-effect"
+                markers = ["Plasma palette effect template.", "SinePalette:", "ColorPatch:"]
+                visual = false
+            case "26 Effects - Twister Slices":
+                expectedID = "twister-effect"
+                markers = ["Twister effect sine blitter slices template.", "SineOffsets:", "Slice:"]
+                visual = false
+            case "27 Effects - Rotozoom Lite":
+                expectedID = "rotozoom-lite"
+                markers = ["Rotozoom-lite fixed-point bitplane template.", "Texture:", "Bitplane:"]
+                visual = false
+            case "28 Effects - Parallax Logo Scene":
+                expectedID = "parallax-logo-scene"
+                markers = ["Parallax logo scene template.", "BackScroll:", "LogoPlane:"]
+                visual = false
+            case "29 C Integration - Menu Navigation":
+                expectedID = "menu-navigation"
+                markers = ["Menu navigation and input shell template.", "SelectedScene:", "SceneTable:"]
+                visual = false
+            case "30 Showcase - Mini Demo Megamix":
+                expectedID = "mini-demo-megamix"
+                markers = ["Mini demo megamix composition template.", "ColorPatch:", "Pulse:"]
+                visual = false
             default:
                 expectedID = ""
                 markers = []
@@ -431,6 +471,11 @@ CopperList:
         XCTAssertTrue(AppPreferenceDefaults.autoInjectGeneratedCode)
     }
 
+    func testDefaultPromptUpdatePreferenceDefaultsOff() {
+        XCTAssertEqual(AppPreferenceDefaults.updateDefaultPromptsWhenAvailableKey, "updateDefaultPromptsWhenAvailable")
+        XCTAssertFalse(AppPreferenceDefaults.updateDefaultPromptsWhenAvailable)
+    }
+
     @MainActor
     func testPromptLibrarySeedsIncreasinglyComplexDefaultPrompts() {
         let suiteName = "PromptLibraryDefaults-\(UUID().uuidString)"
@@ -440,33 +485,74 @@ CopperList:
 
         let store = PromptLibraryStore(userDefaults: defaults)
 
-        XCTAssertEqual(store.prompts.count, 20)
+        XCTAssertEqual(store.prompts.count, 30)
         XCTAssertEqual(store.prompts.map(\.name), [
-            "Demo 01 Copper Bars",
-            "Demo 02 Bouncing Copper Bars",
-            "Demo 03 Raster Splits",
-            "Demo 04 Sinusoidal Text Scroller",
-            "Demo 05 Starfield",
-            "Demo 06 Hardware Sprite Motion",
-            "Demo 07 Blitter Bitplane Clear",
-            "Demo 08 Color-Cycling Logo",
-            "Demo 09 Double Buffered Bitplane",
-            "Demo 10 Frame-Synced Audio Intro",
-            "01 Minimal Executable",
-            "02 Background Color",
-            "03 VBlank Mouse Exit",
-            "04 Static Copper Bars",
-            "05 Bouncing Copper Bars",
-            "06 Centered Fancy Text",
-            "07 Sinusoidal Text Scroll",
-            "08 Color-Cycling Logo",
-            "09 Bouncing Saucer Sprite",
-            "10 Starfield"
+            "01 Foundations - Minimal Executable",
+            "02 Foundations - Registers and Stack",
+            "03 Foundations - Addressing and Memory",
+            "04 System - VBlank Mouse Exit",
+            "05 System - Clean Takeover Skeleton",
+            "06 Custom Chips - Register Map Tour",
+            "07 Copper - Static Rainbow Bars",
+            "08 Copper - Raster Splits",
+            "09 Copper - Runtime Patching",
+            "10 Copper - Double-Buffered Lists",
+            "11 Display - One-Bitplane Screen",
+            "12 Display - Four-Bitplane Palette",
+            "13 Display - Double Buffer Flip",
+            "14 Blitter - Clear and Fill",
+            "15 Blitter - Masked Copy",
+            "16 Blitter - Line Mode",
+            "17 Sprites - Bouncing Hardware Sprite",
+            "18 Sprites - Attached Sprite Logo",
+            "19 Audio - Paula Pulse",
+            "20 Audio - Four-Channel Waveform",
+            "21 Audio - CIA-Timed MOD Scaffold",
+            "22 Math - Fixed-Point Sine Motion",
+            "23 Math - Interpolation and Scaling",
+            "24 Effects - Starfield and Parallax",
+            "25 Effects - Plasma Palette",
+            "26 Effects - Twister Slices",
+            "27 Effects - Rotozoom Lite",
+            "28 Effects - Parallax Logo Scene",
+            "29 C Integration - Menu Navigation",
+            "30 Showcase - Mini Demo Megamix"
         ])
-        XCTAssertTrue(store.prompts[0].prompt.contains("static copper bars"))
-        XCTAssertTrue(store.prompts[2].prompt.contains("raster split"))
-        XCTAssertTrue(store.prompts[8].prompt.contains("double-buffered"))
-        XCTAssertTrue(store.prompts[9].prompt.contains("Paula audio"))
+        XCTAssertEqual(PromptLibraryStore.defaultPrompts.first?.metadata.difficulty, "Beginner")
+        XCTAssertEqual(PromptLibraryStore.defaultPrompts.first?.metadata.stage, "Foundations")
+        XCTAssertEqual(PromptLibraryStore.defaultPrompts.first?.metadata.effectType, "Reference")
+        XCTAssertEqual(PromptLibraryStore.defaultPrompts.first { $0.name == "07 Copper - Static Rainbow Bars" }?.metadata.effectType, "Raster Bars")
+        XCTAssertEqual(PromptLibraryStore.defaultPrompts.last?.metadata.difficulty, "Showcase")
+        XCTAssertEqual(PromptLibraryStore.defaultPrompts.last?.metadata.effectType, "Megamix")
+        XCTAssertEqual(PromptLibraryStore.defaultPrompts.first { $0.name == "29 C Integration - Menu Navigation" }?.metadata.language, "C")
+        XCTAssertEqual(PromptLibraryStore.defaultPrompts.last?.metadata.language, "C + ASM")
+        XCTAssertTrue(PromptLibraryStore.defaultPrompts.last?.metadata.hardware.contains("Paula") == true)
+    }
+
+    func testDefaultPromptCurriculumCoversRequiredDemoSchoolBuildingBlocks() {
+        let curriculumCorpus = PromptLibraryStore.defaultPrompts
+            .map { "\($0.name) \($0.prompt) \($0.metadata.searchableText)" }
+            .joined(separator: " ")
+
+        let requiredTerms = [
+            "minimal runnable", "registers", "addressing modes", "stack", "subroutines", "labels", "data sections", "Chip RAM", "Fast RAM", "clean exit",
+            "ExecBase", "graphics.library", "DMACON", "INTENA", "disable OS safely", "VBlank", "restore",
+            "$dff000", "COLOR00", "BPLCON0", "sprite pointers", "audio channel registers", "mouse input",
+            "WAIT", "MOVE", "raster splits", "runtime patching", "double-buffered copper lists",
+            "DIWSTRT", "DIWSTOP", "DDFSTRT", "DDFSTOP", "BPLCON0/1", "bitplane pointers", "4-bitplane", "double buffering",
+            "BBUSY", "fill", "rectangular copy", "cookie-cut", "line mode", "minterms",
+            "SPRxPOS", "SPRxCTL", "sprite terminator", "attached sprites", "Copper-driven sprite movement",
+            "AUD0LC", "period", "volume", "4 channels", "waveform generation", "CIA timer sync", "MOD replay",
+            "fixed point", "sine table", "interpolation", "perspective scaling", "parallax", "palette cycle", "frame counter",
+            "plasma", "twister", "rotozoom", "logo scene", "menu", "scene dispatch"
+        ]
+
+        for term in requiredTerms {
+            XCTAssertTrue(
+                curriculumCorpus.localizedCaseInsensitiveContains(term),
+                "Default prompt curriculum should cover required building block: \(term)"
+            )
+        }
     }
 
     @MainActor
@@ -486,17 +572,276 @@ CopperList:
         defaults.set(encoded, forKey: "promptLibraryItems")
 
         let seededStore = PromptLibraryStore(userDefaults: defaults)
-        XCTAssertEqual(seededStore.prompts.count, 21)
+        XCTAssertEqual(seededStore.prompts.count, 31)
         XCTAssertTrue(seededStore.prompts.contains(where: { $0.name == "Custom Saved Prompt" }))
-        XCTAssertTrue(seededStore.prompts.contains(where: { $0.name == "Demo 10 Frame-Synced Audio Intro" }))
+        XCTAssertTrue(seededStore.prompts.contains(where: { $0.name == "30 Showcase - Mini Demo Megamix" }))
 
-        let promptToDelete = try! XCTUnwrap(seededStore.prompts.first { $0.name == "01 Minimal Executable" })
+        let promptToDelete = try! XCTUnwrap(seededStore.prompts.first { $0.name == "01 Foundations - Minimal Executable" })
         seededStore.deletePrompt(id: promptToDelete.id)
 
         let reloadedStore = PromptLibraryStore(userDefaults: defaults)
-        XCTAssertEqual(reloadedStore.prompts.count, 20)
-        XCTAssertFalse(reloadedStore.prompts.contains(where: { $0.name == "01 Minimal Executable" }))
+        XCTAssertEqual(reloadedStore.prompts.count, 30)
+        XCTAssertFalse(reloadedStore.prompts.contains(where: { $0.name == "01 Foundations - Minimal Executable" }))
         XCTAssertTrue(reloadedStore.prompts.contains(where: { $0.name == "Custom Saved Prompt" }))
+    }
+
+    @MainActor
+    func testPromptLibraryRefreshesDefaultPromptLanguageMetadataOnSeedUpgrade() {
+        let suiteName = "PromptLanguageSeed-\(UUID().uuidString)"
+        let defaults = try! XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defaults.removePersistentDomain(forName: suiteName)
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        var staleMenuPrompt = try! XCTUnwrap(PromptLibraryStore.defaultPrompts.first { $0.name == "29 C Integration - Menu Navigation" })
+        var staleMegamixPrompt = try! XCTUnwrap(PromptLibraryStore.defaultPrompts.first { $0.name == "30 Showcase - Mini Demo Megamix" })
+        staleMenuPrompt.metadata.language = "ASM"
+        staleMegamixPrompt.metadata.language = "ASM"
+        let customPrompt = PromptLibraryItem(
+            name: "Custom Language Prompt",
+            prompt: "Keep this custom prompt.",
+            metadata: DemoSchoolMetadata(language: "C + ASM")
+        )
+
+        let encoded = try! JSONEncoder().encode([staleMenuPrompt, staleMegamixPrompt, customPrompt])
+        defaults.set(encoded, forKey: "promptLibraryItems")
+        defaults.set(6, forKey: "promptLibraryDefaultSeedVersion")
+
+        let upgradedStore = PromptLibraryStore(userDefaults: defaults)
+
+        XCTAssertEqual(upgradedStore.prompts.first { $0.name == "29 C Integration - Menu Navigation" }?.metadata.language, "C")
+        XCTAssertEqual(upgradedStore.prompts.first { $0.name == "30 Showcase - Mini Demo Megamix" }?.metadata.language, "C + ASM")
+        XCTAssertTrue(upgradedStore.prompts.contains { $0.name == "Custom Language Prompt" })
+    }
+
+    @MainActor
+    func testPromptLibraryAppliesRemoteDefaultPromptUpdatesWithoutTouchingCustomPrompts() {
+        let suiteName = "PromptRemoteUpdate-\(UUID().uuidString)"
+        let defaults = try! XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defaults.removePersistentDomain(forName: suiteName)
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let store = PromptLibraryStore(userDefaults: defaults)
+        let customPrompt = store.createPrompt()
+        store.updatePrompt(id: customPrompt.id, name: "Custom Prompt", prompt: "Keep my local prompt.")
+
+        var remotePrompt = try! XCTUnwrap(PromptLibraryStore.defaultPrompts.first)
+        remotePrompt.prompt = "Updated from GitHub."
+        remotePrompt.updatedAt = Date(timeIntervalSinceReferenceDate: 3_000_000)
+
+        let pendingUpdate = store.prepareDefaultPromptUpdate([remotePrompt])
+
+        XCTAssertNil(pendingUpdate)
+        XCTAssertEqual(store.prompts.first { $0.id == remotePrompt.id }?.prompt, "Updated from GitHub.")
+        XCTAssertEqual(store.prompts.first { $0.id == customPrompt.id }?.prompt, "Keep my local prompt.")
+    }
+
+    @MainActor
+    func testPromptLibraryRequiresConfirmationBeforeReplacingLocallyEditedDefaultPrompt() {
+        let suiteName = "PromptRemoteUpdateConflict-\(UUID().uuidString)"
+        let defaults = try! XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defaults.removePersistentDomain(forName: suiteName)
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let store = PromptLibraryStore(userDefaults: defaults)
+        let bundledPrompt = try! XCTUnwrap(PromptLibraryStore.defaultPrompts.first)
+        store.updatePrompt(id: bundledPrompt.id, name: bundledPrompt.name, prompt: "My local system prompt edit.")
+
+        var remotePrompt = bundledPrompt
+        remotePrompt.prompt = "Updated from GitHub."
+        remotePrompt.updatedAt = Date(timeIntervalSinceReferenceDate: 3_000_000)
+
+        let pendingUpdate = try! XCTUnwrap(store.prepareDefaultPromptUpdate([remotePrompt]))
+
+        XCTAssertEqual(pendingUpdate.conflictNames, [bundledPrompt.name])
+        XCTAssertEqual(store.prompts.first { $0.id == bundledPrompt.id }?.prompt, "My local system prompt edit.")
+
+        store.confirmDefaultPromptUpdate(pendingUpdate)
+
+        XCTAssertEqual(store.prompts.first { $0.id == bundledPrompt.id }?.prompt, "Updated from GitHub.")
+    }
+
+    @MainActor
+    func testPromptAndExampleLibrariesPersistEditableDemoSchoolMetadata() {
+        let promptSuiteName = "PromptMetadata-\(UUID().uuidString)"
+        let promptDefaults = try! XCTUnwrap(UserDefaults(suiteName: promptSuiteName))
+        promptDefaults.removePersistentDomain(forName: promptSuiteName)
+        defer { promptDefaults.removePersistentDomain(forName: promptSuiteName) }
+
+        let promptStore = PromptLibraryStore(userDefaults: promptDefaults)
+        let prompt = promptStore.createPrompt()
+        promptStore.updatePrompt(
+            id: prompt.id,
+            name: "Custom Copper Lesson",
+            prompt: "Teach copper wait move pairs",
+            metadata: DemoSchoolMetadata(
+                difficulty: "Intermediate",
+                stage: "Copper",
+                language: "ASM",
+                effectType: "Raster Bars",
+                hardware: ["Copper"],
+                concepts: ["WAIT", "MOVE"],
+                value: ["Learn", "Reuse"],
+                status: "Verified",
+                dependencies: ["03 System - VBlank Mouse Exit"]
+            )
+        )
+
+        let reloadedPromptStore = PromptLibraryStore(userDefaults: promptDefaults)
+        let reloadedPrompt = try! XCTUnwrap(reloadedPromptStore.prompts.first { $0.name == "Custom Copper Lesson" })
+        XCTAssertEqual(reloadedPrompt.metadata.stage, "Copper")
+        XCTAssertEqual(reloadedPrompt.metadata.effectType, "Raster Bars")
+        XCTAssertEqual(reloadedPrompt.metadata.hardware, ["Copper"])
+        XCTAssertEqual(reloadedPrompt.metadata.status, "Verified")
+
+        let exampleSuiteName = "ExampleMetadata-\(UUID().uuidString)"
+        let exampleDefaults = try! XCTUnwrap(UserDefaults(suiteName: exampleSuiteName))
+        exampleDefaults.removePersistentDomain(forName: exampleSuiteName)
+        defer { exampleDefaults.removePersistentDomain(forName: exampleSuiteName) }
+
+        let exampleStore = ExampleLibraryStore(userDefaults: exampleDefaults)
+        let example = exampleStore.createExample()
+        exampleStore.updateExample(
+            id: example.id,
+            name: "Custom Blitter Block",
+            language: .mixed,
+            code: "extern void BlitBlock(void);",
+            metadata: DemoSchoolMetadata(
+                difficulty: "Advanced",
+                stage: "Blitter",
+                language: "ASM",
+                effectType: "Blitter",
+                hardware: ["Blitter", "Bitplanes"],
+                concepts: ["masked blit"],
+                value: ["Reuse"],
+                status: "Draft",
+                dependencies: ["11 Blitter - Clear and Fill"]
+            )
+        )
+
+        let reloadedExampleStore = ExampleLibraryStore(userDefaults: exampleDefaults)
+        let reloadedExample = try! XCTUnwrap(reloadedExampleStore.examples.first { $0.name == "Custom Blitter Block" })
+        XCTAssertEqual(reloadedExample.language, .mixed)
+        XCTAssertEqual(reloadedExample.metadata.language, "C + ASM")
+        XCTAssertEqual(reloadedExample.metadata.stage, "Blitter")
+        XCTAssertEqual(reloadedExample.metadata.effectType, "Blitter")
+        XCTAssertEqual(reloadedExample.metadata.concepts, ["masked blit"])
+    }
+
+    func testDemoSchoolLibraryProgressParsesSequenceNumbers() {
+        XCTAssertEqual(DemoSchoolLibraryProgress.sequenceNumber(from: "03 Foundations - Addressing and Memory"), 3)
+        XCTAssertEqual(DemoSchoolLibraryProgress.sequenceNumber(from: "30 Showcase - Mini Demo Megamix"), 30)
+        XCTAssertNil(DemoSchoolLibraryProgress.sequenceNumber(from: "Custom Saved Prompt"))
+    }
+
+    func testDemoSchoolLibraryProgressMatchesDependencyReferences() {
+        XCTAssertTrue(DemoSchoolLibraryProgress.reference("Requires 02 System Skeleton", matches: "02 System Skeleton"))
+        XCTAssertTrue(DemoSchoolLibraryProgress.reference("Uses Copper macros", matches: "Copper macros"))
+        XCTAssertTrue(DemoSchoolLibraryProgress.reference("05 System - Clean Takeover Skeleton", matches: "05 System - Clean Takeover Skeleton"))
+        XCTAssertFalse(DemoSchoolLibraryProgress.reference("21 Audio - CIA-Timed MOD Scaffold", matches: "14 Blitter - Clear and Fill"))
+    }
+
+    func testDefaultPromptDependenciesResolveToPromptLessons() {
+        let prompts = PromptLibraryStore.defaultPrompts
+
+        for prompt in prompts {
+            for dependency in prompt.metadata.dependencies {
+                let target = prompts.first { candidate in
+                    candidate.id != prompt.id &&
+                        DemoSchoolLibraryProgress.reference(dependency, matches: candidate.name)
+                }
+                XCTAssertNotNil(target, "\(prompt.name) dependency must resolve to another prompt lesson: \(dependency)")
+            }
+        }
+    }
+
+    func testDefaultExampleDependenciesResolveToExampleLessons() {
+        let examples = ExampleLibraryStore.defaultExamples
+
+        for example in examples {
+            for dependency in example.metadata.dependencies {
+                let target = examples.first { candidate in
+                    candidate.id != example.id &&
+                        DemoSchoolLibraryProgress.reference(dependency, matches: candidate.name)
+                }
+                XCTAssertNotNil(target, "\(example.name) dependency must resolve to another showcase example: \(dependency)")
+            }
+        }
+    }
+
+    func testDemoSchoolLibraryFilterMatchesRequiredDimensions() {
+        let advancedPlasma = DemoSchoolMetadata(
+            difficulty: "Advanced",
+            stage: "Effects",
+            language: "C + ASM",
+            effectType: "Plasma",
+            hardware: ["Copper", "Paula"],
+            concepts: ["sine palette", "MOD sync"],
+            value: ["Showcase", "Reuse"],
+            status: "Verified",
+            dependencies: ["21 Audio - CIA-Timed MOD Scaffold"]
+        )
+        let beginnerCopper = DemoSchoolMetadata(
+            difficulty: "Beginner",
+            stage: "Copper",
+            language: "ASM",
+            effectType: "Raster Bars",
+            hardware: ["Copper"],
+            concepts: ["WAIT", "MOVE"],
+            value: ["Learn"],
+            status: "Draft"
+        )
+
+        XCTAssertTrue(DemoSchoolLibraryFilter(difficulty: "Advanced").matches(name: "Plasma", body: "", metadata: advancedPlasma))
+        XCTAssertFalse(DemoSchoolLibraryFilter(difficulty: "Advanced").matches(name: "Copper", body: "", metadata: beginnerCopper))
+        XCTAssertTrue(DemoSchoolLibraryFilter(language: "C + ASM").matches(name: "Mixed Plasma", body: "", metadata: advancedPlasma, language: "C + ASM"))
+        XCTAssertFalse(DemoSchoolLibraryFilter(language: "C").matches(name: "Mixed Plasma", body: "", metadata: advancedPlasma, language: "C + ASM"))
+        XCTAssertTrue(DemoSchoolLibraryFilter(effectType: "Plasma").matches(name: "Palette Plasma", body: "", metadata: advancedPlasma))
+        XCTAssertTrue(DemoSchoolLibraryFilter(hardware: "paula").matches(name: "Audio Plasma", body: "", metadata: advancedPlasma))
+        XCTAssertTrue(DemoSchoolLibraryFilter(verifiedOnly: true).matches(name: "Verified Plasma", body: "", metadata: advancedPlasma))
+        XCTAssertFalse(DemoSchoolLibraryFilter(verifiedOnly: true).matches(name: "Draft Bars", body: "", metadata: beginnerCopper))
+        XCTAssertTrue(DemoSchoolLibraryFilter(searchText: "MOD Scaffold").matches(name: "Plasma", body: "", metadata: advancedPlasma))
+        XCTAssertTrue(DemoSchoolLibraryFilter(searchText: "palette").matches(name: "Plasma", body: "", metadata: advancedPlasma))
+        XCTAssertTrue(DemoSchoolLibraryFilter(searchText: "copper", includesLanguage: false).matches(name: "Copper Lesson", body: "", metadata: beginnerCopper))
+    }
+
+    func testDemoSchoolMetadataVisibleTagsIncludeLearningValue() {
+        let metadata = DemoSchoolMetadata(
+            difficulty: "Showcase",
+            stage: "Showcase",
+            language: "C + ASM",
+            effectType: "Megamix",
+            hardware: ["Copper", "Paula"],
+            concepts: ["composition", "MOD replay", "sprite logo", "extra concept"],
+            value: ["Showcase", "Reuse"]
+        )
+
+        XCTAssertTrue(metadata.visibleTags.contains("Showcase"))
+        XCTAssertTrue(metadata.visibleTags.contains("Reuse"))
+        XCTAssertEqual(metadata.visibleTags.filter { $0 == "Showcase" }.count, 1)
+        XCTAssertTrue(metadata.searchableText.localizedCaseInsensitiveContains("Reuse"))
+        XCTAssertFalse(metadata.visibleTags.contains("extra concept"))
+    }
+
+    func testPromptLanguageFilterUsesPromptMetadata() {
+        let cPrompt = try! XCTUnwrap(PromptLibraryStore.defaultPrompts.first { $0.name == "29 C Integration - Menu Navigation" })
+        let mixedPrompt = try! XCTUnwrap(PromptLibraryStore.defaultPrompts.first { $0.name == "30 Showcase - Mini Demo Megamix" })
+        let assemblyPrompt = try! XCTUnwrap(PromptLibraryStore.defaultPrompts.first { $0.name == "07 Copper - Static Rainbow Bars" })
+
+        XCTAssertTrue(DemoSchoolLibraryFilter(language: "C").matches(name: cPrompt.name, body: cPrompt.prompt, metadata: cPrompt.metadata))
+        XCTAssertTrue(DemoSchoolLibraryFilter(language: "C + ASM").matches(name: mixedPrompt.name, body: mixedPrompt.prompt, metadata: mixedPrompt.metadata))
+        XCTAssertFalse(DemoSchoolLibraryFilter(language: "C").matches(name: assemblyPrompt.name, body: assemblyPrompt.prompt, metadata: assemblyPrompt.metadata))
+    }
+
+    func testExampleLanguageDecodesLegacyMixedLabel() throws {
+        let legacyJSON = #""ASM + C""#.data(using: .utf8)!
+
+        let language = try JSONDecoder().decode(ExampleLanguage.self, from: legacyJSON)
+        let encoded = try JSONEncoder().encode(language)
+        let encodedLabel = try JSONDecoder().decode(String.self, from: encoded)
+
+        XCTAssertEqual(language, .mixed)
+        XCTAssertEqual(encodedLabel, "C + ASM")
+        XCTAssertEqual(DemoSchoolFilterOptions.languages, ["All", "ASM", "C", "C + ASM"])
     }
 
     // MARK: - Assistant Chat Session Tests
@@ -695,7 +1040,7 @@ CopperList:
     }
 
     func testAssistantPromptTemplateMatchesSinusoidalFlyingSaucerText() {
-        let source = AssistantPromptTemplate.source(for: #"make the words "flying saucer" scroll across the screen in a sinusoidal patternmake the words "flying saucer" scroll across the screen in a sinusoidal pattern"#)
+        let source = AssistantPromptTemplate.source(for: #"Make the words "flying saucer" scroll left across the screen in a slow sinusoidal pattern, with a visible bright text band and smooth frame timing."#)
 
         XCTAssertNotNil(source)
         XCTAssertTrue(source?.contains("Requested text: flying saucer") == true)
@@ -704,6 +1049,11 @@ CopperList:
         XCTAssertTrue(source?.contains("DrawSineText:") == true)
         XCTAssertTrue(source?.contains("SineOffsets:") == true)
         XCTAssertTrue(source?.contains("ScrollX:") == true)
+        XCTAssertTrue(source?.contains("moveq      #39,d6") == true)
+        XCTAssertTrue(source?.contains("sub.w      ScrollX(pc),d6") == true)
+        XCTAssertTrue(source?.contains("FrameTick:") == true)
+        XCTAssertFalse(source?.contains(".consoleHold:") == true)
+        XCTAssertFalse(source?.contains("ConsoleMessage:") == true)
     }
 
     func testAssistantPromptTemplateSinusoidalFlyingSaucerTextCompiles() {
@@ -2063,6 +2413,36 @@ CopperList:
         XCTAssertTrue(formatted.contains("            rts"))
     }
 
+    func testAssemblySourceFormatterAddsCommentsWithoutChangingCode() {
+        let source = """
+        SECTION Code,CODE
+        _Start:
+            moveq #0,d0
+            rts
+        """
+
+        let commented = AssemblySourceFormatter.commentedSource(from: source)
+        let originalCodeOnly = source
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map { String($0).trimmingCharacters(in: .whitespaces) }
+            .joined(separator: "\n")
+        let commentedCodeOnly = commented
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map { line -> String in
+                guard let commentStart = line.firstIndex(of: ";") else {
+                    return String(line).trimmingCharacters(in: .whitespaces)
+                }
+                return String(line[..<commentStart]).trimmingCharacters(in: .whitespaces)
+            }
+            .joined(separator: "\n")
+
+        XCTAssertTrue(commented.contains("SECTION Code,CODE ; selects the output section"))
+        XCTAssertTrue(commented.contains("_Start: ; defines the _Start label"))
+        XCTAssertTrue(commented.contains("moveq #0,d0 ; moves data between registers or memory"))
+        XCTAssertTrue(commented.contains("rts ; returns from the current subroutine"))
+        XCTAssertEqual(commentedCodeOnly, originalCodeOnly)
+    }
+
     func testAssemblySemanticValidatorRejectsKnownModelFailurePatterns() {
         let source = """
                     SECTION Code,CODE
@@ -2844,6 +3224,113 @@ CopperList:
         XCTAssertTrue(ExampleLibraryStore.defaultExamples.contains { $0.language == .assembly })
         XCTAssertTrue(ExampleLibraryStore.defaultExamples.contains { $0.language == .c })
         XCTAssertTrue(ExampleLibraryStore.defaultExamples.contains { $0.language == .mixed })
+        XCTAssertEqual(ExampleLibraryStore.defaultExamples.map(\.name), [
+            "01 ASM Clean Takeover Skeleton",
+            "02 ASM Copper Rainbow Lab",
+            "03 ASM Double-Buffered Bitplane Playground",
+            "04 ASM Blitter Toolkit Demo",
+            "05 ASM Hardware Sprite Logo",
+            "06 ASM Sine Text Scroller",
+            "07 C Starfield + Parallax",
+            "08 C Menu + Input Shell",
+            "09 C + ASM Scene Orchestrator",
+            "10 C + ASM Mini Demo Megamix"
+        ])
+        XCTAssertTrue(ExampleLibraryStore.defaultExamples.allSatisfy { $0.metadata.status == "Verified" })
+        XCTAssertTrue(ExampleLibraryStore.defaultExamples.contains { $0.metadata.hardware.contains("Copper") })
+        XCTAssertTrue(ExampleLibraryStore.defaultExamples.contains { $0.metadata.stage == "C Integration" })
+        XCTAssertTrue(ExampleLibraryStore.defaultExamples.contains { $0.metadata.effectType == "Menu" })
+        XCTAssertTrue(ExampleLibraryStore.defaultExamples.contains { $0.metadata.effectType == "Megamix" })
+
+        let examples = ExampleLibraryStore.defaultExamplesByName
+        XCTAssertTrue(examples["01 ASM Clean Takeover Skeleton"]?.contains("LoadView(oldView)") == true)
+        XCTAssertTrue(examples["04 ASM Blitter Toolkit Demo"]?.contains("WaitBlitter:") == true)
+        XCTAssertTrue(examples["04 ASM Blitter Toolkit Demo"]?.contains("BlitMaskedCopy:") == true)
+        XCTAssertTrue(examples["04 ASM Blitter Toolkit Demo"]?.contains("BlitLine:") == true)
+        XCTAssertTrue(examples["04 ASM Blitter Toolkit Demo"]?.contains("$0fca") == true)
+        XCTAssertTrue(examples["05 ASM Hardware Sprite Logo"]?.contains("Sprite0:") == true)
+        XCTAssertTrue(examples["06 ASM Sine Text Scroller"]?.contains("RenderFrame:") == true)
+        XCTAssertTrue(examples["06 ASM Sine Text Scroller"]?.contains("DrawGlyph:") == true)
+        XCTAssertTrue(examples["06 ASM Sine Text Scroller"]?.contains("ScrollText:") == true)
+        XCTAssertTrue(examples["06 ASM Sine Text Scroller"]?.contains("CustomFont:") == true)
+        XCTAssertTrue(examples["06 ASM Sine Text Scroller"]?.contains("Bitplane:") == true)
+        XCTAssertTrue(examples["07 C Starfield + Parallax"]?.contains("StarCount") == true)
+        XCTAssertTrue(examples["07 C Starfield + Parallax"]?.contains("RenderStarfield") == true)
+        XCTAssertTrue(examples["07 C Starfield + Parallax"]?.contains("PlotStar") == true)
+        XCTAssertTrue(examples["07 C Starfield + Parallax"]?.contains("ParallaxPalette") == true)
+        XCTAssertTrue(examples["07 C Starfield + Parallax"]?.contains("FarPlane") == true)
+        XCTAssertTrue(examples["07 C Starfield + Parallax"]?.contains("NearPlane") == true)
+        XCTAssertTrue(examples["08 C Menu + Input Shell"]?.contains("struct DemoScene") == true)
+        XCTAssertTrue(examples["08 C Menu + Input Shell"]?.contains("struct MenuState") == true)
+        XCTAssertTrue(examples["08 C Menu + Input Shell"]?.contains("update_menu") == true)
+        XCTAssertTrue(examples["08 C Menu + Input Shell"]?.contains("draw_menu") == true)
+        XCTAssertTrue(examples["08 C Menu + Input Shell"]?.contains("INPUT_FIRE") == true)
+        XCTAssertTrue(examples["08 C Menu + Input Shell"]?.contains("extern void CopperBars") == true)
+        XCTAssertTrue(examples["09 C + ASM Scene Orchestrator"]?.contains("_RunScene:") == true)
+        XCTAssertTrue(examples["09 C + ASM Scene Orchestrator"]?.contains("_SceneTick:") == true)
+        XCTAssertTrue(examples["09 C + ASM Scene Orchestrator"]?.contains("ActiveScene:") == true)
+        XCTAssertTrue(examples["09 C + ASM Scene Orchestrator"]?.contains("SceneInitJump:") == true)
+        XCTAssertTrue(examples["09 C + ASM Scene Orchestrator"]?.contains("SceneTickJump:") == true)
+        XCTAssertTrue(examples["09 C + ASM Scene Orchestrator"]?.contains("SpriteYPath:") == true)
+        XCTAssertTrue(examples["10 C + ASM Mini Demo Megamix"]?.contains("_DemoTick:") == true)
+        XCTAssertTrue(examples["10 C + ASM Mini Demo Megamix"]?.contains("UpdateCopperPalette:") == true)
+        XCTAssertTrue(examples["10 C + ASM Mini Demo Megamix"]?.contains("UpdateSpriteLogo:") == true)
+        XCTAssertTrue(examples["10 C + ASM Mini Demo Megamix"]?.contains("UpdateScroller:") == true)
+        XCTAssertTrue(examples["10 C + ASM Mini Demo Megamix"]?.contains("UpdateStarfield:") == true)
+        XCTAssertTrue(examples["10 C + ASM Mini Demo Megamix"]?.contains("_ModTick:") == true)
+        XCTAssertTrue(examples["10 C + ASM Mini Demo Megamix"]?.contains("_CIAInstallBeat:") == true)
+        XCTAssertTrue(examples["10 C + ASM Mini Demo Megamix"]?.contains("ModPattern:") == true)
+        XCTAssertTrue(examples["10 C + ASM Mini Demo Megamix"]?.contains("SpritePath:") == true)
+        XCTAssertTrue(examples["10 C + ASM Mini Demo Megamix"]?.contains("Stars:") == true)
+    }
+
+    func testDefaultExamplesCoverRequiredShowcaseConcepts() throws {
+        let languages = Dictionary(grouping: ExampleLibraryStore.defaultExamples, by: \.language)
+        XCTAssertGreaterThanOrEqual(languages[.assembly, default: []].count, 5)
+        XCTAssertGreaterThanOrEqual(languages[.c, default: []].count, 2)
+        XCTAssertGreaterThanOrEqual(languages[.mixed, default: []].count, 2)
+
+        let expectedMarkers: [(name: String, markers: [String])] = [
+            ("01 ASM Clean Takeover Skeleton", [
+                "LoadView(NULL)", "LoadView(oldView)", "WaitVBlank:", "$dff000", "$96(a6)"
+            ]),
+            ("02 ASM Copper Rainbow Lab", [
+                "CopperList:", "$5007", "$fffe", "$0180", "DMAEN + COPEN"
+            ]),
+            ("03 ASM Double-Buffered Bitplane Playground", [
+                "BufferA:", "BufferB:", "BitplanePtr:", "WaitVBlank:", "exg"
+            ]),
+            ("04 ASM Blitter Toolkit Demo", [
+                "WaitBlitter:", "BBUSY", "BlitClear:", "BlitMaskedCopy:", "BlitLine:", "$0fca"
+            ]),
+            ("05 ASM Hardware Sprite Logo", [
+                "Sprite0:", "YPath:", "$120(a6)", "$8220", "dc.w       0,0"
+            ]),
+            ("06 ASM Sine Text Scroller", [
+                "RenderFrame:", "DrawGlyph:", "ScrollText:", "CustomFont:", "SineTable:", "Bitplane:"
+            ]),
+            ("07 C Starfield + Parallax", [
+                "struct Star", "RenderStarfield", "PlotStar", "ParallaxPalette", "FarPlane", "NearPlane"
+            ]),
+            ("08 C Menu + Input Shell", [
+                "struct DemoScene", "struct MenuState", "update_menu", "draw_menu", "INPUT_FIRE", "extern void CopperBars"
+            ]),
+            ("09 C + ASM Scene Orchestrator", [
+                "_RunScene:", "_SceneTick:", "ActiveScene:", "SceneInitJump:", "SceneTickJump:", "SpriteYPath:"
+            ]),
+            ("10 C + ASM Mini Demo Megamix", [
+                "_DemoTick:", "UpdateCopperPalette:", "UpdateSpriteLogo:", "UpdateScroller:",
+                "UpdateStarfield:", "_ModTick:", "_CIAInstallBeat:", "ModPattern:", "SpritePath:", "Stars:"
+            ])
+        ]
+
+        let examples = ExampleLibraryStore.defaultExamplesByName
+        for (name, markers) in expectedMarkers {
+            let code = try XCTUnwrap(examples[name], "Missing default example \(name)")
+            for marker in markers {
+                XCTAssertTrue(code.contains(marker), "\(name) should include \(marker)")
+            }
+        }
     }
 
     func testDefaultAssemblyAndMixedExamplesCompileWithVASM() throws {

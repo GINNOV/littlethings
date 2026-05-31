@@ -8,14 +8,28 @@ struct ExampleLibraryView: View {
     @State private var draftName = ""
     @State private var draftLanguage: ExampleLanguage = .assembly
     @State private var draftCode = ""
+    @State private var draftMetadata = DemoSchoolMetadata()
     @State private var copiedExampleID: ExampleLibraryItem.ID?
+    @State private var difficultyFilter = "All"
+    @State private var stageFilter = "All"
+    @State private var languageFilter = "All"
+    @State private var effectTypeFilter = "All"
+    @State private var hardwareFilter = "All"
+    @State private var statusFilter = "All"
 
     private var filteredExamples: [ExampleLibraryItem] {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return store.examples }
+        let filter = DemoSchoolLibraryFilter(
+            searchText: searchText,
+            difficulty: difficultyFilter,
+            stage: stageFilter,
+            language: languageFilter,
+            effectType: effectTypeFilter,
+            hardware: hardwareFilter,
+            status: statusFilter
+        )
 
-        return store.examples.filter {
-            $0.name.localizedCaseInsensitiveContains(query)
+        return store.examples.filter { item in
+            filter.matches(name: item.name, body: item.code, metadata: item.metadata, language: item.language.rawValue)
         }
     }
 
@@ -23,13 +37,35 @@ struct ExampleLibraryView: View {
         store.example(withID: selectedExampleID)
     }
 
+    private var previousExample: ExampleLibraryItem? {
+        adjacentExample(offset: -1)
+    }
+
+    private var nextExample: ExampleLibraryItem? {
+        adjacentExample(offset: 1)
+    }
+
     var body: some View {
         NavigationSplitView {
             VStack(spacing: 0) {
+                DemoSchoolFilterBar(
+                    difficulty: $difficultyFilter,
+                    stage: $stageFilter,
+                    language: $languageFilter,
+                    effectType: $effectTypeFilter,
+                    hardware: $hardwareFilter,
+                    status: $statusFilter
+                )
+                .padding(10)
+
                 List(selection: $selectedExampleID) {
                     ForEach(filteredExamples) { item in
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: 5) {
                             HStack(spacing: 6) {
+                                if item.metadata.status == "Verified" {
+                                    DemoSchoolVerifiedIcon()
+                                }
+
                                 Text(item.name.isEmpty ? "Untitled Example" : item.name)
                                     .lineLimit(1)
 
@@ -42,12 +78,14 @@ struct ExampleLibraryView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
+
+                            DemoSchoolTagRow(tags: item.metadata.visibleTags)
                         }
                         .tag(item.id)
                     }
                 }
                 .listStyle(.sidebar)
-                .searchable(text: $searchText, placement: .sidebar, prompt: "Search by name")
+                .searchable(text: $searchText, placement: .sidebar, prompt: "Search examples and tags")
                 .accessibilityIdentifier("exampleLibraryList")
 
                 Divider()
@@ -85,6 +123,21 @@ struct ExampleLibraryView: View {
 
     private var exampleEditor: some View {
         VStack(alignment: .leading, spacing: 12) {
+            if let selectedExample {
+                DemoSchoolProgressHeader(
+                    title: draftName,
+                    metadata: draftMetadata,
+                    sequenceNumber: DemoSchoolLibraryProgress.sequenceNumber(from: selectedExample.name),
+                    totalCount: store.examples.count,
+                    previousTitle: previousExample?.name,
+                    nextTitle: nextExample?.name,
+                    onPrevious: previousExample.map { example in { selectExample(example) } },
+                    onNext: nextExample.map { example in { selectExample(example) } },
+                    onDependencySelected: openDependencyExample
+                )
+                .accessibilityIdentifier("exampleProgressHeader")
+            }
+
             HStack(spacing: 10) {
                 TextField("Example name", text: $draftName)
                     .textFieldStyle(.roundedBorder)
@@ -124,6 +177,9 @@ struct ExampleLibraryView: View {
                         .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
                 )
                 .accessibilityIdentifier("exampleCodeEditor")
+
+            DemoSchoolMetadataEditor(metadata: $draftMetadata, showsLanguage: false)
+                .accessibilityIdentifier("exampleMetadataEditor")
 
             HStack(spacing: 10) {
                 Button {
@@ -170,7 +226,8 @@ struct ExampleLibraryView: View {
             id: selectedExampleID,
             name: draftName.isEmpty ? "Untitled Example" : draftName,
             language: draftLanguage,
-            code: draftCode
+            code: draftCode,
+            metadata: draftMetadata
         )
     }
 
@@ -212,16 +269,44 @@ struct ExampleLibraryView: View {
         loadSelectedExampleDraft()
     }
 
+    private func adjacentExample(offset: Int) -> ExampleLibraryItem? {
+        guard let selectedExampleID,
+              let currentIndex = store.examples.firstIndex(where: { $0.id == selectedExampleID }) else {
+            return nil
+        }
+
+        let targetIndex = currentIndex + offset
+        guard store.examples.indices.contains(targetIndex) else { return nil }
+        return store.examples[targetIndex]
+    }
+
+    private func selectExample(_ example: ExampleLibraryItem) {
+        if canSaveDraft {
+            saveDraft()
+        }
+        selectedExampleID = example.id
+        loadSelectedExampleDraft()
+    }
+
+    private func openDependencyExample(_ dependency: String) {
+        guard let example = store.examples.first(where: {
+            DemoSchoolLibraryProgress.reference(dependency, matches: $0.name)
+        }) else { return }
+        selectExample(example)
+    }
+
     private func loadSelectedExampleDraft() {
         guard let selectedExample else {
             draftName = ""
             draftLanguage = .assembly
             draftCode = ""
+            draftMetadata = DemoSchoolMetadata()
             return
         }
 
         draftName = selectedExample.name
         draftLanguage = selectedExample.language
         draftCode = selectedExample.code
+        draftMetadata = selectedExample.metadata
     }
 }

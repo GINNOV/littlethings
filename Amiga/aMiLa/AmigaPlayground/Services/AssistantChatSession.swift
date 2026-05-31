@@ -268,6 +268,45 @@ enum AssistantPromptTemplate {
     static func match(for prompt: String) -> AssistantPromptTemplateMatch? {
         let normalized = prompt.lowercased()
 
+        if normalized.contains("mini demo") || normalized.contains("megamix") || normalized.contains("scene plan") {
+            return makeMatch(
+                prompt: prompt,
+                source: miniDemoMegamixDemo,
+                id: "mini-demo-megamix",
+                name: "Mini demo megamix",
+                parameters: [
+                    "mode": "composition",
+                    "object": "multi-effect scene"
+                ]
+            )
+        }
+
+        if normalized.contains("register") && normalized.contains("stack") {
+            return makeMatch(
+                prompt: prompt,
+                source: registersAndStackDemo,
+                id: "registers-stack",
+                name: "Registers and stack",
+                parameters: [
+                    "mode": "foundation",
+                    "object": "68000 registers"
+                ]
+            )
+        }
+
+        if normalized.contains("addressing") || normalized.contains("fast ram") || normalized.contains("data sections") {
+            return makeMatch(
+                prompt: prompt,
+                source: memoryAndAddressingDemo,
+                id: "memory-addressing",
+                name: "Addressing and memory sections",
+                parameters: [
+                    "mode": "foundation",
+                    "object": "addressing modes and memory sections"
+                ]
+            )
+        }
+
         if isMinimalExecutablePrompt(normalized) {
             return makeMatch(
                 prompt: prompt,
@@ -276,6 +315,123 @@ enum AssistantPromptTemplate {
                 name: "Minimal executable",
                 parameters: [
                     "mode": "minimal"
+                ]
+            )
+        }
+
+        if normalized.contains("mod replay") || normalized.contains("mod-style") || normalized.contains("cia-timed") || normalized.contains("cia timer") {
+            return makeMatch(
+                prompt: prompt,
+                source: modReplayScaffoldDemo,
+                id: "mod-replay-scaffold",
+                name: "MOD replay scaffold",
+                parameters: [
+                    "mode": "audio timing",
+                    "object": "CIA-timed pattern rows"
+                ]
+            )
+        }
+
+        if normalized.contains("4 channel") || normalized.contains("four channel") || normalized.contains("waveform") {
+            return makeMatch(
+                prompt: prompt,
+                source: fourChannelPaulaDemo,
+                id: "four-channel-paula",
+                name: "Four channel Paula waveform",
+                parameters: [
+                    "mode": "audio",
+                    "object": "Paula channels"
+                ]
+            )
+        }
+
+        if normalized.contains("clean takeover") || normalized.contains("save") && normalized.contains("restore") && normalized.contains("os") {
+            return makeMatch(
+                prompt: prompt,
+                source: cleanTakeoverDemo,
+                id: "clean-takeover",
+                name: "Clean takeover skeleton",
+                parameters: [
+                    "mode": "system init",
+                    "object": "OS display state"
+                ]
+            )
+        }
+
+        if normalized.contains("double-buffered copper") || normalized.contains("double buffered copper") || normalized.contains("copper lists") && normalized.contains("swap") {
+            return makeMatch(
+                prompt: prompt,
+                source: doubleBufferedCopperDemo,
+                id: "double-buffered-copper",
+                name: "Double-buffered copper lists",
+                parameters: [
+                    "mode": "copper",
+                    "object": "two copper lists"
+                ]
+            )
+        }
+
+        if normalized.contains("register map") || normalized.contains("$dff000") || (normalized.contains("custom chip") && normalized.contains("register")) {
+            return makeMatch(
+                prompt: prompt,
+                source: customChipRegisterMapDemo,
+                id: "custom-chip-register-map",
+                name: "Custom chip register map",
+                parameters: [
+                    "mode": "reference",
+                    "object": "custom chip registers"
+                ]
+            )
+        }
+
+        if normalized.contains("twister") {
+            return makeMatch(
+                prompt: prompt,
+                source: twisterBlitterDemo,
+                id: "twister-effect",
+                name: "Twister effect",
+                parameters: [
+                    "mode": "effect",
+                    "object": "sine blitter slices"
+                ]
+            )
+        }
+
+        if normalized.contains("line mode") || normalized.contains("line draw") {
+            return makeMatch(
+                prompt: prompt,
+                source: blitterLineModeDemo,
+                id: "blitter-line-mode",
+                name: "Blitter line mode",
+                parameters: [
+                    "mode": "blitter",
+                    "object": "line draw"
+                ]
+            )
+        }
+
+        if normalized.contains("masked copy") || normalized.contains("cookie-cut") || normalized.contains("minterm") {
+            return makeMatch(
+                prompt: prompt,
+                source: blitterMaskedCopyDemo,
+                id: "blitter-masked-copy",
+                name: "Blitter masked copy",
+                parameters: [
+                    "mode": "blitter helper",
+                    "object": "cookie-cut copy"
+                ]
+            )
+        }
+
+        if normalized.contains("4-bitplane") || normalized.contains("four-bitplane") || normalized.contains("16-color") || normalized.contains("16 color") {
+            return makeMatch(
+                prompt: prompt,
+                source: fourBitplaneDisplayDemo,
+                id: "four-bitplane-display",
+                name: "Four-bitplane display",
+                parameters: [
+                    "mode": "display",
+                    "object": "16-color bitplanes"
                 ]
             )
         }
@@ -289,6 +445,84 @@ enum AssistantPromptTemplate {
                 parameters: [
                     "mode": "hardware sample",
                     "object": "screen buffer"
+                ]
+            )
+        }
+
+        if normalized.contains("plasma") {
+            return makeMatch(
+                prompt: prompt,
+                source: plasmaPaletteDemo,
+                id: "plasma-effect",
+                name: "Plasma palette effect",
+                parameters: [
+                    "mode": "effect",
+                    "object": "sine palette"
+                ]
+            )
+        }
+
+        if normalized.contains("rotozoom") || normalized.contains("roto-zoom") {
+            return makeMatch(
+                prompt: prompt,
+                source: rotozoomLiteDemo,
+                id: "rotozoom-lite",
+                name: "Rotozoom lite",
+                parameters: [
+                    "mode": "effect",
+                    "object": "fixed-point texture"
+                ]
+            )
+        }
+
+        if normalized.contains("parallax logo") || normalized.contains("logo scene") {
+            return makeMatch(
+                prompt: prompt,
+                source: parallaxLogoSceneDemo,
+                id: "parallax-logo-scene",
+                name: "Parallax logo scene",
+                parameters: [
+                    "mode": "effect",
+                    "object": "logo layers"
+                ]
+            )
+        }
+
+        if normalized.contains("menu") || normalized.contains("navigation") {
+            return makeMatch(
+                prompt: prompt,
+                source: menuNavigationDemo,
+                id: "menu-navigation",
+                name: "Menu navigation",
+                parameters: [
+                    "mode": "control",
+                    "object": "scene menu"
+                ]
+            )
+        }
+
+        if normalized.contains("interpolation") || normalized.contains("perspective") || normalized.contains("scaling") {
+            return makeMatch(
+                prompt: prompt,
+                source: interpolationMathDemo,
+                id: "interpolation-math",
+                name: "Interpolation math",
+                parameters: [
+                    "mode": "math",
+                    "object": "fixed-point interpolation"
+                ]
+            )
+        }
+
+        if normalized.contains("attached") && normalized.contains("sprite") {
+            return makeMatch(
+                prompt: prompt,
+                source: attachedSpriteDemo,
+                id: "attached-sprite-logo",
+                name: "Attached sprite logo",
+                parameters: [
+                    "mode": "hardware sprite",
+                    "object": "attached sprite pair"
                 ]
             )
         }
@@ -765,8 +999,12 @@ enum AssistantPromptTemplate {
                         bsr        ClearScreen
                         bsr        DrawSineText
                         bsr        WaitVBlank
+                        addq.w     #1,FrameTick
+                        cmp.w      #3,FrameTick
+                        bne.s      .main
+                        clr.w      FrameTick
                         addq.w     #1,ScrollX
-                        cmp.w      #28,ScrollX
+                        cmp.w      #54,ScrollX
                         bne.s      .main
                         clr.w      ScrollX
                         bra.s      .main
@@ -807,6 +1045,480 @@ enum AssistantPromptTemplate {
 _Start:
             moveq      #0,d0
             rts
+"""
+
+    private static let registersAndStackDemo = """
+; Registers and stack foundation template.
+            SECTION    Code,CODE
+            XDEF       _Start
+_Start:
+            movem.l    d2-d3/a2,-(sp)      ; save caller-visible work regs
+            moveq      #7,d0                ; data register literal
+            move.w     d0,d1                ; word-sized register copy
+            lea        DemoData(pc),a0      ; address register points at data
+            move.w     (a0),d2              ; addressing mode: memory to register
+            bsr.s      AddWords             ; subroutine call pushes return address
+            movem.l    (sp)+,d2-d3/a2      ; restore saved regs
+            moveq      #0,d0
+            rts
+
+AddWords:
+            add.w      d1,d2
+            move.w     d2,d3
+            rts
+
+DemoData:   dc.w       5
+"""
+
+    private static let memoryAndAddressingDemo = """
+; Memory and addressing modes foundation template.
+            SECTION    Code,CODE
+            XDEF       _Start
+_Start:
+            movem.l    d2/a2,-(sp)
+            lea        ChipWords(pc),a0      ; PC-relative addressing
+            move.w     (a0)+,d0              ; post-increment
+            move.w     2(a0),d1              ; displacement
+            lea        FastScratch(pc),a1     ; ordinary data section reference
+            move.w     d0,(a1)               ; register indirect store
+            add.w      d1,d0
+            movem.l    (sp)+,d2/a2
+            rts
+
+ChipWords:  dc.w       3,5,8,13
+ChipBuffer: ds.b       64
+FastScratch: dc.w      0
+"""
+
+    private static let doubleBufferedCopperDemo = """
+; Double-buffered copper list template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        CopperListA(pc),a0
+            lea        CopperListB(pc),a1
+            move.l     a0,$80(a6)           ; COP1LC
+            move.w     #0,$88(a6)           ; COPJMP1
+            move.w     #$8280,$96(a6)       ; DMAEN + COPEN
+            moveq      #15,d7
+.swap:
+            bsr        WaitVBlank
+            exg        a0,a1
+            move.l     a0,$80(a6)           ; install back-buffered copper list
+            move.w     #0,$88(a6)
+            dbf        d7,.swap
+            rts
+
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+CopperListA:
+            dc.w       $0100,$0200
+            dc.w       $5007,$fffe,$0180,$00f
+            dc.w       $ffff,$fffe
+CopperListB:
+            dc.w       $0100,$0200
+            dc.w       $5007,$fffe,$0180,$0f0
+            dc.w       $ffff,$fffe
+"""
+
+    private static let fourBitplaneDisplayDemo = """
+; Four-bitplane 16-color display template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        Plane0(pc),a0
+            move.l     a0,$e0(a6)
+            lea        Plane1(pc),a0
+            move.l     a0,$e4(a6)
+            lea        Plane2(pc),a0
+            move.l     a0,$e8(a6)
+            lea        Plane3(pc),a0
+            move.l     a0,$ec(a6)
+            move.w     #$4200,$100(a6)      ; BPLCON0: four low-res bitplanes
+            move.w     #$0000,$102(a6)      ; BPLCON1 scroll
+            move.w     #$2c81,$08e(a6)      ; DIWSTRT
+            move.w     #$2cc1,$090(a6)      ; DIWSTOP
+            move.w     #$0038,$092(a6)      ; DDFSTRT
+            move.w     #$00d0,$094(a6)      ; DDFSTOP
+            move.w     #$000,$180(a6)
+            move.w     #$00f,$182(a6)
+            move.w     #$0f0,$184(a6)
+            move.w     #$f00,$186(a6)
+            move.w     #$8300,$96(a6)
+            rts
+
+Plane0:     ds.b       40*256
+Plane1:     ds.b       40*256
+Plane2:     ds.b       40*256
+Plane3:     ds.b       40*256
+"""
+
+    private static let blitterLineModeDemo = """
+; Blitter line mode template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        Bitplane(pc),a0
+            bsr        WaitBlitter
+            move.w     #$ffff,$44(a6)
+            move.w     #$ffff,$46(a6)
+            move.w     #$8000,$74(a6)
+            move.w     #40,$66(a6)
+            move.w     #$0bca,$40(a6)       ; BLTCON0 line minterm
+            move.w     #$0001,$42(a6)       ; BLTCON1 octant/sign bits
+            move.l     a0,$54(a6)
+            move.w     #(64*64)+1,$58(a6)
+            bsr        WaitBlitterAfter
+            rts
+
+WaitBlitter:
+            btst       #6,$02(a6)
+            bne.s      WaitBlitter
+            rts
+
+WaitBlitterAfter:
+            btst       #6,$02(a6)
+            bne.s      WaitBlitterAfter
+            rts
+
+Bitplane:   ds.b       40*256
+"""
+
+    private static let fourChannelPaulaDemo = """
+; Four-channel Paula waveform template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        Wave0(pc),a0
+            move.l     a0,$a0(a6)           ; AUD0LC
+            move.w     #8,$a4(a6)
+            move.w     #428,$a6(a6)
+            move.w     #40,$a8(a6)
+            move.l     a0,$b0(a6)           ; AUD1LC
+            move.w     #8,$b4(a6)
+            move.w     #381,$b6(a6)
+            move.w     #32,$b8(a6)
+            move.l     a0,$c0(a6)           ; AUD2LC
+            move.w     #8,$c4(a6)
+            move.w     #340,$c6(a6)
+            move.w     #28,$c8(a6)
+            move.l     a0,$d0(a6)           ; AUD3LC
+            move.w     #8,$d4(a6)
+            move.w     #320,$d6(a6)
+            move.w     #24,$d8(a6)
+            move.w     #$8780,$96(a6)       ; DMAEN + AUD0-3
+            rts
+
+Wave0:      dc.b       0,48,96,127,96,48,0,-48
+            dc.b       -96,-127,-96,-48,0,48,96,127
+"""
+
+    private static let modReplayScaffoldDemo = """
+; CIA-timed MOD replay scaffold template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            move.b     #$7f,$bfdd00         ; CIA-B interrupt mask
+            move.b     #$21,$bfdf00         ; CIA Timer B force-load placeholder
+            move.b     #$81,$bfdd00         ; enable timer source
+            move.b     $bfe001,d2           ; CIA port sample for input/timer sanity
+            clr.w      ModRow
+            move.w     #6,TickDivider
+            bsr        ModTick
+            rts
+
+ModTick:
+            subq.w     #1,TickDivider
+            bne.s      .done
+            move.w     #6,TickDivider
+            move.w     ModRow(pc),d0
+            add.w      d0,d0
+            lea        ModPattern(pc),a0
+            move.w     (a0,d0.w),d1
+            lea        PeriodTable(pc),a1
+            move.w     (a1,d1.w),$a6(a6)    ; AUD0PER
+            lea        Sample(pc),a2
+            move.l     a2,$a0(a6)           ; AUD0LC
+            move.w     #8,$a4(a6)           ; AUD0LEN
+            move.w     #48,$a8(a6)          ; AUD0VOL
+            move.w     #$8201,$96(a6)       ; DMAEN + AUD0
+            addq.w     #1,ModRow
+            and.w      #$0007,ModRow
+.done:
+            rts
+
+TickDivider: dc.w      6
+ModRow:     dc.w       0
+PeriodTable: dc.w      428,381,340,320
+ModPattern: dc.w       0,2,4,6,4,2,0,6
+Sample:     dc.b       0,64,127,64,0,-64,-127,-64
+            dc.b       0,64,127,64,0,-64,-127,-64
+"""
+
+    private static let interpolationMathDemo = """
+; Fixed-point interpolation and perspective scaling template.
+            SECTION    Code,CODE
+            XDEF       _Start
+_Start:
+            move.w     #$0100,d0            ; 8.8 fixed start
+            move.w     #$0020,d1            ; interpolation step
+            moveq      #7,d7
+            lea        ScaleTable(pc),a0
+.step:
+            move.w     d0,(a0)+
+            add.w      d1,d0
+            dbf        d7,.step
+            rts
+
+ScaleTable: ds.w       8
+"""
+
+    private static let plasmaPaletteDemo = """
+; Plasma palette effect template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        CopperList(pc),a0
+            move.l     a0,$80(a6)
+            move.w     #0,$88(a6)
+            move.w     #$8280,$96(a6)
+            lea        SinePalette(pc),a0
+            moveq      #7,d7
+.patch:
+            move.w     (a0)+,ColorPatch
+            dbf        d7,.patch
+            rts
+
+SinePalette:
+            dc.w       $008,$04a,$08c,$0ce,$0ef,$0ac,$068,$024
+CopperList:
+            dc.w       $0100,$0200
+            dc.w       $4007,$fffe,$0180
+ColorPatch: dc.w       $008
+            dc.w       $ffff,$fffe
+"""
+
+    private static let twisterBlitterDemo = """
+; Twister effect sine blitter slices template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        Screen(pc),a0
+            move.l     a0,$e0(a6)
+            move.w     #$1200,$100(a6)
+            move.w     #$8300,$96(a6)
+            lea        Slice(pc),a1
+            lea        SineOffsets(pc),a2
+            moveq      #7,d7
+.slice:
+            bsr        WaitBlitter
+            move.w     #$09f0,$40(a6)
+            move.w     #$0000,$42(a6)
+            move.w     #0,$64(a6)
+            move.w     #38,$66(a6)
+            move.l     a1,$50(a6)
+            move.l     a0,$54(a6)
+            move.w     #(8*64)+1,$58(a6)
+            bsr        WaitBlitterAfter
+            move.w     (a2)+,d0
+            adda.w     d0,a0
+            dbf        d7,.slice
+            rts
+
+WaitBlitter:
+            btst       #6,$02(a6)
+            bne.s      WaitBlitter
+            rts
+
+WaitBlitterAfter:
+            btst       #6,$02(a6)
+            bne.s      WaitBlitterAfter
+            rts
+
+SineOffsets: dc.w      0,2,4,6,4,2,0,-2
+Slice:      dc.w       $ffff,$7ffe,$3ffc,$1ff8,$0ff0,$1ff8,$3ffc,$7ffe
+Screen:     ds.b       40*256
+"""
+
+    private static let rotozoomLiteDemo = """
+; Rotozoom-lite fixed-point bitplane template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        Bitplane(pc),a0
+            move.l     a0,$e0(a6)
+            move.w     #$1200,$100(a6)
+            move.w     #$8300,$96(a6)
+            lea        Texture(pc),a1
+            move.w     #$0100,d0            ; u
+            move.w     #$0020,d1            ; du
+            moveq      #15,d7
+.sample:
+            move.b     (a1),d2
+            add.w      d1,d0
+            dbf        d7,.sample
+            rts
+
+Texture:    dc.b       $00,$ff,$33,$cc,$0f,$f0,$55,$aa
+Bitplane:   ds.b       40*256
+"""
+
+    private static let parallaxLogoSceneDemo = """
+; Parallax logo scene template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        BackPlane(pc),a0
+            move.l     a0,$e0(a6)
+            move.w     #$2200,$100(a6)
+            move.w     #$0000,$102(a6)      ; BPLCON1 scroll register
+            move.w     #$8300,$96(a6)
+            move.w     #$000f,LogoColor
+            addq.w     #1,BackScroll
+            addq.w     #2,LogoScroll
+            rts
+
+BackScroll: dc.w       0
+LogoScroll: dc.w       0
+LogoColor:  dc.w       0
+BackPlane:  ds.b       40*256
+LogoPlane:  ds.b       40*256
+"""
+
+    private static let menuNavigationDemo = """
+; Menu navigation and input shell template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            move.w     $0c(a6),d0           ; JOY1DAT
+            btst       #6,$bfe001           ; CIA left mouse/fire
+            bne.s      .noSelect
+            addq.w     #1,SelectedScene
+            and.w      #$0003,SelectedScene
+.noSelect:
+            lea        SceneTable(pc),a0
+            move.w     SelectedScene(pc),d1
+            add.w      d1,d1
+            move.w     (a0,d1.w),d0
+            rts
+
+SelectedScene: dc.w    0
+SceneTable: dc.w       0,1,2,3
+"""
+
+    private static let cleanTakeoverDemo = """
+; Clean takeover skeleton template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            movem.l    d2-d7/a2-a6,-(sp)
+            move.l     $4.w,a6
+            lea        GfxName(pc),a1
+            moveq      #0,d0
+            jsr        -408(a6)             ; OpenLibrary("graphics.library")
+            move.l     d0,GfxBase
+            beq.s      .exit
+
+            move.l     d0,a6
+            move.l     34(a6),OldView       ; save OS view
+            sub.l      a1,a1
+            jsr        -222(a6)             ; LoadView(NULL)
+            jsr        -270(a6)             ; WaitTOF
+            jsr        -270(a6)
+
+            lea        $dff000,a6
+            lea        CopperList(pc),a0
+            move.l     a0,$80(a6)           ; COP1LC
+            move.w     #0,$88(a6)           ; COPJMP1
+            move.w     #$8280,$96(a6)       ; DMAEN + COPEN
+
+.main:
+            btst       #6,$bfe001
+            bne.s      .main
+
+            move.l     GfxBase(pc),a6
+            move.l     OldView(pc),a1
+            jsr        -222(a6)             ; LoadView(oldView)
+            jsr        -270(a6)
+            jsr        -270(a6)
+            move.l     $4.w,a6
+            move.l     GfxBase(pc),a1
+            jsr        -414(a6)
+
+.exit:
+            movem.l    (sp)+,d2-d7/a2-a6
+            moveq      #0,d0
+            rts
+
+GfxName:    dc.b       "graphics.library",0
+            EVEN
+GfxBase:    dc.l       0
+OldView:    dc.l       0
+
+CopperList:
+            dc.w       $0100,$0200
+            dc.w       $0180,$004
+            dc.w       $ffff,$fffe
+"""
+
+    private static let customChipRegisterMapDemo = """
+; Custom chip register map tour template.
+CUSTOM      equ        $dff000
+DMACON      equ        $096
+INTENA      equ        $09a
+BPLCON0     equ        $100
+BPL1PTH     equ        $0e0
+COLOR00     equ        $180
+SPR0PTH     equ        $120
+AUD0LCH     equ        $0a0
+JOY1DAT     equ        $00c
+VPOSR       equ        $004
+
+            SECTION    Code,CODE
+            XDEF       _Start
+_Start:
+            lea        CUSTOM,a6
+            move.w     VPOSR(a6),d0         ; beam position/high vpos bits
+            move.w     JOY1DAT(a6),d1       ; joystick register
+            lea        Bitplane(pc),a0
+            move.l     a0,$e0(a6)           ; BPL1PTH/BPL1PTL pointer
+            move.w     #$0200,$100(a6)      ; BPLCON0 display mode register
+            lea        Sprite0(pc),a0
+            move.l     a0,$120(a6)          ; SPR0PTH/SPR0PTL pointer
+            lea        Pulse(pc),a0
+            move.l     a0,$a0(a6)           ; AUD0LCH/AUD0LCL pointer
+            move.w     #8,$a4(a6)           ; AUD0LEN
+            move.w     #214,$a6(a6)         ; AUD0PER
+            move.w     #32,$a8(a6)          ; AUD0VOL
+            move.w     #$000,$180(a6)       ; COLOR00 background palette entry
+            move.w     #$7fff,INTENA(a6)    ; interrupt mask reference
+            move.w     #$83a1,$96(a6)       ; DMACON DMA bit reference
+            moveq      #0,d0
+            rts
+
+            ALIGN      4
+Bitplane:   ds.b       40*256
+Sprite0:    dc.w       $5080,$7000
+            dc.w       $ffff,$ffff
+            dc.w       $0000,$0000
+Pulse:      dc.b       127,64,0,-64,-127,-64,0,64
+            dc.b       127,64,0,-64,-127,-64,0,64
 """
 
     private static func backgroundColorDemo(prompt: String) -> String {
@@ -879,6 +1591,135 @@ _Start:
 
             SECTION    ChipData,DATA,CHIP
 Bitplane:   ds.b       40*256
+"""
+
+    private static let blitterMaskedCopyDemo = """
+; Blitter masked copy cookie-cut template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        Source(pc),a0
+            lea        Mask(pc),a1
+            lea        Destination(pc),a2
+            bsr.s      WaitBlitter
+            move.w     #$0fca,$40(a6)       ; A/B/C -> D cookie-cut minterm
+            move.w     #$0000,$42(a6)
+            move.w     #0,$64(a6)           ; BLTAMOD
+            move.w     #0,$62(a6)           ; BLTBMOD
+            move.w     #0,$60(a6)           ; BLTCMOD
+            move.w     #0,$66(a6)           ; BLTDMOD
+            move.l     a1,$50(a6)           ; A = mask
+            move.l     a0,$4c(a6)           ; B = source
+            move.l     a2,$48(a6)           ; C = old destination
+            move.l     a2,$54(a6)           ; D = destination
+            move.w     #(16*64)+1,$58(a6)
+.waitAfter:
+            btst       #6,$02(a6)
+            bne.s      .waitAfter
+            moveq      #0,d0
+            rts
+
+WaitBlitter:
+            btst       #6,$02(a6)
+            bne.s      WaitBlitter
+            rts
+
+Source:     ds.w       16
+Mask:       ds.w       16
+Destination: ds.w      16
+"""
+
+    private static let attachedSpriteDemo = """
+; Attached sprite pair logo template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        Sprite0(pc),a0
+            lea        Sprite1(pc),a1
+            move.l     a0,$120(a6)          ; SPR0PTH/L
+            move.l     a1,$124(a6)          ; SPR1PTH/L
+            move.w     #$8220,$96(a6)       ; DMAEN + sprite DMA
+            moveq      #120,d0
+.hold:
+            bsr.s      WaitVBlank
+            dbra       d0,.hold
+            moveq      #0,d0
+            rts
+
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+Sprite0:
+            dc.b       $50,$70,$70,$80      ; attach bit lives in control word
+            dc.w       $1818,$3c3c,$7e7e,$ffff
+            dc.w       $0000,$0000
+Sprite1:
+            dc.b       $50,$70,$70,$00
+            dc.w       $ffff,$7e7e,$3c3c,$1818
+            dc.w       $0000,$0000
+"""
+
+    private static let miniDemoMegamixDemo = """
+; Mini demo megamix composition template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            lea        $dff000,a6
+            lea        CopperList(pc),a0
+            move.l     a0,$80(a6)
+            lea        Sprite0(pc),a0
+            move.l     a0,$120(a6)
+            lea        Pulse(pc),a0
+            move.l     a0,$a0(a6)
+            move.w     #8,$a4(a6)
+            move.w     #214,$a6(a6)
+            move.w     #64,$a8(a6)
+            move.w     #0,$88(a6)
+            move.w     #$83a1,$96(a6)       ; DMAEN+COPEN+BPLEN+SPRITE+AUD0
+            moveq      #127,d7
+.main:
+            bsr.s      WaitVBlank
+            addq.w     #1,Frame
+            move.w     Frame(pc),d0
+            and.w      #$000f,d0
+            add.w      d0,d0
+            lea        Palette(pc),a0
+            move.w     (a0,d0.w),ColorPatch
+            dbra       d7,.main
+            moveq      #0,d0
+            rts
+
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+Frame:      dc.w       0
+Palette:    dc.w       $00f,$02f,$04f,$06f,$08f,$0af,$0cf,$0ff
+            dc.w       $0fc,$0f8,$0f4,$0f0,$8f0,$cf0,$f80,$f40
+CopperList:
+            dc.w       $0100,$0200
+            dc.w       $5007,$fffe,$0180
+ColorPatch: dc.w       $00f
+            dc.w       $9007,$fffe,$0180,$f40
+            dc.w       $ffff,$fffe
+Sprite0:
+            dc.b       $48,$90,$68,$00
+            dc.w       $1818,$3c3c,$7e7e,$ffff
+            dc.w       $0000,$0000
+Pulse:
+            dc.b       127,127,64,0,-64,-127,-64,0
+            dc.b       127,64,0,-64,-127,-64,0,64
 """
 
     private static let audioPulseDemo = """
@@ -1198,29 +2039,6 @@ RestoreDisplay:
 .restoreDone:
             rts
 
-WriteConsoleMessage:
-            movem.l    d1-d3/a0-a1/a6,-(sp)
-            move.l     $4.w,a6
-            lea        DosName(pc),a1
-            moveq      #0,d0
-            jsr        -552(a6)             ; OpenLibrary
-            move.l     d0,DosBase
-            beq.s      .consoleDone
-            move.l     d0,a6
-            jsr        -60(a6)              ; Output()
-            move.l     d0,d1
-            lea        ConsoleMessage(pc),a0
-            move.l     a0,d2
-            move.l     #ConsoleMessageEnd-ConsoleMessage,d3
-            move.l     DosBase(pc),a6
-            jsr        -48(a6)              ; Write()
-            move.l     $4.w,a6
-            move.l     DosBase(pc),a1
-            jsr        -414(a6)             ; CloseLibrary
-.consoleDone:
-            movem.l    (sp)+,d1-d3/a0-a1/a6
-            rts
-
 WaitVBlank:
             cmp.b      #$ff,$06(a5)
             bne.s      WaitVBlank
@@ -1247,7 +2065,8 @@ DrawCenteredText:
 DrawSineText:
             lea        TextString(pc),a1
             lea        SineOffsets(pc),a3
-            move.w     ScrollX(pc),d6
+            moveq      #39,d6
+            sub.w      ScrollX(pc),d6
             moveq      #0,d4
 .nextSineChar:
             move.b     (a1)+,d0
@@ -1256,7 +2075,12 @@ DrawSineText:
             move.b     0(a3,d4.w),d5
             ext.w      d5
             add.w      #104,d5
+            tst.w      d6
+            bmi.s      .skipSineGlyph
+            cmp.w      #39,d6
+            bgt.s      .skipSineGlyph
             bsr.s      DrawOneGlyph
+.skipSineGlyph:
             addq.w     #1,d6
             addq.w     #1,d4
             bra.s      .nextSineChar
@@ -1362,18 +2186,9 @@ GlyphForChar:
 
             ALIGN      2
 gfxName:    dc.b       "graphics.library",0
-DosName:    dc.b       "dos.library",0
             EVEN
 GfxBase:    dc.l       0
 oldView:    dc.l       0
-DosBase:    dc.l       0
-ConsoleMessage:
-            dc.b       10,10,10,10,10,10,10,10,10,10,10
-            dc.b       "                              \(textLiteral)",10
-            dc.b       "                           \(textLiteral)",10
-            dc.b       "                              \(textLiteral)",10
-ConsoleMessageEnd:
-            EVEN
 
 CopperList:
             dc.w       $008e,$2c81,$0090,$2cc1
@@ -1396,6 +2211,8 @@ SineOffsets:
             dc.b       0,4,8,11,12,11,8,4,0,-4,-8,-11,-12,0
             EVEN
 ScrollX:
+            dc.w       0
+FrameTick:
             dc.w       0
 ColorIndex:
             dc.w       0
@@ -3166,6 +3983,10 @@ enum AssemblySourceFormatter {
         looksLikeC(source) ? indentC(source) : indentAssembly(source)
     }
 
+    static func commentedSource(from source: String) -> String {
+        looksLikeC(source) ? commentC(source) : commentAssembly(source)
+    }
+
     static func looksLikeC(_ source: String) -> Bool {
         let lowercased = source.lowercased()
         return lowercased.contains("#include") ||
@@ -3221,5 +4042,116 @@ enum AssemblySourceFormatter {
                 return line
             }
             .joined(separator: "\n")
+    }
+
+    private static func commentAssembly(_ source: String) -> String {
+        source
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map { rawLine -> String in
+                let line = String(rawLine)
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+
+                guard !trimmed.isEmpty else { return line }
+                guard !trimmed.hasPrefix(";") else { return line }
+                guard !line.contains(";") else { return line }
+
+                return "\(line) ; \(assemblyComment(for: trimmed))"
+            }
+            .joined(separator: "\n")
+    }
+
+    private static func assemblyComment(for trimmedLine: String) -> String {
+        if trimmedLine.hasSuffix(":") {
+            return "defines the \(trimmedLine.dropLast()) label"
+        }
+
+        let tokens = trimmedLine.split(whereSeparator: { $0 == " " || $0 == "\t" }).map(String.init)
+        guard let firstToken = tokens.first else { return "keeps this source line in place" }
+        let mnemonic = firstToken.split(separator: ".", maxSplits: 1).first.map { String($0).uppercased() } ?? firstToken.uppercased()
+
+        switch mnemonic {
+        case "SECTION":
+            return "selects the output section for following code or data"
+        case "XDEF":
+            return "exports the named symbol for the linker"
+        case "XREF":
+            return "declares an external symbol reference"
+        case "INCLUDE":
+            return "includes definitions from another source file"
+        case "LEA":
+            return "loads an effective address into an address register"
+        case "MOVE", "MOVEA", "MOVEQ", "MOVEM", "MOVEP":
+            return "moves data between registers or memory"
+        case "ADD", "ADDA", "ADDI", "ADDQ", "ADDX":
+            return "adds a value to the destination operand"
+        case "SUB", "SUBA", "SUBI", "SUBQ", "SUBX":
+            return "subtracts a value from the destination operand"
+        case "CLR":
+            return "clears the destination operand"
+        case "CMP", "CMPA", "CMPI", "CMPM":
+            return "compares operands and updates condition codes"
+        case "BTST":
+            return "tests a bit and updates condition codes"
+        case "BRA":
+            return "branches unconditionally"
+        case "BSR":
+            return "calls a local subroutine"
+        case "BNE", "BEQ", "BMI", "BPL", "BGT", "BGE", "BLT", "BLE", "BHI", "BLS", "BCC", "BCS", "BVC", "BVS":
+            return "branches when the condition is met"
+        case "DBF", "DBRA", "DBEQ", "DBNE", "DBGT", "DBGE", "DBLT", "DBLE":
+            return "decrements a counter and branches while active"
+        case "JSR":
+            return "jumps to a subroutine"
+        case "JMP":
+            return "jumps to the target address"
+        case "RTS":
+            return "returns from the current subroutine"
+        case "DC.B", "DC.W", "DC.L":
+            return "defines constant data"
+        case "DS.B", "DS.W", "DS.L":
+            return "reserves storage"
+        case "EVEN", "ALIGN", "CNOP":
+            return "aligns following data or code"
+        default:
+            return "executes this \(firstToken) statement"
+        }
+    }
+
+    private static func commentC(_ source: String) -> String {
+        source
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map { rawLine -> String in
+                let line = String(rawLine)
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+
+                guard !trimmed.isEmpty else { return line }
+                guard !trimmed.hasPrefix("//"), !trimmed.hasPrefix("/*"), !trimmed.hasPrefix("*") else { return line }
+                guard !line.contains("//"), !line.contains("/*") else { return line }
+
+                return "\(line) // \(cComment(for: trimmed))"
+            }
+            .joined(separator: "\n")
+    }
+
+    private static func cComment(for trimmedLine: String) -> String {
+        if trimmedLine.hasPrefix("#include") {
+            return "includes declarations from the named header"
+        }
+        if trimmedLine.hasPrefix("#define") {
+            return "defines a preprocessor constant or macro"
+        }
+        if trimmedLine.hasPrefix("return") {
+            return "returns a value from the current function"
+        }
+        if trimmedLine.hasPrefix("if") {
+            return "starts a conditional branch"
+        }
+        if trimmedLine.hasPrefix("for") || trimmedLine.hasPrefix("while") {
+            return "starts a loop"
+        }
+        if trimmedLine == "{" || trimmedLine == "}" {
+            return "marks a block boundary"
+        }
+        return "keeps this C statement in place"
     }
 }

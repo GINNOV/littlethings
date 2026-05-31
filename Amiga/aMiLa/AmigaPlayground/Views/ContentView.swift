@@ -37,6 +37,8 @@ enum AppPreferenceDefaults {
     static let showChatBoingBall = true
     static let autoInjectGeneratedCodeKey = "autoInjectGeneratedCode"
     static let autoInjectGeneratedCode = true
+    static let updateDefaultPromptsWhenAvailableKey = "updateDefaultPromptsWhenAvailable"
+    static let updateDefaultPromptsWhenAvailable = false
 }
 
 struct AmigaPlaygroundCommands: Commands {
@@ -49,7 +51,7 @@ struct AmigaPlaygroundCommands: Commands {
                     actions.assemble()
                 }
                 .disabled(!actions.canRun)
-                .keyboardShortcut("r", modifiers: .command)
+                .keyboardShortcut("e", modifiers: .command)
 
                 Button("Fix Compile Errors with Assistant") {
                     actions.fixCompileErrors()
@@ -86,7 +88,7 @@ struct AmigaPlaygroundCommands: Commands {
                     actions.newChat()
                 }
                 .disabled(!actions.canChat)
-                .keyboardShortcut("n", modifiers: [.command, .shift])
+                .keyboardShortcut("n", modifiers: .command)
 
                 Button("Clear Editor") {
                     actions.clearEditor()
@@ -100,7 +102,7 @@ struct AmigaPlaygroundCommands: Commands {
                     actions.runDefaultEmulator()
                 }
                 .disabled(!actions.canRun)
-                .keyboardShortcut("r", modifiers: [.command, .shift])
+                .keyboardShortcut("r", modifiers: .command)
 
                 Divider()
 
@@ -597,7 +599,7 @@ SineWave:
                             }
                         }
                         .disabled(isCompiling || isExportingADF)
-                        .keyboardShortcut(.init("r"), modifiers: .command)
+                        .keyboardShortcut(.init("e"), modifiers: .command)
                         .controlSize(.large)
                         .buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("assembleButton")
@@ -641,6 +643,7 @@ SineWave:
                             }
                         }
                         .disabled(isCompiling || isExportingADF)
+                        .keyboardShortcut(.init("r"), modifiers: .command)
                         .buttonStyle(.bordered)
                         .accessibilityIdentifier("runDefaultEmulatorButton")
                         .help("Assemble and run in the selected emulator")
@@ -680,6 +683,7 @@ SineWave:
                             Image(systemName: "plus.message")
                         }
                         .disabled(assistantChat.isGenerating)
+                        .keyboardShortcut(.init("n"), modifiers: .command)
                         .buttonStyle(.bordered)
                         .help("Start a new chat")
                         .accessibilityLabel("Start a new chat")
@@ -1026,6 +1030,7 @@ SineWave:
                                 Text(outputConsole)
                                     .font(.system(.body, design: .monospaced))
                                     .foregroundColor(.white)
+                                    .textSelection(.enabled)
                                     .padding(10)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
@@ -1330,6 +1335,12 @@ SineWave:
         }
 
         if selfCorrectionAttempts == 0,
+           isCommentOnlyEditorTransformPrompt(submittedPrompt) {
+            applyCommentOnlyEditorTransform(prompt: submittedPrompt)
+            return
+        }
+
+        if selfCorrectionAttempts == 0,
            let templateMatch = AssistantPromptTemplate.match(for: submittedPrompt) {
             activeTemplateMatch = templateMatch
             generatedCodeTemplateMatch = nil
@@ -1419,6 +1430,48 @@ SineWave:
                 assistantChat.fail(error)
             }
         )
+    }
+
+    private func isCommentOnlyEditorTransformPrompt(_ prompt: String) -> Bool {
+        let normalized = prompt.lowercased()
+        let asksForComments = normalized.contains("add comment") ||
+            normalized.contains("add comments") ||
+            normalized.contains("comment each line") ||
+            normalized.contains("comments on each line") ||
+            normalized.contains("comment every line")
+        let preservesCode = normalized.contains("without changing") ||
+            normalized.contains("do not change") ||
+            normalized.contains("don't change") ||
+            normalized.contains("preserve the code") ||
+            normalized.contains("keep the code")
+
+        return asksForComments && preservesCode
+    }
+
+    private func applyCommentOnlyEditorTransform(prompt: String) {
+        activeTemplateMatch = nil
+        generatedCodeTemplateMatch = nil
+        activeOutputTab = .console
+        assistantGenerationPhase = .idle
+        selfCorrectionAttempts = 0
+
+        let source = codeText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !source.isEmpty else {
+            _ = assistantChat.complete(
+                fullResponse: "The editor is empty, so there is no source to comment.",
+                streamedResponse: ""
+            )
+            outputConsole = "No editor source to comment. Generate or paste code first, then ask to add comments without changing it."
+            return
+        }
+
+        let commentedSource = AssemblySourceFormatter.commentedSource(from: codeText)
+        codeText = commentedSource
+        _ = assistantChat.complete(
+            fullResponse: "Added comments to the existing editor source without changing executable statements.",
+            streamedResponse: ""
+        )
+        outputConsole = "Added comments to existing editor source without using model generation or replacing it with a new template."
     }
 
     private func runAssemblyReliabilityGate(_ source: String, submittedPrompt: String) {
@@ -1778,9 +1831,37 @@ private struct ChatInjectButtonStyle: ButtonStyle {
     }
 }
 
+private struct SettingsInfoButton: View {
+    let text: String
+    @State private var isPresented = false
+
+    var body: some View {
+        Button {
+            isPresented.toggle()
+        } label: {
+            Image(systemName: "info.circle")
+                .imageScale(.medium)
+        }
+        .buttonStyle(.borderless)
+        .foregroundStyle(.secondary)
+        .help(text)
+        .accessibilityLabel("Setting information")
+        .accessibilityHint(text)
+        .popover(isPresented: $isPresented, arrowEdge: .trailing) {
+            Text(text)
+                .font(.caption)
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(12)
+                .frame(width: 280, alignment: .leading)
+        }
+    }
+}
+
 struct SettingsView: View {
     @StateObject private var llm = OllamaService.shared
     @StateObject private var mlxServer = MLXServerController.shared
+    @StateObject private var promptLibrary = PromptLibraryStore.shared
 
     @AppStorage("emulatorModel") private var emulatorModel: String = "A500"
     @AppStorage("emulatorCpu") private var emulatorCpu: String = "68000"
@@ -1800,9 +1881,13 @@ struct SettingsView: View {
     @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
     @AppStorage(AppPreferenceDefaults.showChatBoingBallKey) private var showChatBoingBall: Bool = AppPreferenceDefaults.showChatBoingBall
     @AppStorage(AppPreferenceDefaults.autoInjectGeneratedCodeKey) private var autoInjectGeneratedCode: Bool = AppPreferenceDefaults.autoInjectGeneratedCode
+    @AppStorage(AppPreferenceDefaults.updateDefaultPromptsWhenAvailableKey) private var updateDefaultPromptsWhenAvailable: Bool = AppPreferenceDefaults.updateDefaultPromptsWhenAvailable
     @AppStorage("romsDirectoryPath") private var romsDirectoryPath: String = EmulatorService.defaultRomsDirectory
 
     @State private var availableRoms: [RomEntry] = []
+    @State private var isCheckingDefaultPromptUpdates = false
+    @State private var defaultPromptUpdateStatus: String?
+    @State private var pendingDefaultPromptUpdate: PendingDefaultPromptUpdate?
 
     let models = ["A500", "A500+", "A600", "A1000", "A1200", "A2000", "A3000", "A4000"]
     let cpus = ["68000", "68010", "68020", "68030", "68040", "68060"]
@@ -1828,6 +1913,55 @@ struct SettingsView: View {
         Binding(
             get: { Double(llm.contextWindow) },
             set: { llm.contextWindow = Int($0.rounded()) }
+        )
+    }
+
+    private var fsUaeArgumentPresetSelection: Binding<String> {
+        Binding(
+            get: {
+                FSUAEArgumentPreset.presets.first(where: { $0.arguments == emulatorCustomArgs })?.id ?? FSUAEArgumentPreset.customID
+            },
+            set: { selectedPresetID in
+                guard let preset = FSUAEArgumentPreset.presets.first(where: { $0.id == selectedPresetID }) else { return }
+                emulatorCustomArgs = preset.arguments
+            }
+        )
+    }
+
+    private var hardwarePresetDescription: String {
+        if let selectedPreset = HardwarePreset.presets.first(where: { $0.id == selectedHardwarePresetID }) {
+            return selectedPreset.summary
+        }
+        return "Manual ROM, model, CPU, memory, or JIT settings are active."
+    }
+
+    private var fsUaeArgumentPresetDescription: String {
+        if let selectedPreset = FSUAEArgumentPreset.presets.first(where: { $0.arguments == emulatorCustomArgs }) {
+            return selectedPreset.summary
+        }
+        return "Manual FS-UAE command-line arguments are active."
+    }
+
+    private var aiSettingsModelName: Binding<String> {
+        Binding(
+            get: {
+                let trimmedName = llm.modelName.trimmingCharacters(in: .whitespacesAndNewlines)
+                let bundledModelAliases = [
+                    "",
+                    OllamaService.Provider.ollama.defaultModelName,
+                    OllamaService.publishedModelID,
+                    OllamaService.mlxServerRequestModelName
+                ]
+
+                if bundledModelAliases.contains(trimmedName) {
+                    return OllamaService.publishedModelDisplayName
+                }
+
+                return llm.modelName
+            },
+            set: { newValue in
+                llm.modelName = newValue
+            }
         )
     }
 
@@ -1890,6 +2024,59 @@ struct SettingsView: View {
         } else {
             NSWorkspace.shared.open(logURL.deletingLastPathComponent())
         }
+    }
+
+    private var defaultPromptUpdateToggle: Binding<Bool> {
+        Binding(
+            get: { updateDefaultPromptsWhenAvailable },
+            set: { newValue in
+                updateDefaultPromptsWhenAvailable = newValue
+                defaultPromptUpdateStatus = nil
+                if newValue {
+                    checkForDefaultPromptUpdates()
+                }
+            }
+        )
+    }
+
+    private var defaultPromptUpdateAlertIsPresented: Binding<Bool> {
+        Binding(
+            get: { pendingDefaultPromptUpdate != nil },
+            set: { isPresented in
+                if !isPresented {
+                    pendingDefaultPromptUpdate = nil
+                }
+            }
+        )
+    }
+
+    private func checkForDefaultPromptUpdates() {
+        guard updateDefaultPromptsWhenAvailable, !isCheckingDefaultPromptUpdates else { return }
+        isCheckingDefaultPromptUpdates = true
+        defaultPromptUpdateStatus = "Checking for prompt updates..."
+
+        Task {
+            do {
+                let pendingUpdate = try await promptLibrary.checkForDefaultPromptUpdates()
+                isCheckingDefaultPromptUpdates = false
+                if let pendingUpdate {
+                    pendingDefaultPromptUpdate = pendingUpdate
+                    defaultPromptUpdateStatus = "\(pendingUpdate.conflictNames.count) locally edited default prompt update needs confirmation."
+                } else {
+                    defaultPromptUpdateStatus = "Default prompts are up to date."
+                }
+            } catch {
+                isCheckingDefaultPromptUpdates = false
+                defaultPromptUpdateStatus = "Could not update default prompts: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    private func confirmPendingDefaultPromptUpdate() {
+        guard let pendingDefaultPromptUpdate else { return }
+        promptLibrary.confirmDefaultPromptUpdate(pendingDefaultPromptUpdate)
+        defaultPromptUpdateStatus = "Default prompts updated."
+        self.pendingDefaultPromptUpdate = nil
     }
 
     private var selectedRomDisplayName: String {
@@ -2068,31 +2255,73 @@ struct SettingsView: View {
             if !selectedRomFilename.isEmpty && !availableRoms.contains(where: { $0.relativePath == selectedRomFilename }) {
                 selectedRomFilename = ""
             }
+            if updateDefaultPromptsWhenAvailable {
+                checkForDefaultPromptUpdates()
+            }
         }
+        .alert("Update Default Prompts?", isPresented: defaultPromptUpdateAlertIsPresented) {
+            Button("Update") {
+                confirmPendingDefaultPromptUpdate()
+            }
+            Button("Cancel", role: .cancel) {
+                defaultPromptUpdateStatus = "Default prompt update skipped."
+                pendingDefaultPromptUpdate = nil
+            }
+        } message: {
+            Text(defaultPromptUpdateConfirmationMessage)
+        }
+    }
+
+    private var defaultPromptUpdateConfirmationMessage: String {
+        guard let pendingDefaultPromptUpdate else {
+            return ""
+        }
+
+        let names = pendingDefaultPromptUpdate.conflictNames.prefix(6).joined(separator: "\n")
+        let remainingCount = max(0, pendingDefaultPromptUpdate.conflictNames.count - 6)
+        let suffix = remainingCount == 0 ? "" : "\n...and \(remainingCount) more."
+        return "These bundled prompts have local edits and will be replaced by the GitHub version:\n\n\(names)\(suffix)"
     }
 
     private var generalSettings: some View {
         Form {
-            Picker("Default emulator", selection: $emulatorBackend) {
-                ForEach(EmulatorBackend.allCases) { backend in
-                    Text(backend.displayName).tag(backend.rawValue)
+            Section("General") {
+                HStack {
+                    Picker("Default emulator", selection: $emulatorBackend) {
+                        ForEach(EmulatorBackend.allCases) { backend in
+                            Text(backend.displayName).tag(backend.rawValue)
+                        }
+                    }
+                    SettingsInfoButton(text: selectedBackendDescription)
+                }
+
+                Toggle("Automatically run default emulator after assembly", isOn: $autoRunEmulator)
+            }
+
+            Section("UI") {
+                Toggle("Show Boing Ball animation in chat", isOn: $showChatBoingBall)
+                    .accessibilityIdentifier("showChatBoingBallToggle")
+
+                HStack {
+                    Toggle("Automatically inject generated code", isOn: $autoInjectGeneratedCode)
+                        .accessibilityIdentifier("autoInjectGeneratedCodeToggle")
+                    SettingsInfoButton(text: "When enabled, assistant code is inserted after generation and compiler checks finish. If the editor already contains code, the replacement confirmation still appears.")
+                }
+
+                HStack {
+                    Toggle("Update default prompts when available", isOn: defaultPromptUpdateToggle)
+                        .disabled(isCheckingDefaultPromptUpdates)
+                        .accessibilityIdentifier("updateDefaultPromptsToggle")
+                    SettingsInfoButton(text: "When enabled, Amiga Playground checks GitHub for bundled prompt updates. Custom prompts are preserved; locally edited bundled prompts require confirmation before replacement.")
+                }
+
+                if let defaultPromptUpdateStatus {
+                    Text(defaultPromptUpdateStatus)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("defaultPromptUpdateStatus")
                 }
             }
-            Text(selectedBackendDescription)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            Toggle("Automatically run default emulator after assembly", isOn: $autoRunEmulator)
-
-            Toggle("Show Boing Ball animation in chat", isOn: $showChatBoingBall)
-                .accessibilityIdentifier("showChatBoingBallToggle")
-
-            Toggle("Automatically inject generated code", isOn: $autoInjectGeneratedCode)
-                .accessibilityIdentifier("autoInjectGeneratedCodeToggle")
-
-            Text("When enabled, assistant code is inserted after generation and compiler checks finish. If the editor already contains code, the replacement confirmation still appears.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
         .formStyle(.grouped)
         .padding()
@@ -2107,7 +2336,7 @@ struct SettingsView: View {
                     }
                 }
 
-                TextField("Model name", text: $llm.modelName)
+                TextField("Model card name", text: aiSettingsModelName)
                     .textFieldStyle(.roundedBorder)
 
                 TextField("Custom API URL", text: $llm.customUrl)
@@ -2118,9 +2347,15 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
                     .accessibilityIdentifier("activeEndpointLabel")
 
-                Text("Request model: \(llm.requestModelName)")
+                Text("Model card: \(OllamaService.publishedModelDisplayName)")
                     .font(.caption.monospaced())
                     .foregroundStyle(.secondary)
+
+                if llm.requestModelName != aiSettingsModelName.wrappedValue {
+                    Text("API request model: \(llm.requestModelName)")
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Section("Local MLX Server") {
@@ -2230,10 +2465,10 @@ struct SettingsView: View {
                     .font(.body.monospaced())
                     .frame(minHeight: 120)
                     .accessibilityIdentifier("assistantSystemPromptEditor")
-
-                Text("System prompt is sent as a system message before the chat history.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .overlay(alignment: .topTrailing) {
+                        SettingsInfoButton(text: "System prompt is sent as a system message before the chat history.")
+                            .padding(6)
+                    }
             }
         }
         .formStyle(.grouped)
@@ -2247,21 +2482,14 @@ struct SettingsView: View {
     private var hardwareSettings: some View {
         Form {
             Section("Ideal Configuration") {
-                Picker("Preset", selection: hardwarePresetSelection) {
-                    Text("Custom").tag(HardwarePreset.customID)
-                    ForEach(HardwarePreset.presets) { preset in
-                        Text(preset.name).tag(preset.id)
+                HStack {
+                    Picker("Preset", selection: hardwarePresetSelection) {
+                        Text("Custom").tag(HardwarePreset.customID)
+                        ForEach(HardwarePreset.presets) { preset in
+                            Text(preset.name).tag(preset.id)
+                        }
                     }
-                }
-
-                if let selectedPreset = HardwarePreset.presets.first(where: { $0.id == selectedHardwarePresetID }) {
-                    Text(selectedPreset.summary)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("Manual ROM, model, CPU, memory, or JIT settings are active.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    SettingsInfoButton(text: hardwarePresetDescription)
                 }
             }
 
@@ -2327,11 +2555,23 @@ struct SettingsView: View {
 
     private var fsUaeSettings: some View {
         Form {
-            TextField("Custom FS-UAE launch arguments", text: $emulatorCustomArgs)
-                .textFieldStyle(.roundedBorder)
-            Text("These arguments are appended when the default emulator is FS-UAE.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Section("Launch Arguments") {
+                HStack {
+                    Picker("Preset", selection: fsUaeArgumentPresetSelection) {
+                        Text("Custom").tag(FSUAEArgumentPreset.customID)
+                        ForEach(FSUAEArgumentPreset.presets) { preset in
+                            Text(preset.name).tag(preset.id)
+                        }
+                    }
+                    SettingsInfoButton(text: fsUaeArgumentPresetDescription)
+                }
+
+                HStack {
+                    TextField("Custom FS-UAE launch arguments", text: $emulatorCustomArgs)
+                        .textFieldStyle(.roundedBorder)
+                    SettingsInfoButton(text: "These arguments are appended when the default emulator is FS-UAE.")
+                }
+            }
         }
         .formStyle(.grouped)
         .padding()
@@ -2366,6 +2606,48 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .padding()
     }
+}
+
+private struct FSUAEArgumentPreset: Identifiable {
+    static let customID = "custom"
+
+    let id: String
+    let name: String
+    let arguments: String
+    let summary: String
+
+    static let presets: [FSUAEArgumentPreset] = [
+        FSUAEArgumentPreset(
+            id: "fullscreen",
+            name: "Fullscreen display",
+            arguments: "--fullscreen=1 --keep_aspect=1",
+            summary: "Starts FS-UAE fullscreen while preserving the original Amiga display aspect ratio."
+        ),
+        FSUAEArgumentPreset(
+            id: "windowed-hd",
+            name: "Windowed HD",
+            arguments: "--fullscreen=0 --window_width=1280 --window_height=720 --keep_aspect=1",
+            summary: "Forces a 1280x720 window and keeps the Amiga image proportional."
+        ),
+        FSUAEArgumentPreset(
+            id: "low-latency",
+            name: "Low-latency video",
+            arguments: "--video_sync=0 --scanlines=0",
+            summary: "Disables video sync and scanline styling for faster feedback while testing generated code."
+        ),
+        FSUAEArgumentPreset(
+            id: "classic-crt",
+            name: "Classic CRT look",
+            arguments: "--scanlines=1 --keep_aspect=1",
+            summary: "Adds scanlines and keeps the display closer to a classic monitor shape."
+        ),
+        FSUAEArgumentPreset(
+            id: "fast-floppy",
+            name: "Fast floppy loading",
+            arguments: "--floppy_drive_speed=0",
+            summary: "Speeds up disk loading for iteration-heavy compile and run loops."
+        )
+    ]
 }
 
 private struct HardwarePreset: Identifiable {

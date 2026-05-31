@@ -5,6 +5,15 @@ import AppKit
 struct AmigaPlaygroundApp: App {
     @Environment(\.openWindow) private var openWindow
 
+    init() {
+        if CommandLine.arguments.contains("-UITestMode") {
+            UserDefaults.standard.removeObject(forKey: "promptLibraryItems")
+            UserDefaults.standard.removeObject(forKey: "promptLibraryDefaultSeedVersion")
+            UserDefaults.standard.removeObject(forKey: "exampleLibraryItems")
+            UserDefaults.standard.removeObject(forKey: "exampleLibraryDefaultSeedVersion")
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

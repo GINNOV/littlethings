@@ -7,14 +7,28 @@ struct PromptLibraryView: View {
     @State private var selectedPromptID: PromptLibraryItem.ID?
     @State private var draftName = ""
     @State private var draftPrompt = ""
+    @State private var draftMetadata = DemoSchoolMetadata()
     @State private var copiedPromptID: PromptLibraryItem.ID?
+    @State private var difficultyFilter = "All"
+    @State private var stageFilter = "All"
+    @State private var languageFilter = "All"
+    @State private var effectTypeFilter = "All"
+    @State private var hardwareFilter = "All"
+    @State private var statusFilter = "All"
 
     private var filteredPrompts: [PromptLibraryItem] {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return store.prompts }
+        let filter = DemoSchoolLibraryFilter(
+            searchText: searchText,
+            difficulty: difficultyFilter,
+            stage: stageFilter,
+            language: languageFilter,
+            effectType: effectTypeFilter,
+            hardware: hardwareFilter,
+            status: statusFilter
+        )
 
-        return store.prompts.filter {
-            $0.name.localizedCaseInsensitiveContains(query)
+        return store.prompts.filter { item in
+            filter.matches(name: item.name, body: item.prompt, metadata: item.metadata)
         }
     }
 
@@ -22,25 +36,57 @@ struct PromptLibraryView: View {
         store.prompt(withID: selectedPromptID)
     }
 
+    private var previousPrompt: PromptLibraryItem? {
+        adjacentPrompt(offset: -1)
+    }
+
+    private var nextPrompt: PromptLibraryItem? {
+        adjacentPrompt(offset: 1)
+    }
+
     var body: some View {
         NavigationSplitView {
             VStack(spacing: 0) {
+                DemoSchoolFilterBar(
+                    difficulty: $difficultyFilter,
+                    stage: $stageFilter,
+                    language: $languageFilter,
+                    effectType: $effectTypeFilter,
+                    hardware: $hardwareFilter,
+                    status: $statusFilter
+                )
+                .padding(10)
+
                 List(selection: $selectedPromptID) {
                     ForEach(filteredPrompts) { item in
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(item.name.isEmpty ? "Untitled Prompt" : item.name)
-                                .lineLimit(1)
+                        VStack(alignment: .leading, spacing: 5) {
+                            HStack(spacing: 6) {
+                                if item.metadata.status == "Verified" {
+                                    DemoSchoolVerifiedIcon()
+                                }
+
+                                Text(item.name.isEmpty ? "Untitled Prompt" : item.name)
+                                    .font(.body.weight(.medium))
+                                    .lineLimit(1)
+                            }
 
                             Text(item.prompt)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
+
+                            DemoSchoolTagRow(tags: item.metadata.visibleTags)
                         }
+                        .padding(.vertical, 4)
+                        .contentShape(Rectangle())
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(item.name.isEmpty ? "Untitled Prompt" : item.name)
+                        .accessibilityValue("\(item.metadata.difficulty), \(item.metadata.stage), \(item.metadata.status)")
                         .tag(item.id)
                     }
                 }
                 .listStyle(.sidebar)
-                .searchable(text: $searchText, placement: .sidebar, prompt: "Search by name")
+                .searchable(text: $searchText, placement: .sidebar, prompt: "Search prompts and tags")
                 .accessibilityIdentifier("promptLibraryList")
 
                 Divider()
@@ -63,8 +109,11 @@ struct PromptLibraryView: View {
                 ContentUnavailableView("No Prompt Selected", systemImage: "text.quote")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                promptEditor
-                    .padding(16)
+                ScrollView {
+                    promptEditor
+                        .padding(16)
+                }
+                .scrollContentBackground(.hidden)
             }
         }
         .frame(minWidth: 760, minHeight: 460)
@@ -78,10 +127,26 @@ struct PromptLibraryView: View {
 
     private var promptEditor: some View {
         VStack(alignment: .leading, spacing: 12) {
+            if let selectedPrompt {
+                DemoSchoolProgressHeader(
+                    title: draftName,
+                    metadata: draftMetadata,
+                    sequenceNumber: DemoSchoolLibraryProgress.sequenceNumber(from: selectedPrompt.name),
+                    totalCount: store.prompts.count,
+                    previousTitle: previousPrompt?.name,
+                    nextTitle: nextPrompt?.name,
+                    onPrevious: previousPrompt.map { prompt in { selectPrompt(prompt) } },
+                    onNext: nextPrompt.map { prompt in { selectPrompt(prompt) } },
+                    onDependencySelected: openDependencyPrompt
+                )
+                .accessibilityIdentifier("promptProgressHeader")
+            }
+
             HStack(spacing: 10) {
                 TextField("Prompt name", text: $draftName)
                     .textFieldStyle(.roundedBorder)
                     .onSubmit(saveDraft)
+                    .accessibilityLabel("Prompt name")
                     .accessibilityIdentifier("promptNameField")
 
                 Button {
@@ -100,14 +165,22 @@ struct PromptLibraryView: View {
                 .accessibilityIdentifier("deletePromptButton")
             }
 
+            Text("Prompt")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
             TextEditor(text: $draftPrompt)
                 .font(.body.monospaced())
-                .frame(minHeight: 260)
+                .frame(minHeight: 220, idealHeight: 260, maxHeight: 320)
                 .overlay(
                     RoundedRectangle(cornerRadius: 6)
                         .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
                 )
+                .accessibilityLabel("Prompt body")
                 .accessibilityIdentifier("promptBodyEditor")
+
+            DemoSchoolMetadataEditor(metadata: $draftMetadata)
+                .accessibilityIdentifier("promptMetadataEditor")
 
             HStack(spacing: 10) {
                 Button {
@@ -132,9 +205,11 @@ struct PromptLibraryView: View {
                     Text("Updated \(selectedPrompt.updatedAt.formatted(date: .abbreviated, time: .shortened))")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .accessibilityLabel("Last updated \(selectedPrompt.updatedAt.formatted(date: .complete, time: .shortened))")
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var canSaveDraft: Bool {
@@ -153,7 +228,8 @@ struct PromptLibraryView: View {
         store.updatePrompt(
             id: selectedPromptID,
             name: draftName.isEmpty ? "Untitled Prompt" : draftName,
-            prompt: draftPrompt
+            prompt: draftPrompt,
+            metadata: draftMetadata
         )
     }
 
@@ -192,14 +268,42 @@ struct PromptLibraryView: View {
         loadSelectedPromptDraft()
     }
 
+    private func adjacentPrompt(offset: Int) -> PromptLibraryItem? {
+        guard let selectedPromptID,
+              let currentIndex = store.prompts.firstIndex(where: { $0.id == selectedPromptID }) else {
+            return nil
+        }
+
+        let targetIndex = currentIndex + offset
+        guard store.prompts.indices.contains(targetIndex) else { return nil }
+        return store.prompts[targetIndex]
+    }
+
+    private func selectPrompt(_ prompt: PromptLibraryItem) {
+        if canSaveDraft {
+            saveDraft()
+        }
+        selectedPromptID = prompt.id
+        loadSelectedPromptDraft()
+    }
+
+    private func openDependencyPrompt(_ dependency: String) {
+        guard let prompt = store.prompts.first(where: {
+            DemoSchoolLibraryProgress.reference(dependency, matches: $0.name)
+        }) else { return }
+        selectPrompt(prompt)
+    }
+
     private func loadSelectedPromptDraft() {
         guard let selectedPrompt else {
             draftName = ""
             draftPrompt = ""
+            draftMetadata = DemoSchoolMetadata()
             return
         }
 
         draftName = selectedPrompt.name
         draftPrompt = selectedPrompt.prompt
+        draftMetadata = selectedPrompt.metadata
     }
 }

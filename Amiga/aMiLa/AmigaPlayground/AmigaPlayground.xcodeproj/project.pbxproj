@@ -25,6 +25,8 @@
 		A11100002E8000E200000000 /* Services/ExampleLibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000E100000000 /* Services/ExampleLibraryStore.swift */; };
 		A11100002E8000E400000000 /* Views/ExampleLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000E300000000 /* Views/ExampleLibraryView.swift */; };
 		A11100002E8000F200000000 /* Services/AssemblySemanticValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000F100000000 /* Services/AssemblySemanticValidator.swift */; };
+		A11100002E80010200000000 /* Services/DemoSchoolMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80010100000000 /* Services/DemoSchoolMetadata.swift */; };
+		A11100002E80010400000000 /* Views/DemoSchoolLibraryComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80010300000000 /* Views/DemoSchoolLibraryComponents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,6 +68,8 @@
 		A11100002E8000E100000000 /* Services/ExampleLibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/ExampleLibraryStore.swift; sourceTree = "<group>"; };
 		A11100002E8000E300000000 /* Views/ExampleLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/ExampleLibraryView.swift; sourceTree = "<group>"; };
 		A11100002E8000F100000000 /* Services/AssemblySemanticValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AssemblySemanticValidator.swift; sourceTree = "<group>"; };
+		A11100002E80010100000000 /* Services/DemoSchoolMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/DemoSchoolMetadata.swift; sourceTree = "<group>"; };
+		A11100002E80010300000000 /* Views/DemoSchoolLibraryComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/DemoSchoolLibraryComponents.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,6 +140,7 @@
 			children = (
 				A11100002E80001400000000 /* Views/ContentView.swift */,
 				A11100002E80001200000000 /* Views/BoingBallView.swift */,
+				A11100002E80010300000000 /* Views/DemoSchoolLibraryComponents.swift */,
 				A11100002E8000C300000000 /* Views/PromptLibraryView.swift */,
 				A11100002E8000E300000000 /* Views/ExampleLibraryView.swift */,
 				A11100002E80001700000000 /* Views/WebEmulatorView.swift */,
@@ -149,6 +154,7 @@
 				A11100002E8000B100000000 /* Services/AssistantChatSession.swift */,
 				A11100002E8000F100000000 /* Services/AssemblySemanticValidator.swift */,
 				A11100002E80001300000000 /* Services/CompilerService.swift */,
+				A11100002E80010100000000 /* Services/DemoSchoolMetadata.swift */,
 				A11100002E80001600000000 /* Services/EmulatorService.swift */,
 				A11100002E8000E100000000 /* Services/ExampleLibraryStore.swift */,
 				A11100002E8000D100000000 /* Services/MLXServerController.swift */,
@@ -317,6 +323,8 @@
 				A11100002E8000C200000000 /* Services/PromptLibraryStore.swift in Sources */,
 				A11100002E80002900000000 /* Services/VAmigaValidationService.swift in Sources */,
 				A11100002E8000F200000000 /* Services/AssemblySemanticValidator.swift in Sources */,
+				A11100002E80010200000000 /* Services/DemoSchoolMetadata.swift in Sources */,
+				A11100002E80010400000000 /* Views/DemoSchoolLibraryComponents.swift in Sources */,
 				A11100002E8000C400000000 /* Views/PromptLibraryView.swift in Sources */,
 				A11100002E8000E400000000 /* Views/ExampleLibraryView.swift in Sources */,
 				A11100002E80002700000000 /* Views/WebEmulatorView.swift in Sources */,

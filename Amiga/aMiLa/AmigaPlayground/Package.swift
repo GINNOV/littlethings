@@ -18,6 +18,7 @@ let package = Package(
                 "build",
                 "AmigaPlayground.app",
                 "AmigaPlaygroundTests",
+                "AmigaPlaygroundUITests",
                 "AmigaPlayground.xcodeproj",
                 "Helpers",
                 "script"

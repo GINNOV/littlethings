@@ -15,6 +15,7 @@ struct TokenUsage: Codable, Equatable {
 class OllamaService: ObservableObject {
     static let shared = OllamaService()
     static let publishedModelID = "bmove/antigravity-amiga-68k"
+    static let publishedModelDisplayName = publishedModelID
     static let modelCardURL = URL(string: "https://huggingface.co/bmove/antigravity-amiga-68k")!
     static let mlxServerRequestModelName = "default_model"
 
