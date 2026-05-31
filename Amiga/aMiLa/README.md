@@ -1,162 +1,89 @@
-# aMiLa: Commodore Amiga 68k AI Playground & Fine-Tuning Suite
+# aMiLa
 
-`aMiLa` combines a native macOS SwiftUI playground for Amiga 68k development with a local MLX language-model workflow for generating, checking, fixing, saving, and exporting Motorola 68000 assembly.
+aMiLa is a native macOS playground for writing, generating, assembling, and testing Commodore Amiga 68k code.
 
-The current model artifact is published on Hugging Face at [`bmove/antigravity-amiga-68k`](https://huggingface.co/bmove/antigravity-amiga-68k). Large generated model files are intentionally not stored in GitHub.
+It combines:
 
----
+- a SwiftUI editor for Motorola 68000 assembly
+- an AI assistant tuned for Amiga code generation and repair
+- VASM-based assembly checks
+- ADF export
+- emulator launch paths for FS-UAE, vAmiga, and vAmigaWeb
+- an optional local MLX model server
+
+The current model is published at [`bmove/antigravity-amiga-68k`](https://huggingface.co/bmove/antigravity-amiga-68k).
 
 ## Quick Start
 
-### 1. Open The Native macOS Editor
-
-Open the Xcode project:
+Open the macOS app:
 
 ```bash
 open AmigaPlayground/AmigaPlayground.xcodeproj
 ```
 
-Select the `AmigaPlayground` scheme and run it with `Cmd+R`.
+Select the `AmigaPlayground` scheme in Xcode and run it.
 
-The app provides a split workspace with an AI assistant, source editor, compiler console, emulator views, and toolbar actions for assembly, saving, formatting, chat, and ADF export.
+The main workflow is:
 
-### 2. Download The MLX Model
+1. Write or generate 68k assembly in the editor.
+2. Assemble it with VASM.
+3. Ask the assistant to repair compile errors when needed.
+4. Save source, export an ADF, or launch an emulator.
 
-The fused MLX model is hosted on Hugging Face:
+## Local Model
+
+The app can use a local OpenAI-compatible MLX server.
+
+Download the model:
 
 ```bash
 cd fine_tuning
 ./download_model.sh
 ```
 
-By default this downloads `bmove/antigravity-amiga-68k` into:
-
-```text
-fine_tuning/fused_model/
-```
-
-You can override the source repo:
+Start the server:
 
 ```bash
-HF_MODEL_REPO=bmove/antigravity-amiga-68k ./download_model.sh
-```
-
-### 3. Start The Local MLX Server
-
-From the command line:
-
-```bash
-cd fine_tuning
 uv run python -m mlx_lm.server --model fused_model --port 1234
 ```
 
-Or use the app's **Settings > Local MLX Server** controls to start, stop, refresh, and inspect the server. The app uses the OpenAI-compatible endpoint:
+The app also includes controls in **Settings > Local MLX Server** for starting and inspecting the local server.
 
-```text
-http://localhost:1234/v1/chat/completions
-```
+## Main Folders
 
-### 4. Generate And Inject Code
+- `AmigaPlayground/`: the macOS app.
+- `fine_tuning/`: dataset preparation, training scripts, and model download helper.
+- `Dataset/`: Amiga source corpora used for experiments and training.
 
-In the assistant panel:
+## App Features
 
-- Use `Cmd+Enter` to send a prompt.
-- Use **New Chat** to reset the model conversation.
-- Use **Prompt Library** to store, search, copy, and paste reusable prompts.
-- When injecting assistant code, the app asks for confirmation if the editor already contains code.
-- Injected code gets a provenance header containing user, date/time, proposed file name, and prompt.
-- Injection plays a short sound cue.
+- **Assemble**: compile the current source with `vasmm68k_mot`.
+- **Fix Compile Errors with Assistant**: send assembler errors back to the assistant for repair.
+- **Save Code**: save the current editor source.
+- **Indent Code**: format assembly/C source.
+- **Export Bootable ADF**: build an Amiga executable and write an `.adf`.
+- **Run Default Emulator**: launch FS-UAE or vAmiga depending on settings.
+- **Validate with vAmiga**: run the native vAmiga validation path.
+- **Run Web Emulator**: open the embedded vAmigaWeb view.
 
-Useful prompts:
+## Development
 
-```text
-Create a copper list with a bouncing yellow split bar.
-Write a VASM-compatible Motorola 68000 routine that waits for vertical blank.
-Fix the assembler errors below and comment each amended line.
-```
+Requirements:
 
-### 5. Assemble, Fix, Format, Save, And Export
-
-The toolbar and **Playground** menu expose the main editor workflow:
-
-- **Assemble** (`Cmd+R`): runs `vasmm68k_mot` and switches to the Console tab.
-- **Fix Compile Errors with Assistant** (`Cmd+Option+F`): sends assembler errors back to the assistant for targeted repair.
-- **Save Code...** (`Cmd+S`): saves the current editor source.
-- **Indent Code** (`Cmd+Option+I`): formats assembly/C source with vasm-oriented indentation.
-- **Export Bootable ADF...**: builds an Amiga executable and writes an 880 KB OFS `.adf`.
-- **Run Default Emulator**, **Validate with vAmiga**, and **Run Web Emulator**: launch available emulator validation paths.
-
----
-
-## Project Architecture
-
-```mermaid
-graph TD
-    A[Curated Amiga ASM/C sources] --> B[Dataset preparation]
-    B --> C[VASM and source filtering gates]
-    C --> D[JSONL training splits]
-    D --> E[MLX LoRA fine-tuning]
-    E --> F[Fused MLX model]
-    F --> G[Hugging Face model repo]
-    G --> H[download_model.sh]
-    H --> I[Local fused_model directory]
-    I --> J[MLX-LM OpenAI-compatible server]
-    J --> K[SwiftUI Amiga Playground]
-    K --> L[vasmm68k_mot compiler]
-    K --> M[ADF export via amitools xdftool]
-    K --> N[FS-UAE / vAmiga / web emulator validation]
-```
-
-### Repository Layout
-
-- `AmigaPlayground/`: native macOS SwiftUI app.
-- `AmigaPlayground/App/`: app entry point and macOS scenes.
-- `AmigaPlayground/Views/`: main editor UI, prompt library, Boing Ball view, and web emulator view.
-- `AmigaPlayground/Services/`: compiler, assistant streaming, prompt storage, MLX server control, emulator launching, and vAmiga validation services.
-- `AmigaPlayground/AmigaPlaygroundTests/`: unit tests for compiler, ADF, streaming, prompt library, MLX server invocation, and related services.
-- `fine_tuning/`: MLX-LoRA training, dataset preparation, model download helper, and local generated model output.
-- `Dataset/`: local source corpora. Some nested corpus directories are independent Git working trees.
-
-Generated artifacts ignored by Git include:
-
-- `aMiLa/fine_tuning/adapters/`
-- `aMiLa/fine_tuning/fused_model/`
-- `aMiLa/fine_tuning/*.gguf`
-- `aMiLa/fine_tuning/server.log`
-- `aMiLa/Dataset/corpus1/corpus_manifest.jsonl`
-
----
-
-## Developer Setup
-
-### Prerequisites
-
-- Xcode and macOS Command Line Tools
-- `vasmm68k_mot` with Motorola syntax and hunk output support
+- Xcode
+- macOS Command Line Tools
+- `vasmm68k_mot`
 - Python 3.10+
 - `uv`
-- Hugging Face CLI (`hf`) for model download/upload
 
-Install common dependencies:
-
-```bash
-brew install uv
-```
-
-Install or build `vasm` according to your local toolchain. The app expects to find `vasmm68k_mot` in a standard executable path.
-
-### Python Environment
+Install Python tooling:
 
 ```bash
 cd fine_tuning
 uv sync
 ```
 
-`uv sync` installs the Python tooling used by MLX-LM and the `amitools`/`xdftool` path used by the app for ADF generation.
-
-### Build The App
-
-Recommended:
+Build from the command line:
 
 ```bash
 xcodebuild \
@@ -166,65 +93,12 @@ xcodebuild \
   build
 ```
 
-The most recent verification was a successful macOS Xcode build after the Hugging Face/model cleanup.
-
----
-
-## Fine-Tuning Workflow
-
-The detailed retraining checklist lives in [`fine_tuning/README.md`](fine_tuning/README.md).
-
-High-level flow:
-
-```bash
-cd fine_tuning
-uv sync
-uv run python prepare_dataset.py
-uv run python split_dataset.py
-./finetune.sh
-```
-
-Current published model:
-
-- Model repo: [`bmove/antigravity-amiga-68k`](https://huggingface.co/bmove/antigravity-amiga-68k)
-- Base model: `mlx-community/gemma-4-e4b-it-4bit`
-- Format: MLX fused checkpoint with LoRA adapter checkpoints also uploaded
-- Training length documented on the model card: 1,500 iterations
-- License metadata: Apache 2.0
-- Hub tags include: `mlx`, `m68k`, `assembly`, `retrocomputing`, `amiga`, `c`, `vasm`
-
-When regenerated, publish model artifacts to Hugging Face and keep GitHub limited to source code, scripts, app code, and lightweight metadata.
-
----
-
-## Recommended Assembly System Prompt
-
-```text
-You are AntigravityAmiga, an elite Amiga 68000 Motorola assembly programmer.
-Write highly optimized, clean, and 100% compilable Motorola 68k assembly code.
-
-CRITICAL DIRECTIVES:
-- DO NOT leak C-style preprocessor directives (#define, #include, #ifdef) into assembly code.
-- DO NOT use C-style comments (// or /* */). All assembly comments MUST start with a semicolon (;).
-- Use VASM-compatible include statements, for example: include "exec/types.i".
-- Ensure directives such as SECTION, MOVE, DC, DS, and RTS have leading spaces when needed so they are not treated as compiler labels.
-- When amending code from an assembler error log, change only the lines needed and add semicolon comments on the amended lines explaining the correction.
-```
-
----
+Fine-tuning details live in [`fine_tuning/README.md`](fine_tuning/README.md).
 
 ## Contributing
 
-Useful contributions include:
+Useful contributions include Amiga assembly/C examples, prompt library entries, compiler-repair cases, UI improvements, and emulator validation fixes.
 
-- New reviewed Amiga assembly/C examples.
-- Compiler-error repair prompt examples.
-- Prompt library entries.
-- SwiftUI workflow refinements.
-- Emulator validation improvements.
-
-Open issues in the parent repository:
+Issues are tracked in the parent repository:
 
 <https://github.com/GINNOV/littlethings/issues>
-
-When reporting bugs, strip proprietary code and any sensitive local paths or tokens from logs before posting.
