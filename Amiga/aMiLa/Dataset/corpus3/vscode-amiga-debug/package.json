@@ -559,8 +559,9 @@
 		"@types/react-highlight-words": "^0.16.7",
 		"@types/react-tabs": "^2.3.4",
 		"@types/vscode": "^1.46",
-		"@typescript-eslint/eslint-plugin": "^6.21.0",
-		"@typescript-eslint/parser": "^6.21.0",
+		"@typescript-eslint/eslint-plugin": "^8.60.0",
+		"@typescript-eslint/parser": "^8.60.0",
+		"@vscode/test-electron": "^2.5.2",
 		"base64-encoding": "^0.15.0-alpha.0",
 		"clean-webpack-plugin": "^4.0.0",
 		"css-loader": "^6.10.0",
@@ -571,9 +572,9 @@
 		"eslint-plugin-jsdoc": "^48.0.6",
 		"eslint-plugin-prefer-arrow": "^1.2.3",
 		"fork-ts-checker-webpack-plugin": "^9.0.2",
-		"glob": "^8.1.0",
+		"glob": "^13.0.6",
 		"markdown-to-jsx": "^7.4.1",
-		"mocha": "^10.2.0",
+		"mocha": "^11.3.0",
 		"preact": "^10.19.3",
 		"preact-virtual-list": "^0.3.1",
 		"pubsub-js": "^1.9.4",
@@ -586,13 +587,12 @@
 		"source-map-loader": "^5.0.0",
 		"style-loader": "^3.3.4",
 		"svg-inline-loader": "^0.8.2",
-		"terser-webpack-plugin": "^5.3.10",
+		"terser-webpack-plugin": "^5.6.1",
 		"ts-loader": "^9.5.1",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.3.3",
 		"vscode-debugadapter-testsupport": "^1.51.0",
-		"vscode-test": "^1.6.1",
-		"webpack": "^5.90.1",
+		"webpack": "^5.107.2",
 		"webpack-cli": "^5.1.4",
 		"zustand": "^4.5.0"
 	},
@@ -606,5 +606,8 @@
 	"vsce": {
 		"dependencies": false,
 		"useYarn": false
+	},
+	"overrides": {
+		"serialize-javascript": "^7.0.5"
 	}
 }
