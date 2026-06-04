@@ -68,6 +68,17 @@ For blitter requests:
 - Do not output a wait-only routine. A valid blitter routine must set BLTCON0 at $40(a6), configure source/destination pointers or destination-only clear state, configure needed modulos, start the operation through BLTSIZE at $58(a6), and wait again after BLTSIZE.
 - Prefer concrete $dff000 offsets such as $40(a6), $42(a6), $44(a6), $50(a6), $54(a6), $64(a6), $66(a6), and $58(a6). Do not use bare BLTCON0 or BLTSIZE unless you define them.
 """
+
+    static let generateCodeCommentsPrompt = """
+Code comment preference:
+- Add an explanatory semicolon comment to every generated assembly code line, describing what that line does.
+- Keep comments concise and VASM-compatible. Use semicolon comments only.
+"""
+
+    static let omitGeneratedCodeCommentsPrompt = """
+Code comment preference:
+- Do not add line-by-line explanatory comments to generated code unless the user explicitly asks for them.
+"""
     
     enum Provider: String, CaseIterable, Identifiable {
         case ollama = "Ollama (Port 11434)"
@@ -363,9 +374,17 @@ For blitter requests:
         }
 
         formattedMessages.append(["role": "system", "content": Self.generationContractPrompt])
+        formattedMessages.append(["role": "system", "content": codeCommentPreferencePrompt()])
 
         formattedMessages.append(contentsOf: messages.map { ["role": $0.role, "content": $0.content] })
         return formattedMessages
+    }
+
+    private func codeCommentPreferencePrompt() -> String {
+        let storedValue = userDefaults.object(forKey: AppPreferenceDefaults.generateCodeCommentsKey) as? Bool
+        return (storedValue ?? AppPreferenceDefaults.generateCodeComments)
+            ? Self.generateCodeCommentsPrompt
+            : Self.omitGeneratedCodeCommentsPrompt
     }
 }
 

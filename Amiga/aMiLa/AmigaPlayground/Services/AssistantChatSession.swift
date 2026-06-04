@@ -11,6 +11,167 @@ struct AssistantChatCompletion {
     let consoleMessage: String?
 }
 
+enum AssistantSourceEditPlanner {
+    static func shouldEditExistingSource(prompt: String, source: String) -> Bool {
+        let normalized = prompt.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty,
+              !source.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return false
+        }
+
+        let generationStarters = ["generate", "create", "write", "build", "produce"]
+        let startsAsNewGeneration = generationStarters.contains { starts(with: $0, in: normalized) }
+        let wordEditSignals = [
+            "set", "change", "update", "modify", "adjust", "replace",
+            "add", "remove", "delete", "turn", "switch", "use",
+            "preserve", "front", "back", "faster", "slower",
+            "brighter", "darker"
+        ]
+        let phraseEditSignals = [
+            "make it", "make this", "make the current", "without changing",
+            "do not change", "don't change", "keep the code",
+            "slow down", "speed up"
+        ]
+        let hasEditSignal = wordEditSignals.contains { containsWord($0, in: normalized) } ||
+            phraseEditSignals.contains { containsPhrase($0, in: normalized) }
+        let explicitlyTargetsExistingSource = containsWord("current", in: normalized) ||
+            containsWord("existing", in: normalized)
+
+        return hasEditSignal && (!startsAsNewGeneration || explicitlyTargetsExistingSource)
+    }
+
+    static func requestMessages(from messages: [OllamaService.ChatMessage], userPrompt: String, source: String) -> [OllamaService.ChatMessage] {
+        let editPrompt = wrappedEditPrompt(userPrompt: userPrompt, source: source)
+        guard !messages.isEmpty else {
+            return [OllamaService.ChatMessage(role: "user", content: editPrompt)]
+        }
+
+        var editedMessages = messages
+        editedMessages[editedMessages.count - 1] = OllamaService.ChatMessage(role: "user", content: editPrompt)
+        return editedMessages
+    }
+
+    static func wrappedEditPrompt(userPrompt: String, source: String) -> String {
+        let language = AssemblySourceFormatter.looksLikeC(source) ? "c" : "assembly"
+        return """
+        You are editing the source code currently open in the editor.
+
+        User requested this change:
+        \(userPrompt)
+
+        Edit contract:
+        - Modify the existing source below; do not start a new program from scratch.
+        - Preserve labels, routines, setup/teardown code, comments, and structure unless the requested change requires a local edit.
+        - Make the smallest coherent change that satisfies the request.
+        - Return the complete updated source, not a fragment or explanation.
+        - Return exactly one fenced code block tagged \(language), with no prose outside it.
+
+        Current editor source:
+        ```\(language)
+        \(source)
+        ```
+        """
+    }
+
+    private static func starts(with word: String, in normalizedPrompt: String) -> Bool {
+        normalizedPrompt.split { !$0.isLetter && !$0.isNumber }.first.map(String.init) == word.lowercased()
+    }
+
+    private static func containsWord(_ word: String, in normalizedPrompt: String) -> Bool {
+        normalizedPrompt.split { !$0.isLetter && !$0.isNumber }.contains { $0 == word.lowercased() }
+    }
+
+    private static func containsPhrase(_ phrase: String, in normalizedPrompt: String) -> Bool {
+        let promptTokens = normalizedPrompt.split { !$0.isLetter && !$0.isNumber }
+        let phraseTokens = phrase.lowercased().split { !$0.isLetter && !$0.isNumber }
+        guard !phraseTokens.isEmpty,
+              phraseTokens.count <= promptTokens.count else {
+            return false
+        }
+        for start in 0...(promptTokens.count - phraseTokens.count) {
+            let window = promptTokens[start..<(start + phraseTokens.count)]
+            if zip(window, phraseTokens).allSatisfy({ $0 == $1 }) {
+                return true
+            }
+        }
+        return false
+    }
+}
+
+enum AssistantPromptRoute: Equatable {
+    case structuredModelPatch(AmigaProgramFollowUpPatchOutcome)
+    case sourceEdit
+    case generation
+}
+
+enum AssistantPromptRouter {
+    static func route(prompt: String, source: String, isSelfCorrection: Bool) -> AssistantPromptRoute {
+        guard !isSelfCorrection else { return .generation }
+
+        let structuredPatch = AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: source)
+        switch structuredPatch {
+        case .patched, .rejected:
+            return .structuredModelPatch(structuredPatch)
+        case .notRecognized:
+            break
+        }
+
+        if AssistantSourceEditPlanner.shouldEditExistingSource(prompt: prompt, source: source) {
+            return .sourceEdit
+        }
+
+        return .generation
+    }
+}
+
+enum AssistantReliabilityGatePolicy {
+    static func allowsFreeFormRepair(source: String) -> Bool {
+        AmigaSourceIndexer.index(source).model == nil
+    }
+
+    static func terminalFailureMessage(source: String, failures: [String]) -> String {
+        let firstFailure = failures.first ?? "reliability gate failed"
+        guard !allowsFreeFormRepair(source: source) else {
+            return "Failed: \(firstFailure)"
+        }
+
+        return "Failed structured model-backed reliability gate. The app did not run free-form repair; editor content was kept.\nFirst failure: \(firstFailure)"
+    }
+}
+
+enum AssistantStructuredPatchRejectionPresenter {
+    static func assistantMessage(failures: [String]) -> String {
+        """
+        I could not safely apply that source-aware Amiga program patch:
+        \(bulletList(from: failures))
+
+        I left the editor unchanged.
+        """
+    }
+
+    static func consoleMessage(failures: [String]) -> String {
+        """
+        Source-aware Amiga program patch rejected. The app did not fall back to free-form model editing.
+        Failures:
+        \(bulletList(from: failures))
+        """
+    }
+
+    private static func bulletList(from failures: [String]) -> String {
+        let normalizedFailures = failures
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        guard !normalizedFailures.isEmpty else {
+            return "- structured patch was rejected"
+        }
+
+        return normalizedFailures
+            .map { "- \($0)" }
+            .joined(separator: "\n")
+    }
+}
+
 final class AssistantChatSession: ObservableObject {
     @Published private(set) var messages: [OllamaService.ChatMessage] = []
     @Published private(set) var currentGeneration = ""
@@ -267,6 +428,10 @@ enum AssistantPromptTemplate {
 
     static func match(for prompt: String) -> AssistantPromptTemplateMatch? {
         let normalized = prompt.lowercased()
+
+        if let programMatch = AmigaProgramFollowUpPlanner.modPlayerControlsMatch(for: prompt) {
+            return programMatch
+        }
 
         if normalized.contains("mini demo") || normalized.contains("megamix") || normalized.contains("scene plan") {
             return makeMatch(
@@ -595,15 +760,22 @@ enum AssistantPromptTemplate {
             )
         }
 
-        if normalized.contains("double buffer") || normalized.contains("double-buffer") || normalized.contains("double buffered") {
+        if isDoubleBufferedBitplanePrompt(normalized) {
+            let frontColor = requestedRoleColorName(from: prompt, role: "front") ?? "yellow"
+            let backColor = requestedRoleColorName(from: prompt, role: "back") ?? "cyan"
+            guard let source = try? AmigaProgramTemplate.verifiedDoubleBufferedBitplaneSource(frontColor: frontColor, backColor: backColor) else {
+                return nil
+            }
             return makeMatch(
                 prompt: prompt,
-                source: doubleBufferedBitplaneDemo,
+                source: source,
                 id: "double-buffer-bitplane",
-                name: "Double-buffered bitplane animation",
+                name: "Model-backed double-buffered bitplane",
                 parameters: [
                     "mode": "double buffered",
-                    "object": "bitplane"
+                    "object": "bitplane",
+                    "frontColor": frontColor,
+                    "backColor": backColor
                 ]
             )
         }
@@ -768,6 +940,20 @@ enum AssistantPromptTemplate {
             (normalized.contains("input") && !normalized.contains("copper") && !normalized.contains("sprite"))
     }
 
+    private static func isDoubleBufferedBitplanePrompt(_ normalized: String) -> Bool {
+        let hasDoubleBufferSignal = containsPhrase("double buffer", in: normalized) ||
+            containsPhrase("double buffered", in: normalized)
+        let hasBitplaneSignal = containsWord("bitplane", in: normalized) ||
+            containsWord("bitplanes", in: normalized)
+        let hasEffectSignal = containsWord("swap", in: normalized) ||
+            containsWord("swaps", in: normalized) ||
+            containsWord("pointer", in: normalized) ||
+            containsWord("pointers", in: normalized) ||
+            containsWord("animation", in: normalized) ||
+            containsPhrase("front and back", in: normalized)
+        return hasDoubleBufferSignal && hasBitplaneSignal && hasEffectSignal
+    }
+
     private static func isWaitOrMouseExitPrompt(_ normalized: String) -> Bool {
         let asksForWait = normalized.contains("wait loop") ||
             normalized.contains("vblank") ||
@@ -861,8 +1047,45 @@ enum AssistantPromptTemplate {
         return nil
     }
 
+    private static func requestedRoleColorName(from prompt: String, role: String) -> String? {
+        let normalized = prompt.lowercased()
+        guard let roleRange = normalized.range(of: role) else { return nil }
+        let searchEnd = normalized.index(roleRange.upperBound, offsetBy: 80, limitedBy: normalized.endIndex) ?? normalized.endIndex
+        let nearbyText = normalized[roleRange.upperBound..<searchEnd]
+        var closestColor: (name: String, distance: Int)?
+        for color in ["white", "yellow", "green", "cyan", "blue", "purple", "magenta", "red", "orange"] {
+            guard let colorRange = nearbyText.range(of: color) else { continue }
+            let distance = nearbyText.distance(from: nearbyText.startIndex, to: colorRange.lowerBound)
+            if closestColor == nil || distance < closestColor!.distance {
+                closestColor = (color, distance)
+            }
+        }
+        return closestColor?.name
+    }
+
     private static func requestedColorValue(from prompt: String) -> String {
         switch requestedColorName(from: prompt) {
+        case "white":
+            return "$0fff"
+        case "green":
+            return "$00f0"
+        case "cyan":
+            return "$00ff"
+        case "blue":
+            return "$000f"
+        case "purple", "magenta":
+            return "$0f0f"
+        case "red":
+            return "$0f00"
+        case "orange":
+            return "$0f80"
+        default:
+            return "$0ff0"
+        }
+    }
+
+    private static func colorValue(named color: String?) -> String {
+        switch color {
         case "white":
             return "$0fff"
         case "green":
@@ -900,6 +1123,28 @@ enum AssistantPromptTemplate {
         }
 
         return Array(NSOrderedSet(array: suggestions)) as? [String] ?? suggestions
+    }
+
+    private static func containsWord(_ word: String, in normalizedPrompt: String) -> Bool {
+        normalizedPrompt
+            .split { !$0.isLetter && !$0.isNumber }
+            .contains { $0 == word }
+    }
+
+    private static func containsPhrase(_ phrase: String, in normalizedPrompt: String) -> Bool {
+        let promptTokens = normalizedPrompt.split { !$0.isLetter && !$0.isNumber }
+        let phraseTokens = phrase.lowercased().split { !$0.isLetter && !$0.isNumber }
+        guard !phraseTokens.isEmpty,
+              phraseTokens.count <= promptTokens.count else {
+            return false
+        }
+        for start in 0...(promptTokens.count - phraseTokens.count) {
+            let window = promptTokens[start..<(start + phraseTokens.count)]
+            if zip(window, phraseTokens).allSatisfy({ $0 == $1 }) {
+                return true
+            }
+        }
+        return false
     }
 
     private static func textEffectSource(for prompt: String, normalized: String) -> String? {
@@ -1838,81 +2083,6 @@ CopperList:
             dc.w       $8807,$fffe,$0180,$0ccc
             dc.w       $9807,$fffe,$0180,$0eee
             dc.w       $ffff,$fffe
-"""
-
-    private static let doubleBufferedBitplaneDemo = """
-; Double-buffered bitplane animation template.
-            SECTION    Code,CODE,CHIP
-            XDEF       _Start
-_Start:
-            movem.l    d2/a2-a3/a6,-(sp)
-            lea        $dff000,a6
-            lea        BufferA,a2
-            lea        BufferB,a3
-            move.w     #$1200,$100(a6)      ; BPLCON0: one low-res bitplane
-            move.w     #$0000,$102(a6)      ; BPLCON1
-            move.w     #$0000,$104(a6)      ; BPLCON2
-            move.w     #$0000,$108(a6)      ; BPL1MOD
-            move.w     #$0000,$10a(a6)      ; BPL2MOD
-            move.w     #$0000,$180(a6)
-            move.w     #$0fff,$182(a6)
-            move.w     #$8300,$96(a6)       ; master DMA + bitplane DMA
-
-            moveq      #0,d2
-.main:
-            btst       #6,$bfe001
-            beq.s      .done
-            bsr.s      WaitVBlank
-            tst.b      d2
-            bne.s      .showB
-.showA:
-            move.l     a2,$e0(a6)           ; BPL1PT
-            bsr.s      DrawBufferB
-            moveq      #1,d2
-            bra.s      .main
-.showB:
-            move.l     a3,$e0(a6)           ; BPL1PT
-            bsr.s      DrawBufferA
-            moveq      #0,d2
-            bra.s      .main
-
-.done:
-            move.w     #$0100,$96(a6)
-            movem.l    (sp)+,d2/a2-a3/a6
-            moveq      #0,d0
-            rts
-
-DrawBufferA:
-            lea        BufferA,a0
-            lea        PatternA,a1
-            bra.s      CopyPattern
-
-DrawBufferB:
-            lea        BufferB,a0
-            lea        PatternB,a1
-
-CopyPattern:
-            moveq      #31,d0
-.copy:
-            move.l     (a1)+,(a0)+
-            dbf        d0,.copy
-            rts
-
-WaitVBlank:
-            cmp.b      #$ff,$06(a6)
-            bne.s      WaitVBlank
-.leave:
-            cmp.b      #$ff,$06(a6)
-            beq.s      .leave
-            rts
-
-            SECTION    ChipData,DATA,CHIP
-BufferA:    ds.b       40*256
-BufferB:    ds.b       40*256
-PatternA:
-            dcb.l      32,$aaaaaaaa
-PatternB:
-            dcb.l      32,$55555555
 """
 
     private static let frameSyncedAudioIntroDemo = """
@@ -3984,7 +4154,10 @@ enum AssemblySourceFormatter {
     }
 
     static func commentedSource(from source: String) -> String {
-        looksLikeC(source) ? commentC(source) : commentAssembly(source)
+        guard AmigaSourceIndexer.index(source).model == nil else {
+            return source
+        }
+        return looksLikeC(source) ? commentC(source) : commentAssembly(source)
     }
 
     static func looksLikeC(_ source: String) -> Bool {

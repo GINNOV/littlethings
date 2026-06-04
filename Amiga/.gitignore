@@ -14,3 +14,6 @@ aMiLa/fine_tuning/fused_model/
 *.safetensors
 *.profraw
 *.bundle
+Tutorials/amiga-assembler-class/build/
+Tutorials/amiga-assembler-class/interactive-app/node_modules/
+Tutorials/amiga-assembler-class/interactive-app/dist/

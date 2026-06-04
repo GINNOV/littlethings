@@ -37,6 +37,8 @@ enum AppPreferenceDefaults {
     static let showChatBoingBall = true
     static let autoInjectGeneratedCodeKey = "autoInjectGeneratedCode"
     static let autoInjectGeneratedCode = true
+    static let generateCodeCommentsKey = "generateCodeComments"
+    static let generateCodeComments = true
     static let updateDefaultPromptsWhenAvailableKey = "updateDefaultPromptsWhenAvailable"
     static let updateDefaultPromptsWhenAvailable = false
 }
@@ -306,6 +308,7 @@ CopperList:
     @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
     @AppStorage(AppPreferenceDefaults.showChatBoingBallKey) private var showChatBoingBall: Bool = AppPreferenceDefaults.showChatBoingBall
     @AppStorage(AppPreferenceDefaults.autoInjectGeneratedCodeKey) private var autoInjectGeneratedCode: Bool = AppPreferenceDefaults.autoInjectGeneratedCode
+    @AppStorage(AppPreferenceDefaults.generateCodeCommentsKey) private var generateCodeComments: Bool = AppPreferenceDefaults.generateCodeComments
 
     // Compilation & Output State
     @State private var outputConsole: String = "VASM compiler idle.\nPress Assemble to build the program."
@@ -1340,15 +1343,67 @@ SineWave:
             return
         }
 
+        let assistantRoute = AssistantPromptRouter.route(
+            prompt: submittedPrompt,
+            source: codeText,
+            isSelfCorrection: selfCorrectionAttempts > 0
+        )
+
+        if case .structuredModelPatch(let patchOutcome) = assistantRoute {
+            switch patchOutcome {
+            case .patched(let programPatch):
+                activeTemplateMatch = nil
+                generatedCodeTemplateMatch = nil
+                activeOutputTab = .console
+                outputConsole = "Applied source-aware Amiga program patch.\nChanged regions: \(programPatch.changedRegions.joined(separator: ", "))\nValidation: compiling"
+                let response = """
+                ```assembly
+                \(programPatch.source)
+                ```
+                """
+                let completion = assistantChat.complete(fullResponse: response, streamedResponse: "")
+                guard let injectedCode = completion.injectedCode else { return }
+                runAssemblyReliabilityGate(injectedCode, submittedPrompt: submittedPrompt)
+                return
+            case .rejected(let failures):
+                activeTemplateMatch = nil
+                generatedCodeTemplateMatch = nil
+                activeOutputTab = .console
+                assistantGenerationPhase = .idle
+                _ = assistantChat.complete(
+                    fullResponse: AssistantStructuredPatchRejectionPresenter.assistantMessage(failures: failures),
+                    streamedResponse: ""
+                )
+                outputConsole = AssistantStructuredPatchRejectionPresenter.consoleMessage(failures: failures)
+                return
+            case .notRecognized:
+                break
+            }
+        }
+
+        let shouldEditCurrentSource = assistantRoute == .sourceEdit
+        let streamMessages = shouldEditCurrentSource
+            ? AssistantSourceEditPlanner.requestMessages(from: request.messages, userPrompt: submittedPrompt, source: codeText)
+            : request.messages
+
+        if shouldEditCurrentSource {
+            activeTemplateMatch = nil
+            generatedCodeTemplateMatch = nil
+            activeOutputTab = .console
+            outputConsole = "Editing current editor source with model context. The existing code was sent as the source of truth; validation will compile the edited result."
+        }
+
         if selfCorrectionAttempts == 0,
+           !shouldEditCurrentSource,
            let templateMatch = AssistantPromptTemplate.match(for: submittedPrompt) {
             activeTemplateMatch = templateMatch
             generatedCodeTemplateMatch = nil
             activeOutputTab = .console
             outputConsole = "\(templateMatch.consoleSummary)\nValidation: preparing generated source"
+            let templateSource = sourceRespectingGeneratedCommentPreference(templateMatch.source)
             let response = """
             ```assembly
-            \(templateMatch.source)
+            \(templateSource)
             ```
             """
             let completion = assistantChat.complete(fullResponse: response, streamedResponse: "")
@@ -1358,7 +1413,7 @@ SineWave:
             return
         }
 
-        if selfCorrectionAttempts == 0 {
+        if selfCorrectionAttempts == 0 && !shouldEditCurrentSource {
             activeTemplateMatch = nil
             generatedCodeTemplateMatch = nil
             activeOutputTab = .console
@@ -1371,7 +1426,7 @@ SineWave:
             outputConsole = assistantGenerationPhase.consoleMessage
         }
         currentChatTask = OllamaService.shared.streamChat(
-            messages: request.messages,
+            messages: streamMessages,
             adapterPath: adapterPath,
             onContentChunk: { chunk in
                 llm.markConnected()
@@ -1513,7 +1568,8 @@ SineWave:
                 semanticFailures: semanticResult.failures
             )
 
-            if self.selfCorrectionAttempts < 2 {
+            if AssistantReliabilityGatePolicy.allowsFreeFormRepair(source: source),
+               self.selfCorrectionAttempts < 2 {
                 self.selfCorrectionAttempts += 1
                 assistantGenerationPhase = .repairing(attempt: self.selfCorrectionAttempts)
                 outputConsole = assistantGenerationPhase.consoleMessage
@@ -1532,7 +1588,7 @@ SineWave:
             assistantGenerationPhase = .idle
             activeTemplateMatch = nil
             generatedCodeTemplateMatch = nil
-            outputConsole = "Failed: \(gateFailures.first ?? "reliability gate failed")"
+            outputConsole = AssistantReliabilityGatePolicy.terminalFailureMessage(source: source, failures: gateFailures)
         }
     }
 
@@ -1670,7 +1726,15 @@ SineWave:
             return
         }
 
-        injectGeneratedCode(source, prompt: prompt, consoleMessage: autoInjectConsoleMessage)
+        injectGeneratedCode(
+            sourceRespectingGeneratedCommentPreference(source),
+            prompt: prompt,
+            consoleMessage: autoInjectConsoleMessage
+        )
+    }
+
+    private func sourceRespectingGeneratedCommentPreference(_ source: String) -> String {
+        generateCodeComments ? AssemblySourceFormatter.commentedSource(from: source) : source
     }
 
     private func confirmReplacingEditorIfNeeded() -> Bool {
@@ -1881,6 +1945,7 @@ struct SettingsView: View {
     @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
     @AppStorage(AppPreferenceDefaults.showChatBoingBallKey) private var showChatBoingBall: Bool = AppPreferenceDefaults.showChatBoingBall
     @AppStorage(AppPreferenceDefaults.autoInjectGeneratedCodeKey) private var autoInjectGeneratedCode: Bool = AppPreferenceDefaults.autoInjectGeneratedCode
+    @AppStorage(AppPreferenceDefaults.generateCodeCommentsKey) private var generateCodeComments: Bool = AppPreferenceDefaults.generateCodeComments
     @AppStorage(AppPreferenceDefaults.updateDefaultPromptsWhenAvailableKey) private var updateDefaultPromptsWhenAvailable: Bool = AppPreferenceDefaults.updateDefaultPromptsWhenAvailable
     @AppStorage("romsDirectoryPath") private var romsDirectoryPath: String = EmulatorService.defaultRomsDirectory
 
@@ -2236,6 +2301,10 @@ struct SettingsView: View {
                 .tabItem { Label("AI", systemImage: "sparkles") }
                 .accessibilityIdentifier("settingsAITab")
 
+            codeSettings
+                .tabItem { Label("Code", systemImage: "chevron.left.forwardslash.chevron.right") }
+                .accessibilityIdentifier("settingsCodeTab")
+
             hardwareSettings
                 .tabItem { Label("Hardware", systemImage: "cpu") }
                 .accessibilityIdentifier("settingsHardwareTab")
@@ -2477,6 +2546,22 @@ struct SettingsView: View {
         .onAppear {
             mlxServer.refreshStatus()
         }
+    }
+
+    private var codeSettings: some View {
+        Form {
+            Section("Code") {
+                HStack {
+                    Toggle("Generate comments", isOn: $generateCodeComments)
+                        .toggleStyle(.checkbox)
+                        .accessibilityIdentifier("generateCodeCommentsToggle")
+                    SettingsInfoButton(text: "When enabled, generated source asks the assistant to add an explanatory semicolon comment to each code line.")
+                }
+            }
+        }
+        .formStyle(.grouped)
+        .padding()
+        .accessibilityIdentifier("codeSettingsPane")
     }
 
     private var hardwareSettings: some View {

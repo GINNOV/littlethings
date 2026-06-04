@@ -13,6 +13,7 @@ extension Notification.Name {
 @main
 struct PixDeluxeApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    private let updaterController = UpdaterController()
 
     var body: some Scene {
         DocumentGroup(newDocument: PixDeluxeDocument()) { file in
@@ -24,6 +25,7 @@ struct PixDeluxeApp: App {
         .commands {
             UtilitiesCommands()
             BrowserCommands()
+            UpdaterCommands(updaterController: updaterController)
         }
         
         Window("Image Browser", id: "image-browser") {

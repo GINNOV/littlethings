@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AC9F10112F00000100AA0001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = AC9F10132F00000100AA0001 /* Sparkle */; };
 		ACCDF5EF2E1BEEA800BC736E /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ACCDF5EE2E1BEEA800BC736E /* Quartz.framework */; };
 		ACCDF5FC2E1BEEA800BC736E /* IFFPreviewExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ACCDF5EC2E1BEEA800BC736E /* IFFPreviewExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		ACCDF6072E1BF54000BC736E /* QuickLook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ACCDF6062E1BF54000BC736E /* QuickLook.framework */; };
@@ -78,6 +79,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC9F10112F00000100AA0001 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,6 +149,7 @@
 			);
 			name = IFFViewer;
 			packageProductDependencies = (
+				AC9F10132F00000100AA0001 /* Sparkle */,
 			);
 			productName = IFFViewer;
 			productReference = ACCDF5D92E1BEE8600BC736E /* IFFViewer.app */;
@@ -202,6 +205,9 @@
 			);
 			mainGroup = ACCDF5D02E1BEE8600BC736E;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AC9F10122F00000100AA0001 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = ACCDF5DA2E1BEE8600BC736E /* Products */;
 			projectDirPath = "";
@@ -392,6 +398,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_SUFeedURL = "https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/appcast-iffviewer.xml";
+				INFOPLIST_KEY_SUPublicEDKey = "Oq4b/BX26tC2nXfh+dmMFoHFP9RN8lyqxcgrZPY+Pd8=";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -421,6 +429,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_SUFeedURL = "https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/appcast-iffviewer.xml";
+				INFOPLIST_KEY_SUPublicEDKey = "Oq4b/BX26tC2nXfh+dmMFoHFP9RN8lyqxcgrZPY+Pd8=";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -524,6 +534,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AC9F10122F00000100AA0001 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AC9F10132F00000100AA0001 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AC9F10122F00000100AA0001 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = ACCDF5D12E1BEE8600BC736E /* Project object */;
 }

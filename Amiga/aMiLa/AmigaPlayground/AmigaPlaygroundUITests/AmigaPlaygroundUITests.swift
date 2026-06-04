@@ -85,9 +85,14 @@ final class AmigaPlaygroundUITests: XCTestCase {
         XCTAssertTrue(app.windows.element(boundBy: 1).waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["General"].exists)
         XCTAssertTrue(app.buttons["AI"].exists)
+        XCTAssertTrue(app.buttons["Code"].exists)
         XCTAssertTrue(app.buttons["Hardware"].exists)
         XCTAssertTrue(app.buttons["FS-UAE"].exists)
         XCTAssertTrue(app.buttons["vAmiga"].exists)
+
+        app.buttons["Code"].click()
+        XCTAssertTrue(app.checkBoxes["Generate comments"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["generateCodeCommentsToggle"].exists)
 
         app.buttons["AI"].click()
         XCTAssertTrue(app.staticTexts["Model name"].waitForExistence(timeout: 2))

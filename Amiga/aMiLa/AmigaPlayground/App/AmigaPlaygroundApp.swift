@@ -4,6 +4,7 @@ import AppKit
 @main
 struct AmigaPlaygroundApp: App {
     @Environment(\.openWindow) private var openWindow
+    private let updaterController = UpdaterController()
 
     init() {
         if CommandLine.arguments.contains("-UITestMode") {
@@ -25,6 +26,8 @@ struct AmigaPlaygroundApp: App {
                     openWindow(id: "about")
                 }
             }
+
+            UpdaterCommands(updaterController: updaterController)
 
             CommandGroup(after: .newItem) {
                 Button("Prompt Library") {
