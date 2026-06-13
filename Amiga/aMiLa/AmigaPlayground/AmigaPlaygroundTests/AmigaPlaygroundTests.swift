@@ -1959,6 +1959,56 @@ InputDispatch:
         return (adfSucceeded, adfOutput)
     }
 
+    private func routerPatchChain(
+        prompts: [String],
+        source startingSource: String,
+        context: String
+    ) throws -> AmigaProgramPatchResult {
+        var source = startingSource
+        var result: AmigaProgramPatchResult?
+
+        for prompt in prompts {
+            let route = AssistantPromptRouter.route(prompt: prompt, source: source, isSelfCorrection: false)
+            guard case .structuredModelPatch(.patched(let patched)) = route else {
+                XCTFail("\(context) should stay in structured routing for prompt: \(prompt)")
+                throw AmigaProgramPatchError.verificationFailed([
+                    "\(context) should stay in structured routing for prompt: \(prompt)"
+                ])
+            }
+            source = patched.source
+            result = patched
+        }
+
+        return try XCTUnwrap(result, "\(context) should include at least one prompt.")
+    }
+
+    private func modThirdFourthControlConversationPrompts() -> [String] {
+        [
+            #"add a third button called "Volume Up" to raise volume"#,
+            #"add a fourth button called "Volume Down" to lower volume"#,
+            "add pause",
+            "rename Volume Down to Quieter and move Quieter after Pause and set volume increment to 8",
+            "set initial volume to 32"
+        ]
+    }
+
+    private func modThirdFourthControlRecoveryPrompts() -> [String] {
+        modThirdFourthControlConversationPrompts() + [
+            "set playback period",
+            "set playback note to C-3"
+        ]
+    }
+
+    private func modCompositeRecoverySetupPrompts() -> [String] {
+        [
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+            #"add another button called "Louder" to raise volume"#,
+            "set playback period to 428"
+        ]
+    }
+
     private func assertStrategicPassRates(_ results: [PromptEvalResult], context: String) {
         for level in PromptEvalLevel.allCases {
             let levelResults = results.filter { $0.evalCase.level == level }
@@ -2691,16 +2741,27 @@ InputDispatch:
         XCTAssertTrue(manifest.firstShotPromptExamples.contains("Generate play and stop controls for a tracker module."))
         XCTAssertTrue(manifest.rejectedFirstShotPromptExamples.contains("Generate a display with stopwatch buttons for a modulator."))
         XCTAssertTrue(manifest.rejectedFirstShotPromptExamples.contains("Generate a UI module with play and stop buttons."))
+        XCTAssertTrue(manifest.representativeRoutedFirstShotPromptExamples.contains("Generate play and stop controls for a tracker module."))
         XCTAssertTrue(manifest.supportedFollowUps.contains("add volume up"))
         XCTAssertTrue(manifest.supportedFollowUps.contains("add volume controls"))
         XCTAssertTrue(manifest.supportedFollowUps.contains("rename a visible control label"))
+        XCTAssertTrue(manifest.supportedFollowUps.contains("remove an added control"))
+        XCTAssertTrue(manifest.supportedFollowUps.contains("reorder controls"))
+        XCTAssertTrue(manifest.supportedFollowUps.contains("change an added control behavior"))
+        XCTAssertTrue(manifest.supportedFollowUps.contains("change control bounds"))
+        XCTAssertTrue(manifest.supportedFollowUps.contains("change playback note"))
+        XCTAssertTrue(manifest.supportedFollowUps.contains("change playback period"))
         XCTAssertTrue(manifest.requiredFollowUpSmokePrompts.contains("add a third button called Volume Up"))
         XCTAssertTrue(manifest.requiredFollowUpSmokePrompts.contains("make the third button say Louder"))
         XCTAssertTrue(manifest.requiredFollowUpSmokePrompts.contains("change Stop button caption Halt"))
         XCTAssertTrue(manifest.requiredFollowUpSmokePrompts.contains("set Halt button title Stop"))
+        XCTAssertTrue(manifest.requiredFollowUpSmokePrompts.contains("set playback note to C-3"))
+        XCTAssertTrue(manifest.requiredFollowUpSmokePrompts.contains("set playback period to 428"))
         XCTAssertTrue(manifest.requiredFollowUpSmokePrompts.contains("change volume step to -8"))
         XCTAssertTrue(manifest.requiredFollowUpSmokePrompts.contains("set initial volume to -1"))
         XCTAssertTrue(manifest.requiredFollowUpSmokePrompts.contains("set initial volume to $20"))
+        XCTAssertTrue(manifest.requiredFollowUpSmokePrompts.contains("set initial volume to max"))
+        XCTAssertTrue(manifest.requiredFollowUpSmokePrompts.contains("remove volume up"))
         XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
             "add volume up",
             "rename \"Volume Up\" to \"Louder\"",
@@ -2710,7 +2771,67 @@ InputDispatch:
         ]))
         XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
             "add volume up",
+            "add volume down",
+            "add pause",
+            "add mute"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
             "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "change volume step to -8",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Volume Up lower volume instead and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "center Volume Up below Stop and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add a button called Down centered below Stop to lower volume and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add a button called Down to lower volume and move Down before Volume Up",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add a button called Down centered below Stop to lower volume and move Down before Volume Up",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add a button called Down to lower volume and move Down before Volume Up and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add a button called Down centered below Stop to lower volume and move Down before Volume Up and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add a button called Down to lower volume",
+            "rename Down to Quieter and center Down below Stop and set initial volume to 32",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            #"rename "Volume Up" to "Louder" and center Volume Up below Stop"#,
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            #"rename "Volume Up" to "Louder" and center Volume Up below Stop and set initial volume to 32"#,
+            "set playback period to 428"
         ]))
         XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
             "add volume up",
@@ -2729,12 +2850,25 @@ InputDispatch:
             "set Halt button title Stop"
         ]))
         XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            #"rename 'Stop' to 'Bass "Boost"'"#,
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            #"rename 'Stop' to 'Bass \ Boost'"#,
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
             "set initial volume to 31",
+            "set initial volume to max",
             "set initial volume to 32 for channel 0"
         ]))
         XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
             "set initial volume to 31",
             "set initial volume to 0x21"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "set volume to 200",
+            "set volume to 0"
         ]))
         XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
             "add volume up",
@@ -2784,6 +2918,25 @@ InputDispatch:
             "change volume step to 8"
         ]))
         XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            #"add a third button called "Volume Up" to raise volume"#,
+            #"add a fourth button called "Volume Down" to lower volume"#,
+            "add pause",
+            "rename Volume Down to Quieter and move Quieter after Pause and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.representativeRoutedFollowUpSmokeChains.contains([
+            #"add a third button called "Volume Up" to raise volume"#,
+            #"add a fourth button called "Volume Down" to lower volume"#,
+            "add pause",
+            "rename Volume Down to Quieter and move Quieter after Pause and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.representativeRoutedFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Volume Up mute instead and center Volume Up below Stop and set initial volume to 32",
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
             "add buttons for volume up and volume down",
             "change volume step to 8"
         ]))
@@ -2799,6 +2952,447 @@ InputDispatch:
             "add pause and mute controls",
             "make the pause button say Freeze"
         ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add volume down",
+            "remove volume up",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add volume down",
+            "remove Volume Up and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and rename Volume Down to Quieter",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and rename Volume Down to Quieter and set initial volume to 32",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+            #"add another button called "Louder" to raise volume"#,
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and set initial volume to 32",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Quieter after Pause",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Quieter after Pause and set initial volume to 32",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and make Volume Down mute instead",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and make Volume Down mute instead and set initial volume to 32",
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and make Volume Down mute instead and move Volume Down after Pause",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and make Volume Down mute instead and move Volume Down after Pause and set initial volume to 32",
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and set initial volume to 32",
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Down after Pause",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Down after Pause and set initial volume to 32",
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and make Volume Down say Silence and mute instead",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and make Volume Down say Silence and mute instead and set initial volume to 32",
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and make Volume Down say Silence and mute instead and move Silence after Pause",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and make Volume Down say Silence and mute instead and move Silence after Pause and set initial volume to 32",
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and set initial volume to 32",
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Silence after Pause",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Silence after Pause and set initial volume to 32",
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and center Volume Down below Stop and set initial volume to 32",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and center Volume Down below Stop",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and move Volume Down after Pause",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and move Volume Down after Pause and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            #"rename "Volume Up" to "Louder""#,
+            "remove Louder",
+            "add a third button called Volume Up"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "remove the third button",
+            "add a third button called Volume Up"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add volume down",
+            "move Volume Down before Volume Up",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add volume down",
+            "move Volume Down before Volume Up and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "center Volume Up below Stop and move Volume Up after Pause",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "center Volume Up below Stop and move Volume Up after Pause and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause and move Volume Down after Pause",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause and move Volume Down after Pause and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add volume down",
+            "move the fourth button before the third button",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            #"rename "Volume Up" to "Louder""#,
+            "add volume down",
+            "move Volume Down before Louder"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            #"rename "Volume Up" to "Louder" and move Louder after Volume Down"#,
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            #"rename "Volume Up" to "Louder" and move Louder after Volume Down and set volume increment to 8"#,
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause"#,
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause and set volume increment to 8"#,
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add pause",
+            "make the Pause button mute instead",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "make Volume Up mute instead and move Volume Up after Pause",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Volume Up mute instead and center Volume Up below Stop",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Volume Up mute instead and center Volume Up below Stop and set initial volume to 32",
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "make Volume Up mute instead and move Volume Up after Pause and set initial volume to 32",
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause and set initial volume to 32",
+            "set playback period to 428"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            #"rename "Volume Up" to "Louder""#,
+            "make Louder lower volume instead",
+            "add another button called Volume Up",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            #"rename "Volume Up" to "Louder""#,
+            "make Louder say Down and lower volume",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Volume Up say Down and lower volume and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "make Volume Up say Down and lower volume and move Down after Pause",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "make Volume Up say Down and lower volume and move Down after Pause and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Volume Up say Down and lower volume and center Volume Up below Stop",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Volume Up say Down and lower volume and center Volume Up below Stop and set volume increment to 8",
+            "set initial volume to 32"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            #"rename "Volume Up" to "Louder""#,
+            "set Louder bounds to 208,72,88,20",
+            "make Louder wider by 16",
+            "move Louder left by 8",
+            "center Louder below Stop",
+            "center Louder below Stop and move it down by 4",
+            "set playback note to C-3",
+            "set playback period to 428",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add a volume up button centered below Stop",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add a volume up button centered below Stop and move it down by 4",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add a volume up button centered below Stop and make it wider by 16",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume up",
+            "make the third button 80x20 centered below Stop",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add a button called Louder centered below Stop to raise volume and make it wider by 16",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls centered below Stop",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls centered below Stop and move them down by 4",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "center volume controls below Stop",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "center volume controls below Stop and move them down by 4",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "move volume controls down by 8",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "move volume controls down by 4 and make them wider by 8",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "move volume controls down by 4 and make them 80x20",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "make volume controls wider by 8",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "make volume controls wider by 8 centered below Stop",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "make volume controls 80x20",
+            "change volume step to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "add volume controls",
+            "make volume controls 80x20 centered below Stop",
+            "change volume step to 8"
+        ]))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains(#"add a third button called "Bass Boost +""#))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("add another button called Louderness"))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("change Stopper button text to Halt"))
@@ -2809,6 +3403,70 @@ InputDispatch:
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("add a mute button and a mute button"))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("rename the fourth button to Louder"))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("add a fourth button called Louder to raise volume"))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("add a volume up button centered left of Play"))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("add a volume up button centered below Stop and move it down by 220"))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("add a volume up button centered below Stop and make it wider by 260"))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("add a button called Louder centered below Stop to raise volume and make it wider by 260"))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("add volume controls centered left of Play"))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("add volume controls centered below Stop and move them down by 220"))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("remove Play"))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("move Play after Stop"))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "make the third button wider by 200"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "move the third button right by 200"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "center the third button left of Play"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "center the third button below Stop and move it down by 220"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "make the third button 400x20 centered below Stop"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "center volume controls left of Play"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "center volume controls below Stop and move them down by 220"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "move volume controls left by 260"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "move volume controls down by 4 and make them wider by 260"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "move volume controls down by 4 and make them 400x20"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "make volume controls wider by 260"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "make volume controls wider by 260 centered below Stop"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "make volume controls 400x20"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "make volume controls 400x20 centered below Stop"
+        ]))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
             "add volume up",
             "add volume up"
@@ -2818,8 +3476,203 @@ InputDispatch:
             "change volume step"
         ]))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "add a button called Down centered below Stop to lower volume and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "add a button called Down to lower volume and move Down before Volume Up and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "add a button called Down centered below Stop to lower volume and move Down before Volume Up and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add a button called Down to lower volume",
+            "rename Down to Quieter and center Down below Stop and set initial volume"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            #"rename "Volume Up" to "Louder" and center Volume Up left of Play"#
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Volume Up lower volume instead and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Volume Up mute instead and center Volume Up below Stop and set initial volume"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "make Volume Up mute instead and move Volume Up after Pause and set initial volume"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause and set initial volume"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Volume Up say Down and lower volume and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "make Volume Up say Down and lower volume and move Down after Pause and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Volume Up say Down and lower volume and center Volume Up left of Play"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Volume Up say Down and lower volume and center Volume Up below Stop and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "center Volume Up below Stop and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            "center Volume Up below Stop and move Volume Up after Pause and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "remove Volume Up and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and center Volume Down below Stop and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and center Volume Up below Stop"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and rename Volume Down to Quieter and center Volume Up below Stop"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and rename Volume Down to Quieter and move Volume Up after Pause"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Volume Up after Pause"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and rename Volume Up to Louder"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and make Volume Up mute instead"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and make Volume Down mute instead and center Volume Up below Stop"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and make Volume Down mute instead and move Volume Up after Pause"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Up after Pause"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and make Volume Up say Silence and mute instead"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Up below Stop"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and make Volume Down say Silence and mute instead and move Volume Up after Pause"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Volume Up after Pause"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and move Volume Up after Pause"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and move Volume Down after Pause and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause and move Volume Down after Pause and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            #"rename "Volume Up" to "Louder" and move Louder after Volume Down and change volume step"#
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "add pause",
+            #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause and change volume step"#
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "add a button to pause and mute"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "rename the fourth button to Louder"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "make the fourth button say Louder"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            #"rename "Pause" to "Hold""#
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "set initial volume"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "set playback period to 214",
+            "set playback period"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "set playback note to C-3",
+            "set playback note"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
             "rename Play button to Start",
             #"add another button called "Play" to start playback"#
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "rename Stop button to Halt",
+            #"add another button called "Stop" to stop playback"#
         ]))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
             "rename Play button to Start",
@@ -2830,8 +3683,105 @@ InputDispatch:
             "add volume up"
         ]))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+            #"add another button called "Louder" to raise volume"#,
+            "set playback period to 428",
+            "add volume up"
+        ]))
+        XCTAssertTrue(manifest.requiredRecoveryFollowUpSmokeChains.contains([
+            "add volume up",
+            "change volume step",
+            "set volume increment to 8"
+        ]))
+        XCTAssertTrue(manifest.requiredRecoveryFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+            #"add another button called "Louder" to raise volume"#,
+            "set playback period to 428",
+            "add volume up",
+            "add mute"
+        ]))
+        XCTAssertTrue(manifest.requiredRecoveryFollowUpSmokeChains.contains([
+            #"add a third button called "Volume Up" to raise volume"#,
+            #"add a fourth button called "Volume Down" to lower volume"#,
+            "add pause",
+            "rename Volume Down to Quieter and move Quieter after Pause and set volume increment to 8",
+            "set initial volume to 32",
+            "set playback period",
+            "set playback note to C-3"
+        ]))
+        XCTAssertTrue(manifest.representativeRoutedRecoveryFollowUpSmokeChains.contains([
+            #"add a third button called "Volume Up" to raise volume"#,
+            #"add a fourth button called "Volume Down" to lower volume"#,
+            "add pause",
+            "rename Volume Down to Quieter and move Quieter after Pause and set volume increment to 8",
+            "set initial volume to 32",
+            "set playback period",
+            "set playback note to C-3"
+        ]))
+        XCTAssertTrue(manifest.representativeRoutedRecoveryFollowUpSmokeChains.contains([
+            "add volume controls",
+            "add pause",
+            "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+            #"add another button called "Louder" to raise volume"#,
+            "set playback period to 428",
+            "add volume up",
+            "add mute"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
             "rename Play button to Start",
             #"add another button called "Start" to raise volume"#
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "remove Play"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "remove the fourth button"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "move Volume Down before Volume Up"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "add volume down",
+            "move Volume Down before Volume Up and change volume step"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "move Volume Up before Pause"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "move Play after Stop"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "move the fifth button before the third button"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "move the third button before the fifth button"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add pause",
+            "add mute",
+            "make Pause mute instead"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "add volume down",
+            #"rename "Volume Up" to "Louder""#,
+            "make Louder say Down and lower volume"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "add volume up",
+            "make Play mute instead"
         ]))
         XCTAssertTrue(manifest.requiredIgnoredFollowUpSmokePrompts.contains("set volume amounting to 8"))
         XCTAssertTrue(manifest.requiredIgnoredFollowUpSmokePrompts.contains("make volume currentness 32"))
@@ -2842,6 +3792,7 @@ InputDispatch:
         XCTAssertTrue(manifest.requiredHardware.contains(.paula))
         XCTAssertTrue(manifest.requiredHardware.contains(.cia))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("AmigaProgramSourceVerifier"))
+        XCTAssertTrue(manifest.requiredVerificationGates.contains("representative routed conversation audit"))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("VASM compile"))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("bootable ADF generation"))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("optional vAmiga runtime smoke"))
@@ -2885,6 +3836,7 @@ InputDispatch:
         XCTAssertTrue(manifest.firstShotPromptExamples.contains("Generate double-buffered bitplane animation that swaps front (red) and back (green) bitplane pointers on vblank and exits on left mouse click."))
         XCTAssertTrue(manifest.firstShotPromptExamples.contains("Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."))
         XCTAssertTrue(manifest.rejectedFirstShotPromptExamples.contains("Generate a double buffered audio sample player with clean start and stop controls."))
+        XCTAssertTrue(manifest.representativeRoutedFirstShotPromptExamples.contains("Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."))
         XCTAssertTrue(manifest.supportedFollowUps.contains("set front color"))
         XCTAssertTrue(manifest.supportedFollowUps.contains("set back color"))
         XCTAssertTrue(manifest.requiredFollowUpSmokePrompts.contains("set front color to purple"))
@@ -2900,6 +3852,15 @@ InputDispatch:
             "set front color to orange",
             "set back color to purple"
         ]))
+        XCTAssertTrue(manifest.requiredFollowUpSmokeChains.contains([
+            "set front color to red and back color to blue",
+            "set front color to orange",
+            "set back color to purple"
+        ]))
+        XCTAssertTrue(manifest.representativeRoutedFollowUpSmokeChains.contains([
+            "set front color to purple",
+            "set back color to orange"
+        ]))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("set front color to teal"))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("set front color to"))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokePrompts.contains("set front color to greenhouse"))
@@ -2909,6 +3870,10 @@ InputDispatch:
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
             "set front color to purple",
             "set front color to teal"
+        ]))
+        XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
+            "set front color to purple",
+            "set back color to"
         ]))
         XCTAssertTrue(manifest.requiredRejectedFollowUpSmokeChains.contains([
             "set front and back color to red",
@@ -2923,6 +3888,7 @@ InputDispatch:
         XCTAssertTrue(manifest.requiredRegions.contains(.state))
         XCTAssertTrue(manifest.requiredHardware.contains(.bitplanes))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("AmigaProgramSourceVerifier"))
+        XCTAssertTrue(manifest.requiredVerificationGates.contains("representative routed conversation audit"))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("VASM compile"))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("bootable ADF generation"))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("optional vAmiga runtime smoke"))
@@ -2968,6 +3934,7 @@ InputDispatch:
         let baselineGates = Set(AmigaProgramFamilyPromotionAudit.baselineRequiredVerificationGates)
 
         XCTAssertTrue(baselineGates.contains("optional vAmiga runtime smoke"))
+        XCTAssertTrue(baselineGates.contains("representative routed conversation audit"))
 
         for manifest in AmigaProgramFamilyRegistry.all {
             XCTAssertEqual(
@@ -3043,6 +4010,7 @@ InputDispatch:
                 "set back color to blue"
             ]
         ]
+        manifest.representativeRoutedFollowUpSmokeChains = manifest.requiredFollowUpSmokeChains
         manifest.requiredRejectedFollowUpSmokeChains = [
             [
                 "make background blue",
@@ -3063,6 +4031,29 @@ InputDispatch:
                     $0.contains("required prompt chain prompt was not recognized: make background blue")
             },
             "Expected first-shot follow-up smoke failures to be attributed to routed sources, got: \(failures)"
+        )
+    }
+
+    func testAmigaProgramFamilyPromotionAuditRunsRecoverySmokeFromRoutedFirstShotSources() {
+        var manifest = AmigaProgramFamilyRegistry.doubleBufferedBitplane
+        manifest.requiredRecoveryFollowUpSmokeChains = [
+            [
+                "make background blue",
+                "set front color to teal",
+                "set back color to orange"
+            ]
+        ]
+        manifest.representativeRoutedRecoveryFollowUpSmokeChains = manifest.requiredRecoveryFollowUpSmokeChains
+
+        let failures = AmigaProgramFamilyPromotionAudit.failures(for: manifest)
+
+        XCTAssertTrue(
+            failures.contains {
+                $0.contains("first-shot prompt follow-up smoke failure") &&
+                    $0.contains("Generate double-buffered bitplane animation that swaps front and back bitplane pointers") &&
+                    $0.contains("required follow-up smoke prompt was not recognized: make background blue")
+            },
+            "Expected first-shot recovery smoke failures to be attributed to routed sources, got: \(failures)"
         )
     }
 
@@ -3123,6 +4114,29 @@ InputDispatch:
         }
     }
 
+    func testAmigaProgramFamilyPromotionAuditCompilesRepresentativeRoutedFirstShotConversationArtifacts() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+
+        for manifest in AmigaProgramFamilyRegistry.all {
+            let artifacts = try AmigaProgramFamilyPromotionAudit.representativeRoutedFirstShotConversationArtifacts(for: manifest)
+            XCTAssertFalse(artifacts.isEmpty, "\(manifest.id) should declare representative routed compile artifacts.")
+            for artifact in artifacts {
+                let compileResult = compileSource(
+                    artifact.source,
+                    compiler: compiler,
+                    description: "\(manifest.id) representative first-shot \(artifact.firstShotPrompt) follow-up \(artifact.followUpPrompt) compiles"
+                )
+                XCTAssertTrue(
+                    compileResult.success,
+                    "\(manifest.id) representative first-shot \(artifact.firstShotPrompt) follow-up \(artifact.followUpPrompt) failed to compile:\n\(compileResult.output)"
+                )
+            }
+        }
+    }
+
     func testAmigaProgramFamilyPromotionAuditGeneratesBootableADFsForRepresentativeModelBackedArtifacts() throws {
         let compiler = CompilerService.shared
         guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
@@ -3134,22 +4148,115 @@ InputDispatch:
 
         for manifest in AmigaProgramFamilyRegistry.all {
             let verifiedSource = try AmigaProgramFamilyPromotionAudit.verifiedSource(for: manifest)
+            let acceptedPrompt = try XCTUnwrap(
+                manifest.requiredFollowUpSmokePrompts.first,
+                "\(manifest.id) should declare accepted follow-up smoke coverage."
+            )
             let acceptedFollowUp = try XCTUnwrap(
-                AmigaProgramFamilyPromotionAudit.acceptedFollowUpSmokeSources(for: manifest, source: verifiedSource).first,
-                "\(manifest.id) should have accepted follow-up smoke coverage."
+                AmigaProgramFollowUpPlanner.patch(prompt: acceptedPrompt, source: verifiedSource),
+                "\(manifest.id) should patch representative follow-up: \(acceptedPrompt)"
             )
-            let routedFollowUp = try XCTUnwrap(
-                AmigaProgramFamilyPromotionAudit.routedFirstShotAcceptedFollowUpSmokeSources(for: manifest).first,
-                "\(manifest.id) should have routed first-shot follow-up smoke coverage."
+            let firstShotPrompt = try XCTUnwrap(
+                manifest.firstShotPromptExamples.first,
+                "\(manifest.id) should declare a first-shot prompt."
             )
+            let firstShotSource = try XCTUnwrap(
+                AssistantPromptTemplate.source(for: firstShotPrompt),
+                "\(manifest.id) should route first-shot prompt: \(firstShotPrompt)"
+            )
+            let routedFollowUpRoute = AssistantPromptRouter.route(
+                prompt: acceptedPrompt,
+                source: firstShotSource,
+                isSelfCorrection: false
+            )
+            let routedFollowUp: AmigaProgramPatchResult
+            guard case .structuredModelPatch(.patched(let routedPatched)) = routedFollowUpRoute else {
+                return XCTFail("\(manifest.id) should route first-shot follow-up through structured patching: \(acceptedPrompt)")
+            }
+            routedFollowUp = routedPatched
 
-            let artifacts = [
+            var artifacts = [
                 ("verified-source", verifiedSource),
-                ("accepted-follow-up-\(acceptedFollowUp.prompt)", acceptedFollowUp.source),
-                ("routed-first-shot-follow-up-\(routedFollowUp.followUpPrompt)", routedFollowUp.source)
+                ("routed-first-shot-source", firstShotSource),
+                ("accepted-follow-up-\(acceptedPrompt)", acceptedFollowUp.source),
+                ("routed-first-shot-follow-up-\(acceptedPrompt)", routedFollowUp.source)
             ]
+            for (index, artifact) in try AmigaProgramFamilyPromotionAudit.representativeRoutedFirstShotConversationArtifacts(for: manifest).enumerated() {
+                artifacts.append((
+                    "representative-routed-artifact-\(index + 1)",
+                    artifact.source
+                ))
+            }
+            if manifest.id == AmigaProgramFamilyRegistry.modPlayerControls.id {
+                let canonicalContinuation = try routerPatchChain(
+                    prompts: modThirdFourthControlConversationPrompts(),
+                    source: firstShotSource,
+                    context: "\(manifest.id) routed first-shot canonical third/fourth-button continuation"
+                )
+                let rejectedOrdinalRoute = AssistantPromptRouter.route(
+                    prompt: "set playback period",
+                    source: canonicalContinuation.source,
+                    isSelfCorrection: false
+                )
+                guard case .structuredModelPatch(.rejected(let ordinalFailures)) = rejectedOrdinalRoute else {
+                    return XCTFail("\(manifest.id) ordinal continuation should reject missing playback period before recovery.")
+                }
+                XCTAssertEqual(ordinalFailures, ["Specify a numeric playback period."])
+                let ordinalRecoveryRoute = AssistantPromptRouter.route(
+                    prompt: "set playback note to C-3",
+                    source: canonicalContinuation.source,
+                    isSelfCorrection: false
+                )
+                guard case .structuredModelPatch(.patched(let recoveredOrdinalContinuation)) = ordinalRecoveryRoute else {
+                    return XCTFail("\(manifest.id) ordinal continuation should patch after missing playback-period rejection.")
+                }
+                let recoveredCompositeSetup = try routerPatchChain(
+                    prompts: modCompositeRecoverySetupPrompts(),
+                    source: firstShotSource,
+                    context: "\(manifest.id) routed first-shot recovered composite continuation setup"
+                )
+                let rejectedRoute = AssistantPromptRouter.route(
+                    prompt: "add volume up",
+                    source: recoveredCompositeSetup.source,
+                    isSelfCorrection: false
+                )
+                guard case .structuredModelPatch(.rejected(let failures)) = rejectedRoute else {
+                    return XCTFail("\(manifest.id) recovered composite duplicate setup should reject before recovery.")
+                }
+                XCTAssertEqual(failures, ["A control that dispatches to VolumeUp already exists: Louder."])
+                let recoveryRoute = AssistantPromptRouter.route(
+                    prompt: "add mute",
+                    source: recoveredCompositeSetup.source,
+                    isSelfCorrection: false
+                )
+                guard case .structuredModelPatch(.patched(let recoveredCompositeContinuation)) = recoveryRoute else {
+                    return XCTFail("\(manifest.id) recovered composite continuation should patch after duplicate rejection.")
+                }
+                artifacts.append((
+                    "canonical-third-fourth-continuation",
+                    canonicalContinuation.source
+                ))
+                artifacts.append((
+                    "recovered-composite-setup",
+                    recoveredCompositeSetup.source
+                ))
+                artifacts.append((
+                    "recovered-ordinal-continuation",
+                    recoveredOrdinalContinuation.source
+                ))
+                artifacts.append((
+                    "recovered-composite-continuation",
+                    recoveredCompositeContinuation.source
+                ))
+            }
 
             for (artifactName, source) in artifacts {
+                XCTAssertEqual(
+                    AmigaProgramSourceVerifier.failures(in: source),
+                    [],
+                    "\(manifest.id) \(artifactName) source verifier failed"
+                )
+
                 let safeName = "\(manifest.id)-\(artifactName)"
                     .map { $0.isLetter || $0.isNumber || $0 == "-" ? $0 : "-" }
                     .reduce(into: "") { partialResult, character in
@@ -3182,12 +4289,71 @@ InputDispatch:
     func testAmigaProgramFamilyPromotionAuditAcceptedSmokeSourcesIncludeStandaloneConversationAndRejectedChainSetupPrompts() throws {
         let manifest = AmigaProgramFamilyRegistry.modPlayerControls
         let source = try AmigaProgramFamilyPromotionAudit.verifiedSource(for: manifest)
-        let prompts = try AmigaProgramFamilyPromotionAudit.acceptedFollowUpSmokeSources(for: manifest, source: source).map(\.prompt)
+        let artifacts = try AmigaProgramFamilyPromotionAudit.acceptedFollowUpSmokeSources(for: manifest, source: source)
+        let prompts = artifacts.map(\.prompt)
 
         XCTAssertTrue(prompts.contains("set initial volume to 63"))
         XCTAssertTrue(prompts.contains("add another button named Hold to pause the mod"))
         XCTAssertTrue(prompts.contains("add mute"))
         XCTAssertTrue(prompts.contains("rename Play button to Start"))
+        let recoveredVolumeStepArtifacts = artifacts.filter { artifact in
+            artifact.prompt == "set volume increment to 8" &&
+                artifact.model.controls.map(\.id) == ["play", "stop", "volume_up"] &&
+                artifact.model.controls.map(\.label) == ["Play", "Stop", "Volume Up"]
+        }
+        XCTAssertGreaterThanOrEqual(
+            recoveredVolumeStepArtifacts.count,
+            2,
+            "Expected the volume-step final source from both accepted chains and recovery-chain artifacts."
+        )
+        XCTAssertTrue(recoveredVolumeStepArtifacts.contains { artifact in
+            artifact.source.contains("add.w      #8,d0")
+        })
+        let canonicalConversationFinal = try XCTUnwrap(artifacts.first { artifact in
+            artifact.prompt == "set initial volume to 32" &&
+                artifact.model.controls.map(\.id) == ["play", "stop", "volume_up", "pause", "volume_down"] &&
+                artifact.model.controls.map(\.label) == ["Play", "Stop", "Volume Up", "Pause", "Quieter"]
+        })
+        XCTAssertTrue(canonicalConversationFinal.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(canonicalConversationFinal.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #5,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: canonicalConversationFinal.source), [])
+        let recoveredOrdinalParameterFinal = try XCTUnwrap(artifacts.first { artifact in
+            artifact.prompt == "set playback note to C-3" &&
+                artifact.model.controls.map(\.id) == ["play", "stop", "volume_up", "pause", "volume_down"] &&
+                artifact.model.controls.map(\.label) == ["Play", "Stop", "Volume Up", "Pause", "Quieter"]
+        })
+        XCTAssertTrue(recoveredOrdinalParameterFinal.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(recoveredOrdinalParameterFinal.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(recoveredOrdinalParameterFinal.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(recoveredOrdinalParameterFinal.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: recoveredOrdinalParameterFinal.source), [])
+        let compositeRemovalContinuationArtifacts = artifacts.filter { artifact in
+            artifact.prompt == "set playback period to 428" &&
+                artifact.model.controls.map(\.id) == ["play", "stop", "pause", "volume_down", "louder"] &&
+                artifact.model.controls.map(\.label) == ["Play", "Stop", "Pause", "Quieter", "Louder"]
+        }
+        XCTAssertGreaterThanOrEqual(
+            compositeRemovalContinuationArtifacts.count,
+            2,
+            "Expected the composite continuation final source from both accepted chains and rejected-chain setup artifacts."
+        )
+        let compositeRemovalContinuationFinal = try XCTUnwrap(artifacts.first { artifact in
+            artifact.prompt == "set playback period to 428" &&
+                artifact.model.controls.map(\.id) == ["play", "stop", "pause", "volume_down", "louder"] &&
+                artifact.model.controls.map(\.label) == ["Play", "Stop", "Pause", "Quieter", "Louder"]
+        })
+        XCTAssertTrue(compositeRemovalContinuationFinal.source.contains(#"; @amiga:model control id=louder label="Louder" action=VolumeUp"#))
+        XCTAssertTrue(compositeRemovalContinuationFinal.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: compositeRemovalContinuationFinal.source), [])
+        let recoveredCompositeContinuationFinal = try XCTUnwrap(artifacts.first { artifact in
+            artifact.prompt == "add mute" &&
+                artifact.model.controls.map(\.id) == ["play", "stop", "pause", "volume_down", "louder", "mute"] &&
+                artifact.model.controls.map(\.label) == ["Play", "Stop", "Pause", "Quieter", "Louder", "Mute"]
+        })
+        XCTAssertTrue(recoveredCompositeContinuationFinal.source.contains(#"; @amiga:model control id=mute label="Mute" action=Mute"#))
+        XCTAssertTrue(recoveredCompositeContinuationFinal.source.contains("; @amiga:dispatch mute -> Mute\n            cmp.w      #6,d0"))
+        XCTAssertTrue(recoveredCompositeContinuationFinal.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: recoveredCompositeContinuationFinal.source), [])
     }
 
     func testAmigaProgramFamilyPromotionAuditCollectsRoutedFirstShotFollowUpSmokeSources() throws {
@@ -3206,6 +4372,660 @@ InputDispatch:
             artifacts.allSatisfy { AmigaProgramSourceVerifier.failures(in: $0.source).isEmpty },
             "Expected every routed first-shot follow-up artifact to pass source verification."
         )
+    }
+
+    func testAmigaProgramFamilyPromotionAuditCollectsRepresentativeRoutedFirstShotFollowUpChainFromAlternatePrompt() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let followUpChain = try XCTUnwrap(manifest.representativeRoutedFollowUpSmokeChains.first)
+
+        let artifacts = try AmigaProgramFamilyPromotionAudit.routedFirstShotFollowUpSmokeChainSources(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            followUpChains: [followUpChain]
+        )
+
+        XCTAssertEqual(artifacts.map(\.firstShotPrompt), Array(repeating: firstShotPrompt, count: followUpChain.count))
+        XCTAssertEqual(artifacts.map(\.followUpPrompt), followUpChain)
+        let final = try XCTUnwrap(artifacts.last)
+        XCTAssertEqual(final.model.controls.map(\.id), ["play", "stop", "volume_up", "pause", "volume_down"])
+        XCTAssertEqual(final.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+        XCTAssertEqual(final.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(final.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(final.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: final.source), [])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditPreservesRepresentativeRoutedIntermediateState() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let followUpChain = try XCTUnwrap(manifest.representativeRoutedFollowUpSmokeChains.first)
+
+        let artifacts = try AmigaProgramFamilyPromotionAudit.routedFirstShotFollowUpSmokeChainSources(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            followUpChains: [followUpChain]
+        )
+
+        XCTAssertEqual(artifacts.map { $0.model.controls.map(\.label) }, [
+            ["Play", "Stop", "Volume Up"],
+            ["Play", "Stop", "Volume Up", "Volume Down"],
+            ["Play", "Stop", "Volume Up", "Volume Down", "Pause"],
+            ["Play", "Stop", "Volume Up", "Pause", "Quieter"],
+            ["Play", "Stop", "Volume Up", "Pause", "Quieter"]
+        ])
+        XCTAssertEqual(artifacts.map { $0.model.controls.map(\.action) }, [
+            ["PlayMOD", "StopMOD", "VolumeUp"],
+            ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"],
+            ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown", "PauseMOD"],
+            ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"],
+            ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"]
+        ])
+        XCTAssertTrue(artifacts.dropLast().allSatisfy {
+            $0.model.stateVariables.first(where: { $0.id == "audio_volume" })?.initialValue == "48"
+        })
+        let final = try XCTUnwrap(artifacts.last)
+        XCTAssertEqual(final.model.stateVariables.first(where: { $0.id == "audio_volume" })?.initialValue, "32")
+        XCTAssertEqual(artifacts.flatMap { AmigaProgramSourceVerifier.failures(in: $0.source) }, [])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditRecordsRepresentativeRoutedAcceptedTurnsWithContinuity() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let followUpChain = try XCTUnwrap(manifest.representativeRoutedFollowUpSmokeChains.first)
+
+        let events = try AmigaProgramFamilyPromotionAudit.routedFirstShotFollowUpSmokeChainEvents(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            followUpChains: [followUpChain]
+        )
+
+        XCTAssertEqual(events.map(\.firstShotPrompt), Array(repeating: firstShotPrompt, count: followUpChain.count))
+        XCTAssertEqual(events.map(\.followUpPrompt), followUpChain)
+        XCTAssertTrue(events.allSatisfy { event in
+            if case .patched = event.outcome {
+                return true
+            }
+            return false
+        })
+        for index in events.indices.dropFirst() {
+            XCTAssertEqual(events[index].sourceBefore, events[index - 1].sourceAfter)
+            XCTAssertEqual(events[index].modelBefore, events[index - 1].modelAfter)
+        }
+        let final = try XCTUnwrap(events.last)
+        XCTAssertEqual(final.modelAfter.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+        XCTAssertEqual(final.modelAfter.stateVariables.first(where: { $0.id == "audio_volume" })?.initialValue, "32")
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: final.sourceAfter), [])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditPassesRepresentativeFollowUpConversationEventInvariants() throws {
+        let failures = try AmigaProgramFamilyPromotionAudit.representativeRoutedFollowUpConversationEventFailures(
+            for: AmigaProgramFamilyRegistry.modPlayerControls
+        )
+
+        XCTAssertEqual(failures, [])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditDetectsRepresentativeFollowUpSourceDiscontinuity() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let followUpChain = try XCTUnwrap(manifest.representativeRoutedFollowUpSmokeChains.first)
+        var events = try AmigaProgramFamilyPromotionAudit.routedFirstShotFollowUpSmokeChainEvents(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            followUpChains: [followUpChain]
+        )
+        let secondIndex = 1
+        let secondEvent = events[secondIndex]
+        events[secondIndex] = AmigaProgramFamilyPromotionAudit.RoutedFirstShotFollowUpEvent(
+            firstShotPrompt: secondEvent.firstShotPrompt,
+            followUpPrompt: secondEvent.followUpPrompt,
+            sourceBefore: secondEvent.sourceBefore + "\n; wrong accepted resume source",
+            sourceAfter: secondEvent.sourceAfter,
+            modelBefore: secondEvent.modelBefore,
+            modelAfter: secondEvent.modelAfter,
+            outcome: secondEvent.outcome
+        )
+
+        let failures = AmigaProgramFamilyPromotionAudit.followUpConversationEventInvariantFailures(
+            events: events,
+            manifestID: manifest.id,
+            firstShotPrompt: firstShotPrompt,
+            followUpChain: followUpChain
+        )
+
+        XCTAssertTrue(failures.contains(#"mod-player-controls: representative follow-up resumed from a different source after add a third button called "Volume Up" to raise volume: add a fourth button called "Volume Down" to lower volume"#))
+    }
+
+    func testAmigaProgramFamilyPromotionAuditDetectsRepresentativeFollowUpInitialSourceDrift() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let followUpChain = try XCTUnwrap(manifest.representativeRoutedFollowUpSmokeChains.first)
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: firstShotPrompt))
+        let initialModel = try XCTUnwrap(AmigaSourceIndexer.index(match.source).model)
+        var events = try AmigaProgramFamilyPromotionAudit.routedFirstShotFollowUpSmokeChainEvents(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            followUpChains: [followUpChain]
+        )
+        let firstEvent = try XCTUnwrap(events.first)
+        events[0] = AmigaProgramFamilyPromotionAudit.RoutedFirstShotFollowUpEvent(
+            firstShotPrompt: firstEvent.firstShotPrompt,
+            followUpPrompt: firstEvent.followUpPrompt,
+            sourceBefore: firstEvent.sourceBefore + "\n; wrong initial routed source",
+            sourceAfter: firstEvent.sourceAfter,
+            modelBefore: firstEvent.modelBefore,
+            modelAfter: firstEvent.modelAfter,
+            outcome: firstEvent.outcome
+        )
+
+        let failures = AmigaProgramFamilyPromotionAudit.followUpConversationEventInvariantFailures(
+            events: events,
+            manifestID: manifest.id,
+            firstShotPrompt: firstShotPrompt,
+            followUpChain: followUpChain,
+            initialSource: match.source,
+            initialModel: initialModel
+        )
+
+        XCTAssertTrue(failures.contains(#"mod-player-controls: representative follow-up did not start from routed first-shot source: add a third button called "Volume Up" to raise volume"#))
+    }
+
+    func testAmigaProgramFamilyPromotionAuditDetectsRepresentativeFollowUpTerminalModelDrift() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let followUpChain = try XCTUnwrap(manifest.representativeRoutedFollowUpSmokeChains.first)
+        var events = try AmigaProgramFamilyPromotionAudit.routedFirstShotFollowUpSmokeChainEvents(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            followUpChains: [followUpChain]
+        )
+        let finalIndex = try XCTUnwrap(events.indices.last)
+        let finalEvent = events[finalIndex]
+        var driftedModel = finalEvent.modelAfter
+        driftedModel.verificationExpectations.append("Unexpected terminal model drift.")
+        events[finalIndex] = AmigaProgramFamilyPromotionAudit.RoutedFirstShotFollowUpEvent(
+            firstShotPrompt: finalEvent.firstShotPrompt,
+            followUpPrompt: finalEvent.followUpPrompt,
+            sourceBefore: finalEvent.sourceBefore,
+            sourceAfter: finalEvent.sourceAfter,
+            modelBefore: finalEvent.modelBefore,
+            modelAfter: driftedModel,
+            outcome: finalEvent.outcome
+        )
+
+        let failures = AmigaProgramFamilyPromotionAudit.followUpConversationEventInvariantFailures(
+            events: events,
+            manifestID: manifest.id,
+            firstShotPrompt: firstShotPrompt,
+            followUpChain: followUpChain
+        )
+
+        XCTAssertTrue(failures.contains("mod-player-controls: representative follow-up event 5 source-after embedded model does not match modelAfter: set initial volume to 32"))
+    }
+
+    func testAmigaProgramFamilyPromotionAuditCollectsRepresentativeRoutedFirstShotRecoveryChainFromAlternatePrompt() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let recoveryChain = try XCTUnwrap(manifest.representativeRoutedRecoveryFollowUpSmokeChains.first)
+
+        let artifacts = try AmigaProgramFamilyPromotionAudit.routedFirstShotRecoveryFollowUpSmokeChainSources(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            recoveryChains: [recoveryChain]
+        )
+
+        XCTAssertEqual(artifacts.map(\.firstShotPrompt), Array(repeating: firstShotPrompt, count: recoveryChain.count - 1))
+        XCTAssertEqual(artifacts.map(\.followUpPrompt), Array(recoveryChain.dropLast(2)) + [try XCTUnwrap(recoveryChain.last)])
+        let final = try XCTUnwrap(artifacts.last)
+        XCTAssertEqual(final.model.controls.map(\.id), ["play", "stop", "volume_up", "pause", "volume_down"])
+        XCTAssertEqual(final.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+        XCTAssertTrue(final.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(final.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(final.model.verificationExpectations.contains("Playback period is 214."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: final.source), [])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditPreservesRepresentativeRoutedStateThroughRejectedRecoveryPrompt() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let recoveryChain = try XCTUnwrap(manifest.representativeRoutedRecoveryFollowUpSmokeChains.first)
+        let rejectedPrompt = try XCTUnwrap(recoveryChain.dropLast().last)
+        let recoveryPrompt = try XCTUnwrap(recoveryChain.last)
+
+        let artifacts = try AmigaProgramFamilyPromotionAudit.routedFirstShotRecoveryFollowUpSmokeChainSources(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            recoveryChains: [recoveryChain]
+        )
+
+        XCTAssertFalse(artifacts.map(\.followUpPrompt).contains(rejectedPrompt))
+        XCTAssertEqual(artifacts.last?.followUpPrompt, recoveryPrompt)
+        let sourceBeforeRejection = try XCTUnwrap(artifacts.dropLast().last)
+        XCTAssertEqual(sourceBeforeRejection.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+        XCTAssertEqual(sourceBeforeRejection.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(sourceBeforeRejection.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertFalse(sourceBeforeRejection.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+
+        let rejectedRoute = AssistantPromptRouter.route(
+            prompt: rejectedPrompt,
+            source: sourceBeforeRejection.source,
+            isSelfCorrection: false
+        )
+        guard case .structuredModelPatch(.rejected(let reasons)) = rejectedRoute else {
+            return XCTFail("Expected representative recovery rejected prompt to reject without producing a patched source.")
+        }
+        XCTAssertEqual(reasons, ["Specify a numeric playback period."])
+
+        let recoveredFinal = try XCTUnwrap(artifacts.last)
+        XCTAssertEqual(recoveredFinal.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+        XCTAssertEqual(recoveredFinal.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(recoveredFinal.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(recoveredFinal.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: recoveredFinal.source), [])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditPreservesRepresentativeRoutedStateThroughDuplicateRecoveryPrompt() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let recoveryChain = try XCTUnwrap(manifest.representativeRoutedRecoveryFollowUpSmokeChains.first { chain in
+            Array(chain.suffix(2)) == ["add volume up", "add mute"]
+        })
+        let rejectedPrompt = try XCTUnwrap(recoveryChain.dropLast().last)
+        let recoveryPrompt = try XCTUnwrap(recoveryChain.last)
+
+        let artifacts = try AmigaProgramFamilyPromotionAudit.routedFirstShotRecoveryFollowUpSmokeChainSources(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            recoveryChains: [recoveryChain]
+        )
+
+        XCTAssertFalse(artifacts.map(\.followUpPrompt).contains(rejectedPrompt))
+        XCTAssertEqual(artifacts.last?.followUpPrompt, recoveryPrompt)
+        let sourceBeforeRejection = try XCTUnwrap(artifacts.dropLast().last)
+        XCTAssertEqual(sourceBeforeRejection.model.controls.map(\.id), ["play", "stop", "pause", "volume_down", "louder"])
+        XCTAssertEqual(sourceBeforeRejection.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter", "Louder"])
+        XCTAssertEqual(sourceBeforeRejection.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(sourceBeforeRejection.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(sourceBeforeRejection.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(sourceBeforeRejection.source.contains(#"; @amiga:model control id=louder label="Louder" action=VolumeUp"#))
+
+        let rejectedRoute = AssistantPromptRouter.route(
+            prompt: rejectedPrompt,
+            source: sourceBeforeRejection.source,
+            isSelfCorrection: false
+        )
+        guard case .structuredModelPatch(.rejected(let reasons)) = rejectedRoute else {
+            return XCTFail("Expected duplicate representative recovery prompt to reject without producing a patched source.")
+        }
+        XCTAssertEqual(reasons, ["A control that dispatches to VolumeUp already exists: Louder."])
+
+        let recoveredFinal = try XCTUnwrap(artifacts.last)
+        XCTAssertEqual(recoveredFinal.model.controls.map(\.id), ["play", "stop", "pause", "volume_down", "louder", "mute"])
+        XCTAssertEqual(recoveredFinal.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter", "Louder", "Mute"])
+        XCTAssertEqual(recoveredFinal.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown", "VolumeUp", "Mute"])
+        XCTAssertTrue(recoveredFinal.source.contains(#"; @amiga:model control id=mute label="Mute" action=Mute"#))
+        XCTAssertTrue(recoveredFinal.source.contains("; @amiga:dispatch mute -> Mute\n            cmp.w      #6,d0"))
+        XCTAssertTrue(recoveredFinal.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(recoveredFinal.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: recoveredFinal.source), [])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditRecordsRepresentativeRoutedRejectedRecoveryTurnWithoutMutation() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let recoveryChain = try XCTUnwrap(manifest.representativeRoutedRecoveryFollowUpSmokeChains.first { chain in
+            Array(chain.suffix(2)) == ["add volume up", "add mute"]
+        })
+
+        let events = try AmigaProgramFamilyPromotionAudit.routedFirstShotRecoveryFollowUpSmokeChainEvents(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            recoveryChains: [recoveryChain]
+        )
+
+        XCTAssertEqual(events.map(\.followUpPrompt), recoveryChain)
+        XCTAssertEqual(events.map(\.firstShotPrompt), Array(repeating: firstShotPrompt, count: recoveryChain.count))
+        let rejectedEvent = try XCTUnwrap(events.first { $0.followUpPrompt == "add volume up" })
+        XCTAssertEqual(rejectedEvent.outcome, .rejected(["A control that dispatches to VolumeUp already exists: Louder."]))
+        XCTAssertEqual(rejectedEvent.sourceBefore, rejectedEvent.sourceAfter)
+        XCTAssertEqual(rejectedEvent.modelBefore.controls.map(\.id), ["play", "stop", "pause", "volume_down", "louder"])
+        XCTAssertEqual(rejectedEvent.modelAfter.controls.map(\.id), ["play", "stop", "pause", "volume_down", "louder"])
+        XCTAssertTrue(rejectedEvent.sourceAfter.contains(#"; @amiga:model control id=louder label="Louder" action=VolumeUp"#))
+        XCTAssertTrue(rejectedEvent.sourceAfter.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+
+        let recoveryEvent = try XCTUnwrap(events.last)
+        XCTAssertEqual(recoveryEvent.followUpPrompt, "add mute")
+        XCTAssertEqual(recoveryEvent.outcome, .patched)
+        XCTAssertEqual(recoveryEvent.sourceBefore, rejectedEvent.sourceAfter)
+        XCTAssertNotEqual(recoveryEvent.sourceAfter, rejectedEvent.sourceAfter)
+        XCTAssertEqual(recoveryEvent.modelAfter.controls.map(\.id), ["play", "stop", "pause", "volume_down", "louder", "mute"])
+        XCTAssertTrue(recoveryEvent.sourceAfter.contains(#"; @amiga:model control id=mute label="Mute" action=Mute"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: recoveryEvent.sourceAfter), [])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditRecordsRepresentativeRoutedMissingValueRecoveryTurnWithoutMutation() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let recoveryChain = try XCTUnwrap(manifest.representativeRoutedRecoveryFollowUpSmokeChains.first)
+
+        let events = try AmigaProgramFamilyPromotionAudit.routedFirstShotRecoveryFollowUpSmokeChainEvents(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            recoveryChains: [recoveryChain]
+        )
+
+        XCTAssertEqual(events.map(\.followUpPrompt), recoveryChain)
+        let rejectedEvent = try XCTUnwrap(events.first { $0.followUpPrompt == "set playback period" })
+        XCTAssertEqual(rejectedEvent.outcome, .rejected(["Specify a numeric playback period."]))
+        XCTAssertEqual(rejectedEvent.sourceBefore, rejectedEvent.sourceAfter)
+        XCTAssertFalse(rejectedEvent.sourceAfter.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertEqual(rejectedEvent.modelAfter.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+
+        let recoveryEvent = try XCTUnwrap(events.last)
+        XCTAssertEqual(recoveryEvent.followUpPrompt, "set playback note to C-3")
+        XCTAssertEqual(recoveryEvent.outcome, .patched)
+        XCTAssertEqual(recoveryEvent.sourceBefore, rejectedEvent.sourceAfter)
+        XCTAssertTrue(recoveryEvent.sourceAfter.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertEqual(recoveryEvent.modelAfter.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: recoveryEvent.sourceAfter), [])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditPassesRepresentativeRecoveryConversationEventInvariants() throws {
+        let failures = try AmigaProgramFamilyPromotionAudit.representativeRoutedRecoveryConversationEventFailures(
+            for: AmigaProgramFamilyRegistry.modPlayerControls
+        )
+
+        XCTAssertEqual(failures, [])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditDetectsRepresentativeRejectedEventSourceMutation() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let recoveryChain = try XCTUnwrap(manifest.representativeRoutedRecoveryFollowUpSmokeChains.first { chain in
+            Array(chain.suffix(2)) == ["add volume up", "add mute"]
+        })
+        var events = try AmigaProgramFamilyPromotionAudit.routedFirstShotRecoveryFollowUpSmokeChainEvents(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            recoveryChains: [recoveryChain]
+        )
+        let rejectedIndex = try XCTUnwrap(events.firstIndex { $0.followUpPrompt == "add volume up" })
+        let rejectedEvent = events[rejectedIndex]
+        events[rejectedIndex] = AmigaProgramFamilyPromotionAudit.RoutedFirstShotFollowUpEvent(
+            firstShotPrompt: rejectedEvent.firstShotPrompt,
+            followUpPrompt: rejectedEvent.followUpPrompt,
+            sourceBefore: rejectedEvent.sourceBefore,
+            sourceAfter: rejectedEvent.sourceAfter + "\n; unexpected mutation",
+            modelBefore: rejectedEvent.modelBefore,
+            modelAfter: rejectedEvent.modelAfter,
+            outcome: rejectedEvent.outcome
+        )
+
+        let failures = AmigaProgramFamilyPromotionAudit.recoveryConversationEventInvariantFailures(
+            events: events,
+            manifestID: manifest.id,
+            firstShotPrompt: firstShotPrompt,
+            recoveryChain: recoveryChain
+        )
+
+        XCTAssertTrue(failures.contains("mod-player-controls: representative recovery rejected event mutated source: add volume up"))
+    }
+
+    func testAmigaProgramFamilyPromotionAuditDetectsRepresentativeRecoverySourceDiscontinuity() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let recoveryChain = try XCTUnwrap(manifest.representativeRoutedRecoveryFollowUpSmokeChains.first)
+        var events = try AmigaProgramFamilyPromotionAudit.routedFirstShotRecoveryFollowUpSmokeChainEvents(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            recoveryChains: [recoveryChain]
+        )
+        let recoveryIndex = try XCTUnwrap(events.firstIndex { $0.followUpPrompt == "set playback note to C-3" })
+        let recoveryEvent = events[recoveryIndex]
+        events[recoveryIndex] = AmigaProgramFamilyPromotionAudit.RoutedFirstShotFollowUpEvent(
+            firstShotPrompt: recoveryEvent.firstShotPrompt,
+            followUpPrompt: recoveryEvent.followUpPrompt,
+            sourceBefore: recoveryEvent.sourceBefore + "\n; wrong resume source",
+            sourceAfter: recoveryEvent.sourceAfter,
+            modelBefore: recoveryEvent.modelBefore,
+            modelAfter: recoveryEvent.modelAfter,
+            outcome: recoveryEvent.outcome
+        )
+
+        let failures = AmigaProgramFamilyPromotionAudit.recoveryConversationEventInvariantFailures(
+            events: events,
+            manifestID: manifest.id,
+            firstShotPrompt: firstShotPrompt,
+            recoveryChain: recoveryChain
+        )
+
+        XCTAssertTrue(failures.contains("mod-player-controls: representative recovery resumed from a different source after rejection: set playback note to C-3"))
+    }
+
+    func testAmigaProgramFamilyPromotionAuditDetectsRepresentativeRecoveryInitialModelDrift() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let recoveryChain = try XCTUnwrap(manifest.representativeRoutedRecoveryFollowUpSmokeChains.first)
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: firstShotPrompt))
+        let initialModel = try XCTUnwrap(AmigaSourceIndexer.index(match.source).model)
+        var events = try AmigaProgramFamilyPromotionAudit.routedFirstShotRecoveryFollowUpSmokeChainEvents(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            recoveryChains: [recoveryChain]
+        )
+        let firstEvent = try XCTUnwrap(events.first)
+        var driftedModel = firstEvent.modelBefore
+        driftedModel.verificationExpectations.append("Unexpected initial model drift.")
+        events[0] = AmigaProgramFamilyPromotionAudit.RoutedFirstShotFollowUpEvent(
+            firstShotPrompt: firstEvent.firstShotPrompt,
+            followUpPrompt: firstEvent.followUpPrompt,
+            sourceBefore: firstEvent.sourceBefore,
+            sourceAfter: firstEvent.sourceAfter,
+            modelBefore: driftedModel,
+            modelAfter: firstEvent.modelAfter,
+            outcome: firstEvent.outcome
+        )
+
+        let failures = AmigaProgramFamilyPromotionAudit.recoveryConversationEventInvariantFailures(
+            events: events,
+            manifestID: manifest.id,
+            firstShotPrompt: firstShotPrompt,
+            recoveryChain: recoveryChain,
+            initialSource: match.source,
+            initialModel: initialModel
+        )
+
+        XCTAssertTrue(failures.contains(#"mod-player-controls: representative recovery did not start from routed first-shot model: add a third button called "Volume Up" to raise volume"#))
+    }
+
+    func testAmigaProgramFamilyPromotionAuditDetectsRepresentativeRecoveryTerminalModelDrift() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let firstShotPrompt = try XCTUnwrap(manifest.representativeRoutedFirstShotPromptExamples.first)
+        let recoveryChain = try XCTUnwrap(manifest.representativeRoutedRecoveryFollowUpSmokeChains.first)
+        var events = try AmigaProgramFamilyPromotionAudit.routedFirstShotRecoveryFollowUpSmokeChainEvents(
+            for: manifest,
+            firstShotPrompts: [firstShotPrompt],
+            recoveryChains: [recoveryChain]
+        )
+        let finalIndex = try XCTUnwrap(events.indices.last)
+        let finalEvent = events[finalIndex]
+        var driftedModel = finalEvent.modelAfter
+        driftedModel.verificationExpectations.append("Unexpected recovery terminal model drift.")
+        events[finalIndex] = AmigaProgramFamilyPromotionAudit.RoutedFirstShotFollowUpEvent(
+            firstShotPrompt: finalEvent.firstShotPrompt,
+            followUpPrompt: finalEvent.followUpPrompt,
+            sourceBefore: finalEvent.sourceBefore,
+            sourceAfter: finalEvent.sourceAfter,
+            modelBefore: finalEvent.modelBefore,
+            modelAfter: driftedModel,
+            outcome: finalEvent.outcome
+        )
+
+        let failures = AmigaProgramFamilyPromotionAudit.recoveryConversationEventInvariantFailures(
+            events: events,
+            manifestID: manifest.id,
+            firstShotPrompt: firstShotPrompt,
+            recoveryChain: recoveryChain
+        )
+
+        XCTAssertTrue(failures.contains("mod-player-controls: representative recovery event 7 source-after embedded model does not match modelAfter: set playback note to C-3"))
+    }
+
+    func testAmigaProgramFamilyPromotionAuditCollectsAllRepresentativeRoutedConversationArtifactsFromManifestDeclarations() throws {
+        let bitplaneArtifacts = try AmigaProgramFamilyPromotionAudit.representativeRoutedFirstShotConversationArtifacts(
+            for: AmigaProgramFamilyRegistry.doubleBufferedBitplane
+        )
+        XCTAssertEqual(bitplaneArtifacts.map(\.followUpPrompt), [
+            "set front color to purple",
+            "set back color to orange"
+        ])
+        XCTAssertTrue(bitplaneArtifacts.allSatisfy { AmigaProgramSourceVerifier.failures(in: $0.source).isEmpty })
+
+        let modArtifacts = try AmigaProgramFamilyPromotionAudit.representativeRoutedFirstShotConversationArtifacts(
+            for: AmigaProgramFamilyRegistry.modPlayerControls
+        )
+        XCTAssertEqual(
+            modArtifacts.map(\.followUpPrompt),
+            modThirdFourthControlConversationPrompts() +
+                [
+                    "add volume up",
+                    "make Volume Up mute instead and center Volume Up below Stop and set initial volume to 32",
+                    "set playback period to 428"
+                ] +
+                modThirdFourthControlConversationPrompts() +
+                ["set playback note to C-3"] +
+                modCompositeRecoverySetupPrompts() +
+                ["add mute"]
+        )
+        XCTAssertFalse(modArtifacts.map(\.followUpPrompt).contains("set playback period"))
+        XCTAssertTrue(modArtifacts.allSatisfy { $0.firstShotPrompt == "Generate play and stop controls for a tracker module." })
+        XCTAssertTrue(modArtifacts.allSatisfy { AmigaProgramSourceVerifier.failures(in: $0.source).isEmpty })
+    }
+
+    func testAmigaProgramFamilyPromotionAuditCollectsFinalRepresentativeRoutedArtifactsFromManifestDeclarations() throws {
+        let bitplaneArtifacts = try AmigaProgramFamilyPromotionAudit.representativeRoutedFirstShotFollowUpArtifacts(
+            for: AmigaProgramFamilyRegistry.doubleBufferedBitplane
+        )
+        XCTAssertEqual(bitplaneArtifacts.map(\.followUpPrompt), ["set back color to orange"])
+        XCTAssertTrue(bitplaneArtifacts.allSatisfy { AmigaProgramSourceVerifier.failures(in: $0.source).isEmpty })
+
+        let modArtifacts = try AmigaProgramFamilyPromotionAudit.representativeRoutedFirstShotFollowUpArtifacts(
+            for: AmigaProgramFamilyRegistry.modPlayerControls
+        )
+        XCTAssertEqual(modArtifacts.map(\.followUpPrompt), ["set initial volume to 32", "set playback period to 428", "set playback note to C-3", "add mute"])
+        XCTAssertTrue(modArtifacts.allSatisfy { $0.firstShotPrompt == "Generate play and stop controls for a tracker module." })
+        let ordinalRecoveredFinal = try XCTUnwrap(modArtifacts.first { $0.followUpPrompt == "set playback note to C-3" })
+        XCTAssertEqual(ordinalRecoveredFinal.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+        XCTAssertTrue(ordinalRecoveredFinal.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        let behaviorBoundsFinal = try XCTUnwrap(modArtifacts.first { $0.followUpPrompt == "set playback period to 428" })
+        XCTAssertEqual(behaviorBoundsFinal.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(behaviorBoundsFinal.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertTrue(behaviorBoundsFinal.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=Mute bounds=120,68,72,20"#))
+        let duplicateRecoveredFinal = try XCTUnwrap(modArtifacts.last)
+        XCTAssertEqual(duplicateRecoveredFinal.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter", "Louder", "Mute"])
+        XCTAssertTrue(duplicateRecoveredFinal.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: duplicateRecoveredFinal.source), [])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditRejectsMissingRepresentativeRoutedDeclarationsWhenCollectingFinalArtifacts() {
+        var manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        manifest.representativeRoutedFirstShotPromptExamples = []
+        manifest.representativeRoutedFollowUpSmokeChains = []
+        manifest.representativeRoutedRecoveryFollowUpSmokeChains = []
+
+        XCTAssertThrowsError(try AmigaProgramFamilyPromotionAudit.representativeRoutedFirstShotFollowUpArtifacts(for: manifest)) { error in
+            guard case AmigaProgramPatchError.verificationFailed(let failures) = error else {
+                return XCTFail("Expected missing representative declarations to fail artifact collection, got: \(error)")
+            }
+            XCTAssertEqual(failures, [
+                "mod-player-controls: missing representative routed first-shot prompt examples.",
+                "mod-player-controls: missing representative routed follow-up smoke chains.",
+                "mod-player-controls: missing representative routed recovery follow-up smoke chains."
+            ])
+        }
+    }
+
+    func testAmigaProgramFamilyPromotionAuditRejectsUndeclaredRepresentativeRoutedFirstShotInputs() {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+
+        XCTAssertThrowsError(try AmigaProgramFamilyPromotionAudit.routedFirstShotFollowUpSmokeChainSources(
+            for: manifest,
+            firstShotPrompts: ["Generate a player with start and end buttons."],
+            followUpChains: [modThirdFourthControlConversationPrompts()]
+        )) { error in
+            guard case AmigaProgramPatchError.verificationFailed(let failures) = error else {
+                return XCTFail("Expected undeclared first-shot prompt to fail verification, got: \(error)")
+            }
+            XCTAssertEqual(failures, [
+                "mod-player-controls: representative routed first-shot prompt is not declared by the manifest: Generate a player with start and end buttons."
+            ])
+        }
+
+        XCTAssertThrowsError(try AmigaProgramFamilyPromotionAudit.routedFirstShotFollowUpSmokeChainSources(
+            for: manifest,
+            firstShotPrompts: ["Generate play and stop controls for a tracker module."],
+            followUpChains: [[
+                #"add a third button called "Volume Up" to raise volume"#,
+                "set initial volume to 32"
+            ]]
+        )) { error in
+            guard case AmigaProgramPatchError.verificationFailed(let failures) = error else {
+                return XCTFail("Expected undeclared follow-up chain to fail verification, got: \(error)")
+            }
+            XCTAssertEqual(failures, [
+                #"mod-player-controls: representative routed first-shot follow-up chain is not declared by the manifest: add a third button called "Volume Up" to raise volume -> set initial volume to 32"#
+            ])
+        }
+
+        XCTAssertThrowsError(try AmigaProgramFamilyPromotionAudit.routedFirstShotRecoveryFollowUpSmokeChainSources(
+            for: manifest,
+            firstShotPrompts: ["Generate play and stop controls for a tracker module."],
+            recoveryChains: [[
+                "add volume up",
+                "set playback period",
+                "set playback note to C-3"
+            ]]
+        )) { error in
+            guard case AmigaProgramPatchError.verificationFailed(let failures) = error else {
+                return XCTFail("Expected undeclared recovery chain to fail verification, got: \(error)")
+            }
+            XCTAssertEqual(failures, [
+                "mod-player-controls: representative routed first-shot recovery chain is not declared by the manifest: add volume up -> set playback period -> set playback note to C-3"
+            ])
+        }
+    }
+
+    func testAmigaProgramFamilyPromotionAuditRejectsRepresentativeRoutedFirstShotPromptOwnedByAnotherFamily() {
+        var manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let bitplanePrompt = "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."
+        manifest.firstShotPromptExamples.append(bitplanePrompt)
+
+        XCTAssertThrowsError(try AmigaProgramFamilyPromotionAudit.routedFirstShotFollowUpSmokeChainSources(
+            for: manifest,
+            firstShotPrompts: [bitplanePrompt],
+            followUpChains: [modThirdFourthControlConversationPrompts()]
+        )) { error in
+            guard case AmigaProgramPatchError.verificationFailed(let failures) = error else {
+                return XCTFail("Expected wrong-family representative first-shot prompt to fail verification, got: \(error)")
+            }
+            XCTAssertEqual(failures, [
+                "mod-player-controls: first-shot prompt routed to double-buffer-bitplane instead of manifest id for prompt: Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."
+            ])
+        }
+
+        XCTAssertThrowsError(try AmigaProgramFamilyPromotionAudit.routedFirstShotRecoveryFollowUpSmokeChainSources(
+            for: manifest,
+            firstShotPrompts: [bitplanePrompt],
+            recoveryChains: [modThirdFourthControlRecoveryPrompts()]
+        )) { error in
+            guard case AmigaProgramPatchError.verificationFailed(let failures) = error else {
+                return XCTFail("Expected wrong-family representative recovery first-shot prompt to fail verification, got: \(error)")
+            }
+            XCTAssertEqual(failures, [
+                "mod-player-controls: first-shot prompt routed to double-buffer-bitplane instead of manifest id for prompt: Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."
+            ])
+        }
     }
 
     func testAmigaProgramFamilyPromotionAuditRejectsRoutedFirstShotArtifactCollectionWithWrongModelKind() {
@@ -3287,6 +5107,7 @@ InputDispatch:
 
     func testAmigaProgramFamilyPromotionAuditDetectsBlankPromptDeclarations() {
         var manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let blankSupportedFollowUpIndex = manifest.supportedFollowUps.count + 1
         manifest.rejectedFirstShotPromptExamples = ["  "]
         manifest.supportedFollowUps.append("\t")
         manifest.requiredVerificationGates.append("\n")
@@ -3294,7 +5115,7 @@ InputDispatch:
         let failures = AmigaProgramFamilyPromotionAudit.failures(for: manifest)
 
         XCTAssertTrue(failures.contains("mod-player-controls: blank rejected first-shot prompt examples at index 1."))
-        XCTAssertTrue(failures.contains("mod-player-controls: blank supported follow-up declarations at index 9."))
+        XCTAssertTrue(failures.contains("mod-player-controls: blank supported follow-up declarations at index \(blankSupportedFollowUpIndex)."))
         XCTAssertTrue(failures.contains("mod-player-controls: blank required verification gates at index 9."))
     }
 
@@ -3432,6 +5253,45 @@ InputDispatch:
         )
     }
 
+    func testAmigaProgramFamilyPromotionAuditValidatesRepresentativeRoutedConversationDeclarations() {
+        var manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        manifest.representativeRoutedFirstShotPromptExamples.append("Generate a tracker with only rewind.")
+        manifest.representativeRoutedFollowUpSmokeChains.append([
+            #"add a third button called "Volume Up" to raise volume"#,
+            "set initial volume to 32"
+        ])
+        manifest.representativeRoutedRecoveryFollowUpSmokeChains.append([
+            "add volume up",
+            "set playback period",
+            "set playback note to C-3"
+        ])
+
+        let failures = AmigaProgramFamilyPromotionAudit.failures(for: manifest)
+
+        XCTAssertTrue(failures.contains(
+            "mod-player-controls: representative routed first-shot prompt is not declared by first-shot prompt examples: Generate a tracker with only rewind."
+        ))
+        XCTAssertTrue(failures.contains(
+            #"mod-player-controls: representative routed follow-up smoke chain is not declared by required follow-up smoke chains: add a third button called "Volume Up" to raise volume -> set initial volume to 32"#
+        ))
+        XCTAssertTrue(failures.contains(
+            "mod-player-controls: representative routed recovery follow-up smoke chain is not declared by required recovery follow-up smoke chains: add volume up -> set playback period -> set playback note to C-3"
+        ))
+    }
+
+    func testAmigaProgramFamilyPromotionAuditRequiresRepresentativeRoutedConversationDeclarations() {
+        var manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        manifest.representativeRoutedFirstShotPromptExamples = []
+        manifest.representativeRoutedFollowUpSmokeChains = []
+        manifest.representativeRoutedRecoveryFollowUpSmokeChains = []
+
+        let failures = AmigaProgramFamilyPromotionAudit.failures(for: manifest)
+
+        XCTAssertTrue(failures.contains("mod-player-controls: missing representative routed first-shot prompt examples."))
+        XCTAssertTrue(failures.contains("mod-player-controls: missing representative routed follow-up smoke chains."))
+        XCTAssertTrue(failures.contains("mod-player-controls: missing representative routed recovery follow-up smoke chains."))
+    }
+
     func testAmigaProgramFamilyPromotionAuditDetectsRepeatedPromptInsideConversationSmokeChain() {
         var manifest = AmigaProgramFamilyRegistry.modPlayerControls
         manifest.requiredFollowUpSmokeChains = [[
@@ -3514,6 +5374,22 @@ InputDispatch:
             AmigaProgramFamilyPromotionAudit.failures(for: manifest)
                 .contains("mod-player-controls: supported follow-up lacks accepted smoke coverage: add rewind.")
         )
+    }
+
+    func testAmigaProgramFamilyPromotionAuditRequiresRepresentativeRoutedAcceptedCoverageForSupportedFollowUps() {
+        var manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        manifest.representativeRoutedFollowUpSmokeChains = [
+            modThirdFourthControlConversationPrompts()
+        ]
+        manifest.representativeRoutedRecoveryFollowUpSmokeChains = [
+            modThirdFourthControlRecoveryPrompts()
+        ]
+
+        let failures = AmigaProgramFamilyPromotionAudit.failures(for: manifest)
+
+        XCTAssertTrue(failures.contains(
+            "mod-player-controls: supported follow-up lacks representative routed accepted smoke coverage: change control bounds."
+        ))
     }
 
     func testAmigaProgramFamilyPromotionAuditDoesNotCountNearVolumeWordsAsAcceptedCoverage() {
@@ -3657,9 +5533,22 @@ InputDispatch:
         )
     }
 
+    func testAmigaProgramFamilyPromotionAuditRequiresRepresentativeRoutedConversationGate() {
+        var manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        manifest.requiredVerificationGates.removeAll { $0 == "representative routed conversation audit" }
+
+        XCTAssertTrue(
+            AmigaProgramFamilyPromotionAudit.failures(for: manifest)
+                .contains("mod-player-controls: missing baseline verification gate: representative routed conversation audit.")
+        )
+    }
+
     func testAmigaProgramFamilyPromotionAuditRequiresCanonicalVerificationGateSpelling() {
         var manifest = AmigaProgramFamilyRegistry.modPlayerControls
         manifest.requiredVerificationGates = manifest.requiredVerificationGates.map {
+            if $0 == "representative routed conversation audit" {
+                return "Representative Routed Conversation Audit"
+            }
             if $0 == "VASM compile" {
                 return "vasm compile"
             }
@@ -3671,10 +5560,60 @@ InputDispatch:
 
         let failures = AmigaProgramFamilyPromotionAudit.failures(for: manifest)
 
+        XCTAssertTrue(failures.contains("mod-player-controls: unsupported verification gate declaration: Representative Routed Conversation Audit."))
         XCTAssertTrue(failures.contains("mod-player-controls: unsupported verification gate declaration: vasm compile."))
         XCTAssertTrue(failures.contains("mod-player-controls: unsupported verification gate declaration: Bootable ADF Generation."))
+        XCTAssertTrue(failures.contains("mod-player-controls: missing baseline verification gate: representative routed conversation audit."))
         XCTAssertTrue(failures.contains("mod-player-controls: missing baseline verification gate: VASM compile."))
         XCTAssertTrue(failures.contains("mod-player-controls: missing baseline verification gate: bootable ADF generation."))
+    }
+
+    func testAmigaProgramFamilyPromotionAuditFormatsRepresentativeConversationFailuresWithoutDuplicateManifestPrefix() {
+        let failures = AmigaProgramFamilyPromotionAudit.contextualRepresentativeRoutedFirstShotConversationFailures(
+            manifestID: "mod-player-controls",
+            failures: [
+                "mod-player-controls: required follow-up smoke prompt was not recognized: add tempo",
+                "Source does not contain required region: controls."
+            ]
+        )
+
+        XCTAssertEqual(failures, [
+            "mod-player-controls: representative routed first-shot conversation failure: required follow-up smoke prompt was not recognized: add tempo",
+            "mod-player-controls: representative routed first-shot conversation failure: Source does not contain required region: controls."
+        ])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditReportsRepresentativeConversationFailuresWithoutDuplicateManifestPrefix() {
+        var manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let brokenChain = ["add volume up", "set initial volume"]
+        manifest.requiredFollowUpSmokeChains.append(brokenChain)
+        manifest.representativeRoutedFollowUpSmokeChains = [brokenChain]
+
+        let failures = AmigaProgramFamilyPromotionAudit.representativeRoutedFirstShotConversationFailures(for: manifest)
+
+        XCTAssertTrue(
+            failures.contains("mod-player-controls: representative routed first-shot conversation failure: required follow-up smoke prompt was rejected: set initial volume: Specify a numeric initial volume."),
+            "\(failures)"
+        )
+        XCTAssertFalse(
+            failures.contains { $0.contains("representative routed first-shot conversation failure: mod-player-controls:") },
+            "\(failures)"
+        )
+    }
+
+    func testAmigaProgramFamilyPromotionAuditReportsMissingRepresentativeConversationDeclarationsFromEventAudit() {
+        var manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        manifest.representativeRoutedFirstShotPromptExamples = []
+        manifest.representativeRoutedFollowUpSmokeChains = []
+        manifest.representativeRoutedRecoveryFollowUpSmokeChains = []
+
+        let failures = AmigaProgramFamilyPromotionAudit.representativeRoutedFirstShotConversationFailures(for: manifest)
+
+        XCTAssertEqual(failures, [
+            "mod-player-controls: representative routed first-shot conversation failure: missing representative routed first-shot prompt examples.",
+            "mod-player-controls: representative routed first-shot conversation failure: missing representative routed follow-up smoke chains.",
+            "mod-player-controls: representative routed first-shot conversation failure: missing representative routed recovery follow-up smoke chains."
+        ])
     }
 
     func testAmigaProgramFamilyPromotionAuditRequiresRejectedFollowUpSmokeChains() {
@@ -3694,6 +5633,16 @@ InputDispatch:
         XCTAssertTrue(
             AmigaProgramFamilyPromotionAudit.failures(for: manifest)
                 .contains("mod-player-controls: required rejected follow-up smoke chain 1 must contain at least one accepted setup and one rejected follow-up.")
+        )
+    }
+
+    func testAmigaProgramFamilyPromotionAuditRequiresRecoveryFollowUpSmokeChainsToHaveSetupRejectionAndRecovery() {
+        var manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        manifest.requiredRecoveryFollowUpSmokeChains = [["add volume up", "add volume up"]]
+
+        XCTAssertTrue(
+            AmigaProgramFamilyPromotionAudit.failures(for: manifest)
+                .contains("mod-player-controls: required recovery follow-up smoke chain 1 must contain accepted setup, rejected follow-up, and recovery follow-up.")
         )
     }
 
@@ -3847,6 +5796,21 @@ InputDispatch:
 
         XCTAssertEqual(failures, [
             "mod-player-controls: required rejected follow-up smoke chain 1 rejected prompt patched instead of rejecting after setup: set initial volume to 32"
+        ])
+    }
+
+    func testAmigaProgramFamilyPromotionAuditDetectsAcceptedRejectedRecoveryFollowUpSmokeChainPrompt() throws {
+        let source = try AmigaProgramTemplate.verifiedModPlayerControlsSource()
+        var manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        manifest.requiredRecoveryFollowUpSmokeChains = [["add volume up", "set initial volume to 32", "add mute"]]
+
+        let failures = AmigaProgramFamilyPromotionAudit.recoveryFollowUpSmokeFailures(
+            for: manifest,
+            source: source
+        )
+
+        XCTAssertEqual(failures, [
+            "mod-player-controls: required recovery follow-up smoke chain rejected prompt patched instead of rejecting after setup: set initial volume to 32"
         ])
     }
 
@@ -5603,6 +7567,3127 @@ InputDispatch:
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
     }
 
+    func testModelBackedFollowUpsCanAddControlAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add volume up and set volume increment to 8",
+            source: match.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(changed.source.contains("VolumeUp:"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("add.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddPlaceAndConfigureVolumeControlsInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add volume controls centered below Stop and set volume increment to 8",
+            source: match.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+        let volumeUp = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 80, y: 68, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=80,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=160,68,72,20"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddPlaceAndConfigureSingleControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add a volume up button centered below Stop and set volume increment to 8",
+            source: match.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+        let volumeUp = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddCustomLabelPlaceBehaviorAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add a button called Down centered below Stop to lower volume and set volume increment to 8",
+            source: match.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+        let down = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "down"])
+        XCTAssertEqual(down.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=down label="Down" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch down -> VolumeDown"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertTrue(changed.source.contains("VolumeDown:"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("sub.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Down dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsAddCustomLabelPlaceBehaviorAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "add a button called Down centered below Stop to lower volume and change volume step",
+            source: match.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add a button called Down centered below Stop to lower volume and change volume step",
+            source: match.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "add a button called Down centered below Stop to lower volume and change volume step",
+                source: match.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(match.source).model?.controls.map(\.label), ["Play", "Stop"])
+        XCTAssertFalse(match.source.contains(#"; @amiga:model control id=down label="Down" action=VolumeDown"#))
+        XCTAssertFalse(match.source.contains("; @amiga:dispatch down -> VolumeDown"))
+        XCTAssertFalse(match.source.contains("\nVolumeDown:\n"))
+        XCTAssertTrue(match.source.contains("AudioVolume:  dc.w     48"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRenameMoveCustomControlAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let down = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add a button called Down to lower volume", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "rename Down to Quieter and center Down below Stop and set initial volume to 32",
+            source: down.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: compound.source))
+        let quieter = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "down"])
+        XCTAssertEqual(quieter.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=down label="Quieter" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch down -> VolumeDown"))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=down label="Down""#))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Down is labeled Quieter without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRenameMoveCustomControlAndMissingInitialVolumeWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let down = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add a button called Down to lower volume", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "rename Down to Quieter and center Down below Stop and set initial volume",
+            source: down.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "rename Down to Quieter and center Down below Stop and set initial volume",
+            source: down.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "rename Down to Quieter and center Down below Stop and set initial volume",
+                source: down.source
+            ),
+            .rejected(["Specify a numeric initial volume."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(down.source).model?.controls.map(\.label), ["Play", "Stop", "Down"])
+        XCTAssertEqual(AmigaSourceIndexer.index(down.source).model?.controls.first(where: { $0.id == "down" })?.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertTrue(down.source.contains(#"; @amiga:model control id=down label="Down" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertFalse(down.source.contains(#"; @amiga:model control id=down label="Quieter""#))
+        XCTAssertFalse(down.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertTrue(down.source.contains("AudioVolume:  dc.w     48"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: down.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRenameAndMoveBoundsInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let moved = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up below Stop"#,
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: moved.source))
+        let louder = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Louder"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(louder.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeUp bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up""#))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertFalse(changed.source.contains(#"            dc.b       "Volume Up",0"#))
+        XCTAssertTrue(changed.source.contains("VolumeUp:"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("add.w      #4,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up is labeled Louder without changing VolumeUp."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRenameMoveBoundsAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up below Stop and set initial volume to 32"#,
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: compound.source))
+        let louder = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Louder"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(louder.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeUp bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up is labeled Louder without changing VolumeUp."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRenameMoveBoundsOutsideSurfaceWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up left of Play"#,
+            source: volumeUp.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up left of Play"#,
+            source: volumeUp.source
+        ))
+        let outcome = AmigaProgramFollowUpPlanner.patchOutcome(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up left of Play"#,
+            source: volumeUp.source
+        )
+        guard case .rejected(let reasons) = outcome else {
+            return XCTFail("Expected rejection, got \(outcome)")
+        }
+        XCTAssertTrue(reasons.contains("Control Louder model bounds are outside the 320x256 UI surface."))
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(
+            AmigaSourceIndexer.index(volumeUp.source).model?.controls.first(where: { $0.id == "volume_up" })?.bounds,
+            .init(x: 208, y: 40, width: 72, height: 20)
+        )
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertFalse(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Louder""#))
+        XCTAssertFalse(volumeUp.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRenameControlAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"rename "Volume Up" to "Louder" and set volume increment to 8"#,
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Louder"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertTrue(changed.source.contains("VolumeUp:"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("add.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRenameControlAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: #"rename "Volume Up" to "Louder" and change volume step"#,
+            source: volumeUp.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"rename "Volume Up" to "Louder" and change volume step"#,
+            source: volumeUp.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: #"rename "Volume Up" to "Louder" and change volume step"#,
+                source: volumeUp.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertFalse(volumeUp.source.contains("Louder"))
+        XCTAssertTrue(volumeUp.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRenameAndReorderControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"rename "Volume Up" to "Louder" and move Louder after Volume Down"#,
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: reordered.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Down", "Louder"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeUp bounds=32,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up is labeled Louder without changing VolumeUp."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRenameReorderAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"rename "Volume Up" to "Louder" and move Louder after Volume Down and set volume increment to 8"#,
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: reordered.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Down", "Louder"])
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsDoNotOverDeclareNoOpMoveInRenameReorderParameterPrompt() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let result = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "rename Volume Down to Quieter and move Quieter after Volume Up and set volume increment to 8",
+            source: volumeControls.source
+        ))
+
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Quieter"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("chip_data"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("draw_controls"))
+        XCTAssertFalse(result.changedRegions.contains("hit_test"))
+        XCTAssertFalse(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: result.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRenameReorderAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: #"rename "Volume Up" to "Louder" and move Louder after Volume Down and change volume step"#,
+            source: volumeControls.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"rename "Volume Up" to "Louder" and move Louder after Volume Down and change volume step"#,
+            source: volumeControls.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: #"rename "Volume Up" to "Louder" and move Louder after Volume Down and change volume step"#,
+                source: volumeControls.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertFalse(volumeControls.source.contains("Louder"))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(volumeControls.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRenameMoveBoundsAndReorderControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause"#,
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: reordered.source))
+        let louder = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Louder"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeUp"])
+        XCTAssertEqual(louder.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "VolumeUp"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeUp bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertFalse(changed.source.contains(#"            dc.b       "Volume Up",0"#))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up is labeled Louder without changing VolumeUp."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRenameMoveBoundsReorderAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause and set volume increment to 8"#,
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: reordered.source))
+        let louder = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Louder"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeUp"])
+        XCTAssertEqual(louder.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRenameMoveBoundsReorderAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause and change volume step"#,
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause and change volume step"#,
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause and change volume step"#,
+                source: pause.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.first(where: { $0.id == "volume_up" })?.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #4,d0"))
+        XCTAssertFalse(pause.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertTrue(pause.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRetargetControlBehaviorAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up lower volume instead and set volume increment to 8",
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertTrue(changed.source.contains("VolumeDown:"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("sub.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRetargetBehaviorAndMoveBoundsInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let moved = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up mute instead and center Volume Up below Stop",
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: moved.source))
+        let volumeUpControl = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("\nMute:\n"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRetargetBehaviorMoveBoundsAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let moved = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up mute instead and center Volume Up below Stop and set initial volume to 32",
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: moved.source))
+        let volumeUpControl = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRetargetBehaviorMoveBoundsAndMissingInitialVolumeWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "make Volume Up mute instead and center Volume Up below Stop and set initial volume",
+            source: volumeUp.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up mute instead and center Volume Up below Stop and set initial volume",
+            source: volumeUp.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "make Volume Up mute instead and center Volume Up below Stop and set initial volume",
+                source: volumeUp.source
+            ),
+            .rejected(["Specify a numeric initial volume."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.first(where: { $0.id == "volume_up" })?.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertTrue(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertFalse(volumeUp.source.contains("; @amiga:dispatch volume_up -> Mute"))
+        XCTAssertTrue(volumeUp.source.contains("AudioVolume:  dc.w     48"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRetargetBehaviorAndReorderControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up mute instead and move Volume Up after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: reordered.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=Mute bounds=32,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("\nMute:\n"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRetargetBehaviorMoveBoundsAndReorderControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: reordered.source))
+        let volumeUpControl = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("\nMute:\n"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRetargetReorderAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up mute instead and move Volume Up after Pause and set initial volume to 32",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: reordered.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRetargetBehaviorMoveBoundsReorderAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause and set initial volume to 32",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: reordered.source))
+        let volumeUpControl = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRetargetReorderAndMissingInitialVolumeWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "make Volume Up mute instead and move Volume Up after Pause and set initial volume",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up mute instead and move Volume Up after Pause and set initial volume",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "make Volume Up mute instead and move Volume Up after Pause and set initial volume",
+                source: pause.source
+            ),
+            .rejected(["Specify a numeric initial volume."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD"])
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #4,d0"))
+        XCTAssertFalse(pause.source.contains("; @amiga:dispatch volume_up -> Mute"))
+        XCTAssertTrue(pause.source.contains("AudioVolume:  dc.w     48"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRetargetBehaviorMoveBoundsReorderAndMissingInitialVolumeWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause and set initial volume",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause and set initial volume",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause and set initial volume",
+                source: pause.source
+            ),
+            .rejected(["Specify a numeric initial volume."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.first(where: { $0.id == "volume_up" })?.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #4,d0"))
+        XCTAssertFalse(pause.source.contains("; @amiga:dispatch volume_up -> Mute"))
+        XCTAssertTrue(pause.source.contains("AudioVolume:  dc.w     48"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRenameRetargetAndReorderControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up say Down and lower volume and move Down after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: reordered.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertFalse(changed.source.contains(#"            dc.b       "Volume Up",0"#))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up is labeled Down without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRenameRetargetReorderAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up say Down and lower volume and move Down after Pause and set volume increment to 8",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: reordered.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRenameRetargetReorderAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "make Volume Up say Down and lower volume and move Down after Pause and change volume step",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up say Down and lower volume and move Down after Pause and change volume step",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "make Volume Up say Down and lower volume and move Down after Pause and change volume step",
+                source: pause.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD"])
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #4,d0"))
+        XCTAssertFalse(pause.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertTrue(pause.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRenameRetargetMoveBoundsAndReorderControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: reordered.source))
+        let down = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(down.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Down" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up is labeled Down without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRenameRetargetMoveBoundsReorderAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause and set volume increment to 8",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: reordered.source))
+        let down = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(down.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRenameRetargetMoveBoundsReorderAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause and change volume step",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause and change volume step",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause and change volume step",
+                source: pause.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.first(where: { $0.id == "volume_up" })?.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #4,d0"))
+        XCTAssertFalse(pause.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertTrue(pause.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRenameRetargetAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up say Down and lower volume and set volume increment to 8",
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Down" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertFalse(changed.source.contains(#"            dc.b       "Volume Up",0"#))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("VolumeDown:"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("sub.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up is labeled Down without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRenameRetargetAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "make Volume Up say Down and lower volume and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up say Down and lower volume and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "make Volume Up say Down and lower volume and change volume step",
+                source: volumeUp.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertTrue(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertTrue(volumeUp.source.contains("add.w      #4,d0"))
+        XCTAssertFalse(volumeUp.source.contains("sub.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRenameRetargetAndMoveBoundsInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop",
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: compound.source))
+        let control = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(control.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Down" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       120,68,72,20,3"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("VolumeDown:"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("sub.w      #4,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up is labeled Down without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRenameRetargetMoveBoundsAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop and set volume increment to 8",
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+        let control = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(control.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Down" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("VolumeDown:"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("sub.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up is labeled Down without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRenameRetargetMoveBoundsAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop and change volume step",
+                source: volumeUp.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.first(where: { $0.id == "volume_up" })?.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertFalse(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Down" action=VolumeDown"#))
+        XCTAssertTrue(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertTrue(volumeUp.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRenameRetargetAndOutOfBoundsMoveWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up left of Play",
+            source: volumeUp.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up left of Play",
+            source: volumeUp.source
+        ))
+        switch AmigaProgramFollowUpPlanner.patchOutcome(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up left of Play",
+            source: volumeUp.source
+        ) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Down model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds rename-retarget-layout request to reject.")
+        }
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertFalse(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Down" action=VolumeDown"#))
+        XCTAssertTrue(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsBehaviorRetargetAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "make Volume Up lower volume instead and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "make Volume Up lower volume instead and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "make Volume Up lower volume instead and change volume step",
+                source: volumeUp.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertTrue(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertTrue(volumeUp.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpsCanMoveControlBoundsAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "center Volume Up below Stop and set volume increment to 8",
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+        let moved = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertEqual(moved.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       120,68,72,20,3"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsBoundsMoveAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let original = try XCTUnwrap(volumeUp.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "center Volume Up below Stop and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "center Volume Up below Stop and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "center Volume Up below Stop and change volume step",
+                source: volumeUp.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(original.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.first(where: { $0.id == "volume_up" })?.bounds, original.bounds)
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertFalse(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=120,68,72,20"#))
+        XCTAssertTrue(volumeUp.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpsCanMoveBoundsAndReorderControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "center Volume Up below Stop and move Volume Up after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: reordered.source))
+        let volumeUpControl = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeUp"])
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "VolumeUp"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanMoveBoundsReorderAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "center Volume Up below Stop and move Volume Up after Pause and set volume increment to 8",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: reordered.source))
+        let volumeUpControl = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeUp"])
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsMoveBoundsReorderAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "center Volume Up below Stop and move Volume Up after Pause and change volume step",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "center Volume Up below Stop and move Volume Up after Pause and change volume step",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "center Volume Up below Stop and move Volume Up after Pause and change volume step",
+                source: pause.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.first(where: { $0.id == "volume_up" })?.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #4,d0"))
+        XCTAssertTrue(pause.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveControlAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume down", source: volumeUp.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and set volume increment to 8",
+            source: volumeDown.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("sub.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveAndRenameRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let renamed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Down to Quieter",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: renamed.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=3 bounds=208,40,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertFalse(changed.source.contains(#"            dc.b       "Volume Down",0"#))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("sub.w      #4,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Quieter without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameRemainingControlAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and set initial volume to 32",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Quieter without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameAndReorderRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Quieter without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameReorderAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Quieter without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameAndMoveBoundsForRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertFalse(changed.source.contains(#"            dc.b       "Volume Down",0"#))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("sub.w      #4,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Quieter without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameMoveBoundsForRemainingControlAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and set initial volume to 32",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Quieter without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveAndRetargetRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let retargeted = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down mute instead",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: retargeted.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("\nMute:\n"))
+        XCTAssertFalse(changed.source.contains("\nVolumeDown:\n"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRetargetRemainingControlAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down mute instead and set initial volume to 32",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRetargetAndReorderRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down mute instead and move Volume Down after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=32,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("\nMute:\n"))
+        XCTAssertFalse(changed.source.contains("\nVolumeDown:\n"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRetargetReorderAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down mute instead and move Volume Down after Pause and set initial volume to 32",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=32,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRetargetAndMoveBoundsForRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("\nMute:\n"))
+        XCTAssertFalse(changed.source.contains("\nVolumeDown:\n"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRetargetMoveBoundsAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and set initial volume to 32",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRetargetMoveBoundsAndReorderRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Down after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("\nMute:\n"))
+        XCTAssertFalse(changed.source.contains("\nVolumeDown:\n"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRetargetMoveBoundsReorderAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Down after Pause and set initial volume to 32",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameAndRetargetRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Silence"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Silence",0"#))
+        XCTAssertTrue(changed.source.contains("\nMute:\n"))
+        XCTAssertFalse(changed.source.contains("\nVolumeDown:\n"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Silence without changing Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameRetargetRemainingControlAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and set initial volume to 32",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Silence"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Silence",0"#))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Silence without changing Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameRetargetAndMoveBoundsForRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Silence"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Silence",0"#))
+        XCTAssertTrue(changed.source.contains("\nMute:\n"))
+        XCTAssertFalse(changed.source.contains("\nVolumeDown:\n"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Silence without changing Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameRetargetMoveBoundsAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and set initial volume to 32",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Silence"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Silence",0"#))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Silence without changing Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameRetargetAndReorderRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and move Silence after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Silence"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=32,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Silence",0"#))
+        XCTAssertTrue(changed.source.contains("\nMute:\n"))
+        XCTAssertFalse(changed.source.contains("\nVolumeDown:\n"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Silence without changing Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameRetargetReorderAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and move Silence after Pause and set initial volume to 32",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Silence"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=32,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Silence",0"#))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Silence without changing Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameRetargetMoveBoundsAndReorderRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Silence after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Silence"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Silence",0"#))
+        XCTAssertTrue(changed.source.contains("\nMute:\n"))
+        XCTAssertFalse(changed.source.contains("\nVolumeDown:\n"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Silence without changing Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameRetargetMoveBoundsReorderAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Silence after Pause and set initial volume to 32",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Silence"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down dispatches to Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Silence without changing Mute."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveMoveRemainingControlAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and center Volume Down below Stop and set initial volume to 32",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveAndMoveRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and center Volume Down below Stop",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_down:\n            dc.w       120,68,72,20,3"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveAndReorderRemainingControlsInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and move Volume Down after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0\n            bne.s      .skip_pause\n            bsr        PauseMOD\n.skip_pause:"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0\n            bne.s      .skip_volume_down\n            bsr        VolumeDown\n.skip_volume_down:"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveReorderAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and move Volume Down after Pause and set volume increment to 8",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0\n            bne.s      .skip_pause\n            bsr        PauseMOD\n.skip_pause:"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0\n            bne.s      .skip_volume_down\n            bsr        VolumeDown\n.skip_volume_down:"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemovePlaceAndReorderRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemovePlaceReorderAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause and set volume increment to 8",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameMoveBoundsAndReorderRemainingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Quieter after Pause",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Quieter without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenameMoveBoundsReorderAndSetInitialVolumeInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Quieter after Pause and set initial volume to 32",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: compound.source))
+        let volumeDown = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Quieter without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRemovalAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and change volume step",
+                source: volumeUp.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(volumeUp.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(volumeUp.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveMoveRemainingControlAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and center Volume Down below Stop and change volume step",
+            source: volumeControls.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and center Volume Down below Stop and change volume step",
+            source: volumeControls.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and center Volume Down below Stop and change volume step",
+                source: volumeControls.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(
+            AmigaSourceIndexer.index(volumeControls.source).model?.controls.first(where: { $0.id == "volume_down" })?.bounds,
+            .init(x: 32, y: 68, width: 72, height: 20)
+        )
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_down -> VolumeDown"))
+        XCTAssertTrue(volumeControls.source.contains("add.w      #4,d0"))
+        XCTAssertTrue(volumeControls.source.contains("sub.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveAndMoveSameControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and center Volume Up below Stop",
+            source: volumeControls.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and center Volume Up below Stop",
+            source: volumeControls.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and center Volume Up below Stop",
+                source: volumeControls.source
+            ),
+            .rejected(["Cannot change bounds for a removed control."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_down -> VolumeDown"))
+        XCTAssertTrue(volumeControls.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(volumeControls.source.contains("\nVolumeDown:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveAndRenameRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and rename Volume Up to Louder",
+            source: volumeControls.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Up to Louder",
+            source: volumeControls.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and rename Volume Up to Louder",
+                source: volumeControls.source
+            ),
+            .rejected(["Cannot rename a removed control."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_down -> VolumeDown"))
+        XCTAssertTrue(volumeControls.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(volumeControls.source.contains("\nVolumeDown:\n"))
+        XCTAssertFalse(volumeControls.source.contains("Louder"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveRenameAndMoveBoundsForRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Up below Stop",
+            source: volumeControls.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Up below Stop",
+            source: volumeControls.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Up below Stop",
+                source: volumeControls.source
+            ),
+            .rejected([
+                "Cannot change bounds for a removed control.",
+                "Specify the same control for rename and bounds changes."
+            ])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_down -> VolumeDown"))
+        XCTAssertFalse(volumeControls.source.contains("Quieter"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveRenameAndReorderRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and rename Volume Down to Quieter and move Volume Up after Pause",
+                source: pause.source
+            ),
+            .rejected(["Cannot move a removed control or move another control relative to it."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down", "Pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown", "PauseMOD"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.first(where: { $0.id == "volume_down" })?.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(pause.source.contains("Quieter"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveRenameMoveBoundsAndReorderRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Volume Up after Pause",
+                source: pause.source
+            ),
+            .rejected(["Cannot move a removed control or move another control relative to it."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down", "Pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.first(where: { $0.id == "volume_down" })?.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertFalse(pause.source.contains("Quieter"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveAndRetargetRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and make Volume Up mute instead",
+            source: volumeControls.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Up mute instead",
+            source: volumeControls.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and make Volume Up mute instead",
+                source: volumeControls.source
+            ),
+            .rejected(["Cannot change behavior for a removed control."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_down -> VolumeDown"))
+        XCTAssertTrue(volumeControls.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(volumeControls.source.contains("\nVolumeDown:\n"))
+        XCTAssertFalse(volumeControls.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveRetargetAndMoveBoundsForRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Up below Stop",
+            source: volumeControls.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Up below Stop",
+            source: volumeControls.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and make Volume Down mute instead and center Volume Up below Stop",
+                source: volumeControls.source
+            ),
+            .rejected([
+                "Cannot change bounds for a removed control.",
+                "Specify the same control for behavior and bounds changes."
+            ])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_down -> VolumeDown"))
+        XCTAssertFalse(volumeControls.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveRetargetMoveBoundsAndReorderRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Up after Pause",
+                source: pause.source
+            ),
+            .rejected(["Cannot move a removed control or move another control relative to it."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown", "PauseMOD"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.first(where: { $0.id == "volume_down" })?.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertFalse(pause.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveRetargetAndReorderRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and make Volume Down mute instead and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down mute instead and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and make Volume Down mute instead and move Volume Up after Pause",
+                source: pause.source
+            ),
+            .rejected(["Cannot move a removed control or move another control relative to it."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown", "PauseMOD"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.first(where: { $0.id == "volume_down" })?.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertFalse(pause.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveRenameRetargetAndReorderRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and make Volume Down say Silence and mute instead and move Volume Up after Pause",
+                source: pause.source
+            ),
+            .rejected(["Cannot move a removed control or move another control relative to it."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down", "Pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown", "PauseMOD"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.first(where: { $0.id == "volume_down" })?.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertFalse(pause.source.contains(#"            dc.b       "Silence",0"#))
+        XCTAssertFalse(pause.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveRenameAndRetargetRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and make Volume Up say Silence and mute instead",
+            source: volumeControls.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Up say Silence and mute instead",
+            source: volumeControls.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and make Volume Up say Silence and mute instead",
+                source: volumeControls.source
+            ),
+            .rejected(["Cannot change label or behavior for a removed control."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(volumeControls.source.contains("Silence"))
+        XCTAssertFalse(volumeControls.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveRenameRetargetAndMoveBoundsForRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Up below Stop",
+            source: volumeControls.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Up below Stop",
+            source: volumeControls.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Up below Stop",
+                source: volumeControls.source
+            ),
+            .rejected([
+                "Cannot change bounds for a removed control.",
+                "Specify the same control for label, behavior, and bounds changes."
+            ])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(volumeControls.source.contains("Silence"))
+        XCTAssertFalse(volumeControls.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveRenameRetargetMoveBoundsAndReorderRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Volume Up after Pause",
+                source: pause.source
+            ),
+            .rejected(["Cannot move a removed control or move another control relative to it."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down", "Pause"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown", "PauseMOD"])
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.first(where: { $0.id == "volume_down" })?.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(pause.source.contains("Silence"))
+        XCTAssertFalse(pause.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveAndMoveRemovedControlWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and move Volume Up after Pause",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and move Volume Up after Pause",
+                source: pause.source
+            ),
+            .rejected(["Cannot move a removed control or move another control relative to it."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=pause label="Pause" action=PauseMOD bounds=120,68,72,20"#))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_down -> VolumeDown"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch pause -> PauseMOD"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemoveReorderAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and move Volume Down after Pause and change volume step",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and move Volume Down after Pause and change volume step",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and move Volume Down after Pause and change volume step",
+                source: pause.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=pause label="Pause" action=PauseMOD bounds=120,68,72,20"#))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_down -> VolumeDown"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch pause -> PauseMOD"))
+        XCTAssertTrue(pause.source.contains("sub.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsRemovePlaceReorderAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause and change volume step",
+            source: pause.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause and change volume step",
+            source: pause.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause and change volume step",
+                source: pause.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(pause.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(
+            AmigaSourceIndexer.index(pause.source).model?.controls.first(where: { $0.id == "volume_down" })?.bounds,
+            .init(x: 32, y: 68, width: 72, height: 20)
+        )
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=pause label="Pause" action=PauseMOD bounds=120,68,72,20"#))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch volume_down -> VolumeDown"))
+        XCTAssertTrue(pause.source.contains("; @amiga:dispatch pause -> PauseMOD"))
+        XCTAssertTrue(pause.source.contains("sub.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testModelBackedFollowUpsCanMoveControlAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume down", source: volumeUp.source))
+
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "move Volume Down before Volume Up and set volume increment to 8",
+            source: volumeDown.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_down", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Down", "Volume Up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0\n            bne.s      .skip_volume_down\n            bsr        VolumeDown\n.skip_volume_down:"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0\n            bne.s      .skip_volume_up\n            bsr        VolumeUp\n.skip_volume_up:"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("sub.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsTreatRedundantMoveAsIdentityPatch() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let result = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "move Volume Down after Volume Up",
+            source: volumeControls.source
+        ))
+
+        XCTAssertEqual(result.source, volumeControls.source)
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertEqual(result.changedRegions, [])
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: result.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsMoveAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume down", source: volumeUp.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "move Volume Down before Volume Up and change volume step",
+            source: volumeDown.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "move Volume Down before Volume Up and change volume step",
+            source: volumeDown.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "move Volume Down before Volume Up and change volume step",
+                source: volumeDown.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeDown.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertTrue(volumeDown.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(volumeDown.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(volumeDown.source.contains("add.w      #4,d0"))
+        XCTAssertTrue(volumeDown.source.contains("sub.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeDown.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsAddControlAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "add volume up and change volume step",
+            source: match.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add volume up and change volume step",
+            source: match.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "add volume up and change volume step",
+                source: match.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(match.source).model?.controls.map(\.label), ["Play", "Stop"])
+        XCTAssertFalse(match.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(match.source.contains("VolumeUp:"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testModelBackedFollowUpAddsAndPlacesCompactVolumeControlsAsCenteredGroup() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls centered below Stop", source: match.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 80, y: 68, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=80,68,72,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=160,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=80,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=4 bounds=160,68,72,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       80,68,72,20,3"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_down:\n            dc.w       160,68,72,20,4"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpAddsPlacesAndMovesCompactVolumeControlsAsCenteredGroup() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls centered below Stop and move them down by 4", source: match.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 80, y: 72, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 72, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=80,72,72,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=160,72,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=80,72,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=4 bounds=160,72,72,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       80,72,72,20,3"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_down:\n            dc.w       160,72,72,20,4"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpPlacesExistingVolumeControlsAsCenteredGroup() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "center volume controls below Stop", source: added.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 80, y: 68, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=80,68,72,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=160,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=80,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=4 bounds=160,68,72,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       80,68,72,20,3"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_down:\n            dc.w       160,68,72,20,4"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpPlacesAndMovesExistingVolumeControlsAsCenteredGroup() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "center volume controls below Stop and move them down by 4", source: added.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 80, y: 72, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 72, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=80,72,72,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=160,72,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=80,72,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=4 bounds=160,72,72,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       80,72,72,20,3"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_down:\n            dc.w       160,72,72,20,4"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpMovesExistingVolumeControlsAsGroup() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let moved = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "move volume controls down by 8", source: added.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: moved.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 48, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 76, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,48,72,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,76,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=208,48,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=4 bounds=32,76,72,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       208,48,72,20,3"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_down:\n            dc.w       32,76,72,20,4"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpMovesAndResizesExistingVolumeControlsAsGroup() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let moved = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "move volume controls down by 4 and make them wider by 8", source: added.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: moved.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 44, width: 80, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 72, width: 80, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,44,80,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,72,80,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=208,44,80,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=4 bounds=32,72,80,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       208,44,80,20,3"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_down:\n            dc.w       32,72,80,20,4"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpMovesAndExplicitlySizesExistingVolumeControlsAsGroup() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let moved = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "move volume controls down by 4 and make them 80x20", source: added.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: moved.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 44, width: 80, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 72, width: 80, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,44,80,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,72,80,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=208,44,80,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=4 bounds=32,72,80,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       208,44,80,20,3"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_down:\n            dc.w       32,72,80,20,4"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpResizesExistingVolumeControlsAsGroup() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let resized = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make volume controls wider by 8", source: added.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: resized.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 80, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 80, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,80,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,80,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=208,40,80,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=4 bounds=32,68,80,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       208,40,80,20,3"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_down:\n            dc.w       32,68,80,20,4"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpExplicitlySizesExistingVolumeControlsAsGroup() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let resized = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make volume controls 80x20", source: added.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: resized.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 80, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 80, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,80,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,80,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=208,40,80,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=4 bounds=32,68,80,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       208,40,80,20,3"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_down:\n            dc.w       32,68,80,20,4"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpSizesAndPlacesExistingVolumeControlsAsGroup() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make volume controls 80x20 centered below Stop", source: added.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 72, y: 68, width: 80, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 68, width: 80, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=72,68,80,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=160,68,80,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=72,68,80,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=4 bounds=160,68,80,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       72,68,80,20,3"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_down:\n            dc.w       160,68,80,20,4"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpResizesAndPlacesExistingVolumeControlsAsGroup() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make volume controls wider by 8 centered below Stop", source: added.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeUp.bounds, .init(x: 72, y: 68, width: 80, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 68, width: 80, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=72,68,80,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=160,68,80,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=72,68,80,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=4 bounds=160,68,80,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       72,68,80,20,3"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_down:\n            dc.w       160,68,80,20,4"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
     func testModelBackedFollowUpAddsMultipleCanonicalControlsInPromptOrder() throws {
         let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
 
@@ -5653,6 +10738,220 @@ InputDispatch:
         )
     }
 
+    func testModelBackedFollowUpRejectsMultiAddGroupPlacementOutsideSurfaceWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "add volume controls centered left of Play", source: match.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds multi-add group placement to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(match.source)
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop"])
+        XCTAssertFalse(match.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(match.source.contains(#"; @amiga:model control id=volume_down"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsMultiAddGroupPlacementAndMoveOutsideSurfaceWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "add volume controls centered below Stop and move them down by 220", source: match.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+            XCTAssertTrue(failures.contains("Control Volume Down model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds multi-add group placement and move to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(match.source)
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop"])
+        XCTAssertFalse(match.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(match.source.contains(#"; @amiga:model control id=volume_down"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsExistingGroupPlacementOutsideSurfaceWithoutMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "center volume controls left of Play", source: added.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds existing group placement to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(added.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: added.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsExistingGroupPlacementAndMoveOutsideSurfaceWithoutMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "center volume controls below Stop and move them down by 220", source: added.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+            XCTAssertTrue(failures.contains("Control Volume Down model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds existing group placement and move to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(added.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: added.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsExistingGroupMoveOutsideSurfaceWithoutMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "move volume controls left by 260", source: added.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+            XCTAssertTrue(failures.contains("Control Volume Down model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds existing group move to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(added.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: added.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsExistingGroupMoveAndResizeOutsideSurfaceWithoutMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "move volume controls down by 4 and make them wider by 260", source: added.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+            XCTAssertTrue(failures.contains("Control Volume Down model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds existing group move and resize to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(added.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: added.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsExistingGroupMoveAndExplicitSizeOutsideSurfaceWithoutMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "move volume controls down by 4 and make them 400x20", source: added.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+            XCTAssertTrue(failures.contains("Control Volume Down model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds existing group move and explicit size to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(added.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: added.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsExistingGroupResizeOutsideSurfaceWithoutMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "make volume controls wider by 260", source: added.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+            XCTAssertTrue(failures.contains("Control Volume Down model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds existing group resize to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(added.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: added.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsExistingGroupExplicitSizeOutsideSurfaceWithoutMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "make volume controls 400x20", source: added.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+            XCTAssertTrue(failures.contains("Control Volume Down model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds existing group explicit size to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(added.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: added.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsExistingGroupSizeAndPlacementOutsideSurfaceWithoutMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "make volume controls 400x20 centered below Stop", source: added.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+            XCTAssertTrue(failures.contains("Control Volume Down model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds existing group size and placement to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(added.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: added.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsExistingGroupResizeAndPlacementOutsideSurfaceWithoutMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let added = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "make volume controls wider by 260 centered below Stop", source: added.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+            XCTAssertTrue(failures.contains("Control Volume Down model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds existing group resize and placement to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(added.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: added.source), [])
+    }
+
     func testModelBackedFollowUpRejectsDuplicateWordControlInSameAddRequest() throws {
         let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
 
@@ -5672,6 +10971,478 @@ InputDispatch:
         XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
         XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testModelBackedConversationCanAddThirdAndFourthControlsThenKeepEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"add a third button called "Volume Up" to raise volume"#,
+            source: match.source
+        ))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"add a fourth button called "Volume Down" to lower volume"#,
+            source: volumeUp.source
+        ))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeDown.source))
+        let renamed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "rename Volume Down to Quieter and move Quieter after Pause and set volume increment to 8",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: renamed.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #5,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Quieter without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedConversationWithThirdAndFourthControlsCompilesAfterFollowUps() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"add a third button called "Volume Up" to raise volume"#,
+            source: match.source
+        ))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"add a fourth button called "Volume Down" to lower volume"#,
+            source: volumeUp.source
+        ))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeDown.source))
+        let renamed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "rename Volume Down to Quieter and move Quieter after Pause and set volume increment to 8",
+            source: pause.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: renamed.source))
+
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+        let compileResult = compileSource(
+            changed.source,
+            compiler: compiler,
+            description: "model-backed MOD controls canonical conversation compiles"
+        )
+        XCTAssertTrue(compileResult.success, compileResult.output)
+    }
+
+    func testModelBackedConversationCanContinueAfterCompositeRemovalRenameMoveAndParameterEdit() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+        let composite = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+            source: pause.source
+        ))
+        let louder = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: #"add another button called "Louder" to raise volume"#,
+            source: composite.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: louder.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down", "louder"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter", "Louder"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up""#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=louder label="Louder" action=VolumeUp"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch louder -> VolumeUp\n            cmp.w      #5,d0"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Down is labeled Quieter without changing VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Louder dispatches to VolumeUp."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+        let compileResult = compileSource(
+            changed.source,
+            compiler: compiler,
+            description: "model-backed MOD controls composite removal continuation compiles"
+        )
+        XCTAssertTrue(compileResult.success, compileResult.output)
+    }
+
+    func testAssistantPromptRouterConversationWithThirdAndFourthControlsCompilesAfterFollowUps() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let changed = try routerPatchChain(
+            prompts: modThirdFourthControlConversationPrompts(),
+            source: source,
+            context: "router MOD controls third/fourth compile conversation"
+        )
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+        let compileResult = compileSource(
+            changed.source,
+            compiler: compiler,
+            description: "router MOD controls canonical conversation compiles"
+        )
+        XCTAssertTrue(compileResult.success, compileResult.output)
+    }
+
+    func testAssistantPromptRouterConversationWithThirdAndFourthControlsCompilesFromAlternateFirstShot() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        let source = try XCTUnwrap(
+            AssistantPromptTemplate.source(for: "Generate play and stop controls for a tracker module.")
+        )
+        let changed = try routerPatchChain(
+            prompts: modThirdFourthControlConversationPrompts(),
+            source: source,
+            context: "router MOD controls alternate first-shot third/fourth conversation"
+        )
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate play and stop controls for a tracker module.").failures, [])
+        let compileResult = compileSource(
+            changed.source,
+            compiler: compiler,
+            description: "router MOD controls alternate first-shot third-fourth conversation compiles"
+        )
+        XCTAssertTrue(compileResult.success, compileResult.output)
+    }
+
+    func testAssistantPromptRouterConversationWithThirdAndFourthControlsGeneratesBootableADF() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let changed = try routerPatchChain(
+            prompts: modThirdFourthControlConversationPrompts(),
+            source: source,
+            context: "router MOD controls third/fourth ADF conversation"
+        )
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+
+        let targetADF = FileManager.default.temporaryDirectory
+            .appendingPathComponent("router-third-fourth-controls-conversation-\(UUID().uuidString).adf")
+        defer { try? FileManager.default.removeItem(at: targetADF) }
+
+        let adfResult = generateADF(
+            source: changed.source,
+            compiler: compiler,
+            targetADF: targetADF,
+            description: "router MOD controls third-fourth conversation generates bootable ADF"
+        )
+
+        XCTAssertTrue(adfResult.success, adfResult.output)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+        let attributes = try FileManager.default.attributesOfItem(atPath: targetADF.path)
+        let size = try XCTUnwrap(attributes[.size] as? NSNumber)
+        XCTAssertGreaterThan(size.intValue, 0)
+    }
+
+    func testAssistantPromptRouterRecoversAfterRejectedParameterFollowUpOnThirdFourthConversation() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let changed = try routerPatchChain(
+            prompts: modThirdFourthControlConversationPrompts(),
+            source: source,
+            context: "router MOD controls third/fourth conversation recovery setup"
+        )
+        let sourceBeforeRejectedFollowUp = changed.source
+
+        let rejectedRoute = AssistantPromptRouter.route(
+            prompt: "set playback period",
+            source: changed.source,
+            isSelfCorrection: false
+        )
+        guard case .structuredModelPatch(.rejected(let failures)) = rejectedRoute else {
+            return XCTFail("Expected missing playback-period value to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Specify a numeric playback period."])
+        XCTAssertEqual(changed.source, sourceBeforeRejectedFollowUp)
+
+        let recoveryRoute = AssistantPromptRouter.route(
+            prompt: "set playback note to C-3",
+            source: changed.source,
+            isSelfCorrection: false
+        )
+        guard case .structuredModelPatch(.patched(let recovered)) = recoveryRoute else {
+            return XCTFail("Expected valid playback-note recovery to stay in structured routing.")
+        }
+        XCTAssertEqual(recovered.model.controls.map(\.id), ["play", "stop", "volume_up", "pause", "volume_down"])
+        XCTAssertEqual(recovered.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Quieter"])
+        XCTAssertTrue(recovered.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(recovered.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(recovered.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(recovered.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(recovered.model.verificationExpectations.contains("Playback period is 214."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: recovered.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: recovered.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+        let compileResult = compileSource(
+            recovered.source,
+            compiler: compiler,
+            description: "router MOD controls third-fourth recovery after missing playback period compiles"
+        )
+        XCTAssertTrue(compileResult.success, compileResult.output)
+    }
+
+    func testAssistantPromptRouterCanContinueAfterCompositeRemovalRenameMoveAndParameterEdit() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let changed = try routerPatchChain(
+            prompts: modCompositeRecoverySetupPrompts(),
+            source: source,
+            context: "router MOD controls composite removal continuation"
+        )
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "pause", "volume_down", "louder"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter", "Louder"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up""#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=louder label="Louder" action=VolumeUp"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control pause slot=3 bounds=208,40,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control louder slot=5 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest pause slot=3 bounds=208,40,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest louder slot=5 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("            move.w     #5,ActivatedControl"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch louder -> VolumeUp\n            cmp.w      #5,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+        let compileResult = compileSource(
+            changed.source,
+            compiler: compiler,
+            description: "router MOD controls composite removal continuation compiles"
+        )
+        XCTAssertTrue(compileResult.success, compileResult.output)
+    }
+
+    func testAssistantPromptRouterCompositeRemovalContinuationGeneratesBootableADF() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let changed = try routerPatchChain(
+            prompts: modCompositeRecoverySetupPrompts(),
+            source: source,
+            context: "router MOD controls composite removal ADF continuation"
+        )
+
+        let targetADF = FileManager.default.temporaryDirectory
+            .appendingPathComponent("router-composite-removal-continuation-\(UUID().uuidString).adf")
+        defer { try? FileManager.default.removeItem(at: targetADF) }
+
+        let adfResult = generateADF(
+            source: changed.source,
+            compiler: compiler,
+            targetADF: targetADF,
+            description: "router MOD controls composite removal continuation generates bootable ADF"
+        )
+
+        XCTAssertTrue(adfResult.success, adfResult.output)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+        let attributes = try FileManager.default.attributesOfItem(atPath: targetADF.path)
+        let size = try XCTUnwrap(attributes[.size] as? NSNumber)
+        XCTAssertGreaterThan(size.intValue, 0)
+    }
+
+    func testAssistantPromptRouterRecoversAfterRejectedDuplicateFollowUpOnCompositeContinuation() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let changed = try routerPatchChain(
+            prompts: modCompositeRecoverySetupPrompts(),
+            source: source,
+            context: "router MOD controls duplicate recovery setup"
+        )
+        let sourceBeforeRejectedFollowUp = changed.source
+
+        let duplicateRoute = AssistantPromptRouter.route(prompt: "add volume up", source: changed.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = duplicateRoute else {
+            return XCTFail("Expected duplicate VolumeUp follow-up to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["A control that dispatches to VolumeUp already exists: Louder."])
+        XCTAssertEqual(changed.source, sourceBeforeRejectedFollowUp)
+
+        let recoveryRoute = AssistantPromptRouter.route(prompt: "add mute", source: changed.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let recovered)) = recoveryRoute else {
+            return XCTFail("Expected valid follow-up after duplicate rejection to stay in structured routing.")
+        }
+        XCTAssertEqual(recovered.model.controls.map(\.id), ["play", "stop", "pause", "volume_down", "louder", "mute"])
+        XCTAssertEqual(recovered.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter", "Louder", "Mute"])
+        XCTAssertEqual(recovered.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown", "VolumeUp", "Mute"])
+        XCTAssertTrue(recovered.source.contains(#"; @amiga:model control id=mute label="Mute" action=Mute"#))
+        XCTAssertTrue(recovered.source.contains("; @amiga:dispatch mute -> Mute\n            cmp.w      #6,d0"))
+        XCTAssertTrue(recovered.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: recovered.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: recovered.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+        let compileResult = compileSource(
+            recovered.source,
+            compiler: compiler,
+            description: "router MOD controls recovery after rejected duplicate compiles"
+        )
+        XCTAssertTrue(compileResult.success, compileResult.output)
+    }
+
+    func testAssistantPromptRouterRecoveredCompositeContinuationGeneratesBootableADF() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let changed = try routerPatchChain(
+            prompts: modCompositeRecoverySetupPrompts(),
+            source: source,
+            context: "router MOD controls recovered composite ADF setup"
+        )
+        let sourceBeforeRejectedFollowUp = changed.source
+        let duplicateRoute = AssistantPromptRouter.route(prompt: "add volume up", source: changed.source, isSelfCorrection: false)
+        guard case .structuredModelPatch(.rejected(let failures)) = duplicateRoute else {
+            return XCTFail("Expected duplicate VolumeUp follow-up to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["A control that dispatches to VolumeUp already exists: Louder."])
+        XCTAssertEqual(changed.source, sourceBeforeRejectedFollowUp)
+
+        let recoveryRoute = AssistantPromptRouter.route(prompt: "add mute", source: changed.source, isSelfCorrection: false)
+        guard case .structuredModelPatch(.patched(let recovered)) = recoveryRoute else {
+            return XCTFail("Expected valid follow-up after duplicate rejection to stay in structured routing.")
+        }
+
+        let targetADF = FileManager.default.temporaryDirectory
+            .appendingPathComponent("router-recovered-composite-continuation-\(UUID().uuidString).adf")
+        defer { try? FileManager.default.removeItem(at: targetADF) }
+
+        let adfResult = generateADF(
+            source: recovered.source,
+            compiler: compiler,
+            targetADF: targetADF,
+            description: "router MOD controls recovered composite continuation generates bootable ADF"
+        )
+
+        XCTAssertTrue(adfResult.success, adfResult.output)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+        let attributes = try FileManager.default.attributesOfItem(atPath: targetADF.path)
+        let size = try XCTUnwrap(attributes[.size] as? NSNumber)
+        XCTAssertGreaterThan(size.intValue, 0)
+    }
+
+    func testAssistantPromptRouterRecoveredVolumeStepContinuationGeneratesBootableADF() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUpRoute = AssistantPromptRouter.route(prompt: "add volume up", source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let volumeUp)) = volumeUpRoute else {
+            return XCTFail("Expected volume-up setup to stay in structured MOD routing.")
+        }
+        let sourceBeforeRejectedFollowUp = volumeUp.source
+        let missingStepRoute = AssistantPromptRouter.route(
+            prompt: "change volume step",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+        guard case .structuredModelPatch(.rejected(let failures)) = missingStepRoute else {
+            return XCTFail("Expected missing volume-step value to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Specify a numeric volume step."])
+        XCTAssertEqual(volumeUp.source, sourceBeforeRejectedFollowUp)
+
+        let recoveryRoute = AssistantPromptRouter.route(
+            prompt: "set volume increment to 8",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+        guard case .structuredModelPatch(.patched(let recovered)) = recoveryRoute else {
+            return XCTFail("Expected valid volume-step recovery to stay in structured routing.")
+        }
+        XCTAssertEqual(recovered.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertTrue(recovered.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(recovered.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: recovered.source), [])
+
+        let targetADF = FileManager.default.temporaryDirectory
+            .appendingPathComponent("router-recovered-volume-step-continuation-\(UUID().uuidString).adf")
+        defer { try? FileManager.default.removeItem(at: targetADF) }
+
+        let adfResult = generateADF(
+            source: recovered.source,
+            compiler: compiler,
+            targetADF: targetADF,
+            description: "router MOD controls recovered volume-step continuation generates bootable ADF"
+        )
+
+        XCTAssertTrue(adfResult.success, adfResult.output)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+        let attributes = try FileManager.default.attributesOfItem(atPath: targetADF.path)
+        let size = try XCTUnwrap(attributes[.size] as? NSNumber)
+        XCTAssertGreaterThan(size.intValue, 0)
     }
 
     func testAssistantPromptRouterPatchesMultipleCanonicalControlsWithoutFallback() throws {
@@ -5697,6 +11468,1072 @@ InputDispatch:
         }
         XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
         XCTAssertTrue(result.source.contains("; @amiga:draw_control volume_down slot=4"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsControlAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "add volume up and set volume increment to 8",
+            source: source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected add-control plus parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(result.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsPlacesAndConfiguresVolumeControlsWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "add volume controls centered below Stop and set volume increment to 8",
+            source: source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected add-place-configure follow-up to stay in structured routing.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 80, y: 68, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=80,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=160,68,72,20"))
+        XCTAssertTrue(result.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesControlAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: #"rename "Volume Up" to "Louder" and set volume increment to 8"#,
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-control plus parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Louder"])
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertTrue(result.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesAndMovesBoundsWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up below Stop"#,
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-layout follow-up to stay in structured routing.")
+        }
+        let louder = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Louder"])
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(louder.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeUp bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesMovesBoundsAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up below Stop and set initial volume to 32"#,
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-layout-parameter follow-up to stay in structured routing.")
+        }
+        let louder = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Louder"])
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(louder.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeUp bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesAndReordersControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: #"rename "Volume Up" to "Louder" and move Louder after Volume Down"#,
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-reorder follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Down", "Louder"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesReordersAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: #"rename "Volume Up" to "Louder" and move Louder after Volume Down and set volume increment to 8"#,
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-reorder-parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Down", "Louder"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterDoesNotOverDeclareNoOpMoveInRenameReorderParameterPrompt() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "rename Volume Down to Quieter and move Quieter after Volume Up and set volume increment to 8",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-reorder no-op move plus parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Quieter"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("chip_data"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("draw_controls"))
+        XCTAssertFalse(result.changedRegions.contains("hit_test"))
+        XCTAssertFalse(result.changedRegions.contains("input_dispatch"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesMovesBoundsAndReordersControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause"#,
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-layout-reorder follow-up to stay in structured routing.")
+        }
+        let control = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Louder"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeUp"])
+        XCTAssertEqual(control.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesMovesBoundsReordersAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause and set volume increment to 8"#,
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-layout-reorder-parameter follow-up to stay in structured routing.")
+        }
+        let control = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Louder"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeUp"])
+        XCTAssertEqual(control.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRetargetsControlBehaviorAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up lower volume instead and set volume increment to 8",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected behavior-retarget plus parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRetargetsBehaviorAndMovesBoundsWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up mute instead and center Volume Up below Stop",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected behavior-layout follow-up to stay in structured routing.")
+        }
+        let control = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(control.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRetargetsBehaviorMovesBoundsAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up mute instead and center Volume Up below Stop and set initial volume to 32",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected behavior-layout-parameter follow-up to stay in structured routing.")
+        }
+        let control = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(control.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRetargetsBehaviorAndReordersControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up mute instead and move Volume Up after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected behavior-reorder follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRetargetsBehaviorMovesBoundsAndReordersControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected behavior-layout-reorder follow-up to stay in structured routing.")
+        }
+        let control = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Up"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(control.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRetargetsReordersAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up mute instead and move Volume Up after Pause and set initial volume to 32",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected behavior-reorder-parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRetargetsBehaviorMovesBoundsReordersAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause and set initial volume to 32",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected behavior-layout-reorder-parameter follow-up to stay in structured routing.")
+        }
+        let control = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(control.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesRetargetsAndReordersControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up say Down and lower volume and move Down after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-retarget-reorder follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertFalse(result.source.contains("\nVolumeUp:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesRetargetsReordersAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up say Down and lower volume and move Down after Pause and set volume increment to 8",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-retarget-reorder-parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesRetargetsMovesBoundsAndReordersControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-retarget-layout-reorder follow-up to stay in structured routing.")
+        }
+        let control = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(control.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertFalse(result.source.contains("\nVolumeUp:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesRetargetsMovesBoundsReordersAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause and set volume increment to 8",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-retarget-layout-reorder-parameter follow-up to stay in structured routing.")
+        }
+        let control = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(control.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertFalse(result.source.contains("\nVolumeUp:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesRetargetsAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up say Down and lower volume and set volume increment to 8",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-retarget plus parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertFalse(result.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesRetargetsAndMovesBoundsWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-retarget-layout follow-up to stay in structured routing.")
+        }
+        let control = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(control.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertFalse(result.source.contains("\nVolumeUp:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesRetargetsMovesBoundsAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make Volume Up say Down and lower volume and center Volume Up below Stop and set volume increment to 8",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-retarget-layout-parameter follow-up to stay in structured routing.")
+        }
+        let control = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(control.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertFalse(result.source.contains("\nVolumeUp:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterMovesControlBoundsAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "center Volume Up below Stop and set volume increment to 8",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected bounds plus parameter follow-up to stay in structured routing.")
+        }
+        let moved = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(moved.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterTreatsRedundantBoundsUpdateAsIdentityPatch() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add a volume up button centered below Stop", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "center Volume Up below Stop",
+            source: placed.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected redundant bounds follow-up to stay in structured routing as an identity patch.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.source, placed.source)
+        XCTAssertEqual(volumeUp.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertEqual(result.changedRegions, [])
+        XCTAssertTrue(result.source.contains("; @amiga:draw_control volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterMovesBoundsAndReordersControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "center Volume Up below Stop and move Volume Up after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected bounds-reorder follow-up to stay in structured routing.")
+        }
+        let moved = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(moved.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterMovesBoundsReordersAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "center Volume Up below Stop and move Volume Up after Pause and set volume increment to 8",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected bounds-reorder-parameter follow-up to stay in structured routing.")
+        }
+        let moved = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_up"])
+        XCTAssertEqual(moved.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesControlAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume down", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and set volume increment to 8",
+            source: volumeDown.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-control plus parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterMovesControlAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume down", source: volumeUp.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "move Volume Down before Volume Up and set volume increment to 8",
+            source: volumeDown.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected move-control plus parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(result.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterTreatsRedundantMoveAsIdentityPatch() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "move Volume Down after Volume Up",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected redundant move follow-up to stay in structured routing as an identity patch.")
+        }
+        XCTAssertEqual(result.source, volumeControls.source)
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(result.changedRegions, [])
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsAndPlacesCompactVolumeControlsAsCenteredGroupWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+
+        let route = AssistantPromptRouter.route(prompt: "add volume controls centered below Stop", source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected grouped volume-control layout to stay in structured routing.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 80, y: 68, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=80,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=160,68,72,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsPlacesAndMovesCompactVolumeControlsAsCenteredGroupWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "add volume controls centered below Stop and move them down by 4",
+            source: source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected grouped volume-control layout and move to stay in structured routing.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 80, y: 72, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 72, width: 72, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=80,72,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=160,72,72,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterPlacesExistingVolumeControlsAsCenteredGroupWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let added)) = AssistantPromptRouter.route(
+            prompt: "add volume controls",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected compact volume-control setup to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "center volume controls below Stop", source: added.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected existing group layout to stay in structured routing.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 80, y: 68, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=80,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=160,68,72,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterPlacesAndMovesExistingVolumeControlsAsCenteredGroupWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let added)) = AssistantPromptRouter.route(
+            prompt: "add volume controls",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected compact volume-control setup to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(
+            prompt: "center volume controls below Stop and move them down by 4",
+            source: added.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected existing group layout and move to stay in structured routing.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 80, y: 72, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 72, width: 72, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=80,72,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=160,72,72,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterMovesExistingVolumeControlsAsGroupWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let added)) = AssistantPromptRouter.route(
+            prompt: "add volume controls",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected compact volume-control setup to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "move volume controls down by 8", source: added.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected existing group move to stay in structured routing.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 48, width: 72, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 76, width: 72, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=208,48,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,76,72,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterMovesAndResizesExistingVolumeControlsAsGroupWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let added)) = AssistantPromptRouter.route(
+            prompt: "add volume controls",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected compact volume-control setup to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(
+            prompt: "move volume controls down by 4 and make them wider by 8",
+            source: added.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected existing group move and resize to stay in structured routing.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 44, width: 80, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 72, width: 80, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=208,44,80,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,72,80,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterMovesAndExplicitlySizesExistingVolumeControlsAsGroupWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let added)) = AssistantPromptRouter.route(
+            prompt: "add volume controls",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected compact volume-control setup to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(
+            prompt: "move volume controls down by 4 and make them 80x20",
+            source: added.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected existing group move and explicit size to stay in structured routing.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 44, width: 80, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 72, width: 80, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=208,44,80,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,72,80,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterResizesExistingVolumeControlsAsGroupWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let added)) = AssistantPromptRouter.route(
+            prompt: "add volume controls",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected compact volume-control setup to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "make volume controls wider by 8", source: added.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected existing group resize to stay in structured routing.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 80, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 80, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=208,40,80,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,80,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterExplicitlySizesExistingVolumeControlsAsGroupWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let added)) = AssistantPromptRouter.route(
+            prompt: "add volume controls",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected compact volume-control setup to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "make volume controls 80x20", source: added.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected existing group explicit size to stay in structured routing.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 208, y: 40, width: 80, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 80, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=208,40,80,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,80,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterSizesAndPlacesExistingVolumeControlsAsGroupWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let added)) = AssistantPromptRouter.route(
+            prompt: "add volume controls",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected compact volume-control setup to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make volume controls 80x20 centered below Stop",
+            source: added.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected existing group size and placement to stay in structured routing.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 72, y: 68, width: 80, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 68, width: 80, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=72,68,80,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=160,68,80,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterResizesAndPlacesExistingVolumeControlsAsGroupWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let added)) = AssistantPromptRouter.route(
+            prompt: "add volume controls",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected compact volume-control setup to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(
+            prompt: "make volume controls wider by 8 centered below Stop",
+            source: added.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected existing group resize and placement to stay in structured routing.")
+        }
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(volumeUp.bounds, .init(x: 72, y: 68, width: 80, height: 20))
+        XCTAssertEqual(volumeDown.bounds, .init(x: 160, y: 68, width: 80, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=72,68,80,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=160,68,80,20"))
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
     }
 
@@ -5748,6 +12585,78 @@ InputDispatch:
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
     }
 
+    func testAssistantPromptRouterPreservesAudioControlsAcrossMultiStepChainWithoutFallback() throws {
+        var source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let prompts = [
+            "add volume up",
+            "add volume down",
+            "add pause",
+            "add mute",
+            "change volume step to 8",
+            "set initial volume to 32"
+        ]
+        var result: AmigaProgramPatchResult?
+
+        for prompt in prompts {
+            let route = AssistantPromptRouter.route(prompt: prompt, source: source, isSelfCorrection: false)
+            guard case .structuredModelPatch(.patched(let patched)) = route else {
+                return XCTFail("Expected \(prompt) to stay in structured routing.")
+            }
+            source = patched.source
+            result = patched
+        }
+
+        let patched = try XCTUnwrap(result)
+        XCTAssertEqual(patched.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down", "Pause", "Mute"])
+        XCTAssertEqual(patched.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown", "PauseMOD", "Mute"])
+        XCTAssertTrue(patched.source.contains("; @amiga:dispatch mute -> Mute\n            cmp.w      #6,d0\n            bne.s      .skip_mute\n            bsr        Mute\n.skip_mute:"))
+        XCTAssertTrue(patched.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(patched.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(patched.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(patched.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(patched.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: patched.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: patched.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testAssistantPromptRouterPreservesRenamedAddedControlAcrossLaterEditsWithoutFallback() throws {
+        var source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let prompts = [
+            "add volume up",
+            #"rename "Volume Up" to "Louder""#,
+            "add volume down",
+            "change volume step to 8",
+            "set initial volume to 32"
+        ]
+        var result: AmigaProgramPatchResult?
+
+        for prompt in prompts {
+            let route = AssistantPromptRouter.route(prompt: prompt, source: source, isSelfCorrection: false)
+            guard case .structuredModelPatch(.patched(let patched)) = route else {
+                return XCTFail("Expected \(prompt) to stay in structured routing.")
+            }
+            source = patched.source
+            result = patched
+        }
+
+        let patched = try XCTUnwrap(result)
+        XCTAssertEqual(patched.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(patched.model.controls.map(\.label), ["Play", "Stop", "Louder", "Volume Down"])
+        XCTAssertEqual(patched.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertTrue(patched.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(patched.source.contains("ControlLabel_volume_up:"))
+        XCTAssertTrue(patched.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertFalse(patched.source.contains(#"            dc.b       "Volume Up",0"#))
+        XCTAssertTrue(patched.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(patched.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(patched.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(patched.model.verificationExpectations.contains("Control Volume Up is labeled Louder without changing VolumeUp."))
+        XCTAssertTrue(patched.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(patched.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: patched.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: patched.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
     func testAssistantPromptRouterDoesNotFallBackAfterDuplicateControlInSameAddRequest() throws {
         let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
 
@@ -5757,6 +12666,29 @@ InputDispatch:
             return XCTFail("Expected duplicate add-control request to stay in structured routing.")
         }
         XCTAssertEqual(failures, ["Duplicate control requested: Volume Up. Specify each control only once."])
+    }
+
+    func testAssistantPromptRouterRejectsDuplicateControlAfterPriorPatchWithoutPartialMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "add volume up", source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected duplicate follow-up control to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["A control with id volume_up already exists."])
+        XCTAssertEqual(volumeUp.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(volumeUp.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(volumeUp.model.routines.filter { $0.id == "volume_up" }.count, 1)
+        XCTAssertEqual(volumeUp.source.components(separatedBy: #"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp"#).count - 1, 1)
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
     }
 
     func testModelBackedFollowUpRejectsConflictingControlBehavior() throws {
@@ -5791,6 +12723,24 @@ InputDispatch:
 
         XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Louder"])
         XCTAssertEqual(index.model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=louder label="Louder" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterPatchesAddControlWithIncidentalPlayStopWordsWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+
+        let route = AssistantPromptRouter.route(
+            prompt: #"add a third button called "Louder" to raise volume after I stop and play the mod"#,
+            source: source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected incidental play/stop words to stay in structured add-control routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Louder"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
         XCTAssertTrue(result.source.contains(#"; @amiga:model control id=louder label="Louder" action=VolumeUp bounds=208,40,72,20"#))
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
     }
@@ -5930,6 +12880,19 @@ InputDispatch:
         )
     }
 
+    func testModelBackedFollowUpRejectsOutOfRangeOrdinalRenameAfterAddingVolumeUp() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        XCTAssertEqual(volumeUp.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(prompt: "rename the fourth button to Louder", source: volumeUp.source))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(prompt: "rename the fourth button to Louder", source: volumeUp.source))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(prompt: "rename the fourth button to Louder", source: volumeUp.source),
+            .rejected(["Cannot rename the fourth control; this program has 3 controls."])
+        )
+    }
+
     func testAssistantPromptRouterRejectsOutOfRangeOrdinalRenameWithoutFallback() throws {
         let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
 
@@ -5939,6 +12902,29 @@ InputDispatch:
             return XCTFail("Expected out-of-range ordinal rename to reject in structured routing.")
         }
         XCTAssertEqual(failures, ["Cannot rename the fourth control; this program has 2 controls."])
+    }
+
+    func testAssistantPromptRouterRejectsOutOfRangeOrdinalRenameAfterAddingVolumeUpWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "make the fourth button say Louder", source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected post-setup out-of-range ordinal rename to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot rename the fourth control; this program has 3 controls."])
+        XCTAssertEqual(volumeUp.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(volumeUp.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertFalse(volumeUp.source.contains("Louder"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
     }
 
     func testModelBackedFollowUpPlannerRejectsInvalidPatchedProgram() throws {
@@ -8740,6 +15726,904 @@ ExtraSample: dc.b      1,2,3,4
         XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
     }
 
+    func testModelBackedFollowUpsCanRemoveAddedControlAndContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume down", source: volumeUp.source))
+        let removeOutcome = AmigaProgramFollowUpPlanner.patchOutcome(prompt: "remove volume up", source: volumeDown.source)
+        guard case .patched(let removed) = removeOutcome else {
+            return XCTFail("Expected remove volume up to patch, got \(removeOutcome)")
+        }
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: removed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Down"])
+        XCTAssertEqual(index.model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertFalse(changed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(changed.source.contains("; @amiga:draw_control volume_up"))
+        XCTAssertFalse(changed.source.contains("; @amiga:hittest volume_up"))
+        XCTAssertFalse(changed.source.contains("ControlRect_volume_up:"))
+        XCTAssertFalse(changed.source.contains("ControlLabel_volume_up:"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=3 bounds=208,40,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=3 bounds=208,40,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0\n            bne.s      .skip_volume_down\n            bsr        VolumeDown\n.skip_volume_down:"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveRenamedAddedControlThenReAddIt() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let renamed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: #"rename "Volume Up" to "Louder""#, source: volumeUp.source))
+        let removeOutcome = AmigaProgramFollowUpPlanner.patchOutcome(prompt: "remove Louder", source: renamed.source)
+        guard case .patched(let removed) = removeOutcome else {
+            return XCTFail("Expected remove Louder to patch, got \(removeOutcome)")
+        }
+        let readdOutcome = AmigaProgramFollowUpPlanner.patchOutcome(prompt: "add volume up", source: removed.source)
+        guard case .patched(let readded) = readdOutcome else {
+            return XCTFail("Expected add volume up after removal to patch, got \(readdOutcome)")
+        }
+        let index = AmigaSourceIndexer.index(readded.source)
+
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(index.model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertFalse(readded.source.contains("Louder"))
+        XCTAssertTrue(readded.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(readded.source.contains("VolumeUp:"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: readded.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRemoveAddedControlByOrdinalThenReAddIt() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let removeOutcome = AmigaProgramFollowUpPlanner.patchOutcome(prompt: "remove the third button", source: volumeUp.source)
+        guard case .patched(let removed) = removeOutcome else {
+            return XCTFail("Expected ordinal remove to patch, got \(removeOutcome)")
+        }
+        let readdOutcome = AmigaProgramFollowUpPlanner.patchOutcome(prompt: "add volume up", source: removed.source)
+        guard case .patched(let readded) = readdOutcome else {
+            return XCTFail("Expected add volume up after ordinal removal to patch, got \(readdOutcome)")
+        }
+
+        XCTAssertEqual(removed.model.controls.map(\.id), ["play", "stop"])
+        XCTAssertFalse(removed.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(removed.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(removed.source.contains("\nVolumeUp:\n"))
+        XCTAssertEqual(readded.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertTrue(readded.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(readded.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0\n            bne.s      .skip_volume_up\n            bsr        VolumeUp\n.skip_volume_up:"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: readded.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: readded.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRemovingRequiredPlayStopControls() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "remove Play", source: match.source) {
+        case .rejected(let failures):
+            XCTAssertEqual(failures, ["Cannot remove required control Play. Required controls: Play, Stop."])
+        default:
+            XCTFail("Expected required Play control removal to reject.")
+        }
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "delete Stop button", source: match.source) {
+        case .rejected(let failures):
+            XCTAssertEqual(failures, ["Cannot remove required control Stop. Required controls: Play, Stop."])
+        default:
+            XCTFail("Expected required Stop control removal to reject.")
+        }
+
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testModelBackedFollowUpsCanReorderAddedControlsAndContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume down", source: volumeUp.source))
+        let moveOutcome = AmigaProgramFollowUpPlanner.patchOutcome(prompt: "move Volume Down before Volume Up", source: volumeDown.source)
+        guard case .patched(let moved) = moveOutcome else {
+            return XCTFail("Expected move-control follow-up to patch, got \(moveOutcome)")
+        }
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: moved.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop", "volume_down", "volume_up"])
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Down", "Volume Up"])
+        XCTAssertEqual(index.model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertEqual(index.model?.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=32,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_down slot=3 bounds=208,40,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_down slot=3 bounds=208,40,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0\n            bne.s      .skip_volume_down\n            bsr        VolumeDown\n.skip_volume_down:"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0\n            bne.s      .skip_volume_up\n            bsr        VolumeUp\n.skip_volume_up:"))
+        XCTAssertTrue(changed.source.contains("VolumeUp:"))
+        XCTAssertTrue(changed.source.contains("VolumeDown:"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanReorderAddedControlsByOrdinalAndContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume down", source: volumeUp.source))
+        let moved = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "move the fourth button before the third button", source: volumeDown.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: moved.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop", "volume_down", "volume_up"])
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Down", "Volume Up"])
+        XCTAssertEqual(index.model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0\n            bne.s      .skip_volume_down\n            bsr        VolumeDown\n.skip_volume_down:"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0\n            bne.s      .skip_volume_up\n            bsr        VolumeUp\n.skip_volume_up:"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanReorderRenamedAddedControlByVisibleLabel() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let renamed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: #"rename "Volume Up" to "Louder""#, source: volumeUp.source))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume down", source: renamed.source))
+        let moved = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "move Volume Down before Louder", source: volumeDown.source))
+        let index = AmigaSourceIndexer.index(moved.source)
+
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop", "volume_down", "volume_up"])
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Volume Down", "Louder"])
+        XCTAssertEqual(index.model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(moved.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeUp bounds=32,68,72,20"#))
+        XCTAssertTrue(moved.source.contains("ControlLabel_volume_up:"))
+        XCTAssertTrue(moved.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertTrue(moved.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0\n            bne.s      .skip_volume_down\n            bsr        VolumeDown\n.skip_volume_down:"))
+        XCTAssertTrue(moved.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0\n            bne.s      .skip_volume_up\n            bsr        VolumeUp\n.skip_volume_up:"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: moved.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsMovingRequiredPlayStopControl() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "move Play after Stop", source: volumeUp.source) {
+        case .rejected(let failures):
+            XCTAssertEqual(failures, ["Cannot move required control Play. Move added controls relative to Play or Stop instead."])
+        default:
+            XCTFail("Expected required Play control move to reject.")
+        }
+
+        XCTAssertEqual(volumeUp.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsOutOfRangeOrdinalControlMove() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "move the fifth button before the third button", source: volumeUp.source) {
+        case .rejected(let failures):
+            XCTAssertEqual(failures, ["Cannot move the fifth control; this program has 3 controls."])
+        default:
+            XCTFail("Expected out-of-range source ordinal move to reject.")
+        }
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "move the third button before the fifth button", source: volumeUp.source) {
+        case .rejected(let failures):
+            XCTAssertEqual(failures, ["Cannot move relative to the fifth control; this program has 3 controls."])
+        default:
+            XCTFail("Expected out-of-range target ordinal move to reject.")
+        }
+
+        XCTAssertEqual(volumeUp.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpsCanRetargetPauseControlToMuteAndContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: match.source))
+        let retargeted = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make the Pause button mute instead", source: pause.source))
+        let volume = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: retargeted.source))
+        let index = AmigaSourceIndexer.index(volume.source)
+
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop", "pause"])
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Pause"])
+        XCTAssertEqual(index.model?.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(index.model?.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertTrue(volume.source.contains(#"; @amiga:model control id=pause label="Pause" action=Mute bounds=208,40,72,20"#))
+        XCTAssertTrue(volume.source.contains("; @amiga:dispatch pause -> Mute\n            cmp.w      #3,d0\n            bne.s      .skip_pause\n            bsr        Mute\n.skip_pause:"))
+        XCTAssertTrue(volume.source.contains("\nMute:\n"))
+        XCTAssertFalse(volume.source.contains("\nPauseMOD:\n"))
+        XCTAssertNotNil(volume.source.range(of: #"AudioVolume:\s+dc\.w\s+32"#, options: .regularExpression))
+        XCTAssertTrue(volume.model.verificationExpectations.contains("Control Pause dispatches to Mute."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volume.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: volume.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanRetargetRenamedVolumeControlAndContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let renamed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: #"rename "Volume Up" to "Louder""#, source: volumeUp.source))
+        let retargeted: AmigaProgramPatchResult
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "make Louder lower volume instead", source: renamed.source) {
+        case .patched(let result):
+            retargeted = result
+        case .rejected(let failures):
+            XCTFail("Expected renamed control behavior retarget to patch, rejected with: \(failures)")
+            return
+        case .notRecognized:
+            XCTFail("Expected renamed control behavior retarget to be recognized.")
+            return
+        }
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: retargeted.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Louder"])
+        XCTAssertEqual(index.model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeDown\n            cmp.w      #3,d0\n            bne.s      .skip_volume_up\n            bsr        VolumeDown\n.skip_volume_up:"))
+        XCTAssertTrue(changed.source.contains("\nVolumeDown:\n"))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Louder dispatches to VolumeDown."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanReAddBehaviorAfterRetargetingRenamedControl() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let renamed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: #"rename "Volume Up" to "Louder""#, source: volumeUp.source))
+        let retargeted = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make Louder lower volume instead", source: renamed.source))
+        let readded = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add another button called Volume Up", source: retargeted.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: readded.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_up_2"])
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Louder", "Volume Up"])
+        XCTAssertEqual(index.model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertEqual(index.model?.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up_2 label="Volume Up" action=VolumeUp bounds=32,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeDown"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up_2 -> VolumeUp"))
+        XCTAssertTrue(changed.source.contains("\nVolumeDown:\n"))
+        XCTAssertTrue(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Louder dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Volume Up dispatches to VolumeUp."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanMoveRenamedControlBoundsAndContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let renamed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: #"rename "Volume Up" to "Louder""#, source: volumeUp.source))
+        let moved = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set Louder bounds to 208,72,88,20", source: renamed.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: moved.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let louder = try XCTUnwrap(index.model?.controls.first(where: { $0.label == "Louder" }))
+
+        XCTAssertEqual(louder.id, "volume_up")
+        XCTAssertEqual(louder.action, "VolumeUp")
+        XCTAssertEqual(louder.bounds, .init(x: 208, y: 72, width: 88, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeUp bounds=208,72,88,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=208,72,88,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=208,72,88,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       208,72,88,20,3"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanMoveAndResizeControlWithPartialGeometryPrompts() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let moved = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "move Volume Up to x 208 y 72", source: volumeUp.source))
+        let resized = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make Volume Up width 88 height 20", source: moved.source))
+        let index = AmigaSourceIndexer.index(resized.source)
+        let control = try XCTUnwrap(index.model?.controls.first(where: { $0.label == "Volume Up" }))
+
+        XCTAssertEqual(control.bounds, .init(x: 208, y: 72, width: 88, height: 20))
+        XCTAssertTrue(resized.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,72,88,20"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: resized.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: resized.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanResizeControlRelativelyAndContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let renamed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: #"rename "Volume Up" to "Louder""#, source: volumeUp.source))
+        let moved = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set Louder bounds to 208,72,88,20", source: renamed.source))
+        let resized = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make Louder wider by 16", source: moved.source))
+        let shifted = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "move Louder left by 8", source: resized.source))
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "center Louder below Stop", source: shifted.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback note to C-3", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let louder = try XCTUnwrap(index.model?.controls.first(where: { $0.label == "Louder" }))
+
+        XCTAssertEqual(louder.id, "volume_up")
+        XCTAssertEqual(louder.action, "VolumeUp")
+        XCTAssertEqual(louder.bounds, .init(x: 104, y: 68, width: 104, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeUp bounds=104,68,104,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=104,68,104,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=104,68,104,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       104,68,104,20,3"))
+        XCTAssertTrue(changed.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanPlaceAndMoveRenamedControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let renamed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: #"rename "Volume Up" to "Louder""#, source: volumeUp.source))
+        let moved = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set Louder bounds to 208,72,88,20", source: renamed.source))
+        let resized = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make Louder wider by 16", source: moved.source))
+        let shifted = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "move Louder left by 8", source: resized.source))
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "center Louder below Stop and move it down by 4", source: shifted.source))
+        let noted = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback note to C-3", source: placed.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: noted.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let louder = try XCTUnwrap(index.model?.controls.first(where: { $0.label == "Louder" }))
+
+        XCTAssertEqual(louder.id, "volume_up")
+        XCTAssertEqual(louder.action, "VolumeUp")
+        XCTAssertEqual(louder.bounds, .init(x: 104, y: 72, width: 104, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeUp bounds=104,72,104,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=104,72,104,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=104,72,104,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       104,72,104,20,3"))
+        XCTAssertTrue(changed.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanSizeAndPlaceExistingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make the third button 80x20 centered below Stop", source: volumeUp.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUpControl = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(volumeUpControl.label, "Volume Up")
+        XCTAssertEqual(volumeUpControl.action, "VolumeUp")
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 116, y: 68, width: 80, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=116,68,80,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=116,68,80,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=116,68,80,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       116,68,80,20,3"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanResizeAndPlaceExistingControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make the third button wider by 16 centered below Stop", source: volumeUp.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUpControl = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(volumeUpControl.label, "Volume Up")
+        XCTAssertEqual(volumeUpControl.action, "VolumeUp")
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 112, y: 68, width: 88, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=112,68,88,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=112,68,88,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=112,68,88,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       112,68,88,20,3"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddAndPlaceControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add a volume up button centered below Stop", source: match.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(volumeUp.label, "Volume Up")
+        XCTAssertEqual(volumeUp.action, "VolumeUp")
+        XCTAssertEqual(volumeUp.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       120,68,72,20,3"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsTreatRedundantBoundsUpdateAsIdentityPatch() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add a volume up button centered below Stop", source: match.source))
+
+        let result = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "center Volume Up below Stop",
+            source: placed.source
+        ))
+        let volumeUp = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(result.source, placed.source)
+        XCTAssertEqual(volumeUp.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertEqual(result.changedRegions, [])
+        XCTAssertTrue(result.source.contains("; @amiga:draw_control volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: result.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddPlaceAndMoveControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add a volume up button centered below Stop and move it down by 4", source: match.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(volumeUp.label, "Volume Up")
+        XCTAssertEqual(volumeUp.action, "VolumeUp")
+        XCTAssertEqual(volumeUp.bounds, .init(x: 120, y: 72, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=120,72,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=120,72,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,72,72,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       120,72,72,20,3"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddAndReorderControlsInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add pause and move Volume Down after Pause",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: reordered.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Pause", "Volume Down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #5,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddReorderAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add pause and move Volume Down after Pause and set volume increment to 8",
+            source: volumeControls.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: reordered.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "volume_up", "pause", "volume_down"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #5,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddCustomLabelBehaviorAndReorderInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add a button called Down to lower volume and move Down before Volume Up",
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: reordered.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "down", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Down", "Volume Up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=down label="Down" action=VolumeDown"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertFalse(changed.source.contains("sub.w      #4,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Down dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddCustomLabelBehaviorReorderAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add a button called Down to lower volume and move Down before Volume Up and set volume increment to 8",
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: reordered.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "down", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Down dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddCustomLabelPlaceBehaviorAndReorderInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add a button called Down centered below Stop to lower volume and move Down before Volume Up",
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: reordered.source))
+        let down = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "down", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Down", "Volume Up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertEqual(down.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertEqual(changed.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=down label="Down" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Down dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddCustomLabelPlaceBehaviorReorderAndSetVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        let reordered = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add a button called Down centered below Stop to lower volume and move Down before Volume Up and set volume increment to 8",
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: reordered.source))
+        let down = try XCTUnwrap(changed.model.controls.first(where: { $0.id == "down" }))
+
+        XCTAssertEqual(changed.model.controls.map(\.id), ["play", "stop", "down", "volume_up"])
+        XCTAssertEqual(changed.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertEqual(down.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Down dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddPlaceAndResizeControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add a volume up button centered below Stop and make it wider by 16", source: match.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let volumeUp = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(volumeUp.label, "Volume Up")
+        XCTAssertEqual(volumeUp.action, "VolumeUp")
+        XCTAssertEqual(volumeUp.bounds, .init(x: 112, y: 68, width: 88, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=112,68,88,20"#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control volume_up slot=3 bounds=112,68,88,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest volume_up slot=3 bounds=112,68,88,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_volume_up:\n            dc.w       112,68,88,20,3"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanAddCustomLabelPlaceAndResizeControlInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let placed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add a button called Louder centered below Stop to raise volume and make it wider by 16", source: match.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: placed.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let louder = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "louder" }))
+
+        XCTAssertEqual(louder.label, "Louder")
+        XCTAssertEqual(louder.action, "VolumeUp")
+        XCTAssertEqual(louder.bounds, .init(x: 112, y: 68, width: 88, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=louder label="Louder" action=VolumeUp bounds=112,68,88,20"#))
+        XCTAssertFalse(changed.source.contains(#"label="Louder centered below Stop""#))
+        XCTAssertTrue(changed.source.contains("; @amiga:draw_control louder slot=3 bounds=112,68,88,20"))
+        XCTAssertTrue(changed.source.contains("; @amiga:hittest louder slot=3 bounds=112,68,88,20"))
+        XCTAssertTrue(changed.source.contains("ControlRect_louder:\n            dc.w       112,68,88,20,3"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsAmbiguousAndOverlappingControlBounds() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "set the button bounds to 208,72,88,20", source: volumeUp.source) {
+        case .rejected(let failures):
+            XCTAssertEqual(failures, ["Ambiguous control reference. Specify one of: Play, Stop, Volume Up."])
+        default:
+            XCTFail("Expected ambiguous bounds edit to reject.")
+        }
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "set Volume Up bounds to 32,40,72,20", source: volumeUp.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Play model bounds overlap Volume Up."))
+        default:
+            XCTFail("Expected overlapping bounds edit to reject.")
+        }
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "make the third button wider by 200", source: volumeUp.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds relative resize to reject.")
+        }
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "move the third button right by 200", source: volumeUp.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds relative move to reject.")
+        }
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "center the third button left of Play", source: volumeUp.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds relative placement to reject.")
+        }
+
+        XCTAssertEqual(volumeUp.model.controls.first(where: { $0.label == "Volume Up" })?.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsAddAndPlaceOutsideSurfaceWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "add a volume up button centered left of Play", source: match.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds compound add-and-place request to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(match.source)
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop"])
+        XCTAssertFalse(match.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsAddPlaceAndMoveOutsideSurfaceWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "add a volume up button centered below Stop and move it down by 220", source: match.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds compound add-place-move request to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(match.source)
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop"])
+        XCTAssertFalse(match.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsAddReorderAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "add pause and move Volume Down after Pause and change volume step",
+            source: volumeControls.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add pause and move Volume Down after Pause and change volume step",
+            source: volumeControls.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "add pause and move Volume Down after Pause and change volume step",
+                source: volumeControls.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeControls.source).model?.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertFalse(volumeControls.source.contains(#"; @amiga:model control id=pause"#))
+        XCTAssertTrue(volumeControls.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(volumeControls.source.contains("sub.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsAddCustomLabelBehaviorReorderAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "add a button called Down to lower volume and move Down before Volume Up and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add a button called Down to lower volume and move Down before Volume Up and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "add a button called Down to lower volume and move Down before Volume Up and change volume step",
+                source: volumeUp.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertFalse(volumeUp.source.contains(#"; @amiga:model control id=down"#))
+        XCTAssertFalse(volumeUp.source.contains("; @amiga:dispatch down -> VolumeDown"))
+        XCTAssertTrue(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(volumeUp.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsAddCustomLabelPlaceBehaviorReorderAndMissingVolumeStepWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "add a button called Down centered below Stop to lower volume and move Down before Volume Up and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "add a button called Down centered below Stop to lower volume and move Down before Volume Up and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "add a button called Down centered below Stop to lower volume and move Down before Volume Up and change volume step",
+                source: volumeUp.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(AmigaSourceIndexer.index(volumeUp.source).model?.controls.first(where: { $0.id == "volume_up" })?.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertFalse(volumeUp.source.contains(#"; @amiga:model control id=down"#))
+        XCTAssertFalse(volumeUp.source.contains("; @amiga:dispatch down -> VolumeDown"))
+        XCTAssertTrue(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(volumeUp.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsExistingPlaceAndMoveOutsideSurfaceWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "center the third button below Stop and move it down by 220", source: volumeUp.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds compound place-move request to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(volumeUp.source)
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(index.model?.controls.first(where: { $0.id == "volume_up" })?.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsExistingSizeAndPlacementOutsideSurfaceWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "make the third button 400x20 centered below Stop", source: volumeUp.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds compound size-placement request to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(volumeUp.source)
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(index.model?.controls.first(where: { $0.id == "volume_up" })?.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsCustomLabelAddPlaceAndResizeOutsideSurfaceWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "add a button called Louder centered below Stop to raise volume and make it wider by 260", source: match.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Louder model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds custom-label compound request to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(match.source)
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop"])
+        XCTAssertFalse(match.source.contains(#"; @amiga:model control id=louder"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsAddPlaceAndResizeOutsideSurfaceWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "add a volume up button centered below Stop and make it wider by 260", source: match.source) {
+        case .rejected(let failures):
+            XCTAssertTrue(failures.contains("Control Volume Up model bounds are outside the 320x256 UI surface."))
+        default:
+            XCTFail("Expected out-of-bounds compound add-place-resize request to reject.")
+        }
+
+        let index = AmigaSourceIndexer.index(match.source)
+        XCTAssertEqual(index.model?.controls.map(\.id), ["play", "stop"])
+        XCTAssertFalse(match.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsDuplicateAndProtectedBehaviorRetargets() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: match.source))
+        let mute = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add mute", source: pause.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "make Pause mute instead", source: mute.source) {
+        case .rejected(let failures):
+            XCTAssertEqual(failures, ["A control that dispatches to Mute already exists: Mute."])
+        default:
+            XCTFail("Expected duplicate target behavior retarget to reject.")
+        }
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "make Play mute instead", source: mute.source) {
+        case .rejected(let failures):
+            XCTAssertEqual(failures, ["Cannot change required control Play behavior. Change added controls instead."])
+        default:
+            XCTFail("Expected protected Play behavior retarget to reject.")
+        }
+
+        XCTAssertEqual(mute.model.controls.map(\.id), ["play", "stop", "pause", "mute"])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: mute.source), [])
+    }
+
     func testModelBackedFollowUpRenamesCustomLabeledControlByStableIDWithoutChangingBehavior() throws {
         let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
         let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
@@ -8778,6 +16662,52 @@ ExtraSample: dc.b      1,2,3,4
         XCTAssertEqual(AssemblySemanticValidator.validate(source: result.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
     }
 
+    func testModelBackedFollowUpsCanRenameAndRetargetControlBehaviorInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let louder = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: #"rename "Volume Up" to "Louder""#, source: volumeUp.source))
+        let retargeted = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make Louder say Down and lower volume", source: louder.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: retargeted.source))
+        let index = AmigaSourceIndexer.index(changed.source)
+        let control = try XCTUnwrap(index.model?.controls.first(where: { $0.id == "volume_up" }))
+
+        XCTAssertEqual(control.label, "Down")
+        XCTAssertEqual(control.action, "VolumeDown")
+        XCTAssertEqual(control.bounds, .init(x: 208, y: 40, width: 72, height: 20))
+        XCTAssertTrue(changed.source.contains(#"; @amiga:model control id=volume_up label="Down" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(changed.source.contains("ControlLabel_volume_up:"))
+        XCTAssertTrue(changed.source.contains(#"            dc.b       "Down",0"#))
+        XCTAssertFalse(changed.source.contains(#"            dc.b       "Louder",0"#))
+        XCTAssertFalse(changed.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(changed.source.contains("; @amiga:dispatch volume_up -> VolumeDown\n            cmp.w      #3,d0\n            bne.s      .skip_volume_up\n            bsr        VolumeDown\n.skip_volume_up:"))
+        XCTAssertTrue(changed.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Louder dispatches to VolumeDown."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Control Louder is labeled Down without changing VolumeDown."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsRenameAndRetargetDuplicateBehaviorWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume down", source: volumeUp.source))
+        let louder = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: #"rename "Volume Up" to "Louder""#, source: volumeDown.source))
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "make Louder say Down and lower volume", source: louder.source) {
+        case .rejected(let failures):
+            XCTAssertEqual(failures, ["A control that dispatches to VolumeDown already exists: Volume Down."])
+        default:
+            XCTFail("Expected duplicate behavior retarget to reject before renaming.")
+        }
+
+        let index = AmigaSourceIndexer.index(louder.source)
+        XCTAssertEqual(index.model?.controls.map(\.label), ["Play", "Stop", "Louder", "Volume Down"])
+        XCTAssertEqual(index.model?.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertTrue(louder.source.contains(#"; @amiga:model control id=volume_up label="Louder" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertFalse(louder.source.contains(#"; @amiga:model control id=volume_up label="Down" action=VolumeDown"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: louder.source), [])
+    }
+
     func testModelBackedFollowUpCanModifyVolumeStepAfterAddingControls() throws {
         let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
         let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
@@ -8792,6 +16722,194 @@ ExtraSample: dc.b      1,2,3,4
         XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
         XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsOnlyDeclareModelChangedWhenVolumeStepInstructionsAlreadyMatch() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let volumeDown = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume down", source: volumeUp.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: volumeDown.source))
+        var modelWithoutVolumeExpectation = changed.model
+        modelWithoutVolumeExpectation.verificationExpectations.removeAll { $0.hasPrefix("Volume step is ") }
+        let sourceWithMatchingRoutinesOnly = try sourceByReplacingEmbeddedModel(modelWithoutVolumeExpectation, in: changed.source)
+
+        let normalized = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: sourceWithMatchingRoutinesOnly))
+
+        XCTAssertTrue(normalized.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(normalized.source.contains("sub.w      #8,d0"))
+        XCTAssertTrue(normalized.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(normalized.changedRegions, [AmigaSourceRegionName.model.rawValue])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: normalized.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: normalized.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanChangePlaybackPeriodAndContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let period = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 214", source: match.source))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: period.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: volumeUp.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertTrue(changed.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 214."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsTreatRepeatedPlaybackPeriodAsIdentityPatch() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 214", source: match.source))
+
+        let repeated = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 214", source: changed.source))
+
+        XCTAssertEqual(repeated.source, changed.source)
+        XCTAssertEqual(repeated.changedRegions, [])
+        XCTAssertTrue(repeated.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(repeated.model.verificationExpectations.contains("Playback period is 214."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: repeated.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: repeated.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsOnlyDeclareModelChangedWhenPlaybackPeriodInstructionAlreadyMatches() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: match.source))
+        var modelWithoutPlaybackExpectation = changed.model
+        modelWithoutPlaybackExpectation.verificationExpectations.removeAll { $0.hasPrefix("Playback period is ") }
+        let sourceWithMatchingRoutineOnly = try sourceByReplacingEmbeddedModel(modelWithoutPlaybackExpectation, in: changed.source)
+
+        let normalized = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 428", source: sourceWithMatchingRoutineOnly))
+
+        XCTAssertTrue(normalized.source.contains("move.w     #428,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(normalized.model.verificationExpectations.contains("Playback period is 428."))
+        XCTAssertEqual(normalized.changedRegions, [AmigaSourceRegionName.model.rawValue])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: normalized.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: normalized.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanChangePlaybackNoteAndContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let note = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback note to C-3", source: volumeUp.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "change volume step to 8", source: note.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertTrue(changed.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 214."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsTreatRepeatedPlaybackNoteAsIdentityPatch() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback note to C-3", source: match.source))
+
+        let repeated = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback note to C-3", source: changed.source))
+
+        XCTAssertEqual(repeated.source, changed.source)
+        XCTAssertEqual(repeated.changedRegions, [])
+        XCTAssertTrue(repeated.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(repeated.model.verificationExpectations.contains("Playback period is 214."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: repeated.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: repeated.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsCanUpdatePlaybackNoteAndVolumeStepInOnePromptThenContinueEditing() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let compound = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(
+            prompt: "set playback note to C-3 and change volume step to 8",
+            source: volumeUp.source
+        ))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: compound.source))
+
+        XCTAssertEqual(changed.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertTrue(changed.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(changed.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(changed.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Playback period is 214."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertTrue(changed.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpRejectsMultiParameterUpdateWithMissingValueWithoutPartialMutation() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "set playback note to C-3 and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(
+            prompt: "set playback note to C-3 and change volume step",
+            source: volumeUp.source
+        ))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(
+                prompt: "set playback note to C-3 and change volume step",
+                source: volumeUp.source
+            ),
+            .rejected(["Specify a numeric volume step."])
+        )
+        XCTAssertFalse(volumeUp.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(volumeUp.source.contains("add.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testModelBackedFollowUpMapsPlaybackNoteAccidentalsToProTrackerPeriods() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let sharp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback note to C#3", source: match.source))
+        let flat = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback pitch to D flat 3", source: sharp.source))
+
+        XCTAssertTrue(sharp.source.contains("move.w     #202,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(sharp.model.verificationExpectations.contains("Playback period is 202."))
+        XCTAssertTrue(flat.source.contains("move.w     #202,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(flat.model.verificationExpectations.contains("Playback period is 202."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: sharp.source), [])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: flat.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsPlaybackNoteWithoutSupportedValue() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(prompt: "set playback note", source: match.source))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(prompt: "set playback note", source: match.source))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(prompt: "set playback note", source: match.source),
+            .rejected(["Specify a supported playback note such as C-3."])
+        )
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testModelBackedFollowUpClampsPlaybackPeriodToPaulaRange() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let low = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 1", source: match.source))
+        let high = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period to 2000", source: low.source))
+
+        XCTAssertTrue(low.source.contains("move.w     #113,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(low.model.verificationExpectations.contains("Playback period is 113."))
+        XCTAssertTrue(high.source.contains("move.w     #856,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(high.model.verificationExpectations.contains("Playback period is 856."))
+        XCTAssertFalse(high.model.verificationExpectations.contains("Playback period is 113."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: low.source), [])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: high.source), [])
+    }
+
+    func testModelBackedFollowUpRejectsPlaybackPeriodWithoutNumericValue() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(prompt: "set playback period", source: match.source))
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(prompt: "set playback period", source: match.source))
+        XCTAssertEqual(
+            AmigaProgramFollowUpPlanner.patchOutcome(prompt: "set playback period", source: match.source),
+            .rejected(["Specify a numeric playback period."])
+        )
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
     }
 
     func testModelBackedFollowUpCanModifyUppercaseVolumeStepInstructions() throws {
@@ -8894,6 +17012,41 @@ ExtraSample: dc.b      1,2,3,4
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: cHex.source), [])
     }
 
+    func testModelBackedFollowUpsOnlyDeclareModelChangedWhenInitialVolumeStateAlreadyMatches() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: match.source))
+        var modelWithoutVolumeExpectation = changed.model
+        modelWithoutVolumeExpectation.verificationExpectations.removeAll { $0.hasPrefix("Initial volume is ") }
+        let sourceWithMatchingStateOnly = try sourceByReplacingEmbeddedModel(modelWithoutVolumeExpectation, in: changed.source)
+
+        let normalized = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: sourceWithMatchingStateOnly))
+
+        XCTAssertTrue(normalized.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(normalized.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(normalized.changedRegions, [AmigaSourceRegionName.model.rawValue])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: normalized.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: normalized.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpMapsNamedInitialVolumeLevels() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let maxVolume = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to max", source: match.source))
+        let halfVolume = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to half", source: maxVolume.source))
+        let muted = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to mute", source: halfVolume.source))
+        let normal = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to normal", source: muted.source))
+
+        XCTAssertTrue(maxVolume.source.contains("AudioVolume:  dc.w     64"))
+        XCTAssertTrue(maxVolume.model.verificationExpectations.contains("Initial volume is 64."))
+        XCTAssertTrue(halfVolume.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertTrue(halfVolume.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertTrue(muted.source.contains("AudioVolume:  dc.w     0"))
+        XCTAssertTrue(muted.model.verificationExpectations.contains("Initial volume is 0."))
+        XCTAssertTrue(normal.source.contains("AudioVolume:  dc.w     48"))
+        XCTAssertTrue(normal.model.verificationExpectations.contains("Initial volume is 48."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: normal.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: normal.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
     func testModelBackedFollowUpUsesTargetSeparatorForMultiNumberInitialVolume() throws {
         let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
         let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32 for channel 0", source: match.source))
@@ -8918,6 +17071,21 @@ ExtraSample: dc.b      1,2,3,4
         XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
         XCTAssertEqual(AssemblySemanticValidator.validate(source: changed.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
+    }
+
+    func testModelBackedFollowUpsTreatRepeatedVolumeStepAsIdentityPatch() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: match.source))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: volumeUp.source))
+
+        let repeated = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set volume increment to 8", source: changed.source))
+
+        XCTAssertEqual(repeated.source, changed.source)
+        XCTAssertEqual(repeated.changedRegions, [])
+        XCTAssertTrue(repeated.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(repeated.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: repeated.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: repeated.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
     }
 
     func testModelBackedFollowUpClampsSignedVolumeStepToMinimum() throws {
@@ -8952,6 +17120,21 @@ ExtraSample: dc.b      1,2,3,4
         XCTAssertFalse(changed.source.contains("add.w      #4,d0"))
         XCTAssertTrue(changed.model.verificationExpectations.contains("Volume step is 8."))
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: changed.source), [])
+    }
+
+    func testModelBackedFollowUpsTreatRepeatedInitialVolumeAsIdentityPatch() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: "Generate two buttons, play and stop of a mod file"))
+        let changed = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: match.source))
+
+        let repeated = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set initial volume to 32", source: changed.source))
+
+        XCTAssertEqual(repeated.source, changed.source)
+        XCTAssertEqual(repeated.changedRegions, [])
+        XCTAssertTrue(repeated.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(repeated.model.stateVariables.first(where: { $0.id == "audio_volume" })?.initialValue, "32")
+        XCTAssertTrue(repeated.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: repeated.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: repeated.source, prompt: "Generate two buttons, play and stop of a mod file").failures, [])
     }
 
     func testModelBackedFollowUpRejectsVolumeStepBeforeVolumeControlsExist() throws {
@@ -9479,6 +17662,28 @@ PatternC:
         XCTAssertTrue(patch.source.contains("Volume Up"))
     }
 
+    func testAssistantPromptRouterPatchesPlaybackNoteAndVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "set playback note to C-3 and change volume step to 8",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let patch)) = route else {
+            return XCTFail("Expected compound MOD parameter follow-up to use structured patch routing.")
+        }
+        XCTAssertTrue(patch.changedRegions.contains("routines"))
+        XCTAssertTrue(patch.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(patch.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(AmigaProgramFollowUpPlanner.recognizesPatchRequest(
+            prompt: "set playback note to C-3 and change volume step to 8",
+            source: volumeUp.source
+        ))
+    }
+
     func testAssistantPromptRouterPrioritizesStructuredBitplaneColorPatches() throws {
         let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."))
 
@@ -9563,6 +17768,55 @@ PatternC:
         XCTAssertNotNil(AmigaProgramFollowUpPlanner.patch(prompt: "set front and back color to red", source: source))
     }
 
+    func testAssistantPromptRouterTreatsRepeatedBitplaneColorAsIdentityPatch() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."))
+        guard case .structuredModelPatch(.patched(let redFront)) = AssistantPromptRouter.route(
+            prompt: "set front color to red",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected first front-color edit to stay in structured bitplane routing.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "set front color to red", source: redFront.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected repeated front-color edit to stay in structured routing as an identity patch.")
+        }
+        XCTAssertEqual(result.source, redFront.source)
+        XCTAssertEqual(result.changedRegions, [])
+        XCTAssertTrue(result.source.contains("FrontColor: dc.w       $0f00"))
+        XCTAssertEqual(result.model.stateVariables.first(where: { $0.id == "front_color" })?.initialValue, "$0f00")
+        XCTAssertTrue(result.model.verificationExpectations.contains("Front buffer color is red."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterTreatsRepeatedSharedMultiRoleBitplaneColorAsIdentityPatch() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."))
+        guard case .structuredModelPatch(.patched(let redBoth)) = AssistantPromptRouter.route(
+            prompt: "set front and back color to red",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected shared multi-role bitplane color edit to patch in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "set front and back color to red", source: redBoth.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected repeated shared multi-role color edit to stay in structured routing as an identity patch.")
+        }
+        XCTAssertEqual(result.source, redBoth.source)
+        XCTAssertEqual(result.changedRegions, [])
+        XCTAssertTrue(result.source.contains("FrontColor: dc.w       $0f00"))
+        XCTAssertTrue(result.source.contains("BackColor: dc.w       $0f00"))
+        XCTAssertEqual(result.model.stateVariables.first(where: { $0.id == "front_color" })?.initialValue, "$0f00")
+        XCTAssertEqual(result.model.stateVariables.first(where: { $0.id == "back_color" })?.initialValue, "$0f00")
+        XCTAssertTrue(result.model.verificationExpectations.contains("Front buffer color is red."))
+        XCTAssertTrue(result.model.verificationExpectations.contains("Back buffer color is red."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
     func testAssistantPromptRouterPatchesPerRoleMultiColorBitplaneEdit() throws {
         let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."))
 
@@ -9577,6 +17831,91 @@ PatternC:
         XCTAssertEqual(AmigaSourceIndexer.index(patch.source).model?.stateVariables.first(where: { $0.id == "front_color" })?.initialValue, "$0f00")
         XCTAssertEqual(AmigaSourceIndexer.index(patch.source).model?.stateVariables.first(where: { $0.id == "back_color" })?.initialValue, "$000f")
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: patch.source), [])
+    }
+
+    func testAssistantPromptRouterPreservesBitplaneColorsAcrossMultiStepChainWithoutFallback() throws {
+        var source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."))
+        let prompts = [
+            "set front color to red and back color to blue",
+            "set front color to orange",
+            "set back color to purple"
+        ]
+        var result: AmigaProgramPatchResult?
+
+        for prompt in prompts {
+            let route = AssistantPromptRouter.route(prompt: prompt, source: source, isSelfCorrection: false)
+            guard case .structuredModelPatch(.patched(let patched)) = route else {
+                return XCTFail("Expected \(prompt) to stay in structured bitplane routing.")
+            }
+            source = patched.source
+            result = patched
+        }
+
+        let patched = try XCTUnwrap(result)
+        let model = try XCTUnwrap(AmigaSourceIndexer.index(patched.source).model)
+        XCTAssertEqual(model.id, "double-buffer-bitplane")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "front_color" })?.initialValue, "$0f80")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "back_color" })?.initialValue, "$0f0f")
+        XCTAssertTrue(patched.source.contains("FrontColor: dc.w       $0f80"))
+        XCTAssertTrue(patched.source.contains("; orange foreground for BufferA"))
+        XCTAssertTrue(patched.source.contains("BackColor: dc.w       $0f0f"))
+        XCTAssertTrue(patched.source.contains("; purple foreground for BufferB"))
+        XCTAssertTrue(model.verificationExpectations.contains("Front buffer color is orange."))
+        XCTAssertTrue(model.verificationExpectations.contains("Back buffer color is purple."))
+        XCTAssertFalse(model.verificationExpectations.contains("Front buffer color is red."))
+        XCTAssertFalse(model.verificationExpectations.contains("Back buffer color is blue."))
+        XCTAssertTrue(model.verificationExpectations.contains("Bitplane pointer swaps are paced by vblank."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: patched.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: patched.source, prompt: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click.").failures, [])
+    }
+
+    func testAssistantPromptRouterRejectsUnsupportedBitplaneColorAfterPriorPatchWithoutPartialMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."))
+        guard case .structuredModelPatch(.patched(let purpleFront)) = AssistantPromptRouter.route(
+            prompt: "set front color to purple",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected front-color setup to use structured bitplane routing.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "set front color to teal", source: purpleFront.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected unsupported follow-up color to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Unsupported front buffer color. Supported colors: white, yellow, green, cyan, blue, purple, magenta, red, orange."])
+        XCTAssertTrue(purpleFront.source.contains("FrontColor: dc.w       $0f0f"))
+        XCTAssertTrue(purpleFront.source.contains("; purple foreground for BufferA"))
+        XCTAssertEqual(AmigaSourceIndexer.index(purpleFront.source).model?.stateVariables.first(where: { $0.id == "front_color" })?.initialValue, "$0f0f")
+        XCTAssertTrue(AmigaSourceIndexer.index(purpleFront.source).model?.verificationExpectations.contains("Front buffer color is purple.") == true)
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: purpleFront.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsMissingBitplaneColorAfterPriorPatchWithoutPartialMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."))
+        guard case .structuredModelPatch(.patched(let purpleFront)) = AssistantPromptRouter.route(
+            prompt: "set front color to purple",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected front-color setup to use structured bitplane routing.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "set back color to", source: purpleFront.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected missing follow-up color to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Specify a supported back buffer color."])
+        XCTAssertTrue(purpleFront.source.contains("FrontColor: dc.w       $0f0f"))
+        XCTAssertTrue(purpleFront.source.contains("; purple foreground for BufferA"))
+        XCTAssertTrue(purpleFront.source.contains("BackColor:  dc.w       $00ff                ; cyan foreground for BufferB"))
+        XCTAssertEqual(AmigaSourceIndexer.index(purpleFront.source).model?.stateVariables.first(where: { $0.id == "front_color" })?.initialValue, "$0f0f")
+        XCTAssertEqual(AmigaSourceIndexer.index(purpleFront.source).model?.stateVariables.first(where: { $0.id == "back_color" })?.initialValue, "$00ff")
+        XCTAssertTrue(AmigaSourceIndexer.index(purpleFront.source).model?.verificationExpectations.contains("Front buffer color is purple.") == true)
+        XCTAssertFalse(AmigaSourceIndexer.index(purpleFront.source).model?.verificationExpectations.contains("Back buffer color is purple.") == true)
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: purpleFront.source), [])
     }
 
     func testAssistantPromptRouterRejectsBitplaneColorWithTrailingToWithoutValue() throws {
@@ -9628,6 +17967,56 @@ PatternC:
         XCTAssertEqual(patch.model.stateVariables.first(where: { $0.id == "front_color" })?.initialValue, "$0f00")
         XCTAssertEqual(patch.model.stateVariables.first(where: { $0.id == "back_color" })?.initialValue, "$000f")
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: patch.source), [])
+    }
+
+    func testModelBackedBitplaneColorTreatsRepeatedColorAsIdentityPatch() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."))
+        let redFront = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set front color to red", source: source))
+
+        let repeated = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set front color to red", source: redFront.source))
+
+        XCTAssertEqual(repeated.source, redFront.source)
+        XCTAssertEqual(repeated.changedRegions, [])
+        XCTAssertTrue(repeated.source.contains("FrontColor: dc.w       $0f00"))
+        XCTAssertEqual(repeated.model.stateVariables.first(where: { $0.id == "front_color" })?.initialValue, "$0f00")
+        XCTAssertTrue(repeated.model.verificationExpectations.contains("Front buffer color is red."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: repeated.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: repeated.source, prompt: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click.").failures, [])
+    }
+
+    func testModelBackedBitplaneColorOnlyDeclaresModelChangedWhenStateAlreadyMatches() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."))
+        let redFront = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set front color to red", source: source))
+        var modelWithoutColorExpectation = redFront.model
+        modelWithoutColorExpectation.verificationExpectations.removeAll { $0.hasPrefix("Front buffer color is ") }
+        let sourceWithMatchingStateOnly = try sourceByReplacingEmbeddedModel(modelWithoutColorExpectation, in: redFront.source)
+
+        let normalized = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set front color to red", source: sourceWithMatchingStateOnly))
+
+        XCTAssertTrue(normalized.source.contains("FrontColor: dc.w       $0f00"))
+        XCTAssertEqual(normalized.model.stateVariables.first(where: { $0.id == "front_color" })?.initialValue, "$0f00")
+        XCTAssertTrue(normalized.model.verificationExpectations.contains("Front buffer color is red."))
+        XCTAssertEqual(normalized.changedRegions, [AmigaSourceRegionName.model.rawValue])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: normalized.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: normalized.source, prompt: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click.").failures, [])
+    }
+
+    func testModelBackedBitplaneColorTreatsRepeatedSharedMultiRoleColorAsIdentityPatch() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."))
+        let redBoth = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set front and back color to red", source: source))
+
+        let repeated = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "set front and back color to red", source: redBoth.source))
+
+        XCTAssertEqual(repeated.source, redBoth.source)
+        XCTAssertEqual(repeated.changedRegions, [])
+        XCTAssertTrue(repeated.source.contains("FrontColor: dc.w       $0f00"))
+        XCTAssertTrue(repeated.source.contains("BackColor: dc.w       $0f00"))
+        XCTAssertEqual(repeated.model.stateVariables.first(where: { $0.id == "front_color" })?.initialValue, "$0f00")
+        XCTAssertEqual(repeated.model.stateVariables.first(where: { $0.id == "back_color" })?.initialValue, "$0f00")
+        XCTAssertTrue(repeated.model.verificationExpectations.contains("Front buffer color is red."))
+        XCTAssertTrue(repeated.model.verificationExpectations.contains("Back buffer color is red."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: repeated.source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: repeated.source, prompt: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click.").failures, [])
     }
 
     func testModelBackedBitplaneColorRejectsAmbiguousMultiRoleColorWithoutPartialPatch() throws {
@@ -9710,6 +18099,124 @@ PatternC:
         XCTAssertEqual(failures, ["Unsupported model-backed control \"Louderness\". Supported controls: Volume Up, Volume Down, Pause, Mute."])
     }
 
+    func testAssistantPromptRouterRejectsDuplicateVisibleLabelAfterRenameWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let renamedPlay)) = AssistantPromptRouter.route(
+            prompt: "rename Play button to Start",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected Play rename setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(
+            prompt: #"add another button called "Start" to raise volume"#,
+            source: renamedPlay.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected duplicate visible label to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["A label named Start already exists."])
+    }
+
+    func testAssistantPromptRouterRejectsDuplicateSupportedActionAfterCustomLabelWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let louder)) = AssistantPromptRouter.route(
+            prompt: #"add a third button called "Louder" to raise volume"#,
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected custom-labeled volume setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "add volume up", source: louder.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected duplicate supported action to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["A control that dispatches to VolumeUp already exists: Louder."])
+    }
+
+    func testAssistantPromptRouterRejectsDuplicatePlayActionAfterRenameWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let renamedPlay)) = AssistantPromptRouter.route(
+            prompt: "rename Play button to Start",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected Play rename setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(
+            prompt: #"add another button called "Play" to start playback"#,
+            source: renamedPlay.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected duplicate Play action to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["A control that dispatches to PlayMOD already exists: Start."])
+    }
+
+    func testAssistantPromptRouterRejectsDuplicateStopActionAfterRenameWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let renamedStop)) = AssistantPromptRouter.route(
+            prompt: "rename Stop button to Halt",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected Stop rename setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(
+            prompt: #"add another button called "Stop" to stop playback"#,
+            source: renamedStop.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected duplicate Stop action to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["A control that dispatches to StopMOD already exists: Halt."])
+        XCTAssertEqual(renamedStop.model.controls.map(\.label), ["Play", "Halt"])
+        XCTAssertEqual(renamedStop.model.controls.map(\.action), ["PlayMOD", "StopMOD"])
+        XCTAssertFalse(renamedStop.source.contains(#"; @amiga:model control id=stop label="Stop" action=StopMOD"#))
+        XCTAssertTrue(renamedStop.source.contains(#"; @amiga:model control id=stop label="Halt" action=StopMOD bounds=120,40,72,20"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: renamedStop.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsDuplicateRenameTargetWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+
+        let route = AssistantPromptRouter.route(prompt: #"rename "Stop" to "Play""#, source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected duplicate rename target to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["A control with id play already exists."])
+    }
+
+    func testAssistantPromptRouterRejectsDuplicateRenameStableIDAfterPriorRenameWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let renamedPlay)) = AssistantPromptRouter.route(
+            prompt: "rename Play button to Start",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected Play rename setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: #"rename "Stop" to "Play""#, source: renamedPlay.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected duplicate rename stable id to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["A control with id play already exists."])
+    }
+
     func testAssistantPromptRouterDoesNotFallBackAfterNearCanonicalRenameReference() throws {
         let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
 
@@ -9720,6 +18227,1880 @@ PatternC:
         }
 
         XCTAssertEqual(failures, ["Ambiguous control reference. Specify one of: Play, Stop."])
+    }
+
+    func testAssistantPromptRouterDoesNotFallBackAfterMissingRenameSource() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+
+        let route = AssistantPromptRouter.route(prompt: #"rename "Pause" to "Hold""#, source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected missing rename source to stay in structured routing.")
+        }
+
+        XCTAssertEqual(failures, ["Source does not contain a control named Pause."])
+    }
+
+    func testAssistantPromptRouterRejectsMissingRenameSourceAfterPriorPatchWithoutPartialMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: #"rename "Pause" to "Hold""#, source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected missing rename source to reject in structured routing after a prior patch.")
+        }
+
+        XCTAssertEqual(failures, ["Source does not contain a control named Pause."])
+        XCTAssertEqual(volumeUp.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertEqual(volumeUp.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(volumeUp.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertFalse(volumeUp.source.contains("Hold"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesAddedControlAndPreservesRemainingStateWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+        guard case .structuredModelPatch(.patched(let volumeDown)) = AssistantPromptRouter.route(
+            prompt: "add volume down",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-down setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "remove volume up", source: volumeDown.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-control follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(result.source.contains("\nVolumeUp:\n"))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0\n            bne.s      .skip_volume_down\n            bsr        VolumeDown\n.skip_volume_down:"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesAndRenamesRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and rename Volume Down to Quieter",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Quieter"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesRemainingControlAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and set initial volume to 32",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Quieter"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesAndReordersRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-reorder follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesReordersAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-reorder-parameter follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesAndMovesBoundsForRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-bounds follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Quieter"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Quieter",0"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesMovesBoundsForRemainingControlAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and set initial volume to 32",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-bounds-parameter follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Quieter"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsRemoveAndRenameRemovedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and rename Volume Up to Louder",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected remove-rename-same-control request to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot rename a removed control."])
+        XCTAssertEqual(volumeControls.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(volumeControls.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(volumeControls.source.contains("Louder"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsRemoveRenameAndMoveBoundsForRemovedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Up below Stop",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected remove-rename-bounds-removed-control request to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, [
+            "Cannot change bounds for a removed control.",
+            "Specify the same control for rename and bounds changes."
+        ])
+        XCTAssertEqual(volumeControls.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(volumeControls.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(volumeControls.source.contains("Quieter"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesAndRetargetsRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down mute instead",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-retarget follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=208,40,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRetargetsRemainingControlAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down mute instead and set initial volume to 32",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-retarget-parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=208,40,72,20"#))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRetargetsAndReordersRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down mute instead and move Volume Down after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-retarget-reorder follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=32,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRetargetsReordersAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down mute instead and move Volume Down after Pause and set initial volume to 32",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-retarget-reorder-parameter follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=32,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRetargetsAndMovesBoundsForRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-retarget-bounds follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRetargetsMovesBoundsAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and set initial volume to 32",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-retarget-bounds-parameter follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRetargetsMovesBoundsAndReordersRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Down after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-retarget-bounds-reorder follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Volume Down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRetargetsMovesBoundsReordersAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Down after Pause and set initial volume to 32",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-retarget-bounds-reorder-parameter follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsRemoveRetargetAndReorderRemovedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down mute instead and move Volume Up after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected remove-retarget-reorder removed-control request to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot move a removed control or move another control relative to it."])
+        XCTAssertEqual(pause.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(pause.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down", "Pause"])
+        XCTAssertEqual(pause.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown", "PauseMOD"])
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(pause.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsRemoveRetargetMoveBoundsAndReorderRemovedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Up after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected remove-retarget-bounds-reorder removed-control request to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot move a removed control or move another control relative to it."])
+        XCTAssertEqual(pause.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(pause.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown", "PauseMOD"])
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(pause.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsRemoveAndRetargetRemovedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Up mute instead",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected remove-retarget-same-control request to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot change behavior for a removed control."])
+        XCTAssertEqual(volumeControls.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(volumeControls.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(volumeControls.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsRemoveRetargetAndMoveBoundsForRemovedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down mute instead and center Volume Up below Stop",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected remove-retarget-bounds removed-control request to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, [
+            "Cannot change bounds for a removed control.",
+            "Specify the same control for behavior and bounds changes."
+        ])
+        XCTAssertEqual(volumeControls.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(volumeControls.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(volumeControls.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesAndRetargetsRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-retarget follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Silence"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=208,40,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Silence",0"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesRetargetsRemainingControlAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and set initial volume to 32",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-retarget-parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Silence"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=208,40,72,20"#))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesRetargetsAndReordersRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and move Silence after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-retarget-reorder follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Silence"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=32,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Silence",0"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesRetargetsReordersAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and move Silence after Pause and set initial volume to 32",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-retarget-reorder-parameter follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Silence"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 32, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=32,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=32,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesRetargetsAndMovesBoundsForRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-retarget-bounds follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Silence"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Silence",0"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesRetargetsMovesBoundsAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and set initial volume to 32",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-retarget-bounds-parameter follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Silence"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesRetargetsMovesBoundsAndReordersRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Silence after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-retarget-bounds-reorder follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Silence"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> Mute\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains(#"            dc.b       "Silence",0"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesRetargetsMovesBoundsReordersAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Silence after Pause and set initial volume to 32",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-retarget-bounds-reorder-parameter follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Silence"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "Mute"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Silence" action=Mute bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsRemoveRenameRetargetAndReorderRemovedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and move Volume Up after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected remove-rename-retarget-reorder removed-control request to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot move a removed control or move another control relative to it."])
+        XCTAssertEqual(pause.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(pause.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down", "Pause"])
+        XCTAssertEqual(pause.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown", "PauseMOD"])
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(pause.source.contains("Silence"))
+        XCTAssertFalse(pause.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsRemoveRenameRetargetMoveBoundsAndReorderRemovedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Volume Up after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected remove-rename-retarget-bounds-reorder removed-control request to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot move a removed control or move another control relative to it."])
+        XCTAssertEqual(pause.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(pause.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down", "Pause"])
+        XCTAssertEqual(pause.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown", "PauseMOD"])
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(pause.source.contains("Silence"))
+        XCTAssertFalse(pause.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsRemoveRenameRetargetAndMoveBoundsForRemovedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Up below Stop",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected remove-rename-retarget-bounds removed-control request to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, [
+            "Cannot change bounds for a removed control.",
+            "Specify the same control for label, behavior, and bounds changes."
+        ])
+        XCTAssertEqual(volumeControls.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(volumeControls.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeControls.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeControls.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(volumeControls.source.contains("Silence"))
+        XCTAssertFalse(volumeControls.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsRemoveRenameAndRetargetRemovedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and make Volume Up say Silence and mute instead",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected remove-rename-retarget-same-control request to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot change label or behavior for a removed control."])
+        XCTAssertEqual(volumeControls.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down"])
+        XCTAssertEqual(volumeControls.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down"])
+        XCTAssertEqual(volumeControls.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown"])
+        XCTAssertFalse(volumeControls.source.contains("Silence"))
+        XCTAssertFalse(volumeControls.source.contains("\nMute:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeControls.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesMovesRemainingControlAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and center Volume Down below Stop and set initial volume to 32",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-bounds-parameter follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesAndMovesRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and center Volume Down below Stop",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-bounds follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=3 bounds=120,68,72,20"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesAndReordersRemainingControlsWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and move Volume Down after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-reorder follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0\n            bne.s      .skip_pause\n            bsr        PauseMOD\n.skip_pause:"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0\n            bne.s      .skip_volume_down\n            bsr        VolumeDown\n.skip_volume_down:"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesReordersAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and move Volume Down after Pause and set volume increment to 8",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-reorder-parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0\n            bne.s      .skip_pause\n            bsr        PauseMOD\n.skip_pause:"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0\n            bne.s      .skip_volume_down\n            bsr        VolumeDown\n.skip_volume_down:"))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesPlacesAndReordersRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-place-reorder follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesPlacesReordersAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause and set volume increment to 8",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-place-reorder-parameter follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesMovesBoundsAndReordersRemainingControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Quieter after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-bounds-reorder follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "PauseMOD", "VolumeDown"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_down slot=4 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesRenamesMovesBoundsReordersAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Quieter after Pause and set initial volume to 32",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected remove-rename-bounds-reorder-parameter follow-up to stay in structured routing.")
+        }
+        let volumeDown = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause", "Quieter"])
+        XCTAssertEqual(volumeDown.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("input_dispatch"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_down label="Quieter" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsRemoveRenameAndReorderRemovedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and move Volume Up after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected remove-rename-reorder removed-control request to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot move a removed control or move another control relative to it."])
+        XCTAssertEqual(pause.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(pause.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down", "Pause"])
+        XCTAssertEqual(pause.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "VolumeDown", "PauseMOD"])
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(pause.source.contains("Quieter"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsRemoveRenameMoveBoundsAndReorderRemovedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+        let pause = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add pause", source: volumeControls.source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Volume Up after Pause",
+            source: pause.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected remove-rename-bounds-reorder removed-control request to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot move a removed control or move another control relative to it."])
+        XCTAssertEqual(pause.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_down", "pause"])
+        XCTAssertEqual(pause.model.controls.map(\.label), ["Play", "Stop", "Volume Up", "Volume Down", "Pause"])
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(pause.source.contains(#"; @amiga:model control id=volume_down label="Volume Down" action=VolumeDown bounds=32,68,72,20"#))
+        XCTAssertFalse(pause.source.contains("Quieter"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: pause.source), [])
+    }
+
+    func testAssistantPromptRouterRemovesAddedControlByOrdinalWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "remove the third button", source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected ordinal remove-control follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop"])
+        XCTAssertFalse(result.source.contains(#"; @amiga:model control id=volume_up"#))
+        XCTAssertFalse(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp"))
+        XCTAssertFalse(result.source.contains("\nVolumeUp:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsProtectedControlRemovalWithoutPartialMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "remove Play", source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected protected control removal to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot remove required control Play. Required controls: Play, Stop."])
+        XCTAssertEqual(volumeUp.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=play label="Play" action=PlayMOD bounds=32,40,72,20"#))
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testAssistantPromptRouterReordersAddedControlsWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+        guard case .structuredModelPatch(.patched(let volumeDown)) = AssistantPromptRouter.route(
+            prompt: "add volume down",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-down setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "move Volume Down before Volume Up", source: volumeDown.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected reorder follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Down", "Volume Up"])
+        XCTAssertEqual(result.model.routines.first(where: { $0.label == "InputDispatch" })?.calls, ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0\n            bne.s      .skip_volume_down\n            bsr        VolumeDown\n.skip_volume_down:"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0\n            bne.s      .skip_volume_up\n            bsr        VolumeUp\n.skip_volume_up:"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterReordersAddedControlsByOrdinalWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+        guard case .structuredModelPatch(.patched(let volumeDown)) = AssistantPromptRouter.route(
+            prompt: "add volume down",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-down setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "move the fourth button before the third button", source: volumeDown.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected ordinal reorder follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_down", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Volume Down", "Volume Up"])
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #3,d0\n            bne.s      .skip_volume_down\n            bsr        VolumeDown\n.skip_volume_down:"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0\n            bne.s      .skip_volume_up\n            bsr        VolumeUp\n.skip_volume_up:"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsProtectedControlMoveWithoutPartialMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "move Play after Stop", source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected protected control move to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot move required control Play. Move added controls relative to Play or Stop instead."])
+        XCTAssertEqual(volumeUp.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=play label="Play" action=PlayMOD bounds=32,40,72,20"#))
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsOutOfRangeOrdinalControlMoveWithoutPartialMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "move the fifth button before the third button", source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected out-of-range ordinal move to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Cannot move the fifth control; this program has 3 controls."])
+        XCTAssertEqual(volumeUp.model.controls.map(\.id), ["play", "stop", "volume_up"])
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
+    func testAssistantPromptRouterRetargetsAddedControlBehaviorWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let pause)) = AssistantPromptRouter.route(
+            prompt: "add pause",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected pause setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "make the Pause button mute instead", source: pause.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected behavior retarget follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "pause"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Pause"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "Mute"])
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch pause -> Mute\n            cmp.w      #3,d0\n            bne.s      .skip_pause\n            bsr        Mute\n.skip_pause:"))
+        XCTAssertTrue(result.source.contains("\nMute:\n"))
+        XCTAssertFalse(result.source.contains("\nPauseMOD:\n"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterReAddsBehaviorAfterRetargetingRenamedControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+        guard case .structuredModelPatch(.patched(let renamed)) = AssistantPromptRouter.route(
+            prompt: #"rename "Volume Up" to "Louder""#,
+            source: volumeUp.source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected rename setup to use structured model patching.")
+        }
+        guard case .structuredModelPatch(.patched(let retargeted)) = AssistantPromptRouter.route(
+            prompt: "make Louder lower volume instead",
+            source: renamed.source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected behavior retarget setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "add another button called Volume Up", source: retargeted.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected re-added behavior to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up", "volume_up_2"])
+        XCTAssertEqual(result.model.controls.map(\.label), ["Play", "Stop", "Louder", "Volume Up"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_up_2 label="Volume Up" action=VolumeUp bounds=32,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up_2 -> VolumeUp"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterMovesControlBoundsWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+        guard case .structuredModelPatch(.patched(let renamed)) = AssistantPromptRouter.route(
+            prompt: #"rename "Volume Up" to "Louder""#,
+            source: volumeUp.source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected rename setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "set Louder bounds to 208,72,88,20", source: renamed.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected bounds follow-up to stay in structured routing.")
+        }
+        let louder = try XCTUnwrap(result.model.controls.first(where: { $0.label == "Louder" }))
+        XCTAssertEqual(louder.bounds, .init(x: 208, y: 72, width: 88, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=208,72,88,20"))
+        XCTAssertTrue(result.source.contains("ControlRect_volume_up:\n            dc.w       208,72,88,20,3"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterResizesControlRelativelyWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+        guard case .structuredModelPatch(.patched(let moved)) = AssistantPromptRouter.route(
+            prompt: "set Volume Up bounds to 208,72,88,20",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected bounds setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "make the third button wider by 16", source: moved.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected relative resize follow-up to stay in structured routing.")
+        }
+        let volumeUpControl = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 208, y: 72, width: 104, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=208,72,104,20"))
+        XCTAssertTrue(result.source.contains("ControlRect_volume_up:\n            dc.w       208,72,104,20,3"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterMovesControlRelativelyWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+        guard case .structuredModelPatch(.patched(let moved)) = AssistantPromptRouter.route(
+            prompt: "set Volume Up bounds to 208,72,88,20",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected bounds setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "move the third button left by 8", source: moved.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected relative move follow-up to stay in structured routing.")
+        }
+        let volumeUpControl = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 200, y: 72, width: 88, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=200,72,88,20"))
+        XCTAssertTrue(result.source.contains("ControlRect_volume_up:\n            dc.w       200,72,88,20,3"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterPlacesControlRelativeToAnotherControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "center the third button below Stop", source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected relative placement follow-up to stay in structured routing.")
+        }
+        let volumeUpControl = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("ControlRect_volume_up:\n            dc.w       120,68,72,20,3"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterPlacesAndMovesControlRelativeToAnotherControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "center the third button below Stop and move it down by 4", source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected relative placement and move follow-up to stay in structured routing.")
+        }
+        let volumeUpControl = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 120, y: 72, width: 72, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,72,72,20"))
+        XCTAssertTrue(result.source.contains("ControlRect_volume_up:\n            dc.w       120,72,72,20,3"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterSizesAndPlacesControlRelativeToAnotherControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "make the third button 80x20 centered below Stop", source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected compound size-placement follow-up to stay in structured routing.")
+        }
+        let volumeUpControl = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 116, y: 68, width: 80, height: 20))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=116,68,80,20"))
+        XCTAssertTrue(result.source.contains("ControlRect_volume_up:\n            dc.w       116,68,80,20,3"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsAndPlacesControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let route = AssistantPromptRouter.route(prompt: "add a volume up button centered below Stop", source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected compound add-and-place follow-up to stay in structured routing.")
+        }
+        let volumeUpControl = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("ControlRect_volume_up:\n            dc.w       120,68,72,20,3"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsPlacesAndMovesControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let route = AssistantPromptRouter.route(prompt: "add a volume up button centered below Stop and move it down by 4", source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected compound add-place-move follow-up to stay in structured routing.")
+        }
+        let volumeUpControl = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 120, y: 72, width: 72, height: 20))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=120,72,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=120,72,72,20"))
+        XCTAssertTrue(result.source.contains("ControlRect_volume_up:\n            dc.w       120,72,72,20,3"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsAndReordersControlsWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "add pause and move Volume Down after Pause",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected add-reorder follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up", "pause", "volume_down"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp", "PauseMOD", "VolumeDown"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #5,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsReordersAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeControls = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume controls", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "add pause and move Volume Down after Pause and set volume increment to 8",
+            source: volumeControls.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected add-reorder-parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "volume_up", "pause", "volume_down"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch pause -> PauseMOD\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_down -> VolumeDown\n            cmp.w      #5,d0"))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsCustomLabelBehaviorAndReordersControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "add a button called Down to lower volume and move Down before Volume Up",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected custom-label add-reorder follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "down", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsCustomLabelBehaviorReordersAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "add a button called Down to lower volume and move Down before Volume Up and set volume increment to 8",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected custom-label add-reorder-parameter follow-up to stay in structured routing.")
+        }
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "down", "volume_up"])
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsCustomLabelPlacesBehaviorAndReordersControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "add a button called Down centered below Stop to lower volume and move Down before Volume Up",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected custom-label add-place-reorder follow-up to stay in structured routing.")
+        }
+        let down = try XCTUnwrap(result.model.controls.first(where: { $0.id == "down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "down", "volume_up"])
+        XCTAssertEqual(result.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeDown", "VolumeUp"])
+        XCTAssertEqual(down.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertFalse(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsCustomLabelPlacesBehaviorReordersAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let volumeUp = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add volume up", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "add a button called Down centered below Stop to lower volume and move Down before Volume Up and set volume increment to 8",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected custom-label add-place-reorder-parameter follow-up to stay in structured routing.")
+        }
+        let down = try XCTUnwrap(result.model.controls.first(where: { $0.id == "down" }))
+        XCTAssertEqual(result.model.controls.map(\.id), ["play", "stop", "down", "volume_up"])
+        XCTAssertEqual(down.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch down -> VolumeDown\n            cmp.w      #3,d0"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #4,d0"))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsPlacesAndResizesControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let route = AssistantPromptRouter.route(prompt: "add a volume up button centered below Stop and make it wider by 16", source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected compound add-place-resize follow-up to stay in structured routing.")
+        }
+        let volumeUpControl = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(volumeUpControl.bounds, .init(x: 112, y: 68, width: 88, height: 20))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=112,68,88,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest volume_up slot=3 bounds=112,68,88,20"))
+        XCTAssertTrue(result.source.contains("ControlRect_volume_up:\n            dc.w       112,68,88,20,3"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsCustomLabelPlacesAndResizesControlWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let route = AssistantPromptRouter.route(prompt: "add a button called Louder centered below Stop to raise volume and make it wider by 16", source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected custom-label compound add-place-resize follow-up to stay in structured routing.")
+        }
+        let louderControl = try XCTUnwrap(result.model.controls.first(where: { $0.id == "louder" }))
+        XCTAssertEqual(louderControl.label, "Louder")
+        XCTAssertEqual(louderControl.action, "VolumeUp")
+        XCTAssertEqual(louderControl.bounds, .init(x: 112, y: 68, width: 88, height: 20))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=louder label="Louder" action=VolumeUp bounds=112,68,88,20"#))
+        XCTAssertFalse(result.source.contains(#"label="Louder centered below Stop""#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest louder slot=3 bounds=112,68,88,20"))
+        XCTAssertTrue(result.source.contains("ControlRect_louder:\n            dc.w       112,68,88,20,3"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterAddsCustomLabelPlacesBehaviorAndSetsVolumeStepWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let route = AssistantPromptRouter.route(
+            prompt: "add a button called Down centered below Stop to lower volume and set volume increment to 8",
+            source: source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected custom-label add-place-behavior-parameter follow-up to stay in structured routing.")
+        }
+        let downControl = try XCTUnwrap(result.model.controls.first(where: { $0.id == "down" }))
+        XCTAssertEqual(downControl.label, "Down")
+        XCTAssertEqual(downControl.action, "VolumeDown")
+        XCTAssertEqual(downControl.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("routines"))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=down label="Down" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch down -> VolumeDown"))
+        XCTAssertTrue(result.source.contains("sub.w      #8,d0"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesMovesCustomControlAndSetsInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        let down = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "add a button called Down to lower volume", source: source))
+
+        let route = AssistantPromptRouter.route(
+            prompt: "rename Down to Quieter and center Down below Stop and set initial volume to 32",
+            source: down.source,
+            isSelfCorrection: false
+        )
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected rename-bounds-parameter follow-up to stay in structured routing.")
+        }
+        let quieter = try XCTUnwrap(result.model.controls.first(where: { $0.id == "down" }))
+        XCTAssertEqual(quieter.label, "Quieter")
+        XCTAssertEqual(quieter.action, "VolumeDown")
+        XCTAssertEqual(quieter.bounds, .init(x: 120, y: 68, width: 72, height: 20))
+        XCTAssertTrue(result.changedRegions.contains("controls"))
+        XCTAssertTrue(result.changedRegions.contains("state"))
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=down label="Quieter" action=VolumeDown bounds=120,68,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:hittest down slot=3 bounds=120,68,72,20"))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch down -> VolumeDown"))
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterRejectsDuplicateBehaviorRetargetWithoutPartialMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let pause)) = AssistantPromptRouter.route(
+            prompt: "add pause",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected pause setup to use structured model patching.")
+        }
+        guard case .structuredModelPatch(.patched(let mute)) = AssistantPromptRouter.route(
+            prompt: "add mute",
+            source: pause.source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected mute setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "make Pause mute instead", source: mute.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected duplicate behavior retarget to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["A control that dispatches to Mute already exists: Mute."])
+        XCTAssertEqual(mute.model.controls.map(\.id), ["play", "stop", "pause", "mute"])
+        XCTAssertTrue(mute.source.contains(#"; @amiga:model control id=pause label="Pause" action=PauseMOD bounds=208,40,72,20"#))
+        XCTAssertTrue(mute.source.contains(#"; @amiga:model control id=mute label="Mute" action=Mute bounds=32,68,72,20"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: mute.source), [])
+    }
+
+    func testAssistantPromptRouterRenamesAndRetargetsControlBehaviorWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+        guard case .structuredModelPatch(.patched(let louder)) = AssistantPromptRouter.route(
+            prompt: #"rename "Volume Up" to "Louder""#,
+            source: volumeUp.source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected rename setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "make Louder say Down and lower volume", source: louder.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected compound label and behavior follow-up to stay in structured routing.")
+        }
+        let control = try XCTUnwrap(result.model.controls.first(where: { $0.id == "volume_up" }))
+        XCTAssertEqual(control.label, "Down")
+        XCTAssertEqual(control.action, "VolumeDown")
+        XCTAssertTrue(result.source.contains(#"; @amiga:model control id=volume_up label="Down" action=VolumeDown bounds=208,40,72,20"#))
+        XCTAssertTrue(result.source.contains("; @amiga:dispatch volume_up -> VolumeDown\n            cmp.w      #3,d0\n            bne.s      .skip_volume_up\n            bsr        VolumeDown\n.skip_volume_up:"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
     }
 
     func testAssistantPromptRouterKeepsNearRenameSignalOutOfStructuredPatching() throws {
@@ -9764,6 +20145,30 @@ PatternC:
         XCTAssertEqual(failures, ["Conflicting control behaviors in one request. Specify exactly one of: Mute, Pause."])
     }
 
+    func testAssistantPromptRouterRejectsConflictingControlAfterPriorPatchWithoutPartialMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "add a button to pause and mute", source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected conflicting follow-up control behavior to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Conflicting control behaviors in one request. Specify exactly one of: Pause, Mute."])
+        XCTAssertEqual(volumeUp.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(volumeUp.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertFalse(volumeUp.source.contains("; @amiga:model control id=pause"))
+        XCTAssertFalse(volumeUp.source.contains("; @amiga:model control id=mute"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
+    }
+
     func testAssistantPromptRouterDoesNotFallBackAfterMissingVolumeStepValue() throws {
         let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
         guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
@@ -9781,6 +20186,30 @@ PatternC:
         }
 
         XCTAssertEqual(failures, ["Specify a numeric volume step."])
+    }
+
+    func testAssistantPromptRouterRejectsMissingVolumeStepAfterPriorPatchWithoutPartialMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "change volume step", source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected missing volume step to reject in structured routing.")
+        }
+        XCTAssertEqual(failures, ["Specify a numeric volume step."])
+        XCTAssertEqual(volumeUp.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(volumeUp.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeUp.source.contains("; @amiga:dispatch volume_up -> VolumeUp\n            cmp.w      #3,d0\n            bne.s      .skip_volume_up\n            bsr        VolumeUp\n.skip_volume_up:"))
+        XCTAssertFalse(volumeUp.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
     }
 
     func testAssistantPromptRouterPatchesVolumeStepWithoutFallback() throws {
@@ -9804,6 +20233,133 @@ PatternC:
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
     }
 
+    func testAssistantPromptRouterTreatsRepeatedVolumeStepAsIdentityPatch() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+        guard case .structuredModelPatch(.patched(let changed)) = AssistantPromptRouter.route(
+            prompt: "set volume increment to 8",
+            source: volumeUp.source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected initial volume-step edit to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "set volume increment to 8", source: changed.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected repeated volume-step edit to stay in structured routing as an identity patch.")
+        }
+        XCTAssertEqual(result.source, changed.source)
+        XCTAssertEqual(result.changedRegions, [])
+        XCTAssertTrue(result.source.contains("add.w      #8,d0"))
+        XCTAssertTrue(result.model.verificationExpectations.contains("Volume step is 8."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterDoesNotFallBackAfterMissingPlaybackPeriodValue() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+
+        let route = AssistantPromptRouter.route(prompt: "set playback period", source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected missing playback period value to stay in structured routing.")
+        }
+
+        XCTAssertEqual(failures, ["Specify a numeric playback period."])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: source), [])
+    }
+
+    func testAssistantPromptRouterPatchesPlaybackPeriodWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+
+        let route = AssistantPromptRouter.route(prompt: "set playback period to 214", source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected playback-period parameter edit to stay in structured routing.")
+        }
+
+        XCTAssertTrue(result.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(result.model.verificationExpectations.contains("Playback period is 214."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterTreatsRepeatedPlaybackPeriodAsIdentityPatch() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let changed)) = AssistantPromptRouter.route(
+            prompt: "set playback period to 214",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected playback-period parameter edit to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "set playback period to 214", source: changed.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected repeated playback-period edit to stay in structured routing as an identity patch.")
+        }
+        XCTAssertEqual(result.source, changed.source)
+        XCTAssertEqual(result.changedRegions, [])
+        XCTAssertTrue(result.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(result.model.verificationExpectations.contains("Playback period is 214."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterDoesNotFallBackAfterMissingPlaybackNoteValue() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+
+        let route = AssistantPromptRouter.route(prompt: "set playback note", source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected missing playback note value to stay in structured routing.")
+        }
+
+        XCTAssertEqual(failures, ["Specify a supported playback note such as C-3."])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: source), [])
+    }
+
+    func testAssistantPromptRouterPatchesPlaybackNoteWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+
+        let route = AssistantPromptRouter.route(prompt: "set playback note to C-3", source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected playback-note parameter edit to stay in structured routing.")
+        }
+
+        XCTAssertTrue(result.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(result.model.verificationExpectations.contains("Playback period is 214."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterTreatsRepeatedPlaybackNoteAsIdentityPatch() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let changed)) = AssistantPromptRouter.route(
+            prompt: "set playback note to C-3",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected playback-note parameter edit to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "set playback note to C-3", source: changed.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected repeated playback-note edit to stay in structured routing as an identity patch.")
+        }
+        XCTAssertEqual(result.source, changed.source)
+        XCTAssertEqual(result.changedRegions, [])
+        XCTAssertTrue(result.source.contains("move.w     #214,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(result.model.verificationExpectations.contains("Playback period is 214."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
     func testAssistantPromptRouterDoesNotFallBackAfterMissingInitialVolumeValue() throws {
         let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
 
@@ -9814,6 +20370,32 @@ PatternC:
         }
 
         XCTAssertEqual(failures, ["Specify a numeric initial volume."])
+    }
+
+    func testAssistantPromptRouterRejectsMissingInitialVolumeAfterPriorPatchWithoutPartialMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let volumeUp)) = AssistantPromptRouter.route(
+            prompt: "add volume up",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected volume-up setup to use structured model patching.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "set initial volume", source: volumeUp.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.rejected(let failures)) = route else {
+            return XCTFail("Expected missing initial volume to reject in structured routing after a prior patch.")
+        }
+
+        XCTAssertEqual(failures, ["Specify a numeric initial volume."])
+        XCTAssertEqual(volumeUp.model.controls.map(\.label), ["Play", "Stop", "Volume Up"])
+        XCTAssertEqual(volumeUp.model.controls.map(\.action), ["PlayMOD", "StopMOD", "VolumeUp"])
+        XCTAssertEqual(volumeUp.model.stateVariables.first(where: { $0.id == "audio_volume" })?.initialValue, "48")
+        XCTAssertTrue(volumeUp.source.contains(#"; @amiga:model control id=volume_up label="Volume Up" action=VolumeUp bounds=208,40,72,20"#))
+        XCTAssertTrue(volumeUp.source.contains("AudioVolume:  dc.w     48"))
+        XCTAssertFalse(volumeUp.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: volumeUp.source), [])
     }
 
     func testAssistantPromptRouterPatchesInitialVolumeWithoutFallback() throws {
@@ -9828,6 +20410,43 @@ PatternC:
         XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
         XCTAssertEqual(result.model.stateVariables.first(where: { $0.id == "audio_volume" })?.initialValue, "32")
         XCTAssertTrue(result.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterTreatsRepeatedInitialVolumeAsIdentityPatch() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+        guard case .structuredModelPatch(.patched(let changed)) = AssistantPromptRouter.route(
+            prompt: "set initial volume to 32",
+            source: source,
+            isSelfCorrection: false
+        ) else {
+            return XCTFail("Expected initial-volume parameter edit to stay in structured routing.")
+        }
+
+        let route = AssistantPromptRouter.route(prompt: "set initial volume to 32", source: changed.source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected repeated initial-volume edit to stay in structured routing as an identity patch.")
+        }
+        XCTAssertEqual(result.source, changed.source)
+        XCTAssertEqual(result.changedRegions, [])
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     32"))
+        XCTAssertEqual(result.model.stateVariables.first(where: { $0.id == "audio_volume" })?.initialValue, "32")
+        XCTAssertTrue(result.model.verificationExpectations.contains("Initial volume is 32."))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testAssistantPromptRouterPatchesNamedInitialVolumeWithoutFallback() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate two buttons, play and stop of a mod file"))
+
+        let route = AssistantPromptRouter.route(prompt: "set initial volume to max", source: source, isSelfCorrection: false)
+
+        guard case .structuredModelPatch(.patched(let result)) = route else {
+            return XCTFail("Expected named initial-volume edit to stay in structured routing.")
+        }
+
+        XCTAssertTrue(result.source.contains("AudioVolume:  dc.w     64"))
+        XCTAssertTrue(result.model.verificationExpectations.contains("Initial volume is 64."))
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
     }
 

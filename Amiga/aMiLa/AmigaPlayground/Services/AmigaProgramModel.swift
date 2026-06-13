@@ -154,11 +154,15 @@ struct AmigaProgramFamilyManifest: Equatable, Identifiable {
     var kind: AmigaProgramModel.Kind
     var firstShotPromptExamples: [String]
     var rejectedFirstShotPromptExamples: [String]
+    var representativeRoutedFirstShotPromptExamples: [String]
     var supportedFollowUps: [String]
     var requiredFollowUpSmokePrompts: [String]
     var requiredFollowUpSmokeChains: [[String]]
+    var representativeRoutedFollowUpSmokeChains: [[String]]
     var requiredRejectedFollowUpSmokePrompts: [String]
     var requiredRejectedFollowUpSmokeChains: [[String]]
+    var requiredRecoveryFollowUpSmokeChains: [[String]]
+    var representativeRoutedRecoveryFollowUpSmokeChains: [[String]]
     var requiredIgnoredFollowUpSmokePrompts: [String]
     var requiredRegions: [AmigaSourceRegionName]
     var requiredHardware: [AmigaProgramModel.HardwareSubsystem]
@@ -170,11 +174,15 @@ struct AmigaProgramFamilyManifest: Equatable, Identifiable {
         kind: AmigaProgramModel.Kind,
         firstShotPromptExamples: [String],
         rejectedFirstShotPromptExamples: [String] = [],
+        representativeRoutedFirstShotPromptExamples: [String] = [],
         supportedFollowUps: [String],
         requiredFollowUpSmokePrompts: [String],
         requiredFollowUpSmokeChains: [[String]],
+        representativeRoutedFollowUpSmokeChains: [[String]] = [],
         requiredRejectedFollowUpSmokePrompts: [String],
         requiredRejectedFollowUpSmokeChains: [[String]] = [],
+        requiredRecoveryFollowUpSmokeChains: [[String]] = [],
+        representativeRoutedRecoveryFollowUpSmokeChains: [[String]] = [],
         requiredIgnoredFollowUpSmokePrompts: [String] = [],
         requiredRegions: [AmigaSourceRegionName],
         requiredHardware: [AmigaProgramModel.HardwareSubsystem],
@@ -185,11 +193,15 @@ struct AmigaProgramFamilyManifest: Equatable, Identifiable {
         self.kind = kind
         self.firstShotPromptExamples = firstShotPromptExamples
         self.rejectedFirstShotPromptExamples = rejectedFirstShotPromptExamples
+        self.representativeRoutedFirstShotPromptExamples = representativeRoutedFirstShotPromptExamples
         self.supportedFollowUps = supportedFollowUps
         self.requiredFollowUpSmokePrompts = requiredFollowUpSmokePrompts
         self.requiredFollowUpSmokeChains = requiredFollowUpSmokeChains
+        self.representativeRoutedFollowUpSmokeChains = representativeRoutedFollowUpSmokeChains
         self.requiredRejectedFollowUpSmokePrompts = requiredRejectedFollowUpSmokePrompts
         self.requiredRejectedFollowUpSmokeChains = requiredRejectedFollowUpSmokeChains
+        self.requiredRecoveryFollowUpSmokeChains = requiredRecoveryFollowUpSmokeChains
+        self.representativeRoutedRecoveryFollowUpSmokeChains = representativeRoutedRecoveryFollowUpSmokeChains
         self.requiredIgnoredFollowUpSmokePrompts = requiredIgnoredFollowUpSmokePrompts
         self.requiredRegions = requiredRegions
         self.requiredHardware = requiredHardware
@@ -221,6 +233,9 @@ enum AmigaProgramFamilyRegistry {
         rejectedFirstShotPromptExamples: [
             "Generate a double buffered audio sample player with clean start and stop controls."
         ],
+        representativeRoutedFirstShotPromptExamples: [
+            "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."
+        ],
         supportedFollowUps: [
             "set front color",
             "set back color"
@@ -240,6 +255,17 @@ enum AmigaProgramFamilyRegistry {
                 "set back color to blue",
                 "set front color to orange",
                 "set back color to purple"
+            ],
+            [
+                "set front color to red and back color to blue",
+                "set front color to orange",
+                "set back color to purple"
+            ]
+        ],
+        representativeRoutedFollowUpSmokeChains: [
+            [
+                "set front color to purple",
+                "set back color to orange"
             ]
         ],
         requiredRejectedFollowUpSmokePrompts: [
@@ -254,6 +280,10 @@ enum AmigaProgramFamilyRegistry {
             [
                 "set front color to purple",
                 "set front color to teal"
+            ],
+            [
+                "set front color to purple",
+                "set back color to"
             ],
             [
                 "set front and back color to red",
@@ -281,6 +311,7 @@ enum AmigaProgramFamilyRegistry {
         requiredVerificationGates: [
             "verified first-shot template",
             "structured follow-up patcher",
+            "representative routed conversation audit",
             "AmigaProgramSourceVerifier",
             "AssemblySemanticValidator",
             "VASM compile",
@@ -304,6 +335,9 @@ enum AmigaProgramFamilyRegistry {
             "Generate a display with stopwatch buttons for a modulator.",
             "Generate a UI module with play and stop buttons."
         ],
+        representativeRoutedFirstShotPromptExamples: [
+            "Generate play and stop controls for a tracker module."
+        ],
         supportedFollowUps: [
             "add volume up",
             "add volume down",
@@ -311,6 +345,12 @@ enum AmigaProgramFamilyRegistry {
             "add pause",
             "add mute",
             "rename a visible control label",
+            "remove an added control",
+            "reorder controls",
+            "change an added control behavior",
+            "change control bounds",
+            "change playback note",
+            "change playback period",
             "change volume step",
             "set initial volume"
         ],
@@ -321,9 +361,13 @@ enum AmigaProgramFamilyRegistry {
             "set Halt button title Stop",
             "change volume step to 8",
             "change volume step to -8",
+            "set playback note to C-3",
+            "set playback period to 428",
             "set initial volume to -1",
             "set initial volume to $20",
-            "set initial volume to 63"
+            "set initial volume to max",
+            "set initial volume to 63",
+            "remove volume up"
         ],
         requiredFollowUpSmokeChains: [
             [
@@ -335,6 +379,88 @@ enum AmigaProgramFamilyRegistry {
             [
                 "add volume up",
                 "set volume increment to 8"
+            ],
+            [
+                "add volume up and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume controls centered below Stop and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add a button called Down centered below Stop to lower volume and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "add a button called Down to lower volume and move Down before Volume Up",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume up",
+                "add a button called Down centered below Stop to lower volume and move Down before Volume Up",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume up",
+                "add a button called Down to lower volume and move Down before Volume Up and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "add a button called Down centered below Stop to lower volume and move Down before Volume Up and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add a button called Down to lower volume",
+                "rename Down to Quieter and center Down below Stop and set initial volume to 32",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume up",
+                "center Volume Up below Stop and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                #"rename "Volume Up" to "Louder" and set volume increment to 8"#,
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                #"rename "Volume Up" to "Louder" and center Volume Up below Stop"#,
+                "set volume increment to 8"
+            ],
+            [
+                "add volume up",
+                #"rename "Volume Up" to "Louder" and center Volume Up below Stop and set initial volume to 32"#,
+                "set playback period to 428"
+            ],
+            [
+                "add volume up",
+                "change volume step to -8",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume up",
+                "make Volume Up lower volume instead and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "make Volume Up say Down and lower volume and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "make Volume Up say Down and lower volume and center Volume Up below Stop",
+                "change volume step to 8"
+            ],
+            [
+                "add volume up",
+                "make Volume Up say Down and lower volume and center Volume Up below Stop and set volume increment to 8",
+                "set initial volume to 32"
             ],
             [
                 "add volume up",
@@ -349,11 +475,25 @@ enum AmigaProgramFamilyRegistry {
                 "change volume step to $08"
             ],
             [
+                "add volume up",
+                "set playback note to C-3 and change volume step to 8",
+                "set initial volume to 32"
+            ],
+            [
                 "change Stop button caption Halt",
                 "set Halt button title Stop"
             ],
             [
+                #"rename 'Stop' to 'Bass "Boost"'"#,
+                "set initial volume to 32"
+            ],
+            [
+                #"rename 'Stop' to 'Bass \ Boost'"#,
+                "set initial volume to 32"
+            ],
+            [
                 "set initial volume to 31",
+                "set initial volume to max",
                 "set initial volume to 32 for channel 0"
             ],
             [
@@ -361,11 +501,21 @@ enum AmigaProgramFamilyRegistry {
                 "set initial volume to 0x21"
             ],
             [
+                "set volume to 200",
+                "set volume to 0"
+            ],
+            [
                 "add volume up",
                 "rename \"Volume Up\" to \"Louder\"",
                 "add volume down",
                 "change volume step to 8",
                 "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "add volume down",
+                "add pause",
+                "add mute"
             ],
             [
                 "add volume up",
@@ -420,6 +570,13 @@ enum AmigaProgramFamilyRegistry {
                 "change volume step to 8"
             ],
             [
+                #"add a third button called "Volume Up" to raise volume"#,
+                #"add a fourth button called "Volume Down" to lower volume"#,
+                "add pause",
+                "rename Volume Down to Quieter and move Quieter after Pause and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
                 "add buttons for volume up and volume down",
                 "change volume step to 8"
             ],
@@ -434,6 +591,446 @@ enum AmigaProgramFamilyRegistry {
             [
                 "add pause and mute controls",
                 "make the pause button say Freeze"
+            ],
+            [
+                "add volume up",
+                "add volume down",
+                "remove volume up",
+                "change volume step to 8"
+            ],
+            [
+                "add volume up",
+                "add volume down",
+                "remove Volume Up and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and rename Volume Down to Quieter",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and rename Volume Down to Quieter and set initial volume to 32",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+                #"add another button called "Louder" to raise volume"#,
+                "set playback period to 428"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and set initial volume to 32",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Quieter after Pause",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Quieter after Pause and set initial volume to 32",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and make Volume Down mute instead",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and make Volume Down mute instead and set initial volume to 32",
+                "set playback period to 428"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and make Volume Down mute instead and move Volume Down after Pause",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and make Volume Down mute instead and move Volume Down after Pause and set initial volume to 32",
+                "set playback period to 428"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and set initial volume to 32",
+                "set playback period to 428"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Down after Pause",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Down after Pause and set initial volume to 32",
+                "set playback period to 428"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and make Volume Down say Silence and mute instead",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and make Volume Down say Silence and mute instead and set initial volume to 32",
+                "set playback period to 428"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and make Volume Down say Silence and mute instead and move Silence after Pause",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and make Volume Down say Silence and mute instead and move Silence after Pause and set initial volume to 32",
+                "set playback period to 428"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and set initial volume to 32",
+                "set playback period to 428"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Silence after Pause",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Silence after Pause and set initial volume to 32",
+                "set playback period to 428"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and center Volume Down below Stop and set initial volume to 32",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and center Volume Down below Stop",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and move Volume Down after Pause",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and move Volume Down after Pause and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                #"rename "Volume Up" to "Louder""#,
+                "remove Louder",
+                "add a third button called Volume Up"
+            ],
+            [
+                "add volume up",
+                "remove the third button",
+                "add a third button called Volume Up"
+            ],
+            [
+                "add volume up",
+                "add volume down",
+                "move Volume Down before Volume Up",
+                "change volume step to 8"
+            ],
+            [
+                "add volume up",
+                "add volume down",
+                "move Volume Down before Volume Up and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "center Volume Up below Stop and move Volume Up after Pause",
+                "change volume step to 8"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "center Volume Up below Stop and move Volume Up after Pause and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume controls",
+                "add pause and move Volume Down after Pause",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "add pause and move Volume Down after Pause and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "add volume down",
+                "move the fourth button before the third button",
+                "change volume step to 8"
+            ],
+            [
+                "add volume up",
+                #"rename "Volume Up" to "Louder""#,
+                "add volume down",
+                "move Volume Down before Louder"
+            ],
+            [
+                "add volume controls",
+                #"rename "Volume Up" to "Louder" and move Louder after Volume Down"#,
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                #"rename "Volume Up" to "Louder" and move Louder after Volume Down and set volume increment to 8"#,
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause"#,
+                "set volume increment to 8"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause and set volume increment to 8"#,
+                "set initial volume to 32"
+            ],
+            [
+                "add pause",
+                "make the Pause button mute instead",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "make Volume Up mute instead and move Volume Up after Pause",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "make Volume Up mute instead and center Volume Up below Stop",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "make Volume Up mute instead and center Volume Up below Stop and set initial volume to 32",
+                "set playback period to 428"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "make Volume Up mute instead and move Volume Up after Pause and set initial volume to 32",
+                "set playback period to 428"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause and set initial volume to 32",
+                "set playback period to 428"
+            ],
+            [
+                "add volume up",
+                #"rename "Volume Up" to "Louder""#,
+                "make Louder lower volume instead",
+                "add another button called Volume Up",
+                "change volume step to 8"
+            ],
+            [
+                "add volume up",
+                #"rename "Volume Up" to "Louder""#,
+                "make Louder say Down and lower volume",
+                "change volume step to 8"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "make Volume Up say Down and lower volume and move Down after Pause",
+                "change volume step to 8"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause",
+                "change volume step to 8"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "make Volume Up say Down and lower volume and move Down after Pause and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                #"rename "Volume Up" to "Louder""#,
+                "set Louder bounds to 208,72,88,20",
+                "make Louder wider by 16",
+                "move Louder left by 8",
+                "center Louder below Stop",
+                "center Louder below Stop and move it down by 4",
+                "set playback note to C-3",
+                "set playback period to 428",
+                "change volume step to 8"
+            ],
+            [
+                "add a volume up button centered below Stop",
+                "change volume step to 8"
+            ],
+            [
+                "add a volume up button centered below Stop and move it down by 4",
+                "change volume step to 8"
+            ],
+            [
+                "add a volume up button centered below Stop and make it wider by 16",
+                "change volume step to 8"
+            ],
+            [
+                "add volume up",
+                "make the third button 80x20 centered below Stop",
+                "change volume step to 8"
+            ],
+            [
+                "add a button called Louder centered below Stop to raise volume and make it wider by 16",
+                "change volume step to 8"
+            ],
+            [
+                "add volume controls centered below Stop",
+                "change volume step to 8"
+            ],
+            [
+                "add volume controls centered below Stop and move them down by 4",
+                "change volume step to 8"
+            ],
+            [
+                "add volume controls",
+                "center volume controls below Stop",
+                "change volume step to 8"
+            ],
+            [
+                "add volume controls",
+                "center volume controls below Stop and move them down by 4",
+                "change volume step to 8"
+            ],
+            [
+                "add volume controls",
+                "move volume controls down by 8",
+                "change volume step to 8"
+            ],
+            [
+                "add volume controls",
+                "move volume controls down by 4 and make them wider by 8",
+                "change volume step to 8"
+            ],
+            [
+                "add volume controls",
+                "move volume controls down by 4 and make them 80x20",
+                "change volume step to 8"
+            ],
+            [
+                "add volume controls",
+                "make volume controls wider by 8",
+                "change volume step to 8"
+            ],
+            [
+                "add volume controls",
+                "make volume controls wider by 8 centered below Stop",
+                "change volume step to 8"
+            ],
+            [
+                "add volume controls",
+                "make volume controls 80x20",
+                "change volume step to 8"
+            ],
+            [
+                "add volume controls",
+                "make volume controls 80x20 centered below Stop",
+                "change volume step to 8"
+            ]
+        ],
+        representativeRoutedFollowUpSmokeChains: [
+            [
+                #"add a third button called "Volume Up" to raise volume"#,
+                #"add a fourth button called "Volume Down" to lower volume"#,
+                "add pause",
+                "rename Volume Down to Quieter and move Quieter after Pause and set volume increment to 8",
+                "set initial volume to 32"
+            ],
+            [
+                "add volume up",
+                "make Volume Up mute instead and center Volume Up below Stop and set initial volume to 32",
+                "set playback period to 428"
             ]
         ],
         requiredRejectedFollowUpSmokePrompts: [
@@ -446,7 +1043,17 @@ enum AmigaProgramFamilyRegistry {
             "add volume up and volume up",
             "add a mute button and a mute button",
             "rename the fourth button to Louder",
-            "add a fourth button called Louder to raise volume"
+            "add a fourth button called Louder to raise volume",
+            "add a volume up button centered left of Play",
+            "add a volume up button centered below Stop and move it down by 220",
+            "add a volume up button centered below Stop and make it wider by 260",
+            "add a button called Louder centered below Stop to raise volume and make it wider by 260",
+            "add volume controls centered left of Play",
+            "add volume controls centered below Stop and move them down by 220",
+            "add volume controls centered left of Play and set volume increment to 8",
+            "remove Play",
+            "move Play after Stop",
+            "add volume up and change volume step"
         ],
         requiredRejectedFollowUpSmokeChains: [
             [
@@ -458,8 +1065,211 @@ enum AmigaProgramFamilyRegistry {
                 "change volume step"
             ],
             [
+                "add volume up",
+                "add a button called Down centered below Stop to lower volume and change volume step"
+            ],
+            [
+                "add volume up",
+                "add a button called Down to lower volume and move Down before Volume Up and change volume step"
+            ],
+            [
+                "add volume up",
+                "add a button called Down centered below Stop to lower volume and move Down before Volume Up and change volume step"
+            ],
+            [
+                "add a button called Down to lower volume",
+                "rename Down to Quieter and center Down below Stop and set initial volume"
+            ],
+            [
+                "add volume up",
+                #"rename "Volume Up" to "Louder" and change volume step"#
+            ],
+            [
+                "add volume up",
+                #"rename "Volume Up" to "Louder" and center Volume Up left of Play"#
+            ],
+            [
+                "add volume up",
+                "make Volume Up lower volume instead and change volume step"
+            ],
+            [
+                "add volume up",
+                "make Volume Up mute instead and center Volume Up below Stop and set initial volume"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "make Volume Up mute instead and move Volume Up after Pause and set initial volume"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "make Volume Up mute instead and center Volume Up below Stop and move Volume Up after Pause and set initial volume"
+            ],
+            [
+                "add volume up",
+                "make Volume Up say Down and lower volume and change volume step"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "make Volume Up say Down and lower volume and move Down after Pause and change volume step"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "make Volume Up say Down and lower volume and center Volume Up below Stop and move Down after Pause and change volume step"
+            ],
+            [
+                "add volume up",
+                "make Volume Up say Down and lower volume and center Volume Up left of Play"
+            ],
+            [
+                "add volume up",
+                "make Volume Up say Down and lower volume and center Volume Up below Stop and change volume step"
+            ],
+            [
+                "add volume up",
+                "center Volume Up below Stop and change volume step"
+            ],
+            [
+                "add volume up",
+                "add pause",
+                "center Volume Up below Stop and move Volume Up after Pause and change volume step"
+            ],
+            [
+                "add volume up",
+                "remove Volume Up and change volume step"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and center Volume Down below Stop and change volume step"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and center Volume Up below Stop"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and rename Volume Down to Quieter and center Volume Up below Stop"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and rename Volume Down to Quieter and move Volume Up after Pause"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and rename Volume Down to Quieter and center Volume Down below Stop and move Volume Up after Pause"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and rename Volume Up to Louder"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and make Volume Up mute instead"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and make Volume Down mute instead and center Volume Up below Stop"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and make Volume Down mute instead and move Volume Up after Pause"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and make Volume Down mute instead and center Volume Down below Stop and move Volume Up after Pause"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and make Volume Up say Silence and mute instead"
+            ],
+            [
+                "add volume controls",
+                "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Up below Stop"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and make Volume Down say Silence and mute instead and move Volume Up after Pause"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and make Volume Down say Silence and mute instead and center Volume Down below Stop and move Volume Up after Pause"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and move Volume Up after Pause"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and move Volume Down after Pause and change volume step"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and center Volume Down below Stop and move Volume Down after Pause and change volume step"
+            ],
+            [
+                "add volume controls",
+                "add pause and move Volume Down after Pause and change volume step"
+            ],
+            [
+                "add volume controls",
+                #"rename "Volume Up" to "Louder" and move Louder after Volume Down and change volume step"#
+            ],
+            [
+                "add volume up",
+                "add pause",
+                #"rename "Volume Up" to "Louder" and center Volume Up below Stop and move Louder after Pause and change volume step"#
+            ],
+            [
+                "add volume up",
+                "set playback note to C-3 and change volume step"
+            ],
+            [
+                "set playback period to 214",
+                "set playback period"
+            ],
+            [
+                "set playback note to C-3",
+                "set playback note"
+            ],
+            [
+                "add volume up",
+                "add a button to pause and mute"
+            ],
+            [
+                "add volume up",
+                "rename the fourth button to Louder"
+            ],
+            [
+                "add volume up",
+                "make the fourth button say Louder"
+            ],
+            [
+                "add volume up",
+                #"rename "Pause" to "Hold""#
+            ],
+            [
+                "add volume up",
+                "set initial volume"
+            ],
+            [
                 "rename Play button to Start",
                 #"add another button called "Play" to start playback"#
+            ],
+            [
+                "rename Stop button to Halt",
+                #"add another button called "Stop" to stop playback"#
             ],
             [
                 "rename Play button to Start",
@@ -470,8 +1280,165 @@ enum AmigaProgramFamilyRegistry {
                 "add volume up"
             ],
             [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+                #"add another button called "Louder" to raise volume"#,
+                "set playback period to 428",
+                "add volume up"
+            ],
+            [
                 "rename Play button to Start",
                 #"add another button called "Start" to raise volume"#
+            ],
+            [
+                "add volume up",
+                "remove Play"
+            ],
+            [
+                "add volume up",
+                "remove the fourth button"
+            ],
+            [
+                "add volume up",
+                "move Volume Down before Volume Up"
+            ],
+            [
+                "add volume up",
+                "add volume down",
+                "move Volume Down before Volume Up and change volume step"
+            ],
+            [
+                "add volume up",
+                "move Volume Up before Pause"
+            ],
+            [
+                "add volume up",
+                "move Play after Stop"
+            ],
+            [
+                "add volume up",
+                "move the fifth button before the third button"
+            ],
+            [
+                "add volume up",
+                "move the third button before the fifth button"
+            ],
+            [
+                "add pause",
+                "add mute",
+                "make Pause mute instead"
+            ],
+            [
+                "add volume up",
+                "add volume down",
+                #"rename "Volume Up" to "Louder""#,
+                "make Louder say Down and lower volume"
+            ],
+            [
+                "add volume up",
+                "make Play mute instead"
+            ],
+            [
+                "add volume up",
+                "make the third button wider by 200"
+            ],
+            [
+                "add volume up",
+                "move the third button right by 200"
+            ],
+            [
+                "add volume up",
+                "center the third button left of Play"
+            ],
+            [
+                "add volume up",
+                "center the third button below Stop and move it down by 220"
+            ],
+            [
+                "add volume up",
+                "make the third button 400x20 centered below Stop"
+            ],
+            [
+                "add volume controls",
+                "center volume controls left of Play"
+            ],
+            [
+                "add volume controls",
+                "center volume controls below Stop and move them down by 220"
+            ],
+            [
+                "add volume controls",
+                "move volume controls left by 260"
+            ],
+            [
+                "add volume controls",
+                "move volume controls down by 4 and make them wider by 260"
+            ],
+            [
+                "add volume controls",
+                "move volume controls down by 4 and make them 400x20"
+            ],
+            [
+                "add volume controls",
+                "make volume controls wider by 260"
+            ],
+            [
+                "add volume controls",
+                "make volume controls wider by 260 centered below Stop"
+            ],
+            [
+                "add volume controls",
+                "make volume controls 400x20"
+            ],
+            [
+                "add volume controls",
+                "make volume controls 400x20 centered below Stop"
+            ]
+        ],
+        requiredRecoveryFollowUpSmokeChains: [
+            [
+                "add volume up",
+                "change volume step",
+                "set volume increment to 8"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+                #"add another button called "Louder" to raise volume"#,
+                "set playback period to 428",
+                "add volume up",
+                "add mute"
+            ],
+            [
+                #"add a third button called "Volume Up" to raise volume"#,
+                #"add a fourth button called "Volume Down" to lower volume"#,
+                "add pause",
+                "rename Volume Down to Quieter and move Quieter after Pause and set volume increment to 8",
+                "set initial volume to 32",
+                "set playback period",
+                "set playback note to C-3"
+            ]
+        ],
+        representativeRoutedRecoveryFollowUpSmokeChains: [
+            [
+                #"add a third button called "Volume Up" to raise volume"#,
+                #"add a fourth button called "Volume Down" to lower volume"#,
+                "add pause",
+                "rename Volume Down to Quieter and move Quieter after Pause and set volume increment to 8",
+                "set initial volume to 32",
+                "set playback period",
+                "set playback note to C-3"
+            ],
+            [
+                "add volume controls",
+                "add pause",
+                "remove Volume Up and rename Volume Down to Quieter and move Quieter after Pause and set initial volume to 32",
+                #"add another button called "Louder" to raise volume"#,
+                "set playback period to 428",
+                "add volume up",
+                "add mute"
             ]
         ],
         requiredIgnoredFollowUpSmokePrompts: [
@@ -494,6 +1461,7 @@ enum AmigaProgramFamilyRegistry {
         requiredVerificationGates: [
             "verified first-shot template",
             "structured follow-up patcher",
+            "representative routed conversation audit",
             "AmigaProgramSourceVerifier",
             "AssemblySemanticValidator",
             "VASM compile",
@@ -514,6 +1482,34 @@ enum AmigaProgramFamilyRegistry {
 }
 
 enum AmigaProgramFamilyPromotionAudit {
+    private struct SemanticValidationCache {
+        var results: [String: AssemblySemanticValidationResult] = [:]
+
+        mutating func validate(source: String, prompt: String) -> AssemblySemanticValidationResult {
+            let key = source + "\u{1f}" + prompt
+            if let cached = results[key] {
+                return cached
+            }
+            let result = AssemblySemanticValidator.validate(source: source, prompt: prompt)
+            results[key] = result
+            return result
+        }
+    }
+
+    private struct FollowUpPatchOutcomeCache {
+        var outcomes: [String: AmigaProgramFollowUpPatchOutcome] = [:]
+
+        mutating func outcome(prompt: String, source: String) -> AmigaProgramFollowUpPatchOutcome {
+            let key = source + "\u{1f}" + prompt
+            if let cached = outcomes[key] {
+                return cached
+            }
+            let outcome = AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: source)
+            outcomes[key] = outcome
+            return outcome
+        }
+    }
+
     struct RoutedFirstShotFollowUpArtifact {
         let firstShotPrompt: String
         let followUpPrompt: String
@@ -521,9 +1517,25 @@ enum AmigaProgramFamilyPromotionAudit {
         let model: AmigaProgramModel
     }
 
+    struct RoutedFirstShotFollowUpEvent {
+        enum Outcome: Equatable {
+            case patched
+            case rejected([String])
+        }
+
+        let firstShotPrompt: String
+        let followUpPrompt: String
+        let sourceBefore: String
+        let sourceAfter: String
+        let modelBefore: AmigaProgramModel
+        let modelAfter: AmigaProgramModel
+        let outcome: Outcome
+    }
+
     static let baselineRequiredVerificationGates = [
         "verified first-shot template",
         "structured follow-up patcher",
+        "representative routed conversation audit",
         "AmigaProgramSourceVerifier",
         "AssemblySemanticValidator",
         "VASM compile",
@@ -544,6 +1556,12 @@ enum AmigaProgramFamilyPromotionAudit {
             "add pause",
             "add mute",
             "rename a visible control label",
+            "remove an added control",
+            "reorder controls",
+            "change an added control behavior",
+            "change control bounds",
+            "change playback note",
+            "change playback period",
             "change volume step",
             "set initial volume"
         ]
@@ -616,6 +1634,29 @@ enum AmigaProgramFamilyPromotionAudit {
         ) {
             failures.append("\(manifest.id): first-shot prompt cannot be both accepted and rejected: \(prompt)")
         }
+        if manifest.representativeRoutedFirstShotPromptExamples.isEmpty {
+            failures.append("\(manifest.id): missing representative routed first-shot prompt examples.")
+        }
+        failures.append(contentsOf: blankPromptFailures(
+            in: manifest.representativeRoutedFirstShotPromptExamples,
+            manifestID: manifest.id,
+            fieldName: "representative routed first-shot prompt examples"
+        ))
+        failures.append(contentsOf: trimmedPromptFailures(
+            in: manifest.representativeRoutedFirstShotPromptExamples,
+            manifestID: manifest.id,
+            fieldName: "representative routed first-shot prompt examples"
+        ))
+        failures.append(contentsOf: duplicatePromptFailures(
+            in: manifest.representativeRoutedFirstShotPromptExamples,
+            manifestID: manifest.id,
+            fieldName: "representative routed first-shot prompt examples"
+        ))
+        let firstShotPromptKeys = Set(manifest.firstShotPromptExamples.map(Self.normalizedPromptKey))
+        for prompt in manifest.representativeRoutedFirstShotPromptExamples
+            where !firstShotPromptKeys.contains(Self.normalizedPromptKey(prompt)) {
+            failures.append("\(manifest.id): representative routed first-shot prompt is not declared by first-shot prompt examples: \(prompt)")
+        }
         if manifest.supportedFollowUps.isEmpty {
             failures.append("\(manifest.id): missing supported follow-up declarations.")
         }
@@ -686,6 +1727,19 @@ enum AmigaProgramFamilyPromotionAudit {
                 failures.append("\(manifest.id): required follow-up smoke chain \(index + 1) repeats prompt: \(prompt)")
             }
         }
+        if manifest.representativeRoutedFollowUpSmokeChains.isEmpty {
+            failures.append("\(manifest.id): missing representative routed follow-up smoke chains.")
+        }
+        failures.append(contentsOf: duplicateChainFailures(
+            in: manifest.representativeRoutedFollowUpSmokeChains,
+            manifestID: manifest.id,
+            fieldName: "representative routed follow-up smoke chains"
+        ))
+        let requiredFollowUpChainKeys = Set(manifest.requiredFollowUpSmokeChains.map(Self.normalizedChainKey))
+        for chain in manifest.representativeRoutedFollowUpSmokeChains
+            where !requiredFollowUpChainKeys.contains(Self.normalizedChainKey(chain)) {
+            failures.append("\(manifest.id): representative routed follow-up smoke chain is not declared by required follow-up smoke chains: \(chain.joined(separator: " -> "))")
+        }
         if manifest.requiredRejectedFollowUpSmokeChains.isEmpty {
             failures.append("\(manifest.id): missing required rejected follow-up smoke chains.")
         }
@@ -715,9 +1769,54 @@ enum AmigaProgramFamilyPromotionAudit {
                 failures.append("\(manifest.id): required rejected follow-up smoke chain \(index + 1) repeats setup prompt: \(prompt)")
             }
         }
+        failures.append(contentsOf: duplicateChainFailures(
+            in: manifest.requiredRecoveryFollowUpSmokeChains,
+            manifestID: manifest.id,
+            fieldName: "required recovery follow-up smoke chains"
+        ))
+        for (index, chain) in manifest.requiredRecoveryFollowUpSmokeChains.enumerated() where chain.isEmpty {
+            failures.append("\(manifest.id): required recovery follow-up smoke chain \(index + 1) is empty.")
+        }
+        for (index, chain) in manifest.requiredRecoveryFollowUpSmokeChains.enumerated() where chain.count < 3 {
+            failures.append("\(manifest.id): required recovery follow-up smoke chain \(index + 1) must contain accepted setup, rejected follow-up, and recovery follow-up.")
+        }
+        for (index, chain) in manifest.requiredRecoveryFollowUpSmokeChains.enumerated() {
+            failures.append(contentsOf: blankChainPromptFailures(
+                in: chain,
+                manifestID: manifest.id,
+                chainName: "required recovery follow-up smoke chain \(index + 1)"
+            ))
+            failures.append(contentsOf: trimmedChainPromptFailures(
+                in: chain,
+                manifestID: manifest.id,
+                chainName: "required recovery follow-up smoke chain \(index + 1)"
+            ))
+            for prompt in duplicatePrompts(in: Array(chain.dropLast(2))) {
+                failures.append("\(manifest.id): required recovery follow-up smoke chain \(index + 1) repeats setup prompt: \(prompt)")
+            }
+        }
+        if !manifest.requiredRecoveryFollowUpSmokeChains.isEmpty,
+           manifest.representativeRoutedRecoveryFollowUpSmokeChains.isEmpty {
+            failures.append("\(manifest.id): missing representative routed recovery follow-up smoke chains.")
+        }
+        failures.append(contentsOf: duplicateChainFailures(
+            in: manifest.representativeRoutedRecoveryFollowUpSmokeChains,
+            manifestID: manifest.id,
+            fieldName: "representative routed recovery follow-up smoke chains"
+        ))
+        let requiredRecoveryChainKeys = Set(manifest.requiredRecoveryFollowUpSmokeChains.map(Self.normalizedChainKey))
+        for chain in manifest.representativeRoutedRecoveryFollowUpSmokeChains
+            where !requiredRecoveryChainKeys.contains(Self.normalizedChainKey(chain)) {
+            failures.append("\(manifest.id): representative routed recovery follow-up smoke chain is not declared by required recovery follow-up smoke chains: \(chain.joined(separator: " -> "))")
+        }
         for supportedFollowUp in manifest.supportedFollowUps
             where !acceptedSmokePrompts(in: manifest).contains(where: { smokePromptCovers($0, supportedFollowUp: supportedFollowUp) }) {
             failures.append("\(manifest.id): supported follow-up lacks accepted smoke coverage: \(supportedFollowUp).")
+        }
+        let representativePrompts = representativeAcceptedSmokePrompts(in: manifest)
+        for supportedFollowUp in manifest.supportedFollowUps
+            where !representativePrompts.contains(where: { smokePromptCovers($0, supportedFollowUp: supportedFollowUp) }) {
+            failures.append("\(manifest.id): supported follow-up lacks representative routed accepted smoke coverage: \(supportedFollowUp).")
         }
         let acceptedPrompts = acceptedSmokePrompts(in: manifest)
         for prompt in acceptedPrompts
@@ -805,7 +1904,9 @@ enum AmigaProgramFamilyPromotionAudit {
             failures.append("\(manifest.id): missing baseline verification gate: \(gate).")
         }
 
-        failures.append(contentsOf: firstShotPromptGateFailures(for: manifest))
+        var semanticCache = SemanticValidationCache()
+        var patchCache = FollowUpPatchOutcomeCache()
+        failures.append(contentsOf: firstShotPromptGateFailures(for: manifest, semanticCache: &semanticCache))
         failures.append(contentsOf: rejectedFirstShotPromptRoutingFailures(for: manifest))
 
         if shouldSkipArtifactAudit(for: manifest, after: failures) {
@@ -858,18 +1959,30 @@ enum AmigaProgramFamilyPromotionAudit {
             failures.append(contentsOf: firstShotFollowUpSmokeFailures(
                 for: manifest,
                 prompt: prompt,
-                source: match.source
+                source: match.source,
+                semanticCache: &semanticCache,
+                patchCache: &patchCache
             ))
         }
 
-        failures.append(contentsOf: followUpSmokeFailures(for: manifest, source: source))
-        failures.append(contentsOf: rejectedFollowUpSmokeFailures(for: manifest, source: source))
+        failures.append(contentsOf: followUpSmokeFailures(for: manifest, source: source, semanticCache: &semanticCache, patchCache: &patchCache))
+        failures.append(contentsOf: rejectedFollowUpSmokeFailures(for: manifest, source: source, patchCache: &patchCache))
+        failures.append(contentsOf: recoveryFollowUpSmokeFailures(for: manifest, source: source, patchCache: &patchCache))
+        failures.append(contentsOf: representativeRoutedFirstShotConversationFailures(for: manifest))
         failures.append(contentsOf: ignoredFollowUpSmokeFailures(for: manifest, source: source))
 
         return failures
     }
 
     private static func firstShotPromptGateFailures(for manifest: AmigaProgramFamilyManifest) -> [String] {
+        var semanticCache = SemanticValidationCache()
+        return firstShotPromptGateFailures(for: manifest, semanticCache: &semanticCache)
+    }
+
+    private static func firstShotPromptGateFailures(
+        for manifest: AmigaProgramFamilyManifest,
+        semanticCache: inout SemanticValidationCache
+    ) -> [String] {
         var failures: [String] = []
         for prompt in manifest.firstShotPromptExamples {
             guard let match = AssistantPromptTemplate.match(for: prompt) else {
@@ -905,7 +2018,7 @@ enum AmigaProgramFamilyPromotionAudit {
             }
             let matchVerifierFailures = AmigaProgramSourceVerifier.failures(in: match.source)
             failures.append(contentsOf: matchVerifierFailures.map { "\(manifest.id): first-shot prompt verifier failure for prompt \(prompt): \($0)" })
-            let semantic = AssemblySemanticValidator.validate(source: match.source, prompt: prompt)
+            let semantic = semanticCache.validate(source: match.source, prompt: prompt)
             if !semantic.passed {
                 failures.append("\(manifest.id): semantic gate failed for first-shot prompt \(prompt): \(semantic.summary)")
             }
@@ -958,6 +2071,11 @@ enum AmigaProgramFamilyPromotionAudit {
         ": rejected first-shot prompt examples at index",
         ": duplicate rejected first-shot prompt examples:",
         ": rejected first-shot prompt routed to manifest id:",
+        ": missing representative routed first-shot prompt examples.",
+        ": blank representative routed first-shot prompt examples",
+        ": representative routed first-shot prompt examples at index",
+        ": duplicate representative routed first-shot prompt examples:",
+        ": representative routed first-shot prompt is not declared by first-shot prompt examples:",
         ": missing supported follow-up declarations.",
         ": blank supported follow-up declarations",
         ": supported follow-up declarations at index",
@@ -970,9 +2088,18 @@ enum AmigaProgramFamilyPromotionAudit {
         ": missing required follow-up smoke chains.",
         ": duplicate required follow-up smoke chains:",
         ": required follow-up smoke chain ",
+        ": missing representative routed follow-up smoke chains.",
+        ": duplicate representative routed follow-up smoke chains:",
+        ": representative routed follow-up smoke chain is not declared by required follow-up smoke chains:",
         ": missing required rejected follow-up smoke chains.",
         ": duplicate required rejected follow-up smoke chains:",
         ": required rejected follow-up smoke chain ",
+        ": duplicate required recovery follow-up smoke chains:",
+        ": required recovery follow-up smoke chain ",
+        ": missing representative routed recovery follow-up smoke chains.",
+        ": duplicate representative routed recovery follow-up smoke chains:",
+        ": representative routed recovery follow-up smoke chain is not declared by required recovery follow-up smoke chains:",
+        ": supported follow-up lacks representative routed accepted smoke coverage:",
         ": missing required rejected follow-up smoke prompts.",
         ": blank required rejected follow-up smoke prompts",
         ": required rejected follow-up smoke prompts at index",
@@ -998,11 +2125,328 @@ enum AmigaProgramFamilyPromotionAudit {
         prompt: String,
         source: String
     ) -> [String] {
-        let failures = followUpSmokeFailures(for: manifest, source: source) +
-            rejectedFollowUpSmokeFailures(for: manifest, source: source) +
-            ignoredFollowUpSmokeFailures(for: manifest, source: source)
+        var semanticCache = SemanticValidationCache()
+        return firstShotFollowUpSmokeFailures(
+            for: manifest,
+            prompt: prompt,
+            source: source,
+            semanticCache: &semanticCache
+        )
+    }
+
+    private static func firstShotFollowUpSmokeFailures(
+        for manifest: AmigaProgramFamilyManifest,
+        prompt: String,
+        source: String,
+        semanticCache: inout SemanticValidationCache
+    ) -> [String] {
+        var patchCache = FollowUpPatchOutcomeCache()
+        return firstShotFollowUpSmokeFailures(
+            for: manifest,
+            prompt: prompt,
+            source: source,
+            semanticCache: &semanticCache,
+            patchCache: &patchCache
+        )
+    }
+
+    private static func firstShotFollowUpSmokeFailures(
+        for manifest: AmigaProgramFamilyManifest,
+        prompt: String,
+        source: String,
+        semanticCache: inout SemanticValidationCache,
+        patchCache: inout FollowUpPatchOutcomeCache
+    ) -> [String] {
+        let failures = followUpSmokeFailures(for: manifest, source: source, semanticCache: &semanticCache, patchCache: &patchCache) +
+            rejectedFollowUpSmokeFailures(for: manifest, source: source, patchCache: &patchCache) +
+            recoveryFollowUpSmokeFailures(for: manifest, source: source, patchCache: &patchCache) +
+            ignoredFollowUpSmokeFailures(for: manifest, source: source, patchCache: &patchCache)
         return failures.map {
             "\(manifest.id): first-shot prompt follow-up smoke failure for prompt \(prompt): \($0)"
+        }
+    }
+
+    static func representativeRoutedFirstShotConversationFailures(
+        for manifest: AmigaProgramFamilyManifest
+    ) -> [String] {
+        do {
+            let eventFailures = try representativeRoutedConversationEventFailures(for: manifest)
+            if !eventFailures.isEmpty {
+                return contextualRepresentativeRoutedFirstShotConversationFailures(
+                    manifestID: manifest.id,
+                    failures: eventFailures
+                )
+            }
+            return []
+        } catch AmigaProgramPatchError.verificationFailed(let failures) {
+            return contextualRepresentativeRoutedFirstShotConversationFailures(
+                manifestID: manifest.id,
+                failures: failures
+            )
+        } catch {
+            return [
+                "\(manifest.id): representative routed first-shot conversation failed: \(error.localizedDescription)"
+            ]
+        }
+    }
+
+    static func representativeRoutedConversationEventFailures(
+        for manifest: AmigaProgramFamilyManifest
+    ) throws -> [String] {
+        try representativeRoutedFollowUpConversationEventFailures(for: manifest) +
+            representativeRoutedRecoveryConversationEventFailures(for: manifest)
+    }
+
+    static func representativeRoutedFollowUpConversationEventFailures(
+        for manifest: AmigaProgramFamilyManifest
+    ) throws -> [String] {
+        let declarationFailures = representativeRoutedDeclarationFailures(for: manifest)
+        if !declarationFailures.isEmpty {
+            throw AmigaProgramPatchError.verificationFailed(declarationFailures)
+        }
+
+        return try manifest.representativeRoutedFirstShotPromptExamples.flatMap { firstShotPrompt in
+            try manifest.representativeRoutedFollowUpSmokeChains.flatMap { followUpChain in
+                let match = try routedFirstShotMatch(for: manifest, prompt: firstShotPrompt)
+                guard let initialModel = AmigaSourceIndexer.index(match.source).model else {
+                    throw AmigaProgramPatchError.verificationFailed([
+                        "\(manifest.id): first-shot prompt did not embed an AmigaProgramModel for prompt: \(firstShotPrompt)"
+                    ])
+                }
+                let events = try routedFirstShotFollowUpSmokeChainEvents(
+                    for: manifest,
+                    firstShotPrompts: [firstShotPrompt],
+                    followUpChains: [followUpChain]
+                )
+                return followUpConversationEventInvariantFailures(
+                    events: events,
+                    manifestID: manifest.id,
+                    firstShotPrompt: firstShotPrompt,
+                    followUpChain: followUpChain,
+                    initialSource: match.source,
+                    initialModel: initialModel
+                )
+            }
+        }
+    }
+
+    static func followUpConversationEventInvariantFailures(
+        events: [RoutedFirstShotFollowUpEvent],
+        manifestID: String,
+        firstShotPrompt: String,
+        followUpChain: [String],
+        initialSource: String? = nil,
+        initialModel: AmigaProgramModel? = nil
+    ) -> [String] {
+        var failures: [String] = []
+        guard events.count == followUpChain.count else {
+            return [
+                "\(manifestID): representative follow-up event chain produced \(events.count) events for \(followUpChain.count) prompts: \(followUpChain.joined(separator: " -> "))"
+            ]
+        }
+
+        if let firstEvent = events.first {
+            if let initialSource,
+               firstEvent.sourceBefore != initialSource {
+                failures.append("\(manifestID): representative follow-up did not start from routed first-shot source: \(firstEvent.followUpPrompt)")
+            }
+            if let initialModel,
+               firstEvent.modelBefore != initialModel {
+                failures.append("\(manifestID): representative follow-up did not start from routed first-shot model: \(firstEvent.followUpPrompt)")
+            }
+        }
+
+        for (index, event) in events.enumerated() {
+            let expectedPrompt = followUpChain[index]
+            failures.append(contentsOf: eventEmbeddedModelFailures(
+                event,
+                manifestID: manifestID,
+                context: "representative follow-up event \(index + 1)",
+                prompt: expectedPrompt
+            ))
+            if event.firstShotPrompt != firstShotPrompt {
+                failures.append("\(manifestID): representative follow-up event \(index + 1) has first-shot prompt \(event.firstShotPrompt) instead of \(firstShotPrompt).")
+            }
+            if event.followUpPrompt != expectedPrompt {
+                failures.append("\(manifestID): representative follow-up event \(index + 1) has follow-up prompt \(event.followUpPrompt) instead of \(expectedPrompt).")
+            }
+            guard case .patched = event.outcome else {
+                failures.append("\(manifestID): representative follow-up event \(index + 1) rejected instead of patching: \(expectedPrompt)")
+                continue
+            }
+            if event.sourceBefore == event.sourceAfter {
+                failures.append("\(manifestID): representative follow-up patched event did not change source: \(expectedPrompt)")
+            }
+            if index > 0 {
+                let previous = events[index - 1]
+                if event.sourceBefore != previous.sourceAfter {
+                    failures.append("\(manifestID): representative follow-up resumed from a different source after \(previous.followUpPrompt): \(expectedPrompt)")
+                }
+                if event.modelBefore != previous.modelAfter {
+                    failures.append("\(manifestID): representative follow-up resumed from a different model after \(previous.followUpPrompt): \(expectedPrompt)")
+                }
+            }
+        }
+
+        return failures
+    }
+
+    static func representativeRoutedRecoveryConversationEventFailures(
+        for manifest: AmigaProgramFamilyManifest
+    ) throws -> [String] {
+        let declarationFailures = representativeRoutedDeclarationFailures(for: manifest)
+        if !declarationFailures.isEmpty {
+            throw AmigaProgramPatchError.verificationFailed(declarationFailures)
+        }
+
+        return try manifest.representativeRoutedFirstShotPromptExamples.flatMap { firstShotPrompt in
+            try manifest.representativeRoutedRecoveryFollowUpSmokeChains.flatMap { recoveryChain in
+                let match = try routedFirstShotMatch(for: manifest, prompt: firstShotPrompt)
+                guard let initialModel = AmigaSourceIndexer.index(match.source).model else {
+                    throw AmigaProgramPatchError.verificationFailed([
+                        "\(manifest.id): first-shot prompt did not embed an AmigaProgramModel for prompt: \(firstShotPrompt)"
+                    ])
+                }
+                let events = try routedFirstShotRecoveryFollowUpSmokeChainEvents(
+                    for: manifest,
+                    firstShotPrompts: [firstShotPrompt],
+                    recoveryChains: [recoveryChain]
+                )
+                return recoveryConversationEventInvariantFailures(
+                    events: events,
+                    manifestID: manifest.id,
+                    firstShotPrompt: firstShotPrompt,
+                    recoveryChain: recoveryChain,
+                    initialSource: match.source,
+                    initialModel: initialModel
+                )
+            }
+        }
+    }
+
+    static func recoveryConversationEventInvariantFailures(
+        events: [RoutedFirstShotFollowUpEvent],
+        manifestID: String,
+        firstShotPrompt: String,
+        recoveryChain: [String],
+        initialSource: String? = nil,
+        initialModel: AmigaProgramModel? = nil
+    ) -> [String] {
+        var failures: [String] = []
+        guard recoveryChain.count >= 3 else {
+            return [
+                "\(manifestID): representative recovery event chain must contain accepted setup, rejected follow-up, and recovery follow-up."
+            ]
+        }
+        guard events.count == recoveryChain.count else {
+            return [
+                "\(manifestID): representative recovery event chain produced \(events.count) events for \(recoveryChain.count) prompts: \(recoveryChain.joined(separator: " -> "))"
+            ]
+        }
+
+        if let firstEvent = events.first {
+            if let initialSource,
+               firstEvent.sourceBefore != initialSource {
+                failures.append("\(manifestID): representative recovery did not start from routed first-shot source: \(firstEvent.followUpPrompt)")
+            }
+            if let initialModel,
+               firstEvent.modelBefore != initialModel {
+                failures.append("\(manifestID): representative recovery did not start from routed first-shot model: \(firstEvent.followUpPrompt)")
+            }
+        }
+
+        let rejectedIndex = recoveryChain.count - 2
+        let recoveryIndex = recoveryChain.count - 1
+        for (index, event) in events.enumerated() {
+            let expectedPrompt = recoveryChain[index]
+            failures.append(contentsOf: eventEmbeddedModelFailures(
+                event,
+                manifestID: manifestID,
+                context: "representative recovery event \(index + 1)",
+                prompt: expectedPrompt
+            ))
+            if event.firstShotPrompt != firstShotPrompt {
+                failures.append("\(manifestID): representative recovery event \(index + 1) has first-shot prompt \(event.firstShotPrompt) instead of \(firstShotPrompt).")
+            }
+            if event.followUpPrompt != expectedPrompt {
+                failures.append("\(manifestID): representative recovery event \(index + 1) has follow-up prompt \(event.followUpPrompt) instead of \(expectedPrompt).")
+            }
+            if index == rejectedIndex {
+                guard case .rejected(let reasons) = event.outcome else {
+                    failures.append("\(manifestID): representative recovery event \(index + 1) patched instead of rejecting: \(expectedPrompt)")
+                    continue
+                }
+                let concreteReasons = reasons
+                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                    .filter { !$0.isEmpty }
+                if concreteReasons.isEmpty {
+                    failures.append("\(manifestID): representative recovery rejected event has no concrete rejection reason: \(expectedPrompt)")
+                }
+                if event.sourceBefore != event.sourceAfter {
+                    failures.append("\(manifestID): representative recovery rejected event mutated source: \(expectedPrompt)")
+                }
+                if event.modelBefore != event.modelAfter {
+                    failures.append("\(manifestID): representative recovery rejected event mutated model: \(expectedPrompt)")
+                }
+            } else {
+                guard case .patched = event.outcome else {
+                    failures.append("\(manifestID): representative recovery event \(index + 1) rejected instead of patching: \(expectedPrompt)")
+                    continue
+                }
+                if event.sourceBefore == event.sourceAfter {
+                    failures.append("\(manifestID): representative recovery patched event did not change source: \(expectedPrompt)")
+                }
+            }
+        }
+
+        if events.indices.contains(rejectedIndex),
+           events.indices.contains(recoveryIndex),
+           events[recoveryIndex].sourceBefore != events[rejectedIndex].sourceAfter {
+            failures.append("\(manifestID): representative recovery resumed from a different source after rejection: \(recoveryChain[recoveryIndex])")
+        }
+        if events.indices.contains(rejectedIndex),
+           events.indices.contains(recoveryIndex),
+           events[recoveryIndex].modelBefore != events[rejectedIndex].modelAfter {
+            failures.append("\(manifestID): representative recovery resumed from a different model after rejection: \(recoveryChain[recoveryIndex])")
+        }
+
+        return failures
+    }
+
+    private static func eventEmbeddedModelFailures(
+        _ event: RoutedFirstShotFollowUpEvent,
+        manifestID: String,
+        context: String,
+        prompt: String
+    ) -> [String] {
+        var failures: [String] = []
+        if let sourceBeforeModel = AmigaSourceIndexer.index(event.sourceBefore).model {
+            if sourceBeforeModel != event.modelBefore {
+                failures.append("\(manifestID): \(context) source-before embedded model does not match modelBefore: \(prompt)")
+            }
+        } else {
+            failures.append("\(manifestID): \(context) source-before does not embed an AmigaProgramModel: \(prompt)")
+        }
+        if let sourceAfterModel = AmigaSourceIndexer.index(event.sourceAfter).model {
+            if sourceAfterModel != event.modelAfter {
+                failures.append("\(manifestID): \(context) source-after embedded model does not match modelAfter: \(prompt)")
+            }
+        } else {
+            failures.append("\(manifestID): \(context) source-after does not embed an AmigaProgramModel: \(prompt)")
+        }
+        return failures
+    }
+
+    static func contextualRepresentativeRoutedFirstShotConversationFailures(
+        manifestID: String,
+        failures: [String]
+    ) -> [String] {
+        failures.map { failure in
+            let detailPrefix = "\(manifestID): "
+            let detail = failure.hasPrefix(detailPrefix)
+                ? String(failure.dropFirst(detailPrefix.count))
+                : failure
+            return "\(manifestID): representative routed first-shot conversation failure: \(detail)"
         }
     }
 
@@ -1271,38 +2715,21 @@ enum AmigaProgramFamilyPromotionAudit {
                 source: startingSource
             )
         }
-        return requiredPromptArtifacts + chainArtifacts + rejectedChainSetupArtifacts
+        let recoveryChainArtifacts = try manifest.requiredRecoveryFollowUpSmokeChains.flatMap { prompts in
+            try recoveryFollowUpSmokeSources(
+                for: manifest,
+                prompts: prompts,
+                source: startingSource
+            )
+        }
+        return requiredPromptArtifacts + chainArtifacts + rejectedChainSetupArtifacts + recoveryChainArtifacts
     }
 
     static func routedFirstShotAcceptedFollowUpSmokeSources(
         for manifest: AmigaProgramFamilyManifest
     ) throws -> [RoutedFirstShotFollowUpArtifact] {
         try manifest.firstShotPromptExamples.flatMap { firstShotPrompt in
-            guard let match = AssistantPromptTemplate.match(for: firstShotPrompt) else {
-                throw AmigaProgramPatchError.verificationFailed([
-                    "\(manifest.id): first-shot prompt did not route: \(firstShotPrompt)"
-                ])
-            }
-            guard match.id == manifest.id else {
-                throw AmigaProgramPatchError.verificationFailed([
-                    "\(manifest.id): first-shot prompt routed to \(match.id) instead of manifest id for prompt: \(firstShotPrompt)"
-                ])
-            }
-            guard let matchModel = AmigaSourceIndexer.index(match.source).model else {
-                throw AmigaProgramPatchError.verificationFailed([
-                    "\(manifest.id): first-shot prompt did not embed an AmigaProgramModel for prompt: \(firstShotPrompt)"
-                ])
-            }
-            guard matchModel.id == manifest.id else {
-                throw AmigaProgramPatchError.verificationFailed([
-                    "\(manifest.id): first-shot prompt embedded model id \(matchModel.id) instead of manifest id for prompt: \(firstShotPrompt)"
-                ])
-            }
-            guard matchModel.kind == manifest.kind else {
-                throw AmigaProgramPatchError.verificationFailed([
-                    "\(manifest.id): first-shot prompt embedded model kind \(matchModel.kind.rawValue) instead of \(manifest.kind.rawValue) for prompt: \(firstShotPrompt)"
-                ])
-            }
+            let match = try routedFirstShotMatch(for: manifest, prompt: firstShotPrompt)
             return try acceptedFollowUpSmokeSources(
                 for: manifest,
                 source: match.source
@@ -1315,6 +2742,281 @@ enum AmigaProgramFamilyPromotionAudit {
                 )
             }
         }
+    }
+
+    static func routedFirstShotFollowUpSmokeChainSources(
+        for manifest: AmigaProgramFamilyManifest,
+        firstShotPrompts selectedFirstShotPrompts: [String],
+        followUpChains selectedFollowUpChains: [[String]]
+    ) throws -> [RoutedFirstShotFollowUpArtifact] {
+        try assertDeclaredFirstShotPrompts(
+            selectedFirstShotPrompts,
+            manifest: manifest,
+            context: "representative routed first-shot prompt"
+        )
+        try assertDeclaredChains(
+            selectedFollowUpChains,
+            declaredChains: manifest.requiredFollowUpSmokeChains,
+            manifest: manifest,
+            context: "representative routed first-shot follow-up chain"
+        )
+
+        return try selectedFirstShotPrompts.flatMap { firstShotPrompt in
+            let match = try routedFirstShotMatch(for: manifest, prompt: firstShotPrompt)
+            return try selectedFollowUpChains.flatMap { followUpChain in
+                try followUpSmokeSources(
+                    for: manifest,
+                    prompts: followUpChain,
+                    source: match.source
+                ).map { artifact in
+                    RoutedFirstShotFollowUpArtifact(
+                        firstShotPrompt: firstShotPrompt,
+                        followUpPrompt: artifact.prompt,
+                        source: artifact.source,
+                        model: artifact.model
+                    )
+                }
+            }
+        }
+    }
+
+    static func routedFirstShotFollowUpSmokeChainEvents(
+        for manifest: AmigaProgramFamilyManifest,
+        firstShotPrompts selectedFirstShotPrompts: [String],
+        followUpChains selectedFollowUpChains: [[String]]
+    ) throws -> [RoutedFirstShotFollowUpEvent] {
+        try assertDeclaredFirstShotPrompts(
+            selectedFirstShotPrompts,
+            manifest: manifest,
+            context: "representative routed first-shot prompt"
+        )
+        try assertDeclaredChains(
+            selectedFollowUpChains,
+            declaredChains: manifest.requiredFollowUpSmokeChains,
+            manifest: manifest,
+            context: "representative routed first-shot follow-up chain"
+        )
+
+        return try selectedFirstShotPrompts.flatMap { firstShotPrompt in
+            let match = try routedFirstShotMatch(for: manifest, prompt: firstShotPrompt)
+            return try selectedFollowUpChains.flatMap { followUpChain in
+                try followUpSmokeEvents(
+                    for: manifest,
+                    firstShotPrompt: firstShotPrompt,
+                    prompts: followUpChain,
+                    source: match.source
+                )
+            }
+        }
+    }
+
+    static func routedFirstShotRecoveryFollowUpSmokeChainSources(
+        for manifest: AmigaProgramFamilyManifest,
+        firstShotPrompts selectedFirstShotPrompts: [String],
+        recoveryChains selectedRecoveryChains: [[String]]
+    ) throws -> [RoutedFirstShotFollowUpArtifact] {
+        try assertDeclaredFirstShotPrompts(
+            selectedFirstShotPrompts,
+            manifest: manifest,
+            context: "representative routed first-shot prompt"
+        )
+        try assertDeclaredChains(
+            selectedRecoveryChains,
+            declaredChains: manifest.requiredRecoveryFollowUpSmokeChains,
+            manifest: manifest,
+            context: "representative routed first-shot recovery chain"
+        )
+
+        return try selectedFirstShotPrompts.flatMap { firstShotPrompt in
+            let match = try routedFirstShotMatch(for: manifest, prompt: firstShotPrompt)
+            return try selectedRecoveryChains.flatMap { recoveryChain in
+                try recoveryFollowUpSmokeSources(
+                    for: manifest,
+                    prompts: recoveryChain,
+                    source: match.source
+                ).map { artifact in
+                    RoutedFirstShotFollowUpArtifact(
+                        firstShotPrompt: firstShotPrompt,
+                        followUpPrompt: artifact.prompt,
+                        source: artifact.source,
+                        model: artifact.model
+                    )
+                }
+            }
+        }
+    }
+
+    static func routedFirstShotRecoveryFollowUpSmokeChainEvents(
+        for manifest: AmigaProgramFamilyManifest,
+        firstShotPrompts selectedFirstShotPrompts: [String],
+        recoveryChains selectedRecoveryChains: [[String]]
+    ) throws -> [RoutedFirstShotFollowUpEvent] {
+        try assertDeclaredFirstShotPrompts(
+            selectedFirstShotPrompts,
+            manifest: manifest,
+            context: "representative routed first-shot prompt"
+        )
+        try assertDeclaredChains(
+            selectedRecoveryChains,
+            declaredChains: manifest.requiredRecoveryFollowUpSmokeChains,
+            manifest: manifest,
+            context: "representative routed first-shot recovery chain"
+        )
+
+        return try selectedFirstShotPrompts.flatMap { firstShotPrompt in
+            let match = try routedFirstShotMatch(for: manifest, prompt: firstShotPrompt)
+            return try selectedRecoveryChains.flatMap { recoveryChain in
+                try recoveryFollowUpSmokeEvents(
+                    for: manifest,
+                    firstShotPrompt: firstShotPrompt,
+                    prompts: recoveryChain,
+                    source: match.source
+                )
+            }
+        }
+    }
+
+    static func representativeRoutedFirstShotFollowUpArtifacts(
+        for manifest: AmigaProgramFamilyManifest
+    ) throws -> [RoutedFirstShotFollowUpArtifact] {
+        try representativeRoutedFirstShotConversationArtifactChains(for: manifest).map { chain in
+            try finalRepresentativeArtifact(
+                from: chain,
+                manifest: manifest,
+                context: "representative routed conversation chain"
+            )
+        }
+    }
+
+    static func representativeRoutedFirstShotConversationArtifacts(
+        for manifest: AmigaProgramFamilyManifest
+    ) throws -> [RoutedFirstShotFollowUpArtifact] {
+        try representativeRoutedFirstShotConversationArtifactChains(for: manifest).flatMap { $0 }
+    }
+
+    private static func representativeRoutedFirstShotConversationArtifactChains(
+        for manifest: AmigaProgramFamilyManifest
+    ) throws -> [[RoutedFirstShotFollowUpArtifact]] {
+        let firstShotPrompts = manifest.representativeRoutedFirstShotPromptExamples
+        let declarationFailures = representativeRoutedDeclarationFailures(for: manifest)
+        if !declarationFailures.isEmpty {
+            throw AmigaProgramPatchError.verificationFailed(declarationFailures)
+        }
+
+        let followUpArtifacts = try manifest.representativeRoutedFollowUpSmokeChains.map { chain in
+            try routedFirstShotFollowUpSmokeChainSources(
+                for: manifest,
+                firstShotPrompts: firstShotPrompts,
+                followUpChains: [chain]
+            )
+        }
+        let recoveryArtifacts = try manifest.representativeRoutedRecoveryFollowUpSmokeChains.map { chain in
+            try routedFirstShotRecoveryFollowUpSmokeChainSources(
+                for: manifest,
+                firstShotPrompts: firstShotPrompts,
+                recoveryChains: [chain]
+            )
+        }
+        return followUpArtifacts + recoveryArtifacts
+    }
+
+    private static func representativeRoutedDeclarationFailures(
+        for manifest: AmigaProgramFamilyManifest
+    ) -> [String] {
+        var declarationFailures: [String] = []
+        if manifest.representativeRoutedFirstShotPromptExamples.isEmpty {
+            declarationFailures.append("\(manifest.id): missing representative routed first-shot prompt examples.")
+        }
+        if manifest.representativeRoutedFollowUpSmokeChains.isEmpty {
+            declarationFailures.append("\(manifest.id): missing representative routed follow-up smoke chains.")
+        }
+        if !manifest.requiredRecoveryFollowUpSmokeChains.isEmpty,
+           manifest.representativeRoutedRecoveryFollowUpSmokeChains.isEmpty {
+            declarationFailures.append("\(manifest.id): missing representative routed recovery follow-up smoke chains.")
+        }
+        return declarationFailures
+    }
+
+    private static func finalRepresentativeArtifact(
+        from artifacts: [RoutedFirstShotFollowUpArtifact],
+        manifest: AmigaProgramFamilyManifest,
+        context: String
+    ) throws -> RoutedFirstShotFollowUpArtifact {
+        guard let finalArtifact = artifacts.last else {
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): \(context) produced no artifacts."
+            ])
+        }
+        return finalArtifact
+    }
+
+    private static func assertDeclaredFirstShotPrompts(
+        _ selectedFirstShotPrompts: [String],
+        manifest: AmigaProgramFamilyManifest,
+        context: String
+    ) throws {
+        let declaredFirstShotPromptKeys = Set(manifest.firstShotPromptExamples.map(Self.normalizedPromptKey))
+        let undeclaredFirstShotPrompts = selectedFirstShotPrompts.filter {
+            !declaredFirstShotPromptKeys.contains(Self.normalizedPromptKey($0))
+        }
+        guard undeclaredFirstShotPrompts.isEmpty else {
+            throw AmigaProgramPatchError.verificationFailed(
+                undeclaredFirstShotPrompts.map {
+                    "\(manifest.id): \(context) is not declared by the manifest: \($0)"
+                }
+            )
+        }
+    }
+
+    private static func assertDeclaredChains(
+        _ selectedChains: [[String]],
+        declaredChains: [[String]],
+        manifest: AmigaProgramFamilyManifest,
+        context: String
+    ) throws {
+        let declaredChainKeys = Set(declaredChains.map(Self.normalizedChainKey))
+        let undeclaredChains = selectedChains.filter {
+            !declaredChainKeys.contains(Self.normalizedChainKey($0))
+        }
+        guard undeclaredChains.isEmpty else {
+            throw AmigaProgramPatchError.verificationFailed(
+                undeclaredChains.map {
+                    "\(manifest.id): \(context) is not declared by the manifest: \($0.joined(separator: " -> "))"
+                }
+            )
+        }
+    }
+
+    private static func routedFirstShotMatch(
+        for manifest: AmigaProgramFamilyManifest,
+        prompt firstShotPrompt: String
+    ) throws -> AssistantPromptTemplateMatch {
+        guard let match = AssistantPromptTemplate.match(for: firstShotPrompt) else {
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): first-shot prompt did not route: \(firstShotPrompt)"
+            ])
+        }
+        guard match.id == manifest.id else {
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): first-shot prompt routed to \(match.id) instead of manifest id for prompt: \(firstShotPrompt)"
+            ])
+        }
+        guard let matchModel = AmigaSourceIndexer.index(match.source).model else {
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): first-shot prompt did not embed an AmigaProgramModel for prompt: \(firstShotPrompt)"
+            ])
+        }
+        guard matchModel.id == manifest.id else {
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): first-shot prompt embedded model id \(matchModel.id) instead of manifest id for prompt: \(firstShotPrompt)"
+            ])
+        }
+        guard matchModel.kind == manifest.kind else {
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): first-shot prompt embedded model kind \(matchModel.kind.rawValue) instead of \(manifest.kind.rawValue) for prompt: \(firstShotPrompt)"
+            ])
+        }
+        return match
     }
 
     private static func followUpSmokeSources(
@@ -1360,6 +3062,356 @@ enum AmigaProgramFamilyPromotionAudit {
                 artifacts.append((prompt: prompt, source: result.source, model: result.model))
                 currentSource = result.source
             }
+        }
+
+        return artifacts
+    }
+
+    private static func followUpSmokeSources(
+        for manifest: AmigaProgramFamilyManifest,
+        prompts: [String],
+        source startingSource: String? = nil,
+        patchCache: inout FollowUpPatchOutcomeCache
+    ) throws -> [(prompt: String, source: String, model: AmigaProgramModel)] {
+        let source: String
+        if let startingSource {
+            source = startingSource
+        } else {
+            source = try verifiedSource(for: manifest)
+        }
+
+        var artifacts: [(prompt: String, source: String, model: AmigaProgramModel)] = []
+        var currentSource = source
+
+        for prompt in prompts {
+            switch patchCache.outcome(prompt: prompt, source: currentSource) {
+            case .notRecognized:
+                throw AmigaProgramPatchError.verificationFailed([
+                    "\(manifest.id): required follow-up smoke prompt was not recognized: \(prompt)"
+                ])
+            case .rejected(let reasons):
+                throw AmigaProgramPatchError.verificationFailed(
+                    unexpectedRejectionFailures(
+                        reasons,
+                        manifest: manifest,
+                        context: "required follow-up smoke prompt",
+                        prompt: prompt
+                    )
+                )
+            case .patched(let result):
+                let failures = acceptedFollowUpArtifactFailures(
+                    manifest: manifest,
+                    prompt: prompt,
+                    previousSource: currentSource,
+                    result: result
+                )
+                if !failures.isEmpty {
+                    throw AmigaProgramPatchError.verificationFailed(failures)
+                }
+                artifacts.append((prompt: prompt, source: result.source, model: result.model))
+                currentSource = result.source
+            }
+        }
+
+        return artifacts
+    }
+
+    private static func modelInSource(
+        _ source: String,
+        manifest: AmigaProgramFamilyManifest,
+        context: String,
+        prompt: String
+    ) throws -> AmigaProgramModel {
+        guard let model = AmigaSourceIndexer.index(source).model else {
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): \(context) source does not embed an AmigaProgramModel for prompt: \(prompt)"
+            ])
+        }
+        guard model.id == manifest.id else {
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): \(context) source embedded model id \(model.id) instead of manifest id for prompt: \(prompt)"
+            ])
+        }
+        return model
+    }
+
+    private static func followUpSmokeEvents(
+        for manifest: AmigaProgramFamilyManifest,
+        firstShotPrompt: String,
+        prompts: [String],
+        source startingSource: String? = nil
+    ) throws -> [RoutedFirstShotFollowUpEvent] {
+        var currentSource = try startingSource ?? verifiedSource(for: manifest)
+        var events: [RoutedFirstShotFollowUpEvent] = []
+
+        for prompt in prompts {
+            let modelBefore = try modelInSource(
+                currentSource,
+                manifest: manifest,
+                context: "required follow-up smoke prompt",
+                prompt: prompt
+            )
+            switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: currentSource) {
+            case .notRecognized:
+                throw AmigaProgramPatchError.verificationFailed([
+                    "\(manifest.id): required follow-up smoke prompt was not recognized: \(prompt)"
+                ])
+            case .rejected(let reasons):
+                throw AmigaProgramPatchError.verificationFailed(
+                    unexpectedRejectionFailures(
+                        reasons,
+                        manifest: manifest,
+                        context: "required follow-up smoke prompt",
+                        prompt: prompt
+                    )
+                )
+            case .patched(let result):
+                let failures = acceptedFollowUpArtifactFailures(
+                    manifest: manifest,
+                    prompt: prompt,
+                    previousSource: currentSource,
+                    result: result
+                )
+                if !failures.isEmpty {
+                    throw AmigaProgramPatchError.verificationFailed(failures)
+                }
+                events.append(RoutedFirstShotFollowUpEvent(
+                    firstShotPrompt: firstShotPrompt,
+                    followUpPrompt: prompt,
+                    sourceBefore: currentSource,
+                    sourceAfter: result.source,
+                    modelBefore: modelBefore,
+                    modelAfter: result.model,
+                    outcome: .patched
+                ))
+                currentSource = result.source
+            }
+        }
+
+        return events
+    }
+
+    private static func recoveryFollowUpSmokeEvents(
+        for manifest: AmigaProgramFamilyManifest,
+        firstShotPrompt: String,
+        prompts: [String],
+        source startingSource: String? = nil
+    ) throws -> [RoutedFirstShotFollowUpEvent] {
+        guard prompts.count >= 3 else {
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): required recovery follow-up smoke chain must contain accepted setup, rejected follow-up, and recovery follow-up."
+            ])
+        }
+
+        let setupPrompts = Array(prompts.dropLast(2))
+        let rejectedPrompt = prompts[prompts.count - 2]
+        let recoveryPrompt = prompts[prompts.count - 1]
+        var currentSource = try startingSource ?? verifiedSource(for: manifest)
+        var events: [RoutedFirstShotFollowUpEvent] = []
+
+        for prompt in setupPrompts {
+            let modelBefore = try modelInSource(currentSource, manifest: manifest, context: "required recovery follow-up smoke chain setup prompt", prompt: prompt)
+            switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: currentSource) {
+            case .notRecognized:
+                throw AmigaProgramPatchError.verificationFailed([
+                    "\(manifest.id): required follow-up smoke prompt was not recognized: \(prompt)"
+                ])
+            case .rejected(let reasons):
+                throw AmigaProgramPatchError.verificationFailed(
+                    unexpectedRejectionFailures(
+                        reasons,
+                        manifest: manifest,
+                        context: "required follow-up smoke prompt",
+                        prompt: prompt
+                    )
+                )
+            case .patched(let result):
+                let failures = acceptedFollowUpArtifactFailures(
+                    manifest: manifest,
+                    prompt: prompt,
+                    previousSource: currentSource,
+                    result: result
+                )
+                if !failures.isEmpty {
+                    throw AmigaProgramPatchError.verificationFailed(failures)
+                }
+                events.append(RoutedFirstShotFollowUpEvent(
+                    firstShotPrompt: firstShotPrompt,
+                    followUpPrompt: prompt,
+                    sourceBefore: currentSource,
+                    sourceAfter: result.source,
+                    modelBefore: modelBefore,
+                    modelAfter: result.model,
+                    outcome: .patched
+                ))
+                currentSource = result.source
+            }
+        }
+
+        let modelBeforeRejection = try modelInSource(
+            currentSource,
+            manifest: manifest,
+            context: "required recovery follow-up smoke chain rejected prompt",
+            prompt: rejectedPrompt
+        )
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: rejectedPrompt, source: currentSource) {
+        case .rejected(let reasons):
+            let failures = concreteRejectionReasonFailures(
+                reasons,
+                manifest: manifest,
+                context: "required recovery follow-up smoke chain rejected prompt",
+                prompt: rejectedPrompt
+            )
+            if !failures.isEmpty {
+                throw AmigaProgramPatchError.verificationFailed(failures)
+            }
+            events.append(RoutedFirstShotFollowUpEvent(
+                firstShotPrompt: firstShotPrompt,
+                followUpPrompt: rejectedPrompt,
+                sourceBefore: currentSource,
+                sourceAfter: currentSource,
+                modelBefore: modelBeforeRejection,
+                modelAfter: modelBeforeRejection,
+                outcome: .rejected(reasons)
+            ))
+        case .notRecognized:
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): required recovery follow-up smoke chain rejected prompt was not recognized after setup: \(rejectedPrompt)"
+            ])
+        case .patched:
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): required recovery follow-up smoke chain rejected prompt patched instead of rejecting after setup: \(rejectedPrompt)"
+            ])
+        }
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: recoveryPrompt, source: currentSource) {
+        case .notRecognized:
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): required recovery follow-up smoke chain recovery prompt was not recognized after rejection: \(recoveryPrompt)"
+            ])
+        case .rejected(let reasons):
+            throw AmigaProgramPatchError.verificationFailed(
+                unexpectedRejectionFailures(
+                    reasons,
+                    manifest: manifest,
+                    context: "required recovery follow-up smoke chain recovery prompt",
+                    prompt: recoveryPrompt
+                )
+            )
+        case .patched(let result):
+            let failures = acceptedFollowUpArtifactFailures(
+                manifest: manifest,
+                prompt: recoveryPrompt,
+                previousSource: currentSource,
+                result: result
+            )
+            if !failures.isEmpty {
+                throw AmigaProgramPatchError.verificationFailed(failures)
+            }
+            events.append(RoutedFirstShotFollowUpEvent(
+                firstShotPrompt: firstShotPrompt,
+                followUpPrompt: recoveryPrompt,
+                sourceBefore: currentSource,
+                sourceAfter: result.source,
+                modelBefore: modelBeforeRejection,
+                modelAfter: result.model,
+                outcome: .patched
+            ))
+        }
+
+        return events
+    }
+
+    private static func recoveryFollowUpSmokeSources(
+        for manifest: AmigaProgramFamilyManifest,
+        prompts: [String],
+        source startingSource: String? = nil
+    ) throws -> [(prompt: String, source: String, model: AmigaProgramModel)] {
+        var patchCache = FollowUpPatchOutcomeCache()
+        return try recoveryFollowUpSmokeSources(
+            for: manifest,
+            prompts: prompts,
+            source: startingSource,
+            patchCache: &patchCache
+        )
+    }
+
+    private static func recoveryFollowUpSmokeSources(
+        for manifest: AmigaProgramFamilyManifest,
+        prompts: [String],
+        source startingSource: String? = nil,
+        patchCache: inout FollowUpPatchOutcomeCache
+    ) throws -> [(prompt: String, source: String, model: AmigaProgramModel)] {
+        guard prompts.count >= 3 else {
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): required recovery follow-up smoke chain must contain accepted setup, rejected follow-up, and recovery follow-up."
+            ])
+        }
+
+        let setupPrompts = Array(prompts.dropLast(2))
+        let rejectedPrompt = prompts[prompts.count - 2]
+        let recoveryPrompt = prompts[prompts.count - 1]
+        var artifacts = try followUpSmokeSources(
+            for: manifest,
+            prompts: setupPrompts,
+            source: startingSource,
+            patchCache: &patchCache
+        )
+        let sourceBeforeRejection: String
+        if let lastArtifact = artifacts.last {
+            sourceBeforeRejection = lastArtifact.source
+        } else if let startingSource {
+            sourceBeforeRejection = startingSource
+        } else {
+            sourceBeforeRejection = try verifiedSource(for: manifest)
+        }
+
+        switch patchCache.outcome(prompt: rejectedPrompt, source: sourceBeforeRejection) {
+        case .rejected(let reasons):
+            let failures = concreteRejectionReasonFailures(
+                reasons,
+                manifest: manifest,
+                context: "required recovery follow-up smoke chain rejected prompt",
+                prompt: rejectedPrompt
+            )
+            if !failures.isEmpty {
+                throw AmigaProgramPatchError.verificationFailed(failures)
+            }
+        case .notRecognized:
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): required recovery follow-up smoke chain rejected prompt was not recognized after setup: \(rejectedPrompt)"
+            ])
+        case .patched:
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): required recovery follow-up smoke chain rejected prompt patched instead of rejecting after setup: \(rejectedPrompt)"
+            ])
+        }
+
+        switch patchCache.outcome(prompt: recoveryPrompt, source: sourceBeforeRejection) {
+        case .notRecognized:
+            throw AmigaProgramPatchError.verificationFailed([
+                "\(manifest.id): required recovery follow-up smoke chain recovery prompt was not recognized after rejection: \(recoveryPrompt)"
+            ])
+        case .rejected(let reasons):
+            throw AmigaProgramPatchError.verificationFailed(
+                unexpectedRejectionFailures(
+                    reasons,
+                    manifest: manifest,
+                    context: "required recovery follow-up smoke chain recovery prompt",
+                    prompt: recoveryPrompt
+                )
+            )
+        case .patched(let result):
+            let failures = acceptedFollowUpArtifactFailures(
+                manifest: manifest,
+                prompt: recoveryPrompt,
+                previousSource: sourceBeforeRejection,
+                result: result
+            )
+            if !failures.isEmpty {
+                throw AmigaProgramPatchError.verificationFailed(failures)
+            }
+            artifacts.append((prompt: recoveryPrompt, source: result.source, model: result.model))
         }
 
         return artifacts
@@ -1428,11 +3480,33 @@ enum AmigaProgramFamilyPromotionAudit {
     }
 
     static func followUpSmokeFailures(for manifest: AmigaProgramFamilyManifest, source: String) -> [String] {
+        var semanticCache = SemanticValidationCache()
+        var patchCache = FollowUpPatchOutcomeCache()
+        return followUpSmokeFailures(for: manifest, source: source, semanticCache: &semanticCache, patchCache: &patchCache)
+    }
+
+    private static func followUpSmokeFailures(
+        for manifest: AmigaProgramFamilyManifest,
+        source: String,
+        semanticCache: inout SemanticValidationCache
+    ) -> [String] {
+        var patchCache = FollowUpPatchOutcomeCache()
+        return followUpSmokeFailures(for: manifest, source: source, semanticCache: &semanticCache, patchCache: &patchCache)
+    }
+
+    private static func followUpSmokeFailures(
+        for manifest: AmigaProgramFamilyManifest,
+        source: String,
+        semanticCache: inout SemanticValidationCache,
+        patchCache: inout FollowUpPatchOutcomeCache
+    ) -> [String] {
         var failures = followUpSmokeFailures(
             for: manifest,
             source: source,
             prompts: manifest.requiredFollowUpSmokePrompts,
-            chainName: "required prompt chain"
+            chainName: "required prompt chain",
+            semanticCache: &semanticCache,
+            patchCache: &patchCache
         )
 
         for (index, prompts) in manifest.requiredFollowUpSmokeChains.enumerated() {
@@ -1440,7 +3514,9 @@ enum AmigaProgramFamilyPromotionAudit {
                 for: manifest,
                 source: source,
                 prompts: prompts,
-                chainName: "conversation chain \(index + 1)"
+                chainName: "conversation chain \(index + 1)",
+                semanticCache: &semanticCache,
+                patchCache: &patchCache
             ))
         }
 
@@ -1448,10 +3524,19 @@ enum AmigaProgramFamilyPromotionAudit {
     }
 
     static func rejectedFollowUpSmokeFailures(for manifest: AmigaProgramFamilyManifest, source: String) -> [String] {
+        var patchCache = FollowUpPatchOutcomeCache()
+        return rejectedFollowUpSmokeFailures(for: manifest, source: source, patchCache: &patchCache)
+    }
+
+    private static func rejectedFollowUpSmokeFailures(
+        for manifest: AmigaProgramFamilyManifest,
+        source: String,
+        patchCache: inout FollowUpPatchOutcomeCache
+    ) -> [String] {
         var failures: [String] = []
 
         for prompt in manifest.requiredRejectedFollowUpSmokePrompts {
-            switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: source) {
+            switch patchCache.outcome(prompt: prompt, source: source) {
             case .rejected(let reasons):
                 failures.append(contentsOf: concreteRejectionReasonFailures(
                     reasons,
@@ -1470,18 +3555,55 @@ enum AmigaProgramFamilyPromotionAudit {
                 for: manifest,
                 source: source,
                 prompts: chain,
-                chainName: "required rejected follow-up smoke chain \(index + 1)"
+                chainName: "required rejected follow-up smoke chain \(index + 1)",
+                patchCache: &patchCache
             ))
         }
 
         return failures
     }
 
+    static func recoveryFollowUpSmokeFailures(for manifest: AmigaProgramFamilyManifest, source: String) -> [String] {
+        var patchCache = FollowUpPatchOutcomeCache()
+        return recoveryFollowUpSmokeFailures(for: manifest, source: source, patchCache: &patchCache)
+    }
+
+    private static func recoveryFollowUpSmokeFailures(
+        for manifest: AmigaProgramFamilyManifest,
+        source: String,
+        patchCache: inout FollowUpPatchOutcomeCache
+    ) -> [String] {
+        manifest.requiredRecoveryFollowUpSmokeChains.enumerated().flatMap { index, chain -> [String] in
+            do {
+                _ = try recoveryFollowUpSmokeSources(
+                    for: manifest,
+                    prompts: chain,
+                    source: source,
+                    patchCache: &patchCache
+                )
+                return []
+            } catch AmigaProgramPatchError.verificationFailed(let failures) {
+                return failures
+            } catch {
+                return ["\(manifest.id): required recovery follow-up smoke chain \(index + 1) failed: \(error.localizedDescription)"]
+            }
+        }
+    }
+
     static func ignoredFollowUpSmokeFailures(for manifest: AmigaProgramFamilyManifest, source: String) -> [String] {
+        var patchCache = FollowUpPatchOutcomeCache()
+        return ignoredFollowUpSmokeFailures(for: manifest, source: source, patchCache: &patchCache)
+    }
+
+    private static func ignoredFollowUpSmokeFailures(
+        for manifest: AmigaProgramFamilyManifest,
+        source: String,
+        patchCache: inout FollowUpPatchOutcomeCache
+    ) -> [String] {
         var failures: [String] = []
 
         for prompt in manifest.requiredIgnoredFollowUpSmokePrompts {
-            switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: source) {
+            switch patchCache.outcome(prompt: prompt, source: source) {
             case .notRecognized:
                 break
             case .rejected(let reasons):
@@ -1536,14 +3658,32 @@ enum AmigaProgramFamilyPromotionAudit {
 
     private static func acceptedSmokePrompts(in manifest: AmigaProgramFamilyManifest) -> [String] {
         let rejectedChainSetupPrompts = manifest.requiredRejectedFollowUpSmokeChains.flatMap { $0.dropLast() }
+        let recoveryChainAcceptedPrompts = manifest.requiredRecoveryFollowUpSmokeChains.flatMap { chain -> [String] in
+            guard chain.count >= 3 else { return chain }
+            return Array(chain.dropLast(2)) + [chain[chain.count - 1]]
+        }
         return manifest.requiredFollowUpSmokePrompts +
             manifest.requiredFollowUpSmokeChains.flatMap { $0 } +
-            rejectedChainSetupPrompts
+            rejectedChainSetupPrompts +
+            recoveryChainAcceptedPrompts
+    }
+
+    private static func representativeAcceptedSmokePrompts(in manifest: AmigaProgramFamilyManifest) -> [String] {
+        let recoveryAcceptedPrompts = manifest.representativeRoutedRecoveryFollowUpSmokeChains.flatMap { chain -> [String] in
+            guard chain.count >= 3 else { return chain }
+            return Array(chain.dropLast(2)) + [chain[chain.count - 1]]
+        }
+        return manifest.representativeRoutedFollowUpSmokeChains.flatMap { $0 } +
+            recoveryAcceptedPrompts
     }
 
     private static func rejectedSmokePrompts(in manifest: AmigaProgramFamilyManifest) -> [String] {
-        manifest.requiredRejectedFollowUpSmokePrompts +
-            manifest.requiredRejectedFollowUpSmokeChains.compactMap(\.last)
+        let recoveryChainRejectedPrompts = manifest.requiredRecoveryFollowUpSmokeChains.compactMap { chain in
+            chain.count >= 2 ? chain[chain.count - 2] : nil
+        }
+        return manifest.requiredRejectedFollowUpSmokePrompts +
+            manifest.requiredRejectedFollowUpSmokeChains.compactMap(\.last) +
+            recoveryChainRejectedPrompts
     }
 
     private static func rejectedSmokePromptCovers(_ prompt: String, supportedFollowUp: String) -> Bool {
@@ -1604,6 +3744,82 @@ enum AmigaProgramFamilyPromotionAudit {
                     containsWord("caption", in: normalizedPrompt) ||
                     containsWord("title", in: normalizedPrompt) ||
                     containsWord("say", in: normalizedPrompt))
+        case "remove an added control":
+            return containsWord("remove", in: normalizedPrompt) ||
+                containsWord("delete", in: normalizedPrompt) ||
+                containsWord("drop", in: normalizedPrompt)
+        case "reorder controls":
+            return (containsWord("move", in: normalizedPrompt) ||
+                containsWord("put", in: normalizedPrompt) ||
+                containsWord("place", in: normalizedPrompt) ||
+                containsWord("shift", in: normalizedPrompt) ||
+                containsWord("bring", in: normalizedPrompt) ||
+                containsWord("reorder", in: normalizedPrompt)) &&
+                (containsWord("before", in: normalizedPrompt) || containsWord("after", in: normalizedPrompt))
+        case "change an added control behavior":
+            return (containsWord("make", in: normalizedPrompt) ||
+                containsWord("change", in: normalizedPrompt) ||
+                containsWord("switch", in: normalizedPrompt) ||
+                containsWord("convert", in: normalizedPrompt) ||
+                containsWord("turn", in: normalizedPrompt) ||
+                containsWord("set", in: normalizedPrompt)) &&
+                (containsWord("instead", in: normalizedPrompt) ||
+                    containsWord("to", in: normalizedPrompt) ||
+                    containsWord("into", in: normalizedPrompt) ||
+                    containsWord("as", in: normalizedPrompt))
+        case "change control bounds":
+            return (containsWord("bounds", in: normalizedPrompt) ||
+                containsWord("position", in: normalizedPrompt) ||
+                containsWord("resize", in: normalizedPrompt) ||
+                containsWord("size", in: normalizedPrompt) ||
+                containsWord("wide", in: normalizedPrompt) ||
+                containsWord("width", in: normalizedPrompt) ||
+                containsWord("height", in: normalizedPrompt) ||
+                containsWord("tall", in: normalizedPrompt) ||
+                containsWord("center", in: normalizedPrompt) ||
+                containsWord("centered", in: normalizedPrompt) ||
+                containsWord("wider", in: normalizedPrompt) ||
+                containsWord("narrower", in: normalizedPrompt) ||
+                containsWord("taller", in: normalizedPrompt) ||
+                containsWord("shorter", in: normalizedPrompt) ||
+                containsWord("bigger", in: normalizedPrompt) ||
+                containsWord("larger", in: normalizedPrompt) ||
+                containsWord("smaller", in: normalizedPrompt) ||
+                hasExplicitSizeSmokeSignal(in: normalizedPrompt) ||
+                hasRelativePositionSmokeSignal(in: normalizedPrompt) ||
+                hasRelativePlacementSmokeSignal(in: normalizedPrompt)) &&
+                (containsWord("set", in: normalizedPrompt) ||
+                    containsWord("change", in: normalizedPrompt) ||
+                    containsWord("move", in: normalizedPrompt) ||
+                    containsWord("place", in: normalizedPrompt) ||
+                    containsWord("put", in: normalizedPrompt) ||
+                    containsWord("make", in: normalizedPrompt) ||
+                    containsWord("center", in: normalizedPrompt) ||
+                    containsWord("centered", in: normalizedPrompt))
+        case "change playback period":
+            return containsWord("period", in: normalizedPrompt) &&
+                (containsWord("playback", in: normalizedPrompt) ||
+                    containsWord("audio", in: normalizedPrompt) ||
+                    containsWord("paula", in: normalizedPrompt) ||
+                    containsWord("aud0per", in: normalizedPrompt)) &&
+                (containsWord("set", in: normalizedPrompt) ||
+                    containsWord("change", in: normalizedPrompt) ||
+                    containsWord("update", in: normalizedPrompt) ||
+                    containsWord("adjust", in: normalizedPrompt) ||
+                    containsWord("make", in: normalizedPrompt))
+        case "change playback note":
+            return (containsWord("note", in: normalizedPrompt) ||
+                containsWord("pitch", in: normalizedPrompt)) &&
+                (containsWord("playback", in: normalizedPrompt) ||
+                    containsWord("audio", in: normalizedPrompt) ||
+                    containsWord("paula", in: normalizedPrompt) ||
+                    containsWord("mod", in: normalizedPrompt) ||
+                    containsWord("module", in: normalizedPrompt)) &&
+                (containsWord("set", in: normalizedPrompt) ||
+                    containsWord("change", in: normalizedPrompt) ||
+                    containsWord("update", in: normalizedPrompt) ||
+                    containsWord("adjust", in: normalizedPrompt) ||
+                    containsWord("make", in: normalizedPrompt))
         case "change volume step":
             return containsWord("volume", in: normalizedPrompt) &&
                 (containsWord("step", in: normalizedPrompt) ||
@@ -1623,6 +3839,31 @@ enum AmigaProgramFamilyPromotionAudit {
         default:
             return containsPhrase(supportedFollowUp, in: normalizedPrompt)
         }
+    }
+
+    private static func hasRelativePositionSmokeSignal(in normalizedPrompt: String) -> Bool {
+        guard containsWord("by", in: normalizedPrompt) else { return false }
+        return containsWord("left", in: normalizedPrompt) ||
+            containsWord("right", in: normalizedPrompt) ||
+            containsWord("up", in: normalizedPrompt) ||
+            containsWord("down", in: normalizedPrompt)
+    }
+
+    private static func hasExplicitSizeSmokeSignal(in normalizedPrompt: String) -> Bool {
+        guard let regex = try? NSRegularExpression(pattern: #"\b\d+\s*x\s*\d+\b"#) else {
+            return false
+        }
+        let range = NSRange(normalizedPrompt.startIndex..<normalizedPrompt.endIndex, in: normalizedPrompt)
+        return regex.firstMatch(in: normalizedPrompt, range: range) != nil
+    }
+
+    private static func hasRelativePlacementSmokeSignal(in normalizedPrompt: String) -> Bool {
+        containsWord("below", in: normalizedPrompt) ||
+            containsWord("under", in: normalizedPrompt) ||
+            containsWord("beneath", in: normalizedPrompt) ||
+            containsWord("above", in: normalizedPrompt) ||
+            containsPhrase("left of", in: normalizedPrompt) ||
+            containsPhrase("right of", in: normalizedPrompt)
     }
 
     private static func containsWord(_ word: String, in normalizedPrompt: String) -> Bool {
@@ -1651,6 +3892,23 @@ enum AmigaProgramFamilyPromotionAudit {
         prompts: [String],
         chainName: String
     ) -> [String] {
+        var patchCache = FollowUpPatchOutcomeCache()
+        return rejectedFollowUpSmokeChainFailures(
+            for: manifest,
+            source: source,
+            prompts: prompts,
+            chainName: chainName,
+            patchCache: &patchCache
+        )
+    }
+
+    private static func rejectedFollowUpSmokeChainFailures(
+        for manifest: AmigaProgramFamilyManifest,
+        source: String,
+        prompts: [String],
+        chainName: String,
+        patchCache: inout FollowUpPatchOutcomeCache
+    ) -> [String] {
         guard prompts.count >= 2 else { return [] }
 
         var failures: [String] = []
@@ -1660,7 +3918,7 @@ enum AmigaProgramFamilyPromotionAudit {
         let rejectedPrompt = prompts[prompts.count - 1]
 
         for prompt in acceptedSetupPrompts {
-            switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: currentSource) {
+            switch patchCache.outcome(prompt: prompt, source: currentSource) {
             case .notRecognized:
                 failures.append("\(manifest.id): \(chainName) setup prompt was not recognized: \(prompt)")
                 return failures
@@ -1726,7 +3984,7 @@ enum AmigaProgramFamilyPromotionAudit {
             }
         }
 
-        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: rejectedPrompt, source: currentSource) {
+        switch patchCache.outcome(prompt: rejectedPrompt, source: currentSource) {
         case .rejected(let reasons):
             failures.append(contentsOf: concreteRejectionReasonFailures(
                 reasons,
@@ -1749,12 +4007,48 @@ enum AmigaProgramFamilyPromotionAudit {
         prompts: [String],
         chainName: String
     ) -> [String] {
+        var semanticCache = SemanticValidationCache()
+        return followUpSmokeFailures(
+            for: manifest,
+            source: source,
+            prompts: prompts,
+            chainName: chainName,
+            semanticCache: &semanticCache
+        )
+    }
+
+    private static func followUpSmokeFailures(
+        for manifest: AmigaProgramFamilyManifest,
+        source: String,
+        prompts: [String],
+        chainName: String,
+        semanticCache: inout SemanticValidationCache
+    ) -> [String] {
+        var patchCache = FollowUpPatchOutcomeCache()
+        return followUpSmokeFailures(
+            for: manifest,
+            source: source,
+            prompts: prompts,
+            chainName: chainName,
+            semanticCache: &semanticCache,
+            patchCache: &patchCache
+        )
+    }
+
+    private static func followUpSmokeFailures(
+        for manifest: AmigaProgramFamilyManifest,
+        source: String,
+        prompts: [String],
+        chainName: String,
+        semanticCache: inout SemanticValidationCache,
+        patchCache: inout FollowUpPatchOutcomeCache
+    ) -> [String] {
         var failures: [String] = []
         var currentSource = source
         var previousModel = AmigaSourceIndexer.index(source).model
 
         for prompt in prompts {
-            switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: currentSource) {
+            switch patchCache.outcome(prompt: prompt, source: currentSource) {
             case .notRecognized:
                 failures.append("\(manifest.id): \(chainName) prompt was not recognized: \(prompt)")
             case .rejected(let reasons):
@@ -1784,7 +4078,7 @@ enum AmigaProgramFamilyPromotionAudit {
                 ))
                 let verifierFailures = AmigaProgramSourceVerifier.failures(in: result.source)
                 failures.append(contentsOf: verifierFailures.map { "\(manifest.id): \(chainName) verifier failure after \(prompt): \($0)" })
-                let semantic = AssemblySemanticValidator.validate(
+                let semantic = semanticCache.validate(
                     source: result.source,
                     prompt: semanticPrompt(for: manifest, followUpPrompt: prompt)
                 )
@@ -2000,17 +4294,37 @@ enum AmigaProgramFamilyPromotionAudit {
         resultModel: AmigaProgramModel,
         prompt: String
     ) -> Bool {
-        guard label.hasPrefix("ControlLabel_") else {
+        guard label.hasPrefix("ControlLabel_") || label.hasPrefix("ControlRect_") else {
             return false
         }
-        let controlID = String(label.dropFirst("ControlLabel_".count))
+        if isControlRemovalPrompt(prompt) {
+            return true
+        }
+        if isControlReorderPrompt(prompt), label.hasPrefix("ControlRect_") {
+            return true
+        }
+        let controlID = label.hasPrefix("ControlLabel_")
+            ? String(label.dropFirst("ControlLabel_".count))
+            : String(label.dropFirst("ControlRect_".count))
         guard let previousControl = previousModel.controls.first(where: { $0.id == controlID }) else {
             return false
+        }
+        if isControlBoundsPrompt(prompt),
+           label.hasPrefix("ControlRect_"),
+           let resultControl = resultModel.controls.first(where: { $0.id == controlID }),
+           resultControl.bounds != previousControl.bounds {
+            return true
         }
         return isControlLabelSuperseded(previousControl, by: resultModel.verificationExpectations, prompt: prompt)
     }
 
     private static func isActionRoutineBodySuperseded(_ action: String, by resultExpectations: [String], prompt: String) -> Bool {
+        if action == "PlayMOD" {
+            guard promptAllowsPlaybackPeriodSupersession(prompt) else {
+                return false
+            }
+            return resultExpectations.contains { $0.hasPrefix("Playback period is ") }
+        }
         guard action == "VolumeUp" || action == "VolumeDown" else {
             return false
         }
@@ -2034,7 +4348,29 @@ enum AmigaProgramFamilyPromotionAudit {
         if addedControls && regionSupportsAddedControls(region, routineLabel: routine.label) {
             return true
         }
+        if isControlRemovalPrompt(prompt) && regionSupportsAddedControls(region, routineLabel: routine.label) {
+            return true
+        }
+        if isControlReorderPrompt(prompt) && regionSupportsAddedControls(region, routineLabel: routine.label) {
+            return true
+        }
+        if isControlBehaviorChangePrompt(prompt) && regionSupportsAddedControls(region, routineLabel: routine.label) {
+            return true
+        }
+        if isControlBoundsPrompt(prompt) && regionSupportsControlGeometry(region, routineLabel: routine.label) {
+            return true
+        }
         return false
+    }
+
+    private static func regionSupportsControlGeometry(_ region: AmigaSourceRegionName, routineLabel: String) -> Bool {
+        switch (region, routineLabel) {
+        case (.drawControls, "DrawControls"),
+             (.hitTest, "HitTestControls"):
+            return true
+        default:
+            return false
+        }
     }
 
     private static func regionSupportsAddedControls(_ region: AmigaSourceRegionName, routineLabel: String) -> Bool {
@@ -2229,7 +4565,9 @@ enum AmigaProgramFamilyPromotionAudit {
         }
         for previousExpectation in previousModel.verificationExpectations
             where !resultModel.verificationExpectations.contains(previousExpectation) &&
-            !isVerificationExpectationSuperseded(previousExpectation, by: resultModel.verificationExpectations, prompt: prompt) {
+            !isVerificationExpectationSuperseded(previousExpectation, by: resultModel.verificationExpectations, prompt: prompt) &&
+            !isRemovedControlExpectation(previousExpectation, previousModel: previousModel, resultModel: resultModel, prompt: prompt) &&
+            !isRetargetedControlExpectation(previousExpectation, previousModel: previousModel, resultModel: resultModel, prompt: prompt) {
             failures.append("\(manifest.id): follow-up \(prompt) did not preserve verification expectation: \(previousExpectation)")
         }
         for previousState in previousModel.stateVariables
@@ -2238,6 +4576,10 @@ enum AmigaProgramFamilyPromotionAudit {
         }
         for resultState in resultModel.stateVariables
             where !previousModel.stateVariables.contains(where: { $0.id == resultState.id && $0.symbol == resultState.symbol }) {
+            if isControlBehaviorChangePrompt(prompt),
+               ["audio_volume", "playback_state"].contains(resultState.id) {
+                continue
+            }
             failures.append("\(manifest.id): follow-up \(prompt) added undeclared state variable \(resultState.id) -> \(resultState.symbol).")
         }
         for previousState in previousModel.stateVariables {
@@ -2253,7 +4595,9 @@ enum AmigaProgramFamilyPromotionAudit {
             }
         }
         for previousControl in previousModel.controls
-            where !resultModel.controls.contains(where: { $0.id == previousControl.id && $0.action == previousControl.action }) {
+            where !resultModel.controls.contains(where: { $0.id == previousControl.id && $0.action == previousControl.action }) &&
+            !isControlRemovalPrompt(prompt) &&
+            !isControlBehaviorChangePrompt(prompt) {
             failures.append("\(manifest.id): follow-up \(prompt) did not preserve control \(previousControl.id) -> \(previousControl.action).")
         }
         let addedControls = resultModel.controls.filter { resultControl in
@@ -2266,25 +4610,31 @@ enum AmigaProgramFamilyPromotionAudit {
         for (previousIndex, previousControl) in previousModel.controls.enumerated() {
             guard let resultIndex = resultModel.controls.firstIndex(where: { $0.id == previousControl.id }) else { continue }
             let resultControl = resultModel.controls[resultIndex]
-            if resultIndex != previousIndex {
+            if resultIndex != previousIndex && !isControlRemovalPrompt(prompt) && !isControlReorderPrompt(prompt) {
                 failures.append("\(manifest.id): follow-up \(prompt) changed control \(previousControl.id) slot from \(previousIndex + 1) to \(resultIndex + 1).")
             }
             if resultControl.label != previousControl.label &&
                 !isControlLabelSuperseded(previousControl, by: resultModel.verificationExpectations, prompt: prompt) {
                 failures.append("\(manifest.id): follow-up \(prompt) changed control \(previousControl.id) label from \(previousControl.label) to \(resultControl.label).")
             }
-            if resultControl.bounds != previousControl.bounds {
+            if resultControl.bounds != previousControl.bounds &&
+                !isControlRemovalPrompt(prompt) &&
+                !isControlReorderPrompt(prompt) &&
+                !isControlBoundsPrompt(prompt) {
                 failures.append("\(manifest.id): follow-up \(prompt) changed control \(previousControl.id) bounds.")
             }
         }
         for previousRoutine in previousModel.routines
-            where !resultModel.routines.contains(where: { $0.id == previousRoutine.id && $0.label == previousRoutine.label }) {
+            where !resultModel.routines.contains(where: { $0.id == previousRoutine.id && $0.label == previousRoutine.label }) &&
+            !isRemovedControlRoutine(previousRoutine, previousModel: previousModel, resultModel: resultModel, prompt: prompt) &&
+            !isRetargetedControlRoutine(previousRoutine, previousModel: previousModel, resultModel: resultModel, prompt: prompt) {
             failures.append("\(manifest.id): follow-up \(prompt) did not preserve routine \(previousRoutine.id) -> \(previousRoutine.label).")
         }
         let addedControlActions = Set(addedControls.map(\.action))
         for resultRoutine in resultModel.routines
             where !previousModel.routines.contains(where: { $0.id == resultRoutine.id && $0.label == resultRoutine.label }) &&
-            !addedControlActions.contains(resultRoutine.label) {
+            !addedControlActions.contains(resultRoutine.label) &&
+            !isRetargetedControlRoutine(resultRoutine, previousModel: resultModel, resultModel: previousModel, prompt: prompt) {
             failures.append("\(manifest.id): follow-up \(prompt) added undeclared routine \(resultRoutine.id) -> \(resultRoutine.label).")
         }
         for previousRoutine in previousModel.routines {
@@ -2298,7 +4648,10 @@ enum AmigaProgramFamilyPromotionAudit {
                 failures.append("\(manifest.id): follow-up \(prompt) changed routine \(previousRoutine.id) clobbers.")
             }
             if resultRoutine.calls != previousRoutine.calls &&
-                !isRoutineCallMetadataSuperseded(previousRoutine, resultRoutine: resultRoutine, addedControls: addedControls) {
+                !isRoutineCallMetadataSuperseded(previousRoutine, resultRoutine: resultRoutine, addedControls: addedControls) &&
+                !isControlRemovalPrompt(prompt) &&
+                !isControlReorderPrompt(prompt) &&
+                !isControlBehaviorChangePrompt(prompt) {
                 failures.append("\(manifest.id): follow-up \(prompt) changed routine \(previousRoutine.id) calls.")
             }
         }
@@ -2335,6 +4688,7 @@ enum AmigaProgramFamilyPromotionAudit {
 
     private static func isVerificationExpectationSuperseded(_ previousExpectation: String, by resultExpectations: [String], prompt: String) -> Bool {
         let supersededPrefixes = [
+            "Playback period is ",
             "Volume step is ",
             "Initial volume is ",
             "Front buffer color is ",
@@ -2349,13 +4703,94 @@ enum AmigaProgramFamilyPromotionAudit {
         return resultExpectations.contains { $0.hasPrefix(prefix) }
     }
 
+    private static func isRemovedControlExpectation(
+        _ previousExpectation: String,
+        previousModel: AmigaProgramModel,
+        resultModel: AmigaProgramModel,
+        prompt: String
+    ) -> Bool {
+        guard isControlRemovalPrompt(prompt) else { return false }
+        if previousExpectation.hasPrefix("Volume step is "),
+           !resultModel.controls.contains(where: { $0.action == "VolumeUp" || $0.action == "VolumeDown" }) {
+            return true
+        }
+        return previousModel.controls
+            .filter { previousControl in
+                !resultModel.controls.contains { $0.id == previousControl.id && $0.action == previousControl.action }
+            }
+            .contains { removedControl in
+                previousExpectation.contains(removedControl.label) ||
+                    previousExpectation.contains(removedControl.action)
+            }
+    }
+
+    private static func isRemovedControlRoutine(
+        _ previousRoutine: AmigaProgramModel.Routine,
+        previousModel: AmigaProgramModel,
+        resultModel: AmigaProgramModel,
+        prompt: String
+    ) -> Bool {
+        guard isControlRemovalPrompt(prompt) else { return false }
+        return previousModel.controls.contains { previousControl in
+            previousControl.id == previousRoutine.id &&
+                previousControl.action == previousRoutine.label &&
+                !resultModel.controls.contains { $0.id == previousControl.id && $0.action == previousControl.action }
+        }
+    }
+
+    private static func isRetargetedControlExpectation(
+        _ previousExpectation: String,
+        previousModel: AmigaProgramModel,
+        resultModel: AmigaProgramModel,
+        prompt: String
+    ) -> Bool {
+        guard isControlBehaviorChangePrompt(prompt) else { return false }
+        if previousExpectation.hasPrefix("Volume step is "),
+           !resultModel.controls.contains(where: { $0.action == "VolumeUp" || $0.action == "VolumeDown" }) {
+            return true
+        }
+        return retargetedControls(previousModel: previousModel, resultModel: resultModel).contains { pair in
+            previousExpectation.hasSuffix(" dispatches to \(pair.previous.action).") &&
+                (
+                    resultModel.verificationExpectations.contains("Control \(pair.result.label) dispatches to \(pair.result.action).") ||
+                    resultModel.verificationExpectations.contains("Control \(pair.previous.label) dispatches to \(pair.result.action).")
+                )
+        }
+    }
+
+    private static func isRetargetedControlRoutine(
+        _ routine: AmigaProgramModel.Routine,
+        previousModel: AmigaProgramModel,
+        resultModel: AmigaProgramModel,
+        prompt: String
+    ) -> Bool {
+        guard isControlBehaviorChangePrompt(prompt) else { return false }
+        return retargetedControls(previousModel: previousModel, resultModel: resultModel).contains { pair in
+            routine.id == pair.previous.id &&
+                (routine.label == pair.previous.action || routine.label == pair.result.action)
+        }
+    }
+
+    private static func retargetedControls(
+        previousModel: AmigaProgramModel,
+        resultModel: AmigaProgramModel
+    ) -> [(previous: AmigaProgramModel.Control, result: AmigaProgramModel.Control)] {
+        previousModel.controls.compactMap { previousControl in
+            guard let resultControl = resultModel.controls.first(where: { $0.id == previousControl.id }),
+                  resultControl.action != previousControl.action else {
+                return nil
+            }
+            return (previousControl, resultControl)
+        }
+    }
+
     private static func isControlLabelSuperseded(_ previousControl: AmigaProgramModel.Control, by resultExpectations: [String], prompt: String) -> Bool {
         guard smokePromptCovers(prompt, supportedFollowUp: "rename a visible control label") else {
             return false
         }
         return resultExpectations.contains {
             $0.hasPrefix("Control \(previousControl.label) is labeled ") &&
-                $0.hasSuffix(" without changing \(previousControl.action).")
+                ($0.hasSuffix(" without changing \(previousControl.action).") || isControlBehaviorChangePrompt(prompt))
         }
     }
 
@@ -2382,6 +4817,8 @@ enum AmigaProgramFamilyPromotionAudit {
 
     private static func promptAllowsExpectationSupersession(_ prefix: String, prompt: String) -> Bool {
         switch prefix {
+        case "Playback period is ":
+            return promptAllowsPlaybackPeriodSupersession(prompt)
         case "Volume step is ":
             return promptAllowsVolumeStepSupersession(prompt)
         case "Initial volume is ":
@@ -2395,8 +4832,58 @@ enum AmigaProgramFamilyPromotionAudit {
         }
     }
 
+    private static func isControlRemovalPrompt(_ prompt: String) -> Bool {
+        smokePromptCovers(prompt, supportedFollowUp: "remove an added control")
+    }
+
+    private static func isControlReorderPrompt(_ prompt: String) -> Bool {
+        smokePromptCovers(prompt, supportedFollowUp: "reorder controls")
+    }
+
+    private static func isControlBehaviorChangePrompt(_ prompt: String) -> Bool {
+        let normalized = prompt.lowercased()
+        return smokePromptCovers(prompt, supportedFollowUp: "change an added control behavior") ||
+            (
+                (
+                    containsWord("rename", in: normalized) ||
+                    containsWord("label", in: normalized) ||
+                    containsWord("text", in: normalized) ||
+                    containsWord("caption", in: normalized) ||
+                    containsWord("title", in: normalized) ||
+                    containsWord("say", in: normalized)
+                ) &&
+                (
+                    containsWord("make", in: normalized) ||
+                    containsWord("change", in: normalized) ||
+                    containsWord("switch", in: normalized) ||
+                    containsWord("convert", in: normalized) ||
+                    containsWord("turn", in: normalized) ||
+                    containsWord("set", in: normalized)
+                ) &&
+                !containsWord("add", in: normalized) &&
+                !(containsWord("remove", in: normalized) || containsWord("delete", in: normalized)) &&
+                (
+                    containsPhrase("raise volume", in: normalized) ||
+                    containsPhrase("increase volume", in: normalized) ||
+                    containsPhrase("turn volume up", in: normalized) ||
+                    containsPhrase("lower volume", in: normalized) ||
+                    containsPhrase("decrease volume", in: normalized) ||
+                    containsPhrase("turn volume down", in: normalized)
+                )
+            )
+    }
+
+    private static func isControlBoundsPrompt(_ prompt: String) -> Bool {
+        smokePromptCovers(prompt, supportedFollowUp: "change control bounds")
+    }
+
     private static func promptAllowsVolumeStepSupersession(_ prompt: String) -> Bool {
         smokePromptCovers(prompt, supportedFollowUp: "change volume step")
+    }
+
+    private static func promptAllowsPlaybackPeriodSupersession(_ prompt: String) -> Bool {
+        smokePromptCovers(prompt, supportedFollowUp: "change playback period") ||
+            smokePromptCovers(prompt, supportedFollowUp: "change playback note")
     }
 
     private static func formattedStateInitialValue(_ value: String?) -> String {
@@ -2532,6 +5019,9 @@ enum AmigaProgramPatchError: LocalizedError, Equatable {
     case duplicateRequestedControl(String)
     case invalidControlLabel(String)
     case unsupportedControl(String)
+    case protectedControl(String)
+    case protectedControlMove(String)
+    case protectedControlBehavior(String)
     case duplicateControl(String)
     case duplicateAction(String, String)
     case duplicateLabel(String)
@@ -2555,6 +5045,12 @@ enum AmigaProgramPatchError: LocalizedError, Equatable {
             return "Control labels must be non-blank and cannot contain line breaks or control characters."
         case let .unsupportedControl(label):
             return "Unsupported model-backed control \"\(label)\". Supported controls: Volume Up, Volume Down, Pause, Mute."
+        case let .protectedControl(label):
+            return "Cannot remove required control \(label). Required controls: Play, Stop."
+        case let .protectedControlMove(label):
+            return "Cannot move required control \(label). Move added controls relative to Play or Stop instead."
+        case let .protectedControlBehavior(label):
+            return "Cannot change required control \(label) behavior. Change added controls instead."
         case let .duplicateControl(id):
             return "A control with id \(id) already exists."
         case let .duplicateAction(action, label):
@@ -2573,6 +5069,11 @@ struct AmigaProgramPatchResult: Equatable {
     var changedRegions: [String]
 }
 
+enum AmigaProgramControlPlacement: Equatable {
+    case before
+    case after
+}
+
 enum AmigaProgramFollowUpPatchOutcome: Equatable {
     case notRecognized
     case patched(AmigaProgramPatchResult)
@@ -2588,12 +5089,12 @@ enum AmigaProgramPatcher {
         let trimmedLabel = label.trimmingCharacters(in: .whitespacesAndNewlines)
         try requireValidControlLabel(trimmedLabel)
 
-        let controlID = stableID(from: trimmedLabel)
+        let baseControlID = stableID(from: trimmedLabel)
         let actionLabel = stableLabel(from: action)
 
-        if let existingControl = model.controls.first(where: { $0.id == controlID }),
+        if let existingControl = model.controls.first(where: { $0.id == baseControlID }),
            existingControl.label.caseInsensitiveCompare(trimmedLabel) == .orderedSame {
-            throw AmigaProgramPatchError.duplicateControl(controlID)
+            throw AmigaProgramPatchError.duplicateControl(baseControlID)
         }
         if let existingControl = model.controls.first(where: { $0.action == actionLabel }) {
             throw AmigaProgramPatchError.duplicateAction(actionLabel, existingControl.label)
@@ -2601,9 +5102,7 @@ enum AmigaProgramPatcher {
         if let existingControl = model.controls.first(where: { $0.label.caseInsensitiveCompare(trimmedLabel) == .orderedSame }) {
             throw AmigaProgramPatchError.duplicateLabel(existingControl.label)
         }
-        guard !model.controls.contains(where: { $0.id == controlID }) else {
-            throw AmigaProgramPatchError.duplicateControl(controlID)
-        }
+        let controlID = uniqueControlID(basedOn: baseControlID, existingControls: model.controls)
         guard !index.labels.contains(actionLabel) else {
             throw AmigaProgramPatchError.duplicateLabel(actionLabel)
         }
@@ -2723,18 +5222,64 @@ enum AmigaProgramPatcher {
                 source: patched
             )
         }
+        let changedRoutine = patched != source
 
         model.verificationExpectations.removeAll { $0.hasPrefix("Volume step is ") }
         model.verificationExpectations.append("Volume step is \(clampedStep).")
         patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
 
+        guard patched != source else {
+            return try verifiedPatchResult(AmigaProgramPatchResult(source: source, model: model, changedRegions: []))
+        }
+
+        var changedRegions = [AmigaSourceRegionName.model.rawValue]
+        if changedRoutine {
+            changedRegions.append(AmigaSourceRegionName.routines.rawValue)
+        }
         return try verifiedPatchResult(AmigaProgramPatchResult(
             source: patched,
             model: model,
-            changedRegions: [
-                AmigaSourceRegionName.model.rawValue,
-                AmigaSourceRegionName.routines.rawValue
-            ]
+            changedRegions: changedRegions
+        ))
+    }
+
+    static func updatePlaybackPeriod(_ period: Int, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireMODControlsModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.routines.rawValue, in: index)
+        guard model.controls.contains(where: { $0.action == "PlayMOD" }) else {
+            throw AmigaProgramPatchError.missingRegion("playback control")
+        }
+
+        let clampedPeriod = max(113, min(period, 856))
+        var patched = source
+        patched = try replaceInstructionImmediate(
+            pattern: #"(?im)^(\s*)move\.w\s+#(?:\d+|\$[0-9a-f]+|0x[0-9a-f]+)\s*,\s*\$a6\(a6\)(?:\s*;[^\n]*)?$"#,
+            replacement: "move.w     #\(clampedPeriod),$a6(a6)         ; AUD0PER",
+            inRoutine: "PlayMOD",
+            source: patched
+        )
+        let changedRoutine = patched != source
+
+        model.verificationExpectations.removeAll { $0.hasPrefix("Playback period is ") }
+        model.verificationExpectations.append("Playback period is \(clampedPeriod).")
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+
+        guard patched != source else {
+            return try verifiedPatchResult(AmigaProgramPatchResult(source: source, model: model, changedRegions: []))
+        }
+
+        var changedRegions = [AmigaSourceRegionName.model.rawValue]
+        if changedRoutine {
+            changedRegions.append(AmigaSourceRegionName.routines.rawValue)
+        }
+        return try verifiedPatchResult(AmigaProgramPatchResult(
+            source: patched,
+            model: model,
+            changedRegions: changedRegions
         ))
     }
 
@@ -2756,15 +5301,22 @@ enum AmigaProgramPatcher {
 
         var patched = source
         patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        let modelOnlyPatched = patched
         patched = try replaceStateWordLine(label: "AudioVolume", inRegion: AmigaSourceRegionName.state.rawValue, source: patched, value: clampedVolume)
+        let changedState = patched != modelOnlyPatched
 
+        guard patched != source else {
+            return try verifiedPatchResult(AmigaProgramPatchResult(source: source, model: model, changedRegions: []))
+        }
+
+        var changedRegions = [AmigaSourceRegionName.model.rawValue]
+        if changedState {
+            changedRegions.append(AmigaSourceRegionName.state.rawValue)
+        }
         return try verifiedPatchResult(AmigaProgramPatchResult(
             source: patched,
             model: model,
-            changedRegions: [
-                AmigaSourceRegionName.model.rawValue,
-                AmigaSourceRegionName.state.rawValue
-            ]
+            changedRegions: changedRegions
         ))
     }
 
@@ -2816,14 +5368,21 @@ enum AmigaProgramPatcher {
             value: value,
             suffix: "; \(normalizedColor) foreground for \(bufferName)"
         )
+        let modelOnlyPatched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: source, with: AmigaSourceIndexer.modelRegion(for: model))
+        let changedState = patched != modelOnlyPatched
 
+        guard patched != source else {
+            return try verifiedPatchResult(AmigaProgramPatchResult(source: source, model: model, changedRegions: []))
+        }
+
+        var changedRegions = [AmigaSourceRegionName.model.rawValue]
+        if changedState {
+            changedRegions.append(AmigaSourceRegionName.state.rawValue)
+        }
         return try verifiedPatchResult(AmigaProgramPatchResult(
             source: patched,
             model: model,
-            changedRegions: [
-                AmigaSourceRegionName.model.rawValue,
-                AmigaSourceRegionName.state.rawValue
-            ]
+            changedRegions: changedRegions
         ))
     }
 
@@ -2884,6 +5443,300 @@ enum AmigaProgramPatcher {
         ))
     }
 
+    static func removeControl(label: String, from source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireMODControlsModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.controls.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.drawControls.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.hitTest.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.inputDispatch.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.routines.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.chipData.rawValue, in: index)
+
+        let trimmedLabel = label.trimmingCharacters(in: .whitespacesAndNewlines)
+        let stableID = stableID(from: trimmedLabel)
+        guard let controlIndex = model.controls.firstIndex(where: { control in
+            control.id == stableID ||
+                control.label.caseInsensitiveCompare(trimmedLabel) == .orderedSame
+        }) else {
+            throw AmigaProgramPatchError.missingControl(trimmedLabel)
+        }
+
+        let removedControl = model.controls[controlIndex]
+        guard !["play", "stop"].contains(removedControl.id) else {
+            throw AmigaProgramPatchError.protectedControl(removedControl.label)
+        }
+
+        model.controls.remove(at: controlIndex)
+        for offset in model.controls.indices {
+            model.controls[offset].bounds = defaultBounds(forControlAt: offset + 1)
+        }
+        model.routines.removeAll { $0.id == removedControl.id && $0.label == removedControl.action }
+        if let dispatchRoutineIndex = model.routines.firstIndex(where: { $0.id == "dispatch" && $0.label == "InputDispatch" }) {
+            model.routines[dispatchRoutineIndex].calls.removeAll { $0 == removedControl.action }
+        }
+        model.verificationExpectations.removeAll { expectation in
+            expectation.contains(removedControl.label) ||
+                expectation.contains(removedControl.action) ||
+                expectation.contains("Control \(removedControl.label) ")
+        }
+        if !model.controls.contains(where: { $0.action == "VolumeUp" || $0.action == "VolumeDown" }) {
+            model.verificationExpectations.removeAll { $0.hasPrefix("Volume step is ") }
+        }
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceRegionBody(AmigaSourceRegionName.controls.rawValue, in: patched, with: controlMarkerLines(for: model.controls))
+        patched = try replaceDrawControlsBody(in: patched, controls: model.controls)
+        patched = try replaceHitTestBody(in: patched, controls: model.controls)
+        patched = try replaceInputDispatchBody(in: patched, controls: model.controls)
+        patched = try removeRoutine(label: removedControl.action, inRegion: AmigaSourceRegionName.routines.rawValue, source: patched)
+        patched = try replaceControlDataBody(in: patched, controls: model.controls)
+
+        return try verifiedPatchResult(AmigaProgramPatchResult(
+            source: patched,
+            model: model,
+            changedRegions: [
+                AmigaSourceRegionName.model.rawValue,
+                AmigaSourceRegionName.controls.rawValue,
+                AmigaSourceRegionName.drawControls.rawValue,
+                AmigaSourceRegionName.hitTest.rawValue,
+                AmigaSourceRegionName.inputDispatch.rawValue,
+                AmigaSourceRegionName.routines.rawValue,
+                AmigaSourceRegionName.chipData.rawValue
+            ]
+        ))
+    }
+
+    static func moveControl(label: String, placement: AmigaProgramControlPlacement, targetLabel: String, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireMODControlsModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.controls.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.drawControls.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.hitTest.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.inputDispatch.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.chipData.rawValue, in: index)
+
+        let trimmedLabel = label.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedTargetLabel = targetLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let sourceIndex = controlIndex(matching: trimmedLabel, in: model.controls) else {
+            throw AmigaProgramPatchError.missingControl(trimmedLabel)
+        }
+        guard let targetIndex = controlIndex(matching: trimmedTargetLabel, in: model.controls) else {
+            throw AmigaProgramPatchError.missingControl(trimmedTargetLabel)
+        }
+
+        let movedControl = model.controls[sourceIndex]
+        guard !["play", "stop"].contains(movedControl.id) else {
+            throw AmigaProgramPatchError.protectedControlMove(movedControl.label)
+        }
+        guard sourceIndex != targetIndex else {
+            return try verifiedPatchResult(AmigaProgramPatchResult(source: source, model: model, changedRegions: []))
+        }
+
+        let originalControlIDs = model.controls.map(\.id)
+        var controls = model.controls
+        let controlsWithCustomBounds: Set<String> = Set(controls.enumerated().compactMap { offset, control in
+            guard let bounds = control.bounds,
+                  bounds != defaultBounds(forControlAt: offset + 1) else {
+                return nil
+            }
+            return control.id
+        })
+        let control = controls.remove(at: sourceIndex)
+        let adjustedTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex
+        let insertionIndex: Int
+        switch placement {
+        case .before:
+            insertionIndex = adjustedTargetIndex
+        case .after:
+            insertionIndex = adjustedTargetIndex + 1
+        }
+        controls.insert(control, at: min(max(0, insertionIndex), controls.count))
+        guard controls.map(\.id) != originalControlIDs else {
+            return try verifiedPatchResult(AmigaProgramPatchResult(source: source, model: model, changedRegions: []))
+        }
+        for offset in controls.indices {
+            if !controlsWithCustomBounds.contains(controls[offset].id) {
+                controls[offset].bounds = defaultBounds(forControlAt: offset + 1)
+            }
+        }
+        model.controls = controls
+        if let dispatchRoutineIndex = model.routines.firstIndex(where: { $0.id == "dispatch" && $0.label == "InputDispatch" }) {
+            model.routines[dispatchRoutineIndex].calls = controls.map(\.action)
+        }
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceRegionBody(AmigaSourceRegionName.controls.rawValue, in: patched, with: controlMarkerLines(for: controls))
+        patched = try replaceDrawControlsBody(in: patched, controls: controls)
+        patched = try replaceHitTestBody(in: patched, controls: controls)
+        patched = try replaceInputDispatchBody(in: patched, controls: controls)
+        patched = try replaceControlDataBody(in: patched, controls: controls)
+
+        return try verifiedPatchResult(AmigaProgramPatchResult(
+            source: patched,
+            model: model,
+            changedRegions: [
+                AmigaSourceRegionName.model.rawValue,
+                AmigaSourceRegionName.controls.rawValue,
+                AmigaSourceRegionName.drawControls.rawValue,
+                AmigaSourceRegionName.hitTest.rawValue,
+                AmigaSourceRegionName.inputDispatch.rawValue,
+                AmigaSourceRegionName.chipData.rawValue
+            ]
+        ))
+    }
+
+    static func changeControlBehavior(label: String, action: String, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireMODControlsModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.controls.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.inputDispatch.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.routines.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        let trimmedLabel = label.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let controlIndex = controlIndex(matching: trimmedLabel, in: model.controls) else {
+            throw AmigaProgramPatchError.missingControl(trimmedLabel)
+        }
+
+        let actionLabel = stableLabel(from: action)
+        let previousControl = model.controls[controlIndex]
+        guard !["play", "stop"].contains(previousControl.id) else {
+            throw AmigaProgramPatchError.protectedControlBehavior(previousControl.label)
+        }
+        guard previousControl.action != actionLabel else {
+            throw AmigaProgramPatchError.duplicateAction(actionLabel, previousControl.label)
+        }
+        if let existingControl = model.controls.enumerated().first(where: { offset, control in
+            offset != controlIndex && control.action == actionLabel
+        })?.element {
+            throw AmigaProgramPatchError.duplicateAction(actionLabel, existingControl.label)
+        }
+
+        let patchSpec = try controlPatchSpec(label: previousControl.label, controlID: previousControl.id, actionLabel: actionLabel)
+        model.controls[controlIndex].action = actionLabel
+        if !model.controls.contains(where: { $0.action == previousControl.action }) {
+            model.routines.removeAll { $0.id == previousControl.id && $0.label == previousControl.action }
+        }
+        if !model.routines.contains(where: { $0.label == actionLabel }) {
+            model.routines.append(AmigaProgramModel.Routine(id: previousControl.id, label: actionLabel, purpose: patchSpec.purpose))
+        }
+        if let dispatchRoutineIndex = model.routines.firstIndex(where: { $0.id == "dispatch" && $0.label == "InputDispatch" }) {
+            model.routines[dispatchRoutineIndex].calls = model.controls.map(\.action)
+        }
+        for stateVariable in patchSpec.stateVariables where !model.stateVariables.contains(where: { $0.id == stateVariable.id }) {
+            model.stateVariables.append(stateVariable)
+        }
+        model.verificationExpectations.removeAll { expectation in
+            expectation == "Control \(previousControl.label) dispatches to \(previousControl.action)." ||
+                expectation.hasSuffix(" dispatches to \(previousControl.action).")
+        }
+        if !model.controls.contains(where: { $0.action == "VolumeUp" || $0.action == "VolumeDown" }) {
+            model.verificationExpectations.removeAll { $0.hasPrefix("Volume step is ") }
+        }
+        model.verificationExpectations.append("Control \(previousControl.label) dispatches to \(actionLabel).")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceRegionBody(AmigaSourceRegionName.controls.rawValue, in: patched, with: controlMarkerLines(for: model.controls))
+        patched = try replaceInputDispatchBody(in: patched, controls: model.controls)
+        if !model.controls.contains(where: { $0.action == previousControl.action }) {
+            patched = try removeRoutine(label: previousControl.action, inRegion: AmigaSourceRegionName.routines.rawValue, source: patched)
+        }
+        var changedRegions = [
+            AmigaSourceRegionName.model.rawValue,
+            AmigaSourceRegionName.controls.rawValue,
+            AmigaSourceRegionName.inputDispatch.rawValue,
+            AmigaSourceRegionName.routines.rawValue
+        ]
+        if !hasLabelDefinition(actionLabel, in: patched) {
+            patched = try insertBeforeRegionEnd(AmigaSourceRegionName.routines.rawValue, in: patched, lines: [""] + patchSpec.routineLines)
+        }
+        let stateLines = patchSpec.stateLines.filter { stateLine in
+            let symbol = stateLine.split(separator: ":").first.map(String.init) ?? stateLine
+            return !hasLabelDefinition(symbol, in: patched)
+        }
+        if !stateLines.isEmpty {
+            patched = try insertBeforeRegionEnd(AmigaSourceRegionName.state.rawValue, in: patched, lines: stateLines)
+            changedRegions.append(AmigaSourceRegionName.state.rawValue)
+        }
+
+        return try verifiedPatchResult(AmigaProgramPatchResult(
+            source: patched,
+            model: model,
+            changedRegions: changedRegions
+        ))
+    }
+
+    static func updateControlBounds(label: String, bounds: AmigaProgramModel.Bounds, in source: String) throws -> AmigaProgramPatchResult {
+        try updateControlBounds([(label: label, bounds: bounds)], in: source)
+    }
+
+    static func updateControlBounds(
+        _ placements: [(label: String, bounds: AmigaProgramModel.Bounds)],
+        in source: String
+    ) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireMODControlsModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.controls.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.drawControls.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.hitTest.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.chipData.rawValue, in: index)
+
+        var resolvedPlacements: [(index: Int, bounds: AmigaProgramModel.Bounds)] = []
+        var hasBoundsChanges = false
+        for placement in placements {
+            let trimmedLabel = placement.label.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let controlIndex = controlIndex(matching: trimmedLabel, in: model.controls) else {
+                throw AmigaProgramPatchError.missingControl(trimmedLabel)
+            }
+            if model.controls[controlIndex].bounds != placement.bounds {
+                hasBoundsChanges = true
+            }
+            resolvedPlacements.append((index: controlIndex, bounds: placement.bounds))
+        }
+        guard hasBoundsChanges else {
+            return try verifiedPatchResult(AmigaProgramPatchResult(source: source, model: model, changedRegions: []))
+        }
+
+        for placement in resolvedPlacements {
+            model.controls[placement.index].bounds = placement.bounds
+        }
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceRegionBody(AmigaSourceRegionName.controls.rawValue, in: patched, with: controlMarkerLines(for: model.controls))
+        patched = try replaceDrawControlsBody(in: patched, controls: model.controls)
+        patched = try replaceHitTestBody(in: patched, controls: model.controls)
+        patched = try replaceControlDataBody(in: patched, controls: model.controls)
+
+        return try verifiedPatchResult(AmigaProgramPatchResult(
+            source: patched,
+            model: model,
+            changedRegions: [
+                AmigaSourceRegionName.model.rawValue,
+                AmigaSourceRegionName.controls.rawValue,
+                AmigaSourceRegionName.drawControls.rawValue,
+                AmigaSourceRegionName.hitTest.rawValue,
+                AmigaSourceRegionName.chipData.rawValue
+            ]
+        ))
+    }
+
     private static func requireMODControlsModel(_ model: AmigaProgramModel) throws {
         guard model.id == AmigaProgramFamilyRegistry.modPlayerControls.id,
               model.kind == AmigaProgramFamilyRegistry.modPlayerControls.kind else {
@@ -2923,6 +5776,16 @@ enum AmigaProgramPatcher {
         return words.isEmpty ? "control" : words.joined(separator: "_")
     }
 
+    private static func uniqueControlID(basedOn baseID: String, existingControls: [AmigaProgramModel.Control]) -> String {
+        let existingIDs = Set(existingControls.map(\.id))
+        guard existingIDs.contains(baseID) else { return baseID }
+        var suffix = 2
+        while existingIDs.contains("\(baseID)_\(suffix)") {
+            suffix += 1
+        }
+        return "\(baseID)_\(suffix)"
+    }
+
     static func stableLabel(from action: String) -> String {
         let words = action
             .split { !$0.isLetter && !$0.isNumber }
@@ -2930,6 +5793,15 @@ enum AmigaProgramPatcher {
         let raw = words.isEmpty ? "ControlAction" : words.joined()
         guard let first = raw.first else { return "ControlAction" }
         return String(first).uppercased() + raw.dropFirst()
+    }
+
+    private static func controlIndex(matching label: String, in controls: [AmigaProgramModel.Control]) -> Int? {
+        let stableID = stableID(from: label)
+        return controls.firstIndex { control in
+            control.id == stableID ||
+                control.label.caseInsensitiveCompare(label) == .orderedSame ||
+                control.action.caseInsensitiveCompare(label) == .orderedSame
+        }
     }
 
     private static func requireClosedRegion(_ name: String, in index: AmigaSourceIndex) throws {
@@ -2947,6 +5819,170 @@ enum AmigaProgramPatcher {
         var lines = source.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
         let replacementLines = replacement.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
         lines.replaceSubrange((region.startLine - 1)..<endLine, with: replacementLines)
+        return lines.joined(separator: "\n")
+    }
+
+    private static func replaceRegionBody(_ name: String, in source: String, with replacementLines: [String]) throws -> String {
+        let index = AmigaSourceIndexer.index(source)
+        guard let region = index.regions[name], let endLine = region.endLine else {
+            throw AmigaProgramPatchError.missingRegion(name)
+        }
+
+        var lines = source.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        lines.replaceSubrange(region.startLine..<(endLine - 1), with: replacementLines)
+        return lines.joined(separator: "\n")
+    }
+
+    private static func replaceDrawControlsBody(in source: String, controls: [AmigaProgramModel.Control]) throws -> String {
+        try replaceLines(
+            afterLabel: "DrawControls",
+            beforeReturnInRegion: AmigaSourceRegionName.drawControls.rawValue,
+            source: source,
+            with: controlDrawLines(for: controls)
+        )
+    }
+
+    private static func replaceHitTestBody(in source: String, controls: [AmigaProgramModel.Control]) throws -> String {
+        try replaceLines(
+            afterLineMatching: { $0.trimmingCharacters(in: .whitespaces).lowercased() == "beq        .donehittest" },
+            beforeLabel: ".doneHitTest",
+            inRegion: AmigaSourceRegionName.hitTest.rawValue,
+            source: source,
+            with: controlHitTestLines(for: controls)
+        )
+    }
+
+    private static func replaceInputDispatchBody(in source: String, controls: [AmigaProgramModel.Control]) throws -> String {
+        try replaceLines(
+            afterLineMatching: { $0.trimmingCharacters(in: .whitespaces).lowercased() == "beq.s      .donedispatch" },
+            beforeLabel: ".doneDispatch",
+            inRegion: AmigaSourceRegionName.inputDispatch.rawValue,
+            source: source,
+            with: controlDispatchLines(for: controls)
+        )
+    }
+
+    private static func replaceControlDataBody(in source: String, controls: [AmigaProgramModel.Control]) throws -> String {
+        let index = AmigaSourceIndexer.index(source)
+        guard let region = index.regions[AmigaSourceRegionName.chipData.rawValue], let endLine = region.endLine else {
+            throw AmigaProgramPatchError.missingRegion(AmigaSourceRegionName.chipData.rawValue)
+        }
+
+        var lines = source.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        let regionBodyRange = region.startLine..<(endLine - 1)
+        var removalRanges: [Range<Int>] = []
+        var cursor = regionBodyRange.lowerBound
+        while cursor < regionBodyRange.upperBound {
+            let line = lines[cursor]
+            guard lineDefinesControlRectLabel(line) else {
+                cursor += 1
+                continue
+            }
+            let blockEnd = (cursor + 1)..<regionBodyRange.upperBound
+            let evenLine = blockEnd.first { lines[$0].trimmingCharacters(in: .whitespaces).lowercased() == "even" }
+            let removalEnd = evenLine.map { $0 + 1 } ?? blockEnd.lowerBound
+            removalRanges.append(cursor..<removalEnd)
+            cursor = removalEnd
+        }
+        for range in removalRanges.reversed() {
+            lines.removeSubrange(range)
+        }
+
+        guard let bitplaneBufferIndex = lines.indices.first(where: { lineDefinesExactLabel(lines[$0], label: "BitplaneBuffer") }) else {
+            throw AmigaProgramPatchError.missingRegion("BitplaneBuffer")
+        }
+        lines.insert(contentsOf: controlDataLines(for: controls), at: bitplaneBufferIndex)
+        return lines.joined(separator: "\n")
+    }
+
+    private static func removeRoutine(label: String, inRegion name: String, source: String) throws -> String {
+        let index = AmigaSourceIndexer.index(source)
+        guard let region = index.regions[name], let endLine = region.endLine else {
+            throw AmigaProgramPatchError.missingRegion(name)
+        }
+
+        var lines = source.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        let searchRange = max(region.startLine, 1)..<max(endLine, region.startLine)
+        guard let labelLine = searchRange.first(where: { lineDefinesLabel(lines[$0 - 1], label: label) }) else {
+            throw AmigaProgramPatchError.missingRegion(label)
+        }
+        let routineEnd = ((labelLine + 1)..<max(endLine, labelLine + 1)).first { lineIndex in
+            let line = lines[lineIndex - 1]
+            if line.trimmingCharacters(in: .whitespaces).hasPrefix("; @amiga:region") {
+                return true
+            }
+            let labels = AmigaSourceIndexer.index(line).labels
+            return labels.contains { !$0.hasPrefix(".") }
+        } ?? endLine
+        let startIndex = max(labelLine - 2, region.startLine - 1)
+        let removeStart = lines[startIndex].trimmingCharacters(in: .whitespaces).isEmpty ? startIndex : labelLine - 1
+        lines.removeSubrange(removeStart..<(routineEnd - 1))
+        return lines.joined(separator: "\n")
+    }
+
+    private static func replaceLines(
+        afterLabel label: String,
+        beforeReturnInRegion name: String,
+        source: String,
+        with replacementLines: [String]
+    ) throws -> String {
+        let index = AmigaSourceIndexer.index(source)
+        guard let region = index.regions[name], let endLine = region.endLine else {
+            throw AmigaProgramPatchError.missingRegion(name)
+        }
+
+        var lines = source.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        let searchRange = max(region.startLine, 1)..<max(endLine, region.startLine)
+        guard let labelLine = searchRange.first(where: { lineDefinesLabel(lines[$0 - 1], label: label) }) else {
+            throw AmigaProgramPatchError.missingRegion(label)
+        }
+        guard let returnLine = ((labelLine + 1)..<max(endLine, labelLine + 1)).first(where: { isReturnInstructionLine(lines[$0 - 1]) }) else {
+            throw AmigaProgramPatchError.missingRegion(label)
+        }
+        lines.replaceSubrange(labelLine..<returnLine - 1, with: replacementLines)
+        return lines.joined(separator: "\n")
+    }
+
+    private static func replaceLines(
+        afterLineMatching startPredicate: (String) -> Bool,
+        beforeLabel label: String,
+        inRegion name: String,
+        source: String,
+        with replacementLines: [String]
+    ) throws -> String {
+        let index = AmigaSourceIndexer.index(source)
+        guard let region = index.regions[name], let endLine = region.endLine else {
+            throw AmigaProgramPatchError.missingRegion(name)
+        }
+
+        var lines = source.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        let searchRange = max(region.startLine, 1)..<max(endLine, region.startLine)
+        guard let startLine = searchRange.first(where: { startPredicate(lines[$0 - 1]) }),
+              let labelLine = searchRange.first(where: { lineDefinesLabel(lines[$0 - 1], label: label) }),
+              startLine < labelLine else {
+            throw AmigaProgramPatchError.missingRegion(label)
+        }
+        lines.replaceSubrange(startLine..<(labelLine - 1), with: replacementLines)
+        return lines.joined(separator: "\n")
+    }
+
+    private static func replaceLines(
+        afterRegionStart name: String,
+        beforeLabel label: String,
+        source: String,
+        with replacementLines: [String]
+    ) throws -> String {
+        let index = AmigaSourceIndexer.index(source)
+        guard let region = index.regions[name], let endLine = region.endLine else {
+            throw AmigaProgramPatchError.missingRegion(name)
+        }
+
+        var lines = source.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        let searchRange = max(region.startLine, 1)..<max(endLine, region.startLine)
+        guard let labelLine = searchRange.first(where: { lineDefinesExactLabel(lines[$0 - 1], label: label) }) else {
+            throw AmigaProgramPatchError.missingRegion(label)
+        }
+        lines.replaceSubrange(region.startLine..<(labelLine - 1), with: replacementLines)
         return lines.joined(separator: "\n")
     }
 
@@ -3181,6 +6217,12 @@ enum AmigaProgramPatcher {
         return #"            ; @amiga:model control id=\#(id) label="\#(markerLabel)" action=\#(action) bounds=\#(bounds.x),\#(bounds.y),\#(bounds.width),\#(bounds.height)"#
     }
 
+    private static func controlMarkerLines(for controls: [AmigaProgramModel.Control]) -> [String] {
+        controls.map { control in
+            controlMarkerLine(id: control.id, label: control.label, action: control.action, bounds: control.bounds)
+        }
+    }
+
     private static func defaultBounds(forControlAt slot: Int) -> AmigaProgramModel.Bounds {
         let zeroBasedSlot = max(0, slot - 1)
         let column = zeroBasedSlot % 3
@@ -3215,12 +6257,45 @@ enum AmigaProgramPatcher {
         ]
     }
 
+    private static func controlHitTestLines(for controls: [AmigaProgramModel.Control]) -> [String] {
+        controls.enumerated().flatMap { offset, control in
+            hitTestLines(
+                id: control.id,
+                slot: offset + 1,
+                bounds: control.bounds ?? defaultBounds(forControlAt: offset + 1)
+            )
+        }
+    }
+
     private static func drawControlLines(id: String, slot: Int, bounds: AmigaProgramModel.Bounds) -> [String] {
         [
             "            ; @amiga:draw_control \(id) slot=\(slot) bounds=\(bounds.x),\(bounds.y),\(bounds.width),\(bounds.height)",
             "            lea        ControlRect_\(id)(pc),a0",
             "            bsr        DrawControlRect"
         ]
+    }
+
+    private static func controlDrawLines(for controls: [AmigaProgramModel.Control]) -> [String] {
+        controls.enumerated().flatMap { offset, control in
+            drawControlLines(
+                id: control.id,
+                slot: offset + 1,
+                bounds: control.bounds ?? defaultBounds(forControlAt: offset + 1)
+            )
+        }
+    }
+
+    private static func controlDispatchLines(for controls: [AmigaProgramModel.Control]) -> [String] {
+        controls.enumerated().flatMap { offset, control in
+            let slot = offset + 1
+            return [
+                #"            ; @amiga:dispatch \#(control.id) -> \#(control.action)"#,
+                "            cmp.w      #\(slot),d0",
+                "            bne.s      .skip_\(control.id)",
+                "            bsr        \(control.action)",
+                ".skip_\(control.id):"
+            ]
+        }
     }
 
     private static func controlRectDataLines(id: String, label: String, slot: Int, bounds: AmigaProgramModel.Bounds) -> [String] {
@@ -3232,6 +6307,17 @@ enum AmigaProgramPatcher {
             #"            dc.b       "\#(assemblyStringLiteralText(for: label))",0"#,
             "            even"
         ]
+    }
+
+    private static func controlDataLines(for controls: [AmigaProgramModel.Control]) -> [String] {
+        controls.enumerated().flatMap { offset, control in
+            controlRectDataLines(
+                id: control.id,
+                label: control.label,
+                slot: offset + 1,
+                bounds: control.bounds ?? defaultBounds(forControlAt: offset + 1)
+            )
+        }
     }
 
     private static func assemblyStringLiteralText(for label: String) -> String {
@@ -3318,6 +6404,19 @@ enum AmigaProgramPatcher {
         AmigaSourceIndexer.index(line).labels.contains(label)
     }
 
+    private static func lineDefinesExactLabel(_ line: String, label: String) -> Bool {
+        assemblyCodePrefix(beforeCommentIn: line)
+            .trimmingCharacters(in: .whitespaces)
+            .lowercased()
+            .hasPrefix("\(label.lowercased()):")
+    }
+
+    private static func lineDefinesControlRectLabel(_ line: String) -> Bool {
+        assemblyCodePrefix(beforeCommentIn: line)
+            .trimmingCharacters(in: .whitespaces)
+            .range(of: #"^ControlRect_[A-Za-z0-9_]+:"#, options: .regularExpression) != nil
+    }
+
     private struct ControlPatchSpec {
         var purpose: String
         var stateVariables: [AmigaProgramModel.StateVariable]
@@ -3327,7 +6426,7 @@ enum AmigaProgramPatcher {
 
     private static func controlPatchSpec(label: String, controlID: String, actionLabel: String) throws -> ControlPatchSpec {
         let canonicalAction = actionLabel.lowercased()
-        if controlID == "volume_up" || canonicalAction == "volumeup" {
+        if canonicalAction == "volumeup" {
             return ControlPatchSpec(
                 purpose: "Raises Paula channel 0 playback volume.",
                 stateVariables: [
@@ -3352,7 +6451,7 @@ enum AmigaProgramPatcher {
             )
         }
 
-        if controlID == "volume_down" || canonicalAction == "volumedown" {
+        if canonicalAction == "volumedown" {
             return ControlPatchSpec(
                 purpose: "Lowers Paula channel 0 playback volume.",
                 stateVariables: [
@@ -3376,7 +6475,7 @@ enum AmigaProgramPatcher {
             )
         }
 
-        if controlID == "mute" || canonicalAction == "mute" || canonicalAction == "mutemod" {
+        if canonicalAction == "mute" || canonicalAction == "mutemod" {
             return ControlPatchSpec(
                 purpose: "Mutes Paula channel 0 without changing playback state.",
                 stateVariables: [
@@ -3395,7 +6494,7 @@ enum AmigaProgramPatcher {
             )
         }
 
-        if controlID == "pause" || canonicalAction == "pause" || canonicalAction == "pausemod" {
+        if canonicalAction == "pause" || canonicalAction == "pausemod" {
             return ControlPatchSpec(
                 purpose: "Pauses Paula channel 0 playback while preserving the play controls.",
                 stateVariables: [
@@ -3412,6 +6511,22 @@ enum AmigaProgramPatcher {
                     "            rts"
                 ]
             )
+        }
+
+        if controlID == "volume_up" {
+            return try controlPatchSpec(label: label, controlID: "", actionLabel: "VolumeUp")
+        }
+
+        if controlID == "volume_down" {
+            return try controlPatchSpec(label: label, controlID: "", actionLabel: "VolumeDown")
+        }
+
+        if controlID == "mute" {
+            return try controlPatchSpec(label: label, controlID: "", actionLabel: "Mute")
+        }
+
+        if controlID == "pause" {
+            return try controlPatchSpec(label: label, controlID: "", actionLabel: "PauseMOD")
         }
 
         throw AmigaProgramPatchError.unsupportedControl(label)
@@ -5225,6 +8340,14 @@ enum AmigaProgramSourceVerifier {
                 continue
             }
 
+            if let match = regexMatch(#"^Playback period is ([0-9]+)\.$"#, in: trimmed) {
+                let expectedPeriod = match[1]
+                if !playbackPeriodExpectationMatches(expectedPeriod, model: model, index: index, sourceLines: sourceLines) {
+                    failures.append("Verification expectation claims playback period \(expectedPeriod) but PlayMOD does not write AUD0PER with that period.")
+                }
+                continue
+            }
+
             if let match = regexMatch(#"^(Front|Back) buffer color is ([a-z]+)\.$"#, in: trimmed) {
                 let role = match[1].lowercased()
                 let color = match[2]
@@ -5292,6 +8415,21 @@ enum AmigaProgramSourceVerifier {
             }
         }
         return false
+    }
+
+    private static func playbackPeriodExpectationMatches(
+        _ expectedPeriod: String,
+        model: AmigaProgramModel,
+        index: AmigaSourceIndex,
+        sourceLines: [String]
+    ) -> Bool {
+        guard model.controls.contains(where: { $0.action == "PlayMOD" }),
+              let expectedValue = Int(expectedPeriod) else {
+            return false
+        }
+
+        let lines = linesInRoutine("PlayMOD", inRegion: AmigaSourceRegionName.routines.rawValue, index: index, sourceLines: sourceLines)
+        return lines.contains(where: { moveWordImmediateLine($0, value: expectedValue, destination: "$a6(a6)") })
     }
 
     private static func regexMatch(_ pattern: String, in value: String) -> [String]? {
@@ -6229,14 +9367,27 @@ enum AmigaProgramFollowUpPlanner {
                 case .requests(let requests):
                     try verifyCurrentSourceBeforePatching(source)
                     var patchedSource = source
+                    var changedRegions: [String] = []
                     var finalResult: AmigaProgramPatchResult?
                     for request in requests {
                         let result = try verified(AmigaProgramPatcher.updateBitplaneColor(role: request.role, color: request.color, in: patchedSource))
                         patchedSource = result.source
+                        changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
                         finalResult = result
                     }
                     guard let finalResult else { return .notRecognized }
-                    return .patched(finalResult)
+                    if patchedSource == source {
+                        return .patched(AmigaProgramPatchResult(
+                            source: source,
+                            model: finalResult.model,
+                            changedRegions: []
+                        ))
+                    }
+                    return .patched(AmigaProgramPatchResult(
+                        source: patchedSource,
+                        model: finalResult.model,
+                        changedRegions: changedRegions
+                    ))
                 case .missingColor(let role):
                     try verifyCurrentSourceBeforePatching(source)
                     return .rejected(["Specify a supported \(role) buffer color."])
@@ -6257,6 +9408,1457 @@ enum AmigaProgramFollowUpPlanner {
             guard model.id == AmigaProgramFamilyRegistry.modPlayerControls.id else {
                 return .notRecognized
             }
+            switch modControlMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let controls, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                var patchedSource = source
+                var changedRegions: [String] = []
+                var finalResult: AmigaProgramPatchResult?
+                for control in controls {
+                    let result = try verified(AmigaProgramPatcher.addControl(label: control.label, action: control.action, to: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                guard let added = finalResult else { return .notRecognized }
+                var addedResult = added
+                if controls.count > 1,
+                   let placements = addedControlGroupPlacementBounds(
+                    in: prompt,
+                    addedLabels: controls.map(\.label),
+                    model: addedResult.model
+                   ) {
+                    let placed = try verified(AmigaProgramPatcher.updateControlBounds(placements, in: addedResult.source))
+                    patchedSource = placed.source
+                    changedRegions = mergedChangedRegions(changedRegions, placed.changedRegions)
+                    addedResult = placed
+                    finalResult = placed
+                } else if controls.count == 1,
+                          let placement = addedControlPlacementBounds(
+                            in: prompt,
+                            addedLabel: controls[0].label,
+                            model: addedResult.model
+                          ) {
+                    let placed = try verified(AmigaProgramPatcher.updateControlBounds(
+                        label: controls[0].label,
+                        bounds: placement.bounds,
+                        in: addedResult.source
+                    ))
+                    patchedSource = placed.source
+                    changedRegions = mergedChangedRegions(changedRegions, placed.changedRegions)
+                    addedResult = placed
+                    finalResult = placed
+                }
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: addedResult.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: addedResult.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: addedResult.model) else {
+                    return .rejected(["Specify one control move after adding controls."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: addedResult.source
+                ))
+                patchedSource = moved.source
+                changedRegions = mergedChangedRegions(changedRegions, moved.changedRegions)
+                finalResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                guard let finalResult else { return .notRecognized }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modControlAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let controls, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                var patchedSource = source
+                var changedRegions: [String] = []
+                var finalResult: AmigaProgramPatchResult?
+                for control in controls {
+                    let result = try verified(AmigaProgramPatcher.addControl(label: control.label, action: control.action, to: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                if var result = finalResult {
+                    if controls.count > 1,
+                       let placements = addedControlGroupPlacementBounds(
+                        in: prompt,
+                        addedLabels: controls.map(\.label),
+                        model: result.model
+                       ) {
+                        let placed = try verified(AmigaProgramPatcher.updateControlBounds(placements, in: result.source))
+                        patchedSource = placed.source
+                        changedRegions = mergedChangedRegions(changedRegions, placed.changedRegions)
+                        result = placed
+                        finalResult = result
+                    } else if controls.count == 1,
+                              let placement = addedControlPlacementBounds(
+                                in: prompt,
+                                addedLabel: controls[0].label,
+                                model: result.model
+                              ) {
+                        let placed = try verified(AmigaProgramPatcher.updateControlBounds(
+                            label: controls[0].label,
+                            bounds: placement.bounds,
+                            in: result.source
+                        ))
+                        patchedSource = placed.source
+                        changedRegions = mergedChangedRegions(changedRegions, placed.changedRegions)
+                        result = placed
+                        finalResult = result
+                    }
+                }
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                guard let finalResult else { return .notRecognized }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modLabelBehaviorBoundsMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let change, let placement, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: change.currentLabel,
+                    action: change.action,
+                    in: source
+                ))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: change.currentLabel,
+                    newLabel: change.newLabel,
+                    in: behaviorChanged.source
+                ))
+                let boundsLabel = placement.label == change.currentLabel ? change.newLabel : placement.label
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: boundsLabel,
+                    bounds: placement.bounds,
+                    in: renamed.source
+                ))
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: boundsChanged.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: boundsChanged.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: boundsChanged.model) else {
+                    return .rejected(["Specify one control move after changing label, behavior, and bounds."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: boundsChanged.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(
+                    behaviorChanged.changedRegions,
+                    renamed.changedRegions,
+                    boundsChanged.changedRegions,
+                    moved.changedRegions
+                )
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modLabelBehaviorBoundsAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let change, let placement, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: change.currentLabel,
+                    action: change.action,
+                    in: source
+                ))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: change.currentLabel,
+                    newLabel: change.newLabel,
+                    in: behaviorChanged.source
+                ))
+                let boundsLabel = placement.label == change.currentLabel ? change.newLabel : placement.label
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: boundsLabel,
+                    bounds: placement.bounds,
+                    in: renamed.source
+                ))
+                var patchedSource = boundsChanged.source
+                var changedRegions = mergedChangedRegions(
+                    behaviorChanged.changedRegions,
+                    renamed.changedRegions,
+                    boundsChanged.changedRegions
+                )
+                var finalResult: AmigaProgramPatchResult = boundsChanged
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modLabelBehaviorAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let change, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: change.currentLabel,
+                    action: change.action,
+                    in: source
+                ))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: change.currentLabel,
+                    newLabel: change.newLabel,
+                    in: behaviorChanged.source
+                ))
+                var patchedSource = renamed.source
+                var changedRegions = mergedChangedRegions(behaviorChanged.changedRegions, renamed.changedRegions)
+                var finalResult: AmigaProgramPatchResult = renamed
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modLabelBehaviorAndBoundsUpdateIntent(from: prompt, model: model) {
+            case .request(let change, let placement):
+                try verifyCurrentSourceBeforePatching(source)
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: change.currentLabel,
+                    action: change.action,
+                    in: source
+                ))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: change.currentLabel,
+                    newLabel: change.newLabel,
+                    in: behaviorChanged.source
+                ))
+                let boundsLabel = placement.label == change.currentLabel ? change.newLabel : placement.label
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: boundsLabel,
+                    bounds: placement.bounds,
+                    in: renamed.source
+                ))
+                return .patched(AmigaProgramPatchResult(
+                    source: boundsChanged.source,
+                    model: boundsChanged.model,
+                    changedRegions: mergedChangedRegions(
+                        behaviorChanged.changedRegions,
+                        renamed.changedRegions,
+                        boundsChanged.changedRegions
+                    )
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modLabelBehaviorMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let change, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: change.currentLabel,
+                    action: change.action,
+                    in: source
+                ))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: change.currentLabel,
+                    newLabel: change.newLabel,
+                    in: behaviorChanged.source
+                ))
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: renamed.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: renamed.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: renamed.model) else {
+                    return .rejected(["Specify one control move after changing label and behavior."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: renamed.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(
+                    behaviorChanged.changedRegions,
+                    renamed.changedRegions,
+                    moved.changedRegions
+                )
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRenameBoundsMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let rename, let placement, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: rename.currentLabel,
+                    newLabel: rename.newLabel,
+                    in: source
+                ))
+                let boundsLabel = placement.label == rename.currentLabel ? rename.newLabel : placement.label
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: boundsLabel,
+                    bounds: placement.bounds,
+                    in: renamed.source
+                ))
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: boundsChanged.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: boundsChanged.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: boundsChanged.model) else {
+                    return .rejected(["Specify one control move after renaming and changing bounds."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: boundsChanged.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(renamed.changedRegions, boundsChanged.changedRegions, moved.changedRegions)
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRenameBoundsAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let rename, let placement, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: rename.currentLabel,
+                    newLabel: rename.newLabel,
+                    in: source
+                ))
+                let boundsLabel = placement.label == rename.currentLabel ? rename.newLabel : placement.label
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: boundsLabel,
+                    bounds: placement.bounds,
+                    in: renamed.source
+                ))
+                var patchedSource = boundsChanged.source
+                var changedRegions = mergedChangedRegions(renamed.changedRegions, boundsChanged.changedRegions)
+                var finalResult: AmigaProgramPatchResult = boundsChanged
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRenameBoundsUpdateIntent(from: prompt, model: model) {
+            case .request(let rename, let placement):
+                try verifyCurrentSourceBeforePatching(source)
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: rename.currentLabel,
+                    newLabel: rename.newLabel,
+                    in: source
+                ))
+                let boundsLabel = placement.label == rename.currentLabel ? rename.newLabel : placement.label
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: boundsLabel,
+                    bounds: placement.bounds,
+                    in: renamed.source
+                ))
+                return .patched(AmigaProgramPatchResult(
+                    source: boundsChanged.source,
+                    model: boundsChanged.model,
+                    changedRegions: mergedChangedRegions(renamed.changedRegions, boundsChanged.changedRegions)
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRenameMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let rename, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: rename.currentLabel,
+                    newLabel: rename.newLabel,
+                    in: source
+                ))
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: renamed.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: renamed.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: renamed.model) else {
+                    return .rejected(["Specify one control move after renaming a control."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: renamed.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(renamed.changedRegions, moved.changedRegions)
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRenameAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let rename, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: rename.currentLabel,
+                    newLabel: rename.newLabel,
+                    in: source
+                ))
+                var patchedSource = renamed.source
+                var changedRegions = renamed.changedRegions
+                var finalResult: AmigaProgramPatchResult = renamed
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modBehaviorBoundsMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let behavior, let placement, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: behavior.label,
+                    action: behavior.action,
+                    in: source
+                ))
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: placement.label,
+                    bounds: placement.bounds,
+                    in: behaviorChanged.source
+                ))
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: boundsChanged.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: boundsChanged.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: boundsChanged.model) else {
+                    return .rejected(["Specify one control move after changing behavior and bounds."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: boundsChanged.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(behaviorChanged.changedRegions, boundsChanged.changedRegions, moved.changedRegions)
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modBehaviorBoundsAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let behavior, let placement, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: behavior.label,
+                    action: behavior.action,
+                    in: source
+                ))
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: placement.label,
+                    bounds: placement.bounds,
+                    in: behaviorChanged.source
+                ))
+                var patchedSource = boundsChanged.source
+                var changedRegions = mergedChangedRegions(behaviorChanged.changedRegions, boundsChanged.changedRegions)
+                var finalResult: AmigaProgramPatchResult = boundsChanged
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modBehaviorMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let behavior, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: behavior.label,
+                    action: behavior.action,
+                    in: source
+                ))
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: behaviorChanged.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: behaviorChanged.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: behaviorChanged.model) else {
+                    return .rejected(["Specify one control move after changing behavior."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: behaviorChanged.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(behaviorChanged.changedRegions, moved.changedRegions)
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modBehaviorAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let behavior, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: behavior.label,
+                    action: behavior.action,
+                    in: source
+                ))
+                var patchedSource = behaviorChanged.source
+                var changedRegions = behaviorChanged.changedRegions
+                var finalResult: AmigaProgramPatchResult = behaviorChanged
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modBoundsMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let placements, let move, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(placements, in: source))
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: boundsChanged.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(boundsChanged.changedRegions, moved.changedRegions)
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modBoundsAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let placements, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(placements, in: source))
+                var patchedSource = boundsChanged.source
+                var changedRegions = boundsChanged.changedRegions
+                var finalResult: AmigaProgramPatchResult = boundsChanged
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalLabelBehaviorBoundsMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let change, let placement, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: change.currentLabel,
+                    action: change.action,
+                    in: removed.source
+                ))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: change.currentLabel,
+                    newLabel: change.newLabel,
+                    in: behaviorChanged.source
+                ))
+                let placementLabel = placement.label.caseInsensitiveCompare(change.currentLabel) == .orderedSame
+                    ? change.newLabel
+                    : placement.label
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: placementLabel,
+                    bounds: placement.bounds,
+                    in: renamed.source
+                ))
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: boundsChanged.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: boundsChanged.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: boundsChanged.model) else {
+                    return .rejected(["Specify one control move after removing, changing label, behavior, and bounds."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: boundsChanged.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(
+                    removed.changedRegions,
+                    behaviorChanged.changedRegions,
+                    renamed.changedRegions,
+                    boundsChanged.changedRegions,
+                    moved.changedRegions
+                )
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalRenameBoundsMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let rename, let placement, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: rename.currentLabel,
+                    newLabel: rename.newLabel,
+                    in: removed.source
+                ))
+                let placementLabel = placement.label.caseInsensitiveCompare(rename.currentLabel) == .orderedSame
+                    ? rename.newLabel
+                    : placement.label
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: placementLabel,
+                    bounds: placement.bounds,
+                    in: renamed.source
+                ))
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: boundsChanged.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: boundsChanged.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: boundsChanged.model) else {
+                    return .rejected(["Specify one control move after removing, renaming, and changing bounds."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: boundsChanged.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(removed.changedRegions, renamed.changedRegions, boundsChanged.changedRegions, moved.changedRegions)
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalBoundsMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let placements, let move, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(placements, in: removed.source))
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: boundsChanged.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(removed.changedRegions, boundsChanged.changedRegions, moved.changedRegions)
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalLabelBehaviorMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let change, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: change.currentLabel,
+                    action: change.action,
+                    in: removed.source
+                ))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: change.currentLabel,
+                    newLabel: change.newLabel,
+                    in: behaviorChanged.source
+                ))
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: renamed.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: renamed.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: renamed.model) else {
+                    return .rejected(["Specify one control move after removing, changing label, and behavior."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: renamed.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(
+                    removed.changedRegions,
+                    behaviorChanged.changedRegions,
+                    renamed.changedRegions,
+                    moved.changedRegions
+                )
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalLabelBehaviorBoundsAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let change, let placement, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: change.currentLabel,
+                    action: change.action,
+                    in: removed.source
+                ))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: change.currentLabel,
+                    newLabel: change.newLabel,
+                    in: behaviorChanged.source
+                ))
+                let placementLabel = placement.label.caseInsensitiveCompare(change.currentLabel) == .orderedSame
+                    ? change.newLabel
+                    : placement.label
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: placementLabel,
+                    bounds: placement.bounds,
+                    in: renamed.source
+                ))
+                var patchedSource = boundsChanged.source
+                var changedRegions = mergedChangedRegions(
+                    removed.changedRegions,
+                    behaviorChanged.changedRegions,
+                    renamed.changedRegions,
+                    boundsChanged.changedRegions
+                )
+                var finalResult: AmigaProgramPatchResult = boundsChanged
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalLabelBehaviorAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let change, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: change.currentLabel,
+                    action: change.action,
+                    in: removed.source
+                ))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: change.currentLabel,
+                    newLabel: change.newLabel,
+                    in: behaviorChanged.source
+                ))
+                var patchedSource = renamed.source
+                var changedRegions = mergedChangedRegions(removed.changedRegions, behaviorChanged.changedRegions, renamed.changedRegions)
+                var finalResult: AmigaProgramPatchResult = renamed
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalRenameBoundsAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let rename, let placement, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: rename.currentLabel,
+                    newLabel: rename.newLabel,
+                    in: removed.source
+                ))
+                let placementLabel = placement.label.caseInsensitiveCompare(rename.currentLabel) == .orderedSame
+                    ? rename.newLabel
+                    : placement.label
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: placementLabel,
+                    bounds: placement.bounds,
+                    in: renamed.source
+                ))
+                var patchedSource = boundsChanged.source
+                var changedRegions = mergedChangedRegions(removed.changedRegions, renamed.changedRegions, boundsChanged.changedRegions)
+                var finalResult: AmigaProgramPatchResult = boundsChanged
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalRenameMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let rename, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: rename.currentLabel,
+                    newLabel: rename.newLabel,
+                    in: removed.source
+                ))
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: renamed.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: renamed.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: renamed.model) else {
+                    return .rejected(["Specify one control move after removing and renaming."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: renamed.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(removed.changedRegions, renamed.changedRegions, moved.changedRegions)
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalRenameAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let rename, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: rename.currentLabel,
+                    newLabel: rename.newLabel,
+                    in: removed.source
+                ))
+                var patchedSource = renamed.source
+                var changedRegions = mergedChangedRegions(removed.changedRegions, renamed.changedRegions)
+                var finalResult: AmigaProgramPatchResult = renamed
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalBehaviorBoundsMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let behavior, let placement, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: behavior.label,
+                    action: behavior.action,
+                    in: removed.source
+                ))
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: placement.label,
+                    bounds: placement.bounds,
+                    in: behaviorChanged.source
+                ))
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: boundsChanged.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: boundsChanged.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: boundsChanged.model) else {
+                    return .rejected(["Specify one control move after removing, changing behavior, and changing bounds."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: boundsChanged.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(
+                    removed.changedRegions,
+                    behaviorChanged.changedRegions,
+                    boundsChanged.changedRegions,
+                    moved.changedRegions
+                )
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalBehaviorBoundsAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let behavior, let placement, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: behavior.label,
+                    action: behavior.action,
+                    in: removed.source
+                ))
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: placement.label,
+                    bounds: placement.bounds,
+                    in: behaviorChanged.source
+                ))
+                var patchedSource = boundsChanged.source
+                var changedRegions = mergedChangedRegions(removed.changedRegions, behaviorChanged.changedRegions, boundsChanged.changedRegions)
+                var finalResult: AmigaProgramPatchResult = boundsChanged
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalBehaviorMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let behavior, let moveClause, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: behavior.label,
+                    action: behavior.action,
+                    in: removed.source
+                ))
+                if let rejection = ordinalControlMoveRejection(from: moveClause, model: behaviorChanged.model) ??
+                    ambiguousControlMoveRejection(from: moveClause, model: behaviorChanged.model) {
+                    return .rejected([rejection])
+                }
+                guard let move = moveControlRequest(from: moveClause, model: behaviorChanged.model) else {
+                    return .rejected(["Specify one control move after removing and changing behavior."])
+                }
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: behaviorChanged.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(removed.changedRegions, behaviorChanged.changedRegions, moved.changedRegions)
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalBehaviorAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let behavior, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: behavior.label,
+                    action: behavior.action,
+                    in: removed.source
+                ))
+                var patchedSource = behaviorChanged.source
+                var changedRegions = mergedChangedRegions(removed.changedRegions, behaviorChanged.changedRegions)
+                var finalResult: AmigaProgramPatchResult = behaviorChanged
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalBoundsAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let placements, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(placements, in: removed.source))
+                var patchedSource = boundsChanged.source
+                var changedRegions = mergedChangedRegions(removed.changedRegions, boundsChanged.changedRegions)
+                var finalResult: AmigaProgramPatchResult = boundsChanged
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let move, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: removed.source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = mergedChangedRegions(removed.changedRegions, moved.changedRegions)
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalBoundsUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let placements):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let boundsChanged = try verified(AmigaProgramPatcher.updateControlBounds(placements, in: removed.source))
+                return .patched(AmigaProgramPatchResult(
+                    source: boundsChanged.source,
+                    model: boundsChanged.model,
+                    changedRegions: mergedChangedRegions(removed.changedRegions, boundsChanged.changedRegions)
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalMoveUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let move):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: removed.source
+                ))
+                return .patched(AmigaProgramPatchResult(
+                    source: moved.source,
+                    model: moved.model,
+                    changedRegions: mergedChangedRegions(removed.changedRegions, moved.changedRegions)
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modRemovalAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let label, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let removed = try verified(AmigaProgramPatcher.removeControl(label: label, from: source))
+                var patchedSource = removed.source
+                var changedRegions = removed.changedRegions
+                var finalResult: AmigaProgramPatchResult = removed
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modMoveAndParameterUpdateIntent(from: prompt, model: model) {
+            case .request(let move, let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                let moved = try verified(AmigaProgramPatcher.moveControl(
+                    label: move.label,
+                    placement: move.placement,
+                    targetLabel: move.targetLabel,
+                    in: source
+                ))
+                var patchedSource = moved.source
+                var changedRegions = moved.changedRegions
+                var finalResult: AmigaProgramPatchResult = moved
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            switch modParameterUpdateIntent(from: prompt) {
+            case .request(let updates):
+                try verifyCurrentSourceBeforePatching(source)
+                var patchedSource = source
+                var changedRegions: [String] = []
+                var finalResult: AmigaProgramPatchResult?
+                for update in updates {
+                    let result = try verified(modParameterPatchResult(for: update, in: patchedSource))
+                    patchedSource = result.source
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                    finalResult = result
+                }
+                guard let finalResult else { return .notRecognized }
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
+            case .rejected(let reasons):
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected(reasons)
+            case .notRecognized:
+                break
+            }
+            if playbackNoteIntent(from: prompt) {
+                try verifyCurrentSourceBeforePatching(source)
+                guard let period = playbackNotePeriod(from: prompt) else {
+                    return .rejected(["Specify a supported playback note such as C-3."])
+                }
+                return .patched(try verified(AmigaProgramPatcher.updatePlaybackPeriod(period, in: source)))
+            }
+            if playbackPeriodIntent(from: prompt) {
+                try verifyCurrentSourceBeforePatching(source)
+                guard let period = firstInteger(in: prompt) else {
+                    return .rejected(["Specify a numeric playback period."])
+                }
+                return .patched(try verified(AmigaProgramPatcher.updatePlaybackPeriod(period, in: source)))
+            }
             if volumeStepIntent(from: prompt) {
                 try verifyCurrentSourceBeforePatching(source)
                 guard let step = firstInteger(in: prompt) else {
@@ -6266,18 +10868,97 @@ enum AmigaProgramFollowUpPlanner {
             }
             if initialVolumeIntent(from: prompt) {
                 try verifyCurrentSourceBeforePatching(source)
-                guard let volume = firstInteger(in: prompt) else {
+                guard let volume = initialVolumeValue(from: prompt) else {
                     return .rejected(["Specify a numeric initial volume."])
                 }
                 return .patched(try verified(AmigaProgramPatcher.updateInitialVolume(volume, in: source)))
             }
-            if let request = labelRenameRequest(from: prompt, model: model) {
+            if let rejection = conflictingControlBehaviorChangeRejection(from: prompt, model: model) {
                 try verifyCurrentSourceBeforePatching(source)
-                return .patched(try verified(AmigaProgramPatcher.renameControl(currentLabel: request.currentLabel, newLabel: request.newLabel, in: source)))
+                return .rejected([rejection])
+            }
+            if let rejection = duplicateControlLabelAndBehaviorChangeRejection(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected([rejection])
+            }
+            if let request = controlLabelAndBehaviorChangeRequest(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                let behaviorChanged = try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: request.currentLabel,
+                    action: request.action,
+                    in: source
+                ))
+                let renamed = try verified(AmigaProgramPatcher.renameControl(
+                    currentLabel: request.currentLabel,
+                    newLabel: request.newLabel,
+                    in: behaviorChanged.source
+                ))
+                return .patched(AmigaProgramPatchResult(
+                    source: renamed.source,
+                    model: renamed.model,
+                    changedRegions: mergedChangedRegions(behaviorChanged.changedRegions, renamed.changedRegions)
+                ))
+            }
+            if let request = controlBehaviorChangeRequest(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                return .patched(try verified(AmigaProgramPatcher.changeControlBehavior(
+                    label: request.label,
+                    action: request.action,
+                    in: source
+                )))
+            }
+            if let placements = controlGroupBoundsRequest(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                return .patched(try verified(AmigaProgramPatcher.updateControlBounds(placements, in: source)))
+            }
+            if let request = controlBoundsRequest(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                return .patched(try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: request.label,
+                    bounds: request.bounds,
+                    in: source
+                )))
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected([rejection])
+            }
+            if let rejection = ordinalControlMoveRejection(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected([rejection])
+            }
+            if let request = moveControlRequest(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                return .patched(try verified(AmigaProgramPatcher.moveControl(
+                    label: request.label,
+                    placement: request.placement,
+                    targetLabel: request.targetLabel,
+                    in: source
+                )))
+            }
+            if let rejection = ambiguousControlMoveRejection(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected([rejection])
+            }
+            if let rejection = ordinalControlRemovalRejection(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected([rejection])
+            }
+            if let label = removeControlRequest(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                return .patched(try verified(AmigaProgramPatcher.removeControl(label: label, from: source)))
+            }
+            if let rejection = ambiguousControlRemovalRejection(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                return .rejected([rejection])
             }
             if let rejection = ordinalLabelRenameRejection(from: prompt, model: model) {
                 try verifyCurrentSourceBeforePatching(source)
                 return .rejected([rejection])
+            }
+            if let request = labelRenameRequest(from: prompt, model: model) {
+                try verifyCurrentSourceBeforePatching(source)
+                return .patched(try verified(AmigaProgramPatcher.renameControl(currentLabel: request.currentLabel, newLabel: request.newLabel, in: source)))
             }
             if let rejection = ambiguousLabelRenameRejection(from: prompt, model: model) {
                 try verifyCurrentSourceBeforePatching(source)
@@ -6299,13 +10980,34 @@ enum AmigaProgramFollowUpPlanner {
                 try verifyCurrentSourceBeforePatching(source)
                 var patchedSource = source
                 var finalResult: AmigaProgramPatchResult?
+                var changedRegions: [String] = []
                 for request in requests {
                     let result = try verified(AmigaProgramPatcher.addControl(label: request.label, action: request.action, to: patchedSource))
                     patchedSource = result.source
                     finalResult = result
+                    changedRegions = mergedChangedRegions(changedRegions, result.changedRegions)
+                }
+                if var result = finalResult,
+                   let placements = addedControlGroupPlacementBounds(
+                    in: prompt,
+                    addedLabels: requests.map(\.label),
+                    model: result.model
+                   ) {
+                    let placed = try verified(AmigaProgramPatcher.updateControlBounds(placements, in: result.source))
+                    result = placed
+                    changedRegions = mergedChangedRegions(changedRegions, placed.changedRegions)
+                    return .patched(AmigaProgramPatchResult(
+                        source: result.source,
+                        model: result.model,
+                        changedRegions: changedRegions
+                    ))
                 }
                 guard let finalResult else { return .notRecognized }
-                return .patched(finalResult)
+                return .patched(AmigaProgramPatchResult(
+                    source: finalResult.source,
+                    model: finalResult.model,
+                    changedRegions: changedRegions
+                ))
             }
             guard let request = addControlRequest(from: prompt) else {
                 if let unsupportedLabel = unsupportedAddControlLabel(from: prompt) {
@@ -6323,7 +11025,20 @@ enum AmigaProgramFollowUpPlanner {
                 return .notRecognized
             }
             try verifyCurrentSourceBeforePatching(source)
-            return .patched(try verified(AmigaProgramPatcher.addControl(label: request.label, action: request.action, to: source)))
+            let added = try verified(AmigaProgramPatcher.addControl(label: request.label, action: request.action, to: source))
+            if let placement = addedControlPlacementBounds(in: prompt, addedLabel: request.label, model: added.model) {
+                let placed = try verified(AmigaProgramPatcher.updateControlBounds(
+                    label: placement.label,
+                    bounds: placement.bounds,
+                    in: added.source
+                ))
+                return .patched(AmigaProgramPatchResult(
+                    source: placed.source,
+                    model: placed.model,
+                    changedRegions: mergedChangedRegions(added.changedRegions, placed.changedRegions)
+                ))
+            }
+            return .patched(added)
         } catch AmigaProgramPatchError.verificationFailed(let failures) {
             return .rejected(failures)
         } catch {
@@ -6473,6 +11188,14 @@ enum AmigaProgramFollowUpPlanner {
         return result
     }
 
+    private static func mergedChangedRegions(_ regions: [String]...) -> [String] {
+        var merged: [String] = []
+        for region in regions.flatMap({ $0 }) where !merged.contains(region) {
+            merged.append(region)
+        }
+        return merged
+    }
+
     private static func patchErrorDescription(_ error: Error) -> String {
         if let localizedError = error as? LocalizedError,
            let description = localizedError.errorDescription {
@@ -6481,9 +11204,4018 @@ enum AmigaProgramFollowUpPlanner {
         return error.localizedDescription
     }
 
+    private enum ModParameterUpdate: Equatable {
+        case playbackPeriod(Int)
+        case volumeStep(Int)
+        case initialVolume(Int)
+
+        var target: String {
+            switch self {
+            case .playbackPeriod:
+                return "playback period"
+            case .volumeStep:
+                return "volume step"
+            case .initialVolume:
+                return "initial volume"
+            }
+        }
+    }
+
+    private enum ModParameterUpdateIntent: Equatable {
+        case request([ModParameterUpdate])
+        case rejected([String])
+        case notRecognized
+    }
+
+    private enum ModParameterClauseIntent: Equatable {
+        case update(ModParameterUpdate)
+        case rejected(String)
+        case notRecognized
+    }
+
+    private enum ModControlAndParameterUpdateIntent: Equatable {
+        case request(controls: [(label: String, action: String)], updates: [ModParameterUpdate])
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModControlAndParameterUpdateIntent, rhs: ModControlAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsControls, let lhsUpdates), .request(let rhsControls, let rhsUpdates)):
+                return lhsControls.map(\.label) == rhsControls.map(\.label) &&
+                    lhsControls.map(\.action) == rhsControls.map(\.action) &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModControlMoveAndParameterUpdateIntent: Equatable {
+        case request(controls: [(label: String, action: String)], moveClause: String, updates: [ModParameterUpdate])
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModControlMoveAndParameterUpdateIntent, rhs: ModControlMoveAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsControls, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsControls, let rhsMoveClause, let rhsUpdates)):
+                return lhsControls.map(\.label) == rhsControls.map(\.label) &&
+                    lhsControls.map(\.action) == rhsControls.map(\.action) &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRenameAndParameterUpdateIntent: Equatable {
+        case request(rename: (currentLabel: String, newLabel: String), updates: [ModParameterUpdate])
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModRenameAndParameterUpdateIntent, rhs: ModRenameAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsRename, let lhsUpdates), .request(let rhsRename, let rhsUpdates)):
+                return lhsRename.currentLabel == rhsRename.currentLabel &&
+                    lhsRename.newLabel == rhsRename.newLabel &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRenameBoundsAndParameterUpdateIntent: Equatable {
+        case request(
+            rename: (currentLabel: String, newLabel: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds),
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModRenameBoundsAndParameterUpdateIntent, rhs: ModRenameBoundsAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsRename, let lhsPlacement, let lhsUpdates),
+                  .request(let rhsRename, let rhsPlacement, let rhsUpdates)):
+                return lhsRename.currentLabel == rhsRename.currentLabel &&
+                    lhsRename.newLabel == rhsRename.newLabel &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRenameBoundsUpdateIntent: Equatable {
+        case request(
+            rename: (currentLabel: String, newLabel: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds)
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModRenameBoundsUpdateIntent, rhs: ModRenameBoundsUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsRename, let lhsPlacement), .request(let rhsRename, let rhsPlacement)):
+                return lhsRename.currentLabel == rhsRename.currentLabel &&
+                    lhsRename.newLabel == rhsRename.newLabel &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRenameBoundsMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            rename: (currentLabel: String, newLabel: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds),
+            moveClause: String,
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModRenameBoundsMoveAndParameterUpdateIntent, rhs: ModRenameBoundsMoveAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsRename, let lhsPlacement, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsRename, let rhsPlacement, let rhsMoveClause, let rhsUpdates)):
+                return lhsRename.currentLabel == rhsRename.currentLabel &&
+                    lhsRename.newLabel == rhsRename.newLabel &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRenameMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            rename: (currentLabel: String, newLabel: String),
+            moveClause: String,
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModRenameMoveAndParameterUpdateIntent, rhs: ModRenameMoveAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsRename, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsRename, let rhsMoveClause, let rhsUpdates)):
+                return lhsRename.currentLabel == rhsRename.currentLabel &&
+                    lhsRename.newLabel == rhsRename.newLabel &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModBehaviorAndParameterUpdateIntent: Equatable {
+        case request(behavior: (label: String, action: String), updates: [ModParameterUpdate])
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModBehaviorAndParameterUpdateIntent, rhs: ModBehaviorAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsBehavior, let lhsUpdates), .request(let rhsBehavior, let rhsUpdates)):
+                return lhsBehavior.label == rhsBehavior.label &&
+                    lhsBehavior.action == rhsBehavior.action &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModBehaviorMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            behavior: (label: String, action: String),
+            moveClause: String,
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModBehaviorMoveAndParameterUpdateIntent, rhs: ModBehaviorMoveAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsBehavior, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsBehavior, let rhsMoveClause, let rhsUpdates)):
+                return lhsBehavior.label == rhsBehavior.label &&
+                    lhsBehavior.action == rhsBehavior.action &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModBehaviorBoundsAndParameterUpdateIntent: Equatable {
+        case request(
+            behavior: (label: String, action: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds),
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModBehaviorBoundsAndParameterUpdateIntent, rhs: ModBehaviorBoundsAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsBehavior, let lhsPlacement, let lhsUpdates),
+                  .request(let rhsBehavior, let rhsPlacement, let rhsUpdates)):
+                return lhsBehavior.label == rhsBehavior.label &&
+                    lhsBehavior.action == rhsBehavior.action &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModLabelBehaviorAndParameterUpdateIntent: Equatable {
+        case request(change: (currentLabel: String, newLabel: String, action: String), updates: [ModParameterUpdate])
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModLabelBehaviorAndParameterUpdateIntent, rhs: ModLabelBehaviorAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsChange, let lhsUpdates), .request(let rhsChange, let rhsUpdates)):
+                return lhsChange.currentLabel == rhsChange.currentLabel &&
+                    lhsChange.newLabel == rhsChange.newLabel &&
+                    lhsChange.action == rhsChange.action &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModBehaviorBoundsMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            behavior: (label: String, action: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds),
+            moveClause: String,
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModBehaviorBoundsMoveAndParameterUpdateIntent, rhs: ModBehaviorBoundsMoveAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsBehavior, let lhsPlacement, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsBehavior, let rhsPlacement, let rhsMoveClause, let rhsUpdates)):
+                return lhsBehavior.label == rhsBehavior.label &&
+                    lhsBehavior.action == rhsBehavior.action &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModLabelBehaviorMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            change: (currentLabel: String, newLabel: String, action: String),
+            moveClause: String,
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModLabelBehaviorMoveAndParameterUpdateIntent,
+            rhs: ModLabelBehaviorMoveAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsChange, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsChange, let rhsMoveClause, let rhsUpdates)):
+                return lhsChange.currentLabel == rhsChange.currentLabel &&
+                    lhsChange.newLabel == rhsChange.newLabel &&
+                    lhsChange.action == rhsChange.action &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModLabelBehaviorBoundsAndParameterUpdateIntent: Equatable {
+        case request(
+            change: (currentLabel: String, newLabel: String, action: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds),
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModLabelBehaviorBoundsAndParameterUpdateIntent,
+            rhs: ModLabelBehaviorBoundsAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsChange, let lhsPlacement, let lhsUpdates),
+                  .request(let rhsChange, let rhsPlacement, let rhsUpdates)):
+                return lhsChange.currentLabel == rhsChange.currentLabel &&
+                    lhsChange.newLabel == rhsChange.newLabel &&
+                    lhsChange.action == rhsChange.action &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModLabelBehaviorBoundsMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            change: (currentLabel: String, newLabel: String, action: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds),
+            moveClause: String,
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModLabelBehaviorBoundsMoveAndParameterUpdateIntent,
+            rhs: ModLabelBehaviorBoundsMoveAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsChange, let lhsPlacement, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsChange, let rhsPlacement, let rhsMoveClause, let rhsUpdates)):
+                return lhsChange.currentLabel == rhsChange.currentLabel &&
+                    lhsChange.newLabel == rhsChange.newLabel &&
+                    lhsChange.action == rhsChange.action &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModLabelBehaviorAndBoundsUpdateIntent: Equatable {
+        case request(
+            change: (currentLabel: String, newLabel: String, action: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds)
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModLabelBehaviorAndBoundsUpdateIntent, rhs: ModLabelBehaviorAndBoundsUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsChange, let lhsPlacement), .request(let rhsChange, let rhsPlacement)):
+                return lhsChange.currentLabel == rhsChange.currentLabel &&
+                    lhsChange.newLabel == rhsChange.newLabel &&
+                    lhsChange.action == rhsChange.action &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModBoundsAndParameterUpdateIntent: Equatable {
+        case request(placements: [(label: String, bounds: AmigaProgramModel.Bounds)], updates: [ModParameterUpdate])
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModBoundsAndParameterUpdateIntent, rhs: ModBoundsAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsPlacements, let lhsUpdates), .request(let rhsPlacements, let rhsUpdates)):
+                return lhsPlacements.map(\.label) == rhsPlacements.map(\.label) &&
+                    lhsPlacements.map(\.bounds) == rhsPlacements.map(\.bounds) &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModBoundsMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            placements: [(label: String, bounds: AmigaProgramModel.Bounds)],
+            move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String),
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModBoundsMoveAndParameterUpdateIntent, rhs: ModBoundsMoveAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsPlacements, let lhsMove, let lhsUpdates),
+                  .request(let rhsPlacements, let rhsMove, let rhsUpdates)):
+                return lhsPlacements.map(\.label) == rhsPlacements.map(\.label) &&
+                    lhsPlacements.map(\.bounds) == rhsPlacements.map(\.bounds) &&
+                    lhsMove.label == rhsMove.label &&
+                    lhsMove.placement == rhsMove.placement &&
+                    lhsMove.targetLabel == rhsMove.targetLabel &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalBoundsAndParameterUpdateIntent: Equatable {
+        case request(label: String, placements: [(label: String, bounds: AmigaProgramModel.Bounds)], updates: [ModParameterUpdate])
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModRemovalBoundsAndParameterUpdateIntent, rhs: ModRemovalBoundsAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsPlacements, let lhsUpdates),
+                  .request(let rhsLabel, let rhsPlacements, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsPlacements.map(\.label) == rhsPlacements.map(\.label) &&
+                    lhsPlacements.map(\.bounds) == rhsPlacements.map(\.bounds) &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalBoundsUpdateIntent: Equatable {
+        case request(label: String, placements: [(label: String, bounds: AmigaProgramModel.Bounds)])
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModRemovalBoundsUpdateIntent, rhs: ModRemovalBoundsUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsPlacements), .request(let rhsLabel, let rhsPlacements)):
+                return lhsLabel == rhsLabel &&
+                    lhsPlacements.map(\.label) == rhsPlacements.map(\.label) &&
+                    lhsPlacements.map(\.bounds) == rhsPlacements.map(\.bounds)
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalBoundsMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            label: String,
+            placements: [(label: String, bounds: AmigaProgramModel.Bounds)],
+            move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String),
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModRemovalBoundsMoveAndParameterUpdateIntent, rhs: ModRemovalBoundsMoveAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsPlacements, let lhsMove, let lhsUpdates),
+                  .request(let rhsLabel, let rhsPlacements, let rhsMove, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsPlacements.map(\.label) == rhsPlacements.map(\.label) &&
+                    lhsPlacements.map(\.bounds) == rhsPlacements.map(\.bounds) &&
+                    lhsMove.label == rhsMove.label &&
+                    lhsMove.placement == rhsMove.placement &&
+                    lhsMove.targetLabel == rhsMove.targetLabel &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalRenameBoundsMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            label: String,
+            rename: (currentLabel: String, newLabel: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds),
+            moveClause: String,
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModRemovalRenameBoundsMoveAndParameterUpdateIntent,
+            rhs: ModRemovalRenameBoundsMoveAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsRename, let lhsPlacement, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsLabel, let rhsRename, let rhsPlacement, let rhsMoveClause, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsRename.currentLabel == rhsRename.currentLabel &&
+                    lhsRename.newLabel == rhsRename.newLabel &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalRenameAndParameterUpdateIntent: Equatable {
+        case request(label: String, rename: (currentLabel: String, newLabel: String), updates: [ModParameterUpdate])
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModRemovalRenameAndParameterUpdateIntent, rhs: ModRemovalRenameAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsRename, let lhsUpdates), .request(let rhsLabel, let rhsRename, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsRename.currentLabel == rhsRename.currentLabel &&
+                    lhsRename.newLabel == rhsRename.newLabel &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalRenameMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            label: String,
+            rename: (currentLabel: String, newLabel: String),
+            moveClause: String,
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModRemovalRenameMoveAndParameterUpdateIntent,
+            rhs: ModRemovalRenameMoveAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsRename, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsLabel, let rhsRename, let rhsMoveClause, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsRename.currentLabel == rhsRename.currentLabel &&
+                    lhsRename.newLabel == rhsRename.newLabel &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalRenameBoundsAndParameterUpdateIntent: Equatable {
+        case request(
+            label: String,
+            rename: (currentLabel: String, newLabel: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds),
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModRemovalRenameBoundsAndParameterUpdateIntent,
+            rhs: ModRemovalRenameBoundsAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsRename, let lhsPlacement, let lhsUpdates),
+                  .request(let rhsLabel, let rhsRename, let rhsPlacement, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsRename.currentLabel == rhsRename.currentLabel &&
+                    lhsRename.newLabel == rhsRename.newLabel &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalLabelBehaviorAndParameterUpdateIntent: Equatable {
+        case request(
+            label: String,
+            change: (currentLabel: String, newLabel: String, action: String),
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModRemovalLabelBehaviorAndParameterUpdateIntent,
+            rhs: ModRemovalLabelBehaviorAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsChange, let lhsUpdates),
+                  .request(let rhsLabel, let rhsChange, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsChange.currentLabel == rhsChange.currentLabel &&
+                    lhsChange.newLabel == rhsChange.newLabel &&
+                    lhsChange.action == rhsChange.action &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalLabelBehaviorMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            label: String,
+            change: (currentLabel: String, newLabel: String, action: String),
+            moveClause: String,
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModRemovalLabelBehaviorMoveAndParameterUpdateIntent,
+            rhs: ModRemovalLabelBehaviorMoveAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsChange, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsLabel, let rhsChange, let rhsMoveClause, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsChange.currentLabel == rhsChange.currentLabel &&
+                    lhsChange.newLabel == rhsChange.newLabel &&
+                    lhsChange.action == rhsChange.action &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalLabelBehaviorBoundsAndParameterUpdateIntent: Equatable {
+        case request(
+            label: String,
+            change: (currentLabel: String, newLabel: String, action: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds),
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModRemovalLabelBehaviorBoundsAndParameterUpdateIntent,
+            rhs: ModRemovalLabelBehaviorBoundsAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsChange, let lhsPlacement, let lhsUpdates),
+                  .request(let rhsLabel, let rhsChange, let rhsPlacement, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsChange.currentLabel == rhsChange.currentLabel &&
+                    lhsChange.newLabel == rhsChange.newLabel &&
+                    lhsChange.action == rhsChange.action &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalLabelBehaviorBoundsMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            label: String,
+            change: (currentLabel: String, newLabel: String, action: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds),
+            moveClause: String,
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModRemovalLabelBehaviorBoundsMoveAndParameterUpdateIntent,
+            rhs: ModRemovalLabelBehaviorBoundsMoveAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsChange, let lhsPlacement, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsLabel, let rhsChange, let rhsPlacement, let rhsMoveClause, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsChange.currentLabel == rhsChange.currentLabel &&
+                    lhsChange.newLabel == rhsChange.newLabel &&
+                    lhsChange.action == rhsChange.action &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalBehaviorAndParameterUpdateIntent: Equatable {
+        case request(label: String, behavior: (label: String, action: String), updates: [ModParameterUpdate])
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModRemovalBehaviorAndParameterUpdateIntent, rhs: ModRemovalBehaviorAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsBehavior, let lhsUpdates), .request(let rhsLabel, let rhsBehavior, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsBehavior.label == rhsBehavior.label &&
+                    lhsBehavior.action == rhsBehavior.action &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalBehaviorMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            label: String,
+            behavior: (label: String, action: String),
+            moveClause: String,
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModRemovalBehaviorMoveAndParameterUpdateIntent,
+            rhs: ModRemovalBehaviorMoveAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsBehavior, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsLabel, let rhsBehavior, let rhsMoveClause, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsBehavior.label == rhsBehavior.label &&
+                    lhsBehavior.action == rhsBehavior.action &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalBehaviorBoundsAndParameterUpdateIntent: Equatable {
+        case request(
+            label: String,
+            behavior: (label: String, action: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds),
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModRemovalBehaviorBoundsAndParameterUpdateIntent,
+            rhs: ModRemovalBehaviorBoundsAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsBehavior, let lhsPlacement, let lhsUpdates),
+                  .request(let rhsLabel, let rhsBehavior, let rhsPlacement, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsBehavior.label == rhsBehavior.label &&
+                    lhsBehavior.action == rhsBehavior.action &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalBehaviorBoundsMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            label: String,
+            behavior: (label: String, action: String),
+            placement: (label: String, bounds: AmigaProgramModel.Bounds),
+            moveClause: String,
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (
+            lhs: ModRemovalBehaviorBoundsMoveAndParameterUpdateIntent,
+            rhs: ModRemovalBehaviorBoundsMoveAndParameterUpdateIntent
+        ) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsBehavior, let lhsPlacement, let lhsMoveClause, let lhsUpdates),
+                  .request(let rhsLabel, let rhsBehavior, let rhsPlacement, let rhsMoveClause, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsBehavior.label == rhsBehavior.label &&
+                    lhsBehavior.action == rhsBehavior.action &&
+                    lhsPlacement.label == rhsPlacement.label &&
+                    lhsPlacement.bounds == rhsPlacement.bounds &&
+                    lhsMoveClause == rhsMoveClause &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            label: String,
+            move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String),
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModRemovalMoveAndParameterUpdateIntent, rhs: ModRemovalMoveAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsMove, let lhsUpdates),
+                  .request(let rhsLabel, let rhsMove, let rhsUpdates)):
+                return lhsLabel == rhsLabel &&
+                    lhsMove.label == rhsMove.label &&
+                    lhsMove.placement == rhsMove.placement &&
+                    lhsMove.targetLabel == rhsMove.targetLabel &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalMoveUpdateIntent: Equatable {
+        case request(
+            label: String,
+            move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String)
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModRemovalMoveUpdateIntent, rhs: ModRemovalMoveUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsLabel, let lhsMove), .request(let rhsLabel, let rhsMove)):
+                return lhsLabel == rhsLabel &&
+                    lhsMove.label == rhsMove.label &&
+                    lhsMove.placement == rhsMove.placement &&
+                    lhsMove.targetLabel == rhsMove.targetLabel
+            default:
+                return false
+            }
+        }
+    }
+
+    private enum ModRemovalAndParameterUpdateIntent: Equatable {
+        case request(label: String, updates: [ModParameterUpdate])
+        case rejected([String])
+        case notRecognized
+    }
+
+    private enum ModMoveAndParameterUpdateIntent: Equatable {
+        case request(
+            move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String),
+            updates: [ModParameterUpdate]
+        )
+        case rejected([String])
+        case notRecognized
+
+        static func == (lhs: ModMoveAndParameterUpdateIntent, rhs: ModMoveAndParameterUpdateIntent) -> Bool {
+            switch (lhs, rhs) {
+            case (.notRecognized, .notRecognized):
+                return true
+            case (.rejected(let lhsReasons), .rejected(let rhsReasons)):
+                return lhsReasons == rhsReasons
+            case (.request(let lhsMove, let lhsUpdates), .request(let rhsMove, let rhsUpdates)):
+                return lhsMove.label == rhsMove.label &&
+                    lhsMove.placement == rhsMove.placement &&
+                    lhsMove.targetLabel == rhsMove.targetLabel &&
+                    lhsUpdates == rhsUpdates
+            default:
+                return false
+            }
+        }
+    }
+
+    private static func modControlMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModControlMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasAddControlSignal(in: normalizedPrompt),
+              movePlacementSeparator(in: prompt) != nil,
+              !hasRemoveControlSignal(in: normalizedPrompt),
+              !hasControlRenameSignalOutsideAddLabel(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var controls: [(label: String, action: String)] = []
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = duplicateAddControlRequestRejection(from: clause) ??
+                conflictingAddControlRejection(from: clause) ??
+                addControlOrdinalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let requests = addControlRequests(from: clause) {
+                controls.append(contentsOf: requests)
+                continue
+            }
+            if let request = addControlRequest(from: clause) {
+                controls.append(request)
+                continue
+            }
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard !controls.isEmpty,
+              let moveClause else {
+            return .notRecognized
+        }
+        if let duplicateLabel = duplicateAddControlLabel(in: controls) {
+            return .rejected(["Duplicate control requested: \(duplicateLabel). Specify each control only once."])
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(controls: controls, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modControlAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModControlAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        guard clauses.count > 1,
+              hasAddControlSignal(in: prompt.lowercased()) else {
+            return .notRecognized
+        }
+
+        var controls: [(label: String, action: String)] = []
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = duplicateAddControlRequestRejection(from: clause) ??
+                conflictingAddControlRejection(from: clause) ??
+                addControlOrdinalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let requests = addControlRequests(from: clause) {
+                controls.append(contentsOf: requests)
+                continue
+            }
+            if let request = addControlRequest(from: clause) {
+                controls.append(request)
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard !controls.isEmpty,
+              updates.count + rejectedReasons.count > 0 else {
+            return .notRecognized
+        }
+        if let duplicateLabel = duplicateAddControlLabel(in: controls) {
+            return .rejected(["Duplicate control requested: \(duplicateLabel). Specify each control only once."])
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(controls: controls, updates: updates)
+    }
+
+    private static func modRenameAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRenameAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasRenameSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var rename: (currentLabel: String, newLabel: String)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ordinalLabelRenameRejection(from: clause, model: model) ??
+                ambiguousLabelRenameRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = labelRenameRequest(from: clause, model: model) {
+                if rename != nil {
+                    rejectedReasons.append("Specify only one control rename.")
+                } else {
+                    rename = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let rename,
+              updates.count + rejectedReasons.count > 0 else {
+            return .notRecognized
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(rename: rename, updates: updates)
+    }
+
+    private static func modRenameBoundsAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRenameBoundsAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRenameSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var rename: (currentLabel: String, newLabel: String)?
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ordinalLabelRenameRejection(from: clause, model: model) ??
+                ambiguousLabelRenameRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = labelRenameRequest(from: clause, model: model) {
+                if rename != nil {
+                    rejectedReasons.append("Specify only one control rename.")
+                } else {
+                    rename = request
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let boundsRequest = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = boundsRequest
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let rename,
+              let placement,
+              updates.count + rejectedReasons.count > 0 else {
+            return .notRecognized
+        }
+        if placement.label != rename.currentLabel {
+            rejectedReasons.append("Specify the same control for rename and bounds changes.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(rename: rename, placement: placement, updates: updates)
+    }
+
+    private static func modRenameBoundsUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRenameBoundsUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasRenameSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt),
+              movePlacementSeparator(in: prompt) == nil else {
+            return .notRecognized
+        }
+
+        var rename: (currentLabel: String, newLabel: String)?
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ordinalLabelRenameRejection(from: clause, model: model) ??
+                ambiguousLabelRenameRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = labelRenameRequest(from: clause, model: model) {
+                if rename != nil {
+                    rejectedReasons.append("Specify only one control rename.")
+                } else {
+                    rename = request
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let boundsRequest = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = boundsRequest
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update:
+                return .notRecognized
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let rename,
+              let placement else {
+            return .notRecognized
+        }
+        if placement.label != rename.currentLabel {
+            rejectedReasons.append("Specify the same control for rename and bounds changes.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        return .request(rename: rename, placement: placement)
+    }
+
+    private static func modRenameBoundsMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRenameBoundsMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRenameSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              movePlacementSeparator(in: prompt) != nil,
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var rename: (currentLabel: String, newLabel: String)?
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ordinalLabelRenameRejection(from: clause, model: model) ??
+                ambiguousLabelRenameRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = labelRenameRequest(from: clause, model: model) {
+                if rename != nil {
+                    rejectedReasons.append("Specify only one control rename.")
+                } else {
+                    rename = request
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let boundsRequest = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = boundsRequest
+                }
+                continue
+            }
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let rename,
+              let placement,
+              let moveClause else {
+            return .notRecognized
+        }
+        if placement.label != rename.currentLabel {
+            rejectedReasons.append("Specify the same control for rename and bounds changes.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(rename: rename, placement: placement, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modRenameMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRenameMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasRenameSignal(in: normalizedPrompt),
+              movePlacementSeparator(in: prompt) != nil,
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var rename: (currentLabel: String, newLabel: String)?
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ordinalLabelRenameRejection(from: clause, model: model) ??
+                ambiguousLabelRenameRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = labelRenameRequest(from: clause, model: model) {
+                if rename != nil {
+                    rejectedReasons.append("Specify only one control rename.")
+                } else {
+                    rename = request
+                }
+                continue
+            }
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let rename,
+              let moveClause else {
+            return .notRecognized
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(rename: rename, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modBehaviorAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModBehaviorAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt),
+              !hasMoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var behavior: (label: String, action: String)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = conflictingControlBehaviorChangeRejection(from: clause, model: model) ??
+                duplicateControlLabelAndBehaviorChangeRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBehaviorChangeRequest(from: clause, model: model) {
+                if behavior != nil {
+                    rejectedReasons.append("Specify only one control behavior change.")
+                } else {
+                    behavior = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let behavior,
+              updates.count + rejectedReasons.count > 0 else {
+            return .notRecognized
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(behavior: behavior, updates: updates)
+    }
+
+    private static func modBehaviorMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModBehaviorMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              movePlacementSeparator(in: prompt) != nil,
+              !hasRenameSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var behavior: (label: String, action: String)?
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = conflictingControlBehaviorChangeRejection(from: clause, model: model) ??
+                duplicateControlLabelAndBehaviorChangeRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBehaviorChangeRequest(from: clause, model: model) {
+                if behavior != nil {
+                    rejectedReasons.append("Specify only one control behavior change.")
+                } else {
+                    behavior = request
+                }
+                continue
+            }
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let behavior,
+              let moveClause else {
+            return .notRecognized
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(behavior: behavior, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modBehaviorBoundsAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModBehaviorBoundsAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt),
+              !hasMoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var behavior: (label: String, action: String)?
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = conflictingControlBehaviorChangeRejection(from: clause, model: model) ??
+                duplicateControlLabelAndBehaviorChangeRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBehaviorChangeRequest(from: clause, model: model) {
+                if behavior != nil {
+                    rejectedReasons.append("Specify only one control behavior change.")
+                } else {
+                    behavior = request
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let boundsRequest = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = boundsRequest
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let behavior,
+              let placement else {
+            return .notRecognized
+        }
+        if placement.label != behavior.label {
+            rejectedReasons.append("Specify the same control for behavior and bounds changes.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(behavior: behavior, placement: placement, updates: updates)
+    }
+
+    private static func modBehaviorBoundsMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModBehaviorBoundsMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              movePlacementSeparator(in: prompt) != nil,
+              !hasRenameSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var behavior: (label: String, action: String)?
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = conflictingControlBehaviorChangeRejection(from: clause, model: model) ??
+                duplicateControlLabelAndBehaviorChangeRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBehaviorChangeRequest(from: clause, model: model) {
+                if behavior != nil {
+                    rejectedReasons.append("Specify only one control behavior change.")
+                } else {
+                    behavior = request
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let boundsRequest = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = boundsRequest
+                }
+                continue
+            }
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let behavior,
+              let placement,
+              let moveClause else {
+            return .notRecognized
+        }
+        if placement.label != behavior.label {
+            rejectedReasons.append("Specify the same control for behavior and bounds changes.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(behavior: behavior, placement: placement, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modLabelBehaviorAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModLabelBehaviorAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasRenameSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt),
+              !hasMoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var structuralClauses: [String] = []
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                structuralClauses.append(clause)
+            }
+        }
+
+        let structuralPrompt = structuralClauses.joined(separator: " and ")
+        if let rejection = conflictingControlBehaviorChangeRejection(from: structuralPrompt, model: model) ??
+            duplicateControlLabelAndBehaviorChangeRejection(from: structuralPrompt, model: model) {
+            rejectedReasons.append(rejection)
+        }
+
+        guard let change = controlLabelAndBehaviorChangeRequest(from: structuralPrompt, model: model),
+              updates.count + rejectedReasons.count > 0 else {
+            return .notRecognized
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(change: change, updates: updates)
+    }
+
+    private static func modLabelBehaviorMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModLabelBehaviorMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasRenameSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              movePlacementSeparator(in: prompt) != nil,
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var structuralClauses: [String] = []
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+                continue
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+                continue
+            case .notRecognized:
+                break
+            }
+
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            structuralClauses.append(clause)
+        }
+
+        let structuralPrompt = structuralClauses.joined(separator: " and ")
+        if let rejection = conflictingControlBehaviorChangeRejection(from: structuralPrompt, model: model) ??
+            duplicateControlLabelAndBehaviorChangeRejection(from: structuralPrompt, model: model) {
+            rejectedReasons.append(rejection)
+        }
+
+        guard let change = controlLabelAndBehaviorChangeRequest(from: structuralPrompt, model: model),
+              let moveClause else {
+            return .notRecognized
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(change: change, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modLabelBehaviorBoundsAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModLabelBehaviorBoundsAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRenameSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt),
+              !hasMoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var structuralClauses: [String] = []
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+                continue
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+                continue
+            case .notRecognized:
+                break
+            }
+
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let boundsRequest = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = boundsRequest
+                }
+                continue
+            }
+            structuralClauses.append(clause)
+        }
+
+        let structuralPrompt = structuralClauses.joined(separator: " and ")
+        if let rejection = conflictingControlBehaviorChangeRejection(from: structuralPrompt, model: model) ??
+            duplicateControlLabelAndBehaviorChangeRejection(from: structuralPrompt, model: model) {
+            rejectedReasons.append(rejection)
+        }
+
+        guard let change = controlLabelAndBehaviorChangeRequest(from: structuralPrompt, model: model),
+              let placement,
+              updates.count + rejectedReasons.count > 0 else {
+            return .notRecognized
+        }
+        if placement.label != change.currentLabel {
+            rejectedReasons.append("Specify the same control for label, behavior, and bounds changes.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(change: change, placement: placement, updates: updates)
+    }
+
+    private static func modLabelBehaviorBoundsMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModLabelBehaviorBoundsMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRenameSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              movePlacementSeparator(in: prompt) != nil,
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var structuralClauses: [String] = []
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+                continue
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+                continue
+            case .notRecognized:
+                break
+            }
+
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let boundsRequest = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = boundsRequest
+                }
+                continue
+            }
+            structuralClauses.append(clause)
+        }
+
+        let structuralPrompt = structuralClauses.joined(separator: " and ")
+        if let rejection = conflictingControlBehaviorChangeRejection(from: structuralPrompt, model: model) ??
+            duplicateControlLabelAndBehaviorChangeRejection(from: structuralPrompt, model: model) {
+            rejectedReasons.append(rejection)
+        }
+
+        guard let change = controlLabelAndBehaviorChangeRequest(from: structuralPrompt, model: model),
+              let placement,
+              let moveClause else {
+            return .notRecognized
+        }
+        if placement.label != change.currentLabel {
+            rejectedReasons.append("Specify the same control for label, behavior, bounds, and move changes.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(change: change, placement: placement, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modLabelBehaviorAndBoundsUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModLabelBehaviorAndBoundsUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasRenameSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt),
+              !hasMoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var structuralClauses: [String] = []
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let boundsRequest = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = boundsRequest
+                }
+                continue
+            }
+            structuralClauses.append(clause)
+        }
+
+        let structuralPrompt = structuralClauses.joined(separator: " and ")
+        if let rejection = conflictingControlBehaviorChangeRejection(from: structuralPrompt, model: model) ??
+            duplicateControlLabelAndBehaviorChangeRejection(from: structuralPrompt, model: model) {
+            rejectedReasons.append(rejection)
+        }
+
+        guard let change = controlLabelAndBehaviorChangeRequest(from: structuralPrompt, model: model),
+              let placement else {
+            return .notRecognized
+        }
+        if placement.label != change.currentLabel {
+            rejectedReasons.append("Specify the same control for label, behavior, and bounds changes.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        return .request(change: change, placement: placement)
+    }
+
+    private static func modBoundsAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModBoundsAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasControlBoundsSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var placements: [(label: String, bounds: AmigaProgramModel.Bounds)]?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let groupPlacement = controlGroupBoundsRequest(from: clause, model: model) {
+                if placements != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placements = groupPlacement
+                }
+                continue
+            }
+            if let placement = controlBoundsRequest(from: clause, model: model) {
+                if placements != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placements = [placement]
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let placements,
+              updates.count + rejectedReasons.count > 0 else {
+            return .notRecognized
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(placements: placements, updates: updates)
+    }
+
+    private static func modBoundsMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModBoundsMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasControlBoundsSignal(in: normalizedPrompt),
+              hasMoveControlSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var placements: [(label: String, bounds: AmigaProgramModel.Bounds)]?
+        var move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let groupPlacement = controlGroupBoundsRequest(from: clause, model: model) {
+                if placements != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placements = groupPlacement
+                }
+                continue
+            }
+            if let placement = controlBoundsRequest(from: clause, model: model) {
+                if placements != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placements = [placement]
+                }
+                continue
+            }
+            if let rejection = ordinalControlMoveRejection(from: clause, model: model) ??
+                ambiguousControlMoveRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = moveControlRequest(from: clause, model: model) {
+                if move != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    move = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let placements,
+              let move else {
+            return .notRecognized
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(placements: placements, move: move, updates: updates)
+    }
+
+    private static func modRemovalBoundsAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalBoundsAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var placements: [(label: String, bounds: AmigaProgramModel.Bounds)]?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let groupPlacement = controlGroupBoundsRequest(from: clause, model: model) {
+                if placements != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placements = groupPlacement
+                }
+                continue
+            }
+            if let placement = controlBoundsRequest(from: clause, model: model) {
+                if placements != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placements = [placement]
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let label,
+              let placements,
+              updates.count + rejectedReasons.count > 0 else {
+            return .notRecognized
+        }
+        if placements.contains(where: { $0.label.caseInsensitiveCompare(label) == .orderedSame }) {
+            rejectedReasons.append("Cannot change bounds for a removed control.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, placements: placements, updates: updates)
+    }
+
+    private static func modRemovalBoundsUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalBoundsUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var placements: [(label: String, bounds: AmigaProgramModel.Bounds)]?
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let groupPlacement = controlGroupBoundsRequest(from: clause, model: model) {
+                if placements != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placements = groupPlacement
+                }
+                continue
+            }
+            if let placement = controlBoundsRequest(from: clause, model: model) {
+                if placements != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placements = [placement]
+                }
+                continue
+            }
+        }
+
+        guard let label,
+              let placements else {
+            return .notRecognized
+        }
+        if placements.contains(where: { $0.label.caseInsensitiveCompare(label) == .orderedSame }) {
+            rejectedReasons.append("Cannot change bounds for a removed control.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        return .request(label: label, placements: placements)
+    }
+
+    private static func modRemovalBoundsMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalBoundsMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              hasMoveControlSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt),
+              !containsWord("make", in: normalizedPrompt),
+              !containsPhrase("lower volume", in: normalizedPrompt),
+              !containsPhrase("raise volume", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var placements: [(label: String, bounds: AmigaProgramModel.Bounds)]?
+        var move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let groupPlacement = controlGroupBoundsRequest(from: clause, model: model) {
+                if placements != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placements = groupPlacement
+                }
+                continue
+            }
+            if let placement = controlBoundsRequest(from: clause, model: model) {
+                if placements != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placements = [placement]
+                }
+                continue
+            }
+            if let rejection = ordinalControlMoveRejection(from: clause, model: model) ??
+                ambiguousControlMoveRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = moveControlRequest(from: clause, model: model) {
+                if move != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    move = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let label,
+              let placements,
+              let move else {
+            return .notRecognized
+        }
+        if placements.contains(where: { $0.label.caseInsensitiveCompare(label) == .orderedSame }) {
+            rejectedReasons.append("Cannot change bounds for a removed control.")
+        }
+        if move.label.caseInsensitiveCompare(label) == .orderedSame ||
+            move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, placements: placements, move: move, updates: updates)
+    }
+
+    private static func modRemovalRenameBoundsMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalRenameBoundsMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 3,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasRenameSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              hasMoveControlSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var rename: (currentLabel: String, newLabel: String)?
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = ordinalLabelRenameRejection(from: clause, model: model) ??
+                ambiguousLabelRenameRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = labelRenameRequest(from: clause, model: model) {
+                if rename != nil {
+                    rejectedReasons.append("Specify only one control rename.")
+                } else {
+                    rename = request
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = request
+                }
+                continue
+            }
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let label,
+              let rename,
+              let placement,
+              let moveClause else {
+            return .notRecognized
+        }
+        if rename.currentLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot rename a removed control.")
+        }
+        if placement.label.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change bounds for a removed control.")
+        }
+        if placement.label.caseInsensitiveCompare(rename.currentLabel) != .orderedSame {
+            rejectedReasons.append("Specify the same control for rename, bounds, and move changes.")
+        }
+        if let move = moveControlRequest(from: moveClause, model: model),
+           move.label.caseInsensitiveCompare(label) == .orderedSame ||
+            move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, rename: rename, placement: placement, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modRemovalRenameAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalRenameAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasRenameSignal(in: normalizedPrompt),
+              !hasControlBoundsSignal(in: normalizedPrompt),
+              !hasMoveControlSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var rename: (currentLabel: String, newLabel: String)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = ordinalLabelRenameRejection(from: clause, model: model) ??
+                ambiguousLabelRenameRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = labelRenameRequest(from: clause, model: model) {
+                if rename != nil {
+                    rejectedReasons.append("Specify only one control rename.")
+                } else {
+                    rename = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let label,
+              let rename else {
+            return .notRecognized
+        }
+        if rename.currentLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot rename a removed control.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, rename: rename, updates: updates)
+    }
+
+    private static func modRemovalRenameMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalRenameMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasRenameSignal(in: normalizedPrompt),
+              hasMoveControlSignal(in: normalizedPrompt),
+              !hasControlBoundsSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var rename: (currentLabel: String, newLabel: String)?
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = ordinalLabelRenameRejection(from: clause, model: model) ??
+                ambiguousLabelRenameRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = labelRenameRequest(from: clause, model: model) {
+                if rename != nil {
+                    rejectedReasons.append("Specify only one control rename.")
+                } else {
+                    rename = request
+                }
+                continue
+            }
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let label,
+              let rename,
+              let moveClause else {
+            return .notRecognized
+        }
+        if rename.currentLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot rename a removed control.")
+        }
+        if let move = moveControlRequest(from: moveClause, model: model),
+           move.label.caseInsensitiveCompare(label) == .orderedSame ||
+            move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, rename: rename, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modRemovalRenameBoundsAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalRenameBoundsAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasRenameSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              !hasMoveControlSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var rename: (currentLabel: String, newLabel: String)?
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = ordinalLabelRenameRejection(from: clause, model: model) ??
+                ambiguousLabelRenameRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = labelRenameRequest(from: clause, model: model) {
+                if rename != nil {
+                    rejectedReasons.append("Specify only one control rename.")
+                } else {
+                    rename = request
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let label,
+              let rename,
+              let placement else {
+            return .notRecognized
+        }
+        if rename.currentLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot rename a removed control.")
+        }
+        if placement.label.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change bounds for a removed control.")
+        }
+        if placement.label.caseInsensitiveCompare(rename.currentLabel) != .orderedSame {
+            rejectedReasons.append("Specify the same control for rename and bounds changes.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, rename: rename, placement: placement, updates: updates)
+    }
+
+    private static func modRemovalLabelBehaviorAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalLabelBehaviorAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasRenameSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              !hasControlBoundsSignal(in: normalizedPrompt),
+              !hasMoveControlSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var structuralClauses: [String] = []
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+                continue
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+                continue
+            case .notRecognized:
+                break
+            }
+            structuralClauses.append(clause)
+        }
+
+        let structuralPrompt = structuralClauses.joined(separator: " and ")
+        if let rejection = conflictingControlBehaviorChangeRejection(from: structuralPrompt, model: model) ??
+            duplicateControlLabelAndBehaviorChangeRejection(from: structuralPrompt, model: model) {
+            rejectedReasons.append(rejection)
+        }
+
+        guard let label,
+              let change = controlLabelAndBehaviorChangeRequest(from: structuralPrompt, model: model) else {
+            return .notRecognized
+        }
+        if change.currentLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change label or behavior for a removed control.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, change: change, updates: updates)
+    }
+
+    private static func modRemovalLabelBehaviorBoundsAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalLabelBehaviorBoundsAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasRenameSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              !hasMoveControlSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var structuralClauses: [String] = []
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+                continue
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+                continue
+            case .notRecognized:
+                break
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = request
+                }
+                continue
+            }
+            structuralClauses.append(clause)
+        }
+
+        let structuralPrompt = structuralClauses.joined(separator: " and ")
+        if let rejection = conflictingControlBehaviorChangeRejection(from: structuralPrompt, model: model) ??
+            duplicateControlLabelAndBehaviorChangeRejection(from: structuralPrompt, model: model) {
+            rejectedReasons.append(rejection)
+        }
+
+        guard let label,
+              let change = controlLabelAndBehaviorChangeRequest(from: structuralPrompt, model: model),
+              let placement else {
+            return .notRecognized
+        }
+        if change.currentLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change label or behavior for a removed control.")
+        }
+        if placement.label.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change bounds for a removed control.")
+        }
+        if placement.label.caseInsensitiveCompare(change.currentLabel) != .orderedSame {
+            rejectedReasons.append("Specify the same control for label, behavior, and bounds changes.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, change: change, placement: placement, updates: updates)
+    }
+
+    private static func modRemovalLabelBehaviorMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalLabelBehaviorMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasRenameSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              hasMoveControlSignal(in: normalizedPrompt),
+              !hasControlBoundsSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var structuralClauses: [String] = []
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+                continue
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+                continue
+            case .notRecognized:
+                break
+            }
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            structuralClauses.append(clause)
+        }
+
+        let structuralPrompt = structuralClauses.joined(separator: " and ")
+        if let rejection = conflictingControlBehaviorChangeRejection(from: structuralPrompt, model: model) ??
+            duplicateControlLabelAndBehaviorChangeRejection(from: structuralPrompt, model: model) {
+            rejectedReasons.append(rejection)
+        }
+
+        guard let label,
+              let change = controlLabelAndBehaviorChangeRequest(from: structuralPrompt, model: model),
+              let moveClause else {
+            return .notRecognized
+        }
+        if change.currentLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change label or behavior for a removed control.")
+        }
+        if let move = moveControlRequest(from: moveClause, model: model),
+           move.label.caseInsensitiveCompare(label) == .orderedSame ||
+            move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, change: change, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modRemovalLabelBehaviorBoundsMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalLabelBehaviorBoundsMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 3,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasRenameSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              hasMoveControlSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var structuralClauses: [String] = []
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+                continue
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+                continue
+            case .notRecognized:
+                break
+            }
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = request
+                }
+                continue
+            }
+            structuralClauses.append(clause)
+        }
+
+        let structuralPrompt = structuralClauses.joined(separator: " and ")
+        if let rejection = conflictingControlBehaviorChangeRejection(from: structuralPrompt, model: model) ??
+            duplicateControlLabelAndBehaviorChangeRejection(from: structuralPrompt, model: model) {
+            rejectedReasons.append(rejection)
+        }
+
+        guard let label,
+              let change = controlLabelAndBehaviorChangeRequest(from: structuralPrompt, model: model),
+              let placement,
+              let moveClause else {
+            return .notRecognized
+        }
+        if change.currentLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change label or behavior for a removed control.")
+        }
+        if placement.label.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change bounds for a removed control.")
+        }
+        if placement.label.caseInsensitiveCompare(change.currentLabel) != .orderedSame {
+            rejectedReasons.append("Specify the same control for label, behavior, bounds, and move changes.")
+        }
+        if let move = moveControlRequest(from: moveClause, model: model),
+           move.label.caseInsensitiveCompare(label) == .orderedSame ||
+            move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, change: change, placement: placement, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modRemovalBehaviorAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalBehaviorAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt),
+              !hasControlBoundsSignal(in: normalizedPrompt),
+              !hasMoveControlSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var behavior: (label: String, action: String)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = conflictingControlBehaviorChangeRejection(from: clause, model: model) ??
+                duplicateControlLabelAndBehaviorChangeRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBehaviorChangeRequest(from: clause, model: model) {
+                if behavior != nil {
+                    rejectedReasons.append("Specify only one control behavior change.")
+                } else {
+                    behavior = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let label,
+              let behavior else {
+            return .notRecognized
+        }
+        if behavior.label.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change behavior for a removed control.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, behavior: behavior, updates: updates)
+    }
+
+    private static func modRemovalBehaviorMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalBehaviorMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              hasMoveControlSignal(in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt),
+              !hasControlBoundsSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var behavior: (label: String, action: String)?
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = conflictingControlBehaviorChangeRejection(from: clause, model: model) ??
+                duplicateControlLabelAndBehaviorChangeRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBehaviorChangeRequest(from: clause, model: model) {
+                if behavior != nil {
+                    rejectedReasons.append("Specify only one control behavior change.")
+                } else {
+                    behavior = request
+                }
+                continue
+            }
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let label,
+              let behavior,
+              let moveClause else {
+            return .notRecognized
+        }
+        if behavior.label.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change behavior for a removed control.")
+        }
+        if let move = moveControlRequest(from: moveClause, model: model),
+           move.label.caseInsensitiveCompare(label) == .orderedSame ||
+            move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, behavior: behavior, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modRemovalBehaviorBoundsAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalBehaviorBoundsAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt),
+              !hasMoveControlSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var behavior: (label: String, action: String)?
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = conflictingControlBehaviorChangeRejection(from: clause, model: model) ??
+                duplicateControlLabelAndBehaviorChangeRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBehaviorChangeRequest(from: clause, model: model) {
+                if behavior != nil {
+                    rejectedReasons.append("Specify only one control behavior change.")
+                } else {
+                    behavior = request
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let label,
+              let behavior,
+              let placement else {
+            return .notRecognized
+        }
+        if behavior.label.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change behavior for a removed control.")
+        }
+        if placement.label.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change bounds for a removed control.")
+        }
+        if placement.label.caseInsensitiveCompare(behavior.label) != .orderedSame {
+            rejectedReasons.append("Specify the same control for behavior and bounds changes.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, behavior: behavior, placement: placement, updates: updates)
+    }
+
+    private static func modRemovalBehaviorBoundsMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalBehaviorBoundsMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 3,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasBehaviorChangeSignal(in: normalizedPrompt),
+              hasControlBoundsSignal(in: normalizedPrompt),
+              hasMoveControlSignal(in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var behavior: (label: String, action: String)?
+        var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
+        var moveClause: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = conflictingControlBehaviorChangeRejection(from: clause, model: model) ??
+                duplicateControlLabelAndBehaviorChangeRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBehaviorChangeRequest(from: clause, model: model) {
+                if behavior != nil {
+                    rejectedReasons.append("Specify only one control behavior change.")
+                } else {
+                    behavior = request
+                }
+                continue
+            }
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = controlBoundsRequest(from: clause, model: model) {
+                if placement != nil {
+                    rejectedReasons.append("Specify only one control bounds change.")
+                } else {
+                    placement = request
+                }
+                continue
+            }
+            if movePlacementSeparator(in: clause) != nil {
+                if moveClause != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    moveClause = clause
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let label,
+              let behavior,
+              let placement,
+              let moveClause else {
+            return .notRecognized
+        }
+        if behavior.label.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change behavior for a removed control.")
+        }
+        if placement.label.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot change bounds for a removed control.")
+        }
+        if placement.label.caseInsensitiveCompare(behavior.label) != .orderedSame {
+            rejectedReasons.append("Specify the same control for behavior, bounds, and move changes.")
+        }
+        if let move = moveControlRequest(from: moveClause, model: model),
+           move.label.caseInsensitiveCompare(label) == .orderedSame ||
+            move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, behavior: behavior, placement: placement, moveClause: moveClause, updates: updates)
+    }
+
+    private static func modRemovalMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 2,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasMoveControlSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = ordinalControlMoveRejection(from: clause, model: model) ??
+                ambiguousControlMoveRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = moveControlRequest(from: clause, model: model) {
+                if move != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    move = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let label,
+              let move,
+              updates.count + rejectedReasons.count > 0 else {
+            return .notRecognized
+        }
+        if move.label.caseInsensitiveCompare(label) == .orderedSame ||
+            move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, move: move, updates: updates)
+    }
+
+    private static func modRemovalMoveUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalMoveUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              hasMoveControlSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String)?
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            if let rejection = ordinalControlMoveRejection(from: clause, model: model) ??
+                ambiguousControlMoveRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = moveControlRequest(from: clause, model: model) {
+                if move != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    move = request
+                }
+                continue
+            }
+        }
+
+        guard let label,
+              let move else {
+            return .notRecognized
+        }
+        if move.label.caseInsensitiveCompare(label) == .orderedSame ||
+            move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
+            rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        return .request(label: label, move: move)
+    }
+
+    private static func modRemovalAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModRemovalAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasRemoveControlSignal(in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var label: String?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ambiguousControlRemovalRejection(from: clause, model: model) ??
+                ordinalControlRemovalRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = removeControlRequest(from: clause, model: model) {
+                if label != nil {
+                    rejectedReasons.append("Specify only one control removal.")
+                } else {
+                    label = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let label,
+              updates.count + rejectedReasons.count > 0 else {
+            return .notRecognized
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(label: label, updates: updates)
+    }
+
+    private static func modMoveAndParameterUpdateIntent(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> ModMoveAndParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        let normalizedPrompt = prompt.lowercased()
+        guard clauses.count > 1,
+              hasMoveControlSignal(in: normalizedPrompt),
+              !hasRenameSignal(in: normalizedPrompt),
+              !containsWord("add", in: normalizedPrompt),
+              !hasRemoveControlSignal(in: normalizedPrompt) else {
+            return .notRecognized
+        }
+
+        var move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String)?
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            if let rejection = ordinalControlMoveRejection(from: clause, model: model) ??
+                ambiguousControlMoveRejection(from: clause, model: model) {
+                rejectedReasons.append(rejection)
+                continue
+            }
+            if let request = moveControlRequest(from: clause, model: model) {
+                if move != nil {
+                    rejectedReasons.append("Specify only one control move.")
+                } else {
+                    move = request
+                }
+                continue
+            }
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard let move,
+              updates.count + rejectedReasons.count > 0 else {
+            return .notRecognized
+        }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        return .request(move: move, updates: updates)
+    }
+
+    private static func modParameterUpdateIntent(from prompt: String) -> ModParameterUpdateIntent {
+        let clauses = modParameterUpdateClauses(in: prompt)
+        guard clauses.count > 1 else { return .notRecognized }
+
+        var updates: [ModParameterUpdate] = []
+        var rejectedReasons: [String] = []
+        for clause in clauses {
+            switch modParameterClauseIntent(from: clause) {
+            case .update(let update):
+                updates.append(update)
+            case .rejected(let reason):
+                rejectedReasons.append(reason)
+            case .notRecognized:
+                break
+            }
+        }
+
+        guard updates.count + rejectedReasons.count > 1 else { return .notRecognized }
+        if !rejectedReasons.isEmpty {
+            return .rejected(Array(Set(rejectedReasons)).sorted())
+        }
+        let duplicateTargets = duplicateModParameterUpdateTargets(in: updates)
+        if !duplicateTargets.isEmpty {
+            return .rejected(duplicateTargets.map { "Specify only one \($0) update." })
+        }
+        guard updates.count > 1 else { return .notRecognized }
+        return .request(updates)
+    }
+
+    private static func modParameterPatchResult(
+        for update: ModParameterUpdate,
+        in source: String
+    ) throws -> AmigaProgramPatchResult {
+        switch update {
+        case .playbackPeriod(let period):
+            return try AmigaProgramPatcher.updatePlaybackPeriod(period, in: source)
+        case .volumeStep(let step):
+            return try AmigaProgramPatcher.updateVolumeStep(step, in: source)
+        case .initialVolume(let volume):
+            return try AmigaProgramPatcher.updateInitialVolume(volume, in: source)
+        }
+    }
+
+    private static func modParameterClauseIntent(from clause: String) -> ModParameterClauseIntent {
+        if playbackNoteIntent(from: clause) {
+            guard let period = playbackNotePeriod(from: clause) else {
+                return .rejected("Specify a supported playback note such as C-3.")
+            }
+            return .update(.playbackPeriod(period))
+        }
+        if playbackPeriodIntent(from: clause) {
+            guard let period = firstInteger(in: clause) else {
+                return .rejected("Specify a numeric playback period.")
+            }
+            return .update(.playbackPeriod(period))
+        }
+        if volumeStepIntent(from: clause) {
+            guard let step = firstInteger(in: clause) else {
+                return .rejected("Specify a numeric volume step.")
+            }
+            return .update(.volumeStep(step))
+        }
+        if initialVolumeIntent(from: clause) {
+            guard let volume = initialVolumeValue(from: clause) else {
+                return .rejected("Specify a numeric initial volume.")
+            }
+            return .update(.initialVolume(volume))
+        }
+        return .notRecognized
+    }
+
+    private static func modParameterUpdateClauses(in prompt: String) -> [String] {
+        guard let regex = try? NSRegularExpression(pattern: #"(?i)\band\b"#) else { return [prompt] }
+        let range = NSRange(prompt.startIndex..<prompt.endIndex, in: prompt)
+        var clauses: [String] = []
+        var clauseStart = prompt.startIndex
+        for match in regex.matches(in: prompt, range: range) {
+            guard let matchRange = Range(match.range, in: prompt) else { continue }
+            let clause = prompt[clauseStart..<matchRange.lowerBound]
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if !clause.isEmpty {
+                clauses.append(String(clause))
+            }
+            clauseStart = matchRange.upperBound
+        }
+        let finalClause = prompt[clauseStart...].trimmingCharacters(in: .whitespacesAndNewlines)
+        if !finalClause.isEmpty {
+            clauses.append(finalClause)
+        }
+        return clauses
+    }
+
+    private static func duplicateModParameterUpdateTargets(in updates: [ModParameterUpdate]) -> [String] {
+        var seen: Set<String> = []
+        var duplicates: [String] = []
+        for update in updates where !seen.insert(update.target).inserted && !duplicates.contains(update.target) {
+            duplicates.append(update.target)
+        }
+        return duplicates
+    }
+
+    private static func duplicateAddControlLabel(in controls: [(label: String, action: String)]) -> String? {
+        var seen: Set<String> = []
+        for control in controls where !seen.insert(control.action).inserted {
+            return control.label
+        }
+        return nil
+    }
+
     static func volumeStepRequest(from prompt: String) -> Int? {
         guard volumeStepIntent(from: prompt) else { return nil }
         return firstInteger(in: prompt)
+    }
+
+    static func playbackPeriodRequest(from prompt: String) -> Int? {
+        guard playbackPeriodIntent(from: prompt) else { return nil }
+        return firstInteger(in: prompt)
+    }
+
+    static func playbackNotePeriodRequest(from prompt: String) -> Int? {
+        guard playbackNoteIntent(from: prompt) else { return nil }
+        return playbackNotePeriod(from: prompt)
+    }
+
+    private static func playbackPeriodIntent(from prompt: String) -> Bool {
+        let normalized = prompt.lowercased()
+        let hasEditSignal = containsWord("set", in: normalized) ||
+            containsWord("change", in: normalized) ||
+            containsWord("update", in: normalized) ||
+            containsWord("adjust", in: normalized) ||
+            containsWord("make", in: normalized)
+        return hasEditSignal &&
+            containsWord("period", in: normalized) &&
+            (containsWord("playback", in: normalized) ||
+                containsWord("audio", in: normalized) ||
+                containsWord("paula", in: normalized) ||
+                containsWord("aud0per", in: normalized))
+    }
+
+    private static func playbackNoteIntent(from prompt: String) -> Bool {
+        let normalized = prompt.lowercased()
+        let hasEditSignal = containsWord("set", in: normalized) ||
+            containsWord("change", in: normalized) ||
+            containsWord("update", in: normalized) ||
+            containsWord("adjust", in: normalized) ||
+            containsWord("make", in: normalized)
+        return hasEditSignal &&
+            (containsWord("note", in: normalized) || containsWord("pitch", in: normalized)) &&
+            (containsWord("playback", in: normalized) ||
+                containsWord("audio", in: normalized) ||
+                containsWord("paula", in: normalized) ||
+                containsWord("mod", in: normalized) ||
+                containsWord("module", in: normalized))
+    }
+
+    private static func playbackNotePeriod(from prompt: String) -> Int? {
+        let normalized = prompt.lowercased()
+        guard let regex = try? NSRegularExpression(pattern: #"(?i)\b([a-g])\s*(#|sharp|b|flat|-)?\s*([1-3])\b"#) else {
+            return nil
+        }
+        let range = NSRange(normalized.startIndex..<normalized.endIndex, in: normalized)
+        guard let match = regex.firstMatch(in: normalized, range: range),
+              let noteRange = Range(match.range(at: 1), in: normalized),
+              let octaveRange = Range(match.range(at: 3), in: normalized),
+              let octave = Int(normalized[octaveRange]) else {
+            return nil
+        }
+        let accidental = Range(match.range(at: 2), in: normalized).map { String(normalized[$0]) }
+        let note = String(normalized[noteRange])
+        return protrackerPeriod(note: note, accidental: accidental, octave: octave)
+    }
+
+    private static func protrackerPeriod(note: String, accidental: String?, octave: Int) -> Int? {
+        let semitone: Int
+        switch note {
+        case "c": semitone = 0
+        case "d": semitone = 2
+        case "e": semitone = 4
+        case "f": semitone = 5
+        case "g": semitone = 7
+        case "a": semitone = 9
+        case "b": semitone = 11
+        default: return nil
+        }
+
+        let adjustedSemitone: Int
+        switch accidental {
+        case "#", "sharp":
+            adjustedSemitone = semitone + 1
+        case "b", "flat":
+            adjustedSemitone = semitone - 1
+        default:
+            adjustedSemitone = semitone
+        }
+
+        let normalizedSemitone = (adjustedSemitone + 12) % 12
+        let octaveOffset = adjustedSemitone < 0 ? -1 : (adjustedSemitone > 11 ? 1 : 0)
+        let normalizedOctave = octave + octaveOffset
+        guard (1...3).contains(normalizedOctave) else {
+            return nil
+        }
+
+        let periods = [
+            [856, 808, 762, 720, 678, 640, 604, 570, 538, 508, 480, 453],
+            [428, 404, 381, 360, 339, 320, 302, 285, 269, 254, 240, 226],
+            [214, 202, 190, 180, 170, 160, 151, 143, 135, 127, 120, 113]
+        ]
+        return periods[normalizedOctave - 1][normalizedSemitone]
     }
 
     private static func volumeStepIntent(from prompt: String) -> Bool {
@@ -6500,7 +15232,7 @@ enum AmigaProgramFollowUpPlanner {
 
     static func initialVolumeRequest(from prompt: String) -> Int? {
         guard initialVolumeIntent(from: prompt) else { return nil }
-        return firstInteger(in: prompt)
+        return initialVolumeValue(from: prompt)
     }
 
     private static func initialVolumeIntent(from prompt: String) -> Bool {
@@ -6534,6 +15266,38 @@ enum AmigaProgramFollowUpPlanner {
         return hasVolumeLevelSignal
     }
 
+    private static func initialVolumeValue(from prompt: String) -> Int? {
+        if let numericValue = firstInteger(in: prompt) {
+            return numericValue
+        }
+
+        let normalized = prompt.lowercased()
+        if containsWord("max", in: normalized) ||
+            containsWord("maximum", in: normalized) ||
+            containsWord("full", in: normalized) ||
+            containsWord("loudest", in: normalized) {
+            return 64
+        }
+        if containsWord("half", in: normalized) ||
+            containsPhrase("half volume", in: normalized) {
+            return 32
+        }
+        if containsWord("mute", in: normalized) ||
+            containsWord("muted", in: normalized) ||
+            containsWord("silent", in: normalized) ||
+            containsWord("silence", in: normalized) ||
+            containsWord("off", in: normalized) ||
+            containsWord("min", in: normalized) ||
+            containsWord("minimum", in: normalized) {
+            return 0
+        }
+        if containsWord("normal", in: normalized) ||
+            containsWord("default", in: normalized) {
+            return 48
+        }
+        return nil
+    }
+
     static func labelRenameRequest(from prompt: String, model: AmigaProgramModel) -> (currentLabel: String, newLabel: String)? {
         let normalized = prompt.lowercased()
         guard hasRenameSignal(in: normalized),
@@ -6553,6 +15317,9 @@ enum AmigaProgramFollowUpPlanner {
            let newLabel = labelAfterRenameSeparator(in: prompt) {
             return (model.controls[ordinalIndex].label, newLabel)
         }
+        if controlOrdinalRequest(in: normalized) != nil {
+            return nil
+        }
 
         guard let control = model.controls
             .sorted(by: { $0.label.count > $1.label.count })
@@ -6566,6 +15333,972 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         return (control.label, newLabel)
+    }
+
+    static func removeControlRequest(from prompt: String, model: AmigaProgramModel) -> String? {
+        let normalized = prompt.lowercased()
+        guard hasRemoveControlSignal(in: normalized),
+              !hasRenameSignal(in: normalized),
+              !containsWord("add", in: normalized) else {
+            return nil
+        }
+
+        let quoted = quotedTexts(in: prompt)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        if let firstQuoted = quoted.first {
+            return firstQuoted
+        }
+
+        if let ordinalIndex = controlOrdinalRequest(in: normalized),
+           model.controls.indices.contains(ordinalIndex) {
+            return model.controls[ordinalIndex].label
+        }
+        if controlOrdinalRequest(in: normalized) != nil {
+            return nil
+        }
+
+        return model.controls
+            .sorted(by: { $0.label.count > $1.label.count })
+            .first { control in
+                containsPhrase(control.label, in: normalized) ||
+                    containsPhrase(control.id.replacingOccurrences(of: "_", with: " "), in: normalized) ||
+                    controlActionReferenceMatches(control.action, in: normalized)
+            }?
+            .label
+    }
+
+    private static func ambiguousControlRemovalRejection(from prompt: String, model: AmigaProgramModel) -> String? {
+        let normalized = prompt.lowercased()
+        guard hasRemoveControlSignal(in: normalized),
+              hasControlNoun(in: normalized),
+              !hasRenameSignal(in: normalized),
+              quotedTexts(in: prompt).isEmpty,
+              controlOrdinalRequest(in: normalized) == nil,
+              model.controls.count > 1 else {
+            return nil
+        }
+
+        return AmigaProgramPatchError.ambiguousControlReference(model.controls.map(\.label)).errorDescription
+    }
+
+    static func controlBehaviorChangeRequest(from prompt: String, model: AmigaProgramModel) -> (label: String, action: String)? {
+        let normalized = prompt.lowercased()
+        guard hasBehaviorChangeSignal(in: normalized),
+              !containsWord("add", in: normalized),
+              !hasRemoveControlSignal(in: normalized),
+              !hasMoveControlSignal(in: normalized),
+              behaviorChangeTargetSeparator(in: normalized) else {
+            return nil
+        }
+        let targetRequests = behaviorChangeTargetRequests(in: prompt, model: model)
+        guard targetRequests.count == 1,
+              let request = targetRequests.first else {
+            return nil
+        }
+        return (request.control.label, request.action)
+    }
+
+    static func controlLabelAndBehaviorChangeRequest(from prompt: String, model: AmigaProgramModel) -> (currentLabel: String, newLabel: String, action: String)? {
+        let normalized = prompt.lowercased()
+        guard hasRenameSignal(in: normalized),
+              hasBehaviorChangeSignal(in: normalized),
+              !containsWord("add", in: normalized),
+              !hasRemoveControlSignal(in: normalized),
+              !hasMoveControlSignal(in: normalized),
+              behaviorChangeTargetSeparator(in: normalized) || hasExplicitControlBehaviorPhrase(in: normalized),
+              let rename = labelRenameRequest(from: prompt, model: model) else {
+            return nil
+        }
+        let targetRequests = behaviorChangeTargetRequests(in: prompt, model: model)
+        guard targetRequests.count == 1,
+              let request = targetRequests.first,
+              request.control.label == rename.currentLabel else {
+            return nil
+        }
+        return (rename.currentLabel, rename.newLabel, request.action)
+    }
+
+    private static func duplicateControlLabelAndBehaviorChangeRejection(from prompt: String, model: AmigaProgramModel) -> String? {
+        let normalized = prompt.lowercased()
+        guard hasRenameSignal(in: normalized),
+              hasBehaviorChangeSignal(in: normalized),
+              !containsWord("add", in: normalized),
+              !hasRemoveControlSignal(in: normalized),
+              !hasMoveControlSignal(in: normalized),
+              behaviorChangeTargetSeparator(in: normalized) || hasExplicitControlBehaviorPhrase(in: normalized) else {
+            return nil
+        }
+        let targetRequests = behaviorChangeTargetRequests(in: prompt, model: model)
+        guard targetRequests.count == 1,
+              let request = targetRequests.first,
+              let existingControl = model.controls.first(where: { control in
+                control.label != request.control.label && control.action == request.action
+              }) else {
+            return nil
+        }
+        return AmigaProgramPatchError.duplicateAction(request.action, existingControl.label).errorDescription
+    }
+
+    private static func conflictingControlBehaviorChangeRejection(from prompt: String, model: AmigaProgramModel) -> String? {
+        let normalized = prompt.lowercased()
+        guard hasBehaviorChangeSignal(in: normalized),
+              !containsWord("add", in: normalized),
+              !hasRemoveControlSignal(in: normalized),
+              !hasMoveControlSignal(in: normalized),
+              behaviorChangeTargetSeparator(in: normalized) else {
+            return nil
+        }
+        let targetRequests = behaviorChangeTargetRequests(in: prompt, model: model)
+        guard targetRequests.count > 1 else {
+            return nil
+        }
+        let names = targetRequests.map { _, action in
+            addControlBehaviorCandidates().first(where: { $0.action == action })?.name ?? action
+        }
+        return AmigaProgramPatchError.conflictingControlBehaviors(names).errorDescription
+    }
+
+    private static func behaviorChangeTargetRequests(in prompt: String, model: AmigaProgramModel) -> [(control: AmigaProgramModel.Control, action: String)] {
+        let normalized = prompt.lowercased()
+        var results: [(control: AmigaProgramModel.Control, action: String)] = []
+        let promptTokens = normalized.split { !$0.isLetter && !$0.isNumber }
+        for target in addControlBehaviorIntentLocations(in: normalized) where target.action != "PlayMOD" && target.action != "StopMOD" {
+            let prefix = prefix(upToTokenLocation: target.location, tokens: promptTokens)
+            guard let sourceControl = controlReference(in: prefix, model: model),
+                  sourceControl.action != target.action,
+                  !results.contains(where: { $0.control.label == sourceControl.label && $0.action == target.action }) else {
+                continue
+            }
+            results.append((sourceControl, target.action))
+        }
+        return results
+    }
+
+    private static func hasExplicitControlBehaviorPhrase(in normalizedPrompt: String) -> Bool {
+        addControlBehaviorCandidates().contains { candidate in
+            candidate.matches.contains { containsPhrase($0, in: normalizedPrompt) }
+        }
+    }
+
+    private static func prefix(upToTokenLocation location: Int, tokens: [Substring]) -> String {
+        let boundedLocation = max(0, min(location, tokens.count))
+        return tokens[..<boundedLocation].joined(separator: " ")
+    }
+
+    static func controlBoundsRequest(from prompt: String, model: AmigaProgramModel) -> (label: String, bounds: AmigaProgramModel.Bounds)? {
+        let normalized = prompt.lowercased()
+        guard hasControlBoundsSignal(in: normalized),
+              !containsWord("add", in: normalized),
+              !hasRemoveControlSignal(in: normalized),
+              !hasRenameSignal(in: normalized) else {
+            return nil
+        }
+
+        if let separator = relativeControlPlacementSeparator(in: prompt) {
+            let currentSide = String(prompt[..<separator.range.lowerBound])
+            if let sourceLabel = controlReferenceLabel(in: currentSide, model: model) ??
+                ordinalControlReferenceLabel(in: currentSide, model: model),
+               let sourceControl = model.controls.first(where: { $0.label == sourceLabel }),
+               let currentBounds = sourceControl.bounds,
+               let placement = relativeControlPlacementBounds(
+                in: prompt,
+                model: model,
+                sourceBoundsOverride: boundsByApplyingSizeRequest(in: prompt, to: currentBounds)
+               ) {
+                return boundByApplyingPositionRequest(in: prompt, placement: placement)
+            }
+        }
+
+        guard let sourceControl = controlReference(in: prompt, model: model),
+              let currentBounds = sourceControl.bounds else {
+            return nil
+        }
+
+        if let explicitBounds = explicitControlBounds(in: prompt) {
+            return (sourceControl.label, explicitBounds)
+        }
+
+        var bounds = currentBounds
+        var didChange = false
+        if let x = keyedInteger(named: ["x"], in: prompt) {
+            bounds.x = x
+            didChange = true
+        }
+        if let y = keyedInteger(named: ["y"], in: prompt) {
+            bounds.y = y
+            didChange = true
+        }
+        if let width = keyedInteger(named: ["w", "width", "wide"], in: prompt) {
+            bounds.width = width
+            didChange = true
+        }
+        if let height = keyedInteger(named: ["h", "height", "tall"], in: prompt) {
+            bounds.height = height
+            didChange = true
+        }
+        if !didChange,
+           let size = explicitControlSize(in: prompt) {
+            bounds.width = size.width
+            bounds.height = size.height
+            didChange = true
+        }
+        if !didChange,
+           let delta = relativeControlSizeDelta(in: prompt) {
+            bounds.width += delta.width
+            bounds.height += delta.height
+            didChange = true
+        }
+        if !didChange,
+           let delta = relativeControlPositionDelta(in: prompt) {
+            bounds.x += delta.x
+            bounds.y += delta.y
+            didChange = true
+        } else if didChange,
+                  let delta = relativeControlPositionDelta(in: prompt) {
+            bounds.x += delta.x
+            bounds.y += delta.y
+        }
+        return didChange ? (sourceControl.label, bounds) : nil
+    }
+
+    private static func controlGroupBoundsRequest(
+        from prompt: String,
+        model: AmigaProgramModel
+    ) -> [(label: String, bounds: AmigaProgramModel.Bounds)]? {
+        let normalized = prompt.lowercased()
+        guard hasControlBoundsSignal(in: normalized),
+              !containsWord("add", in: normalized),
+              !hasRemoveControlSignal(in: normalized),
+              !hasRenameSignal(in: normalized) else {
+            return nil
+        }
+
+        if let separator = relativeControlPlacementSeparator(in: prompt) {
+            let currentSide = String(prompt[..<separator.range.lowerBound])
+            let targetSide = String(prompt[separator.range.upperBound...])
+            guard let sourceControls = controlGroupReference(in: currentSide, model: model),
+                  let targetLabel = visibleControlReferenceLabel(in: targetSide, model: model) ??
+                    ordinalControlReferenceLabel(in: targetSide, model: model) ??
+                    controlReferenceLabel(in: targetSide, model: model),
+                  let targetControl = model.controls.first(where: { $0.label == targetLabel }) else {
+                return nil
+            }
+
+            let sizedControls = controlsByApplyingSizeRequest(in: prompt, to: sourceControls)
+            return boundsByApplyingPositionRequest(
+                in: prompt,
+                placement: controlGroupPlacementBounds(
+                    for: sizedControls,
+                    relativeTo: targetControl,
+                    placement: separator.placement,
+                    centered: containsWord("center", in: normalized) || containsWord("centered", in: normalized)
+                )
+            )
+        }
+
+        guard let sourceControls = controlGroupReference(in: prompt, model: model) else {
+            return nil
+        }
+        if let delta = relativeControlPositionDelta(in: prompt) {
+            return controlsByApplyingSizeRequest(in: prompt, to: sourceControls).compactMap { control in
+                guard var bounds = control.bounds else { return nil }
+                bounds.x += delta.x
+                bounds.y += delta.y
+                return (control.label, bounds)
+            }
+        }
+        if let delta = relativeControlSizeDelta(in: prompt) {
+            return sourceControls.compactMap { control in
+                guard var bounds = control.bounds else { return nil }
+                bounds.width += delta.width
+                bounds.height += delta.height
+                return (control.label, bounds)
+            }
+        }
+        if let size = explicitControlSize(in: prompt) {
+            return sourceControls.compactMap { control in
+                guard var bounds = control.bounds else { return nil }
+                bounds.width = size.width
+                bounds.height = size.height
+                return (control.label, bounds)
+            }
+        }
+        return nil
+    }
+
+    private static func ambiguousControlBoundsRejection(from prompt: String, model: AmigaProgramModel) -> String? {
+        let normalized = prompt.lowercased()
+        guard hasControlBoundsSignal(in: normalized),
+              hasControlNoun(in: normalized),
+              !containsWord("add", in: normalized),
+              !hasRemoveControlSignal(in: normalized),
+              !hasRenameSignal(in: normalized),
+              controlReference(in: prompt, model: model) == nil,
+              model.controls.count > 1 else {
+            return nil
+        }
+        return AmigaProgramPatchError.ambiguousControlReference(model.controls.map(\.label)).errorDescription
+    }
+
+    private static func boundsByApplyingPositionRequest(
+        in prompt: String,
+        placement: [(label: String, bounds: AmigaProgramModel.Bounds)]?
+    ) -> [(label: String, bounds: AmigaProgramModel.Bounds)]? {
+        guard let placement,
+              let delta = relativeControlPositionDelta(in: prompt) else {
+            return placement
+        }
+        return placement.map { placed in
+            var bounds = placed.bounds
+            bounds.x += delta.x
+            bounds.y += delta.y
+            return (placed.label, bounds)
+        }
+    }
+
+    private static func boundByApplyingPositionRequest(
+        in prompt: String,
+        placement: (label: String, bounds: AmigaProgramModel.Bounds)
+    ) -> (label: String, bounds: AmigaProgramModel.Bounds) {
+        guard let delta = relativeControlPositionDelta(in: prompt) else {
+            return placement
+        }
+        var bounds = placement.bounds
+        bounds.x += delta.x
+        bounds.y += delta.y
+        return (placement.label, bounds)
+    }
+
+    private static func hasControlBoundsSignal(in normalizedPrompt: String) -> Bool {
+        let hasGeometryWord = containsWord("bounds", in: normalizedPrompt) ||
+            containsWord("position", in: normalizedPrompt) ||
+            containsWord("resize", in: normalizedPrompt) ||
+            containsWord("size", in: normalizedPrompt) ||
+            containsWord("wide", in: normalizedPrompt) ||
+            containsWord("width", in: normalizedPrompt) ||
+            containsWord("height", in: normalizedPrompt) ||
+            containsWord("tall", in: normalizedPrompt) ||
+            containsWord("wider", in: normalizedPrompt) ||
+            containsWord("narrower", in: normalizedPrompt) ||
+            containsWord("taller", in: normalizedPrompt) ||
+            containsWord("shorter", in: normalizedPrompt) ||
+            containsWord("bigger", in: normalizedPrompt) ||
+            containsWord("larger", in: normalizedPrompt) ||
+            containsWord("smaller", in: normalizedPrompt) ||
+            explicitControlSize(in: normalizedPrompt) != nil ||
+            hasRelativePositionSignal(in: normalizedPrompt) ||
+            hasRelativePlacementSignal(in: normalizedPrompt)
+        let hasPositionKeys = containsWord("x", in: normalizedPrompt) && containsWord("y", in: normalizedPrompt)
+        let hasEditSignal = containsWord("set", in: normalizedPrompt) ||
+            containsWord("change", in: normalizedPrompt) ||
+            containsWord("move", in: normalizedPrompt) ||
+            containsWord("place", in: normalizedPrompt) ||
+            containsWord("put", in: normalizedPrompt) ||
+            containsWord("make", in: normalizedPrompt) ||
+            containsWord("center", in: normalizedPrompt) ||
+            containsWord("centered", in: normalizedPrompt)
+        return hasEditSignal && (hasGeometryWord || hasPositionKeys)
+    }
+
+    private static func explicitControlBounds(in prompt: String) -> AmigaProgramModel.Bounds? {
+        let normalized = prompt.lowercased()
+        guard containsWord("bounds", in: normalized) else { return nil }
+        let values = integers(in: prompt)
+        guard values.count >= 4 else { return nil }
+        return AmigaProgramModel.Bounds(x: values[0], y: values[1], width: values[2], height: values[3])
+    }
+
+    private static func explicitControlSize(in prompt: String) -> (width: Int, height: Int)? {
+        guard let regex = try? NSRegularExpression(pattern: #"(?i)\b(\$[0-9a-f]+|0x[0-9a-f]+|-?\d+)\s*x\s*(\$[0-9a-f]+|0x[0-9a-f]+|-?\d+)\b"#) else {
+            return nil
+        }
+        let range = NSRange(prompt.startIndex..<prompt.endIndex, in: prompt)
+        guard let match = regex.firstMatch(in: prompt, range: range),
+              match.numberOfRanges > 2,
+              let widthRange = Range(match.range(at: 1), in: prompt),
+              let heightRange = Range(match.range(at: 2), in: prompt),
+              let width = integerValue(from: String(prompt[widthRange])),
+              let height = integerValue(from: String(prompt[heightRange])) else {
+            return nil
+        }
+        return (width, height)
+    }
+
+    private static func relativeControlSizeDelta(in prompt: String) -> (width: Int, height: Int)? {
+        let fallbackAmount = integers(in: prompt).first ?? 16
+        var widthDelta = 0
+        var heightDelta = 0
+        if let amount = relativeControlSizeAmount(for: ["wider"], in: prompt, defaultAmount: fallbackAmount) {
+            widthDelta += amount
+        }
+        if let amount = relativeControlSizeAmount(for: ["narrower"], in: prompt, defaultAmount: fallbackAmount) {
+            widthDelta -= amount
+        }
+        if let amount = relativeControlSizeAmount(for: ["taller"], in: prompt, defaultAmount: fallbackAmount) {
+            heightDelta += amount
+        }
+        if let amount = relativeControlSizeAmount(for: ["shorter"], in: prompt, defaultAmount: fallbackAmount) {
+            heightDelta -= amount
+        }
+        if let amount = relativeControlSizeAmount(for: ["bigger", "larger"], in: prompt, defaultAmount: fallbackAmount) {
+            widthDelta += amount
+            heightDelta += amount
+        }
+        if let amount = relativeControlSizeAmount(for: ["smaller"], in: prompt, defaultAmount: fallbackAmount) {
+            widthDelta -= amount
+            heightDelta -= amount
+        }
+        guard widthDelta != 0 || heightDelta != 0 else { return nil }
+        return (widthDelta, heightDelta)
+    }
+
+    private static func relativeControlSizeAmount(
+        for keywords: [String],
+        in prompt: String,
+        defaultAmount: Int
+    ) -> Int? {
+        let normalized = prompt.lowercased()
+        let integer = #"\$[0-9a-fA-F]+|0x[0-9a-fA-F]+|-?\d+"#
+        for keyword in keywords {
+            if let amount = relativeControlSizeAmount(
+                pattern: #"(?i)\b\#(keyword)\s+by\s+(\#(integer))\b"#,
+                prompt: prompt,
+                amountGroup: 1
+            ) {
+                return amount
+            }
+            if let amount = relativeControlSizeAmount(
+                pattern: #"(?i)\bby\s+(\#(integer))\s+\#(keyword)\b"#,
+                prompt: prompt,
+                amountGroup: 1
+            ) {
+                return amount
+            }
+            if containsWord(keyword, in: normalized) {
+                return defaultAmount
+            }
+        }
+        return nil
+    }
+
+    private static func relativeControlSizeAmount(
+        pattern: String,
+        prompt: String,
+        amountGroup: Int
+    ) -> Int? {
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+        let range = NSRange(prompt.startIndex..<prompt.endIndex, in: prompt)
+        guard let match = regex.firstMatch(in: prompt, range: range),
+              match.numberOfRanges > amountGroup,
+              let amountRange = Range(match.range(at: amountGroup), in: prompt) else {
+            return nil
+        }
+        return integerValue(from: String(prompt[amountRange]))
+    }
+
+    private static func relativeControlPositionDelta(in prompt: String) -> (x: Int, y: Int)? {
+        guard let request = relativeControlPositionRequest(in: prompt) else { return nil }
+        switch request.direction {
+        case "left":
+            return (-request.amount, 0)
+        case "right":
+            return (request.amount, 0)
+        case "up":
+            return (0, -request.amount)
+        case "down":
+            return (0, request.amount)
+        default:
+            return nil
+        }
+    }
+
+    private static func hasRelativePositionSignal(in normalizedPrompt: String) -> Bool {
+        relativeControlPositionRequest(in: normalizedPrompt) != nil
+    }
+
+    private static func relativeControlPositionRequest(in prompt: String) -> (direction: String, amount: Int)? {
+        let integer = #"\$[0-9a-fA-F]+|0x[0-9a-fA-F]+|-?\d+"#
+        if let request = relativeControlPositionRequest(
+            pattern: #"(?i)\b(left|right|up|down)\s+by\s+(\#(integer))\b"#,
+            prompt: prompt,
+            directionGroup: 1,
+            amountGroup: 2
+        ) {
+            return request
+        }
+        if let request = relativeControlPositionRequest(
+            pattern: #"(?i)\bby\s+(\#(integer))\s+(left|right|up|down)\b"#,
+            prompt: prompt,
+            directionGroup: 2,
+            amountGroup: 1
+        ) {
+            return request
+        }
+        return nil
+    }
+
+    private static func relativeControlPositionRequest(
+        pattern: String,
+        prompt: String,
+        directionGroup: Int,
+        amountGroup: Int
+    ) -> (direction: String, amount: Int)? {
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+        let range = NSRange(prompt.startIndex..<prompt.endIndex, in: prompt)
+        guard let match = regex.firstMatch(in: prompt, range: range),
+              match.numberOfRanges > max(directionGroup, amountGroup),
+              let directionRange = Range(match.range(at: directionGroup), in: prompt),
+              let amountRange = Range(match.range(at: amountGroup), in: prompt),
+              let amount = integerValue(from: String(prompt[amountRange])) else {
+            return nil
+        }
+        return (String(prompt[directionRange]).lowercased(), amount)
+    }
+
+    private enum RelativeControlPlacement: Equatable {
+        case above
+        case below
+        case leftOf
+        case rightOf
+    }
+
+    private static func relativeControlPlacementBounds(
+        in prompt: String,
+        model: AmigaProgramModel,
+        sourceBoundsOverride: AmigaProgramModel.Bounds? = nil
+    ) -> (label: String, bounds: AmigaProgramModel.Bounds)? {
+        guard let separator = relativeControlPlacementSeparator(in: prompt) else { return nil }
+        let currentSide = String(prompt[..<separator.range.lowerBound])
+        let targetSide = String(prompt[separator.range.upperBound...])
+        guard let sourceLabel = controlReferenceLabel(in: currentSide, model: model) ??
+            ordinalControlReferenceLabel(in: currentSide, model: model),
+            let targetLabel = visibleControlReferenceLabel(in: targetSide, model: model) ??
+            ordinalControlReferenceLabel(in: targetSide, model: model) ??
+            controlReferenceLabel(in: targetSide, model: model),
+            let sourceControl = model.controls.first(where: { $0.label == sourceLabel }),
+            let targetControl = model.controls.first(where: { $0.label == targetLabel }),
+            sourceControl.id != targetControl.id,
+            let currentBounds = sourceControl.bounds,
+            let targetBounds = targetControl.bounds else {
+            return nil
+        }
+        let sourceBounds = sourceBoundsOverride ?? currentBounds
+        let gap = 8
+        let normalized = prompt.lowercased()
+        let center = containsWord("center", in: normalized) || containsWord("centered", in: normalized)
+        var bounds = sourceBounds
+        switch separator.placement {
+        case .above:
+            bounds.x = center ? centeredCoordinate(sourceSize: sourceBounds.width, targetOrigin: targetBounds.x, targetSize: targetBounds.width) : targetBounds.x
+            bounds.y = targetBounds.y - sourceBounds.height - gap
+        case .below:
+            bounds.x = center ? centeredCoordinate(sourceSize: sourceBounds.width, targetOrigin: targetBounds.x, targetSize: targetBounds.width) : targetBounds.x
+            bounds.y = targetBounds.y + targetBounds.height + gap
+        case .leftOf:
+            bounds.x = targetBounds.x - sourceBounds.width - gap
+            bounds.y = center ? centeredCoordinate(sourceSize: sourceBounds.height, targetOrigin: targetBounds.y, targetSize: targetBounds.height) : targetBounds.y
+        case .rightOf:
+            bounds.x = targetBounds.x + targetBounds.width + gap
+            bounds.y = center ? centeredCoordinate(sourceSize: sourceBounds.height, targetOrigin: targetBounds.y, targetSize: targetBounds.height) : targetBounds.y
+        }
+        return (sourceControl.label, bounds)
+    }
+
+    private static func addedControlPlacementBounds(
+        in prompt: String,
+        addedLabel: String,
+        model: AmigaProgramModel
+    ) -> (label: String, bounds: AmigaProgramModel.Bounds)? {
+        guard let addedControl = model.controls.first(where: { $0.label.caseInsensitiveCompare(addedLabel) == .orderedSame }),
+              let currentBounds = addedControl.bounds else {
+            return nil
+        }
+
+        var sourceBounds = currentBounds
+        if let size = explicitControlSize(in: prompt) {
+            sourceBounds.width = size.width
+            sourceBounds.height = size.height
+        }
+        if let delta = relativeControlSizeDelta(in: prompt) {
+            sourceBounds.width += delta.width
+            sourceBounds.height += delta.height
+        }
+
+        guard let placement = relativeControlPlacementBounds(in: prompt, model: model, sourceBoundsOverride: sourceBounds),
+              placement.label == addedControl.label else {
+            return nil
+        }
+        return boundByApplyingPositionRequest(in: prompt, placement: placement)
+    }
+
+    private static func boundsByApplyingSizeRequest(
+        in prompt: String,
+        to bounds: AmigaProgramModel.Bounds
+    ) -> AmigaProgramModel.Bounds {
+        var bounds = bounds
+        if let size = explicitControlSize(in: prompt) {
+            bounds.width = size.width
+            bounds.height = size.height
+        }
+        if let delta = relativeControlSizeDelta(in: prompt) {
+            bounds.width += delta.width
+            bounds.height += delta.height
+        }
+        return bounds
+    }
+
+    private static func addedControlGroupPlacementBounds(
+        in prompt: String,
+        addedLabels: [String],
+        model: AmigaProgramModel
+    ) -> [(label: String, bounds: AmigaProgramModel.Bounds)]? {
+        guard addedLabels.count > 1,
+              let separator = relativeControlPlacementSeparator(in: prompt) else {
+            return nil
+        }
+        let targetSide = String(prompt[separator.range.upperBound...])
+        guard let targetLabel = visibleControlReferenceLabel(in: targetSide, model: model) ??
+            ordinalControlReferenceLabel(in: targetSide, model: model) ??
+            controlReferenceLabel(in: targetSide, model: model),
+            let targetControl = model.controls.first(where: { $0.label == targetLabel }) else {
+            return nil
+        }
+
+        let addedControls = addedLabels.compactMap { label in
+            model.controls.first { $0.label.caseInsensitiveCompare(label) == .orderedSame }
+        }
+        guard addedControls.count == addedLabels.count else {
+            return nil
+        }
+
+        let normalized = prompt.lowercased()
+        let sizedControls = controlsByApplyingSizeRequest(in: prompt, to: addedControls)
+        return boundsByApplyingPositionRequest(
+            in: prompt,
+            placement: controlGroupPlacementBounds(
+                for: sizedControls,
+                relativeTo: targetControl,
+                placement: separator.placement,
+                centered: containsWord("center", in: normalized) || containsWord("centered", in: normalized)
+            )
+        )
+    }
+
+    private static func controlsByApplyingSizeRequest(
+        in prompt: String,
+        to controls: [AmigaProgramModel.Control]
+    ) -> [AmigaProgramModel.Control] {
+        controls.map { control in
+            guard var bounds = control.bounds else {
+                return control
+            }
+            if let size = explicitControlSize(in: prompt) {
+                bounds.width = size.width
+                bounds.height = size.height
+            }
+            if let delta = relativeControlSizeDelta(in: prompt) {
+                bounds.width += delta.width
+                bounds.height += delta.height
+            }
+            var sized = control
+            sized.bounds = bounds
+            return sized
+        }
+    }
+
+    private static func controlGroupPlacementBounds(
+        for sourceControls: [AmigaProgramModel.Control],
+        relativeTo targetControl: AmigaProgramModel.Control,
+        placement: RelativeControlPlacement,
+        centered: Bool
+    ) -> [(label: String, bounds: AmigaProgramModel.Bounds)]? {
+        guard sourceControls.count > 1,
+              let targetBounds = targetControl.bounds,
+              sourceControls.allSatisfy({ $0.id != targetControl.id && $0.bounds != nil }) else {
+            return nil
+        }
+
+        let gap = 8
+        switch placement {
+        case .above, .below:
+            let sizes = sourceControls.compactMap(\.bounds)
+            let totalWidth = sizes.map(\.width).reduce(0, +) + gap * max(0, sizes.count - 1)
+            let rowHeight = sizes.map(\.height).max() ?? 0
+            var x = centered ? centeredCoordinate(sourceSize: totalWidth, targetOrigin: targetBounds.x, targetSize: targetBounds.width) : targetBounds.x
+            let y = placement == .below ? targetBounds.y + targetBounds.height + gap : targetBounds.y - rowHeight - gap
+            return zip(sourceControls, sizes).map { control, size in
+                defer { x += size.width + gap }
+                return (control.label, AmigaProgramModel.Bounds(x: x, y: y, width: size.width, height: size.height))
+            }
+        case .leftOf, .rightOf:
+            let sizes = sourceControls.compactMap(\.bounds)
+            let columnWidth = sizes.map(\.width).max() ?? 0
+            let totalHeight = sizes.map(\.height).reduce(0, +) + gap * max(0, sizes.count - 1)
+            let x = placement == .rightOf ? targetBounds.x + targetBounds.width + gap : targetBounds.x - columnWidth - gap
+            var y = centered ? centeredCoordinate(sourceSize: totalHeight, targetOrigin: targetBounds.y, targetSize: targetBounds.height) : targetBounds.y
+            return zip(sourceControls, sizes).map { control, size in
+                defer { y += size.height + gap }
+                return (control.label, AmigaProgramModel.Bounds(x: x, y: y, width: size.width, height: size.height))
+            }
+        }
+    }
+
+    private static func centeredCoordinate(sourceSize: Int, targetOrigin: Int, targetSize: Int) -> Int {
+        targetOrigin + (targetSize - sourceSize) / 2
+    }
+
+    private static func hasRelativePlacementSignal(in normalizedPrompt: String) -> Bool {
+        relativeControlPlacementSeparator(in: normalizedPrompt) != nil
+    }
+
+    private static func relativeControlPlacementSeparator(in prompt: String) -> (placement: RelativeControlPlacement, range: Range<String.Index>)? {
+        let patterns: [(String, RelativeControlPlacement)] = [
+            (#"(?i)\b(?:to\s+the\s+)?right\s+of\b"#, .rightOf),
+            (#"(?i)\b(?:to\s+the\s+)?left\s+of\b"#, .leftOf),
+            (#"(?i)\b(?:below|under|beneath)\b"#, .below),
+            (#"(?i)\babove\b"#, .above)
+        ]
+        for (pattern, placement) in patterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern) else { continue }
+            let range = NSRange(prompt.startIndex..<prompt.endIndex, in: prompt)
+            guard let match = regex.firstMatch(in: prompt, range: range),
+                  let swiftRange = Range(match.range, in: prompt) else {
+                continue
+            }
+            return (placement, swiftRange)
+        }
+        return nil
+    }
+
+    private static func keyedInteger(named names: [String], in prompt: String) -> Int? {
+        let escapedNames = names.map { NSRegularExpression.escapedPattern(for: $0) }.joined(separator: "|")
+        let pattern = #"(?i)\b(?:\#(escapedNames))\b\s*(?:=|to|:)?\s*(\$[0-9a-f]+|0x[0-9a-f]+|-?\d+)"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+        let range = NSRange(prompt.startIndex..<prompt.endIndex, in: prompt)
+        guard let match = regex.firstMatch(in: prompt, range: range),
+              match.numberOfRanges > 1,
+              let valueRange = Range(match.range(at: 1), in: prompt) else {
+            return nil
+        }
+        return integerValue(from: String(prompt[valueRange]))
+    }
+
+    private static func integers(in prompt: String) -> [Int] {
+        let pattern = #"\$[0-9a-fA-F]+|0x[0-9a-fA-F]+|-?\d+"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+        let range = NSRange(prompt.startIndex..<prompt.endIndex, in: prompt)
+        return regex.matches(in: prompt, range: range).compactMap { match in
+            guard let valueRange = Range(match.range, in: prompt) else { return nil }
+            return integerValue(from: String(prompt[valueRange]))
+        }
+    }
+
+    private static func integerValue(from text: String) -> Int? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.hasPrefix("$") {
+            return Int(trimmed.dropFirst(), radix: 16)
+        }
+        if trimmed.lowercased().hasPrefix("0x") {
+            return Int(trimmed.dropFirst(2), radix: 16)
+        }
+        return Int(trimmed)
+    }
+
+    private static func controlReference(in prompt: String, model: AmigaProgramModel) -> AmigaProgramModel.Control? {
+        let normalized = prompt.lowercased()
+        if let ordinal = controlOrdinalRequest(in: normalized),
+           model.controls.indices.contains(ordinal) {
+            return model.controls[ordinal]
+        }
+        if let label = controlReferenceLabel(in: prompt, model: model) {
+            return model.controls.first { $0.label == label }
+        }
+        return nil
+    }
+
+    private static func controlGroupReference(in text: String, model: AmigaProgramModel) -> [AmigaProgramModel.Control]? {
+        let normalized = text.lowercased()
+        guard containsWord("volume", in: normalized),
+              containsWord("controls", in: normalized) || containsWord("buttons", in: normalized) else {
+            return nil
+        }
+        let controls = model.controls.filter { control in
+            control.action == "VolumeUp" || control.action == "VolumeDown"
+        }
+        guard controls.count == 2 else {
+            return nil
+        }
+        return controls
+    }
+
+    private static func behaviorChangeTargetSeparator(in normalizedPrompt: String) -> Bool {
+        containsWord("to", in: normalizedPrompt) ||
+            containsWord("into", in: normalizedPrompt) ||
+            containsWord("as", in: normalizedPrompt) ||
+            containsWord("instead", in: normalizedPrompt)
+    }
+
+    private static func hasBehaviorChangeSignal(in normalizedPrompt: String) -> Bool {
+        containsWord("make", in: normalizedPrompt) ||
+            containsWord("change", in: normalizedPrompt) ||
+            containsWord("switch", in: normalizedPrompt) ||
+            containsWord("convert", in: normalizedPrompt) ||
+            containsWord("turn", in: normalizedPrompt) ||
+            containsWord("set", in: normalizedPrompt)
+    }
+
+    static func moveControlRequest(from prompt: String, model: AmigaProgramModel) -> (label: String, placement: AmigaProgramControlPlacement, targetLabel: String)? {
+        let normalized = prompt.lowercased()
+        guard hasMoveControlSignal(in: normalized),
+              !hasRenameSignal(in: normalized),
+              !containsWord("add", in: normalized),
+              !hasRemoveControlSignal(in: normalized),
+              let separator = movePlacementSeparator(in: prompt) else {
+            return nil
+        }
+
+        let quoted = quotedTexts(in: prompt)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        if quoted.count >= 2 {
+            return (quoted[0], separator.placement, quoted[1])
+        }
+
+        let currentSide = String(prompt[..<separator.range.lowerBound])
+        let targetSide = String(prompt[separator.range.upperBound...])
+        guard let currentLabel = controlReferenceLabel(in: currentSide, model: model) ??
+            ordinalControlReferenceLabel(in: currentSide, model: model) ??
+            cleanedMoveReference(from: currentSide),
+            let targetLabel = controlReferenceLabel(in: targetSide, model: model) ??
+            ordinalControlReferenceLabel(in: targetSide, model: model) ??
+            cleanedMoveReference(from: targetSide) else {
+            return nil
+        }
+        return (currentLabel, separator.placement, targetLabel)
+    }
+
+    private static func ordinalControlMoveRejection(from prompt: String, model: AmigaProgramModel) -> String? {
+        let normalized = prompt.lowercased()
+        guard hasMoveControlSignal(in: normalized),
+              !hasRenameSignal(in: normalized),
+              !containsWord("add", in: normalized),
+              !hasRemoveControlSignal(in: normalized),
+              let separator = movePlacementSeparator(in: prompt) else {
+            return nil
+        }
+
+        let currentSide = String(prompt[..<separator.range.lowerBound])
+        if let ordinal = controlOrdinalRequest(in: currentSide.lowercased()),
+           !model.controls.indices.contains(ordinal) {
+            return "Cannot move the \(ordinalDescription(ordinal)); this program has \(model.controls.count) controls."
+        }
+
+        let targetSide = String(prompt[separator.range.upperBound...])
+        if let ordinal = controlOrdinalRequest(in: targetSide.lowercased()),
+           !model.controls.indices.contains(ordinal) {
+            return "Cannot move relative to the \(ordinalDescription(ordinal)); this program has \(model.controls.count) controls."
+        }
+
+        return nil
+    }
+
+    private static func ambiguousControlMoveRejection(from prompt: String, model: AmigaProgramModel) -> String? {
+        let normalized = prompt.lowercased()
+        guard hasMoveControlSignal(in: normalized),
+              movePlacementSeparator(in: prompt) != nil,
+              hasControlNoun(in: normalized),
+              !hasRenameSignal(in: normalized),
+              !containsWord("add", in: normalized),
+              !hasRemoveControlSignal(in: normalized),
+              model.controls.count > 1 else {
+            return nil
+        }
+
+        return AmigaProgramPatchError.ambiguousControlReference(model.controls.map(\.label)).errorDescription
+    }
+
+    private static func movePlacementSeparator(in prompt: String) -> (placement: AmigaProgramControlPlacement, range: Range<String.Index>)? {
+        let patterns: [(String, AmigaProgramControlPlacement)] = [
+            (#"(?i)\bbefore\b"#, .before),
+            (#"(?i)\bafter\b"#, .after)
+        ]
+        for (pattern, placement) in patterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern) else { continue }
+            let range = NSRange(prompt.startIndex..<prompt.endIndex, in: prompt)
+            guard let match = regex.firstMatch(in: prompt, range: range),
+                  let swiftRange = Range(match.range, in: prompt) else {
+                continue
+            }
+            return (placement, swiftRange)
+        }
+        return nil
+    }
+
+    private static func controlReferenceLabel(in text: String, model: AmigaProgramModel) -> String? {
+        let normalized = text.lowercased()
+        return model.controls
+            .sorted(by: { $0.label.count > $1.label.count })
+            .first { control in
+                containsPhrase(control.label, in: normalized) ||
+                    containsPhrase(control.id.replacingOccurrences(of: "_", with: " "), in: normalized) ||
+                    controlActionReferenceMatches(control.action, in: normalized)
+            }?
+            .label
+    }
+
+    private static func visibleControlReferenceLabel(in text: String, model: AmigaProgramModel) -> String? {
+        let normalized = text.lowercased()
+        return model.controls
+            .compactMap { control -> (label: String, location: Int, length: Int)? in
+                let promptTokens = normalized.split { !$0.isLetter && !$0.isNumber }
+                let labelLocation = firstPhraseTokenIndex(control.label, in: promptTokens)
+                let idLocation = firstPhraseTokenIndex(control.id.replacingOccurrences(of: "_", with: " "), in: promptTokens)
+                guard let location = [labelLocation, idLocation].compactMap({ $0 }).min() else {
+                    return nil
+                }
+                return (control.label, location, control.label.count)
+            }
+            .sorted { lhs, rhs in
+                lhs.location == rhs.location ? lhs.length > rhs.length : lhs.location < rhs.location
+            }
+            .first?
+            .label
+    }
+
+    private static func ordinalControlReferenceLabel(in text: String, model: AmigaProgramModel) -> String? {
+        guard let ordinal = controlOrdinalRequest(in: text.lowercased()),
+              model.controls.indices.contains(ordinal) else {
+            return nil
+        }
+        return model.controls[ordinal].label
+    }
+
+    private static func cleanedMoveReference(from text: String) -> String? {
+        let removableWords = Set([
+            "move", "put", "place", "shift", "bring", "reorder",
+            "the", "a", "an", "button", "buttons", "control", "controls", "to"
+        ])
+        let words = text
+            .split { !$0.isLetter && !$0.isNumber }
+            .map(String.init)
+            .filter { !removableWords.contains($0.lowercased()) }
+        guard !words.isEmpty else { return nil }
+        return words.map { word in
+            guard let first = word.first else { return word }
+            return String(first).uppercased() + word.dropFirst().lowercased()
+        }.joined(separator: " ")
+    }
+
+    private static func ordinalControlRemovalRejection(from prompt: String, model: AmigaProgramModel) -> String? {
+        let normalized = prompt.lowercased()
+        guard hasRemoveControlSignal(in: normalized),
+              let ordinal = controlOrdinalRequest(in: normalized),
+              !model.controls.indices.contains(ordinal) else {
+            return nil
+        }
+
+        return "Cannot remove the \(ordinalDescription(ordinal)); this program has \(model.controls.count) controls."
     }
 
     private static func ambiguousLabelRenameRejection(from prompt: String, model: AmigaProgramModel) -> String? {
@@ -6734,6 +16467,11 @@ enum AmigaProgramFollowUpPlanner {
     }
 
     private static func addControlBehaviorIntents(in normalized: String) -> [(action: String, name: String)] {
+        addControlBehaviorIntentLocations(in: normalized)
+            .map { ($0.action, $0.name) }
+    }
+
+    private static func addControlBehaviorIntentLocations(in normalized: String) -> [(action: String, name: String, location: Int)] {
         let candidates = addControlBehaviorCandidates()
 
         let promptTokens = normalized.split { !$0.isLetter && !$0.isNumber }
@@ -6753,7 +16491,6 @@ enum AmigaProgramFollowUpPlanner {
             .sorted { lhs, rhs in
                 lhs.location == rhs.location ? lhs.name < rhs.name : lhs.location < rhs.location
             }
-            .map { ($0.action, $0.name) }
     }
 
     private static func addControlBehaviorCandidates() -> [(action: String, name: String, matches: [String], wordMatches: [String])] {
@@ -6812,12 +16549,13 @@ enum AmigaProgramFollowUpPlanner {
             return quoted
         }
 
+        let labelTerminator = #"\s+(?:to|that|which|center|centered|below|under|beneath|above|left|right|before|after|and)\b|$"#
         let patterns = [
-            #"(?i)\bcalled\s+([^"”'\n.,]+?)(?:\s+to\b|\s+that\b|\s+which\b|$)"#,
-            #"(?i)\bnamed\s+([^"”'\n.,]+?)(?:\s+to\b|\s+that\b|\s+which\b|$)"#,
-            #"(?i)\bwith\s+(?:label|text|caption|title)\b\s+([^"”'\n.,]+?)(?:\s+to\b|\s+that\b|\s+which\b|$)"#,
-            #"(?i)\blabel(?:ed|led)\s+([^"”'\n.,]+?)(?:\s+to\b|\s+that\b|\s+which\b|$)"#,
-            #"(?i)\b(?:label|text|caption|title)\b\s+([^"”'\n.,]+?)(?:\s+to\b|\s+that\b|\s+which\b|$)"#
+            #"(?i)\bcalled\s+([^"”'\n.,]+?)(?:\#(labelTerminator))"#,
+            #"(?i)\bnamed\s+([^"”'\n.,]+?)(?:\#(labelTerminator))"#,
+            #"(?i)\bwith\s+(?:label|text|caption|title)\b\s+([^"”'\n.,]+?)(?:\#(labelTerminator))"#,
+            #"(?i)\blabel(?:ed|led)\s+([^"”'\n.,]+?)(?:\#(labelTerminator))"#,
+            #"(?i)\b(?:label|text|caption|title)\b\s+([^"”'\n.,]+?)(?:\#(labelTerminator))"#
         ]
         for pattern in patterns {
             guard let regex = try? NSRegularExpression(pattern: pattern) else { continue }
@@ -6866,10 +16604,36 @@ enum AmigaProgramFollowUpPlanner {
             containsWord("say", in: normalizedPrompt)
     }
 
+    private static func hasControlRenameSignalOutsideAddLabel(in normalizedPrompt: String) -> Bool {
+        containsWord("rename", in: normalizedPrompt) ||
+            containsWord("label", in: normalizedPrompt) ||
+            containsWord("labeled", in: normalizedPrompt) ||
+            containsWord("labelled", in: normalizedPrompt) ||
+            containsWord("text", in: normalizedPrompt) ||
+            containsWord("caption", in: normalizedPrompt) ||
+            containsWord("title", in: normalizedPrompt) ||
+            containsWord("say", in: normalizedPrompt)
+    }
+
     private static func hasAddControlSignal(in normalizedPrompt: String) -> Bool {
         containsWord("add", in: normalizedPrompt) ||
             containsWord("third", in: normalizedPrompt) ||
             containsWord("another", in: normalizedPrompt)
+    }
+
+    private static func hasRemoveControlSignal(in normalizedPrompt: String) -> Bool {
+        containsWord("remove", in: normalizedPrompt) ||
+            containsWord("delete", in: normalizedPrompt) ||
+            containsWord("drop", in: normalizedPrompt)
+    }
+
+    private static func hasMoveControlSignal(in normalizedPrompt: String) -> Bool {
+        containsWord("move", in: normalizedPrompt) ||
+            containsWord("put", in: normalizedPrompt) ||
+            containsWord("place", in: normalizedPrompt) ||
+            containsWord("shift", in: normalizedPrompt) ||
+            containsWord("bring", in: normalizedPrompt) ||
+            containsWord("reorder", in: normalizedPrompt)
     }
 
     private static func hasControlNoun(in normalizedPrompt: String) -> Bool {
@@ -6940,13 +16704,14 @@ enum AmigaProgramFollowUpPlanner {
     }
 
     private static func labelAfterRenameSeparator(in prompt: String) -> String? {
+        let labelTerminator = #"\s+(?:and|that|which|center|centered|below|under|beneath|above|left|right|before|after)\b|$"#
         let patterns = [
-            #"(?i)\bto\s+["“']?([^"”'\n.,]+)["”']?"#,
-            #"(?i)\bcalled\s+["“']?([^"”'\n.,]+)["”']?"#,
-            #"(?i)\bnamed\s+["“']?([^"”'\n.,]+)["”']?"#,
-            #"(?i)\bsay\s+["“']?([^"”'\n.,]+)["”']?"#,
-            #"(?i)\blabel(?:ed|led)\s+["“']?([^"”'\n.,]+)["”']?"#,
-            #"(?i)\b(?:label|text|caption|title)\b\s+["“']?([^"”'\n.,]+)["”']?"#
+            #"(?i)\bto\s+["“']?([^"”'\n.,]+?)["”']?(?:\#(labelTerminator))"#,
+            #"(?i)\bcalled\s+["“']?([^"”'\n.,]+?)["”']?(?:\#(labelTerminator))"#,
+            #"(?i)\bnamed\s+["“']?([^"”'\n.,]+?)["”']?(?:\#(labelTerminator))"#,
+            #"(?i)\bsay\s+["“']?([^"”'\n.,]+?)["”']?(?:\#(labelTerminator))"#,
+            #"(?i)\blabel(?:ed|led)\s+["“']?([^"”'\n.,]+?)["”']?(?:\#(labelTerminator))"#,
+            #"(?i)\b(?:label|text|caption|title)\b\s+["“']?([^"”'\n.,]+?)["”']?(?:\#(labelTerminator))"#
         ]
         for pattern in patterns {
             guard let regex = try? NSRegularExpression(pattern: pattern) else { continue }

@@ -42,16 +42,28 @@ The adapters reduce language interference, but reliability comes from the compil
 
 ## Current Reliability Status
 
-As of the May 2026 app-side validation update, the best user outcomes come from a hybrid path:
+As of the June 2026 app-side producer update, the best user outcomes come from a hybrid path:
 
 1. route supported prompts to deterministic Amiga templates,
-2. extract visible parameters such as text, color, speed, direction, object type, and counts,
-3. compile with VASM,
-4. run semantic validation,
-5. package a bootable ADF,
-6. launch FS-UAE and validate a captured frame for visible pixels.
+2. embed a canonical `AmigaProgramModel` contract in generated source,
+3. patch same-conversation follow-ups through structured model/source mutation,
+4. reject unsafe or ambiguous recognized edits without mutating the editor state,
+5. run source-contract and semantic validation,
+6. compile with VASM,
+7. package a bootable ADF,
+8. run runtime-oriented smoke checks where available.
 
-This substantially improves the practical result users see from the model: common prompts no longer depend entirely on free-form generation, and the UI now reports when a template is being used.
+This substantially improves the practical result users see from the model: common prompts no longer depend entirely on free-form generation, and the UI now reports when a template is being used. The most recent improvement stream focuses on holistic same-conversation code production rather than new model weights. A first prompt such as "Generate play and stop controls for a tracker module" routes to a model-backed MOD controls program; compatible follow-ups can add, rename, remove, reorder, retarget, reposition, and parameterize controls while preserving the existing program model, routines, state, and source regions.
+
+Side-by-side with the earlier flow:
+
+| area | previous app-side path | current app-side producer path |
+| --- | --- | --- |
+| source contract | Generated text plus template hints. | Source embeds a canonical `AmigaProgramModel` with family, kind, controls, routines, state, hardware, and verification expectations. |
+| follow-ups | Follow-ups could become ad hoc edits. | Supported follow-ups patch the embedded model and owned source regions together. |
+| rejection behavior | Malformed or ambiguous edits could fall through to generic editing. | Recognized structured failures are terminal and preserve the current editor source unchanged. |
+| conversation recovery | Recovery after a rejected turn was mostly implicit. | Representative recovery chains prove the rejected turn does not mutate source/model and that the next compatible request continues from the preserved state. |
+| promotion proof | Compile and smoke checks were useful but could be indirect for conversation continuity. | Routed first-shot sources, accepted follow-up artifacts, pre-rejection setup states, recovery outputs, and final conversation artifacts all pass source verification and bootable ADF generation gates. |
 
 Current benchmark evidence:
 
