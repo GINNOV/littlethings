@@ -80,7 +80,7 @@
     <text class="ink body" x="48" y="165">Terminal rejections preserve editor state</text>
 
     <path class="check" d="M4 225 L14 236 L32 212"/>
-    <text class="ink body" x="48" y="234">Verifier, semantic, compile, and ADF gates</text>
+    <text class="ink body" x="48" y="234">Verifier, runtime observation, compile, and ADF gates</text>
 
     <path class="check" d="M4 294 L14 305 L32 281"/>
     <text class="ink body" x="48" y="303">Representative routed conversation audits</text>
@@ -93,7 +93,7 @@
   <g transform="translate(190 604)">
     <rect class="pill" x="0" y="0" width="900" height="58"/>
     <text class="muted small" x="24" y="37">Proof path:</text>
-    <text class="ink small" x="135" y="37">Prompt routing -> model/source patch -> rejection recovery -> verifier -> compile -> bootable ADF</text>
+    <text class="ink small" x="135" y="37">Prompt routing -> model/source patch -> rejection recovery -> verifier -> runtime evidence -> compile -> bootable ADF</text>
   </g>
 
   <g transform="translate(50 675)">

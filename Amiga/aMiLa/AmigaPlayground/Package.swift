@@ -24,6 +24,7 @@ let package = Package(
                 "Assets.xcassets",
                 "aMiLa",
                 "build",
+                "docs",
                 "AmigaPlaygroundTests",
                 "AmigaPlaygroundUITests",
                 "AmigaPlayground.xcodeproj",

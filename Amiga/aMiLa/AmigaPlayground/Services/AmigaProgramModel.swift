@@ -316,6 +316,7 @@ enum AmigaProgramFamilyRegistry {
             "AssemblySemanticValidator",
             "VASM compile",
             "bootable ADF generation",
+            "runtime observation contract",
             "optional vAmiga runtime smoke",
             "negative verifier tests"
         ]
@@ -1466,6 +1467,7 @@ enum AmigaProgramFamilyRegistry {
             "AssemblySemanticValidator",
             "VASM compile",
             "bootable ADF generation",
+            "runtime observation contract",
             "optional vAmiga runtime smoke",
             "negative verifier tests"
         ]
@@ -1540,6 +1542,7 @@ enum AmigaProgramFamilyPromotionAudit {
         "AssemblySemanticValidator",
         "VASM compile",
         "bootable ADF generation",
+        "runtime observation contract",
         "optional vAmiga runtime smoke",
         "negative verifier tests"
     ]
@@ -1951,6 +1954,7 @@ enum AmigaProgramFamilyPromotionAudit {
 
         let verifierFailures = AmigaProgramSourceVerifier.failures(in: source)
         failures.append(contentsOf: verifierFailures.map { "\(manifest.id): verifier failure: \($0)" })
+        failures.append(contentsOf: runtimeObservationFailures(for: manifest, source: source))
 
         for prompt in manifest.firstShotPromptExamples {
             guard let match = AssistantPromptTemplate.match(for: prompt) else {
@@ -1972,6 +1976,73 @@ enum AmigaProgramFamilyPromotionAudit {
         failures.append(contentsOf: ignoredFollowUpSmokeFailures(for: manifest, source: source))
 
         return failures
+    }
+
+    static func runtimeObservationFailures(for manifest: AmigaProgramFamilyManifest, source: String) -> [String] {
+        let index = AmigaSourceIndexer.index(source)
+        guard let model = index.model else {
+            return ["\(manifest.id): runtime observation contract failure: missing embedded AmigaProgramModel."]
+        }
+
+        let normalizedLines = source
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map { normalizedRuntimeObservationLine(String($0)) }
+        let containsLine: (String) -> Bool = { needle in
+            normalizedLines.contains { $0.contains(needle) }
+        }
+
+        switch manifest.id {
+        case AmigaProgramFamilyRegistry.doubleBufferedBitplane.id:
+            var failures: [String] = []
+            if !model.hardware.contains(.bitplanes) {
+                failures.append("\(manifest.id): runtime observation contract failure: model does not declare bitplane hardware.")
+            }
+            if !containsLine("move.wfrontcolor(pc),$182(a6)") ||
+                !containsLine("move.wbackcolor(pc),$182(a6)") {
+                failures.append("\(manifest.id): runtime observation contract failure: missing COLOR01 writes for front/back frame evidence.")
+            }
+            if !containsLine("move.la2,$e0(a6)") ||
+                !containsLine("move.la3,$e0(a6)") {
+                failures.append("\(manifest.id): runtime observation contract failure: missing BPL1PT writes for both front/back buffers.")
+            }
+            if !containsLine("bsr.swaitvblank") && !containsLine("bsrwaitvblank") {
+                failures.append("\(manifest.id): runtime observation contract failure: frame swap is not paced through WaitVBlank.")
+            }
+            for label in ["buffera:", "bufferb:", "patterna:", "patternb:"] where !containsLine(label) {
+                failures.append("\(manifest.id): runtime observation contract failure: missing visible frame data label \(label.dropLast()).")
+            }
+            return failures
+
+        case AmigaProgramFamilyRegistry.modPlayerControls.id:
+            var failures: [String] = []
+            if !model.hardware.contains(.paula) {
+                failures.append("\(manifest.id): runtime observation contract failure: model does not declare Paula hardware.")
+            }
+            let requiredSignals = [
+                ("AUD0LC sample pointer write", "move.la0,$a0(a6)"),
+                ("AUD0LEN sample length write", "move.w#8,$a4(a6)"),
+                ("AUD0PER playback period write", "$a6(a6)"),
+                ("AUD0VOL volume write", "$a8(a6)"),
+                ("audio DMA enable", "move.w#$8201,$96(a6)"),
+                ("audio DMA stop", "move.w#$0001,$96(a6)"),
+                ("playback-state set", "move.w#1,playbackstate"),
+                ("playback-state clear", "clr.wplaybackstate")
+            ]
+            for (name, needle) in requiredSignals where !containsLine(needle) {
+                failures.append("\(manifest.id): runtime observation contract failure: missing \(name).")
+            }
+            return failures
+
+        default:
+            return ["\(manifest.id): runtime observation contract failure: no runtime contract is defined for this promoted family."]
+        }
+    }
+
+    private static func normalizedRuntimeObservationLine(_ line: String) -> String {
+        let code = line.split(separator: ";", maxSplits: 1, omittingEmptySubsequences: false).first.map(String.init) ?? ""
+        return code
+            .lowercased()
+            .replacingOccurrences(of: #"\s+"#, with: "", options: .regularExpression)
     }
 
     private static func firstShotPromptGateFailures(for manifest: AmigaProgramFamilyManifest) -> [String] {

@@ -1,6 +1,6 @@
 # Agentic Amiga Producer Improvements
 
-Date: 2026-06-13
+Date: 2026-06-15
 
 This summary describes the integrated Amiga Playground producer improvements around the local model. The model weights were not retrained in this slice; the reliability gain comes from a structured program model, deterministic routing, source patching, and promotion gates that surround model-assisted generation.
 
@@ -23,6 +23,7 @@ The main user-visible result is continuity. A first prompt can create a coherent
 | Rejections | Ambiguous or malformed follow-ups could fall through to generic editing. | Recognized structured failures are terminal and leave the editor state unchanged, with concrete reasons for missing values, duplicates, ambiguity, invalid ordinals, or unsupported values. |
 | Same-conversation recovery | Recovery after a rejected turn was implicit and easy to regress. | Recovery smoke chains record accepted, rejected, and recovered events, proving the rejected turn does not mutate source/model and the next compatible request continues from the preserved state. |
 | Verification | Compile success could be too late and too noisy as a failure signal. | Every routed conversation artifact now passes `AmigaProgramSourceVerifier` before ADF generation, then generates a bootable ADF in the heavy compile gate. |
+| Runtime-oriented evidence | Runtime behavior could be inferred from plausible source structure. | Promoted families now declare and pass a default runtime observation contract: double-buffered bitplane requires front/back COLOR01 and BPL pointer swap evidence plus expected-frame visual smoke; MOD controls require Paula AUD0 register writes, DMA enable/stop, and playback-state evidence. Full vAmiga smoke remains optional for ROM-equipped machines. |
 | Promotion evidence | Coverage could be declared without representative routed conversation proof. | Manifest audits require representative routed first-shot prompts, accepted follow-up smoke chains, recovery smoke chains, event invariants, embedded model/source checks, and supported-follow-up coverage. |
 | Diagnostics | Failures could be broad or indirect. | Artifact names, event prompts, source/model before/after state, and verifier failures point to the exact broken conversation checkpoint. |
 
@@ -37,6 +38,7 @@ The main user-visible result is continuity. A first prompt can create a coherent
 - Required representative routed accepted coverage for every declared supported follow-up category.
 - Added routed first-shot source, pre-rejection setup source, accepted follow-up artifacts, recovery artifacts, and final representative conversation artifacts to the compile/ADF proof set.
 - Added per-artifact `AmigaProgramSourceVerifier` assertions before ADF generation.
+- Added a required runtime observation contract gate for promoted families, with negative tests for missing bitplane frame-pointer evidence and missing MOD audio-register writes.
 - Added outcome caching to keep promotion audits practical while preserving broad coverage.
 
 ## Verified Evidence
@@ -67,8 +69,9 @@ The model remains useful for broad generation and unsupported requests, but the 
 3. patch follow-ups through structured planners,
 4. reject unsafe or ambiguous requests without mutation,
 5. verify model/source semantics,
-6. compile and package bootable ADF artifacts.
+6. prove runtime-observable frame or audio state/register evidence,
+7. compile and package bootable ADF artifacts.
 
 ## Remaining Direction
 
-The goal is still active. The next layers are to broaden family coverage, keep reducing unsupported fallback use, and add more runtime-oriented validation where visual or audio behavior can be observed rather than inferred from source and compile gates alone.
+The goal is still active. The next layers are to broaden family coverage only when it can meet the same manifest, verifier, compile, ADF, rejection/recovery, and runtime-observation standard, and to keep optional emulator smoke available as a higher-confidence check on machines with ROMs and automation access.

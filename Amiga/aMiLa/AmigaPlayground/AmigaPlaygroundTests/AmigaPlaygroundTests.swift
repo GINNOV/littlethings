@@ -3795,6 +3795,7 @@ InputDispatch:
         XCTAssertTrue(manifest.requiredVerificationGates.contains("representative routed conversation audit"))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("VASM compile"))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("bootable ADF generation"))
+        XCTAssertTrue(manifest.requiredVerificationGates.contains("runtime observation contract"))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("optional vAmiga runtime smoke"))
     }
 
@@ -3891,6 +3892,7 @@ InputDispatch:
         XCTAssertTrue(manifest.requiredVerificationGates.contains("representative routed conversation audit"))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("VASM compile"))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("bootable ADF generation"))
+        XCTAssertTrue(manifest.requiredVerificationGates.contains("runtime observation contract"))
         XCTAssertTrue(manifest.requiredVerificationGates.contains("optional vAmiga runtime smoke"))
     }
 
@@ -3930,9 +3932,63 @@ InputDispatch:
         XCTAssertEqual(AmigaProgramFamilyPromotionAudit.failuresForAllFamilies(), [])
     }
 
+    func testAmigaProgramFamilyPromotionAuditRuntimeObservationContractCoversPromotedFamilies() throws {
+        for manifest in AmigaProgramFamilyRegistry.all {
+            let source = try AmigaProgramFamilyPromotionAudit.verifiedSource(for: manifest)
+            XCTAssertEqual(
+                AmigaProgramFamilyPromotionAudit.runtimeObservationFailures(for: manifest, source: source),
+                [],
+                "\(manifest.id) should satisfy its runtime observation contract."
+            )
+        }
+
+        let bitplanePrompt = try XCTUnwrap(AmigaProgramFamilyRegistry.doubleBufferedBitplane.firstShotPromptExamples.first)
+        let bitplaneMatch = try XCTUnwrap(AssistantPromptTemplate.match(for: bitplanePrompt))
+        let visualSmoke = try PromptTemplateVisualSmokeValidator.validate(
+            match: bitplaneMatch,
+            prompt: bitplanePrompt
+        )
+
+        XCTAssertTrue(visualSmoke.success)
+        XCTAssertGreaterThan(visualSmoke.nonBlackPixels, 0)
+    }
+
+    func testAmigaProgramFamilyPromotionAuditRuntimeObservationDetectsMissingBitplaneFrameEvidence() throws {
+        let manifest = AmigaProgramFamilyRegistry.doubleBufferedBitplane
+        let source = try AmigaProgramTemplate.verifiedDoubleBufferedBitplaneSource(frontColor: "red", backColor: "green")
+            .replacingOccurrences(
+                of: "            move.l     a3,$e0(a6)           ; BPL1PT",
+                with: "            move.l     a3,$e4(a6)           ; broken BPL1PT"
+            )
+
+        let failures = AmigaProgramFamilyPromotionAudit.runtimeObservationFailures(for: manifest, source: source)
+
+        XCTAssertTrue(
+            failures.contains("\(manifest.id): runtime observation contract failure: missing BPL1PT writes for both front/back buffers."),
+            "\(failures)"
+        )
+    }
+
+    func testAmigaProgramFamilyPromotionAuditRuntimeObservationDetectsMissingMODAudioWriteEvidence() throws {
+        let manifest = AmigaProgramFamilyRegistry.modPlayerControls
+        let source = try AmigaProgramTemplate.verifiedModPlayerControlsSource()
+            .replacingOccurrences(
+                of: "            move.w     AudioVolume(pc),$a8(a6) ; AUD0VOL",
+                with: "            move.w     AudioVolume(pc),$aa(a6) ; broken AUD0VOL"
+            )
+
+        let failures = AmigaProgramFamilyPromotionAudit.runtimeObservationFailures(for: manifest, source: source)
+
+        XCTAssertTrue(
+            failures.contains("\(manifest.id): runtime observation contract failure: missing AUD0VOL volume write."),
+            "\(failures)"
+        )
+    }
+
     func testAmigaProgramFamilyRegistryUsesBaselinePromotionGates() {
         let baselineGates = Set(AmigaProgramFamilyPromotionAudit.baselineRequiredVerificationGates)
 
+        XCTAssertTrue(baselineGates.contains("runtime observation contract"))
         XCTAssertTrue(baselineGates.contains("optional vAmiga runtime smoke"))
         XCTAssertTrue(baselineGates.contains("representative routed conversation audit"))
 
@@ -4003,17 +4059,20 @@ InputDispatch:
 
     func testAmigaProgramFamilyPromotionAuditRunsFollowUpSmokeFromRoutedFirstShotSources() {
         var manifest = AmigaProgramFamilyRegistry.doubleBufferedBitplane
-        manifest.requiredFollowUpSmokePrompts = ["make background blue"]
+        manifest.requiredFollowUpSmokePrompts = [
+            "set front color to teal",
+            "set back color to blue"
+        ]
         manifest.requiredFollowUpSmokeChains = [
             [
-                "make background blue",
+                "set front color to teal",
                 "set back color to blue"
             ]
         ]
         manifest.representativeRoutedFollowUpSmokeChains = manifest.requiredFollowUpSmokeChains
         manifest.requiredRejectedFollowUpSmokeChains = [
             [
-                "make background blue",
+                "set back color to blue",
                 "set front color to teal"
             ],
             [
@@ -4026,9 +4085,10 @@ InputDispatch:
 
         XCTAssertTrue(
             failures.contains {
-                $0.contains("first-shot prompt follow-up smoke failure") &&
+                    $0.contains("first-shot prompt follow-up smoke failure") &&
                     $0.contains("Generate double-buffered bitplane animation that swaps front and back bitplane pointers") &&
-                    $0.contains("required prompt chain prompt was not recognized: make background blue")
+                    $0.contains("required prompt chain prompt was rejected: set front color to teal") &&
+                    $0.contains("Unsupported front buffer color.")
             },
             "Expected first-shot follow-up smoke failures to be attributed to routed sources, got: \(failures)"
         )
@@ -5108,6 +5168,7 @@ InputDispatch:
     func testAmigaProgramFamilyPromotionAuditDetectsBlankPromptDeclarations() {
         var manifest = AmigaProgramFamilyRegistry.modPlayerControls
         let blankSupportedFollowUpIndex = manifest.supportedFollowUps.count + 1
+        let blankVerificationGateIndex = manifest.requiredVerificationGates.count + 1
         manifest.rejectedFirstShotPromptExamples = ["  "]
         manifest.supportedFollowUps.append("\t")
         manifest.requiredVerificationGates.append("\n")
@@ -5116,7 +5177,7 @@ InputDispatch:
 
         XCTAssertTrue(failures.contains("mod-player-controls: blank rejected first-shot prompt examples at index 1."))
         XCTAssertTrue(failures.contains("mod-player-controls: blank supported follow-up declarations at index \(blankSupportedFollowUpIndex)."))
-        XCTAssertTrue(failures.contains("mod-player-controls: blank required verification gates at index 9."))
+        XCTAssertTrue(failures.contains("mod-player-controls: blank required verification gates at index \(blankVerificationGateIndex)."))
     }
 
     func testAmigaProgramFamilyPromotionAuditDetectsUntrimmedPromptDeclarations() {
@@ -5404,6 +5465,7 @@ InputDispatch:
             "add volume up",
             "change volume step"
         ]]
+        manifest.requiredRecoveryFollowUpSmokeChains = []
 
         XCTAssertTrue(
             AmigaProgramFamilyPromotionAudit.failures(for: manifest)
@@ -5423,6 +5485,7 @@ InputDispatch:
             "add volume up",
             "change volume step"
         ]]
+        manifest.requiredRecoveryFollowUpSmokeChains = []
 
         XCTAssertTrue(
             AmigaProgramFamilyPromotionAudit.failures(for: manifest)
