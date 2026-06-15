@@ -46,17 +46,12 @@ The main user-visible result is continuity. A first prompt can create a coherent
 Recent local verification included:
 
 - `git diff --check`
-- `swift test --disable-sandbox --filter 'AmigaPlaygroundTests/testAmigaProgramFamilyPromotionAuditCompilesVerifiedSourcesAndSmokeChains'`
-  - Result: passed, 1 test, 0 failures
-  - Runtime with the expanded artifact gate: 1011.960 seconds
-
-Previously completed gates in this same improvement stream included:
-
-- representative routed conversation artifact collection,
-- accepted and recovery event invariant tests,
-- representative supported-follow-up coverage enforcement,
-- all-family promotion audit,
-- routed first-shot conversation artifact compile checks.
+- `aMiLa/AmigaPlayground/script/validate_amiga_agent.sh`
+  - Result: passed from a clean worktree on 2026-06-15
+  - Covered promotion audits, model-backed follow-up chains, router fail-closed behavior, double-buffered bitplane template checks, prompt-template compile checks, semantic validator checks, VASM compile gates, and bootable ADF generation gates.
+- Public Hugging Face card update for `bmove/antigravity-amiga-68k`
+  - Result: published card commit `5a296a4d0c221447835a029878b3f06c3678a61d`
+  - The card now separates raw model weights, app-side structured producer guarantees, and remaining unsupported/fallback behavior.
 
 ## Practical Impact
 
@@ -74,4 +69,4 @@ The model remains useful for broad generation and unsupported requests, but the 
 
 ## Remaining Direction
 
-The goal is still active. The next layers are to broaden family coverage only when it can meet the same manifest, verifier, compile, ADF, rejection/recovery, and runtime-observation standard, and to keep optional emulator smoke available as a higher-confidence check on machines with ROMs and automation access.
+The promoted-family checkpoint is complete. The next layers should broaden family coverage only when each new family can meet the same manifest, verifier, compile, ADF, rejection/recovery, and runtime-observation standard. Optional emulator smoke remains a higher-confidence check for machines with ROMs and automation access.
