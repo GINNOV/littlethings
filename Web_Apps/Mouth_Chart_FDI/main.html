@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Interactive Dental Chart</title>
+        <title>Dental Chart Selector</title>
         <style>
             body {
                 font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -93,78 +93,29 @@
                 color: #2c3e50;
             }
 
-            /* Control Panel Styling */
-            .controls-panel {
+            /* Simplified Controls Styling */
+            .controls-container {
                 background: white;
-                padding: 20px;
-                border-radius: 12px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                margin-bottom: 25px;
+                display: flex;
+                align-items: center;
                 gap: 15px;
-                width: 100%;
-                max-width: 800px;
-                margin-bottom: 25px;
-            }
-
-            .calibration-panel {
-                background: #e8f4fc;
-                border: 1px solid #b3d7ff;
-                padding: 20px;
-                border-radius: 12px;
-                width: 100%;
-                max-width: 800px;
-                margin-bottom: 25px;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .control-group {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
             }
 
             label {
-                font-size: 0.9em;
                 font-weight: 600;
                 color: #555;
             }
 
-            select,
-            input[type="color"],
-            input[type="range"],
-            textarea {
-                padding: 8px;
+            select {
+                padding: 8px 12px;
                 border: 1px solid #ddd;
                 border-radius: 6px;
-                font-size: 14px;
-                width: 100%;
-                box-sizing: border-box;
-            }
-
-            input[type="range"] {
-                padding: 0;
-            }
-
-            textarea {
-                font-family: monospace;
-                resize: vertical;
-                background-color: #fff;
-            }
-
-            .checkbox-group {
-                flex-direction: row;
-                align-items: center;
-                gap: 10px;
-                padding-top: 24px; /* Align with other inputs */
-            }
-
-            .checkbox-group input {
-                width: auto;
-                margin: 0;
-                cursor: pointer;
+                font-size: 16px;
+                min-width: 150px;
             }
 
             /* Chart Area Styling */
@@ -177,7 +128,7 @@
                 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
                 overflow: hidden;
                 border: 1px solid #eee;
-                cursor: crosshair; /* Indicates clickable area */
+                cursor: pointer; /* Indicates clickable */
                 flex-shrink: 0;
             }
 
@@ -185,7 +136,7 @@
                 width: 100%;
                 height: auto;
                 display: block;
-                user-select: none; /* Prevents image highlighting on click */
+                user-select: none;
             }
 
             /* SVG Overlay */
@@ -210,28 +161,23 @@
 
             /* Tooth Outline Paths for Highlight Selection */
             .tooth-path {
-                fill: rgba(46, 204, 113, 0.05); /* very subtle indicator outline for calibration */
-                stroke: rgba(46, 204, 113, 0.3);
-                stroke-width: 0.15;
+                fill: transparent;
+                stroke: transparent;
                 cursor: pointer;
                 pointer-events: auto;
                 transition: all 0.2s ease;
             }
-            .tooth-path:hover {
-                fill: rgba(46, 204, 113, 0.2);
-                stroke: rgba(46, 204, 113, 0.8);
-                stroke-width: 0.3;
-            }
-            .tooth-path.selected {
-                fill: rgba(46, 204, 113, 0.4);
-                stroke: rgba(46, 204, 113, 0.9);
-                stroke-width: 0.4;
-            }
 
             /* Styles when precise shape highlighting is enabled */
-            .use-path-selection .tooth-path.selected {
-                fill: rgba(46, 204, 113, 0.45);
+            .use-path-selection .tooth-path:hover {
+                fill: rgba(231, 76, 60, 0.15);
             }
+            .use-path-selection .tooth-path.selected {
+                fill: rgba(231, 76, 60, 0.35);
+                stroke: none; /* No border stroke to avoid box-inside look */
+            }
+
+            /* Styles when circle highlight is active */
             .use-circle-selection #selection-circle {
                 display: block;
             }
@@ -242,29 +188,9 @@
             #selection-circle {
                 transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                 opacity: 0;
-            }
-
-            .copy-icon-btn {
-                background: #ffffff;
-                border: 1px solid #b3d7ff;
-                color: #2980b9;
-                padding: 6px;
-                border-radius: 6px;
-                cursor: pointer;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.2s ease;
-            }
-
-            .copy-icon-btn:hover {
-                background-color: #e8f4fc;
-                border-color: #2980b9;
-                color: #3498db;
-            }
-
-            .copy-icon-btn:active {
-                transform: scale(0.95);
+                fill: none;
+                stroke: #e74c3c; /* Standard Red */
+                stroke-width: 0.5;
             }
         </style>
     </head>
@@ -274,7 +200,7 @@
             <aside class="sidebar">
                 <div class="sidebar-brand">🦷 FDI Dental Hub</div>
                 <nav class="sidebar-nav">
-                    <a href="main.html" class="nav-item">
+                    <a href="main.html" class="nav-item active">
                         <span class="nav-icon">📊</span>
                         Standard Selector
                     </a>
@@ -282,7 +208,7 @@
                         <span class="nav-icon">🖱️</span>
                         Click-Only Selector
                     </a>
-                    <a href="tooth_calibration.html" class="nav-item active">
+                    <a href="tooth_calibration.html" class="nav-item">
                         <span class="nav-icon">⚙️</span>
                         Calibration Tool
                     </a>
@@ -297,88 +223,14 @@
             <main class="main-content">
                 <h1>Dental Chart Selector</h1>
 
-                <div class="controls-panel">
-                    <!-- Tooth Selection -->
-                    <div class="control-group">
-                        <label for="tooth-selector">Select Tooth (FDI):</label>
-                        <select id="tooth-selector">
-                            <option value="">-- Choose Tooth --</option>
-                        </select>
-                    </div>
-
-                    <!-- Color Picker -->
-                    <div class="control-group">
-                        <label for="color-picker">Circle Color:</label>
-                        <input type="color" id="color-picker" value="#2ecc71" />
-                    </div>
-
-                    <!-- Size Slider -->
-                    <div class="control-group">
-                        <label for="size-slider">Circle Size:</label>
-                        <input
-                            type="range"
-                            id="size-slider"
-                            min="1"
-                            max="10"
-                            value="3.5"
-                            step="0.5"
-                        />
-                    </div>
-
-                    <!-- Fill Toggle -->
-                    <div class="control-group checkbox-group">
-                        <input type="checkbox" id="fill-check" />
-                        <label for="fill-check" style="cursor: pointer"
-                            >Fill Circle?</label
-                        >
-                    </div>
-                </div>
-
-                <!-- Calibration Panel -->
-                <div class="calibration-panel">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #b3d7ff; padding-bottom: 8px; margin-bottom: 10px;">
-                        <h3 style="margin: 0; color: #2980b9">Calibration Mode</h3>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <input
-                                type="checkbox"
-                                id="calib-mode"
-                                style="transform: scale(1.2); margin: 0; cursor: pointer;"
-                            />
-                            <label for="calib-mode" style="cursor: pointer; color: #d35400; font-weight: 600;"
-                                >Enable Manual Calibration</label
-                            >
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 20px; align-items: stretch; flex-wrap: wrap; margin-top: 15px;">
-                        <!-- Left Pane: Instructions -->
-                        <div style="flex: 1.2; min-width: 280px;">
-                            <p style="margin: 0; font-size: 0.9em; color: #666; line-height: 1.5;">
-                                <strong>Instructions:</strong><br>
-                                1. Check the <em>Enable Manual Calibration</em> box above.<br>
-                                2. Select a tooth from the <strong>Select Tooth (FDI)</strong> dropdown menu.<br>
-                                3. Click on the correct location on the chart image to set its coordinates. You can click repeatedly to nudge and adjust the selection overlay to improve its alignment and accuracy.<br>
-                                4. Click the copy icon in the coordinates box on the right to copy the JSON coordinates. Paste them directly into your project (e.g., replace the <code>toothMap</code> object in <code>main.html</code>, or <code>TOOTH_COORDINATES</code> in your React component).
-                            </p>
-                        </div>
-                        
-                        <!-- Right Pane: Output Area -->
-                        <div class="control-group" style="flex: 1; min-width: 280px; display: flex; flex-direction: column;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                <label for="config-output" style="margin: 0; font-weight: 600; color: #555;">Current Coordinates (JSON):</label>
-                                <button type="button" id="copy-btn" class="copy-icon-btn" title="Copy to Clipboard">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                            <textarea id="config-output" readonly style="font-size: 11px; margin-top: 0; flex-grow: 1; min-height: 120px; font-family: monospace; resize: none;"></textarea>
-                        </div>
-                    </div>
+                <div class="controls-container">
+                    <label for="tooth-selector">Select Tooth:</label>
+                    <select id="tooth-selector">
+                        <option value="">-- None --</option>
+                    </select>
                 </div>
 
                 <div class="chart-wrapper">
-                    <!-- Added onerror fallback to show a placeholder if the local file is missing -->
                     <img
                         src="assets/fdi_mouth_chart.png"
                         alt="Dental Chart"
@@ -386,7 +238,7 @@
                         onerror="
                             this.onerror = null;
                             this.src =
-                                'https://placehold.co/600x400?text=Image+Not+Found+in+Folder';
+                                'https://placehold.co/600x400?text=Image+Not+Found';
                         "
                     />
 
@@ -397,8 +249,10 @@
                         viewBox="0 0 100 100"
                         preserveAspectRatio="none"
                     >
+                        <!-- Fixed radius of 3.5% -->
                         <circle id="selection-circle" cx="0" cy="0" r="3.5" />
-                        </div>
+                    </svg>
+                 </div>
             </main>
         </div>
 
@@ -407,14 +261,8 @@
             // --- Configuration ---
             const elements = {
                 select: document.getElementById("tooth-selector"),
-                color: document.getElementById("color-picker"),
-                size: document.getElementById("size-slider"),
-                fill: document.getElementById("fill-check"),
                 circle: document.getElementById("selection-circle"),
                 wrapper: document.querySelector(".chart-wrapper"),
-                calibCheck: document.getElementById("calib-mode"),
-                output: document.getElementById("config-output"),
-                copyBtn: document.getElementById("copy-btn"),
                 image: document.querySelector(".chart-image"),
                 overlay: document.querySelector(".overlay"),
                 highlightCanvas: document.getElementById("highlight-canvas")
@@ -427,7 +275,6 @@
             const mapHeight = 500;
             let hoveredTooth = null;
             let selectedTooth = null;
-            let uncoloredImage = null;
             const isolatedTeeth = {};
 
             // Standard FDI Tooth Coordinates
@@ -472,9 +319,12 @@
 
             // --- Initialization ---
             function init() {
+                // Load saved chart style setting
                 const savedStyle = localStorage.getItem('mouthChartStyle') || 'colored';
                 elements.image.src = savedStyle === 'uncolored' ? 'assets/fdi_mouth_chart_uncolored.png' : 'assets/fdi_mouth_chart.png';
 
+                // Load saved selection highlight style setting
+                // Force to circle overlay selection if style is colored
                 if (savedStyle === 'colored') {
                     colorSelectedTooth = false;
                 } else {
@@ -490,7 +340,7 @@
                 }
 
                 // Load offscreen uncolored image to build the tooth index map
-                uncoloredImage = new Image();
+                const uncoloredImage = new Image();
                 uncoloredImage.src = UNCOLORED_CHART_BASE64;
                 uncoloredImage.onload = () => {
                     buildToothIndexMap(uncoloredImage);
@@ -511,19 +361,9 @@
                     selectedTooth = elements.select.value ? parseInt(elements.select.value) : null;
                     updateSelection();
                 });
-                elements.color.addEventListener("input", updateStyle);
-                elements.size.addEventListener("input", updateStyle);
-                elements.fill.addEventListener("change", updateStyle);
-                elements.copyBtn.addEventListener("click", copyToClipboard);
-
-                // Click-to-select & calibrate logic
                 elements.wrapper.addEventListener("click", handleChartClick);
                 elements.wrapper.addEventListener("mousemove", handleMouseMove);
                 elements.wrapper.addEventListener("mouseleave", handleMouseLeave);
-
-                // Initial Output
-                updateConfigOutput();
-                updateStyle();
             }
 
             function buildToothIndexMap(img) {
@@ -564,7 +404,7 @@
                     const pixels = [[startX, startY]];
 
                     let head = 0;
-                    const maxPixels = 6000;
+                    const maxPixels = 6000; // safety limit
                     while (head < queue.length && queue.length < maxPixels) {
                         const [cx, cy] = queue[head++];
 
@@ -673,16 +513,15 @@
                 const ctx = elements.highlightCanvas.getContext('2d');
                 ctx.clearRect(0, 0, mapWidth, mapHeight);
 
-                if (!colorSelectedTooth || !toothIndexMap) return;
+                if (!colorSelectedTooth) return;
 
-                // Draw hovered tooth in medium green
+                // Draw hovered highlight first (using light red)
                 if (hoveredTooth && isolatedTeeth[hoveredTooth]) {
-                    drawSingleToothHighlight(ctx, hoveredTooth, [120, 230, 160]); // medium green
+                    drawSingleToothHighlight(ctx, hoveredTooth, [255, 102, 102]);
                 }
-
-                // Draw selected tooth in bright green
+                // Draw selected highlight on top (using standard red)
                 if (selectedTooth && isolatedTeeth[selectedTooth]) {
-                    drawSingleToothHighlight(ctx, selectedTooth, [46, 204, 113]); // bright green
+                    drawSingleToothHighlight(ctx, selectedTooth, [231, 76, 60]);
                 }
             }
 
@@ -707,31 +546,6 @@
                 ctx.drawImage(tempCanvas, tooth.minX, tooth.minY);
             }
 
-            function copyToClipboard() {
-                elements.output.select();
-                elements.output.setSelectionRange(0, 99999);
-                navigator.clipboard.writeText(elements.output.value)
-                    .then(() => {
-                        const originalHTML = elements.copyBtn.innerHTML;
-                        elements.copyBtn.innerHTML = `
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                        `;
-                        elements.copyBtn.style.borderColor = "#27ae60";
-                        elements.copyBtn.style.backgroundColor = "#e8f8f0";
-                        setTimeout(() => {
-                            elements.copyBtn.innerHTML = originalHTML;
-                            elements.copyBtn.style.borderColor = "";
-                            elements.copyBtn.style.backgroundColor = "";
-                        }, 2000);
-                    })
-                    .catch(err => {
-                        console.error("Failed to copy text: ", err);
-                        alert("Failed to copy coordinates automatically. Please select and copy manually.");
-                    });
-            }
-
             // --- Logic ---
 
             function handleChartClick(e) {
@@ -739,44 +553,6 @@
                 const clickX = ((e.clientX - rect.left) / rect.width) * mapWidth;
                 const clickY = ((e.clientY - rect.top) / rect.height) * mapHeight;
 
-                // CHECK CALIBRATION MODE
-                if (elements.calibCheck.checked) {
-                    const selectedToothNum = elements.select.value;
-                    if (!selectedToothNum) {
-                        alert(
-                            "⚠️ Please select a specific tooth from the dropdown list first, then click on the chart to set its location."
-                        );
-                        return;
-                    }
-
-                    const pctX = ((e.clientX - rect.left) / rect.width) * 100;
-                    const pctY = ((e.clientY - rect.top) / rect.height) * 100;
-
-                    // Update ONLY the x and y properties, preserving w, h, rot, shape
-                    if (toothMap[selectedToothNum]) {
-                        toothMap[selectedToothNum].x = parseFloat(pctX.toFixed(1));
-                        toothMap[selectedToothNum].y = parseFloat(pctY.toFixed(1));
-                    } else {
-                        toothMap[selectedToothNum] = {
-                            x: parseFloat(pctX.toFixed(1)),
-                            y: parseFloat(pctY.toFixed(1)),
-                            w: 2.8,
-                            h: 3.8,
-                            rot: 0,
-                            shape: 'incisor'
-                        };
-                    }
-
-                    // Re-build index map and update UI
-                    if (uncoloredImage && uncoloredImage.complete) {
-                        buildToothIndexMap(uncoloredImage);
-                    }
-                    updateSelection();
-                    updateConfigOutput();
-                    return;
-                }
-
-                // NORMAL MODE (Click to Select)
                 const x = Math.floor(clickX);
                 const y = Math.floor(clickY);
 
@@ -872,29 +648,6 @@
                 } else {
                     elements.circle.style.opacity = "0";
                 }
-            }
-
-            function updateStyle() {
-                const color = elements.color.value;
-                const size = elements.size.value;
-                const isFilled = elements.fill.checked;
-
-                elements.circle.setAttribute("r", size);
-
-                if (isFilled) {
-                    elements.circle.style.fill = color;
-                    elements.circle.style.fillOpacity = "0.5";
-                    elements.circle.style.stroke = color;
-                    elements.circle.style.strokeWidth = "1";
-                } else {
-                    elements.circle.style.fill = "none";
-                    elements.circle.style.stroke = color;
-                    elements.circle.style.strokeWidth = "1.5";
-                }
-            }
-
-            function updateConfigOutput() {
-                elements.output.value = JSON.stringify(toothMap, null, 4);
             }
 
             // Start

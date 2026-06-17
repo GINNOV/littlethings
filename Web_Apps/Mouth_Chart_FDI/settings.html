@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dental Chart Settings</title>
+        <style>
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f0f2f5;
+                color: #333;
+                display: flex;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            .app-layout {
+                display: flex;
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            /* Sidebar Styles */
+            .sidebar {
+                width: 260px;
+                background-color: #2c3e50;
+                color: #ecf0f1;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+                flex-shrink: 0;
+                overflow-y: auto;
+            }
+
+            .sidebar-brand {
+                padding: 24px 20px;
+                font-size: 1.25em;
+                font-weight: 700;
+                border-bottom: 1px solid #34495e;
+                letter-spacing: 0.5px;
+            }
+
+            .sidebar-nav {
+                padding: 20px 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                flex-grow: 1;
+            }
+
+            .nav-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 16px;
+                color: #bdc3c7;
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: 500;
+                font-size: 14px;
+                transition: all 0.2s ease;
+            }
+
+            .nav-item:hover {
+                color: #ffffff;
+                background-color: #34495e;
+            }
+
+            .nav-item.active {
+                color: #ffffff;
+                background-color: #2980b9;
+            }
+
+            .nav-icon {
+                font-size: 1.2em;
+            }
+
+            /* Main Content Styles */
+            .main-content {
+                flex-grow: 1;
+                padding: 30px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                overflow: auto;
+            }
+
+            h1 {
+                margin-bottom: 30px;
+                color: #2c3e50;
+                align-self: flex-start;
+            }
+
+            /* Settings Container Styles */
+            .settings-card {
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+                width: 100%;
+                max-width: 600px;
+                border: 1px solid #eee;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+            }
+
+            .settings-section-title {
+                font-size: 1.1em;
+                font-weight: 700;
+                color: #2c3e50;
+                margin: 0 0 15px 0;
+                border-bottom: 2px solid #f0f2f5;
+                padding-bottom: 8px;
+            }
+
+            .option-group {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .option-card {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                padding: 15px;
+                border: 2px solid #e8f4fc;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .option-card:hover {
+                border-color: #b3d7ff;
+                background-color: #fafdff;
+            }
+
+            .option-card.selected {
+                border-color: #2980b9;
+                background-color: #f4f9fd;
+            }
+
+            .option-radio {
+                transform: scale(1.3);
+                cursor: pointer;
+            }
+
+            .option-details {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .option-title {
+                font-weight: 600;
+                color: #2c3e50;
+            }
+
+            .option-desc {
+                font-size: 0.85em;
+                color: #7f8c8d;
+            }
+
+            .save-msg {
+                color: #27ae60;
+                font-weight: 600;
+                font-size: 0.9em;
+                margin-top: 10px;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="app-layout">
+            <!-- Side Navigation -->
+            <aside class="sidebar">
+                <div class="sidebar-brand">🦷 FDI Dental Hub</div>
+                <nav class="sidebar-nav">
+                    <a href="main.html" class="nav-item">
+                        <span class="nav-icon">📊</span>
+                        Standard Selector
+                    </a>
+                    <a href="tooth_mouse_selector.html" class="nav-item">
+                        <span class="nav-icon">🖱️</span>
+                        Click-Only Selector
+                    </a>
+                    <a href="tooth_calibration.html" class="nav-item">
+                        <span class="nav-icon">⚙️</span>
+                        Calibration Tool
+                    </a>
+                    <a href="settings.html" class="nav-item active">
+                        <span class="nav-icon">🛠️</span>
+                        Settings
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <h1>Settings</h1>
+
+                <div class="settings-card">
+                    <div>
+                        <h3 class="settings-section-title">Visual Customization</h3>
+                        
+                        <div class="option-group">
+                            <!-- Option 1: Colored Chart -->
+                            <div class="option-card" id="card-colored" onclick="selectStyle('colored')">
+                                <input type="radio" name="chart-style" id="radio-colored" value="colored" class="option-radio" />
+                                <div class="option-details">
+                                    <div class="option-title">Colored Mouth Chart</div>
+                                    <div class="option-desc">Display standard color-coded quadrants and highlighted teeth segments.</div>
+                                </div>
+                            </div>
+
+                            <!-- Option 2: Uncolored Chart -->
+                            <div class="option-card" id="card-uncolored" onclick="selectStyle('uncolored')">
+                                <input type="radio" name="chart-style" id="radio-uncolored" value="uncolored" class="option-radio" />
+                                <div class="option-details">
+                                    <div class="option-title">Uncolored / Outline Mouth Chart</div>
+                                    <div class="option-desc">Display clean black-and-white outlines for a minimal medical look.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="settings-section-title" style="margin-top: 25px;">Highlight Customization</h3>
+                        
+                        <div class="option-group">
+                            <!-- Option: Color Selected Tooth -->
+                            <div class="option-card" id="card-color-tooth" onclick="toggleColorSelectedTooth()">
+                                <input type="checkbox" id="check-color-tooth" class="option-radio" style="pointer-events: none;" />
+                                <div class="option-details">
+                                    <div class="option-title">Color Selected Tooth</div>
+                                    <div class="option-desc">Color and highlight the exact anatomical shape of the selected tooth instead of using a red circle overlay.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="save-notification" class="save-msg">
+                            <span>✓ Preferences saved successfully!</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <script>
+            // Load current setting
+            const currentStyle = localStorage.getItem('mouthChartStyle') || 'colored';
+            const colorSelectedTooth = localStorage.getItem('colorSelectedTooth') !== 'false';
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                applyUIVisuals(currentStyle);
+            });
+
+            function selectStyle(styleName) {
+                // Save setting
+                localStorage.setItem('mouthChartStyle', styleName);
+                
+                // Update UI Visuals
+                applyUIVisuals(styleName);
+                showSaveNotification();
+            }
+
+            function applyUIVisuals(styleName) {
+                // Set radio checked
+                document.getElementById(`radio-${styleName}`).checked = true;
+
+                // Highlight cards
+                const coloredCard = document.getElementById('card-colored');
+                const uncoloredCard = document.getElementById('card-uncolored');
+                const highlightCard = document.getElementById('card-color-tooth');
+
+                if (styleName === 'uncolored') {
+                    uncoloredCard.classList.add('selected');
+                    coloredCard.classList.remove('selected');
+
+                    // Enable the highlight card
+                    highlightCard.style.opacity = '1';
+                    highlightCard.style.pointerEvents = 'auto';
+                    highlightCard.style.cursor = 'pointer';
+
+                    // Load and apply current highlight setting
+                    const isEnabled = localStorage.getItem('colorSelectedTooth') !== 'false';
+                    applyHighlightVisuals(isEnabled);
+                } else {
+                    coloredCard.classList.add('selected');
+                    uncoloredCard.classList.remove('selected');
+
+                    // Disable the highlight card
+                    highlightCard.style.opacity = '0.5';
+                    highlightCard.style.pointerEvents = 'none';
+                    highlightCard.style.cursor = 'not-allowed';
+
+                    // Force display as disabled/unchecked in the UI
+                    applyHighlightVisuals(false);
+                }
+            }
+
+            function toggleColorSelectedTooth() {
+                const checkbox = document.getElementById('check-color-tooth');
+                const newValue = !checkbox.checked;
+                localStorage.setItem('colorSelectedTooth', newValue ? 'true' : 'false');
+                applyHighlightVisuals(newValue);
+                showSaveNotification();
+            }
+
+            function applyHighlightVisuals(isEnabled) {
+                const checkbox = document.getElementById('check-color-tooth');
+                checkbox.checked = isEnabled;
+
+                const card = document.getElementById('card-color-tooth');
+                if (isEnabled) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            }
+
+            function showSaveNotification() {
+                // Show save notification
+                const msg = document.getElementById('save-notification');
+                msg.style.opacity = '1';
+                setTimeout(() => {
+                    msg.style.opacity = '0';
+                }, 1500);
+            }
+        </script>
+    </body>
+</html>
