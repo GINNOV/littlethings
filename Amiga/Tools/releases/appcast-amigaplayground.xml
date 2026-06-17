@@ -2,5 +2,13 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <title>Amiga Playground Changelog</title>
+        <item>
+            <title>Version 1.0.0</title>
+            <description><![CDATA[
+Initial public DMG build for Amiga Playground.
+]]></description>
+            <pubDate>Wed, 17 Jun 2026 15:43:45 +0200</pubDate>
+            <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_37.dmg" sparkle:version="37" sparkle:shortVersionString="1.0.0" length="2553976" type="application/octet-stream" />
+        </item>
     </channel>
 </rss>
