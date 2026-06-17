@@ -163,6 +163,213 @@ The validators can recognize the older bit-14 wording as a blitter wait, but tra
 
 ---
 
+## Complex Functional Code Gym
+
+The next model-quality frontier is the execution-grounded complex benchmark and repair corpus:
+
+```text
+complex_amiga_benchmark_corpus.json
+```
+
+It defines seven representative complex Amiga program families:
+
+- MOD player controls with stateful Paula playback.
+- Double-buffered bitplane animation with sprite/copper interaction.
+- Blitter BOB movement with bounds and collision.
+- Copper raster effects with runtime frame validation.
+- Mouse-controlled sprite multiplexing.
+- Intuition windowed tools with balanced resource cleanup.
+- Clean takeover demos with full system restore.
+
+Current app-side executable seed coverage includes MOD controls, double-buffered bitplanes, blitter BOB collision/bounds, copper raster validation, mouse sprite multiplexing, Intuition window cleanup, and clean takeover restore. The Intuition window tool now embeds an `AmigaProgramModel`, proves deterministic routing, generated ASM, semantic checks, VASM compile, bootable ADF generation, runtime-evidence contract JSON for balanced library/window/event cleanup, the corpus follow-up chain, rejected-turn diagnostics, and targeted cleanup broken-variant rejection. Clean takeover now also embeds an `AmigaProgramModel` and proves deterministic routing, generated ASM, semantic checks, VASM compile, bootable ADF generation, runtime-evidence contract JSON, the corpus follow-up chain, rejected-turn no-mutation behavior, and restore-path broken-variant diagnostics. The standalone Intuition and clean takeover vAmiga artifact gates are wired as opt-in promotion smokes.
+
+Every family must declare the same professional proof surface: structured model requirements, generated ASM expectations, semantic verification, VASM compile, bootable ADF generation, runtime evidence, multi-turn follow-up preservation, rejected-turn no-mutation behavior, and repair-loop seeds from deliberately broken variants.
+
+Validate the corpus before using it to generate golden or repair training data:
+
+```bash
+uv run python validate_complex_benchmark_corpus.py
+```
+
+Build the deterministic JSONL records used for evaluation, repair-seed curation, and future training data extraction:
+
+```bash
+uv run python build_complex_benchmark_records.py
+```
+
+Repair records are not just free-form prompts. Each `repair_seed` JSONL entry now carries a `repair_attempt_contract` with the broken variant strategy, expected pre-repair diagnostic, narrow-patch scope, forbidden broad rewrites, post-repair required gates, runtime evidence contract, family proof tests, and preference order. This keeps repair examples aligned with the code-gym verifier stack instead of training the model to produce plausible broad rewrites.
+
+The generated records are stored in:
+
+```text
+complex_amiga_benchmark_records.jsonl
+```
+
+To verify the tracked records are still synchronized with the corpus:
+
+```bash
+uv run python build_complex_benchmark_records.py --check
+```
+
+Build the dedicated repair-loop examples used to train or evaluate the narrow repair step:
+
+```bash
+uv run python build_complex_repair_loop_examples.py
+```
+
+The generated repair-loop examples are stored in:
+
+```text
+complex_amiga_repair_loop_examples.jsonl
+```
+
+To verify those examples are still synchronized with the corpus and benchmark records:
+
+```bash
+uv run python build_complex_repair_loop_examples.py --check
+```
+
+Build the before/after proof manifests for every repair-loop example:
+
+```bash
+uv run python build_complex_repair_proofs.py
+```
+
+The generated repair proof manifests are stored in:
+
+```text
+complex_amiga_repair_proofs.jsonl
+```
+
+To verify those proof manifests still cover every repair-loop gate in corpus order:
+
+```bash
+uv run python build_complex_repair_proofs.py --check
+```
+
+Build the executable repair matrix that turns each repair proof into concrete Swift test commands:
+
+```bash
+uv run python build_complex_repair_execution_matrix.py
+```
+
+The generated execution matrix is stored in:
+
+```text
+complex_amiga_repair_execution_matrix.jsonl
+```
+
+To verify the matrix is synchronized with the repair proofs:
+
+```bash
+uv run python build_complex_repair_execution_matrix.py --check
+```
+
+To run the fast before/after proof set for every repair seed:
+
+```bash
+uv run python build_complex_repair_execution_matrix.py --check --execute fast
+```
+
+Build the concrete source-mutation evidence rows that bind every repair seed to a deterministic broken source, the expected verifier failure, and the repaired source pass condition:
+
+```bash
+uv run python build_complex_repair_mutation_runs.py
+```
+
+The generated mutation runs are stored in:
+
+```text
+complex_amiga_repair_mutation_runs.jsonl
+```
+
+To verify the mutation-run artifact is synchronized with the corpus and execution matrix:
+
+```bash
+uv run python build_complex_repair_mutation_runs.py --check
+```
+
+The Swift test `testComplexAmigaRepairMutationRunsFailBeforeAndPassAfter` reads this JSONL and executes all 14 deterministic mutations. Each row must preserve the embedded template identity, fail before repair with the declared source/semantic/runtime diagnostic, and pass after restoring the verified narrow repair source.
+
+The concrete verifier-output transcript generated by that Swift runner is stored in:
+
+```text
+complex_amiga_repair_verifier_transcripts.jsonl
+```
+
+Each transcript row records the actual before-repair verifier failure array, the matched expected diagnostic, the preserved template identity, and the empty after-repair failure array. Regenerate it from the Swift verifier stack with:
+
+```bash
+AMIGA_COMPLEX_REPAIR_TRANSCRIPT_OUTPUT="$PWD/complex_amiga_repair_verifier_transcripts.jsonl" \
+  swift test --package-path ../AmigaPlayground \
+  --filter AmigaPlaygroundTests/testComplexAmigaRepairMutationVerifierTranscriptsMatchCurrentVerifierOutput
+```
+
+Then validate the tracked transcript structure and mutation-run alignment:
+
+```bash
+uv run python validate_complex_repair_verifier_transcripts.py
+```
+
+Build and verify the golden source distillation artifact generated from the app-side source providers and replayable corpus follow-up chains:
+
+```bash
+AMIGA_COMPLEX_GOLDEN_SOURCES_OUTPUT="$PWD/complex_amiga_golden_sources.jsonl" \
+AMIGA_COMPLEX_FOLLOWUP_GAPS_OUTPUT="$PWD/complex_amiga_followup_replay_gaps.jsonl" \
+  swift test --package-path ../AmigaPlayground \
+  --filter AmigaPlaygroundTests/testComplexAmigaGoldenSourcesMatchCurrentVerifiedOutputs
+```
+
+The golden rows are stored in:
+
+```text
+complex_amiga_golden_sources.jsonl
+```
+
+Each row contains the chat messages, verified assistant source, embedded model metrics, source/semantic/runtime verification status, and distillation labels. Current coverage is 12 rows: first-shot verified sources for all seven families, plus terminal multi-turn sources for the five declared chains that fully replay through structured patching.
+
+Declared follow-up chains that do not yet replay are stored in:
+
+```text
+complex_amiga_followup_replay_gaps.jsonl
+```
+
+Validate both artifacts with:
+
+```bash
+uv run python validate_complex_golden_sources.py
+```
+
+Audit the whole code-gym contract across the corpus, benchmark records, golden sources, repair examples, repair proofs, execution matrix, mutation runs, and verifier transcripts:
+
+```bash
+uv run python validate_complex_goal_completion.py
+```
+
+This cross-artifact audit proves the current package still has 5-8 representative families, the full required gate set, first-shot and terminal multi-turn golden sources for every family, no unresolved follow-up replay gaps, repair evidence for every declared seed, runtime artifact contracts, domain tags, negative/rejected examples, and preference data ordered as `passes_all_gates > compiles_only > plausible_but_unverified`.
+
+Do not train terminal multi-turn golden samples for rows listed in the gap file. Those rows must first gain structured patcher support and verifier coverage, or the unsupported prompt must be removed from the corpus.
+
+Current executable seeds:
+
+- `mod_player_controls_complex` is bound to the app-side `mod-player-controls` template as an initial executable seed. The seed keeps the model-backed Play/Stop UI and existing same-conversation follow-up surface, while boot-previewing `PlayMOD` so vAmiga can observe Paula state without synthetic mouse input. Focused proof tests cover deterministic routing, embedded model verification, semantic validation, VASM compile, bootable ADF generation, generated-record binding, multi-turn Play/Stop/Volume/Pause preservation, rejected-turn no-mutation behavior, runtime-evidence contract JSON for AUD0LC/AUD0LEN/AUD0PER/AUD0VOL and DMACON, and an opt-in standalone vAmiga promotion gate. The exact terminal corpus chain now also proves Play/Stop/Volume/Pause/Mute preservation, collision-aware relative placement for `Volume Up below Play`, shared-verb parameter edits, A-3 playback-period mapping, and a final opt-in vAmiga artifact gate.
+- `double_buffered_bitplane_sprite_copper` is bound to the app-side `double-buffer-bitplane` template as an initial executable seed. The seed now declares bitplane, sprite, copper, and CIA ownership; emits an owned copper list; writes front/back BPL pointers, COLOR01 values, and SPR0 pointer evidence; and has a dedicated runtime-evidence manifest for vblank-paced buffer swaps with copper/sprite overlay state. Focused proof tests cover deterministic routing, embedded model verification, semantic validation, VASM compile, bootable ADF generation, generated-record binding, color follow-up preservation, rejected color edits without mutation, runtime source-proof JSON generation, and an opt-in standalone vAmiga promotion gate.
+- `blitter_bob_collision_bounds` is bound to the app-side `blitter-bob-collision-bounds` template and is now app-side promoted with opt-in runtime evidence. The focused Swift proof checks deterministic routing, embedded `AmigaProgramModel` source verification, semantic validation, VASM compile, bootable ADF generation, generated-record binding, same-conversation follow-up preservation for speed/target/color edits, rejected-turn no-mutation routing, runtime-evidence contract JSON generation for vblank/blitter/collision observability, and repair-seed diagnostics for missing post-blit wait and missing right-edge bounds clamp. The opt-in `testComplexBlitterBOBStandaloneVAmigaRuntimeEvidenceWhenEnabled` promotion gate compiles the family, generates an ADF, launches the standalone vAmiga validator, and now passes with non-black frame evidence plus register evidence for RAM PC, owned copper list, `BPLCON0=$1200`, `DMACON=$03c0`, and a nonzero first bitplane pointer. The family remains an initial executable seed rather than a complete family proof until every declared follow-up has its own promoted runtime capture.
+- `copper_runtime_raster_validation` is bound to the app-side `bouncing-copper-bars` template as an initial executable seed. The seed embeds an `AmigaProgramModel`, routes the benchmark prompt deterministically, compiles with VASM, generates a bootable ADF, and has a dedicated runtime-evidence contract for vblank-paced copper WAIT updates. The template now exposes model-owned bar count, spacing, bounce speed, palette, and top status band state; focused follow-up tests prove the declared same-conversation chain for eight bars, slower bounce, blue/white palette, and a top status band without losing semantic, runtime-contract, or compile validity. Rejected-turn tests also prove unsafe copper waits, odd instruction addresses, COPJMP1 removal, and zero bars are rejected without free-form mutation. Repair-seed diagnostics now cover missing COPJMP1 and flat model-palette runtime evidence. The opt-in `testComplexCopperRuntimeRasterStandaloneVAmigaRuntimeEvidenceWhenEnabled` gate passes with vAmiga evidence for observed `COP1LC`, runtime `DMACON`, changing copper-list memory, and changing custom color register state. The opt-in `testComplexCopperRuntimeRasterFollowUpChainStandaloneVAmigaRuntimeEvidenceWhenEnabled` gate also compiles the terminal four-turn follow-up artifact, builds an ADF, and validates it through standalone vAmiga runtime evidence.
+- `mouse_sprite_multiplex` is bound to the app-side `mouse-sprite-multiplex` template as an initial executable seed. The seed embeds an `AmigaProgramModel`, samples `JOY0DAT`, updates primary and offset sprite control words under vblank, programs `SPR0PT`/`SPR1PT`, and owns a visible one-bitplane backdrop so frame capture can prove display output. The opt-in `testComplexMouseSpriteMultiplexStandaloneVAmigaRuntimeEvidenceWhenEnabled` gate passes with vAmiga evidence for nonblack frame output, sprite and bitplane DMA, a nonzero first bitplane pointer, changing `SPR0PT`/`SPR1PT` memory, and left-mouse clean exit behavior after the startup grace period. Focused follow-up tests now prove all declared same-conversation structured patches for sprite color, follower offset, horizontal wrapping, and one-frame follower lag, plus rejected-turn no-mutation behavior for unsupported colors, missing offset values, and unsafe sprite pointer edits. The opt-in `testComplexMouseSpriteMultiplexFollowUpChainStandaloneVAmigaRuntimeEvidenceWhenEnabled` gate also compiles the terminal four-turn follow-up artifact, builds an ADF, and validates it through standalone vAmiga runtime evidence. Repair-seed diagnostics now cover missing multiplexed sprite pointer writes and sprite updates moved outside the vblank-paced path.
+- `intuition_window_tool` is bound to the app-side `intuition-window-tool` template as an initial executable seed. The seed opens `intuition.library`, builds a two-gadget window, waits on IDCMP messages, dispatches Play/Stop gadget events, replies to messages, and funnels close-window and failure paths through balanced `CloseWindow`/`CloseLibrary` cleanup. Focused proof tests cover deterministic routing, embedded model verification, semantic validation, VASM compile, bootable ADF generation, generated-record binding, the declared follow-up chain for adding Volume Up, renaming Stop to Halt, moving buttons, and preserving status text cleanup, rejected-turn no-mutation behavior, runtime-evidence contract JSON for system-friendly resource and event cleanup, negative runtime proof for missing `CloseWindow`, and repair-seed diagnostics for missing `CloseLibrary` and missing `CloseWindow`. The opt-in `testComplexIntuitionWindowToolStandaloneVAmigaRuntimeEvidenceWhenEnabled` gate compiles the family, generates an ADF, and launches standalone vAmiga validation when `AMIGA_RUN_COMPLEX_INTUITION_VAMIGA_SMOKE=1` or `/private/tmp/AMIGA_RUN_COMPLEX_INTUITION_VAMIGA_SMOKE` is present.
+- `clean_takeover_restore` is now bound to the app-side `clean-takeover` template as an initial executable seed. The seed saves the active view, DMACONR, INTENAR, COP1LC, and COLOR00 before takeover; disables interrupts and old DMA; installs an owned copper list; runs a vblank-paced COLOR00 cycle; and restores palette, copper pointer, DMA, interrupts, view, and graphics.library cleanup through one shared mouse-exit path. Focused proof tests cover deterministic routing, embedded model verification, source-level restore evidence, semantic validation, VASM compile, bootable ADF generation, generated-record binding, runtime-evidence contract JSON for saved state, owned copper/color output, restore routing, LoadView restoration, and CloseLibrary cleanup, a negative runtime proof for missing DMACON restore, the declared four-turn follow-up chain for green palette, copper split, every-other-vblank pacing, and right-mouse restore, rejected-turn no-mutation behavior for unsafe restore edits, and repair-seed diagnostics for missing DMA restore and an exit path that bypasses restore. The opt-in `testComplexCleanTakeoverRestoreStandaloneVAmigaRuntimeEvidenceWhenEnabled` gate compiles the family, generates an ADF, and launches standalone vAmiga validation when `AMIGA_RUN_COMPLEX_CLEAN_TAKEOVER_VAMIGA_SMOKE=1` or `/private/tmp/AMIGA_RUN_COMPLEX_CLEAN_TAKEOVER_VAMIGA_SMOKE` is present.
+
+Runtime validator sanity gate:
+
+- `validate_emulator_runtime.py --skip-gui --allow-state-second-path` now validates the handcrafted sentinel without macOS Accessibility-dependent window capture. It proves the generated ADF boots under vAmiga by combining raw frame evidence with RetroShell CPU/copper/custom-chip state. The app-side opt-in `testVAmigaRuntimeSmokeHandcraftedSentinelWhenEnabled` uses this path unless `AMIGA_SMOKE_HOST_SCREEN_CAPTURE=1` requests the stricter host-image second path. Run it through `AMIGA_RUN_VAMIGA_SENTINEL_SMOKE=1 aMiLa/AmigaPlayground/script/validate_amiga_agent.sh` when changing runtime capture or ADF boot plumbing.
+- In ADF mode, the validator also records disk inspection, startup-sequence text, boot-state registers, and template-specific evidence. For the blitter BOB seed, this caught the original failure where the OS copper/interrupt path overwrote direct display writes; the repaired template now disables OS interrupts/DMA for the hardware-owned frame, installs its own copper list, and enables bitplane, copper, and blitter DMA with `$83c0`.
+- The full complex promotion suite is available through `AMIGA_RUN_COMPLEX_VAMIGA_SMOKE=1 AMIGA_SMOKE_ROM_DIR=/path/to/kickstarts aMiLa/AmigaPlayground/script/validate_amiga_agent.sh`. It enables all ten focused vAmiga gates for MOD base/follow-up, double-buffered bitplanes, blitter BOB, copper base/follow-up, mouse sprite base/follow-up, Intuition, and clean takeover. The standalone validator treats the first boot-state snapshot as early evidence only; for families still in Kickstart at that instant, runtime CPU/custom-chip snapshots prove execution once the generated program reaches RAM and starts programming DMA, copper, bitplanes, sprites, or audio.
+
+This corpus is intentionally stricter than the older prompt ladder. The prompt ladder measures raw generation and bounded repair. The complex code gym defines what must become a shippable, multi-turn, runtime-observed app-side capability before it is promoted or distilled back into training data.
+
+---
+
 ## When To Retrain
 
 Retrain when you add meaningful new `.s`, `.asm`, or curated Amiga C examples and want the model to learn those patterns.

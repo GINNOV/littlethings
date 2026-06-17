@@ -510,11 +510,30 @@ enum AssistantPromptTemplate {
             )
         }
 
-        if normalized.contains("clean takeover") || normalized.contains("save") && normalized.contains("restore") && normalized.contains("os") {
+        if normalized.contains("intuition.library") || (normalized.contains("intuition") && normalized.contains("window")) || (normalized.contains("window") && normalized.contains("gadget")) {
+            guard let source = try? AmigaProgramTemplate.verifiedIntuitionWindowToolSource() else {
+                return nil
+            }
             return makeMatch(
                 prompt: prompt,
-                source: cleanTakeoverDemo,
-                id: "clean-takeover",
+                source: source,
+                id: "intuition-window-tool",
+                name: "Intuition windowed tool",
+                parameters: [
+                    "mode": "system friendly",
+                    "object": "intuition window and gadgets"
+                ]
+            )
+        }
+
+        if normalized.contains("clean takeover") || normalized.contains("save") && normalized.contains("restore") && normalized.contains("os") {
+            guard let source = try? AmigaProgramTemplate.verifiedCleanTakeoverRestoreSource() else {
+                return nil
+            }
+            return makeMatch(
+                prompt: prompt,
+                source: source,
+                id: AmigaProgramTemplate.cleanTakeoverRestoreID,
                 name: "Clean takeover skeleton",
                 parameters: [
                     "mode": "system init",
@@ -584,6 +603,25 @@ enum AssistantPromptTemplate {
                 parameters: [
                     "mode": "blitter helper",
                     "object": "cookie-cut copy"
+                ]
+            )
+        }
+
+        if normalized.contains("blitter"),
+           (normalized.contains("bob") || normalized.contains("object")),
+           normalized.contains("collision") || normalized.contains("bounds") {
+            guard let source = try? AmigaProgramTemplate.verifiedBlitterBOBCollisionBoundsSource() else {
+                return nil
+            }
+            return makeMatch(
+                prompt: prompt,
+                source: source,
+                id: AmigaProgramTemplate.blitterBOBCollisionBoundsID,
+                name: "Blitter BOB collision bounds",
+                parameters: [
+                    "mode": "blitter object",
+                    "object": "bounded masked BOB",
+                    "collision": "rectangle"
                 ]
             )
         }
@@ -741,6 +779,21 @@ enum AssistantPromptTemplate {
                     "mode": "scrolling",
                     "stars": requestedCount(from: prompt, fallback: 16),
                     "speed": requestedSpeed(from: prompt)
+                ]
+            )
+        }
+
+        if isMouseSpriteMultiplexPrompt(normalized),
+           let source = try? mouseSpriteMultiplexDemo() {
+            return makeMatch(
+                prompt: prompt,
+                source: source,
+                id: "mouse-sprite-multiplex",
+                name: "Mouse sprite multiplex",
+                parameters: [
+                    "mode": "mouse-controlled multiplex",
+                    "object": "sprite",
+                    "copies": "2"
                 ]
             )
         }
@@ -1029,6 +1082,12 @@ enum AssistantPromptTemplate {
             return String(normalized[match])
         }
         return "normal"
+    }
+
+    private static func isMouseSpriteMultiplexPrompt(_ normalized: String) -> Bool {
+        normalized.contains("sprite")
+            && (normalized.contains("mouse") || normalized.contains("pointer"))
+            && (normalized.contains("multiplex") || normalized.contains("copy") || normalized.contains("second"))
     }
 
     private static func requestedObjectType(from prompt: String) -> String {
@@ -1667,61 +1726,6 @@ SelectedScene: dc.w    0
 SceneTable: dc.w       0,1,2,3
 """
 
-    private static let cleanTakeoverDemo = """
-; Clean takeover skeleton template.
-            SECTION    Code,CODE,CHIP
-            XDEF       _Start
-_Start:
-            movem.l    d2-d7/a2-a6,-(sp)
-            move.l     $4.w,a6
-            lea        GfxName(pc),a1
-            moveq      #0,d0
-            jsr        -408(a6)             ; OpenLibrary("graphics.library")
-            move.l     d0,GfxBase
-            beq.s      .exit
-
-            move.l     d0,a6
-            move.l     34(a6),OldView       ; save OS view
-            sub.l      a1,a1
-            jsr        -222(a6)             ; LoadView(NULL)
-            jsr        -270(a6)             ; WaitTOF
-            jsr        -270(a6)
-
-            lea        $dff000,a6
-            lea        CopperList(pc),a0
-            move.l     a0,$80(a6)           ; COP1LC
-            move.w     #0,$88(a6)           ; COPJMP1
-            move.w     #$8280,$96(a6)       ; DMAEN + COPEN
-
-.main:
-            btst       #6,$bfe001
-            bne.s      .main
-
-            move.l     GfxBase(pc),a6
-            move.l     OldView(pc),a1
-            jsr        -222(a6)             ; LoadView(oldView)
-            jsr        -270(a6)
-            jsr        -270(a6)
-            move.l     $4.w,a6
-            move.l     GfxBase(pc),a1
-            jsr        -414(a6)
-
-.exit:
-            movem.l    (sp)+,d2-d7/a2-a6
-            moveq      #0,d0
-            rts
-
-GfxName:    dc.b       "graphics.library",0
-            EVEN
-GfxBase:    dc.l       0
-OldView:    dc.l       0
-
-CopperList:
-            dc.w       $0100,$0200
-            dc.w       $0180,$004
-            dc.w       $ffff,$fffe
-"""
-
     private static let customChipRegisterMapDemo = """
 ; Custom chip register map tour template.
 CUSTOM      equ        $dff000
@@ -1873,6 +1877,155 @@ WaitBlitter:
 Source:     ds.w       16
 Mask:       ds.w       16
 Destination: ds.w      16
+"""
+
+    private static let blitterBOBCollisionBoundsDemo = """
+; Blitter BOB collision bounds template.
+; Effect: bounded masked BOB with rectangle collision color
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            movem.l    d2-d7/a2-a6,-(sp)
+            lea        $dff000,a6
+            lea        Bitplane,a0
+            move.l     a0,$e0(a6)           ; BPL1PT
+            move.w     #$1200,$100(a6)      ; BPLCON0: one low-res bitplane
+            move.w     #$0000,$102(a6)
+            move.w     #$0000,$104(a6)
+            move.w     #$000,$180(a6)       ; COLOR00 background
+            move.w     #$0f0,$182(a6)       ; COLOR01 non-collision object
+            move.w     #$8300,$96(a6)       ; DMAEN + bitplane DMA
+
+.main:
+            btst       #6,$bfe001
+            beq        .done
+            bsr        WaitVBlank
+            bsr        UpdateBOBPosition
+            bsr        CheckCollision
+            bsr        DrawBOB
+            bra        .main
+
+.done:
+            move.w     #$0100,$96(a6)
+            movem.l    (sp)+,d2-d7/a2-a6
+            moveq      #0,d0
+            rts
+
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+UpdateBOBPosition:
+            move.w     BOBX(pc),d0
+            add.w      BOBDX(pc),d0
+            cmp.w      #16,d0
+            bge.s      .rightBound
+            move.w     #16,d0
+            neg.w      BOBDX
+.rightBound:
+            cmp.w      #288,d0
+            ble.s      .storeX
+            move.w     #288,d0
+            neg.w      BOBDX
+.storeX:
+            move.w     d0,BOBX
+            move.w     BOBY(pc),d1
+            add.w      BOBDY(pc),d1
+            cmp.w      #32,d1
+            bge.s      .bottomBound
+            move.w     #32,d1
+            neg.w      BOBDY
+.bottomBound:
+            cmp.w      #176,d1
+            ble.s      .storeY
+            move.w     #176,d1
+            neg.w      BOBDY
+.storeY:
+            move.w     d1,BOBY
+            rts
+
+CheckCollision:
+            clr.w      CollisionState
+            move.w     BOBX(pc),d0
+            cmp.w      TargetRight(pc),d0
+            bgt.s      .noCollision
+            add.w      #16,d0
+            cmp.w      TargetLeft(pc),d0
+            blt.s      .noCollision
+            move.w     BOBY(pc),d1
+            cmp.w      TargetBottom(pc),d1
+            bgt.s      .noCollision
+            add.w      #16,d1
+            cmp.w      TargetTop(pc),d1
+            blt.s      .noCollision
+            move.w     #1,CollisionState
+            move.w     #$f00,$182(a6)       ; COLOR01 collision evidence
+            rts
+.noCollision:
+            move.w     #$0f0,$182(a6)
+            rts
+
+DrawBOB:
+            bsr        WaitBlitter
+            move.w     BOBY(pc),d0
+            mulu       #40,d0
+            move.w     BOBX(pc),d1
+            lsr.w      #3,d1
+            add.w      d1,d0
+            lea        Bitplane,a2
+            adda.w     d0,a2
+            lea        BOBMask(pc),a0
+            lea        BOBImage(pc),a1
+            move.w     #$ffff,$44(a6)       ; BLTAFWM
+            move.w     #$ffff,$46(a6)       ; BLTALWM
+            move.w     #$0fca,$40(a6)       ; cookie-cut A/B/C to D
+            move.w     #$0000,$42(a6)
+            move.w     #0,$64(a6)           ; BLTAMOD
+            move.w     #0,$62(a6)           ; BLTBMOD
+            move.w     #38,$60(a6)          ; BLTCMOD
+            move.w     #38,$66(a6)          ; BLTDMOD
+            move.l     a0,$50(a6)           ; A = mask
+            move.l     a1,$4c(a6)           ; B = image
+            move.l     a2,$48(a6)           ; C = destination
+            move.l     a2,$54(a6)           ; D = destination
+            move.w     #(16*64)+1,$58(a6)   ; BLTSIZE: 16 rows, one word
+.waitAfter:
+            btst       #6,$02(a6)
+            bne.s      .waitAfter
+            rts
+
+WaitBlitter:
+            btst       #6,$02(a6)
+            bne.s      WaitBlitter
+            rts
+
+BOBX:           dc.w       24
+BOBY:           dc.w       48
+BOBDX:          dc.w       2
+BOBDY:          dc.w       1
+TargetLeft:     dc.w       128
+TargetTop:      dc.w       72
+TargetRight:    dc.w       176
+TargetBottom:   dc.w       120
+CollisionState: dc.w       0
+
+BOBMask:
+            dc.w       $07e0,$1ff8,$3ffc,$7ffe
+            dc.w       $7ffe,$ffff,$ffff,$ffff
+            dc.w       $ffff,$ffff,$7ffe,$7ffe
+            dc.w       $3ffc,$1ff8,$07e0,$0000
+BOBImage:
+            dc.w       $0180,$0660,$0ff0,$1998
+            dc.w       $3ffc,$2664,$5ffa,$599a
+            dc.w       $599a,$5ffa,$2664,$3ffc
+            dc.w       $1998,$0ff0,$0660,$0180
+
+            SECTION    ChipData,DATA,CHIP
+Bitplane:   ds.b       40*256
 """
 
     private static let attachedSpriteDemo = """
@@ -2621,6 +2774,285 @@ ScreenBuffer:
             ds.b       10240
 """
 
+    static func mouseSpriteMultiplexDemo() throws -> String {
+        let model = AmigaProgramModel(
+            id: "mouse-sprite-multiplex",
+            kind: .effect,
+            routines: [
+                AmigaProgramModel.Routine(id: "start", label: "_Start", purpose: "Installs a mouse-controlled two-sprite display and keeps it active until left mouse exits.", calls: ["WaitVBlank", "ReadMouseSprite", "UpdateSprites"]),
+                AmigaProgramModel.Routine(id: "wait_vblank", label: "WaitVBlank", purpose: "Paces mouse sampling and sprite control-word updates to vertical blank."),
+                AmigaProgramModel.Routine(id: "read_mouse", label: "ReadMouseSprite", purpose: "Samples JOY0DAT and updates bounded mouse X/Y state."),
+                AmigaProgramModel.Routine(id: "update_sprites", label: "UpdateSprites", purpose: "Writes sprite control bytes for the primary sprite and a second offset copy.")
+            ],
+            stateVariables: [
+                AmigaProgramModel.StateVariable(id: "mouse_x", symbol: "MouseX", purpose: "Current mouse-controlled sprite X position.", initialValue: "128"),
+                AmigaProgramModel.StateVariable(id: "mouse_y", symbol: "MouseY", purpose: "Current mouse-controlled sprite Y position.", initialValue: "80"),
+                AmigaProgramModel.StateVariable(id: "mouse_raw_x", symbol: "MouseRawX", purpose: "Previous raw JOY0DAT X counter.", initialValue: "128"),
+                AmigaProgramModel.StateVariable(id: "mouse_raw_y", symbol: "MouseRawY", purpose: "Previous raw JOY0DAT Y counter.", initialValue: "80"),
+                AmigaProgramModel.StateVariable(id: "follower_x_offset", symbol: "FollowerXOffset", purpose: "Horizontal offset applied to the multiplexed follower sprite.", initialValue: "28"),
+                AmigaProgramModel.StateVariable(id: "follower_y_offset", symbol: "FollowerYOffset", purpose: "Vertical offset applied to the multiplexed follower sprite.", initialValue: "24"),
+                AmigaProgramModel.StateVariable(id: "follower_wrap_enabled", symbol: "FollowerWrapEnabled", purpose: "One enables horizontal wrapping for the multiplexed follower sprite.", initialValue: "0"),
+                AmigaProgramModel.StateVariable(id: "follower_lag_enabled", symbol: "FollowerLagEnabled", purpose: "One makes the multiplexed follower use the previous frame mouse position.", initialValue: "0"),
+                AmigaProgramModel.StateVariable(id: "lag_mouse_x", symbol: "LagMouseX", purpose: "Previous frame mouse X position for follower lag.", initialValue: "128"),
+                AmigaProgramModel.StateVariable(id: "lag_mouse_y", symbol: "LagMouseY", purpose: "Previous frame mouse Y position for follower lag.", initialValue: "80"),
+                AmigaProgramModel.StateVariable(id: "sprite_color", symbol: "SpriteColor1", purpose: "Primary hardware sprite COLOR17 value.", initialValue: "$0ff0"),
+                AmigaProgramModel.StateVariable(id: "sprite_color_2", symbol: "SpriteColor2", purpose: "Secondary hardware sprite COLOR18 value.", initialValue: "$00f0"),
+                AmigaProgramModel.StateVariable(id: "sprite_color_3", symbol: "SpriteColor3", purpose: "Tertiary hardware sprite COLOR19 value.", initialValue: "$0fff"),
+                AmigaProgramModel.StateVariable(id: "exit_delay", symbol: "ExitDelay", purpose: "Initial vblank countdown before honoring left mouse exit.", initialValue: "120")
+            ],
+            hardware: [.sprites, .cia, .copper, .bitplanes],
+            verificationExpectations: [
+                "SPR0PT and SPR1PT are both programmed for primary and multiplexed sprite copies.",
+                "JOY0DAT mouse deltas update bounded MouseX and MouseY state.",
+                "WaitVBlank paces sprite control-word updates.",
+                "SpriteData0 and SpriteData1 terminate with zero control words.",
+                "Left mouse click exits cleanly after the startup grace period."
+            ]
+        )
+
+        return """
+\(try AmigaSourceIndexer.modelRegion(for: model))
+; Mouse-controlled sprite with offset multiplex copy.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+            bra.w      _Start
+            ; @amiga:region controls begin
+            ; @amiga:region controls end
+            ; @amiga:region draw_controls begin
+            ; @amiga:region draw_controls end
+            ; @amiga:region hit_test begin
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+ReadMouseSprite:
+            move.w     $0a(a6),d0           ; JOY0DAT mouse counters
+            move.w     d0,d1
+            and.w      #$00ff,d1            ; raw X counter
+            move.w     d1,d2
+            sub.w      MouseRawX(pc),d2
+            cmp.w      #127,d2
+            ble.s      .xNoPositiveWrap
+            sub.w      #256,d2
+.xNoPositiveWrap:
+            cmp.w      #-128,d2
+            bge.s      .xDeltaReady
+            add.w      #256,d2
+.xDeltaReady:
+            move.w     d1,MouseRawX
+            add.w      MouseX(pc),d2
+            cmp.w      #64,d2
+            bge.s      .xNotLow
+            move.w     #64,d2
+.xNotLow:
+            cmp.w      #220,d2
+            ble.s      .storeX
+            move.w     #220,d2
+.storeX:
+            move.w     d2,MouseX
+            lsr.w      #8,d0
+            and.w      #$00ff,d0            ; raw Y counter
+            move.w     d0,d2
+            sub.w      MouseRawY(pc),d2
+            cmp.w      #127,d2
+            ble.s      .yNoPositiveWrap
+            sub.w      #256,d2
+.yNoPositiveWrap:
+            cmp.w      #-128,d2
+            bge.s      .yDeltaReady
+            add.w      #256,d2
+.yDeltaReady:
+            move.w     d0,MouseRawY
+            add.w      MouseY(pc),d2
+            cmp.w      #40,d2
+            bge.s      .yNotLow
+            move.w     #40,d2
+.yNotLow:
+            cmp.w      #180,d2
+            ble.s      .storeY
+            move.w     #180,d2
+.storeY:
+            move.w     d2,MouseY
+            rts
+            ; @amiga:region hit_test end
+
+            ; @amiga:region input_dispatch begin
+            ; @amiga:region input_dispatch end
+
+            ; @amiga:region routines begin
+_Start:
+            movem.l    d2-d7/a2-a6,-(sp)
+            lea        $dff000,a6
+            move.w     #$7fff,$9a(a6)       ; disable interrupts for hardware-owned frame
+            move.w     #$7fff,$9c(a6)       ; clear pending interrupts
+            move.w     #$7fff,$96(a6)       ; clear inherited DMA before display setup
+            lea        BackdropBitplane,a0
+            move.l     a0,d0
+            move.w     d0,CopperBplLo
+            swap       d0
+            move.w     d0,CopperBplHi
+            move.l     a0,$e0(a6)           ; BPL1PT visible backdrop
+            move.w     #$1200,$100(a6)      ; BPLCON0: one low-res bitplane
+            move.w     #$0000,$102(a6)
+            move.w     #$0000,$104(a6)
+            move.w     #$0000,$180(a6)      ; COLOR00
+            move.w     #$0333,$182(a6)      ; COLOR01 backdrop
+            move.w     SpriteColor1(pc),d0
+            move.w     d0,$1a2(a6)          ; sprite color 1
+            move.w     SpriteColor2(pc),d0
+            move.w     d0,$1a4(a6)          ; sprite color 2
+            move.w     SpriteColor3(pc),d0
+            move.w     d0,$1a6(a6)          ; sprite color 3
+            lea        SpriteData0,a0
+            move.l     a0,$120(a6)          ; SPR0PT primary mouse sprite
+            lea        SpriteData1,a0
+            move.l     a0,$124(a6)          ; SPR1PT multiplexed offset copy
+            lea        CopperList,a0
+            move.l     a0,$80(a6)           ; COP1LC
+            move.w     #$0000,$88(a6)       ; COPJMP1
+            move.w     #$83a0,$96(a6)       ; DMAEN + bitplane + copper + sprite DMA
+.main:
+            bsr        WaitVBlank
+            tst.w      ExitDelay
+            beq.s      .checkMouse
+            subq.w     #1,ExitDelay
+            bra.s      .update
+.checkMouse:
+            btst       #6,$bfe001           ; left mouse exits
+            beq.s      .done
+.update:
+            bsr        ReadMouseSprite
+            bsr        UpdateSprites
+            bra.s      .main
+.done:
+            move.w     #$7fff,$96(a6)
+            movem.l    (sp)+,d2-d7/a2-a6
+            moveq      #0,d0
+            rts
+
+UpdateSprites:
+            move.w     MouseY(pc),d0
+            move.b     d0,Sprite0VStart
+            add.w      #16,d0
+            move.b     d0,Sprite0VStop
+            move.w     MouseX(pc),d1
+            move.b     d1,Sprite0HStart
+            tst.w      FollowerLagEnabled
+            beq.s      .copyUsesCurrentY
+            move.w     LagMouseY(pc),d0
+            bra.s      .copyYBaseReady
+.copyUsesCurrentY:
+            move.w     MouseY(pc),d0
+.copyYBaseReady:
+            add.w      FollowerYOffset(pc),d0
+            cmp.w      #196,d0
+            ble.s      .copyYReady
+            move.w     #196,d0
+.copyYReady:
+            move.b     d0,Sprite1VStart
+            add.w      #16,d0
+            move.b     d0,Sprite1VStop
+            tst.w      FollowerLagEnabled
+            beq.s      .copyUsesCurrentX
+            move.w     LagMouseX(pc),d1
+            bra.s      .copyXBaseReady
+.copyUsesCurrentX:
+            move.w     MouseX(pc),d1
+.copyXBaseReady:
+            add.w      FollowerXOffset(pc),d1
+            tst.w      FollowerWrapEnabled
+            beq.s      .copyClampX
+            cmp.w      #240,d1
+            ble.s      .copyXReady
+            sub.w      #176,d1
+            bra.s      .copyXReady
+.copyClampX:
+            cmp.w      #240,d1
+            ble.s      .copyXReady
+            move.w     #240,d1
+.copyXReady:
+            move.b     d1,Sprite1HStart
+            move.w     MouseX(pc),LagMouseX
+            move.w     MouseY(pc),LagMouseY
+            rts
+            ; @amiga:region routines end
+
+            ; @amiga:region state begin
+MouseX:     dc.w       128
+MouseY:     dc.w       80
+MouseRawX:  dc.w       128
+MouseRawY:  dc.w       80
+FollowerXOffset: dc.w  28
+FollowerYOffset: dc.w  24
+FollowerWrapEnabled: dc.w 0
+FollowerLagEnabled: dc.w 0
+LagMouseX:  dc.w       128
+LagMouseY:  dc.w       80
+SpriteColor1: dc.w     $0ff0                ; yellow sprite COLOR17
+SpriteColor2: dc.w     $00f0                ; green sprite COLOR18
+SpriteColor3: dc.w     $0fff                ; white sprite COLOR19
+ExitDelay:  dc.w       120
+            ; @amiga:region state end
+
+            ALIGN      2
+            ; @amiga:region chip_data begin
+CopperList:
+            dc.w       $008e,$2c81,$0090,$f4c1
+            dc.w       $0092,$0038,$0094,$00d0
+            dc.w       $00e0
+CopperBplHi:
+            dc.w       $0000
+            dc.w       $00e2
+CopperBplLo:
+            dc.w       $0000
+            dc.w       $0100,$1200,$0102,$0000,$0104,$0000
+            dc.w       $0180,$0000,$0182,$0333,$01a2,$0ff0,$01a4,$00f0,$01a6,$0fff
+            dc.w       $ffff,$fffe
+
+BackdropBitplane:
+            dcb.l      2560,$55555555
+
+SpriteData0:
+Sprite0VStart:
+            dc.b       80
+Sprite0HStart:
+            dc.b       $80
+Sprite0VStop:
+            dc.b       96
+Sprite0Ctl:
+            dc.b       $00
+            dc.w       %0001100000011000,%0011110000111100
+            dc.w       %0111111001111110,%1111111111111111
+            dc.w       %1110011111100111,%1100001111000011
+            dc.w       %1111111111111111,%0111111001111110
+            dc.w       %0011110000111100,%0001100000011000
+            dc.w       %0000000000000000,%0000000000000000
+            dc.w       $0000,$0000
+
+SpriteData1:
+Sprite1VStart:
+            dc.b       104
+Sprite1HStart:
+            dc.b       $9c
+Sprite1VStop:
+            dc.b       120
+Sprite1Ctl:
+            dc.b       $00
+            dc.w       %0001100000011000,%0001100000011000
+            dc.w       %0011110000111100,%0111111001111110
+            dc.w       %1111111111111111,%1110011111100111
+            dc.w       %1100001111000011,%1110011111100111
+            dc.w       %0111111001111110,%0011110000111100
+            dc.w       %0001100000011000,%0000000000000000
+            dc.w       $0000,$0000
+            ; @amiga:region chip_data end
+"""
+    }
+
     static let bouncingSpriteDemo = """
 ; Bouncing sprite template.
 ; Effect: bouncing sprite object
@@ -2832,50 +3264,55 @@ CopperList:
             dc.w       $ffff,$fffe
 """
 
-    static let bouncingMulticolorCopperList = """
+    static let bouncingMulticolorCopperList: String = {
+        let model = AmigaProgramModel(
+            id: "bouncing-copper-bars",
+            kind: .effect,
+            routines: [
+                AmigaProgramModel.Routine(id: "start", label: "_Start", purpose: "Installs the copper list and animates raster bar WAIT positions until left mouse exits.", calls: ["ApplyPalette", "WaitVBlank"]),
+                AmigaProgramModel.Routine(id: "apply_palette", label: "ApplyPalette", purpose: "Copies model-owned color state into the copper list color words.", clobbers: ["d4"]),
+                AmigaProgramModel.Routine(id: "wait_vblank", label: "WaitVBlank", purpose: "Paces copper WAIT updates to vertical blank.")
+            ],
+            stateVariables: [
+                AmigaProgramModel.StateVariable(id: "bar_count", symbol: "BarCount", purpose: "Visible raster bar count for model-backed follow-up edits.", initialValue: "6"),
+                AmigaProgramModel.StateVariable(id: "bar_spacing", symbol: "BarSpacing", purpose: "Vertical distance between adjacent animated copper bars.", initialValue: "8"),
+                AmigaProgramModel.StateVariable(id: "bar_step", symbol: "BarStep", purpose: "Signed initial pixels-per-frame bounce velocity.", initialValue: "2"),
+                AmigaProgramModel.StateVariable(id: "status_band_color", symbol: "StatusBandColor", purpose: "Top status band COLOR00 value.", initialValue: "$0000"),
+                AmigaProgramModel.StateVariable(id: "band_color_1", symbol: "BandColor1", purpose: "First raster bar COLOR00 value.", initialValue: "$0f00"),
+                AmigaProgramModel.StateVariable(id: "band_color_2", symbol: "BandColor2", purpose: "Second raster bar COLOR00 value.", initialValue: "$0ff0"),
+                AmigaProgramModel.StateVariable(id: "band_color_3", symbol: "BandColor3", purpose: "Third raster bar COLOR00 value.", initialValue: "$00f0"),
+                AmigaProgramModel.StateVariable(id: "band_color_4", symbol: "BandColor4", purpose: "Fourth raster bar COLOR00 value.", initialValue: "$00ff"),
+                AmigaProgramModel.StateVariable(id: "band_color_5", symbol: "BandColor5", purpose: "Fifth raster bar COLOR00 value.", initialValue: "$000f"),
+                AmigaProgramModel.StateVariable(id: "band_color_6", symbol: "BandColor6", purpose: "Sixth raster bar COLOR00 value.", initialValue: "$0f0f"),
+                AmigaProgramModel.StateVariable(id: "band_color_7", symbol: "BandColor7", purpose: "Seventh raster bar COLOR00 value used when eight bars are enabled.", initialValue: "$0000"),
+                AmigaProgramModel.StateVariable(id: "band_color_8", symbol: "BandColor8", purpose: "Eighth raster bar COLOR00 value used when eight bars are enabled.", initialValue: "$0000")
+            ],
+            hardware: [.copper, .cia],
+            verificationExpectations: [
+                "COP1LC and COPJMP1 install the owned copper list.",
+                "Copper DMA is enabled before the main loop.",
+                "WaitVBlank paces Bar1Wait through Bar8Wait updates.",
+                "Distinct copper COLOR00 words create visible raster bands.",
+                "Left mouse click exits cleanly.",
+                "Copper bar count is 6.",
+                "Copper bar spacing is 8 pixels.",
+                "Copper bar bounce step is 2 pixels per frame.",
+                "Copper palette is multicolor.",
+                "Top status band is disabled."
+            ]
+        )
+
+        return """
+\(try! AmigaSourceIndexer.modelRegion(for: model))
 ; Bouncing multi-color copper bars.
             SECTION    Code,CODE,CHIP
             XDEF       _Start
-_Start:
-            lea        $dff000,a6
-            lea        CopperList(pc),a0
-            move.l     a0,$80(a6)           ; COP1LC
-            move.w     #$0000,$88(a6)       ; COPJMP1
-            move.w     #$8280,$96(a6)       ; DMAEN + COPEN
-
-            moveq      #64,d0               ; top bar position
-            moveq      #1,d1                ; direction
-
-.main:
-            btst       #6,$bfe001           ; left mouse exits
-            beq.s      .done
-            bsr        WaitVBlank
-
-            move.b     d0,d2
-            move.b     d2,Bar1Wait
-            addq.b     #8,d2
-            move.b     d2,Bar2Wait
-            addq.b     #8,d2
-            move.b     d2,Bar3Wait
-            addq.b     #8,d2
-            move.b     d2,Bar4Wait
-            addq.b     #8,d2
-            move.b     d2,Bar5Wait
-            addq.b     #8,d2
-            move.b     d2,Bar6Wait
-
-            add.b      d1,d0
-            cmp.b      #152,d0
-            beq.s      .flip
-            cmp.b      #48,d0
-            bne.s      .main
-.flip:
-            neg.b      d1
-            bra.s      .main
-
-.done:
-            rts
-
+            bra.w      _Start
+            ; @amiga:region controls begin
+            ; @amiga:region controls end
+            ; @amiga:region draw_controls begin
+            ; @amiga:region draw_controls end
+            ; @amiga:region hit_test begin
 WaitVBlank:
             cmp.b      #$ff,$06(a6)
             bne.s      WaitVBlank
@@ -2883,25 +3320,137 @@ WaitVBlank:
             cmp.b      #$ff,$06(a6)
             beq.s      .leave
             rts
+            ; @amiga:region hit_test end
+
+            ; @amiga:region input_dispatch begin
+            ; @amiga:region input_dispatch end
+
+            ; @amiga:region routines begin
+_Start:
+            lea        $dff000,a6
+            bsr        ApplyPalette
+            lea        CopperList(pc),a0
+            move.l     a0,$80(a6)           ; COP1LC
+            move.w     #$0000,$88(a6)       ; COPJMP1
+            move.w     #$8280,$96(a6)       ; DMAEN + COPEN
+
+            moveq      #64,d0               ; top bar position
+            move.w     BarStep(pc),d1       ; signed direction and speed
+            move.w     #120,d3              ; ignore startup mouse state for runtime capture
+
+.main:
+            bsr        WaitVBlank
+            tst.w      d3
+            beq.s      .checkMouse
+            subq.w     #1,d3
+            bra.s      .animate
+.checkMouse:
+            btst       #6,$bfe001           ; left mouse exits
+            beq.s      .done
+
+.animate:
+            move.w     d0,d2
+            move.b     d2,Bar1Wait
+            add.w      BarSpacing(pc),d2
+            move.b     d2,Bar2Wait
+            add.w      BarSpacing(pc),d2
+            move.b     d2,Bar3Wait
+            add.w      BarSpacing(pc),d2
+            move.b     d2,Bar4Wait
+            add.w      BarSpacing(pc),d2
+            move.b     d2,Bar5Wait
+            add.w      BarSpacing(pc),d2
+            move.b     d2,Bar6Wait
+            add.w      BarSpacing(pc),d2
+            move.b     d2,Bar7Wait
+            add.w      BarSpacing(pc),d2
+            move.b     d2,Bar8Wait
+
+            add.w      d1,d0
+            cmp.w      #152,d0
+            beq.s      .flip
+            cmp.w      #48,d0
+            bne.s      .main
+.flip:
+            neg.w      d1
+            bra.s      .main
+
+.done:
+            rts
+
+ApplyPalette:
+            move.w     StatusBandColor(pc),d4
+            move.w     d4,StatusBandColorWord+2
+            move.w     BandColor1(pc),d4
+            move.w     d4,Bar1Color+2
+            move.w     BandColor2(pc),d4
+            move.w     d4,Bar2Color+2
+            move.w     BandColor3(pc),d4
+            move.w     d4,Bar3Color+2
+            move.w     BandColor4(pc),d4
+            move.w     d4,Bar4Color+2
+            move.w     BandColor5(pc),d4
+            move.w     d4,Bar5Color+2
+            move.w     BandColor6(pc),d4
+            move.w     d4,Bar6Color+2
+            move.w     BandColor7(pc),d4
+            move.w     d4,Bar7Color+2
+            move.w     BandColor8(pc),d4
+            move.w     d4,Bar8Color+2
+            rts
+            ; @amiga:region routines end
+
+            ; @amiga:region state begin
+BarCount:   dc.w       6
+BarSpacing: dc.w       8
+BarStep:    dc.w       2
+StatusBandColor: dc.w  $0000
+BandColor1: dc.w       $0f00
+BandColor2: dc.w       $0ff0
+BandColor3: dc.w       $00f0
+BandColor4: dc.w       $00ff
+BandColor5: dc.w       $000f
+BandColor6: dc.w       $0f0f
+BandColor7: dc.w       $0000
+BandColor8: dc.w       $0000
+            ; @amiga:region state end
 
             ALIGN      2
+            ; @amiga:region chip_data begin
 CopperList:
             dc.w       $0100,$0200          ; no bitplanes, color 0 only
+            dc.w       $2007,$fffe
+StatusBandColorWord:
+            dc.w       $0180,$0000          ; optional top status band
 Bar1Wait:   dc.b       64,$07
-            dc.w       $fffe,$0180,$0f00    ; red
+            dc.w       $fffe
+Bar1Color:  dc.w       $0180,$0f00          ; red
 Bar2Wait:   dc.b       72,$07
-            dc.w       $fffe,$0180,$0ff0    ; yellow
+            dc.w       $fffe
+Bar2Color:  dc.w       $0180,$0ff0          ; yellow
 Bar3Wait:   dc.b       80,$07
-            dc.w       $fffe,$0180,$00f0    ; green
+            dc.w       $fffe
+Bar3Color:  dc.w       $0180,$00f0          ; green
 Bar4Wait:   dc.b       88,$07
-            dc.w       $fffe,$0180,$00ff    ; cyan
+            dc.w       $fffe
+Bar4Color:  dc.w       $0180,$00ff          ; cyan
 Bar5Wait:   dc.b       96,$07
-            dc.w       $fffe,$0180,$000f    ; blue
+            dc.w       $fffe
+Bar5Color:  dc.w       $0180,$000f          ; blue
 Bar6Wait:   dc.b       104,$07
-            dc.w       $fffe,$0180,$0f0f    ; purple
+            dc.w       $fffe
+Bar6Color:  dc.w       $0180,$0f0f          ; purple
+Bar7Wait:   dc.b       112,$07
+            dc.w       $fffe
+Bar7Color:  dc.w       $0180,$0000          ; disabled until eight bars
+Bar8Wait:   dc.b       120,$07
+            dc.w       $fffe
+Bar8Color:  dc.w       $0180,$0000          ; disabled until eight bars
             dc.w       $c007,$fffe,$0180,$0000
             dc.w       $ffff,$fffe
+            ; @amiga:region chip_data end
 """
+    }()
 }
 
 struct PromptTemplateVisualSmokeResult: Equatable {

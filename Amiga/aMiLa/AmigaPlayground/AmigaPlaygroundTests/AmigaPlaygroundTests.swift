@@ -44,6 +44,14 @@ class AmigaPlaygroundTests: XCTestCase {
         }
     }
 
+    private static let blitterBOBCollisionBenchmarkPrompt = "Generate an Amiga 68k blitter BOB demo that moves a masked object inside screen bounds, detects collision with a rectangular target, changes color on collision, and exits on left mouse."
+    private static let modPlayerControlsBenchmarkPrompt = "Generate Amiga 68k assembly for a tracker module control panel with Play and Stop buttons, Paula channel 0 playback state, and clean left mouse exit."
+    private static let doubleBufferedBitplaneBenchmarkPrompt = "Generate double-buffered bitplane animation that swaps front red and back green bitplane pointers on vblank, overlays a small sprite, updates a copper color register, and exits on left mouse click."
+    private static let copperRuntimeRasterBenchmarkPrompt = "Generate an Amiga 68k copper list demo with bouncing raster bars, frame-counted color cycling, and clean left mouse exit."
+    private static let mouseSpriteMultiplexBenchmarkPrompt = "Generate an Amiga 68k demo with a mouse-controlled sprite and a second multiplexed sprite copy that follows with an offset, exiting on left mouse."
+    private static let intuitionWindowToolBenchmarkPrompt = "Generate an AmigaOS-friendly 68k assembly program that opens intuition.library, creates a window with two gadgets, handles close events, and releases every resource cleanly."
+    private static let cleanTakeoverRestoreBenchmarkPrompt = "Generate an Amiga 68k clean takeover demo that saves DMA, interrupt, view, copper, and palette state, runs a color-cycling hardware effect, and restores the system on left mouse exit."
+
     private struct StandaloneVAmigaRuntimeResult {
         let success: Bool
         let summary: String
@@ -1253,6 +1261,2549 @@ CopperList:
         }
     }
 
+    func testComplexIntuitionWindowToolBenchmarkRoutesToExecutableTemplate() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.intuitionWindowToolBenchmarkPrompt))
+
+        XCTAssertEqual(match.id, "intuition-window-tool")
+        XCTAssertEqual(match.name, "Intuition windowed tool")
+        XCTAssertEqual(match.parameters["mode"], "system friendly")
+        XCTAssertEqual(match.parameters["object"], "intuition window and gadgets")
+        XCTAssertTrue(match.source.contains("Intuition windowed tool template."))
+        XCTAssertTrue(match.source.contains("Gadget_play:"))
+        XCTAssertTrue(match.source.contains("Gadget_stop:"))
+        XCTAssertTrue(match.source.contains("WindowPtr:"))
+        XCTAssertEqual(intuitionWindowToolProofFailures(in: match.source), [])
+    }
+
+    func testComplexIntuitionWindowToolTemplatePassesSemanticGate() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.intuitionWindowToolBenchmarkPrompt))
+        let result = AssemblySemanticValidator.validate(source: source, prompt: Self.intuitionWindowToolBenchmarkPrompt)
+
+        XCTAssertTrue(result.passed, "Intuition window tool template should pass semantic gate. Failures:\n\(result.summary)")
+    }
+
+    func testComplexIntuitionWindowToolFollowUpChainPreservesModelAndCompiles() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+
+        let source = try intuitionWindowToolFollowUpChainSource()
+        let model = try XCTUnwrap(AmigaSourceIndexer.index(source).model)
+
+        XCTAssertEqual(model.id, "intuition-window-tool")
+        XCTAssertEqual(model.controls.map(\.label), ["Play", "Halt", "Volume Up"])
+        XCTAssertEqual(model.controls.map(\.action), ["PlayAction", "StopAction", "VolumeUpAction"])
+        XCTAssertTrue(model.controls.allSatisfy { $0.bounds?.y == 62 })
+        XCTAssertTrue(model.stateVariables.contains { $0.id == "status_text" && $0.symbol == "StatusTextEnabled" })
+        XCTAssertTrue(source.contains("StatusText:"))
+        XCTAssertTrue(source.contains("Gadget_volume_up:"))
+        XCTAssertTrue(source.contains("Label_stop:"))
+        XCTAssertTrue(source.contains(#"dc.b       "Halt",0"#))
+        XCTAssertTrue(source.contains("jsr        -72(a6)              ; CloseWindow(WindowPtr)"))
+        XCTAssertTrue(source.contains("jsr        -414(a6)             ; CloseLibrary(IntuitionBase)"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: source), [])
+
+        let semantic = AssemblySemanticValidator.validate(source: source, prompt: Self.intuitionWindowToolBenchmarkPrompt)
+        XCTAssertTrue(semantic.passed, semantic.summary)
+
+        let compileResult = compileSource(source, compiler: compiler, description: "complex Intuition follow-up chain compiles")
+        XCTAssertTrue(compileResult.success, compileResult.output)
+    }
+
+    func testComplexIntuitionWindowToolRejectedFollowUpsDoNotPatchSource() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.intuitionWindowToolBenchmarkPrompt))
+        let rejectedPrompts = [
+            "skip closing the window",
+            "open intuition twice but close it once",
+            "add a gadget with no bounds",
+            "handle close events by jumping into data"
+        ]
+
+        for prompt in rejectedPrompts {
+            let route = AssistantPromptRouter.route(prompt: prompt, source: source, isSelfCorrection: false)
+            guard case .structuredModelPatch(.rejected(let reasons)) = route else {
+                XCTFail("Expected Intuition rejected follow-up for \(prompt), got \(route)")
+                continue
+            }
+            XCTAssertFalse(reasons.isEmpty, "Rejected prompt should include a concrete diagnostic: \(prompt)")
+            XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: source), [])
+        }
+
+        let recovery = AssistantPromptRouter.route(prompt: "add a status text field without changing cleanup", source: source, isSelfCorrection: false)
+        guard case .structuredModelPatch(.patched(let result)) = recovery else {
+            XCTFail("Expected compatible Intuition follow-up to patch after rejected-turn checks, got \(recovery)")
+            return
+        }
+        XCTAssertTrue(result.source.contains("StatusText:"))
+        XCTAssertTrue(result.source.contains("jsr        -72(a6)              ; CloseWindow(WindowPtr)"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+    }
+
+    func testComplexIntuitionWindowToolProofRejectsMissingCloseLibrary() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.intuitionWindowToolBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            jsr        -414(a6)             ; CloseLibrary(IntuitionBase)\n",
+            with: ""
+        )
+
+        let failures = intuitionWindowToolProofFailures(in: brokenSource)
+
+        XCTAssertTrue(failures.contains("missing CloseLibrary(IntuitionBase) cleanup"), failures.joined(separator: "\n"))
+    }
+
+    func testComplexIntuitionWindowToolProofRejectsMissingCloseWindow() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.intuitionWindowToolBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            jsr        -72(a6)              ; CloseWindow(WindowPtr)\n",
+            with: ""
+        )
+
+        let failures = intuitionWindowToolProofFailures(in: brokenSource)
+
+        XCTAssertTrue(failures.contains("missing CloseWindow(WindowPtr) cleanup"), failures.joined(separator: "\n"))
+    }
+
+    func testComplexIntuitionWindowToolRuntimeEvidenceContractCapturesObservableSignals() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.intuitionWindowToolBenchmarkPrompt))
+        let result = AmigaRuntimeEvidenceContract.validateIntuitionWindowTool(
+            source: source,
+            prompt: Self.intuitionWindowToolBenchmarkPrompt
+        )
+
+        XCTAssertTrue(result.passed, "Runtime evidence contract should pass. Failures:\n\(result.failures.joined(separator: "\n"))")
+        XCTAssertEqual(result.manifest.schemaVersion, 1)
+        XCTAssertEqual(result.manifest.familyID, "intuition_window_tool")
+        XCTAssertEqual(result.manifest.templateID, AmigaProgramTemplate.intuitionWindowToolID)
+        XCTAssertEqual(result.manifest.emulatorCapture.backend, "vAmiga")
+        XCTAssertEqual(result.manifest.emulatorCapture.expectation, "system-resource-trace")
+        XCTAssertGreaterThanOrEqual(result.manifest.expectedSignals.count, 10)
+        XCTAssertTrue(result.manifest.sourceProofs.contains("intuition_openlibrary"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("openwindow_call"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("closewindow_before_closelibrary"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("play_gadget_dispatch"))
+
+        let json = try AmigaRuntimeEvidenceContract.manifestJSON(result.manifest)
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoded = try JSONDecoder().decode(AmigaRuntimeEvidenceManifest.self, from: data)
+        XCTAssertEqual(decoded, result.manifest)
+    }
+
+    func testComplexIntuitionWindowToolRuntimeEvidenceContractRejectsMissingCloseWindow() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.intuitionWindowToolBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            jsr        -72(a6)              ; CloseWindow(WindowPtr)\n",
+            with: "            ; deliberately removed CloseWindow runtime evidence\n"
+        )
+        let result = AmigaRuntimeEvidenceContract.validateIntuitionWindowTool(
+            source: brokenSource,
+            prompt: Self.intuitionWindowToolBenchmarkPrompt
+        )
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(
+            result.failures.contains { $0.contains("closewindow_before_closelibrary") || $0.contains("CloseWindow") },
+            result.failures.joined(separator: "\n")
+        )
+    }
+
+    func testComplexIntuitionWindowToolStandaloneVAmigaRuntimeEvidenceWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_COMPLEX_INTUITION_VAMIGA_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_COMPLEX_INTUITION_VAMIGA_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_COMPLEX_INTUITION_VAMIGA_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_COMPLEX_INTUITION_VAMIGA_SMOKE=1 or create \(globalEnableFlagPath) to run the focused Intuition vAmiga runtime evidence promotion.")
+        }
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: EmulatorService.shared.defaultVAmigaPath) else {
+            throw XCTSkip("vAmiga executable not found at \(EmulatorService.shared.defaultVAmigaPath)")
+        }
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") ?? strategicDefaultRomDirectory() else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or configure the app ROM directory before running focused Intuition vAmiga validation.")
+        }
+
+        let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
+        guard vAmigaSmokeHardware(from: roms) != nil else {
+            throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in \(romDirectory).")
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.intuitionWindowToolBenchmarkPrompt))
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.intuitionWindowToolBenchmarkPrompt))
+        let contract = AmigaRuntimeEvidenceContract.validateIntuitionWindowTool(
+            source: source,
+            prompt: Self.intuitionWindowToolBenchmarkPrompt
+        )
+        XCTAssertTrue(contract.passed, "Runtime contract must pass before emulator validation: \(contract.failures.joined(separator: "; "))")
+
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/complex-intuition-vamiga-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        let adfURL = artifactRoot.appendingPathComponent("intuition-window-tool.adf")
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: adfURL,
+            description: "complex Intuition vAmiga ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex Intuition ADF generation failed:\n\(adfResult.output)")
+
+        let runtimeResult = try validateADFWithStandaloneVAmiga(
+            adfURL: adfURL,
+            match: match,
+            evalCase: PromptEvalCase(
+                level: .level3,
+                name: "complex Intuition runtime evidence",
+                prompt: Self.intuitionWindowToolBenchmarkPrompt,
+                expectedTemplateID: AmigaProgramTemplate.intuitionWindowToolID,
+                markers: ["NewWindow:", "Gadget_play:", "CleanupAndExit:"],
+                expectsVisualEvidence: true
+            ),
+            expectation: "any-visual",
+            romDirectory: romDirectory,
+            artifactRoot: artifactRoot
+        )
+
+        XCTAssertTrue(runtimeResult.success, "Focused Intuition vAmiga runtime failed: \(runtimeResult.summary)")
+    }
+
+    func testComplexIntuitionWindowToolCompilesAndGeneratesBootableADF() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping complex Intuition window tool compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            print("Skipping complex Intuition window tool ADF test: xdftool not found at \(compiler.xdftoolPath)")
+            return
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.intuitionWindowToolBenchmarkPrompt))
+        let compileResult = compileSource(source, compiler: compiler, description: "complex Intuition window tool template compiles")
+        XCTAssertTrue(compileResult.success, compileResult.output)
+
+        let targetADF = FileManager.default.temporaryDirectory
+            .appendingPathComponent("complex_intuition_window_tool_\(UUID().uuidString).adf")
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: targetADF,
+            description: "complex Intuition window tool ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex Intuition window tool ADF generation failed:\n\(adfResult.output)")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+        if let attributes = try? FileManager.default.attributesOfItem(atPath: targetADF.path),
+           let size = attributes[.size] as? NSNumber {
+            XCTAssertGreaterThan(size.intValue, 0)
+        } else {
+            XCTFail("Could not read generated ADF size for complex Intuition window tool")
+        }
+        try? FileManager.default.removeItem(at: targetADF)
+    }
+
+    func testComplexCleanTakeoverRestoreBenchmarkRoutesToExecutableTemplate() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.cleanTakeoverRestoreBenchmarkPrompt))
+
+        XCTAssertEqual(match.id, "clean-takeover")
+        XCTAssertEqual(match.name, "Clean takeover skeleton")
+        XCTAssertEqual(match.parameters["mode"], "system init")
+        XCTAssertEqual(match.parameters["object"], "OS display state")
+        XCTAssertTrue(match.source.contains("Clean takeover skeleton template."))
+        XCTAssertTrue(match.source.contains("OldDMACON:"))
+        XCTAssertTrue(match.source.contains("OldINTENA:"))
+        XCTAssertTrue(match.source.contains("OldCOP1LC:"))
+        XCTAssertTrue(match.source.contains("OldColor00:"))
+        let model = try XCTUnwrap(AmigaSourceIndexer.index(match.source).model)
+        XCTAssertEqual(model.id, AmigaProgramTemplate.cleanTakeoverRestoreID)
+        XCTAssertEqual(model.kind, .effect)
+        XCTAssertEqual(Set(model.hardware), [.exec, .graphics, .cia, .copper])
+        XCTAssertTrue(model.stateVariables.contains { $0.symbol == "VBlankDivider" && $0.initialValue == "1" })
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+        XCTAssertEqual(cleanTakeoverRestoreProofFailures(in: match.source), [])
+    }
+
+    func testComplexCleanTakeoverRestoreTemplatePassesSemanticGate() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.cleanTakeoverRestoreBenchmarkPrompt))
+        let result = AssemblySemanticValidator.validate(source: source, prompt: Self.cleanTakeoverRestoreBenchmarkPrompt)
+
+        XCTAssertTrue(result.passed, "Clean takeover restore template should pass semantic gate. Failures:\n\(result.summary)")
+    }
+
+    func testComplexCleanTakeoverRestoreProofRejectsMissingDMARestore() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.cleanTakeoverRestoreBenchmarkPrompt))
+        let brokenSource = source
+            .replacingOccurrences(of: "            move.w     OldDMACON(pc),d0\n            or.w       #$8000,d0\n            move.w     d0,$96(a6)\n", with: "")
+
+        let failures = cleanTakeoverRestoreProofFailures(in: brokenSource)
+
+        XCTAssertTrue(failures.contains("missing DMA restore from OldDMACON"), failures.joined(separator: "\n"))
+    }
+
+    func testComplexCleanTakeoverRestoreProofRejectsMissingEmergencyRestorePath() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.cleanTakeoverRestoreBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(of: ".restore", with: ".exit")
+        XCTAssertNotEqual(brokenSource, source)
+
+        let failures = cleanTakeoverRestoreProofFailures(in: brokenSource)
+
+        XCTAssertTrue(failures.contains("mouse exit does not route through RestoreSystem path"), failures.joined(separator: "\n"))
+    }
+
+    func testComplexCleanTakeoverRestoreFollowUpChainPreservesModelAndCompiles() throws {
+        var currentSource = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.cleanTakeoverRestoreBenchmarkPrompt))
+
+        for prompt in [
+            "change the cycling palette to green tones",
+            "add a copper split while preserving restore",
+            "slow the effect to every other vblank",
+            "add a right mouse emergency restore path"
+        ] {
+            switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: currentSource) {
+            case .patched(let result):
+                XCTAssertNotEqual(result.source, currentSource, "\(prompt) should produce a source patch")
+                currentSource = result.source
+            case .rejected(let reasons):
+                XCTFail("\(prompt) should be accepted, rejected with: \(reasons.joined(separator: "; "))")
+            case .notRecognized:
+                XCTFail("\(prompt) should be recognized as a clean takeover follow-up")
+            }
+        }
+
+        let model = try XCTUnwrap(AmigaSourceIndexer.index(currentSource).model)
+        XCTAssertEqual(model.id, AmigaProgramTemplate.cleanTakeoverRestoreID)
+        XCTAssertTrue(model.stateVariables.contains { $0.symbol == "PaletteMode" && $0.initialValue == "1" })
+        XCTAssertTrue(model.stateVariables.contains { $0.symbol == "CopperSplitEnabled" && $0.initialValue == "1" })
+        XCTAssertTrue(model.stateVariables.contains { $0.symbol == "VBlankDivider" && $0.initialValue == "2" })
+        XCTAssertTrue(model.stateVariables.contains { $0.symbol == "RightMouseRestoreEnabled" && $0.initialValue == "1" })
+        XCTAssertTrue(currentSource.contains("ColorTable: dc.w       $0020,$0040,$0060,$0080 ; green tone cycle"))
+        XCTAssertTrue(currentSource.contains("dc.w       $7f07,$fffe"))
+        XCTAssertTrue(currentSource.contains("btst       #2,$dff016"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: currentSource), [])
+        XCTAssertEqual(cleanTakeoverRestoreProofFailures(in: currentSource), [])
+
+        let semantic = AssemblySemanticValidator.validate(source: currentSource, prompt: Self.cleanTakeoverRestoreBenchmarkPrompt)
+        let copperListSlice = currentSource
+            .components(separatedBy: "CopperList:")
+            .last
+            .map { String($0.prefix(240)) } ?? "<missing CopperList>"
+        XCTAssertTrue(
+            semantic.passed,
+            "Patched clean takeover chain should pass semantic gate. Failures:\n\(semantic.summary)\nCopperList slice:\n\(copperListSlice)"
+        )
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping patched clean takeover compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+        let compileResult = compileSource(currentSource, compiler: compiler, description: "patched clean takeover restore template compiles")
+        XCTAssertTrue(compileResult.success, compileResult.output)
+    }
+
+    func testComplexCleanTakeoverRestoreRejectedFollowUpsDoNotPatchSource() throws {
+        let baseSource = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.cleanTakeoverRestoreBenchmarkPrompt))
+
+        for prompt in [
+            "disable interrupts without restoring them",
+            "skip saving the old copper pointer",
+            "exit directly with RTS from the effect loop",
+            "overwrite saved DMA state with zero"
+        ] {
+            switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: baseSource) {
+            case .patched:
+                XCTFail("\(prompt) should be rejected")
+            case .rejected(let reasons):
+                XCTAssertFalse(reasons.isEmpty)
+                XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: baseSource), [])
+                XCTAssertEqual(cleanTakeoverRestoreProofFailures(in: baseSource), [])
+            case .notRecognized:
+                XCTFail("\(prompt) should be recognized as unsafe clean takeover follow-up")
+            }
+        }
+
+        switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: "change the cycling palette to green tones", source: baseSource) {
+        case .patched(let result):
+            XCTAssertNotEqual(result.source, baseSource)
+            XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: result.source), [])
+            XCTAssertEqual(cleanTakeoverRestoreProofFailures(in: result.source), [])
+        case .rejected(let reasons):
+            XCTFail("Recovery follow-up should patch after rejected prompts, rejected with: \(reasons.joined(separator: "; "))")
+        case .notRecognized:
+            XCTFail("Recovery follow-up should be recognized")
+        }
+    }
+
+    func testComplexCleanTakeoverRestoreRuntimeEvidenceContractCapturesObservableSignals() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.cleanTakeoverRestoreBenchmarkPrompt))
+        let result = AmigaRuntimeEvidenceContract.validateCleanTakeoverRestore(
+            source: source,
+            prompt: Self.cleanTakeoverRestoreBenchmarkPrompt
+        )
+
+        XCTAssertTrue(result.passed, "Runtime evidence contract should pass. Failures:\n\(result.failures.joined(separator: "\n"))")
+        XCTAssertEqual(result.manifest.schemaVersion, 1)
+        XCTAssertEqual(result.manifest.familyID, "clean_takeover_restore")
+        XCTAssertEqual(result.manifest.templateID, AmigaProgramTemplate.cleanTakeoverRestoreID)
+        XCTAssertEqual(result.manifest.emulatorCapture.backend, "vAmiga")
+        XCTAssertEqual(result.manifest.emulatorCapture.expectation, "motion-plus-register-trace")
+        XCTAssertGreaterThanOrEqual(result.manifest.expectedSignals.count, 10)
+        XCTAssertTrue(result.manifest.sourceProofs.contains("saved_old_dmacon"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("restore_dmacon"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("loadview_oldview_restore"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("all_exits_call_restore_system"))
+
+        let json = try AmigaRuntimeEvidenceContract.manifestJSON(result.manifest)
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoded = try JSONDecoder().decode(AmigaRuntimeEvidenceManifest.self, from: data)
+        XCTAssertEqual(decoded, result.manifest)
+    }
+
+    func testComplexCleanTakeoverRestoreRuntimeEvidenceContractRejectsMissingDMARestore() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.cleanTakeoverRestoreBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            move.w     OldDMACON(pc),d0\n            or.w       #$8000,d0\n            move.w     d0,$96(a6)\n",
+            with: "            ; deliberately removed DMACON restore runtime evidence\n"
+        )
+        let result = AmigaRuntimeEvidenceContract.validateCleanTakeoverRestore(
+            source: brokenSource,
+            prompt: Self.cleanTakeoverRestoreBenchmarkPrompt
+        )
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(
+            result.failures.contains { $0.contains("restore_dmacon") || $0.contains("missing DMA restore") },
+            result.failures.joined(separator: "\n")
+        )
+    }
+
+    func testComplexCleanTakeoverRestoreStandaloneVAmigaRuntimeEvidenceWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_COMPLEX_CLEAN_TAKEOVER_VAMIGA_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_COMPLEX_CLEAN_TAKEOVER_VAMIGA_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_COMPLEX_CLEAN_TAKEOVER_VAMIGA_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_COMPLEX_CLEAN_TAKEOVER_VAMIGA_SMOKE=1 or create \(globalEnableFlagPath) to run the focused clean takeover vAmiga runtime evidence promotion.")
+        }
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: EmulatorService.shared.defaultVAmigaPath) else {
+            throw XCTSkip("vAmiga executable not found at \(EmulatorService.shared.defaultVAmigaPath)")
+        }
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") ?? strategicDefaultRomDirectory() else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or configure the app ROM directory before running focused clean takeover vAmiga validation.")
+        }
+
+        let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
+        guard vAmigaSmokeHardware(from: roms) != nil else {
+            throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in \(romDirectory).")
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.cleanTakeoverRestoreBenchmarkPrompt))
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.cleanTakeoverRestoreBenchmarkPrompt))
+        let contract = AmigaRuntimeEvidenceContract.validateCleanTakeoverRestore(
+            source: source,
+            prompt: Self.cleanTakeoverRestoreBenchmarkPrompt
+        )
+        XCTAssertTrue(contract.passed, "Runtime contract must pass before emulator validation: \(contract.failures.joined(separator: "; "))")
+
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/complex-clean-takeover-vamiga-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        let adfURL = artifactRoot.appendingPathComponent("clean-takeover-restore.adf")
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: adfURL,
+            description: "complex clean takeover vAmiga ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex clean takeover ADF generation failed:\n\(adfResult.output)")
+
+        let runtimeResult = try validateADFWithStandaloneVAmiga(
+            adfURL: adfURL,
+            match: match,
+            evalCase: PromptEvalCase(
+                level: .level3,
+                name: "complex clean takeover runtime evidence",
+                prompt: Self.cleanTakeoverRestoreBenchmarkPrompt,
+                expectedTemplateID: AmigaProgramTemplate.cleanTakeoverRestoreID,
+                markers: ["RestoreSystem:", "ColorTable:", "OldDMACON:"],
+                expectsVisualEvidence: true
+            ),
+            expectation: "motion",
+            romDirectory: romDirectory,
+            artifactRoot: artifactRoot
+        )
+
+        XCTAssertTrue(runtimeResult.success, "Focused clean takeover vAmiga runtime failed: \(runtimeResult.summary)")
+    }
+
+    func testComplexCleanTakeoverRestoreCompilesAndGeneratesBootableADF() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping complex clean takeover compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            print("Skipping complex clean takeover ADF test: xdftool not found at \(compiler.xdftoolPath)")
+            return
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.cleanTakeoverRestoreBenchmarkPrompt))
+        let compileResult = compileSource(source, compiler: compiler, description: "complex clean takeover restore template compiles")
+        XCTAssertTrue(compileResult.success, compileResult.output)
+
+        let targetADF = FileManager.default.temporaryDirectory
+            .appendingPathComponent("complex_clean_takeover_restore_\(UUID().uuidString).adf")
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: targetADF,
+            description: "complex clean takeover restore ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex clean takeover ADF generation failed:\n\(adfResult.output)")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+        if let attributes = try? FileManager.default.attributesOfItem(atPath: targetADF.path),
+           let size = attributes[.size] as? NSNumber {
+            XCTAssertGreaterThan(size.intValue, 0)
+        } else {
+            XCTFail("Could not read generated ADF size for complex clean takeover restore")
+        }
+        try? FileManager.default.removeItem(at: targetADF)
+    }
+
+    func testAssistantPromptTemplateMatchesComplexBlitterBOBCollisionBenchmark() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.blitterBOBCollisionBenchmarkPrompt))
+
+        XCTAssertEqual(match.id, "blitter-bob-collision-bounds")
+        XCTAssertEqual(match.name, "Blitter BOB collision bounds")
+        XCTAssertEqual(match.parameters["object"], "bounded masked BOB")
+        XCTAssertTrue(match.source.contains("Blitter BOB collision bounds template."))
+        XCTAssertTrue(match.source.contains("CollisionState:"))
+        XCTAssertTrue(match.source.contains("TargetLeft:"))
+        XCTAssertTrue(match.source.contains("BOBMask:"))
+        XCTAssertTrue(match.source.contains("btst       #6,$02(a6)"))
+        XCTAssertTrue(match.source.contains("move.w     #(16*64)+1,$58(a6)"))
+    }
+
+    func testAssistantPromptTemplateComplexBlitterBOBCollisionPassesSemanticGate() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        let result = AssemblySemanticValidator.validate(source: source, prompt: Self.blitterBOBCollisionBenchmarkPrompt)
+
+        XCTAssertTrue(result.passed, "Complex blitter BOB benchmark should pass semantic gate. Failures:\n\(result.summary)")
+    }
+
+    func testAssistantPromptTemplateComplexBlitterBOBCollisionIsModelBacked() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        let index = AmigaSourceIndexer.index(source)
+        let model = try XCTUnwrap(index.model)
+
+        XCTAssertEqual(model.id, AmigaProgramTemplate.blitterBOBCollisionBoundsID)
+        XCTAssertEqual(model.kind, .effect)
+        XCTAssertEqual(Set(model.hardware), [.bitplanes, .blitter, .cia, .copper])
+        XCTAssertTrue(model.stateVariables.contains { $0.symbol == "BOBDX" && $0.initialValue == "2" })
+        XCTAssertTrue(AmigaProgramSourceVerifier.failures(in: source).isEmpty)
+    }
+
+    func testComplexBlitterBOBFollowUpChainPreservesModelAndPassesSemanticGate() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        var currentSource = source
+
+        for prompt in [
+            "make the object move faster horizontally",
+            "move the collision rectangle to the right side",
+            "change collision color to blue",
+            "add keyboard or joystick direction control while preserving mouse exit"
+        ] {
+            switch AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: currentSource) {
+            case .patched(let result):
+                XCTAssertNotEqual(result.source, currentSource, "\(prompt) should produce a narrow source patch")
+                currentSource = result.source
+            case .rejected(let reasons):
+                XCTFail("\(prompt) should be accepted, rejected with: \(reasons.joined(separator: "; "))")
+            case .notRecognized:
+                XCTFail("\(prompt) should be recognized as a blitter BOB follow-up")
+            }
+        }
+
+        let model = try XCTUnwrap(AmigaSourceIndexer.index(currentSource).model)
+        XCTAssertEqual(model.id, AmigaProgramTemplate.blitterBOBCollisionBoundsID)
+        XCTAssertTrue(model.stateVariables.contains { $0.symbol == "BOBDX" && $0.initialValue == "4" })
+        XCTAssertTrue(model.stateVariables.contains { $0.symbol == "TargetLeft" && $0.initialValue == "208" })
+        XCTAssertTrue(model.stateVariables.contains { $0.symbol == "TargetRight" && $0.initialValue == "256" })
+        XCTAssertTrue(model.stateVariables.contains { $0.symbol == "CollisionColor" && $0.initialValue?.lowercased() == "$000f" })
+        XCTAssertTrue(model.stateVariables.contains { $0.symbol == "DirectionControlEnabled" && $0.initialValue == "1" })
+        XCTAssertTrue(model.stateVariables.contains { $0.symbol == "DirectionSample" && $0.initialValue == "0" })
+        XCTAssertTrue(model.routines.contains { $0.id == "read_direction_input" && $0.label == "ReadDirectionInput" })
+        XCTAssertTrue(currentSource.contains("BOBMask:"))
+        XCTAssertTrue(currentSource.contains("WaitBlitter:"))
+        XCTAssertTrue(currentSource.contains("CollisionState:"))
+        XCTAssertTrue(currentSource.contains("ReadDirectionInput:"))
+        XCTAssertTrue(currentSource.contains("move.w     $00c(a6),d3"))
+        XCTAssertTrue(currentSource.contains("btst       #6,$bfe001"))
+        XCTAssertTrue(AmigaProgramSourceVerifier.failures(in: currentSource).isEmpty)
+
+        let result = AssemblySemanticValidator.validate(source: currentSource, prompt: Self.blitterBOBCollisionBenchmarkPrompt)
+        XCTAssertTrue(result.passed, "Patched complex blitter BOB chain should pass semantic gate. Failures:\n\(result.summary)")
+    }
+
+    func testComplexBlitterBOBFollowUpChainCompiles() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping patched complex blitter BOB compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+
+        var source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        for prompt in [
+            "make the object move faster horizontally",
+            "move the collision rectangle to the right side",
+            "change collision color to blue",
+            "add keyboard or joystick direction control while preserving mouse exit"
+        ] {
+            guard case .patched(let result) = AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: source) else {
+                XCTFail("\(prompt) should patch the blitter BOB source")
+                return
+            }
+            source = result.source
+        }
+
+        let expectation = self.expectation(description: "patched complex blitter BOB benchmark compiles")
+        compiler.compile(assemblyCode: source) { success, output in
+            XCTAssertTrue(success, "Patched complex blitter BOB compilation failed:\n\(output)")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 5.0)
+    }
+
+    func testComplexBlitterBOBRuntimeEvidenceContractCapturesObservableSignals() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        let result = AmigaRuntimeEvidenceContract.validateBlitterBOBCollisionBounds(
+            source: source,
+            prompt: Self.blitterBOBCollisionBenchmarkPrompt
+        )
+
+        XCTAssertTrue(result.passed, "Runtime evidence contract should pass. Failures:\n\(result.failures.joined(separator: "\n"))")
+        XCTAssertEqual(result.manifest.schemaVersion, 1)
+        XCTAssertEqual(result.manifest.familyID, "blitter_bob_collision_bounds")
+        XCTAssertEqual(result.manifest.templateID, AmigaProgramTemplate.blitterBOBCollisionBoundsID)
+        XCTAssertEqual(result.manifest.emulatorCapture.backend, "vAmiga")
+        XCTAssertEqual(result.manifest.emulatorCapture.expectation, "motion-plus-register-trace")
+        XCTAssertGreaterThanOrEqual(result.manifest.expectedSignals.count, 10)
+        XCTAssertTrue(result.manifest.sourceProofs.contains("post_bltsize_wait"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("collision_color_output"))
+
+        let json = try AmigaRuntimeEvidenceContract.manifestJSON(result.manifest)
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoded = try JSONDecoder().decode(AmigaRuntimeEvidenceManifest.self, from: data)
+        XCTAssertEqual(decoded, result.manifest)
+
+        let artifactURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("blitter_bob_runtime_evidence_\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: artifactURL) }
+        try json.write(to: artifactURL, atomically: true, encoding: .utf8)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: artifactURL.path))
+    }
+
+    func testComplexBlitterBOBRuntimeEvidenceContractRejectsMissingCollisionColorOutput() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            move.w     CollisionColor(pc),$182(a6) ; COLOR01 collision evidence",
+            with: "            ; deliberately removed collision COLOR01 runtime evidence"
+        )
+        let result = AmigaRuntimeEvidenceContract.validateBlitterBOBCollisionBounds(
+            source: brokenSource,
+            prompt: Self.blitterBOBCollisionBenchmarkPrompt
+        )
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.failures.contains { $0.contains("collision_color_output") }, result.failures.joined(separator: "\n"))
+    }
+
+    func testComplexBlitterBOBStandaloneVAmigaRuntimeEvidenceWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_COMPLEX_BLITTER_VAMIGA_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_COMPLEX_BLITTER_VAMIGA_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_COMPLEX_BLITTER_VAMIGA_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_COMPLEX_BLITTER_VAMIGA_SMOKE=1 or create \(globalEnableFlagPath) to run the focused blitter BOB vAmiga runtime evidence promotion.")
+        }
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: EmulatorService.shared.defaultVAmigaPath) else {
+            throw XCTSkip("vAmiga executable not found at \(EmulatorService.shared.defaultVAmigaPath)")
+        }
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") ?? strategicDefaultRomDirectory() else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or configure the app ROM directory before running focused blitter BOB vAmiga validation.")
+        }
+
+        let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
+        guard vAmigaSmokeHardware(from: roms) != nil else {
+            throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in \(romDirectory).")
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        let contract = AmigaRuntimeEvidenceContract.validateBlitterBOBCollisionBounds(
+            source: source,
+            prompt: Self.blitterBOBCollisionBenchmarkPrompt
+        )
+        XCTAssertTrue(contract.passed, "Runtime contract must pass before emulator validation: \(contract.failures.joined(separator: "; "))")
+
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/complex-blitter-vamiga-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        let adfURL = artifactRoot.appendingPathComponent("blitter-bob-collision-bounds.adf")
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: adfURL,
+            description: "complex blitter BOB vAmiga ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex blitter BOB ADF generation failed:\n\(adfResult.output)")
+
+        let runtimeResult = try validateADFWithStandaloneVAmiga(
+            adfURL: adfURL,
+            match: match,
+            evalCase: PromptEvalCase(
+                level: .level3,
+                name: "complex blitter BOB runtime evidence",
+                prompt: Self.blitterBOBCollisionBenchmarkPrompt,
+                expectedTemplateID: AmigaProgramTemplate.blitterBOBCollisionBoundsID,
+                markers: ["BOBMask:", "CollisionState:", "WaitBlitter:"],
+                expectsVisualEvidence: true
+            ),
+            expectation: "motion",
+            romDirectory: romDirectory,
+            artifactRoot: artifactRoot
+        )
+
+        XCTAssertTrue(runtimeResult.success, "Focused blitter BOB vAmiga runtime failed: \(runtimeResult.summary)")
+        XCTAssertGreaterThan(runtimeResult.nonBlackPixels, 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: adfURL.path))
+        print("Focused blitter BOB vAmiga runtime artifacts: \(artifactRoot.path)")
+    }
+
+    func testComplexCopperRuntimeRasterBenchmarkRoutesToExecutableTemplate() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.copperRuntimeRasterBenchmarkPrompt))
+
+        XCTAssertEqual(match.id, "bouncing-copper-bars")
+        XCTAssertEqual(match.name, "Bouncing copper bars")
+        XCTAssertEqual(match.parameters["mode"], "bouncing")
+        XCTAssertTrue(match.source.contains("Bouncing multi-color copper bars."))
+        XCTAssertTrue(match.source.contains("CopperList:"))
+        XCTAssertTrue(match.source.contains("Bar6Wait:"))
+        XCTAssertTrue(match.source.contains("            bsr        WaitVBlank"))
+        XCTAssertTrue(match.source.contains("            move.w     #$8280,$96(a6)       ; DMAEN + COPEN"))
+    }
+
+    func testComplexCopperRuntimeRasterEvidenceContractCapturesObservableSignals() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.copperRuntimeRasterBenchmarkPrompt))
+        let result = AmigaRuntimeEvidenceContract.validateCopperRuntimeRaster(
+            source: source,
+            prompt: Self.copperRuntimeRasterBenchmarkPrompt
+        )
+
+        XCTAssertTrue(result.passed, "Runtime evidence contract should pass. Failures:\n\(result.failures.joined(separator: "\n"))")
+        XCTAssertEqual(result.manifest.familyID, "copper_runtime_raster_validation")
+        XCTAssertEqual(result.manifest.templateID, "bouncing-copper-bars")
+        XCTAssertEqual(result.manifest.emulatorCapture.backend, "vAmiga")
+        XCTAssertEqual(result.manifest.emulatorCapture.expectation, "motion-plus-register-trace")
+        XCTAssertTrue(result.manifest.sourceProofs.contains("owned_copper_list_installed"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("copper_dma_enable"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("vblank_paced_copper_patch"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("distinct_raster_colors"))
+
+        let json = try AmigaRuntimeEvidenceContract.manifestJSON(result.manifest)
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoded = try JSONDecoder().decode(AmigaRuntimeEvidenceManifest.self, from: data)
+        XCTAssertEqual(decoded, result.manifest)
+    }
+
+    func testComplexCopperRuntimeRasterEvidenceContractRejectsMissingCopperJump() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.copperRuntimeRasterBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            move.w     #$0000,$88(a6)       ; COPJMP1",
+            with: "            ; deliberately removed COPJMP1 runtime evidence"
+        )
+        let result = AmigaRuntimeEvidenceContract.validateCopperRuntimeRaster(
+            source: brokenSource,
+            prompt: Self.copperRuntimeRasterBenchmarkPrompt
+        )
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.failures.contains { $0.contains("owned_copper_list_installed") }, result.failures.joined(separator: "\n"))
+    }
+
+    func testComplexCopperRuntimeRasterRepairSeedDetectsMissingCopperJump() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.copperRuntimeRasterBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            move.w     #$0000,$88(a6)       ; COPJMP1",
+            with: "            ; deliberately removed COPJMP1 runtime evidence"
+        )
+        let result = AmigaRuntimeEvidenceContract.validateCopperRuntimeRaster(
+            source: brokenSource,
+            prompt: Self.copperRuntimeRasterBenchmarkPrompt
+        )
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(
+            result.failures.contains { $0.contains("owned_copper_list_installed") || $0.contains("COPJMP1") },
+            result.failures.joined(separator: "\n")
+        )
+    }
+
+    func testComplexCopperRuntimeRasterRepairSeedDetectsFlatRuntimeFramePalette() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.copperRuntimeRasterBenchmarkPrompt))
+        var model = try XCTUnwrap(AmigaSourceIndexer.index(source).model)
+        let originalModelRegion = try AmigaSourceIndexer.modelRegion(for: model)
+        for index in model.stateVariables.indices where model.stateVariables[index].id.hasPrefix("band_color_") {
+            model.stateVariables[index].initialValue = "$0000"
+        }
+
+        var brokenSource = source.replacingOccurrences(
+            of: originalModelRegion,
+            with: try AmigaSourceIndexer.modelRegion(for: model)
+        )
+        for (label, value) in [
+            ("BandColor1", "$0f00"),
+            ("BandColor2", "$0ff0"),
+            ("BandColor3", "$00f0"),
+            ("BandColor4", "$00ff"),
+            ("BandColor5", "$000f"),
+            ("BandColor6", "$0f0f")
+        ] {
+            brokenSource = brokenSource.replacingOccurrences(
+                of: "\(label): dc.w       \(value)",
+                with: "\(label): dc.w       $0000"
+            )
+        }
+
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: brokenSource), [])
+        let result = AmigaRuntimeEvidenceContract.validateCopperRuntimeRaster(
+            source: brokenSource,
+            prompt: Self.copperRuntimeRasterBenchmarkPrompt
+        )
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.failures.contains { $0.contains("model palette") }, result.failures.joined(separator: "\n"))
+    }
+
+    func testComplexCopperRuntimeRasterCompilesAndGeneratesBootableADF() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping complex copper raster compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            print("Skipping complex copper raster ADF test: xdftool not found at \(compiler.xdftoolPath)")
+            return
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.copperRuntimeRasterBenchmarkPrompt))
+        let compileResult = compileSource(source, compiler: compiler, description: "complex copper raster template compiles")
+        XCTAssertTrue(compileResult.success, compileResult.output)
+
+        let targetADF = FileManager.default.temporaryDirectory
+            .appendingPathComponent("complex_copper_runtime_raster_\(UUID().uuidString).adf")
+        defer { try? FileManager.default.removeItem(at: targetADF) }
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: targetADF,
+            description: "complex copper raster ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex copper raster ADF generation failed:\n\(adfResult.output)")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+    }
+
+    func testComplexCopperRuntimeRasterStandaloneVAmigaRuntimeEvidenceWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_COMPLEX_COPPER_VAMIGA_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_COMPLEX_COPPER_VAMIGA_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_COMPLEX_COPPER_VAMIGA_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_COMPLEX_COPPER_VAMIGA_SMOKE=1 or create \(globalEnableFlagPath) to run the focused copper raster vAmiga runtime evidence promotion.")
+        }
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: EmulatorService.shared.defaultVAmigaPath) else {
+            throw XCTSkip("vAmiga executable not found at \(EmulatorService.shared.defaultVAmigaPath)")
+        }
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") ?? strategicDefaultRomDirectory() else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or configure the app ROM directory before running focused copper raster vAmiga validation.")
+        }
+
+        let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
+        guard vAmigaSmokeHardware(from: roms) != nil else {
+            throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in \(romDirectory).")
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.copperRuntimeRasterBenchmarkPrompt))
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.copperRuntimeRasterBenchmarkPrompt))
+        let contract = AmigaRuntimeEvidenceContract.validateCopperRuntimeRaster(
+            source: source,
+            prompt: Self.copperRuntimeRasterBenchmarkPrompt
+        )
+        XCTAssertTrue(contract.passed, "Runtime contract must pass before emulator validation: \(contract.failures.joined(separator: "; "))")
+
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/complex-copper-vamiga-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        let adfURL = artifactRoot.appendingPathComponent("bouncing-copper-bars.adf")
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: adfURL,
+            description: "complex copper raster vAmiga ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex copper raster ADF generation failed:\n\(adfResult.output)")
+
+        let runtimeResult = try validateADFWithStandaloneVAmiga(
+            adfURL: adfURL,
+            match: match,
+            evalCase: PromptEvalCase(
+                level: .level3,
+                name: "complex copper raster runtime evidence",
+                prompt: Self.copperRuntimeRasterBenchmarkPrompt,
+                expectedTemplateID: "bouncing-copper-bars",
+                markers: ["CopperList:", "Bar1Wait:", "Bar6Wait:"],
+                expectsVisualEvidence: true
+            ),
+            expectation: "motion",
+            romDirectory: romDirectory,
+            artifactRoot: artifactRoot
+        )
+
+        XCTAssertTrue(runtimeResult.success, "Focused copper raster vAmiga runtime failed: \(runtimeResult.summary)")
+        XCTAssertGreaterThan(runtimeResult.nonBlackPixels, 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: adfURL.path))
+        print("Focused copper raster vAmiga runtime artifacts: \(artifactRoot.path)")
+    }
+
+    func testComplexCopperRuntimeRasterFollowUpChainStandaloneVAmigaRuntimeEvidenceWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_COMPLEX_COPPER_FOLLOWUP_VAMIGA_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_COMPLEX_COPPER_FOLLOWUP_VAMIGA_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_COMPLEX_COPPER_FOLLOWUP_VAMIGA_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_COMPLEX_COPPER_FOLLOWUP_VAMIGA_SMOKE=1 or create \(globalEnableFlagPath) to run the focused copper follow-up-chain vAmiga runtime evidence promotion.")
+        }
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: EmulatorService.shared.defaultVAmigaPath) else {
+            throw XCTSkip("vAmiga executable not found at \(EmulatorService.shared.defaultVAmigaPath)")
+        }
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") ?? strategicDefaultRomDirectory() else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or configure the app ROM directory before running focused copper follow-up-chain vAmiga validation.")
+        }
+
+        let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
+        guard vAmigaSmokeHardware(from: roms) != nil else {
+            throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in \(romDirectory).")
+        }
+
+        let source = try copperRuntimeRasterFollowUpChainSource()
+        let baseMatch = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.copperRuntimeRasterBenchmarkPrompt))
+        let match = AssistantPromptTemplateMatch(
+            id: baseMatch.id,
+            name: "\(baseMatch.name) follow-up chain",
+            source: source,
+            parameters: baseMatch.parameters.merging(["follow_up_chain": "terminal"]) { _, new in new }
+        )
+        let contract = AmigaRuntimeEvidenceContract.validateCopperRuntimeRaster(
+            source: source,
+            prompt: Self.copperRuntimeRasterBenchmarkPrompt
+        )
+        XCTAssertTrue(contract.passed, "Runtime contract must pass before emulator validation: \(contract.failures.joined(separator: "; "))")
+
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/complex-copper-followup-vamiga-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        let adfURL = artifactRoot.appendingPathComponent("bouncing-copper-bars-followup-chain.adf")
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: adfURL,
+            description: "complex copper follow-up-chain vAmiga ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex copper follow-up-chain ADF generation failed:\n\(adfResult.output)")
+
+        let runtimeResult = try validateADFWithStandaloneVAmiga(
+            adfURL: adfURL,
+            match: match,
+            evalCase: PromptEvalCase(
+                level: .level3,
+                name: "complex copper raster follow-up-chain runtime evidence",
+                prompt: Self.copperRuntimeRasterBenchmarkPrompt,
+                expectedTemplateID: "bouncing-copper-bars",
+                markers: ["CopperList:", "Bar1Wait:", "Bar8Wait:", "StatusBandColor:"],
+                expectsVisualEvidence: true
+            ),
+            expectation: "motion",
+            romDirectory: romDirectory,
+            artifactRoot: artifactRoot
+        )
+
+        XCTAssertTrue(runtimeResult.success, "Focused copper follow-up-chain vAmiga runtime failed: \(runtimeResult.summary)")
+        XCTAssertGreaterThan(runtimeResult.nonBlackPixels, 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: adfURL.path))
+        print("Focused copper follow-up-chain vAmiga runtime artifacts: \(artifactRoot.path)")
+    }
+
+    func testComplexCopperRuntimeRasterFollowUpChainPreservesModelAndCompiles() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+
+        let source = try copperRuntimeRasterFollowUpChainSource()
+
+        let model = try XCTUnwrap(AmigaSourceIndexer.index(source).model)
+        XCTAssertEqual(model.id, "bouncing-copper-bars")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "bar_count" })?.initialValue, "8")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "bar_step" })?.initialValue, "1")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "status_band_color" })?.initialValue, "$00f0")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "band_color_1" })?.initialValue, "$000f")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "band_color_2" })?.initialValue, "$0fff")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "band_color_7" })?.initialValue, "$000f")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "band_color_8" })?.initialValue, "$0fff")
+        XCTAssertTrue(model.verificationExpectations.contains("Copper bar count is 8."))
+        XCTAssertTrue(model.verificationExpectations.contains("Copper bar bounce step is 1 pixel per frame."))
+        XCTAssertTrue(model.verificationExpectations.contains("Copper palette is blue and white."))
+        XCTAssertTrue(model.verificationExpectations.contains("Top status band is enabled."))
+        XCTAssertTrue(source.contains("ApplyPalette:"))
+        XCTAssertTrue(source.contains("Bar8Wait:"))
+        XCTAssertTrue(source.contains("BarCount:  dc.w     8"))
+        XCTAssertTrue(source.contains("BarStep:  dc.w     1"))
+        XCTAssertTrue(source.contains("StatusBandColor: dc.w       $00f0"))
+        XCTAssertTrue(source.contains("BandColor8: dc.w       $0fff"))
+        XCTAssertTrue(source.contains("            move.b     d2,Bar8Wait"))
+
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: source), [])
+
+        let semantic = AssemblySemanticValidator.validate(
+            source: source,
+            prompt: Self.copperRuntimeRasterBenchmarkPrompt
+        )
+        XCTAssertTrue(semantic.passed, semantic.summary)
+
+        let runtimeContract = AmigaRuntimeEvidenceContract.validateCopperRuntimeRaster(
+            source: source,
+            prompt: Self.copperRuntimeRasterBenchmarkPrompt
+        )
+        XCTAssertTrue(runtimeContract.passed, "Runtime contract should still pass after copper follow-ups. Failures:\n\(runtimeContract.failures.joined(separator: "\n"))")
+
+        let compileResult = compileSource(
+            source,
+            compiler: compiler,
+            description: "complex copper raster follow-up chain compiles"
+        )
+        XCTAssertTrue(compileResult.success, compileResult.output)
+    }
+
+    func testComplexCopperRuntimeRasterRejectedFollowUpsDoNotRouteToFreeFormMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.copperRuntimeRasterBenchmarkPrompt))
+        let rejectedPrompts = [
+            "create a copper wait past the end of display",
+            "use an odd copper instruction address",
+            "remove the copper jump but keep animation",
+            "set zero bars"
+        ]
+
+        for prompt in rejectedPrompts {
+            guard case .structuredModelPatch(.rejected(let reasons)) = AssistantPromptRouter.route(
+                prompt: prompt,
+                source: source,
+                isSelfCorrection: false
+            ) else {
+                return XCTFail("Expected structured copper rejection for prompt: \(prompt)")
+            }
+            XCTAssertFalse(reasons.isEmpty)
+            XCTAssertEqual(source, try XCTUnwrap(AssistantPromptTemplate.source(for: Self.copperRuntimeRasterBenchmarkPrompt)))
+            XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: source), [])
+        }
+    }
+
+    func testComplexMouseSpriteMultiplexBenchmarkRoutesToExecutableTemplate() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.mouseSpriteMultiplexBenchmarkPrompt))
+        let model = try XCTUnwrap(AmigaSourceIndexer.index(match.source).model)
+
+        XCTAssertEqual(match.id, "mouse-sprite-multiplex")
+        XCTAssertEqual(match.name, "Mouse sprite multiplex")
+        XCTAssertEqual(model.id, "mouse-sprite-multiplex")
+        XCTAssertTrue(model.hardware.contains(.sprites))
+        XCTAssertTrue(model.hardware.contains(.cia))
+        XCTAssertTrue(model.hardware.contains(.copper))
+        XCTAssertTrue(model.hardware.contains(.bitplanes))
+        XCTAssertTrue(match.source.contains("Mouse-controlled sprite with offset multiplex copy."))
+        XCTAssertTrue(match.source.contains("            move.l     a0,$e0(a6)           ; BPL1PT visible backdrop"))
+        XCTAssertTrue(match.source.contains("            move.w     #$83a0,$96(a6)       ; DMAEN + bitplane + copper + sprite DMA"))
+        XCTAssertTrue(match.source.contains("            move.l     a0,$120(a6)          ; SPR0PT primary mouse sprite"))
+        XCTAssertTrue(match.source.contains("            move.l     a0,$124(a6)          ; SPR1PT multiplexed offset copy"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testComplexMouseSpriteMultiplexRuntimeEvidenceContractCapturesObservableSignals() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.mouseSpriteMultiplexBenchmarkPrompt))
+        let result = AmigaRuntimeEvidenceContract.validateMouseSpriteMultiplex(
+            source: source,
+            prompt: Self.mouseSpriteMultiplexBenchmarkPrompt
+        )
+
+        XCTAssertTrue(result.passed, "Runtime evidence contract should pass. Failures:\n\(result.failures.joined(separator: "\n"))")
+        XCTAssertEqual(result.manifest.familyID, "mouse_sprite_multiplex")
+        XCTAssertEqual(result.manifest.templateID, "mouse-sprite-multiplex")
+        XCTAssertEqual(result.manifest.emulatorCapture.backend, "vAmiga")
+        XCTAssertEqual(result.manifest.emulatorCapture.expectation, "motion-plus-register-trace")
+        XCTAssertTrue(result.manifest.sourceProofs.contains("spr0_pointer_write"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("spr1_pointer_write"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("bitplane_pointer_setup"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("sprite_bitplane_copper_dma_enable"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("joy0dat_mouse_sampling"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("multiplexed_sprite_control_update"))
+
+        let json = try AmigaRuntimeEvidenceContract.manifestJSON(result.manifest)
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoded = try JSONDecoder().decode(AmigaRuntimeEvidenceManifest.self, from: data)
+        XCTAssertEqual(decoded, result.manifest)
+    }
+
+    func testComplexMouseSpriteMultiplexRuntimeEvidenceContractRejectsMissingSecondSpritePointer() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.mouseSpriteMultiplexBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            move.l     a0,$124(a6)          ; SPR1PT multiplexed offset copy",
+            with: "            ; deliberately removed second sprite pointer runtime evidence"
+        )
+        let result = AmigaRuntimeEvidenceContract.validateMouseSpriteMultiplex(
+            source: brokenSource,
+            prompt: Self.mouseSpriteMultiplexBenchmarkPrompt
+        )
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.failures.contains { $0.contains("spr1_pointer_write") }, result.failures.joined(separator: "\n"))
+    }
+
+    func testComplexMouseSpriteMultiplexRepairSeedDetectsMissingSpritePointer() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.mouseSpriteMultiplexBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            move.l     a0,$124(a6)          ; SPR1PT multiplexed offset copy",
+            with: "            ; deliberately removed second sprite pointer runtime evidence"
+        )
+        let result = AmigaRuntimeEvidenceContract.validateMouseSpriteMultiplex(
+            source: brokenSource,
+            prompt: Self.mouseSpriteMultiplexBenchmarkPrompt
+        )
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.failures.contains { $0.contains("spr1_pointer_write") }, result.failures.joined(separator: "\n"))
+    }
+
+    func testComplexMouseSpriteMultiplexRepairSeedDetectsUnpacedSpriteUpdate() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.mouseSpriteMultiplexBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            bsr        WaitVBlank\n            tst.w      ExitDelay",
+            with: "            ; deliberately removed vblank pacing before sprite updates\n            tst.w      ExitDelay"
+        )
+        let result = AmigaRuntimeEvidenceContract.validateMouseSpriteMultiplex(
+            source: brokenSource,
+            prompt: Self.mouseSpriteMultiplexBenchmarkPrompt
+        )
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(
+            result.failures.contains { $0.contains("vblank_before_sprite_update") || $0.contains("vertical blank") },
+            result.failures.joined(separator: "\n")
+        )
+    }
+
+    func testComplexMouseSpriteMultiplexCompilesAndGeneratesBootableADF() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping complex mouse sprite multiplex compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            print("Skipping complex mouse sprite multiplex ADF test: xdftool not found at \(compiler.xdftoolPath)")
+            return
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.mouseSpriteMultiplexBenchmarkPrompt))
+        let compileResult = compileSource(source, compiler: compiler, description: "complex mouse sprite multiplex template compiles")
+        XCTAssertTrue(compileResult.success, compileResult.output)
+
+        let targetADF = FileManager.default.temporaryDirectory
+            .appendingPathComponent("complex_mouse_sprite_multiplex_\(UUID().uuidString).adf")
+        defer { try? FileManager.default.removeItem(at: targetADF) }
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: targetADF,
+            description: "complex mouse sprite multiplex ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex mouse sprite multiplex ADF generation failed:\n\(adfResult.output)")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+    }
+
+    func testComplexMouseSpriteMultiplexStandaloneVAmigaRuntimeEvidenceWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_COMPLEX_MOUSE_SPRITE_VAMIGA_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_COMPLEX_MOUSE_SPRITE_VAMIGA_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_COMPLEX_MOUSE_SPRITE_VAMIGA_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_COMPLEX_MOUSE_SPRITE_VAMIGA_SMOKE=1 or create \(globalEnableFlagPath) to run the focused mouse sprite multiplex vAmiga runtime evidence promotion.")
+        }
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: EmulatorService.shared.defaultVAmigaPath) else {
+            throw XCTSkip("vAmiga executable not found at \(EmulatorService.shared.defaultVAmigaPath)")
+        }
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") ?? strategicDefaultRomDirectory() else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or configure the app ROM directory before running focused mouse sprite multiplex vAmiga validation.")
+        }
+
+        let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
+        guard vAmigaSmokeHardware(from: roms) != nil else {
+            throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in \(romDirectory).")
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.mouseSpriteMultiplexBenchmarkPrompt))
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.mouseSpriteMultiplexBenchmarkPrompt))
+        let contract = AmigaRuntimeEvidenceContract.validateMouseSpriteMultiplex(
+            source: source,
+            prompt: Self.mouseSpriteMultiplexBenchmarkPrompt
+        )
+        XCTAssertTrue(contract.passed, "Runtime contract must pass before emulator validation: \(contract.failures.joined(separator: "; "))")
+
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/complex-mouse-sprite-vamiga-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        let adfURL = artifactRoot.appendingPathComponent("mouse-sprite-multiplex.adf")
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: adfURL,
+            description: "complex mouse sprite multiplex vAmiga ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex mouse sprite multiplex ADF generation failed:\n\(adfResult.output)")
+
+        let runtimeResult = try validateADFWithStandaloneVAmiga(
+            adfURL: adfURL,
+            match: match,
+            evalCase: PromptEvalCase(
+                level: .level3,
+                name: "complex mouse sprite multiplex runtime evidence",
+                prompt: Self.mouseSpriteMultiplexBenchmarkPrompt,
+                expectedTemplateID: "mouse-sprite-multiplex",
+                markers: ["SpriteData0:", "SpriteData1:", "ReadMouseSprite:"],
+                expectsVisualEvidence: true
+            ),
+            expectation: "motion",
+            romDirectory: romDirectory,
+            artifactRoot: artifactRoot
+        )
+
+        XCTAssertTrue(runtimeResult.success, "Focused mouse sprite multiplex vAmiga runtime failed: \(runtimeResult.summary)")
+        XCTAssertGreaterThan(runtimeResult.nonBlackPixels, 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: adfURL.path))
+        print("Focused mouse sprite multiplex vAmiga runtime artifacts: \(artifactRoot.path)")
+    }
+
+    func testComplexMouseSpriteMultiplexFollowUpChainStandaloneVAmigaRuntimeEvidenceWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_COMPLEX_MOUSE_SPRITE_FOLLOWUP_VAMIGA_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_COMPLEX_MOUSE_SPRITE_FOLLOWUP_VAMIGA_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_COMPLEX_MOUSE_SPRITE_FOLLOWUP_VAMIGA_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_COMPLEX_MOUSE_SPRITE_FOLLOWUP_VAMIGA_SMOKE=1 or create \(globalEnableFlagPath) to run the focused mouse sprite follow-up-chain vAmiga runtime evidence promotion.")
+        }
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: EmulatorService.shared.defaultVAmigaPath) else {
+            throw XCTSkip("vAmiga executable not found at \(EmulatorService.shared.defaultVAmigaPath)")
+        }
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") ?? strategicDefaultRomDirectory() else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or configure the app ROM directory before running focused mouse sprite follow-up-chain vAmiga validation.")
+        }
+
+        let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
+        guard vAmigaSmokeHardware(from: roms) != nil else {
+            throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in \(romDirectory).")
+        }
+
+        let source = try mouseSpriteMultiplexFollowUpChainSource()
+        let baseMatch = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.mouseSpriteMultiplexBenchmarkPrompt))
+        let match = AssistantPromptTemplateMatch(
+            id: baseMatch.id,
+            name: "\(baseMatch.name) follow-up chain",
+            source: source,
+            parameters: baseMatch.parameters.merging(["follow_up_chain": "terminal"]) { _, new in new }
+        )
+        let contract = AmigaRuntimeEvidenceContract.validateMouseSpriteMultiplex(
+            source: source,
+            prompt: Self.mouseSpriteMultiplexBenchmarkPrompt
+        )
+        XCTAssertTrue(contract.passed, "Runtime contract must pass before emulator validation: \(contract.failures.joined(separator: "; "))")
+
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/complex-mouse-sprite-followup-vamiga-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        let adfURL = artifactRoot.appendingPathComponent("mouse-sprite-multiplex-followup-chain.adf")
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: adfURL,
+            description: "complex mouse sprite follow-up-chain vAmiga ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex mouse sprite follow-up-chain ADF generation failed:\n\(adfResult.output)")
+
+        let runtimeResult = try validateADFWithStandaloneVAmiga(
+            adfURL: adfURL,
+            match: match,
+            evalCase: PromptEvalCase(
+                level: .level3,
+                name: "complex mouse sprite follow-up-chain runtime evidence",
+                prompt: Self.mouseSpriteMultiplexBenchmarkPrompt,
+                expectedTemplateID: "mouse-sprite-multiplex",
+                markers: ["SpriteData0:", "SpriteData1:", "ReadMouseSprite:", "FollowerLagEnabled:"],
+                expectsVisualEvidence: true
+            ),
+            expectation: "motion",
+            romDirectory: romDirectory,
+            artifactRoot: artifactRoot
+        )
+
+        XCTAssertTrue(runtimeResult.success, "Focused mouse sprite follow-up-chain vAmiga runtime failed: \(runtimeResult.summary)")
+        XCTAssertGreaterThan(runtimeResult.nonBlackPixels, 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: adfURL.path))
+        print("Focused mouse sprite follow-up-chain vAmiga runtime artifacts: \(artifactRoot.path)")
+    }
+
+    func testComplexMouseSpriteMultiplexFollowUpChainPreservesModelAndCompiles() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+
+        let source = try mouseSpriteMultiplexFollowUpChainSource()
+
+        let model = try XCTUnwrap(AmigaSourceIndexer.index(source).model)
+        XCTAssertEqual(model.id, "mouse-sprite-multiplex")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "sprite_color" })?.initialValue, "$00f0")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "follower_x_offset" })?.initialValue, "32")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "follower_wrap_enabled" })?.initialValue, "1")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "follower_lag_enabled" })?.initialValue, "1")
+        XCTAssertTrue(model.verificationExpectations.contains("Sprite color is green."))
+        XCTAssertTrue(model.verificationExpectations.contains("Follower sprite horizontal offset is 32 pixels."))
+        XCTAssertTrue(model.verificationExpectations.contains("Follower horizontal wrapping is enabled."))
+        XCTAssertTrue(model.verificationExpectations.contains("Follower one-frame lag is enabled."))
+        XCTAssertTrue(source.contains("SpriteColor1: dc.w       $00f0"))
+        XCTAssertTrue(source.contains("SpriteColor2: dc.w       $00f0"))
+        XCTAssertTrue(source.contains("SpriteColor3: dc.w       $00f0"))
+        XCTAssertTrue(source.contains("FollowerXOffset:  dc.w     32"))
+        XCTAssertTrue(source.contains("FollowerWrapEnabled:  dc.w     1"))
+        XCTAssertTrue(source.contains("FollowerLagEnabled:  dc.w     1"))
+        XCTAssertTrue(source.contains("            sub.w      #176,d1"))
+        XCTAssertTrue(source.contains("            move.w     LagMouseX(pc),d1"))
+        XCTAssertTrue(source.contains("            move.w     MouseX(pc),LagMouseX"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: source), [])
+
+        let semantic = AssemblySemanticValidator.validate(
+            source: source,
+            prompt: Self.mouseSpriteMultiplexBenchmarkPrompt
+        )
+        XCTAssertTrue(semantic.passed, semantic.summary)
+
+        let runtimeContract = AmigaRuntimeEvidenceContract.validateMouseSpriteMultiplex(
+            source: source,
+            prompt: Self.mouseSpriteMultiplexBenchmarkPrompt
+        )
+        XCTAssertTrue(runtimeContract.passed, runtimeContract.failures.joined(separator: "\n"))
+
+        let compileResult = compileSource(
+            source,
+            compiler: compiler,
+            description: "mouse sprite multiplex chained follow-ups compile"
+        )
+        XCTAssertTrue(compileResult.success, compileResult.output)
+    }
+
+    func testComplexMouseSpriteMultiplexRejectedFollowUpsDoNotRouteToFreeFormMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.mouseSpriteMultiplexBenchmarkPrompt))
+        let greenSprite = try XCTUnwrap(AmigaProgramFollowUpPlanner.patch(prompt: "make the sprite green", source: source))
+
+        let unsupportedColor = AssistantPromptRouter.route(
+            prompt: "make the sprite color ultraviolet",
+            source: greenSprite.source,
+            isSelfCorrection: false
+        )
+        guard case .structuredModelPatch(.rejected(let colorFailures)) = unsupportedColor else {
+            return XCTFail("Expected unsupported sprite color to reject in structured routing.")
+        }
+        XCTAssertEqual(colorFailures, ["Specify a supported sprite color: white, yellow, green, cyan, blue, purple, magenta, red, orange."])
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(prompt: "make the sprite color ultraviolet", source: greenSprite.source))
+        XCTAssertTrue(greenSprite.source.contains("SpriteColor1: dc.w       $00f0"))
+
+        let missingOffset = AssistantPromptRouter.route(
+            prompt: "change the follower offset",
+            source: greenSprite.source,
+            isSelfCorrection: false
+        )
+        guard case .structuredModelPatch(.rejected(let offsetFailures)) = missingOffset else {
+            return XCTFail("Expected missing follower offset value to reject in structured routing.")
+        }
+        XCTAssertEqual(offsetFailures, ["Specify a numeric follower offset."])
+        XCTAssertNil(AmigaProgramFollowUpPlanner.patch(prompt: "change the follower offset", source: greenSprite.source))
+
+        let unsafePointer = AssistantPromptRouter.route(
+            prompt: "write sprite pointers outside chip memory",
+            source: greenSprite.source,
+            isSelfCorrection: false
+        )
+        guard case .structuredModelPatch(.rejected(let pointerFailures)) = unsafePointer else {
+            return XCTFail("Expected unsafe sprite pointer edit to reject in structured routing.")
+        }
+        XCTAssertEqual(pointerFailures, ["Cannot write sprite pointers outside chip memory."])
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: greenSprite.source), [])
+    }
+
+    func testComplexMODPlayerControlsBenchmarkRoutesToModelBackedTemplate() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.modPlayerControlsBenchmarkPrompt))
+        let index = AmigaSourceIndexer.index(match.source)
+        let model = try XCTUnwrap(index.model)
+
+        XCTAssertEqual(match.id, AmigaProgramFamilyRegistry.modPlayerControls.id)
+        XCTAssertEqual(model.id, AmigaProgramFamilyRegistry.modPlayerControls.id)
+        XCTAssertEqual(model.controls.map(\.action), ["PlayMOD", "StopMOD"])
+        XCTAssertTrue(model.hardware.contains(.paula))
+        XCTAssertTrue(model.hardware.contains(.cia))
+        XCTAssertTrue(model.hardware.contains(.bitplanes))
+        XCTAssertTrue(match.source.contains("            bsr        PlayMOD              ; boot-time preview for runtime Paula register evidence"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testComplexMODPlayerControlsRuntimeEvidenceContractCapturesObservableSignals() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.modPlayerControlsBenchmarkPrompt))
+        let result = AmigaRuntimeEvidenceContract.validateModPlayerControls(
+            source: source,
+            prompt: Self.modPlayerControlsBenchmarkPrompt
+        )
+
+        XCTAssertTrue(result.passed, "Runtime evidence contract should pass. Failures:\n\(result.failures.joined(separator: "\n"))")
+        XCTAssertEqual(result.manifest.familyID, "mod_player_controls_complex")
+        XCTAssertEqual(result.manifest.templateID, AmigaProgramFamilyRegistry.modPlayerControls.id)
+        XCTAssertEqual(result.manifest.emulatorCapture.backend, "vAmiga")
+        XCTAssertEqual(result.manifest.emulatorCapture.expectation, "paula-register-trace")
+        XCTAssertTrue(result.manifest.sourceProofs.contains("startup_playmod_preview"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("aud0lc_pointer_write"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("aud0vol_write"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("audio_dma_enable"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("audio_dma_stop"))
+
+        let json = try AmigaRuntimeEvidenceContract.manifestJSON(result.manifest)
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoded = try JSONDecoder().decode(AmigaRuntimeEvidenceManifest.self, from: data)
+        XCTAssertEqual(decoded, result.manifest)
+    }
+
+    func testComplexMODPlayerControlsRuntimeEvidenceContractRejectsMissingAudioDMAEnable() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.modPlayerControlsBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            move.w     #$8201,$96(a6)       ; DMAEN + AUD0",
+            with: "            ; deliberately removed AUD0 DMA enable runtime evidence"
+        )
+        let result = AmigaRuntimeEvidenceContract.validateModPlayerControls(
+            source: brokenSource,
+            prompt: Self.modPlayerControlsBenchmarkPrompt
+        )
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.failures.contains { $0.contains("audio_dma_enable") }, result.failures.joined(separator: "\n"))
+    }
+
+    func testComplexMODPlayerControlsCompilesAndGeneratesBootableADF() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping complex MOD controls compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            print("Skipping complex MOD controls ADF test: xdftool not found at \(compiler.xdftoolPath)")
+            return
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.modPlayerControlsBenchmarkPrompt))
+        let compileResult = compileSource(source, compiler: compiler, description: "complex MOD controls template compiles")
+        XCTAssertTrue(compileResult.success, compileResult.output)
+
+        let targetADF = FileManager.default.temporaryDirectory
+            .appendingPathComponent("complex_mod_controls_\(UUID().uuidString).adf")
+        defer { try? FileManager.default.removeItem(at: targetADF) }
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: targetADF,
+            description: "complex MOD controls ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex MOD controls ADF generation failed:\n\(adfResult.output)")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+    }
+
+    func testComplexMODPlayerControlsStandaloneVAmigaRuntimeEvidenceWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_COMPLEX_MOD_VAMIGA_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_COMPLEX_MOD_VAMIGA_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_COMPLEX_MOD_VAMIGA_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_COMPLEX_MOD_VAMIGA_SMOKE=1 or create \(globalEnableFlagPath) to run the focused MOD controls vAmiga runtime evidence promotion.")
+        }
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: EmulatorService.shared.defaultVAmigaPath) else {
+            throw XCTSkip("vAmiga executable not found at \(EmulatorService.shared.defaultVAmigaPath)")
+        }
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") ?? strategicDefaultRomDirectory() else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or configure the app ROM directory before running focused MOD controls vAmiga validation.")
+        }
+
+        let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
+        guard vAmigaSmokeHardware(from: roms) != nil else {
+            throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in \(romDirectory).")
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.modPlayerControlsBenchmarkPrompt))
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.modPlayerControlsBenchmarkPrompt))
+        let contract = AmigaRuntimeEvidenceContract.validateModPlayerControls(
+            source: source,
+            prompt: Self.modPlayerControlsBenchmarkPrompt
+        )
+        XCTAssertTrue(contract.passed, "Runtime contract must pass before emulator validation: \(contract.failures.joined(separator: "; "))")
+
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/complex-mod-vamiga-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        let adfURL = artifactRoot.appendingPathComponent("mod-player-controls.adf")
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: adfURL,
+            description: "complex MOD controls vAmiga ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex MOD controls ADF generation failed:\n\(adfResult.output)")
+
+        let runtimeResult = try validateADFWithStandaloneVAmiga(
+            adfURL: adfURL,
+            match: match,
+            evalCase: PromptEvalCase(
+                level: .level3,
+                name: "complex MOD controls runtime evidence",
+                prompt: Self.modPlayerControlsBenchmarkPrompt,
+                expectedTemplateID: AmigaProgramFamilyRegistry.modPlayerControls.id,
+                markers: ["PlayMOD:", "StopMOD:", "AudioVolume:"],
+                expectsVisualEvidence: false
+            ),
+            expectation: "nonvisual",
+            romDirectory: romDirectory,
+            artifactRoot: artifactRoot
+        )
+
+        XCTAssertTrue(runtimeResult.success, "Focused MOD controls vAmiga runtime failed: \(runtimeResult.summary)")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: adfURL.path))
+        print("Focused MOD controls vAmiga runtime artifacts: \(artifactRoot.path)")
+    }
+
+    func testComplexMODPlayerControlsCorpusFollowUpChainPreservesModelAndCompiles() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+
+        let source = try modPlayerControlsCorpusFollowUpChainSource()
+        let model = try XCTUnwrap(AmigaSourceIndexer.index(source).model)
+
+        XCTAssertEqual(model.id, AmigaProgramFamilyRegistry.modPlayerControls.id)
+        XCTAssertTrue(model.controls.contains { $0.id == "play" && $0.action == "PlayMOD" })
+        XCTAssertTrue(model.controls.contains { $0.id == "stop" && $0.label == "Halt" && $0.action == "StopMOD" })
+        XCTAssertTrue(model.controls.contains { $0.id == "volume_up" && $0.action == "VolumeUp" })
+        XCTAssertTrue(model.controls.contains { $0.id == "pause" && $0.action == "PauseMOD" })
+        XCTAssertTrue(model.controls.contains { $0.id == "mute" && $0.action == "Mute" })
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "audio_volume" })?.initialValue, "48")
+        XCTAssertTrue(model.verificationExpectations.contains("Volume step is 4."))
+        XCTAssertTrue(model.verificationExpectations.contains("Playback period is 127."))
+        XCTAssertTrue(source.contains("move.w     #127,$a6(a6)         ; AUD0PER"))
+        XCTAssertTrue(source.contains(#"; @amiga:model control id=stop label="Halt" action=StopMOD"#))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: source), [])
+
+        let semantic = AssemblySemanticValidator.validate(
+            source: source,
+            prompt: Self.modPlayerControlsBenchmarkPrompt
+        )
+        XCTAssertTrue(semantic.passed, semantic.summary)
+
+        let runtimeContract = AmigaRuntimeEvidenceContract.validateModPlayerControls(
+            source: source,
+            prompt: Self.modPlayerControlsBenchmarkPrompt
+        )
+        XCTAssertTrue(runtimeContract.passed, runtimeContract.failures.joined(separator: "\n"))
+
+        let compileResult = compileSource(
+            source,
+            compiler: compiler,
+            description: "complex MOD controls corpus follow-up chain compiles"
+        )
+        XCTAssertTrue(compileResult.success, compileResult.output)
+    }
+
+    func testComplexMODPlayerControlsFollowUpChainStandaloneVAmigaRuntimeEvidenceWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_COMPLEX_MOD_FOLLOWUP_VAMIGA_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_COMPLEX_MOD_FOLLOWUP_VAMIGA_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_COMPLEX_MOD_FOLLOWUP_VAMIGA_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_COMPLEX_MOD_FOLLOWUP_VAMIGA_SMOKE=1 or create \(globalEnableFlagPath) to run the focused MOD controls follow-up-chain vAmiga runtime evidence promotion.")
+        }
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: EmulatorService.shared.defaultVAmigaPath) else {
+            throw XCTSkip("vAmiga executable not found at \(EmulatorService.shared.defaultVAmigaPath)")
+        }
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") ?? strategicDefaultRomDirectory() else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or configure the app ROM directory before running focused MOD controls follow-up-chain vAmiga validation.")
+        }
+
+        let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
+        guard vAmigaSmokeHardware(from: roms) != nil else {
+            throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in \(romDirectory).")
+        }
+
+        let source = try modPlayerControlsCorpusFollowUpChainSource()
+        let baseMatch = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.modPlayerControlsBenchmarkPrompt))
+        let match = AssistantPromptTemplateMatch(
+            id: baseMatch.id,
+            name: "\(baseMatch.name) follow-up chain",
+            source: source,
+            parameters: baseMatch.parameters.merging(["follow_up_chain": "terminal"]) { _, new in new }
+        )
+        let contract = AmigaRuntimeEvidenceContract.validateModPlayerControls(
+            source: source,
+            prompt: Self.modPlayerControlsBenchmarkPrompt
+        )
+        XCTAssertTrue(contract.passed, "Runtime contract must pass before emulator validation: \(contract.failures.joined(separator: "; "))")
+
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/complex-mod-followup-vamiga-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        let adfURL = artifactRoot.appendingPathComponent("mod-player-controls-followup-chain.adf")
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: adfURL,
+            description: "complex MOD controls follow-up-chain vAmiga ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex MOD controls follow-up-chain ADF generation failed:\n\(adfResult.output)")
+
+        let runtimeResult = try validateADFWithStandaloneVAmiga(
+            adfURL: adfURL,
+            match: match,
+            evalCase: PromptEvalCase(
+                level: .level3,
+                name: "complex MOD controls follow-up-chain runtime evidence",
+                prompt: Self.modPlayerControlsBenchmarkPrompt,
+                expectedTemplateID: AmigaProgramFamilyRegistry.modPlayerControls.id,
+                markers: ["PlayMOD:", "StopMOD:", "PauseMOD:", "MuteMOD:", "AudioVolume:"],
+                expectsVisualEvidence: false
+            ),
+            expectation: "nonvisual",
+            romDirectory: romDirectory,
+            artifactRoot: artifactRoot
+        )
+
+        XCTAssertTrue(runtimeResult.success, "Focused MOD controls follow-up-chain vAmiga runtime failed: \(runtimeResult.summary)")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: adfURL.path))
+        print("Focused MOD controls follow-up-chain vAmiga runtime artifacts: \(artifactRoot.path)")
+    }
+
+    func testComplexDoubleBufferedBitplaneBenchmarkRoutesToModelBackedTemplate() throws {
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.doubleBufferedBitplaneBenchmarkPrompt))
+        let index = AmigaSourceIndexer.index(match.source)
+        let model = try XCTUnwrap(index.model)
+
+        XCTAssertEqual(match.id, AmigaProgramFamilyRegistry.doubleBufferedBitplane.id)
+        XCTAssertEqual(match.parameters["frontColor"], "red")
+        XCTAssertEqual(match.parameters["backColor"], "green")
+        XCTAssertEqual(model.id, AmigaProgramFamilyRegistry.doubleBufferedBitplane.id)
+        XCTAssertTrue(model.hardware.contains(.bitplanes))
+        XCTAssertTrue(model.hardware.contains(.sprites))
+        XCTAssertTrue(model.hardware.contains(.copper))
+        XCTAssertTrue(model.hardware.contains(.cia))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: match.source), [])
+    }
+
+    func testComplexDoubleBufferedBitplaneRuntimeEvidenceContractCapturesObservableSignals() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.doubleBufferedBitplaneBenchmarkPrompt))
+        let result = AmigaRuntimeEvidenceContract.validateDoubleBufferedBitplane(
+            source: source,
+            prompt: Self.doubleBufferedBitplaneBenchmarkPrompt
+        )
+
+        XCTAssertTrue(result.passed, "Runtime evidence contract should pass. Failures:\n\(result.failures.joined(separator: "\n"))")
+        XCTAssertEqual(result.manifest.familyID, "double_buffered_bitplane_sprite_copper")
+        XCTAssertEqual(result.manifest.templateID, AmigaProgramFamilyRegistry.doubleBufferedBitplane.id)
+        XCTAssertEqual(result.manifest.emulatorCapture.backend, "vAmiga")
+        XCTAssertEqual(result.manifest.emulatorCapture.expectation, "motion-plus-register-trace")
+        XCTAssertTrue(result.manifest.sourceProofs.contains("front_buffer_pointer_swap"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("back_buffer_pointer_swap"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("owned_copper_bitplane_sprite_palette"))
+        XCTAssertTrue(result.manifest.sourceProofs.contains("sprite_pointer_setup"))
+
+        let json = try AmigaRuntimeEvidenceContract.manifestJSON(result.manifest)
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoded = try JSONDecoder().decode(AmigaRuntimeEvidenceManifest.self, from: data)
+        XCTAssertEqual(decoded, result.manifest)
+    }
+
+    func testComplexDoubleBufferedBitplaneRuntimeEvidenceContractRejectsMissingSpriteOverlay() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.doubleBufferedBitplaneBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            move.l     a4,$120(a6)          ; SPR0PT",
+            with: "            ; deliberately removed SPR0PT runtime evidence"
+        )
+        let result = AmigaRuntimeEvidenceContract.validateDoubleBufferedBitplane(
+            source: brokenSource,
+            prompt: Self.doubleBufferedBitplaneBenchmarkPrompt
+        )
+
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.failures.contains { $0.contains("sprite_pointer_setup") }, result.failures.joined(separator: "\n"))
+    }
+
+    func testComplexDoubleBufferedBitplaneCompilesAndGeneratesBootableADF() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping complex double-buffered bitplane compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            print("Skipping complex double-buffered bitplane ADF test: xdftool not found at \(compiler.xdftoolPath)")
+            return
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.doubleBufferedBitplaneBenchmarkPrompt))
+        let compileResult = compileSource(source, compiler: compiler, description: "complex double-buffered bitplane template compiles")
+        XCTAssertTrue(compileResult.success, compileResult.output)
+
+        let targetADF = FileManager.default.temporaryDirectory
+            .appendingPathComponent("complex_double_buffered_bitplane_\(UUID().uuidString).adf")
+        defer { try? FileManager.default.removeItem(at: targetADF) }
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: targetADF,
+            description: "complex double-buffered bitplane ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex double-buffered bitplane ADF generation failed:\n\(adfResult.output)")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+    }
+
+    func testComplexDoubleBufferedBitplaneStandaloneVAmigaRuntimeEvidenceWhenEnabled() throws {
+        let enableFlagPath = FileManager.default.temporaryDirectory.appendingPathComponent("AMIGA_RUN_COMPLEX_DOUBLE_BUFFER_VAMIGA_SMOKE").path
+        let globalEnableFlagPath = "/private/tmp/AMIGA_RUN_COMPLEX_DOUBLE_BUFFER_VAMIGA_SMOKE"
+        let isEnabled = ProcessInfo.processInfo.environment["AMIGA_RUN_COMPLEX_DOUBLE_BUFFER_VAMIGA_SMOKE"] == "1"
+            || FileManager.default.fileExists(atPath: enableFlagPath)
+            || FileManager.default.fileExists(atPath: globalEnableFlagPath)
+        guard isEnabled else {
+            throw XCTSkip("Set AMIGA_RUN_COMPLEX_DOUBLE_BUFFER_VAMIGA_SMOKE=1 or create \(globalEnableFlagPath) to run the focused double-buffered bitplane vAmiga runtime evidence promotion.")
+        }
+
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            throw XCTSkip("VASM compiler not found at \(compiler.vasmPath)")
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            throw XCTSkip("xdftool not found at \(compiler.xdftoolPath)")
+        }
+        guard FileManager.default.fileExists(atPath: EmulatorService.shared.defaultVAmigaPath) else {
+            throw XCTSkip("vAmiga executable not found at \(EmulatorService.shared.defaultVAmigaPath)")
+        }
+        guard let romDirectory = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ROM_DIR", fileName: "AMIGA_SMOKE_ROM_DIR") ?? strategicDefaultRomDirectory() else {
+            throw XCTSkip("Set AMIGA_SMOKE_ROM_DIR or configure the app ROM directory before running focused double-buffered bitplane vAmiga validation.")
+        }
+
+        let roms = EmulatorService.shared.getAvailableRoms(in: romDirectory)
+        guard vAmigaSmokeHardware(from: roms) != nil else {
+            throw XCTSkip("No vAmiga-compatible A500/A500+ Kickstart ROM was found in \(romDirectory).")
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.doubleBufferedBitplaneBenchmarkPrompt))
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: Self.doubleBufferedBitplaneBenchmarkPrompt))
+        let contract = AmigaRuntimeEvidenceContract.validateDoubleBufferedBitplane(
+            source: source,
+            prompt: Self.doubleBufferedBitplaneBenchmarkPrompt
+        )
+        XCTAssertTrue(contract.passed, "Runtime contract must pass before emulator validation: \(contract.failures.joined(separator: "; "))")
+
+        let artifactBasePath = runtimeSmokeValue(envKey: "AMIGA_SMOKE_ARTIFACT_DIR", fileName: "AMIGA_SMOKE_ARTIFACT_DIR") ?? NSTemporaryDirectory()
+        let artifactRoot = URL(fileURLWithPath: artifactBasePath, isDirectory: true)
+            .appendingPathComponent("AmigaPlayground/complex-double-buffer-vamiga-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: artifactRoot, withIntermediateDirectories: true)
+
+        let adfURL = artifactRoot.appendingPathComponent("double-buffer-bitplane.adf")
+        let adfResult = generateADF(
+            source: source,
+            compiler: compiler,
+            targetADF: adfURL,
+            description: "complex double-buffered bitplane vAmiga ADF"
+        )
+        XCTAssertTrue(adfResult.success, "Complex double-buffered bitplane ADF generation failed:\n\(adfResult.output)")
+
+        let runtimeResult = try validateADFWithStandaloneVAmiga(
+            adfURL: adfURL,
+            match: match,
+            evalCase: PromptEvalCase(
+                level: .level3,
+                name: "complex double-buffered bitplane runtime evidence",
+                prompt: Self.doubleBufferedBitplaneBenchmarkPrompt,
+                expectedTemplateID: AmigaProgramFamilyRegistry.doubleBufferedBitplane.id,
+                markers: ["CopperList:", "SpriteData:", "PatchCopperBitplane:"],
+                expectsVisualEvidence: true
+            ),
+            expectation: "motion",
+            romDirectory: romDirectory,
+            artifactRoot: artifactRoot
+        )
+
+        XCTAssertTrue(runtimeResult.success, "Focused double-buffered bitplane vAmiga runtime failed: \(runtimeResult.summary)")
+        XCTAssertGreaterThan(runtimeResult.nonBlackPixels, 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: adfURL.path))
+        print("Focused double-buffered bitplane vAmiga runtime artifacts: \(artifactRoot.path)")
+    }
+
+    func testComplexBlitterBOBRejectedFollowUpsDoNotRouteToFreeFormMutation() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+
+        for prompt in [
+            "start the blitter without waiting",
+            "move outside the screen bounds",
+            "use a negative blit size",
+            "remove the mask but keep masked collision"
+        ] {
+            let route = AssistantPromptRouter.route(prompt: prompt, source: source, isSelfCorrection: false)
+            switch route {
+            case .structuredModelPatch(.rejected(let reasons)):
+                XCTAssertFalse(reasons.isEmpty, "\(prompt) should explain why it was rejected")
+            default:
+                XCTFail("\(prompt) should be a structured rejection, got \(route)")
+            }
+            XCTAssertEqual(source, try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt)))
+        }
+    }
+
+    func testComplexBlitterBOBRepairSeedDetectsMissingPostBlitWait() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: """
+            .waitAfter:
+                        btst       #6,$02(a6)
+                        bne.s      .waitAfter
+            """,
+            with: """
+            .waitAfter:
+                        ; deliberately removed post-BLTSIZE wait for repair-seed validation
+            """
+        )
+        let result = AssemblySemanticValidator.validate(source: brokenSource, prompt: Self.blitterBOBCollisionBenchmarkPrompt)
+
+        XCTAssertNotEqual(brokenSource, source)
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.failures.contains("missing blitter wait after BLTSIZE"), result.summary)
+    }
+
+    func testComplexBlitterBOBRepairSeedDetectsMissingRightBoundsClamp() throws {
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        let brokenSource = source.replacingOccurrences(
+            of: "            cmp.w      #288,d0",
+            with: "            ; deliberately removed right-edge clamp compare"
+        )
+        let result = AssemblySemanticValidator.validate(source: brokenSource, prompt: Self.blitterBOBCollisionBenchmarkPrompt)
+
+        XCTAssertNotEqual(brokenSource, source)
+        XCTAssertFalse(result.passed)
+        XCTAssertTrue(result.failures.contains("missing bounds clamp #288"), result.summary)
+    }
+
+    func testAssistantPromptTemplateComplexBlitterBOBCollisionCompiles() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping complex blitter BOB compilation test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        let expectation = self.expectation(description: "complex blitter BOB benchmark compiles")
+
+        compiler.compile(assemblyCode: source) { success, output in
+            XCTAssertTrue(success, "Complex blitter BOB compilation failed:\n\(output)")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 5.0)
+    }
+
+    func testAssistantPromptTemplateComplexBlitterBOBCollisionGeneratesBootableADF() throws {
+        let compiler = CompilerService.shared
+        guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
+            print("Skipping complex blitter BOB ADF test: VASM compiler not found at \(compiler.vasmPath)")
+            return
+        }
+        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
+            print("Skipping complex blitter BOB ADF test: xdftool not found at \(compiler.xdftoolPath)")
+            return
+        }
+
+        let source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        let targetADF = FileManager.default.temporaryDirectory
+            .appendingPathComponent("complex_blitter_bob_\(UUID().uuidString).adf")
+        let expectation = self.expectation(description: "complex blitter BOB benchmark generates bootable ADF")
+
+        compiler.generateBootableADF(assemblyCode: source, targetADFPath: targetADF.path) { success, output in
+            XCTAssertTrue(success, "Complex blitter BOB ADF generation failed:\n\(output)")
+            XCTAssertTrue(FileManager.default.fileExists(atPath: targetADF.path))
+            if let attributes = try? FileManager.default.attributesOfItem(atPath: targetADF.path),
+               let size = attributes[.size] as? NSNumber {
+                XCTAssertGreaterThan(size.intValue, 0)
+            } else {
+                XCTFail("Could not read generated ADF size for complex blitter BOB benchmark")
+            }
+            try? FileManager.default.removeItem(at: targetADF)
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 10.0)
+    }
+
+    func testComplexAmigaBenchmarkRecordsBindBlitterBOBToExecutableTemplate() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let amilaRoot = testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let recordsURL = amilaRoot
+            .appendingPathComponent("fine_tuning")
+            .appendingPathComponent("complex_amiga_benchmark_records.jsonl")
+        let lines = try String(contentsOf: recordsURL, encoding: .utf8)
+            .split(separator: "\n")
+            .map(String.init)
+        let records = try lines.map { line -> [String: Any] in
+            let data = try XCTUnwrap(line.data(using: .utf8))
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+        let blitterFirstShot = try XCTUnwrap(records.first {
+            $0["record_id"] as? String == "blitter_bob_collision_bounds::first_shot"
+        })
+        let messages = try XCTUnwrap(blitterFirstShot["messages"] as? [[String: String]])
+        let prompt = try XCTUnwrap(messages.last?["content"])
+        let executableProof = try XCTUnwrap(blitterFirstShot["executable_proof"] as? [String: Any])
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: prompt))
+
+        XCTAssertEqual(prompt, Self.blitterBOBCollisionBenchmarkPrompt)
+        XCTAssertEqual(executableProof["status"] as? String, "initial_executable_seed")
+        XCTAssertEqual(executableProof["template_id"] as? String, "blitter-bob-collision-bounds")
+        XCTAssertEqual(match.id, "blitter-bob-collision-bounds")
+    }
+
+    func testComplexAmigaBenchmarkRecordsBindMODControlsToExecutableTemplate() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let amilaRoot = testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let recordsURL = amilaRoot
+            .appendingPathComponent("fine_tuning")
+            .appendingPathComponent("complex_amiga_benchmark_records.jsonl")
+        let lines = try String(contentsOf: recordsURL, encoding: .utf8)
+            .split(separator: "\n")
+            .map(String.init)
+        let records = try lines.map { line -> [String: Any] in
+            let data = try XCTUnwrap(line.data(using: .utf8))
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+        let firstShot = try XCTUnwrap(records.first {
+            $0["record_id"] as? String == "mod_player_controls_complex::first_shot"
+        })
+        let messages = try XCTUnwrap(firstShot["messages"] as? [[String: String]])
+        let prompt = try XCTUnwrap(messages.last?["content"])
+        let executableProof = try XCTUnwrap(firstShot["executable_proof"] as? [String: Any])
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: prompt))
+
+        XCTAssertEqual(prompt, Self.modPlayerControlsBenchmarkPrompt)
+        XCTAssertEqual(executableProof["status"] as? String, "initial_executable_seed")
+        XCTAssertEqual(executableProof["template_id"] as? String, AmigaProgramFamilyRegistry.modPlayerControls.id)
+        XCTAssertEqual(match.id, AmigaProgramFamilyRegistry.modPlayerControls.id)
+    }
+
+    func testComplexAmigaBenchmarkRecordsBindCopperRasterToExecutableTemplate() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let amilaRoot = testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let recordsURL = amilaRoot
+            .appendingPathComponent("fine_tuning")
+            .appendingPathComponent("complex_amiga_benchmark_records.jsonl")
+        let lines = try String(contentsOf: recordsURL, encoding: .utf8)
+            .split(separator: "\n")
+            .map(String.init)
+        let records = try lines.map { line -> [String: Any] in
+            let data = try XCTUnwrap(line.data(using: .utf8))
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+        let firstShot = try XCTUnwrap(records.first {
+            $0["record_id"] as? String == "copper_runtime_raster_validation::first_shot"
+        })
+        let messages = try XCTUnwrap(firstShot["messages"] as? [[String: String]])
+        let prompt = try XCTUnwrap(messages.last?["content"])
+        let executableProof = try XCTUnwrap(firstShot["executable_proof"] as? [String: Any])
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: prompt))
+
+        XCTAssertEqual(prompt, Self.copperRuntimeRasterBenchmarkPrompt)
+        XCTAssertEqual(executableProof["status"] as? String, "initial_executable_seed")
+        XCTAssertEqual(executableProof["template_id"] as? String, "bouncing-copper-bars")
+        XCTAssertEqual(match.id, "bouncing-copper-bars")
+    }
+
+    func testComplexAmigaBenchmarkRecordsBindMouseSpriteMultiplexToExecutableTemplate() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let amilaRoot = testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let recordsURL = amilaRoot
+            .appendingPathComponent("fine_tuning")
+            .appendingPathComponent("complex_amiga_benchmark_records.jsonl")
+        let lines = try String(contentsOf: recordsURL, encoding: .utf8)
+            .split(separator: "\n")
+            .map(String.init)
+        let records = try lines.map { line -> [String: Any] in
+            let data = try XCTUnwrap(line.data(using: .utf8))
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+        let firstShot = try XCTUnwrap(records.first {
+            $0["record_id"] as? String == "mouse_sprite_multiplex::first_shot"
+        })
+        let messages = try XCTUnwrap(firstShot["messages"] as? [[String: String]])
+        let prompt = try XCTUnwrap(messages.last?["content"])
+        let executableProof = try XCTUnwrap(firstShot["executable_proof"] as? [String: Any])
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: prompt))
+
+        XCTAssertEqual(prompt, Self.mouseSpriteMultiplexBenchmarkPrompt)
+        XCTAssertEqual(executableProof["status"] as? String, "initial_executable_seed")
+        XCTAssertEqual(executableProof["template_id"] as? String, "mouse-sprite-multiplex")
+        XCTAssertEqual(match.id, "mouse-sprite-multiplex")
+    }
+
+    func testComplexAmigaBenchmarkRecordsBindDoubleBufferedBitplaneToExecutableTemplate() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let amilaRoot = testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let recordsURL = amilaRoot
+            .appendingPathComponent("fine_tuning")
+            .appendingPathComponent("complex_amiga_benchmark_records.jsonl")
+        let lines = try String(contentsOf: recordsURL, encoding: .utf8)
+            .split(separator: "\n")
+            .map(String.init)
+        let records = try lines.map { line -> [String: Any] in
+            let data = try XCTUnwrap(line.data(using: .utf8))
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+        let firstShot = try XCTUnwrap(records.first {
+            $0["record_id"] as? String == "double_buffered_bitplane_sprite_copper::first_shot"
+        })
+        let messages = try XCTUnwrap(firstShot["messages"] as? [[String: String]])
+        let prompt = try XCTUnwrap(messages.last?["content"])
+        let executableProof = try XCTUnwrap(firstShot["executable_proof"] as? [String: Any])
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: prompt))
+
+        XCTAssertEqual(prompt, Self.doubleBufferedBitplaneBenchmarkPrompt)
+        XCTAssertEqual(executableProof["status"] as? String, "initial_executable_seed")
+        XCTAssertEqual(executableProof["template_id"] as? String, AmigaProgramFamilyRegistry.doubleBufferedBitplane.id)
+        XCTAssertEqual(match.id, AmigaProgramFamilyRegistry.doubleBufferedBitplane.id)
+    }
+
+    func testComplexAmigaBenchmarkRecordsBindCleanTakeoverToExecutableTemplate() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let amilaRoot = testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let recordsURL = amilaRoot
+            .appendingPathComponent("fine_tuning")
+            .appendingPathComponent("complex_amiga_benchmark_records.jsonl")
+        let lines = try String(contentsOf: recordsURL, encoding: .utf8)
+            .split(separator: "\n")
+            .map(String.init)
+        let records = try lines.map { line -> [String: Any] in
+            let data = try XCTUnwrap(line.data(using: .utf8))
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+        let firstShot = try XCTUnwrap(records.first {
+            $0["record_id"] as? String == "clean_takeover_restore::first_shot"
+        })
+        let messages = try XCTUnwrap(firstShot["messages"] as? [[String: String]])
+        let prompt = try XCTUnwrap(messages.last?["content"])
+        let executableProof = try XCTUnwrap(firstShot["executable_proof"] as? [String: Any])
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: prompt))
+
+        XCTAssertEqual(prompt, Self.cleanTakeoverRestoreBenchmarkPrompt)
+        XCTAssertEqual(executableProof["status"] as? String, "initial_executable_seed")
+        XCTAssertEqual(executableProof["template_id"] as? String, "clean-takeover")
+        XCTAssertEqual(match.id, "clean-takeover")
+    }
+
+    func testComplexAmigaBenchmarkRecordsBindIntuitionWindowToolToExecutableTemplate() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let amilaRoot = testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let recordsURL = amilaRoot
+            .appendingPathComponent("fine_tuning")
+            .appendingPathComponent("complex_amiga_benchmark_records.jsonl")
+        let lines = try String(contentsOf: recordsURL, encoding: .utf8)
+            .split(separator: "\n")
+            .map(String.init)
+        let records = try lines.map { line -> [String: Any] in
+            let data = try XCTUnwrap(line.data(using: .utf8))
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+        let firstShot = try XCTUnwrap(records.first {
+            $0["record_id"] as? String == "intuition_window_tool::first_shot"
+        })
+        let messages = try XCTUnwrap(firstShot["messages"] as? [[String: String]])
+        let prompt = try XCTUnwrap(messages.last?["content"])
+        let executableProof = try XCTUnwrap(firstShot["executable_proof"] as? [String: Any])
+        let match = try XCTUnwrap(AssistantPromptTemplate.match(for: prompt))
+
+        XCTAssertEqual(prompt, Self.intuitionWindowToolBenchmarkPrompt)
+        XCTAssertEqual(executableProof["status"] as? String, "initial_executable_seed")
+        XCTAssertEqual(executableProof["template_id"] as? String, "intuition-window-tool")
+        XCTAssertEqual(match.id, "intuition-window-tool")
+    }
+
+    func testComplexAmigaBenchmarkCorpusExecutableProofsCoverRequiredGates() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let amilaRoot = testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let corpusURL = amilaRoot
+            .appendingPathComponent("fine_tuning")
+            .appendingPathComponent("complex_amiga_benchmark_corpus.json")
+        let data = try Data(contentsOf: corpusURL)
+        let corpus = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let requiredGates = Set(try XCTUnwrap(corpus["required_gates"] as? [String]))
+        let families = try XCTUnwrap(corpus["benchmark_families"] as? [[String: Any]])
+
+        XCTAssertEqual(families.count, 7)
+        for family in families {
+            let familyID = try XCTUnwrap(family["id"] as? String)
+            let proof = try XCTUnwrap(family["executable_proof"] as? [String: Any], "\(familyID) missing executable proof")
+            let verifiedGates = Set(try XCTUnwrap(proof["verified_gates"] as? [String], "\(familyID) missing verified gates"))
+            let repairSeeds = try XCTUnwrap(family["repair_seeds"] as? [[String: Any]], "\(familyID) missing repair seeds")
+            let repairSeedKinds = Set(repairSeeds.compactMap { $0["failure_kind"] as? String })
+            let verifiedRepairSeeds = Set(try XCTUnwrap(proof["verified_repair_seeds"] as? [String], "\(familyID) missing verified repair seeds"))
+            let runtimeContract = try XCTUnwrap(proof["runtime_evidence_contract"] as? [String: Any], "\(familyID) missing runtime evidence contract")
+            let proofTests = Set(try XCTUnwrap(proof["proof_tests"] as? [String], "\(familyID) missing proof tests"))
+            let sourceProofTest = try XCTUnwrap(runtimeContract["source_proof_test"] as? String, "\(familyID) missing source proof test")
+            let negativeProofTest = try XCTUnwrap(runtimeContract["negative_proof_test"] as? String, "\(familyID) missing negative proof test")
+            let promotionTest = try XCTUnwrap(runtimeContract["emulator_artifact_promotion_test"] as? String, "\(familyID) missing promotion test")
+
+            XCTAssertEqual(verifiedGates, requiredGates, "\(familyID) executable proof does not cover every required gate")
+            XCTAssertEqual(verifiedRepairSeeds, repairSeedKinds, "\(familyID) repair-loop proof does not cover every repair seed")
+            XCTAssertTrue(proofTests.contains(sourceProofTest), "\(familyID) source proof test is not listed in proof_tests")
+            XCTAssertTrue(proofTests.contains(negativeProofTest), "\(familyID) negative proof test is not listed in proof_tests")
+            XCTAssertTrue(proofTests.contains(promotionTest), "\(familyID) promotion test is not listed in proof_tests")
+        }
+    }
+
+    func testComplexAmigaBenchmarkRepairRecordsDeclareNarrowRepairContracts() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let amilaRoot = testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let recordsURL = amilaRoot
+            .appendingPathComponent("fine_tuning")
+            .appendingPathComponent("complex_amiga_benchmark_records.jsonl")
+        let lines = try String(contentsOf: recordsURL, encoding: .utf8)
+            .split(separator: "\n")
+            .map(String.init)
+        let records = try lines.map { line -> [String: Any] in
+            let data = try XCTUnwrap(line.data(using: .utf8))
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+        let repairRecords = records.filter { $0["record_type"] as? String == "repair_seed" }
+
+        XCTAssertEqual(repairRecords.count, 14)
+        for record in repairRecords {
+            let recordID = try XCTUnwrap(record["record_id"] as? String)
+            let failureKind = try XCTUnwrap(record["failure_kind"] as? String, "\(recordID) missing failure kind")
+            let requiredGates = try XCTUnwrap(record["required_gates"] as? [String], "\(recordID) missing gates")
+            let contract = try XCTUnwrap(record["repair_attempt_contract"] as? [String: Any], "\(recordID) missing repair contract")
+            let brokenVariant = try XCTUnwrap(contract["broken_variant"] as? [String: Any], "\(recordID) missing broken variant contract")
+            let repairScope = try XCTUnwrap(contract["repair_scope"] as? [String: Any], "\(recordID) missing repair scope")
+            let postRepair = try XCTUnwrap(contract["post_repair_verification"] as? [String: Any], "\(recordID) missing post-repair verification")
+            let trainingUse = try XCTUnwrap(contract["training_use"] as? [String: Any], "\(recordID) missing training use")
+            let forbiddenChanges = try XCTUnwrap(repairScope["forbidden_changes"] as? [String], "\(recordID) missing forbidden changes")
+            let postRepairGates = try XCTUnwrap(postRepair["required_gates"] as? [String], "\(recordID) missing post-repair gates")
+            let proofTests = try XCTUnwrap(postRepair["family_proof_tests"] as? [String], "\(recordID) missing family proof tests")
+            let preferenceOrder = try XCTUnwrap(trainingUse["preference_order"] as? [String], "\(recordID) missing preference order")
+
+            XCTAssertEqual(brokenVariant["failure_kind"] as? String, failureKind, "\(recordID) contract failure kind drifted")
+            XCTAssertEqual(brokenVariant["must_fail_before_repair"] as? Bool, true, "\(recordID) must fail before repair")
+            XCTAssertEqual(repairScope["allowed_change"] as? String, "narrow_patch_only", "\(recordID) repair must be narrow")
+            XCTAssertGreaterThanOrEqual(forbiddenChanges.count, 3, "\(recordID) should forbid broad rewrites explicitly")
+            XCTAssertEqual(postRepairGates, requiredGates, "\(recordID) post-repair gates must match corpus gates")
+            XCTAssertEqual(postRepair["must_remain_in_verified_repair_seeds"] as? Bool, true, "\(recordID) repair seed must be verified")
+            XCTAssertNotNil(postRepair["runtime_evidence_contract"] as? [String: Any], "\(recordID) needs runtime evidence contract")
+            XCTAssertFalse(proofTests.isEmpty, "\(recordID) needs proof-test references")
+            XCTAssertEqual(preferenceOrder.first, "passes_all_gates", "\(recordID) must prefer fully verified repairs")
+        }
+    }
+
+    func testComplexAmigaBenchmarkRepairLoopExamplesAreVerifierGrounded() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let amilaRoot = testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let examplesURL = amilaRoot
+            .appendingPathComponent("fine_tuning")
+            .appendingPathComponent("complex_amiga_repair_loop_examples.jsonl")
+        let lines = try String(contentsOf: examplesURL, encoding: .utf8)
+            .split(separator: "\n")
+            .map(String.init)
+        let examples = try lines.map { line -> [String: Any] in
+            let data = try XCTUnwrap(line.data(using: .utf8))
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+
+        XCTAssertEqual(examples.count, 14)
+        for example in examples {
+            let exampleID = try XCTUnwrap(example["example_id"] as? String)
+            let requiredGates = try XCTUnwrap(example["post_repair_verification"] as? [String: Any])["required_gates"] as? [String]
+            let brokenVariant = try XCTUnwrap(example["broken_variant"] as? [String: Any], "\(exampleID) missing broken variant")
+            let diagnostic = try XCTUnwrap(example["diagnostic_evidence"] as? [String: Any], "\(exampleID) missing diagnostic evidence")
+            let repairAttempt = try XCTUnwrap(example["repair_attempt"] as? [String: Any], "\(exampleID) missing repair attempt")
+            let postRepair = try XCTUnwrap(example["post_repair_verification"] as? [String: Any], "\(exampleID) missing post-repair verification")
+            let runtimeContract = try XCTUnwrap(postRepair["runtime_evidence_contract"] as? [String: Any], "\(exampleID) missing runtime contract")
+            let trainingLabels = try XCTUnwrap(example["training_labels"] as? [String: Any], "\(exampleID) missing training labels")
+            let proofTests = try XCTUnwrap(diagnostic["family_proof_tests"] as? [String], "\(exampleID) missing proof tests")
+            let adapterTags = try XCTUnwrap(trainingLabels["adapter_tags"] as? [String], "\(exampleID) missing adapter tags")
+            let preferenceOrder = try XCTUnwrap(trainingLabels["preference_order"] as? [String], "\(exampleID) missing preference order")
+
+            XCTAssertEqual(example["record_type"] as? String, "repair_loop_example", "\(exampleID) wrong record type")
+            XCTAssertEqual(brokenVariant["must_fail_before_repair"] as? Bool, true, "\(exampleID) must fail before repair")
+            XCTAssertEqual(diagnostic["failure_is_verified_repair_seed"] as? Bool, true, "\(exampleID) must map to verified seed")
+            XCTAssertNotNil(diagnostic["negative_proof_test"] as? String, "\(exampleID) missing negative proof test")
+            XCTAssertFalse(proofTests.isEmpty, "\(exampleID) needs family proof tests")
+            XCTAssertEqual(repairAttempt["allowed_change"] as? String, "narrow_patch_only", "\(exampleID) repair must be narrow")
+            XCTAssertEqual(postRepair["accepted_repair_outcome"] as? String, "passes_all_required_gates", "\(exampleID) must require all gates")
+            XCTAssertEqual(requiredGates?.count, 9, "\(exampleID) should cover every required gate")
+            XCTAssertNotNil(runtimeContract["source_proof_test"] as? String, "\(exampleID) missing source proof")
+            XCTAssertNotNil(postRepair["emulator_artifact_promotion_test"] as? String, "\(exampleID) missing promotion proof")
+            XCTAssertFalse(adapterTags.isEmpty, "\(exampleID) needs adapter tags")
+            XCTAssertEqual(preferenceOrder.first, "passes_all_gates", "\(exampleID) must prefer fully verified output")
+        }
+    }
+
+    func testComplexAmigaBenchmarkRepairProofsCoverBeforeAfterGateMatrix() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let amilaRoot = testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let proofsURL = amilaRoot
+            .appendingPathComponent("fine_tuning")
+            .appendingPathComponent("complex_amiga_repair_proofs.jsonl")
+        let lines = try String(contentsOf: proofsURL, encoding: .utf8)
+            .split(separator: "\n")
+            .map(String.init)
+        let proofs = try lines.map { line -> [String: Any] in
+            let data = try XCTUnwrap(line.data(using: .utf8))
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+
+        XCTAssertEqual(proofs.count, 14)
+        for proof in proofs {
+            let proofID = try XCTUnwrap(proof["proof_id"] as? String)
+            let before = try XCTUnwrap(proof["before_repair_gate_evidence"] as? [String: Any], "\(proofID) missing before evidence")
+            let patchPolicy = try XCTUnwrap(proof["repair_patch_policy"] as? [String: Any], "\(proofID) missing repair policy")
+            let after = try XCTUnwrap(proof["after_repair_gate_evidence"] as? [String: Any], "\(proofID) missing after evidence")
+            let matrix = try XCTUnwrap(proof["gate_matrix"] as? [[String: Any]], "\(proofID) missing gate matrix")
+            let requiredGates = try XCTUnwrap(after["required_gates"] as? [String], "\(proofID) missing required gates")
+            let qualityBar = try XCTUnwrap(proof["quality_bar"] as? [String: Any], "\(proofID) missing quality bar")
+            let trainingUse = try XCTUnwrap(proof["training_use"] as? [String: Any], "\(proofID) missing training use")
+            let preferenceOrder = try XCTUnwrap(trainingUse["preference_order"] as? [String], "\(proofID) missing preference order")
+            let matrixGates = try matrix.map { row -> String in
+                try XCTUnwrap(row["gate"] as? String, "\(proofID) gate matrix row missing gate")
+            }
+
+            XCTAssertEqual(proof["record_type"] as? String, "repair_loop_proof", "\(proofID) wrong record type")
+            XCTAssertEqual(requiredGates.count, 9, "\(proofID) should cover every required gate")
+            XCTAssertEqual(matrixGates, requiredGates, "\(proofID) gate matrix should match required gate order")
+            XCTAssertEqual(before["must_fail"] as? Bool, true, "\(proofID) broken variant must fail before repair")
+            XCTAssertEqual(before["failure_is_verified_repair_seed"] as? Bool, true, "\(proofID) failure must be verified")
+            XCTAssertNotNil(before["expected_diagnostic"] as? String, "\(proofID) needs expected diagnostic")
+            XCTAssertNotNil(before["negative_proof_test"] as? String, "\(proofID) needs negative proof test")
+            XCTAssertEqual(patchPolicy["allowed_change"] as? String, "narrow_patch_only", "\(proofID) repair must be narrow")
+            XCTAssertEqual(patchPolicy["preserve_existing_behavior"] as? Bool, true, "\(proofID) must preserve behavior")
+            XCTAssertEqual(patchPolicy["preserve_structured_model_identity"] as? Bool, true, "\(proofID) must preserve model identity")
+            XCTAssertEqual(after["must_pass"] as? Bool, true, "\(proofID) repaired artifact must pass")
+            XCTAssertEqual(after["accepted_repair_outcome"] as? String, "passes_all_required_gates", "\(proofID) must require all gates")
+            XCTAssertNotNil(after["runtime_evidence_contract"] as? [String: Any], "\(proofID) needs runtime evidence contract")
+            XCTAssertNotNil(after["source_proof_test"] as? String, "\(proofID) needs source proof")
+            XCTAssertNotNil(after["emulator_artifact_promotion_test"] as? String, "\(proofID) needs emulator proof")
+            XCTAssertTrue(qualityBar.values.allSatisfy { ($0 as? Bool) == true }, "\(proofID) quality bar must reject weak repair outcomes")
+            XCTAssertEqual(preferenceOrder.first, "passes_all_gates", "\(proofID) must prefer fully verified repairs")
+
+            for row in matrix {
+                let gate = try XCTUnwrap(row["gate"] as? String, "\(proofID) gate matrix row missing gate")
+                let beforeGate = try XCTUnwrap(row["before_repair"] as? [String: Any], "\(proofID) \(gate) missing before gate state")
+                let afterGate = try XCTUnwrap(row["after_repair"] as? [String: Any], "\(proofID) \(gate) missing after gate state")
+                if gate == "repair_loop" {
+                    XCTAssertEqual(beforeGate["status"] as? String, "fails_expected_diagnostic", "\(proofID) repair loop must fail before repair")
+                }
+                XCTAssertEqual(afterGate["status"] as? String, "required_pass", "\(proofID) \(gate) must pass after repair")
+                XCTAssertNotNil(beforeGate["evidence"] as? String, "\(proofID) \(gate) needs before evidence")
+                XCTAssertNotNil(afterGate["evidence"] as? String, "\(proofID) \(gate) needs after evidence")
+            }
+        }
+    }
+
+    func testComplexAmigaBenchmarkRepairExecutionMatrixBindsProofsToSwiftTests() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let amilaRoot = testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let matrixURL = amilaRoot
+            .appendingPathComponent("fine_tuning")
+            .appendingPathComponent("complex_amiga_repair_execution_matrix.jsonl")
+        let lines = try String(contentsOf: matrixURL, encoding: .utf8)
+            .split(separator: "\n")
+            .map(String.init)
+        let rows = try lines.map { line -> [String: Any] in
+            let data = try XCTUnwrap(line.data(using: .utf8))
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+
+        XCTAssertEqual(rows.count, 14)
+        for row in rows {
+            let executionID = try XCTUnwrap(row["execution_id"] as? String)
+            let before = try XCTUnwrap(row["before_repair_execution"] as? [String: Any], "\(executionID) missing before execution")
+            let after = try XCTUnwrap(row["after_repair_execution"] as? [String: Any], "\(executionID) missing after execution")
+            let commandPlan = try XCTUnwrap(row["command_plan"] as? [String: Any], "\(executionID) missing command plan")
+            let diagnosticTest = try XCTUnwrap(before["diagnostic_proof_test"] as? String, "\(executionID) missing diagnostic test")
+            let diagnosticFilter = try XCTUnwrap(before["diagnostic_swift_filter"] as? String, "\(executionID) missing diagnostic filter")
+            let runtimeNegativeTest = try XCTUnwrap(before["runtime_negative_test"] as? String, "\(executionID) missing runtime negative test")
+            let sourceProofTest = try XCTUnwrap(after["source_proof_test"] as? String, "\(executionID) missing source proof test")
+            let promotionTest = try XCTUnwrap(after["emulator_artifact_promotion_test"] as? String, "\(executionID) missing promotion test")
+            let familyProofTests = try XCTUnwrap(after["family_proof_tests"] as? [String], "\(executionID) missing family proof tests")
+            let fastTests = try XCTUnwrap(commandPlan["fast_tests"] as? [String], "\(executionID) missing fast tests")
+            let fastCommand = try XCTUnwrap(commandPlan["fast_command"] as? [String], "\(executionID) missing fast command")
+            let fullTests = try XCTUnwrap(commandPlan["full_non_promotion_tests"] as? [String], "\(executionID) missing full tests")
+            let fullCommand = try XCTUnwrap(commandPlan["full_non_promotion_command"] as? [String], "\(executionID) missing full command")
+
+            XCTAssertEqual(row["record_type"] as? String, "repair_execution_matrix", "\(executionID) wrong record type")
+            XCTAssertEqual(before["expected_test_result"] as? String, "pass_when_negative_diagnostic_is_observed", "\(executionID) wrong before-repair result")
+            XCTAssertEqual(diagnosticFilter, "AmigaPlaygroundTests/\(diagnosticTest)", "\(executionID) diagnostic filter drifted")
+            XCTAssertTrue(familyProofTests.contains(diagnosticTest), "\(executionID) diagnostic test must be in family proof tests")
+            XCTAssertTrue(familyProofTests.contains(sourceProofTest), "\(executionID) source proof test must be in family proof tests")
+            XCTAssertTrue(familyProofTests.contains(promotionTest), "\(executionID) promotion test must be in family proof tests")
+            XCTAssertFalse(runtimeNegativeTest.isEmpty, "\(executionID) runtime negative test must be named")
+            XCTAssertEqual(Set(fastTests), Set([diagnosticTest, sourceProofTest]), "\(executionID) fast tests must cover diagnostic and source proof")
+            XCTAssertFalse(fullTests.contains(promotionTest), "\(executionID) full non-promotion tests should exclude opt-in promotion")
+            XCTAssertEqual(commandPlan["promotion_is_opt_in"] as? Bool, true, "\(executionID) promotion should be opt-in")
+            XCTAssertEqual(fastCommand.count, 6, "\(executionID) malformed fast command")
+            XCTAssertEqual(fullCommand.count, 6, "\(executionID) malformed full command")
+            XCTAssertEqual(fastCommand[0], "swift", "\(executionID) malformed fast command")
+            XCTAssertEqual(fastCommand[1], "test", "\(executionID) malformed fast command")
+            XCTAssertEqual(fastCommand[4], "--filter", "\(executionID) malformed fast command")
+            XCTAssertEqual(fullCommand[0], "swift", "\(executionID) malformed full command")
+            XCTAssertEqual(fullCommand[1], "test", "\(executionID) malformed full command")
+            XCTAssertEqual(fullCommand[4], "--filter", "\(executionID) malformed full command")
+        }
+    }
+
+    func testComplexAmigaRepairMutationRunsFailBeforeAndPassAfter() throws {
+        let rows = try complexRepairMutationRows()
+
+        XCTAssertEqual(rows.count, 14)
+        for row in rows {
+            let mutationRunID = try XCTUnwrap(row["mutation_run_id"] as? String)
+            let familyID = try XCTUnwrap(row["family_id"] as? String, "\(mutationRunID) missing family id")
+            let failureKind = try XCTUnwrap(row["failure_kind"] as? String, "\(mutationRunID) missing failure kind")
+            let templateID = try XCTUnwrap(row["template_id"] as? String, "\(mutationRunID) missing template id")
+            let before = try XCTUnwrap(row["before_repair_verification"] as? [String: Any], "\(mutationRunID) missing before evidence")
+            let after = try XCTUnwrap(row["after_repair_verification"] as? [String: Any], "\(mutationRunID) missing after evidence")
+            let expectedFailureSnippet = try XCTUnwrap(before["expected_failure_snippet"] as? String, "\(mutationRunID) missing expected failure")
+            let repairedSource = try complexRepairMutationVerifiedSource(familyID: familyID)
+            let brokenSource = try complexRepairMutationBrokenSource(
+                familyID: familyID,
+                failureKind: failureKind,
+                source: repairedSource
+            )
+
+            XCTAssertNotEqual(brokenSource, repairedSource, "\(mutationRunID) mutation must change source")
+            XCTAssertEqual(
+                AmigaSourceIndexer.index(brokenSource).model?.id,
+                templateID,
+                "\(mutationRunID) mutation must preserve embedded model identity"
+            )
+
+            let brokenFailures = try complexRepairMutationFailures(
+                familyID: familyID,
+                source: brokenSource
+            )
+            XCTAssertTrue(
+                brokenFailures.contains { $0.contains(expectedFailureSnippet) },
+                "\(mutationRunID) should fail before repair with \(expectedFailureSnippet). Failures:\n\(brokenFailures.joined(separator: "\n"))"
+            )
+
+            let repairedFailures = try complexRepairMutationFailures(
+                familyID: familyID,
+                source: repairedSource
+            )
+            XCTAssertEqual(
+                repairedFailures,
+                [],
+                "\(mutationRunID) repaired source should pass all mutation-run verifier channels. Failures:\n\(repairedFailures.joined(separator: "\n"))"
+            )
+            XCTAssertEqual(after["swift_test"] as? String, "testComplexAmigaRepairMutationRunsFailBeforeAndPassAfter")
+            XCTAssertEqual(before["swift_test"] as? String, "testComplexAmigaRepairMutationRunsFailBeforeAndPassAfter")
+        }
+    }
+
+    func testComplexAmigaRepairMutationVerifierTranscriptsMatchCurrentVerifierOutput() throws {
+        let rows = try complexRepairMutationRows()
+        let transcriptJSONL = try complexRepairMutationTranscriptJSONL(from: rows)
+
+        if let outputPath = ProcessInfo.processInfo.environment["AMIGA_COMPLEX_REPAIR_TRANSCRIPT_OUTPUT"],
+           !outputPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            try transcriptJSONL.write(toFile: outputPath, atomically: true, encoding: .utf8)
+        }
+
+        let transcriptURL = complexRepairMutationTranscriptURL()
+        let trackedTranscript = try String(contentsOf: transcriptURL, encoding: .utf8)
+        XCTAssertEqual(trackedTranscript, transcriptJSONL)
+    }
+
+    func testComplexAmigaGoldenSourcesMatchCurrentVerifiedOutputs() throws {
+        let artifacts = try complexGoldenSourceArtifacts()
+        let goldenJSONL = try complexGoldenSourceJSONL(from: artifacts.goldenRows)
+        let gapsJSONL = try complexFollowUpReplayGapsJSONL(from: artifacts.gapRows)
+
+        if let outputPath = ProcessInfo.processInfo.environment["AMIGA_COMPLEX_GOLDEN_SOURCES_OUTPUT"],
+           !outputPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            try goldenJSONL.write(toFile: outputPath, atomically: true, encoding: .utf8)
+        }
+        if let outputPath = ProcessInfo.processInfo.environment["AMIGA_COMPLEX_FOLLOWUP_GAPS_OUTPUT"],
+           !outputPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            try gapsJSONL.write(toFile: outputPath, atomically: true, encoding: .utf8)
+        }
+
+        let goldenURL = complexGoldenSourcesURL()
+        let trackedGolden = try String(contentsOf: goldenURL, encoding: .utf8)
+        XCTAssertEqual(trackedGolden, goldenJSONL)
+        let gapsURL = complexFollowUpReplayGapsURL()
+        let trackedGaps = try String(contentsOf: gapsURL, encoding: .utf8)
+        XCTAssertEqual(trackedGaps, gapsJSONL)
+    }
+
     func testAssistantPromptTemplateMetadataAndFallbackPolicy() {
         let match = AssistantPromptTemplate.match(for: #"make a fast blue color-cycling logo that says "amiga""#)
 
@@ -1783,6 +4334,774 @@ CopperList:
         )
     }
 
+    private func copperRuntimeRasterFollowUpChainSource() throws -> String {
+        var source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.copperRuntimeRasterBenchmarkPrompt))
+        for prompt in [
+            "increase the number of bars to eight",
+            "make the bars bounce slower",
+            "change the palette to blue and white",
+            "add a top status band without losing the animation"
+        ] {
+            guard case .structuredModelPatch(.patched(let result)) = AssistantPromptRouter.route(
+                prompt: prompt,
+                source: source,
+                isSelfCorrection: false
+            ) else {
+                throw NSError(
+                    domain: "CopperRuntimeRasterFollowUpChain",
+                    code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "Expected structured copper patch for follow-up: \(prompt)"]
+                )
+            }
+            source = result.source
+        }
+        return source
+    }
+
+    private func mouseSpriteMultiplexFollowUpChainSource() throws -> String {
+        var source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.mouseSpriteMultiplexBenchmarkPrompt))
+        for prompt in [
+            "change the follower offset to 32 pixels",
+            "make the sprite green",
+            "add horizontal wrapping",
+            "make the follower lag by one frame"
+        ] {
+            guard case .structuredModelPatch(.patched(let result)) = AssistantPromptRouter.route(
+                prompt: prompt,
+                source: source,
+                isSelfCorrection: false
+            ) else {
+                throw NSError(
+                    domain: "MouseSpriteMultiplexFollowUpChain",
+                    code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "Expected structured mouse sprite patch for follow-up: \(prompt)"]
+                )
+            }
+            source = result.source
+        }
+        return source
+    }
+
+    private func modPlayerControlsCorpusFollowUpChainSource() throws -> String {
+        var source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.modPlayerControlsBenchmarkPrompt))
+        for prompt in [
+            "add a Volume Up button without changing Play or Stop",
+            "add Pause and Mute buttons, keeping the existing controls",
+            "rename Stop to Halt and move Volume Up below Play",
+            "set the initial volume to 48 and the volume step to 4",
+            "change playback note to A-3 and keep all controls"
+        ] {
+            let route = AssistantPromptRouter.route(
+                prompt: prompt,
+                source: source,
+                isSelfCorrection: false
+            )
+            guard case .structuredModelPatch(.patched(let result)) = route else {
+                throw NSError(
+                    domain: "MODPlayerControlsFollowUpChain",
+                    code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "Expected structured MOD controls patch for follow-up: \(prompt); got \(route)"]
+                )
+            }
+            source = result.source
+        }
+        return source
+    }
+
+    private func intuitionWindowToolFollowUpChainSource() throws -> String {
+        var source = try XCTUnwrap(AssistantPromptTemplate.source(for: Self.intuitionWindowToolBenchmarkPrompt))
+        for prompt in [
+            "add a third gadget called Volume Up",
+            "rename the Stop gadget to Halt",
+            "move the buttons to the bottom of the window",
+            "add a status text field without changing cleanup"
+        ] {
+            let route = AssistantPromptRouter.route(
+                prompt: prompt,
+                source: source,
+                isSelfCorrection: false
+            )
+            guard case .structuredModelPatch(.patched(let result)) = route else {
+                throw NSError(
+                    domain: "IntuitionWindowToolFollowUpChain",
+                    code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "Expected structured Intuition patch for follow-up: \(prompt); got \(route)"]
+                )
+            }
+            source = result.source
+        }
+        return source
+    }
+
+    private func complexRepairMutationRows() throws -> [[String: Any]] {
+        let mutationRunsURL = complexRepairMutationRunsURL()
+        let lines = try String(contentsOf: mutationRunsURL, encoding: .utf8)
+            .split(separator: "\n")
+            .map(String.init)
+        return try lines.map { line -> [String: Any] in
+            let data = try XCTUnwrap(line.data(using: .utf8))
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+    }
+
+    private func complexRepairMutationRunsURL() -> URL {
+        complexFineTuningDirectory()
+            .appendingPathComponent("complex_amiga_repair_mutation_runs.jsonl")
+    }
+
+    private func complexRepairMutationTranscriptURL() -> URL {
+        complexFineTuningDirectory()
+            .appendingPathComponent("complex_amiga_repair_verifier_transcripts.jsonl")
+    }
+
+    private func complexGoldenSourcesURL() -> URL {
+        complexFineTuningDirectory()
+            .appendingPathComponent("complex_amiga_golden_sources.jsonl")
+    }
+
+    private func complexFollowUpReplayGapsURL() -> URL {
+        complexFineTuningDirectory()
+            .appendingPathComponent("complex_amiga_followup_replay_gaps.jsonl")
+    }
+
+    private func complexFineTuningDirectory() -> URL {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        return testFileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("fine_tuning")
+    }
+
+    private func complexBenchmarkFamilies() throws -> [[String: Any]] {
+        let corpusURL = complexFineTuningDirectory()
+            .appendingPathComponent("complex_amiga_benchmark_corpus.json")
+        let data = try Data(contentsOf: corpusURL)
+        let corpus = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        return try XCTUnwrap(corpus["benchmark_families"] as? [[String: Any]])
+    }
+
+    private func complexGoldenSourceArtifacts() throws -> (goldenRows: [[String: Any]], gapRows: [[String: Any]]) {
+        var goldenRows: [[String: Any]] = []
+        var gapRows: [[String: Any]] = []
+        for family in try complexBenchmarkFamilies() {
+            goldenRows.append(try complexGoldenSourceRow(family: family, stage: "first_shot_verified_source"))
+            let replay = try complexGoldenTerminalReplay(family: family)
+            if let source = replay.source {
+                goldenRows.append(try complexGoldenSourceRow(
+                    family: family,
+                    stage: "multi_turn_terminal_source",
+                    suppliedSource: source
+                ))
+            }
+            if let gap = replay.gap {
+                gapRows.append(gap)
+            }
+        }
+        return (goldenRows, gapRows)
+    }
+
+    private func complexGoldenSourceJSONL(from rows: [[String: Any]]) throws -> String {
+        try rows.map { row -> String in
+            let data = try JSONSerialization.data(withJSONObject: row, options: [.sortedKeys])
+            return try XCTUnwrap(String(data: data, encoding: .utf8))
+        }
+        .joined(separator: "\n") + "\n"
+    }
+
+    private func complexFollowUpReplayGapsJSONL(from rows: [[String: Any]]) throws -> String {
+        if rows.isEmpty {
+            return ""
+        }
+        return try rows.map { row -> String in
+            let data = try JSONSerialization.data(withJSONObject: row, options: [.sortedKeys])
+            return try XCTUnwrap(String(data: data, encoding: .utf8))
+        }
+        .joined(separator: "\n") + "\n"
+    }
+
+    private func complexGoldenSourceRow(
+        family: [String: Any],
+        stage: String,
+        suppliedSource: String? = nil
+    ) throws -> [String: Any] {
+        let familyID = try XCTUnwrap(family["id"] as? String)
+        let familyTitle = try XCTUnwrap(family["title"] as? String)
+        let prompt = try XCTUnwrap(family["first_shot_prompt"] as? String)
+        let followUps = try XCTUnwrap(family["multi_turn_follow_ups"] as? [String])
+        let source: String
+        let messages: [[String: String]]
+        switch stage {
+        case "first_shot_verified_source":
+            source = try complexRepairMutationVerifiedSource(familyID: familyID)
+            messages = [
+                ["role": "system", "content": complexGoldenSourceSystemPrompt()],
+                ["role": "user", "content": prompt]
+            ]
+        case "multi_turn_terminal_source":
+            source = try XCTUnwrap(suppliedSource, "\(familyID) terminal source must be supplied after replay succeeds")
+            messages = [
+                [["role": "system", "content": complexGoldenSourceSystemPrompt()]],
+                [["role": "user", "content": prompt]],
+                followUps.map { ["role": "user", "content": $0] }
+            ].flatMap { $0 }
+        default:
+            throw NSError(
+                domain: "ComplexGoldenSourceRow",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Unsupported golden source stage: \(stage)"]
+            )
+        }
+
+        let verification = try complexGoldenSourceVerification(familyID: familyID, source: source)
+        let model = try XCTUnwrap(AmigaSourceIndexer.index(source).model)
+        let sourceLines = source.split(separator: "\n", omittingEmptySubsequences: false).count
+        let domainTags = try XCTUnwrap(family["domain_tags"] as? [String])
+
+        return [
+            "schema_version": 1,
+            "record_type": "complex_amiga_golden_source",
+            "golden_id": "\(familyID)::\(stage)",
+            "family_id": familyID,
+            "family_title": familyTitle,
+            "stage": stage,
+            "template_id": model.id,
+            "domain_tags": domainTags,
+            "messages": messages,
+            "assistant_content": source,
+            "source_metrics": [
+                "line_count": sourceLines,
+                "byte_count": Data(source.utf8).count,
+                "embedded_model_controls": model.controls.map(\.id),
+                "embedded_model_routines": model.routines.map(\.id),
+                "embedded_model_hardware": model.hardware.map(\.rawValue)
+            ],
+            "verification": verification,
+            "training_use": [
+                "sample_type": stage == "first_shot_verified_source" ? "golden_first_shot" : "golden_multi_turn_terminal",
+                "adapter_tags": domainTags,
+                "preference_label": "passes_all_available_non_promotion_gates",
+                "distillation_target": "structured_model_to_verified_asm"
+            ]
+        ]
+    }
+
+    private func complexGoldenTerminalReplay(family: [String: Any]) throws -> (source: String?, gap: [String: Any]?) {
+        let familyID = try XCTUnwrap(family["id"] as? String)
+        let familyTitle = try XCTUnwrap(family["title"] as? String)
+        let followUps = try XCTUnwrap(family["multi_turn_follow_ups"] as? [String])
+        var source = try complexRepairMutationVerifiedSource(familyID: familyID)
+        var completedPrompts: [String] = []
+        for prompt in followUps {
+            let route = AssistantPromptRouter.route(prompt: prompt, source: source, isSelfCorrection: false)
+            switch route {
+            case .structuredModelPatch(.patched(let result)):
+                source = result.source
+                completedPrompts.append(prompt)
+            case .structuredModelPatch(.rejected(let reasons)):
+                return (nil, complexFollowUpReplayGapRow(
+                    familyID: familyID,
+                    familyTitle: familyTitle,
+                    prompt: prompt,
+                    completedPrompts: completedPrompts,
+                    status: "rejected",
+                    reasons: reasons
+                ))
+            case .structuredModelPatch(.notRecognized):
+                let fallback = AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: source)
+                switch fallback {
+                case .patched(let result):
+                    source = result.source
+                    completedPrompts.append(prompt)
+                case .rejected(let reasons):
+                    return (nil, complexFollowUpReplayGapRow(
+                        familyID: familyID,
+                        familyTitle: familyTitle,
+                        prompt: prompt,
+                        completedPrompts: completedPrompts,
+                        status: "rejected",
+                        reasons: reasons
+                    ))
+                case .notRecognized:
+                    return (nil, complexFollowUpReplayGapRow(
+                        familyID: familyID,
+                        familyTitle: familyTitle,
+                        prompt: prompt,
+                        completedPrompts: completedPrompts,
+                        status: "not_recognized",
+                        reasons: ["No structured follow-up patcher recognized this declared corpus prompt."]
+                    ))
+                }
+            default:
+                let fallback = AmigaProgramFollowUpPlanner.patchOutcome(prompt: prompt, source: source)
+                switch fallback {
+                case .patched(let result):
+                    source = result.source
+                    completedPrompts.append(prompt)
+                case .rejected(let reasons):
+                    return (nil, complexFollowUpReplayGapRow(
+                        familyID: familyID,
+                        familyTitle: familyTitle,
+                        prompt: prompt,
+                        completedPrompts: completedPrompts,
+                        status: "rejected",
+                        reasons: reasons
+                    ))
+                case .notRecognized:
+                    return (nil, complexFollowUpReplayGapRow(
+                        familyID: familyID,
+                        familyTitle: familyTitle,
+                        prompt: prompt,
+                        completedPrompts: completedPrompts,
+                        status: "not_recognized",
+                        reasons: ["No structured follow-up patcher recognized this declared corpus prompt."]
+                    ))
+                }
+            }
+        }
+        return (source, nil)
+    }
+
+    private func complexFollowUpReplayGapRow(
+        familyID: String,
+        familyTitle: String,
+        prompt: String,
+        completedPrompts: [String],
+        status: String,
+        reasons: [String]
+    ) -> [String: Any] {
+        [
+            "schema_version": 1,
+            "record_type": "complex_amiga_followup_replay_gap",
+            "gap_id": "\(familyID)::followup_replay_gap::\(completedPrompts.count + 1)",
+            "family_id": familyID,
+            "family_title": familyTitle,
+            "failed_follow_up": prompt,
+            "failed_follow_up_index": completedPrompts.count + 1,
+            "completed_follow_ups": completedPrompts,
+            "status": status,
+            "reasons": reasons,
+            "required_resolution": [
+                "Add a structured follow-up patcher and verifier coverage for this declared corpus prompt, or remove the prompt from the corpus if it is intentionally unsupported.",
+                "Do not turn this into a golden multi-turn training sample until the entire declared chain replays and passes verifier gates."
+            ]
+        ]
+    }
+
+    private func complexGoldenSourceVerification(familyID: String, source: String) throws -> [String: Any] {
+        let prompt = try complexRepairMutationPrompt(familyID: familyID)
+        let sourceVerifierFailures = AmigaProgramSourceVerifier.failures(in: source)
+        let semantic = AssemblySemanticValidator.validate(source: source, prompt: prompt)
+        let allFailures = try complexRepairMutationFailures(familyID: familyID, source: source)
+        return [
+            "source_verifier": [
+                "passed": sourceVerifierFailures.isEmpty,
+                "failures": sourceVerifierFailures
+            ],
+            "semantic_verifier": [
+                "passed": semantic.passed,
+                "failures": semantic.failures
+            ],
+            "runtime_contract": [
+                "passed": allFailures.isEmpty,
+                "failures": allFailures
+            ],
+            "compile_and_adf": [
+                "status": "covered_by_family_proof_tests",
+                "note": "Golden sources are regenerated from the same source providers and follow-up chains used by the compile/ADF proof tests."
+            ]
+        ]
+    }
+
+    private func complexGoldenSourceSystemPrompt() -> String {
+        "You are AntigravityAmiga, an execution-grounded Amiga 68000 code producer. Use a structured AmigaProgramModel, preserve multi-turn state, reject unsafe edits without mutation, and only claim success when semantic, compile, ADF, and runtime-observation gates are satisfied."
+    }
+
+    private func complexRepairMutationTranscriptJSONL(from rows: [[String: Any]]) throws -> String {
+        let transcriptRows = try rows.map { try complexRepairMutationTranscriptRow(from: $0) }
+        return try transcriptRows.map { row -> String in
+            let data = try JSONSerialization.data(withJSONObject: row, options: [.sortedKeys])
+            return try XCTUnwrap(String(data: data, encoding: .utf8))
+        }
+        .joined(separator: "\n") + "\n"
+    }
+
+    private func complexRepairMutationTranscriptRow(from row: [String: Any]) throws -> [String: Any] {
+        let mutationRunID = try XCTUnwrap(row["mutation_run_id"] as? String)
+        let familyID = try XCTUnwrap(row["family_id"] as? String, "\(mutationRunID) missing family id")
+        let failureKind = try XCTUnwrap(row["failure_kind"] as? String, "\(mutationRunID) missing failure kind")
+        let templateID = try XCTUnwrap(row["template_id"] as? String, "\(mutationRunID) missing template id")
+        let before = try XCTUnwrap(row["before_repair_verification"] as? [String: Any], "\(mutationRunID) missing before evidence")
+        let verifierChannel = try XCTUnwrap(before["verifier_channel"] as? String, "\(mutationRunID) missing verifier channel")
+        let expectedFailureSnippet = try XCTUnwrap(before["expected_failure_snippet"] as? String, "\(mutationRunID) missing expected failure")
+        let repairedSource = try complexRepairMutationVerifiedSource(familyID: familyID)
+        let brokenSource = try complexRepairMutationBrokenSource(
+            familyID: familyID,
+            failureKind: failureKind,
+            source: repairedSource
+        )
+        let brokenFailures = try complexRepairMutationFailures(familyID: familyID, source: brokenSource)
+        let repairedFailures = try complexRepairMutationFailures(familyID: familyID, source: repairedSource)
+        let matchedFailure = try XCTUnwrap(
+            brokenFailures.first { $0.contains(expectedFailureSnippet) },
+            "\(mutationRunID) did not produce expected failure \(expectedFailureSnippet). Failures:\n\(brokenFailures.joined(separator: "\n"))"
+        )
+
+        return [
+            "schema_version": 1,
+            "record_type": "repair_mutation_verifier_transcript",
+            "mutation_run_id": mutationRunID,
+            "family_id": familyID,
+            "failure_kind": failureKind,
+            "template_id": templateID,
+            "swift_test": "testComplexAmigaRepairMutationVerifierTranscriptsMatchCurrentVerifierOutput",
+            "source_identity": [
+                "broken_model_id": AmigaSourceIndexer.index(brokenSource).model?.id ?? "",
+                "repaired_model_id": AmigaSourceIndexer.index(repairedSource).model?.id ?? "",
+                "mutation_changed_source": brokenSource != repairedSource,
+                "template_identity_preserved": AmigaSourceIndexer.index(brokenSource).model?.id == templateID
+            ],
+            "before_repair": [
+                "status": "failed_as_expected",
+                "verifier_channel": verifierChannel,
+                "expected_failure_snippet": expectedFailureSnippet,
+                "matched_failure": matchedFailure,
+                "failure_count": brokenFailures.count,
+                "failures": brokenFailures
+            ],
+            "after_repair": [
+                "status": repairedFailures.isEmpty ? "passed" : "failed",
+                "failure_count": repairedFailures.count,
+                "failures": repairedFailures
+            ],
+            "training_use": [
+                "negative_sample": "broken_failures",
+                "positive_sample": "after_repair_empty_failures",
+                "preference_signal": "fail_before_pass_after_real_verifier_output"
+            ]
+        ]
+    }
+
+    private func complexRepairMutationVerifiedSource(familyID: String) throws -> String {
+        switch familyID {
+        case "mod_player_controls_complex":
+            return try XCTUnwrap(AssistantPromptTemplate.source(for: Self.modPlayerControlsBenchmarkPrompt))
+        case "double_buffered_bitplane_sprite_copper":
+            return try XCTUnwrap(AssistantPromptTemplate.source(for: Self.doubleBufferedBitplaneBenchmarkPrompt))
+        case "blitter_bob_collision_bounds":
+            return try XCTUnwrap(AssistantPromptTemplate.source(for: Self.blitterBOBCollisionBenchmarkPrompt))
+        case "copper_runtime_raster_validation":
+            return try XCTUnwrap(AssistantPromptTemplate.source(for: Self.copperRuntimeRasterBenchmarkPrompt))
+        case "mouse_sprite_multiplex":
+            return try XCTUnwrap(AssistantPromptTemplate.source(for: Self.mouseSpriteMultiplexBenchmarkPrompt))
+        case "intuition_window_tool":
+            return try XCTUnwrap(AssistantPromptTemplate.source(for: Self.intuitionWindowToolBenchmarkPrompt))
+        case "clean_takeover_restore":
+            return try XCTUnwrap(AssistantPromptTemplate.source(for: Self.cleanTakeoverRestoreBenchmarkPrompt))
+        default:
+            throw NSError(
+                domain: "ComplexRepairMutationVerifiedSource",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Unknown family id: \(familyID)"]
+            )
+        }
+    }
+
+    private func complexRepairMutationBrokenSource(
+        familyID: String,
+        failureKind: String,
+        source: String
+    ) throws -> String {
+        switch (familyID, failureKind) {
+        case ("mod_player_controls_complex", "missing_audio_dma_enable"):
+            return try source.replacingRequiredOccurrence(
+                of: "            move.w     #$8201,$96(a6)       ; DMAEN + AUD0",
+                with: "            ; deliberately removed AUD0 DMA enable mutation-run evidence"
+            )
+        case ("mod_player_controls_complex", "lost_follow_up_control"):
+            return try source.replacingRequiredOccurrence(
+                of: "; @amiga:dispatch stop -> StopMOD\n            cmp.w      #2,d0\n",
+                with: "            cmp.w      #2,d0\n"
+            )
+        case ("double_buffered_bitplane_sprite_copper", "missing_front_back_pointer_swap"):
+            return try source.replacingRequiredOccurrence(
+                of: "            move.l     a3,$e0(a6)           ; BPL1PT",
+                with: "            move.l     a3,$e4(a6)           ; broken BPL1PT mutation-run evidence"
+            )
+        case ("double_buffered_bitplane_sprite_copper", "missing_visible_frame_data"):
+            return try source.replacingRequiredOccurrence(
+                of: "BufferA:    ds.b       40*256",
+                with: "            ds.b       40*256              ; deliberately removed BufferA label"
+            )
+        case ("blitter_bob_collision_bounds", "missing_blitter_wait"):
+            return try source.replacingRequiredOccurrence(
+                of: """
+            .waitAfter:
+                        btst       #6,$02(a6)
+                        bne.s      .waitAfter
+            """,
+                with: """
+            .waitAfter:
+                        ; deliberately removed post-BLTSIZE wait for mutation-run evidence
+            """
+            )
+        case ("blitter_bob_collision_bounds", "unbounded_position_update"):
+            return try source.replacingRequiredOccurrence(
+                of: "            cmp.w      #288,d0",
+                with: "            ; deliberately removed right-edge clamp compare"
+            )
+        case ("copper_runtime_raster_validation", "missing_copper_jump"):
+            return try source.replacingRequiredOccurrence(
+                of: "            move.w     #$0000,$88(a6)       ; COPJMP1",
+                with: "            ; deliberately removed COPJMP1 mutation-run evidence"
+            )
+        case ("copper_runtime_raster_validation", "flat_runtime_frame"):
+            var model = try XCTUnwrap(AmigaSourceIndexer.index(source).model)
+            for index in model.stateVariables.indices where model.stateVariables[index].id.hasPrefix("band_color_") {
+                model.stateVariables[index].initialValue = "$0000"
+            }
+            var brokenSource = try sourceByReplacingEmbeddedModel(model, in: source)
+            for (label, value) in [
+                ("BandColor1", "$0f00"),
+                ("BandColor2", "$0ff0"),
+                ("BandColor3", "$00f0"),
+                ("BandColor4", "$00ff"),
+                ("BandColor5", "$000f"),
+                ("BandColor6", "$0f0f")
+            ] {
+                brokenSource = try brokenSource.replacingRequiredOccurrence(
+                    of: "\(label): dc.w       \(value)",
+                    with: "\(label): dc.w       $0000"
+                )
+            }
+            return brokenSource
+        case ("mouse_sprite_multiplex", "missing_sprite_pointer"):
+            return try source.replacingRequiredOccurrence(
+                of: "            move.l     a0,$124(a6)          ; SPR1PT multiplexed offset copy",
+                with: "            ; deliberately removed second sprite pointer mutation-run evidence"
+            )
+        case ("mouse_sprite_multiplex", "unpaced_sprite_update"):
+            return try source.replacingRequiredOccurrence(
+                of: "            bsr        WaitVBlank\n            tst.w      ExitDelay",
+                with: "            ; deliberately removed vblank pacing before sprite updates\n            tst.w      ExitDelay"
+            )
+        case ("intuition_window_tool", "unbalanced_library_close"):
+            return try source.replacingRequiredOccurrence(
+                of: "            jsr        -414(a6)             ; CloseLibrary(IntuitionBase)\n",
+                with: ""
+            )
+        case ("intuition_window_tool", "missing_close_window"):
+            return try source.replacingRequiredOccurrence(
+                of: "            jsr        -72(a6)              ; CloseWindow(WindowPtr)\n",
+                with: ""
+            )
+        case ("clean_takeover_restore", "missing_dma_restore"):
+            return try source.replacingRequiredOccurrence(
+                of: "            move.w     OldDMACON(pc),d0\n            or.w       #$8000,d0\n            move.w     d0,$96(a6)\n",
+                with: ""
+            )
+        case ("clean_takeover_restore", "lost_emergency_restore"):
+            return try source.replacingRequiredOccurrence(of: ".restore", with: ".exit")
+        default:
+            throw NSError(
+                domain: "ComplexRepairMutationBrokenSource",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Unknown mutation: \(familyID)::\(failureKind)"]
+            )
+        }
+    }
+
+    private func complexRepairMutationFailures(familyID: String, source: String) throws -> [String] {
+        var failures = AmigaProgramSourceVerifier.failures(in: source)
+        let prompt = try complexRepairMutationPrompt(familyID: familyID)
+        let semantic = AssemblySemanticValidator.validate(source: source, prompt: prompt)
+        if !semantic.passed {
+            failures.append(contentsOf: semantic.failures)
+        }
+
+        switch familyID {
+        case "mod_player_controls_complex":
+            failures.append(contentsOf: AmigaRuntimeEvidenceContract.validateModPlayerControls(
+                source: source,
+                prompt: prompt
+            ).failures)
+        case "double_buffered_bitplane_sprite_copper":
+            failures.append(contentsOf: AmigaRuntimeEvidenceContract.validateDoubleBufferedBitplane(
+                source: source,
+                prompt: prompt
+            ).failures)
+            failures.append(contentsOf: AmigaProgramFamilyPromotionAudit.runtimeObservationFailures(
+                for: AmigaProgramFamilyRegistry.doubleBufferedBitplane,
+                source: source
+            ))
+        case "blitter_bob_collision_bounds":
+            failures.append(contentsOf: AmigaRuntimeEvidenceContract.validateBlitterBOBCollisionBounds(
+                source: source,
+                prompt: prompt
+            ).failures)
+        case "copper_runtime_raster_validation":
+            failures.append(contentsOf: AmigaRuntimeEvidenceContract.validateCopperRuntimeRaster(
+                source: source,
+                prompt: prompt
+            ).failures)
+        case "mouse_sprite_multiplex":
+            failures.append(contentsOf: AmigaRuntimeEvidenceContract.validateMouseSpriteMultiplex(
+                source: source,
+                prompt: prompt
+            ).failures)
+        case "intuition_window_tool":
+            failures.append(contentsOf: intuitionWindowToolProofFailures(in: source))
+            failures.append(contentsOf: AmigaRuntimeEvidenceContract.validateIntuitionWindowTool(
+                source: source,
+                prompt: prompt
+            ).failures)
+        case "clean_takeover_restore":
+            failures.append(contentsOf: cleanTakeoverRestoreProofFailures(in: source))
+            failures.append(contentsOf: AmigaRuntimeEvidenceContract.validateCleanTakeoverRestore(
+                source: source,
+                prompt: prompt
+            ).failures)
+        default:
+            throw NSError(
+                domain: "ComplexRepairMutationFailures",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Unknown family id: \(familyID)"]
+            )
+        }
+
+        return Array(Set(failures)).sorted()
+    }
+
+    private func complexRepairMutationPrompt(familyID: String) throws -> String {
+        switch familyID {
+        case "mod_player_controls_complex":
+            return Self.modPlayerControlsBenchmarkPrompt
+        case "double_buffered_bitplane_sprite_copper":
+            return Self.doubleBufferedBitplaneBenchmarkPrompt
+        case "blitter_bob_collision_bounds":
+            return Self.blitterBOBCollisionBenchmarkPrompt
+        case "copper_runtime_raster_validation":
+            return Self.copperRuntimeRasterBenchmarkPrompt
+        case "mouse_sprite_multiplex":
+            return Self.mouseSpriteMultiplexBenchmarkPrompt
+        case "intuition_window_tool":
+            return Self.intuitionWindowToolBenchmarkPrompt
+        case "clean_takeover_restore":
+            return Self.cleanTakeoverRestoreBenchmarkPrompt
+        default:
+            throw NSError(
+                domain: "ComplexRepairMutationPrompt",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Unknown family id: \(familyID)"]
+            )
+        }
+    }
+
+    private func intuitionWindowToolProofFailures(in source: String) -> [String] {
+        var failures: [String] = []
+
+        let requiredSnippets: [(String, String)] = [
+            ("missing intuition.library name", "IntuitionName:"),
+            ("missing OpenLibrary(\"intuition.library\")", "jsr        -552(a6)             ; OpenLibrary(\"intuition.library\")"),
+            ("missing IntuitionBase storage", "move.l     d0,IntuitionBase"),
+            ("missing OpenWindow call", "jsr        -204(a6)             ; OpenWindow(&NewWindow)"),
+            ("missing WindowPtr storage", "move.l     d0,WindowPtr"),
+            ("missing IDCMP close-window flag", "IDCMP_CLOSEWINDOW"),
+            ("missing IDCMP gadget-up flag", "IDCMP_GADGETUP"),
+            ("missing WaitPort event wait", "jsr        -384(a6)             ; WaitPort(UserPort)"),
+            ("missing GetMsg event read", "jsr        -372(a6)             ; GetMsg(UserPort)"),
+            ("missing ReplyMsg call", "jsr        -378(a6)             ; ReplyMsg(message)"),
+            ("missing close-window branch", "cmp.l      #IDCMP_CLOSEWINDOW,d2"),
+            ("missing gadget-up branch", "cmp.l      #IDCMP_GADGETUP,d2"),
+            ("missing Play gadget data", "Gadget_play:"),
+            ("missing Stop gadget data", "Gadget_stop:"),
+            ("missing status state", "StatusState:")
+        ]
+        for (failure, snippet) in requiredSnippets where !source.contains(snippet) {
+            failures.append(failure)
+        }
+
+        if !source.contains("jsr        -72(a6)              ; CloseWindow(WindowPtr)") ||
+            !source.contains("clr.l      WindowPtr") {
+            failures.append("missing CloseWindow(WindowPtr) cleanup")
+        }
+        if !source.contains("jsr        -414(a6)             ; CloseLibrary(IntuitionBase)") ||
+            !source.contains("clr.l      IntuitionBase") {
+            failures.append("missing CloseLibrary(IntuitionBase) cleanup")
+        }
+        if !source.contains("beq        CloseLibraryOnly") {
+            failures.append("OpenWindow failure does not route to library cleanup")
+        }
+        if let closeWindowRange = source.range(of: "jsr        -72(a6)              ; CloseWindow(WindowPtr)"),
+           let closeLibraryRange = source.range(of: "jsr        -414(a6)             ; CloseLibrary(IntuitionBase)"),
+           closeWindowRange.lowerBound > closeLibraryRange.lowerBound {
+            failures.append("CloseWindow occurs after CloseLibrary")
+        }
+        if !source.contains("dc.l       Gadget_play") ||
+            !source.contains("dc.l       Gadget_stop") {
+            failures.append("window gadget chain is not wired")
+        }
+
+        return Array(Set(failures)).sorted()
+    }
+
+    private func cleanTakeoverRestoreProofFailures(in source: String) -> [String] {
+        var failures: [String] = []
+
+        let requiredSnippets: [(String, String)] = [
+            ("missing active view save", "move.l     34(a6),OldView"),
+            ("missing LoadView(NULL) takeover", "jsr        -222(a6)             ; LoadView(NULL)"),
+            ("missing LoadView(oldView) restore", "jsr        -222(a6)             ; LoadView(oldView)"),
+            ("missing DMA save from DMACONR", "move.w     $02(a6),OldDMACON"),
+            ("missing interrupt save from INTENAR", "move.w     $1c(a6),OldINTENA"),
+            ("missing COP1LC save", "move.l     $80(a6),d0"),
+            ("missing palette save from COLOR00", "move.w     $180(a6),OldColor00"),
+            ("missing INTREQ acknowledgement", "move.w     #$7fff,$9c(a6)"),
+            ("missing interrupt disable", "move.w     #$7fff,$9a(a6)"),
+            ("missing DMA clear before takeover", "move.w     #$7fff,$96(a6)"),
+            ("missing owned copper install", "move.l     a0,$80(a6)           ; COP1LC"),
+            ("missing COPJMP1 activation", "move.w     #0,$88(a6)           ; COPJMP1"),
+            ("missing copper DMA enable", "move.w     #$8280,$96(a6)"),
+            ("missing vblank wait", "WaitVBlank:"),
+            ("missing color cycling routine", "CycleColor:"),
+            ("missing color table", "ColorTable:"),
+            ("missing restore label", ".restore:")
+        ]
+        for (failure, snippet) in requiredSnippets where !source.contains(snippet) {
+            failures.append(failure)
+        }
+
+        if !source.contains("            beq.s      .restore") &&
+            !source.contains("            bne.s      .restore") {
+            failures.append("mouse exit does not route through RestoreSystem path")
+        }
+        if !source.contains("move.w     OldColor00(pc),$180(a6)") {
+            failures.append("missing palette restore from OldColor00")
+        }
+        if !source.contains("move.l     OldCOP1LC(pc),d0") ||
+            !source.contains("move.l     d0,$80(a6)") {
+            failures.append("missing copper pointer restore from OldCOP1LC")
+        }
+        if !source.contains("move.w     OldDMACON(pc),d0") ||
+            !source.contains("move.w     d0,$96(a6)") {
+            failures.append("missing DMA restore from OldDMACON")
+        }
+        if !source.contains("move.w     OldINTENA(pc),d0") ||
+            !source.contains("move.w     d0,$9a(a6)") {
+            failures.append("missing interrupt restore from OldINTENA")
+        }
+        if !source.contains("GfxBase:    dc.l       0") ||
+            !source.contains("OldView:    dc.l       0") ||
+            !source.contains("OldDMACON:  dc.w       0") ||
+            !source.contains("OldINTENA:  dc.w       0") ||
+            !source.contains("OldCOP1LC:  dc.l       0") ||
+            !source.contains("OldColor00: dc.w       0") {
+            failures.append("missing saved state storage")
+        }
+
+        return Array(Set(failures)).sorted()
+    }
+
     private func compileSource(_ source: String, compiler: CompilerService, description: String) -> (success: Bool, output: String) {
         let compileExpectation = expectation(description: description)
         var compileSucceeded = false
@@ -2300,7 +5619,11 @@ InputDispatch:
 
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/python3")
-        process.arguments = [validator.path]
+        var validatorArguments = [validator.path]
+        if ProcessInfo.processInfo.environment["AMIGA_SMOKE_HOST_SCREEN_CAPTURE"] != "1" {
+            validatorArguments.append(contentsOf: ["--skip-gui", "--allow-state-second-path"])
+        }
+        process.arguments = validatorArguments
         process.currentDirectoryURL = repoRoot
         process.environment = ProcessInfo.processInfo.environment
 
@@ -17576,7 +20899,7 @@ PatternC:
         let source = try AmigaProgramTemplate.verifiedDoubleBufferedBitplaneSource(frontColor: "red", backColor: "green")
         let equivalentOperands = source
             .replacingOccurrences(of: "            move.w     #$1200,$100(a6)", with: "            MOVE.W     #0x1200,0x100(A6)")
-            .replacingOccurrences(of: "            move.w     #$8300,$96(a6)", with: "            MOVE.W     #0x8300,0x96(A6)")
+            .replacingOccurrences(of: "            move.w     #$83a0,$96(a6)", with: "            MOVE.W     #0x83a0,0x96(A6)")
             .replacingOccurrences(of: "            btst       #6,$bfe001", with: "            BTST       #$06,$bfe001")
             .replacingOccurrences(of: "            cmp.b      #$ff,$06(a6)", with: "            CMP.B      #$ff,0x06(A6)")
             .replacingOccurrences(of: "            move.w     FrontColor(pc),$182(a6)", with: "            MOVE.W     FrontColor(PC),0x182(A6)")
@@ -17592,7 +20915,7 @@ PatternC:
         let failures = AmigaProgramSourceVerifier.failures(in: equivalentOperands)
 
         XCTAssertFalse(failures.contains("Double-buffered bitplane startup does not configure one low-res bitplane."), "\(failures)")
-        XCTAssertFalse(failures.contains("Double-buffered bitplane startup does not enable bitplane DMA."), "\(failures)")
+        XCTAssertFalse(failures.contains("Double-buffered bitplane startup does not enable bitplane, copper, and sprite DMA."), "\(failures)")
         XCTAssertFalse(failures.contains("Double-buffered bitplane main loop does not exit on left mouse click."), "\(failures)")
         XCTAssertFalse(failures.contains("Double-buffered bitplane swaps are not paced by vertical blank."), "\(failures)")
         XCTAssertFalse(failures.contains("Double-buffered bitplane front-buffer path does not show BufferA and draw BufferB."), "\(failures)")
@@ -17930,6 +21253,37 @@ PatternC:
         XCTAssertTrue(model.verificationExpectations.contains("Bitplane pointer swaps are paced by vblank."))
         XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: patched.source), [])
         XCTAssertEqual(AssemblySemanticValidator.validate(source: patched.source, prompt: "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click.").failures, [])
+    }
+
+    func testAssistantPromptRouterReplaysDoubleBufferedSpriteCopperFollowUpsWithoutFallback() throws {
+        var source = try XCTUnwrap(AssistantPromptTemplate.source(for: "Generate double-buffered bitplane animation that swaps front red and back green bitplane pointers on vblank, overlays a small sprite, updates a copper color register, and exits on left mouse click."))
+
+        for prompt in [
+            "change the front buffer to blue and the back buffer to yellow",
+            "make the sprite move downward while keeping the buffer swap",
+            "slow the animation by waiting two vblanks",
+            "change the copper accent color to purple"
+        ] {
+            let route = AssistantPromptRouter.route(prompt: prompt, source: source, isSelfCorrection: false)
+            guard case .structuredModelPatch(.patched(let patched)) = route else {
+                return XCTFail("Expected \(prompt) to stay in structured double-buffered routing.")
+            }
+            source = patched.source
+        }
+
+        let model = try XCTUnwrap(AmigaSourceIndexer.index(source).model)
+        XCTAssertEqual(model.id, "double-buffer-bitplane")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "front_color" })?.initialValue, "$000f")
+        XCTAssertEqual(model.stateVariables.first(where: { $0.id == "back_color" })?.initialValue, "$0ff0")
+        XCTAssertTrue(model.verificationExpectations.contains("Sprite overlay vertical offset is 16 pixels downward."))
+        XCTAssertTrue(model.verificationExpectations.contains("Animation waits 2 vblanks per buffer swap."))
+        XCTAssertTrue(model.verificationExpectations.contains("Copper accent color is purple."))
+        XCTAssertTrue(source.contains("dc.w       $5060,$5800"))
+        XCTAssertTrue(source.contains("second vblank wait for slower animation"))
+        XCTAssertTrue(source.contains("dc.w       $0180,$0f0f"))
+        XCTAssertTrue(source.contains("btst       #6,$bfe001"))
+        XCTAssertEqual(AmigaProgramSourceVerifier.failures(in: source), [])
+        XCTAssertEqual(AssemblySemanticValidator.validate(source: source, prompt: "Generate double-buffered bitplane animation that swaps front red and back green bitplane pointers on vblank, overlays a small sprite, updates a copper color register, and exits on left mouse click.").failures, [])
     }
 
     func testAssistantPromptRouterRejectsUnsupportedBitplaneColorAfterPriorPatchWithoutPartialMutation() throws {
@@ -22568,6 +25922,20 @@ PatternC:
         }
 
         XCTAssertTrue(controller.modelIsDownloaded)
+    }
+}
+
+private extension String {
+    func replacingRequiredOccurrence(of target: String, with replacement: String) throws -> String {
+        let updated = replacingOccurrences(of: target, with: replacement)
+        guard updated != self else {
+            throw NSError(
+                domain: "RequiredSourceMutation",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Required mutation target was not found: \(target)"]
+            )
+        }
+        return updated
     }
 }
 
