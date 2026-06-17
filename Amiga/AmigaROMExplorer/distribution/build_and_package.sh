@@ -9,6 +9,21 @@ ARCHIVE_PATH="./build/${PROJECT_NAME}.xcarchive"
 EXPORT_PATH="./build"
 APP_PATH="${EXPORT_PATH}/${PROJECT_NAME}.app"
 MIN_SPACE_MB=1024
+BUMP_BUILD=1
+
+usage() {
+    echo "Usage: $0 [--no-bump]"
+    echo "  --no-bump   Rebuild using the current Xcode build number without incrementing"
+    exit 1
+}
+
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        --no-bump) BUMP_BUILD=0; shift ;;
+        -h|--help) usage ;;
+        *) usage ;;
+    esac
+done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 README_PATH="${SCRIPT_DIR}/dmg_assets/README.md"
@@ -20,8 +35,27 @@ DMG_BASE_PATH="${DMG_DIR}/${PROJECT_NAME}.dmg"
 PROJECT_PATH="${SCRIPT_DIR}/${PROJECT_PATH}"
 GENERATE_SCRIPT="${SCRIPT_DIR}/../Scripts/generate_bundled_catalog.sh"
 APPCAST_PATH="${DMG_DIR}/appcast-amigaromexplorer.xml"
+PBXPROJ="${SCRIPT_DIR}/${PROJECT_PATH}/project.pbxproj"
+SITE_INDEX="${SCRIPT_DIR}/../../../docs/index.html"
 
-for file in "$PROJECT_PATH" "$README_PATH" "$BACKGROUND_IMAGE" "$VOLUME_ICON" "$EXPORT_OPTIONS_PLIST" "${SCRIPT_DIR}/gendmg.sh" "$GENERATE_SCRIPT"; do
+read_build_number() {
+    grep 'CURRENT_PROJECT_VERSION = ' "$PBXPROJ" | head -1 | sed -E 's/.*CURRENT_PROJECT_VERSION = ([0-9]+);/\1/'
+}
+
+bump_build_number() {
+    local current="$1"
+    local next=$((current + 1))
+
+    if [[ ! "$current" =~ ^[0-9]+$ ]]; then
+        echo "Error: Could not parse CURRENT_PROJECT_VERSION from $PBXPROJ"
+        exit 1
+    fi
+
+    sed -i '' "s/CURRENT_PROJECT_VERSION = ${current};/CURRENT_PROJECT_VERSION = ${next};/g" "$PBXPROJ"
+    echo "Bumped CURRENT_PROJECT_VERSION: ${current} -> ${next}"
+}
+
+for file in "$PROJECT_PATH" "$README_PATH" "$BACKGROUND_IMAGE" "$VOLUME_ICON" "$EXPORT_OPTIONS_PLIST" "${SCRIPT_DIR}/gendmg.sh" "$GENERATE_SCRIPT" "$PBXPROJ"; do
     if [ ! -e "$file" ]; then
         echo "Error: File not found at $file"
         exit 1
@@ -34,6 +68,13 @@ AVAILABLE_SPACE=$(df -P "$DMG_DIR" | tail -1 | awk '{print $4}' | awk '{print $1
 if (( $(echo "$AVAILABLE_SPACE < $MIN_SPACE_MB" | bc -l) )); then
     echo "Error: Insufficient disk space. Need $MIN_SPACE_MB MB, got ${AVAILABLE_SPACE} MB."
     exit 1
+fi
+
+CURRENT_BUILD="$(read_build_number)"
+if [[ "$BUMP_BUILD" -eq 1 ]]; then
+    bump_build_number "$CURRENT_BUILD"
+else
+    echo "Skipping build-number bump (current: ${CURRENT_BUILD})"
 fi
 
 echo "Regenerating bundled catalog..."
@@ -94,7 +135,7 @@ cat > "$APPCAST_PATH" <<EOF
         <item>
             <title>Version ${VERSION}</title>
             <description><![CDATA[
-Build ${BUILD_NUMBER}: sidebar interaction fixes, improved Ollama setup wizard, and Sparkle auto-updates.
+Amiga ROM Explorer ${VERSION} (build ${BUILD_NUMBER})
 ]]></description>
             <sparkle:releaseNotesLink>https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/changelogs.html#amigaromexplorer</sparkle:releaseNotesLink>
             <pubDate>${PUB_DATE}</pubDate>
@@ -104,6 +145,12 @@ Build ${BUILD_NUMBER}: sidebar interaction fixes, improved Ollama setup wizard, 
 </rss>
 EOF
 
+if [ -f "$SITE_INDEX" ]; then
+    sed -i '' -E "s|AmigaROMExplorer-[0-9.]+_[0-9]+\\.dmg|${DMG_NAME}|g" "$SITE_INDEX"
+    echo "Site download link updated in: $SITE_INDEX"
+fi
+
 echo "DMG created at: $DMG_FINAL_PATH"
 echo "Appcast updated at: $APPCAST_PATH"
 echo "Build and packaging complete."
+echo "Remember to commit project.pbxproj, DMG, appcast, and docs/index.html before pushing."
