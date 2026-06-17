@@ -15,7 +15,7 @@
   ],
   "purpose" : "Stored in ROM (or loaded from disk on early A1000 setups), Kickstart initializes custom chips, brings up Chip RAM, installs core libraries, and hands control to boot media or the Workbench desktop.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803402338.700619,
+  "researchedAt" : 803405427.860216,
   "romID" : "kickstart\/v3-1-r40-068\/a4000\/hack-cloanto\/kickstart-v3-1-r40-068-1993-12-commodore-a4000-h-cloanto.rom",
   "summary" : "Kickstart is the Amiga's resident operating system firmware. This hack \/ crack image targets Amiga 4000 and provides the Exec kernel, device drivers, Intuition GUI, and DOS library needed to boot Workbench or games.",
   "technicalInsights" : [

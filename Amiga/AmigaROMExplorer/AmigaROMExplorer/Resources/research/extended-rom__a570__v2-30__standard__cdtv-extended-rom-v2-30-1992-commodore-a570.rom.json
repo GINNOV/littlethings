@@ -15,7 +15,7 @@
   ],
   "purpose" : "Enables CD-based boot, audio CD playback, and console-style startup on CDTV\/CD32, or CD-ROM expansion on A500-class machines.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803402338.671313,
+  "researchedAt" : 803405427.831876,
   "romID" : "extended-rom\/a570\/v2-30\/standard\/cdtv-extended-rom-v2-30-1992-commodore-a570.rom",
   "summary" : "Extended ROM firmware for Commodore CDTV. Adds CD filesystem support, audio\/CD streaming helpers, and boot logic beyond standard Kickstart.",
   "technicalInsights" : [

@@ -10,7 +10,7 @@
   ],
   "purpose" : "Brings the A3000 hardware to a state where SuperKickstart or standard Kickstart can be loaded from ROM or disk.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803402338.668541,
+  "researchedAt" : 803405427.829662,
   "romID" : "boot-rom\/a3000\/v1-4-r36-16\/good\/amiga-3000-boot-rom-v1-4-r36-16-1990-commodore-a3000-good-rom1.rom",
   "summary" : "A3000 boot ROM providing early startup code before Kickstart takes over. The A3000 uses a two-stage boot process with separate ROM0 and ROM1 images.",
   "technicalInsights" : [

@@ -33,9 +33,9 @@ EXPORT_OPTIONS_PLIST="${SCRIPT_DIR}/exportOptions.plist"
 DMG_DIR="${SCRIPT_DIR}/../../Tools/releases"
 DMG_BASE_PATH="${DMG_DIR}/${PROJECT_NAME}.dmg"
 PROJECT_PATH="${SCRIPT_DIR}/${PROJECT_PATH}"
+PBXPROJ="${PROJECT_PATH}/project.pbxproj"
 GENERATE_SCRIPT="${SCRIPT_DIR}/../Scripts/generate_bundled_catalog.sh"
 APPCAST_PATH="${DMG_DIR}/appcast-amigaromexplorer.xml"
-PBXPROJ="${SCRIPT_DIR}/${PROJECT_PATH}/project.pbxproj"
 SITE_INDEX="${SCRIPT_DIR}/../../../docs/index.html"
 
 read_build_number() {

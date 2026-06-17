@@ -14,7 +14,7 @@
   ],
   "purpose" : "Enables CD-based boot, audio CD playback, and console-style startup on CDTV\/CD32, or CD-ROM expansion on A500-class machines.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803402338.67094,
+  "researchedAt" : 803405427.831568,
   "romID" : "extended-rom\/cdtv\/v1-0\/encrypted-needs-rom-key\/cdtv-extended-rom-v1-0-1991-commodore-cdtv-encrypted-needs-rom-key.rom",
   "summary" : "Extended ROM firmware for Commodore CDTV. Adds CD filesystem support, audio\/CD streaming helpers, and boot logic beyond standard Kickstart.",
   "technicalInsights" : [
