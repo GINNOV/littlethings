@@ -119,6 +119,8 @@ struct AmigaProgramModel: Codable, Equatable {
         case paula = "Paula"
         case cia = "CIA"
         case exec = "Exec"
+        case graphics = "Graphics"
+        case intuition = "Intuition"
     }
 
     var id: String
@@ -227,6 +229,7 @@ enum AmigaProgramFamilyRegistry {
         name: "Model-backed double-buffered bitplane",
         kind: .effect,
         firstShotPromptExamples: [
+            "Generate double-buffered bitplane animation that swaps front red and back green bitplane pointers on vblank, overlays a small sprite, updates a copper color register, and exits on left mouse click.",
             "Generate double-buffered bitplane animation that swaps front (red) and back (green) bitplane pointers on vblank and exits on left mouse click.",
             "Generate double-buffered bitplane animation that swaps front and back bitplane pointers on vblank and exits on left mouse click."
         ],
@@ -307,7 +310,7 @@ enum AmigaProgramFamilyRegistry {
             .state,
             .chipData
         ],
-        requiredHardware: [.bitplanes, .cia],
+        requiredHardware: [.bitplanes, .sprites, .copper, .cia],
         requiredVerificationGates: [
             "verified first-shot template",
             "structured follow-up patcher",
@@ -1997,6 +2000,12 @@ enum AmigaProgramFamilyPromotionAudit {
             if !model.hardware.contains(.bitplanes) {
                 failures.append("\(manifest.id): runtime observation contract failure: model does not declare bitplane hardware.")
             }
+            if !model.hardware.contains(.copper) {
+                failures.append("\(manifest.id): runtime observation contract failure: model does not declare copper hardware.")
+            }
+            if !model.hardware.contains(.sprites) {
+                failures.append("\(manifest.id): runtime observation contract failure: model does not declare sprite hardware.")
+            }
             if !containsLine("move.wfrontcolor(pc),$182(a6)") ||
                 !containsLine("move.wbackcolor(pc),$182(a6)") {
                 failures.append("\(manifest.id): runtime observation contract failure: missing COLOR01 writes for front/back frame evidence.")
@@ -2008,7 +2017,16 @@ enum AmigaProgramFamilyPromotionAudit {
             if !containsLine("bsr.swaitvblank") && !containsLine("bsrwaitvblank") {
                 failures.append("\(manifest.id): runtime observation contract failure: frame swap is not paced through WaitVBlank.")
             }
-            for label in ["buffera:", "bufferb:", "patterna:", "patternb:"] where !containsLine(label) {
+            if !containsLine("move.wa0,$80(a6)") && !containsLine("move.la0,$80(a6)") {
+                failures.append("\(manifest.id): runtime observation contract failure: missing owned copper-list install.")
+            }
+            if !containsLine("move.la4,$120(a6)") {
+                failures.append("\(manifest.id): runtime observation contract failure: missing sprite overlay pointer write.")
+            }
+            if !containsLine("move.w#$83a0,$96(a6)") {
+                failures.append("\(manifest.id): runtime observation contract failure: missing bitplane/copper/sprite DMA enable.")
+            }
+            for label in ["buffera:", "bufferb:", "patterna:", "patternb:", "copperlist:", "spritedata:"] where !containsLine(label) {
                 failures.append("\(manifest.id): runtime observation contract failure: missing visible frame data label \(label.dropLast()).")
             }
             return failures
@@ -2030,6 +2048,9 @@ enum AmigaProgramFamilyPromotionAudit {
             ]
             for (name, needle) in requiredSignals where !containsLine(needle) {
                 failures.append("\(manifest.id): runtime observation contract failure: missing \(name).")
+            }
+            if !containsLine("bsrplaymod") {
+                failures.append("\(manifest.id): runtime observation contract failure: startup does not preview PlayMOD for emulator-visible Paula evidence.")
             }
             return failures
 
@@ -4302,6 +4323,8 @@ enum AmigaProgramFamilyPromotionAudit {
     ) -> [String] {
         let previousLines = previousSource.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
         let resultLines = result.source.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        let previousIndex = AmigaSourceIndexer.index(previousSource)
+        let resultIndex = AmigaSourceIndexer.index(result.source)
         var failures: [String] = []
 
         for previousRoutine in previousModel.routines {
@@ -4318,8 +4341,8 @@ enum AmigaProgramFamilyPromotionAudit {
             ) else {
                 continue
             }
-            guard let previousBody = routineBody(previousRoutine.label, inRegion: expectedRegion.rawValue, source: previousSource, sourceLines: previousLines),
-                  let resultBody = routineBody(previousRoutine.label, inRegion: expectedRegion.rawValue, source: result.source, sourceLines: resultLines) else {
+            guard let previousBody = routineBody(previousRoutine.label, inRegion: expectedRegion.rawValue, index: previousIndex, sourceLines: previousLines),
+                  let resultBody = routineBody(previousRoutine.label, inRegion: expectedRegion.rawValue, index: resultIndex, sourceLines: resultLines) else {
                 continue
             }
             if previousBody != resultBody {
@@ -4339,16 +4362,18 @@ enum AmigaProgramFamilyPromotionAudit {
     ) -> [String] {
         let previousLines = previousSource.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
         let resultLines = result.source.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
-        let previousLabels = labelNames(inRegion: AmigaSourceRegionName.chipData.rawValue, source: previousSource, sourceLines: previousLines)
-        let resultLabels = Set(labelNames(inRegion: AmigaSourceRegionName.chipData.rawValue, source: result.source, sourceLines: resultLines))
+        let previousIndex = AmigaSourceIndexer.index(previousSource)
+        let resultIndex = AmigaSourceIndexer.index(result.source)
+        let previousLabels = labelNames(inRegion: AmigaSourceRegionName.chipData.rawValue, index: previousIndex, sourceLines: previousLines)
+        let resultLabels = Set(labelNames(inRegion: AmigaSourceRegionName.chipData.rawValue, index: resultIndex, sourceLines: resultLines))
         var failures: [String] = []
 
         for label in previousLabels where resultLabels.contains(label) {
             guard !isDataBlockSuperseded(label, previousModel: previousModel, resultModel: result.model, prompt: prompt) else {
                 continue
             }
-            guard let previousBlock = dataBlock(label, inRegion: AmigaSourceRegionName.chipData.rawValue, source: previousSource, sourceLines: previousLines),
-                  let resultBlock = dataBlock(label, inRegion: AmigaSourceRegionName.chipData.rawValue, source: result.source, sourceLines: resultLines) else {
+            guard let previousBlock = dataBlock(label, inRegion: AmigaSourceRegionName.chipData.rawValue, index: previousIndex, sourceLines: previousLines),
+                  let resultBlock = dataBlock(label, inRegion: AmigaSourceRegionName.chipData.rawValue, index: resultIndex, sourceLines: resultLines) else {
                 continue
             }
             if previousBlock != resultBlock {
@@ -4474,6 +4499,10 @@ enum AmigaProgramFamilyPromotionAudit {
 
     private static func dataBlock(_ label: String, inRegion name: String, source: String, sourceLines: [String]) -> [String]? {
         let index = AmigaSourceIndexer.index(source)
+        return dataBlock(label, inRegion: name, index: index, sourceLines: sourceLines)
+    }
+
+    private static func dataBlock(_ label: String, inRegion name: String, index: AmigaSourceIndex, sourceLines: [String]) -> [String]? {
         guard let region = index.regions[name],
               let endLine = region.endLine,
               let labelIndex = labelLineIndex(label, inRegion: name, index: index, sourceLines: sourceLines) else {
@@ -4489,13 +4518,17 @@ enum AmigaProgramFamilyPromotionAudit {
             if trimmed.hasPrefix("; @amiga:region") {
                 return true
             }
-            return AmigaSourceIndexer.index(line).labels.isEmpty == false
+            return AmigaSourceIndexer.labelName(from: line) != nil
         } ?? regionEndIndex
         return trimmedRoutineBody(Array(sourceLines[labelIndex..<bodyEnd]))
     }
 
     private static func labelNames(inRegion name: String, source: String, sourceLines: [String]) -> [String] {
         let index = AmigaSourceIndexer.index(source)
+        return labelNames(inRegion: name, index: index, sourceLines: sourceLines)
+    }
+
+    private static func labelNames(inRegion name: String, index: AmigaSourceIndex, sourceLines: [String]) -> [String] {
         guard let region = index.regions[name], let endLine = region.endLine else {
             return []
         }
@@ -4504,13 +4537,20 @@ enum AmigaProgramFamilyPromotionAudit {
         guard lowerBound < upperBound else {
             return []
         }
-        return sourceLines[lowerBound..<upperBound].flatMap { line in
-            AmigaSourceIndexer.index(line).labels.filter { !$0.hasPrefix(".") }
+        return sourceLines[lowerBound..<upperBound].compactMap { line in
+            guard let label = AmigaSourceIndexer.labelName(from: line), !label.hasPrefix(".") else {
+                return nil
+            }
+            return label
         }
     }
 
     private static func routineBody(_ label: String, inRegion name: String, source: String, sourceLines: [String]) -> [String]? {
         let index = AmigaSourceIndexer.index(source)
+        return routineBody(label, inRegion: name, index: index, sourceLines: sourceLines)
+    }
+
+    private static func routineBody(_ label: String, inRegion name: String, index: AmigaSourceIndex, sourceLines: [String]) -> [String]? {
         guard let region = index.regions[name],
               let endLine = region.endLine,
               let labelIndex = labelLineIndex(label, inRegion: name, index: index, sourceLines: sourceLines) else {
@@ -4526,7 +4566,7 @@ enum AmigaProgramFamilyPromotionAudit {
             if trimmed.hasPrefix("; @amiga:region") {
                 return true
             }
-            guard let label = AmigaSourceIndexer.index(line).labels.first else {
+            guard let label = AmigaSourceIndexer.labelName(from: line) else {
                 return false
             }
             return !label.hasPrefix(".")
@@ -4557,7 +4597,7 @@ enum AmigaProgramFamilyPromotionAudit {
             return nil
         }
         return sourceLines[lowerBound..<upperBound].firstIndex {
-            AmigaSourceIndexer.index($0).labels.contains(label)
+            AmigaSourceIndexer.labelName(from: $0) == label
         }
     }
 
@@ -4763,7 +4803,12 @@ enum AmigaProgramFamilyPromotionAudit {
             "Volume step is ",
             "Initial volume is ",
             "Front buffer color is ",
-            "Back buffer color is "
+            "Back buffer color is ",
+            "Copper bar count is ",
+            "Copper bar spacing is ",
+            "Copper bar bounce step is ",
+            "Copper palette is ",
+            "Top status band is "
         ]
         guard let prefix = supersededPrefixes.first(where: { previousExpectation.hasPrefix($0) }) else {
             return false
@@ -4874,6 +4919,23 @@ enum AmigaProgramFamilyPromotionAudit {
             expectationPrefix = "Front buffer color is "
         case ("back_color", _), (_, "BackColor"):
             expectationPrefix = "Back buffer color is "
+        case ("bar_count", _), (_, "BarCount"):
+            expectationPrefix = "Copper bar count is "
+        case ("bar_spacing", _), (_, "BarSpacing"):
+            expectationPrefix = "Copper bar spacing is "
+        case ("bar_step", _), (_, "BarStep"):
+            expectationPrefix = "Copper bar bounce step is "
+        case ("status_band_color", _), (_, "StatusBandColor"):
+            expectationPrefix = "Top status band is "
+        case ("band_color_1", _), (_, "BandColor1"),
+             ("band_color_2", _), (_, "BandColor2"),
+             ("band_color_3", _), (_, "BandColor3"),
+             ("band_color_4", _), (_, "BandColor4"),
+             ("band_color_5", _), (_, "BandColor5"),
+             ("band_color_6", _), (_, "BandColor6"),
+             ("band_color_7", _), (_, "BandColor7"),
+             ("band_color_8", _), (_, "BandColor8"):
+            expectationPrefix = "Copper palette is "
         default:
             expectationPrefix = nil
         }
@@ -4898,6 +4960,17 @@ enum AmigaProgramFamilyPromotionAudit {
             return smokePromptCovers(prompt, supportedFollowUp: "set front color")
         case "Back buffer color is ":
             return smokePromptCovers(prompt, supportedFollowUp: "set back color")
+        case "Copper bar count is ":
+            return smokePromptCovers(prompt, supportedFollowUp: "increase the number of bars to eight")
+        case "Copper bar spacing is ":
+            return smokePromptCovers(prompt, supportedFollowUp: "change copper bar spacing")
+        case "Copper bar bounce step is ":
+            return smokePromptCovers(prompt, supportedFollowUp: "make the bars bounce slower")
+        case "Copper palette is ":
+            return smokePromptCovers(prompt, supportedFollowUp: "change the palette to blue and white") ||
+                smokePromptCovers(prompt, supportedFollowUp: "increase the number of bars to eight")
+        case "Top status band is ":
+            return smokePromptCovers(prompt, supportedFollowUp: "add a top status band without losing the animation")
         default:
             return false
         }
@@ -5054,7 +5127,7 @@ enum AmigaSourceIndexer {
 """
     }
 
-    private static func labelName(from line: String) -> String? {
+    static func labelName(from line: String) -> String? {
         let code = assemblyCodePrefix(beforeCommentIn: line)
         let trimmed = code.trimmingCharacters(in: .whitespaces)
         guard let colonIndex = trimmed.firstIndex(of: ":") else { return nil }
@@ -5314,6 +5387,181 @@ enum AmigaProgramPatcher {
         ))
     }
 
+    static func addIntuitionGadget(label: String, to source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireIntuitionWindowToolModel(model)
+        try requireVerifiedCurrentSource(source)
+
+        let trimmedLabel = label.trimmingCharacters(in: .whitespacesAndNewlines)
+        try requireValidControlLabel(trimmedLabel)
+        let baseID = stableID(from: trimmedLabel)
+        if let existing = model.controls.first(where: { $0.id == baseID || $0.label.caseInsensitiveCompare(trimmedLabel) == .orderedSame }) {
+            throw AmigaProgramPatchError.duplicateControl(existing.id)
+        }
+        let controlID = uniqueControlID(basedOn: baseID, existingControls: model.controls)
+        let actionLabel = "\(stableLabel(from: trimmedLabel))Action"
+        if model.controls.contains(where: { $0.action == actionLabel }) {
+            throw AmigaProgramPatchError.duplicateAction(actionLabel, trimmedLabel)
+        }
+        let slot = model.controls.count
+        let y = model.controls.map { $0.bounds?.y ?? 18 }.max() ?? 18
+        let bounds = AmigaProgramModel.Bounds(x: 14 + slot * 90, y: y, width: 78, height: 18)
+        model.controls.append(AmigaProgramModel.Control(id: controlID, label: trimmedLabel, action: actionLabel, bounds: bounds))
+        model.routines.append(AmigaProgramModel.Routine(id: controlID, label: actionLabel, purpose: "Records that the \(trimmedLabel) gadget was activated."))
+        if let dispatchIndex = model.routines.firstIndex(where: { $0.id == "dispatch" }),
+           !model.routines[dispatchIndex].calls.contains(actionLabel) {
+            model.routines[dispatchIndex].calls.append(actionLabel)
+        }
+        model.verificationExpectations.append("Control \(trimmedLabel) dispatches to \(actionLabel).")
+
+        return try verifiedIntuitionPatchResult(model: model, changedRegions: [
+            AmigaSourceRegionName.model.rawValue,
+            AmigaSourceRegionName.controls.rawValue,
+            AmigaSourceRegionName.inputDispatch.rawValue,
+            AmigaSourceRegionName.routines.rawValue,
+            AmigaSourceRegionName.chipData.rawValue
+        ])
+    }
+
+    static func renameIntuitionGadget(currentLabel: String, newLabel: String, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireIntuitionWindowToolModel(model)
+        try requireVerifiedCurrentSource(source)
+
+        let trimmedNewLabel = newLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        try requireValidControlLabel(trimmedNewLabel)
+        guard let controlIndex = controlIndex(matching: currentLabel, in: model.controls) else {
+            throw AmigaProgramPatchError.missingControl(currentLabel)
+        }
+        if model.controls.enumerated().contains(where: { offset, control in
+            offset != controlIndex && control.label.caseInsensitiveCompare(trimmedNewLabel) == .orderedSame
+        }) {
+            throw AmigaProgramPatchError.duplicateLabel(trimmedNewLabel)
+        }
+        let previousLabel = model.controls[controlIndex].label
+        model.controls[controlIndex].label = trimmedNewLabel
+        model.verificationExpectations.removeAll { $0.contains("Control \(previousLabel) dispatches") }
+        model.verificationExpectations.append("Control \(trimmedNewLabel) dispatches to \(model.controls[controlIndex].action).")
+
+        return try verifiedIntuitionPatchResult(model: model, changedRegions: [
+            AmigaSourceRegionName.model.rawValue,
+            AmigaSourceRegionName.controls.rawValue,
+            AmigaSourceRegionName.chipData.rawValue
+        ])
+    }
+
+    static func moveIntuitionButtonsToBottom(in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireIntuitionWindowToolModel(model)
+        try requireVerifiedCurrentSource(source)
+
+        for offset in model.controls.indices {
+            model.controls[offset].bounds = AmigaProgramModel.Bounds(x: 14 + offset * 90, y: 62, width: 78, height: 18)
+        }
+        model.verificationExpectations.removeAll { $0 == "Modeled gadgets are placed on the bottom row." }
+        model.verificationExpectations.append("Modeled gadgets are placed on the bottom row.")
+
+        return try verifiedIntuitionPatchResult(model: model, changedRegions: [
+            AmigaSourceRegionName.model.rawValue,
+            AmigaSourceRegionName.controls.rawValue,
+            AmigaSourceRegionName.chipData.rawValue
+        ])
+    }
+
+    static func addIntuitionStatusText(in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireIntuitionWindowToolModel(model)
+        try requireVerifiedCurrentSource(source)
+
+        if !model.stateVariables.contains(where: { $0.id == "status_text" }) {
+            model.stateVariables.append(AmigaProgramModel.StateVariable(
+                id: "status_text",
+                symbol: "StatusTextEnabled",
+                purpose: "One when the generated Intuition text field is present.",
+                initialValue: "1"
+            ))
+        }
+        model.verificationExpectations.removeAll { $0 == "Status text field is present without changing cleanup." }
+        model.verificationExpectations.append("Status text field is present without changing cleanup.")
+
+        return try verifiedIntuitionPatchResult(model: model, changedRegions: [
+            AmigaSourceRegionName.model.rawValue,
+            AmigaSourceRegionName.state.rawValue,
+            AmigaSourceRegionName.chipData.rawValue
+        ])
+    }
+
+    static func updateCleanTakeoverPaletteToGreen(in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireCleanTakeoverRestoreModel(model)
+        try requireVerifiedCurrentSource(source)
+
+        try updateStateInitialValue(symbol: "PaletteMode", id: "palette_mode", value: "1", model: &model)
+        model.verificationExpectations.removeAll { $0 == "Cycling palette uses green tones." }
+        model.verificationExpectations.append("Cycling palette uses green tones.")
+
+        return try verifiedCleanTakeoverPatchResult(model: model, changedRegions: [
+            AmigaSourceRegionName.model.rawValue,
+            AmigaSourceRegionName.state.rawValue,
+            AmigaSourceRegionName.chipData.rawValue
+        ])
+    }
+
+    static func enableCleanTakeoverCopperSplit(in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireCleanTakeoverRestoreModel(model)
+        try requireVerifiedCurrentSource(source)
+
+        try updateStateInitialValue(symbol: "CopperSplitEnabled", id: "copper_split_enabled", value: "1", model: &model)
+        model.verificationExpectations.removeAll { $0 == "Copper split is enabled while preserving restore." }
+        model.verificationExpectations.append("Copper split is enabled while preserving restore.")
+
+        return try verifiedCleanTakeoverPatchResult(model: model, changedRegions: [
+            AmigaSourceRegionName.model.rawValue,
+            AmigaSourceRegionName.state.rawValue,
+            AmigaSourceRegionName.chipData.rawValue
+        ])
+    }
+
+    static func slowCleanTakeoverEveryOtherVBlank(in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireCleanTakeoverRestoreModel(model)
+        try requireVerifiedCurrentSource(source)
+
+        try updateStateInitialValue(symbol: "VBlankDivider", id: "vblank_divider", value: "2", model: &model)
+        model.verificationExpectations.removeAll { $0 == "Color cycling updates every other vblank." }
+        model.verificationExpectations.append("Color cycling updates every other vblank.")
+
+        return try verifiedCleanTakeoverPatchResult(model: model, changedRegions: [
+            AmigaSourceRegionName.model.rawValue,
+            AmigaSourceRegionName.state.rawValue
+        ])
+    }
+
+    static func enableCleanTakeoverRightMouseRestore(in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireCleanTakeoverRestoreModel(model)
+        try requireVerifiedCurrentSource(source)
+
+        try updateStateInitialValue(symbol: "RightMouseRestoreEnabled", id: "right_mouse_restore_enabled", value: "1", model: &model)
+        model.verificationExpectations.removeAll { $0 == "Right mouse also routes through RestoreSystem." }
+        model.verificationExpectations.append("Right mouse also routes through RestoreSystem.")
+
+        return try verifiedCleanTakeoverPatchResult(model: model, changedRegions: [
+            AmigaSourceRegionName.model.rawValue,
+            AmigaSourceRegionName.hitTest.rawValue,
+            AmigaSourceRegionName.state.rawValue
+        ])
+    }
+
     static func updatePlaybackPeriod(_ period: Int, in source: String) throws -> AmigaProgramPatchResult {
         let index = AmigaSourceIndexer.index(source)
         guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
@@ -5455,6 +5703,504 @@ enum AmigaProgramPatcher {
             model: model,
             changedRegions: changedRegions
         ))
+    }
+
+    static func moveDoubleBufferedSpriteDownward(in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireDoubleBufferedBitplaneModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.chipData.rawValue, in: index)
+
+        model.verificationExpectations.removeAll { $0.hasPrefix("Sprite overlay vertical offset is ") }
+        model.verificationExpectations.append("Sprite overlay vertical offset is 16 pixels downward.")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        let beforeSprite = patched
+        patched = patched.replacingOccurrences(
+            of: "            dc.w       $4060,$4800",
+            with: "            dc.w       $5060,$5800          ; sprite moved 16 pixels downward"
+        )
+        guard patched != beforeSprite else {
+            throw AmigaProgramPatchError.missingRegion("sprite vertical control words")
+        }
+        return try doubleBufferedBitplaneVerifiedPatchResult(
+            source: source,
+            patched: patched,
+            model: model,
+            changedRegions: [AmigaSourceRegionName.model.rawValue, AmigaSourceRegionName.chipData.rawValue]
+        )
+    }
+
+    static func updateDoubleBufferedVBlankWaits(_ count: Int, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireDoubleBufferedBitplaneModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+
+        guard count == 2 else {
+            throw AmigaProgramPatchError.missingRegion("supported double-buffered vblank wait count")
+        }
+        model.verificationExpectations.removeAll { $0.hasPrefix("Animation waits ") }
+        model.verificationExpectations.append("Animation waits 2 vblanks per buffer swap.")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        let beforeLoopPatch = patched
+        patched = patched.replacingOccurrences(
+            of: "            bsr.s      WaitVBlank\n            tst.b      d2",
+            with: "            bsr.s      WaitVBlank\n            bsr.s      WaitVBlank          ; second vblank wait for slower animation\n            tst.b      d2"
+        )
+        guard patched != beforeLoopPatch else {
+            throw AmigaProgramPatchError.missingRegion("double-buffered vblank pacing call")
+        }
+        return try doubleBufferedBitplaneVerifiedPatchResult(
+            source: source,
+            patched: patched,
+            model: model,
+            changedRegions: [AmigaSourceRegionName.model.rawValue, AmigaSourceRegionName.hitTest.rawValue]
+        )
+    }
+
+    static func updateDoubleBufferedCopperAccentColor(_ color: String, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireDoubleBufferedBitplaneModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.chipData.rawValue, in: index)
+
+        let normalizedColor = color.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard let value = AmigaProgramTemplate.colorValue(named: normalizedColor) else {
+            throw AmigaProgramPatchError.missingRegion("supported copper accent color")
+        }
+        model.verificationExpectations.removeAll { $0.hasPrefix("Copper accent color is ") }
+        model.verificationExpectations.append("Copper accent color is \(normalizedColor).")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        let beforeStartup = patched
+        patched = patched.replacingOccurrences(
+            of: "            move.w     #$0000,$180(a6)",
+            with: "            move.w     #\(value),$180(a6)       ; \(normalizedColor) copper accent"
+        )
+        guard patched != beforeStartup else {
+            throw AmigaProgramPatchError.missingRegion("startup copper accent color")
+        }
+        let beforeCopperList = patched
+        patched = patched.replacingOccurrences(
+            of: "            dc.w       $0180,$0000",
+            with: "            dc.w       $0180,\(value)          ; \(normalizedColor) copper accent"
+        )
+        guard patched != beforeCopperList else {
+            throw AmigaProgramPatchError.missingRegion("copper list accent color")
+        }
+        return try doubleBufferedBitplaneVerifiedPatchResult(
+            source: source,
+            patched: patched,
+            model: model,
+            changedRegions: [AmigaSourceRegionName.model.rawValue, AmigaSourceRegionName.chipData.rawValue]
+        )
+    }
+
+    static func updateMouseSpriteFollowerOffset(_ offset: Int, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireMouseSpriteMultiplexModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        let boundedOffset = min(max(offset, 0), 96)
+        try updateStateInitialValue(symbol: "FollowerXOffset", id: "follower_x_offset", value: "\(boundedOffset)", model: &model)
+        model.verificationExpectations.removeAll { $0.hasPrefix("Follower sprite horizontal offset is ") }
+        model.verificationExpectations.append("Follower sprite horizontal offset is \(boundedOffset) pixels.")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceStateWordLine(
+            label: "FollowerXOffset",
+            inRegion: AmigaSourceRegionName.state.rawValue,
+            source: patched,
+            value: boundedOffset
+        )
+        return try mouseSpriteVerifiedPatchResult(source: source, patched: patched, model: model)
+    }
+
+    static func updateMouseSpriteHorizontalWrapping(enabled: Bool, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireMouseSpriteMultiplexModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        let value = enabled ? 1 : 0
+        try updateStateInitialValue(symbol: "FollowerWrapEnabled", id: "follower_wrap_enabled", value: "\(value)", model: &model)
+        model.verificationExpectations.removeAll { $0.hasPrefix("Follower horizontal wrapping is ") }
+        model.verificationExpectations.append("Follower horizontal wrapping is \(enabled ? "enabled" : "disabled").")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceStateWordLine(
+            label: "FollowerWrapEnabled",
+            inRegion: AmigaSourceRegionName.state.rawValue,
+            source: patched,
+            value: value
+        )
+        return try mouseSpriteVerifiedPatchResult(source: source, patched: patched, model: model)
+    }
+
+    static func updateMouseSpriteFollowerLag(enabled: Bool, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireMouseSpriteMultiplexModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        let value = enabled ? 1 : 0
+        try updateStateInitialValue(symbol: "FollowerLagEnabled", id: "follower_lag_enabled", value: "\(value)", model: &model)
+        model.verificationExpectations.removeAll { $0.hasPrefix("Follower one-frame lag is ") }
+        model.verificationExpectations.append("Follower one-frame lag is \(enabled ? "enabled" : "disabled").")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceStateWordLine(
+            label: "FollowerLagEnabled",
+            inRegion: AmigaSourceRegionName.state.rawValue,
+            source: patched,
+            value: value
+        )
+        return try mouseSpriteVerifiedPatchResult(source: source, patched: patched, model: model)
+    }
+
+    static func updateMouseSpriteColor(_ color: String, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireMouseSpriteMultiplexModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        let normalizedColor = color.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard let value = AmigaProgramTemplate.colorValue(named: normalizedColor) else {
+            throw AmigaProgramPatchError.missingRegion("supported sprite color")
+        }
+        try updateStateInitialValue(symbol: "SpriteColor1", id: "sprite_color", value: value, model: &model)
+        try updateStateInitialValue(symbol: "SpriteColor2", id: "sprite_color_2", value: value, model: &model)
+        try updateStateInitialValue(symbol: "SpriteColor3", id: "sprite_color_3", value: value, model: &model)
+        model.verificationExpectations.removeAll { $0.hasPrefix("Sprite color is ") }
+        model.verificationExpectations.append("Sprite color is \(normalizedColor).")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceStateWordLine(
+            label: "SpriteColor1",
+            inRegion: AmigaSourceRegionName.state.rawValue,
+            source: patched,
+            value: value,
+            suffix: "; \(normalizedColor) sprite COLOR17"
+        )
+        patched = try replaceStateWordLine(
+            label: "SpriteColor2",
+            inRegion: AmigaSourceRegionName.state.rawValue,
+            source: patched,
+            value: value,
+            suffix: "; \(normalizedColor) sprite COLOR18"
+        )
+        patched = try replaceStateWordLine(
+            label: "SpriteColor3",
+            inRegion: AmigaSourceRegionName.state.rawValue,
+            source: patched,
+            value: value,
+            suffix: "; \(normalizedColor) sprite COLOR19"
+        )
+        return try mouseSpriteVerifiedPatchResult(source: source, patched: patched, model: model)
+    }
+
+    static func updateCopperRasterBarCount(_ count: Int, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireCopperRasterModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        guard count == 8 else {
+            throw AmigaProgramPatchError.missingRegion("supported copper bar count")
+        }
+
+        try updateStateInitialValue(symbol: "BarCount", id: "bar_count", value: "8", model: &model)
+        try updateStateInitialValue(symbol: "BandColor7", id: "band_color_7", value: "$000f", model: &model)
+        try updateStateInitialValue(symbol: "BandColor8", id: "band_color_8", value: "$0fff", model: &model)
+        model.verificationExpectations.removeAll { $0.hasPrefix("Copper bar count is ") }
+        model.verificationExpectations.append("Copper bar count is 8.")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceStateWordLine(label: "BarCount", inRegion: AmigaSourceRegionName.state.rawValue, source: patched, value: 8)
+        patched = try replaceStateWordLine(label: "BandColor7", inRegion: AmigaSourceRegionName.state.rawValue, source: patched, value: "$000f", suffix: "; blue seventh bar")
+        patched = try replaceStateWordLine(label: "BandColor8", inRegion: AmigaSourceRegionName.state.rawValue, source: patched, value: "$0fff", suffix: "; white eighth bar")
+        return try copperRasterVerifiedPatchResult(source: source, patched: patched, model: model)
+    }
+
+    static func updateCopperRasterBounceStep(_ step: Int, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireCopperRasterModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        let boundedStep = min(max(step, 1), 4)
+        try updateStateInitialValue(symbol: "BarStep", id: "bar_step", value: "\(boundedStep)", model: &model)
+        model.verificationExpectations.removeAll { $0.hasPrefix("Copper bar bounce step is ") }
+        model.verificationExpectations.append("Copper bar bounce step is \(boundedStep) pixel\(boundedStep == 1 ? "" : "s") per frame.")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceStateWordLine(label: "BarStep", inRegion: AmigaSourceRegionName.state.rawValue, source: patched, value: boundedStep)
+        return try copperRasterVerifiedPatchResult(source: source, patched: patched, model: model)
+    }
+
+    static func updateCopperRasterBlueWhitePalette(in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireCopperRasterModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        let values = [
+            ("BandColor1", "band_color_1", "$000f"),
+            ("BandColor2", "band_color_2", "$0fff"),
+            ("BandColor3", "band_color_3", "$000f"),
+            ("BandColor4", "band_color_4", "$0fff"),
+            ("BandColor5", "band_color_5", "$000f"),
+            ("BandColor6", "band_color_6", "$0fff"),
+            ("BandColor7", "band_color_7", "$000f"),
+            ("BandColor8", "band_color_8", "$0fff")
+        ]
+        for (symbol, id, value) in values {
+            try updateStateInitialValue(symbol: symbol, id: id, value: value, model: &model)
+        }
+        model.verificationExpectations.removeAll { $0.hasPrefix("Copper palette is ") }
+        model.verificationExpectations.append("Copper palette is blue and white.")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        for (symbol, _, value) in values {
+            patched = try replaceStateWordLine(label: symbol, inRegion: AmigaSourceRegionName.state.rawValue, source: patched, value: value, suffix: "; blue/white palette")
+        }
+        return try copperRasterVerifiedPatchResult(source: source, patched: patched, model: model)
+    }
+
+    static func updateCopperRasterTopStatusBand(in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireCopperRasterModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        try updateStateInitialValue(symbol: "StatusBandColor", id: "status_band_color", value: "$00f0", model: &model)
+        model.verificationExpectations.removeAll { $0.hasPrefix("Top status band is ") }
+        model.verificationExpectations.append("Top status band is enabled.")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceStateWordLine(label: "StatusBandColor", inRegion: AmigaSourceRegionName.state.rawValue, source: patched, value: "$00f0", suffix: "; green top status band")
+        return try copperRasterVerifiedPatchResult(source: source, patched: patched, model: model)
+    }
+
+    static func updateBlitterBOBHorizontalSpeed(_ speed: Int, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireBlitterBOBCollisionModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        let boundedSpeed = min(max(speed, 1), 16)
+        guard let stateIndex = model.stateVariables.firstIndex(where: { $0.id == "bob_dx" || $0.symbol == "BOBDX" }) else {
+            throw AmigaProgramPatchError.missingRegion("BOBDX state")
+        }
+        model.stateVariables[stateIndex].initialValue = "\(boundedSpeed)"
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceStateWordLine(
+            label: "BOBDX",
+            inRegion: AmigaSourceRegionName.state.rawValue,
+            source: patched,
+            value: boundedSpeed
+        )
+        return try blitterBOBVerifiedPatchResult(source: source, patched: patched, model: model)
+    }
+
+    static func updateBlitterBOBTargetRectangle(left: Int, right: Int, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireBlitterBOBCollisionModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        let clampedLeft = min(max(left, 16), 272)
+        let clampedRight = min(max(right, clampedLeft + 16), 288)
+        try updateBlitterBOBStateInitialValue(symbol: "TargetLeft", id: "target_left", value: "\(clampedLeft)", model: &model)
+        try updateBlitterBOBStateInitialValue(symbol: "TargetRight", id: "target_right", value: "\(clampedRight)", model: &model)
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceStateWordLine(
+            label: "TargetLeft",
+            inRegion: AmigaSourceRegionName.state.rawValue,
+            source: patched,
+            value: clampedLeft
+        )
+        patched = try replaceStateWordLine(
+            label: "TargetRight",
+            inRegion: AmigaSourceRegionName.state.rawValue,
+            source: patched,
+            value: clampedRight
+        )
+        return try blitterBOBVerifiedPatchResult(source: source, patched: patched, model: model)
+    }
+
+    static func updateBlitterBOBCollisionColor(_ color: String, in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireBlitterBOBCollisionModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        let normalizedColor = color.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard let value = AmigaProgramTemplate.colorValue(named: normalizedColor) else {
+            throw AmigaProgramPatchError.missingRegion("supported collision color")
+        }
+        try updateBlitterBOBStateInitialValue(symbol: "CollisionColor", id: "collision_color", value: value, model: &model)
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+        patched = try replaceStateWordLine(
+            label: "CollisionColor",
+            inRegion: AmigaSourceRegionName.state.rawValue,
+            source: patched,
+            value: value,
+            suffix: "; \(normalizedColor) collision COLOR01"
+        )
+        return try blitterBOBVerifiedPatchResult(source: source, patched: patched, model: model)
+    }
+
+    static func addBlitterBOBDirectionControl(in source: String) throws -> AmigaProgramPatchResult {
+        let index = AmigaSourceIndexer.index(source)
+        guard var model = index.model else { throw AmigaProgramPatchError.missingModel }
+        try requireBlitterBOBCollisionModel(model)
+        try requireVerifiedCurrentSource(source)
+        try requireClosedRegion(AmigaSourceRegionName.model.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.routines.rawValue, in: index)
+        try requireClosedRegion(AmigaSourceRegionName.state.rawValue, in: index)
+
+        if !model.routines.contains(where: { $0.id == "read_direction_input" || $0.label == "ReadDirectionInput" }) {
+            let readDirectionRoutine = AmigaProgramModel.Routine(
+                id: "read_direction_input",
+                label: "ReadDirectionInput",
+                purpose: "Reads joystick direction state while preserving the left-mouse exit path."
+            )
+            if let updateRoutineIndex = model.routines.firstIndex(where: { $0.id == "update_bob_position" || $0.label == "UpdateBOBPosition" }) {
+                model.routines.insert(readDirectionRoutine, at: model.routines.index(after: updateRoutineIndex))
+            } else {
+                model.routines.append(readDirectionRoutine)
+            }
+        }
+        if let updateIndex = model.routines.firstIndex(where: { $0.id == "update_bob_position" || $0.label == "UpdateBOBPosition" }),
+           !model.routines[updateIndex].calls.contains("ReadDirectionInput") {
+            model.routines[updateIndex].calls.append("ReadDirectionInput")
+        }
+        if !model.stateVariables.contains(where: { $0.id == "direction_control_enabled" || $0.symbol == "DirectionControlEnabled" }) {
+            model.stateVariables.append(AmigaProgramModel.StateVariable(
+                id: "direction_control_enabled",
+                symbol: "DirectionControlEnabled",
+                purpose: "Set when joystick direction reads are part of the BOB movement path.",
+                initialValue: "1"
+            ))
+        }
+        if !model.stateVariables.contains(where: { $0.id == "direction_sample" || $0.symbol == "DirectionSample" }) {
+            model.stateVariables.append(AmigaProgramModel.StateVariable(
+                id: "direction_sample",
+                symbol: "DirectionSample",
+                purpose: "Last sampled joystick direction bits.",
+                initialValue: "0"
+            ))
+        }
+        model.verificationExpectations.removeAll { $0 == "Joystick direction input participates in BOB movement while mouse exit remains armed." }
+        model.verificationExpectations.append("Joystick direction input participates in BOB movement while mouse exit remains armed.")
+
+        var patched = source
+        patched = try replaceRegion(AmigaSourceRegionName.model.rawValue, in: patched, with: AmigaSourceIndexer.modelRegion(for: model))
+
+        let beforeUpdateCall = patched
+        patched = patched.replacingOccurrences(
+            of: "UpdateBOBPosition:\n            move.w     BOBX(pc),d0",
+            with: "UpdateBOBPosition:\n            bsr        ReadDirectionInput\n            move.w     BOBX(pc),d0"
+        )
+        guard patched != beforeUpdateCall else {
+            throw AmigaProgramPatchError.missingRegion("UpdateBOBPosition entry")
+        }
+
+        let beforeRoutine = patched
+        patched = patched.replacingOccurrences(
+            of: "\nCheckCollision:\n",
+            with: """
+
+ReadDirectionInput:
+            move.w     DirectionControlEnabled(pc),d5
+            beq.s      .directionDone
+            move.w     $00c(a6),d3          ; JOY1DAT direction evidence
+            move.w     d3,d4
+            andi.w     #$0303,d4
+            beq.s      .directionDone
+            move.w     d4,DirectionSample
+.directionDone:
+            rts
+
+CheckCollision:
+"""
+        )
+        guard patched != beforeRoutine else {
+            throw AmigaProgramPatchError.missingRegion("CheckCollision routine anchor")
+        }
+
+        let beforeState = patched
+        patched = patched.replacingOccurrences(
+            of: "ExitDelay:      dc.w       90\n            ; @amiga:region state end",
+            with: """
+ExitDelay:      dc.w       90
+DirectionControlEnabled: dc.w 1
+DirectionSample: dc.w       0
+            ; @amiga:region state end
+"""
+        )
+        guard patched != beforeState else {
+            throw AmigaProgramPatchError.missingRegion("DirectionControlEnabled state")
+        }
+
+        return try blitterBOBVerifiedPatchResult(
+            source: source,
+            patched: patched,
+            model: model,
+            changedRegions: [
+                AmigaSourceRegionName.model.rawValue,
+                AmigaSourceRegionName.routines.rawValue,
+                AmigaSourceRegionName.state.rawValue
+            ]
+        )
     }
 
     static func renameControl(currentLabel: String, newLabel: String, in source: String) throws -> AmigaProgramPatchResult {
@@ -5815,6 +6561,158 @@ enum AmigaProgramPatcher {
         }
     }
 
+    private static func requireDoubleBufferedBitplaneModel(_ model: AmigaProgramModel) throws {
+        guard model.id == AmigaProgramFamilyRegistry.doubleBufferedBitplane.id,
+              model.kind == AmigaProgramFamilyRegistry.doubleBufferedBitplane.kind else {
+            throw AmigaProgramPatchError.missingRegion("double-buffered bitplane model")
+        }
+    }
+
+    private static func requireIntuitionWindowToolModel(_ model: AmigaProgramModel) throws {
+        guard model.id == AmigaProgramTemplate.intuitionWindowToolID,
+              model.kind == .utility else {
+            throw AmigaProgramPatchError.missingRegion("Intuition window tool model")
+        }
+    }
+
+    private static func requireCleanTakeoverRestoreModel(_ model: AmigaProgramModel) throws {
+        guard model.id == AmigaProgramTemplate.cleanTakeoverRestoreID,
+              model.kind == .effect else {
+            throw AmigaProgramPatchError.missingRegion("clean takeover restore model")
+        }
+    }
+
+    private static func verifiedIntuitionPatchResult(model: AmigaProgramModel, changedRegions: [String]) throws -> AmigaProgramPatchResult {
+        let source = try AmigaProgramTemplate.verifiedIntuitionWindowToolSource(model: model)
+        return try verifiedPatchResult(AmigaProgramPatchResult(
+            source: source,
+            model: model,
+            changedRegions: changedRegions
+        ))
+    }
+
+    private static func verifiedCleanTakeoverPatchResult(model: AmigaProgramModel, changedRegions: [String]) throws -> AmigaProgramPatchResult {
+        let source = try AmigaProgramTemplate.verifiedCleanTakeoverRestoreSource(model: model)
+        return try verifiedPatchResult(AmigaProgramPatchResult(
+            source: source,
+            model: model,
+            changedRegions: changedRegions
+        ))
+    }
+
+    private static func requireBlitterBOBCollisionModel(_ model: AmigaProgramModel) throws {
+        guard model.id == AmigaProgramTemplate.blitterBOBCollisionBoundsID,
+              model.kind == .effect else {
+            throw AmigaProgramPatchError.missingRegion("blitter BOB collision model")
+        }
+    }
+
+    private static func requireMouseSpriteMultiplexModel(_ model: AmigaProgramModel) throws {
+        guard model.id == "mouse-sprite-multiplex",
+              model.kind == .effect else {
+            throw AmigaProgramPatchError.missingRegion("mouse sprite multiplex model")
+        }
+    }
+
+    private static func requireCopperRasterModel(_ model: AmigaProgramModel) throws {
+        guard model.id == "bouncing-copper-bars",
+              model.kind == .effect else {
+            throw AmigaProgramPatchError.missingRegion("bouncing copper raster model")
+        }
+    }
+
+    private static func updateBlitterBOBStateInitialValue(
+        symbol: String,
+        id: String,
+        value: String,
+        model: inout AmigaProgramModel
+    ) throws {
+        try updateStateInitialValue(symbol: symbol, id: id, value: value, model: &model)
+    }
+
+    private static func updateStateInitialValue(
+        symbol: String,
+        id: String,
+        value: String,
+        model: inout AmigaProgramModel
+    ) throws {
+        guard let stateIndex = model.stateVariables.firstIndex(where: { $0.id == id || $0.symbol == symbol }) else {
+            throw AmigaProgramPatchError.missingRegion("\(symbol) state")
+        }
+        model.stateVariables[stateIndex].initialValue = value
+    }
+
+    private static func blitterBOBVerifiedPatchResult(
+        source: String,
+        patched: String,
+        model: AmigaProgramModel,
+        changedRegions: [String] = [
+            AmigaSourceRegionName.model.rawValue,
+            AmigaSourceRegionName.state.rawValue
+        ]
+    ) throws -> AmigaProgramPatchResult {
+        guard patched != source else {
+            return try verifiedPatchResult(AmigaProgramPatchResult(source: source, model: model, changedRegions: []))
+        }
+        return try verifiedPatchResult(AmigaProgramPatchResult(
+            source: patched,
+            model: model,
+            changedRegions: changedRegions
+        ))
+    }
+
+    private static func doubleBufferedBitplaneVerifiedPatchResult(
+        source: String,
+        patched: String,
+        model: AmigaProgramModel,
+        changedRegions: [String]
+    ) throws -> AmigaProgramPatchResult {
+        guard patched != source else {
+            return try verifiedPatchResult(AmigaProgramPatchResult(source: source, model: model, changedRegions: []))
+        }
+        return try verifiedPatchResult(AmigaProgramPatchResult(
+            source: patched,
+            model: model,
+            changedRegions: changedRegions
+        ))
+    }
+
+    private static func mouseSpriteVerifiedPatchResult(
+        source: String,
+        patched: String,
+        model: AmigaProgramModel
+    ) throws -> AmigaProgramPatchResult {
+        guard patched != source else {
+            return try verifiedPatchResult(AmigaProgramPatchResult(source: source, model: model, changedRegions: []))
+        }
+        return try verifiedPatchResult(AmigaProgramPatchResult(
+            source: patched,
+            model: model,
+            changedRegions: [
+                AmigaSourceRegionName.model.rawValue,
+                AmigaSourceRegionName.state.rawValue
+            ]
+        ))
+    }
+
+    private static func copperRasterVerifiedPatchResult(
+        source: String,
+        patched: String,
+        model: AmigaProgramModel
+    ) throws -> AmigaProgramPatchResult {
+        guard patched != source else {
+            return try verifiedPatchResult(AmigaProgramPatchResult(source: source, model: model, changedRegions: []))
+        }
+        return try verifiedPatchResult(AmigaProgramPatchResult(
+            source: patched,
+            model: model,
+            changedRegions: [
+                AmigaSourceRegionName.model.rawValue,
+                AmigaSourceRegionName.state.rawValue
+            ]
+        ))
+    }
+
     private static func requireVerifiedCurrentSource(_ source: String) throws {
         let failures = AmigaProgramSourceVerifier.failures(in: source)
         guard failures.isEmpty else {
@@ -5982,8 +6880,10 @@ enum AmigaProgramPatcher {
             if line.trimmingCharacters(in: .whitespaces).hasPrefix("; @amiga:region") {
                 return true
             }
-            let labels = AmigaSourceIndexer.index(line).labels
-            return labels.contains { !$0.hasPrefix(".") }
+            guard let label = AmigaSourceIndexer.labelName(from: line) else {
+                return false
+            }
+            return !label.hasPrefix(".")
         } ?? endLine
         let startIndex = max(labelLine - 2, region.startLine - 1)
         let removeStart = lines[startIndex].trimmingCharacters(in: .whitespaces).isEmpty ? startIndex : labelLine - 1
@@ -6132,7 +7032,7 @@ enum AmigaProgramPatcher {
         let dataRange = (lineIndex + 1)..<max(endLine, lineIndex + 1)
         for dataLineIndex in dataRange.prefix(3) {
             let line = lines[dataLineIndex - 1]
-            if AmigaSourceIndexer.index(line).labels.isEmpty == false {
+            if AmigaSourceIndexer.labelName(from: line) != nil {
                 break
             }
             if stateWordDirectiveLine(line, label: nil) {
@@ -6463,7 +7363,7 @@ enum AmigaProgramPatcher {
             if line.trimmingCharacters(in: .whitespaces).hasPrefix("; @amiga:region") {
                 return true
             }
-            return AmigaSourceIndexer.index(line).labels.isEmpty == false
+            return AmigaSourceIndexer.labelName(from: line) != nil
         } ?? lines.count
 
         let start = lineStarts[bodyStartLine]
@@ -6472,7 +7372,7 @@ enum AmigaProgramPatcher {
     }
 
     private static func lineDefinesLabel(_ line: String, label: String) -> Bool {
-        AmigaSourceIndexer.index(line).labels.contains(label)
+        AmigaSourceIndexer.labelName(from: line) == label
     }
 
     private static func lineDefinesExactLabel(_ line: String, label: String) -> Bool {
@@ -6605,75 +7505,106 @@ enum AmigaProgramPatcher {
 }
 
 enum AmigaProgramTemplate {
-    static func doubleBufferedBitplaneSource(frontColor: String = "yellow", backColor: String = "cyan") throws -> String {
-        let normalizedFrontColor = normalizedColorName(frontColor, fallback: "yellow")
-        let normalizedBackColor = normalizedColorName(backColor, fallback: "cyan")
-        let frontValue = colorValue(named: normalizedFrontColor) ?? "$0ff0"
-        let backValue = colorValue(named: normalizedBackColor) ?? "$00ff"
+    static let blitterBOBCollisionBoundsID = "blitter-bob-collision-bounds"
+    static let cleanTakeoverRestoreID = "clean-takeover"
+    static let intuitionWindowToolID = "intuition-window-tool"
+
+    static func blitterBOBCollisionBoundsSource(
+        horizontalSpeed: Int = 2,
+        targetLeft: Int = 128,
+        targetRight: Int = 176,
+        collisionColor: String = "red"
+    ) throws -> String {
+        let normalizedCollisionColor = normalizedColorName(collisionColor, fallback: "red")
+        let collisionColorValue = colorValue(named: normalizedCollisionColor) ?? "$0f00"
         let model = AmigaProgramModel(
-            id: "double-buffer-bitplane",
+            id: blitterBOBCollisionBoundsID,
             kind: .effect,
             routines: [
-                AmigaProgramModel.Routine(id: "draw_buffer_a", label: "DrawBufferA", purpose: "Draws the next frame into front buffer A.", calls: ["CopyPattern"]),
-                AmigaProgramModel.Routine(id: "draw_buffer_b", label: "DrawBufferB", purpose: "Draws the next frame into back buffer B.", calls: ["CopyPattern"]),
-                AmigaProgramModel.Routine(id: "copy_pattern", label: "CopyPattern", purpose: "Copies the selected bitplane pattern into the hidden buffer."),
-                AmigaProgramModel.Routine(id: "wait_vblank", label: "WaitVBlank", purpose: "Paces bitplane pointer swaps to vertical blank.")
+                AmigaProgramModel.Routine(id: "wait_vblank", label: "WaitVBlank", purpose: "Paces object updates to vertical blank."),
+                AmigaProgramModel.Routine(id: "update_bob_position", label: "UpdateBOBPosition", purpose: "Moves the BOB and bounces it inside visible screen bounds."),
+                AmigaProgramModel.Routine(id: "check_collision", label: "CheckCollision", purpose: "Tests the BOB against the target rectangle and records collision state."),
+                AmigaProgramModel.Routine(id: "draw_bob", label: "DrawBOB", purpose: "Programs a masked cookie-cut blitter draw for the BOB.", calls: ["WaitBlitter"]),
+                AmigaProgramModel.Routine(id: "wait_blitter", label: "WaitBlitter", purpose: "Waits until the blitter is idle before programming or after starting a blit.")
             ],
             stateVariables: [
-                AmigaProgramModel.StateVariable(id: "front_color", symbol: "FrontColor", purpose: "COLOR01 value used while BufferA is visible.", initialValue: frontValue),
-                AmigaProgramModel.StateVariable(id: "back_color", symbol: "BackColor", purpose: "COLOR01 value used while BufferB is visible.", initialValue: backValue)
+                AmigaProgramModel.StateVariable(id: "bob_x", symbol: "BOBX", purpose: "Current bounded BOB X position.", initialValue: "24"),
+                AmigaProgramModel.StateVariable(id: "bob_y", symbol: "BOBY", purpose: "Current bounded BOB Y position.", initialValue: "48"),
+                AmigaProgramModel.StateVariable(id: "bob_dx", symbol: "BOBDX", purpose: "Signed horizontal BOB velocity.", initialValue: "\(horizontalSpeed)"),
+                AmigaProgramModel.StateVariable(id: "bob_dy", symbol: "BOBDY", purpose: "Signed vertical BOB velocity.", initialValue: "1"),
+                AmigaProgramModel.StateVariable(id: "target_left", symbol: "TargetLeft", purpose: "Collision target left edge.", initialValue: "\(targetLeft)"),
+                AmigaProgramModel.StateVariable(id: "target_top", symbol: "TargetTop", purpose: "Collision target top edge.", initialValue: "72"),
+                AmigaProgramModel.StateVariable(id: "target_right", symbol: "TargetRight", purpose: "Collision target right edge.", initialValue: "\(targetRight)"),
+                AmigaProgramModel.StateVariable(id: "target_bottom", symbol: "TargetBottom", purpose: "Collision target bottom edge.", initialValue: "120"),
+                AmigaProgramModel.StateVariable(id: "collision_state", symbol: "CollisionState", purpose: "Set to one while the BOB overlaps the target rectangle.", initialValue: "0"),
+                AmigaProgramModel.StateVariable(id: "collision_color", symbol: "CollisionColor", purpose: "COLOR01 value written when collision is detected.", initialValue: collisionColorValue),
+                AmigaProgramModel.StateVariable(id: "exit_delay", symbol: "ExitDelay", purpose: "Initial vblank countdown before honoring left mouse exit.", initialValue: "90")
             ],
-            hardware: [.bitplanes, .cia],
+            hardware: [.bitplanes, .blitter, .cia, .copper],
             verificationExpectations: [
-                "Front buffer color is \(normalizedFrontColor).",
-                "Back buffer color is \(normalizedBackColor).",
-                "Bitplane pointer swaps are paced by vblank.",
+                "BOB motion stays bounded before blitter pointer setup.",
+                "Masked blitter draw waits before programming and after BLTSIZE.",
+                "Collision state drives a visible COLOR01 change.",
                 "Left mouse click exits cleanly."
             ]
         )
 
         return """
 \(try AmigaSourceIndexer.modelRegion(for: model))
-; Double-buffered bitplane animation template.
+; Blitter BOB collision bounds template.
+; Effect: bounded masked BOB with rectangle collision color
             SECTION    Code,CODE,CHIP
             XDEF       _Start
 _Start:
-            movem.l    d2/a2-a3/a6,-(sp)
+            movem.l    d2-d7/a2-a6,-(sp)
             lea        $dff000,a6
-            lea        BufferA,a2
-            lea        BufferB,a3
+            move.w     #$7fff,$9a(a6)       ; INTENA: disable OS interrupts for hardware-owned frame
+            move.w     #$7fff,$9c(a6)       ; INTREQ: clear pending interrupts
+            move.w     #$7fff,$96(a6)       ; DMACON: clear OS DMA/copper before direct display setup
+            lea        Bitplane,a0
+            move.l     a0,$e0(a6)           ; BPL1PT
             move.w     #$1200,$100(a6)      ; BPLCON0: one low-res bitplane
-            move.w     #$0000,$102(a6)      ; BPLCON1
-            move.w     #$0000,$104(a6)      ; BPLCON2
-            move.w     #$0000,$108(a6)      ; BPL1MOD
-            move.w     #$0000,$10a(a6)      ; BPL2MOD
-            move.w     #$0000,$180(a6)
-            move.w     FrontColor(pc),$182(a6)
-            move.w     #$8300,$96(a6)       ; master DMA + bitplane DMA
+            move.w     #$0000,$102(a6)
+            move.w     #$0000,$104(a6)
+            move.w     #$000,$180(a6)       ; COLOR00 background
+            move.w     #$0f0,$182(a6)       ; COLOR01 non-collision object
+            lea        Bitplane,a0
+            move.l     a0,d0
+            lea        CopperBplHi,a1
+            swap       d0
+            move.w     d0,(a1)
+            swap       d0
+            move.w     d0,4(a1)
+            moveq      #0,d0
+            move.w     #(40*256/4)-1,d1
+.clearBitplane:
+            move.l     d0,(a0)+
+            dbra       d1,.clearBitplane
+            move.w     #90,ExitDelay
+            lea        CopperList,a0
+            move.l     a0,$80(a6)           ; COP1LC
+            move.w     #$0000,$88(a6)       ; COPJMP1
+            move.w     #$83c0,$96(a6)       ; DMAEN + bitplane DMA + copper DMA + blitter DMA
+            bsr        DrawBOB
 
-            moveq      #0,d2
 .main:
+            bsr        WaitVBlank
+            tst.w      ExitDelay
+            beq.s      .mouseExitArmed
+            subq.w     #1,ExitDelay
+            bra.s      .updateFrame
+.mouseExitArmed:
             btst       #6,$bfe001
-            beq.s      .done
-            bsr.s      WaitVBlank
-            tst.b      d2
-            bne.s      .showB
-.showA:
-            move.w     FrontColor(pc),$182(a6) ; COLOR01 for BufferA/front frame
-            move.l     a2,$e0(a6)           ; BPL1PT
-            bsr.s      DrawBufferB
-            moveq      #1,d2
-            bra.s      .main
-.showB:
-            move.w     BackColor(pc),$182(a6) ; COLOR01 for BufferB/back frame
-            move.l     a3,$e0(a6)           ; BPL1PT
-            bsr.s      DrawBufferA
-            moveq      #0,d2
-            bra.s      .main
+            beq        .done
+.updateFrame:
+            bsr        UpdateBOBPosition
+            bsr        CheckCollision
+            bsr        DrawBOB
+            bra        .main
 
 .done:
             move.w     #$0100,$96(a6)
-            movem.l    (sp)+,d2/a2-a3/a6
+            movem.l    (sp)+,d2-d7/a2-a6
             moveq      #0,d0
             rts
 
@@ -6690,6 +7621,518 @@ WaitVBlank:
 .leave:
             cmp.b      #$ff,$06(a6)
             beq.s      .leave
+            rts
+            ; @amiga:region hit_test end
+
+            ; @amiga:region input_dispatch begin
+            ; @amiga:region input_dispatch end
+
+            ; @amiga:region routines begin
+UpdateBOBPosition:
+            move.w     BOBX(pc),d0
+            add.w      BOBDX(pc),d0
+            cmp.w      #16,d0
+            bge.s      .rightBound
+            move.w     #16,d0
+            neg.w      BOBDX
+.rightBound:
+            cmp.w      #288,d0
+            ble.s      .storeX
+            move.w     #288,d0
+            neg.w      BOBDX
+.storeX:
+            move.w     d0,BOBX
+            move.w     BOBY(pc),d1
+            add.w      BOBDY(pc),d1
+            cmp.w      #32,d1
+            bge.s      .bottomBound
+            move.w     #32,d1
+            neg.w      BOBDY
+.bottomBound:
+            cmp.w      #176,d1
+            ble.s      .storeY
+            move.w     #176,d1
+            neg.w      BOBDY
+.storeY:
+            move.w     d1,BOBY
+            rts
+
+CheckCollision:
+            clr.w      CollisionState
+            move.w     BOBX(pc),d0
+            cmp.w      TargetRight(pc),d0
+            bgt.s      .noCollision
+            add.w      #16,d0
+            cmp.w      TargetLeft(pc),d0
+            blt.s      .noCollision
+            move.w     BOBY(pc),d1
+            cmp.w      TargetBottom(pc),d1
+            bgt.s      .noCollision
+            add.w      #16,d1
+            cmp.w      TargetTop(pc),d1
+            blt.s      .noCollision
+            move.w     #1,CollisionState
+            move.w     CollisionColor(pc),$182(a6) ; COLOR01 collision evidence
+            rts
+.noCollision:
+            move.w     #$0f0,$182(a6)
+            rts
+
+DrawBOB:
+            bsr        WaitBlitter
+            move.w     BOBY(pc),d0
+            mulu       #40,d0
+            move.w     BOBX(pc),d1
+            lsr.w      #3,d1
+            add.w      d1,d0
+            lea        Bitplane,a2
+            adda.w     d0,a2
+            lea        BOBMask,a0
+            lea        BOBImage,a1
+            move.w     #$ffff,$44(a6)       ; BLTAFWM
+            move.w     #$ffff,$46(a6)       ; BLTALWM
+            move.w     #$0fca,$40(a6)       ; cookie-cut A/B/C to D
+            move.w     #$0000,$42(a6)
+            move.w     #0,$64(a6)           ; BLTAMOD
+            move.w     #0,$62(a6)           ; BLTBMOD
+            move.w     #38,$60(a6)          ; BLTCMOD
+            move.w     #38,$66(a6)          ; BLTDMOD
+            move.l     a0,$50(a6)           ; A = mask
+            move.l     a1,$4c(a6)           ; B = image
+            move.l     a2,$48(a6)           ; C = destination
+            move.l     a2,$54(a6)           ; D = destination
+            move.w     #(16*64)+1,$58(a6)   ; BLTSIZE: 16 rows, one word
+.waitAfter:
+            btst       #6,$02(a6)
+            bne.s      .waitAfter
+            rts
+
+WaitBlitter:
+            btst       #6,$02(a6)
+            bne.s      WaitBlitter
+            rts
+            ; @amiga:region routines end
+
+            ; @amiga:region state begin
+BOBX:           dc.w       24
+BOBY:           dc.w       48
+BOBDX:          dc.w       \(horizontalSpeed)
+BOBDY:          dc.w       1
+TargetLeft:     dc.w       \(targetLeft)
+TargetTop:      dc.w       72
+TargetRight:    dc.w       \(targetRight)
+TargetBottom:   dc.w       120
+CollisionState: dc.w       0
+CollisionColor: dc.w       \(collisionColorValue)       ; \(normalizedCollisionColor) collision COLOR01
+ExitDelay:      dc.w       90
+            ; @amiga:region state end
+
+            SECTION    ChipData,DATA,CHIP
+            ; @amiga:region chip_data begin
+            ALIGN      2
+CopperList:
+            dc.w       $0100,$1200          ; BPLCON0: one low-res bitplane
+            dc.w       $00e0
+CopperBplHi:
+            dc.w       0
+            dc.w       $00e2
+CopperBplLo:
+            dc.w       0
+            dc.w       $0180,$0000          ; COLOR00
+            dc.w       $0182,$00f0          ; COLOR01
+            dc.w       $ffff,$fffe
+BOBMask:
+            dc.w       $07e0,$1ff8,$3ffc,$7ffe
+            dc.w       $7ffe,$ffff,$ffff,$ffff
+            dc.w       $ffff,$ffff,$7ffe,$7ffe
+            dc.w       $3ffc,$1ff8,$07e0,$0000
+BOBImage:
+            dc.w       $0180,$0660,$0ff0,$1998
+            dc.w       $3ffc,$2664,$5ffa,$599a
+            dc.w       $599a,$5ffa,$2664,$3ffc
+            dc.w       $1998,$0ff0,$0660,$0180
+
+Bitplane:   ds.b       40*256
+            ; @amiga:region chip_data end
+"""
+    }
+
+    static func verifiedBlitterBOBCollisionBoundsSource(
+        horizontalSpeed: Int = 2,
+        targetLeft: Int = 128,
+        targetRight: Int = 176,
+        collisionColor: String = "red"
+    ) throws -> String {
+        let source = try blitterBOBCollisionBoundsSource(
+            horizontalSpeed: horizontalSpeed,
+            targetLeft: targetLeft,
+            targetRight: targetRight,
+            collisionColor: collisionColor
+        )
+        return try verifiedModelBackedSource(source)
+    }
+
+    static func cleanTakeoverRestoreModel(
+        paletteMode: String = "amber",
+        copperSplitEnabled: Bool = false,
+        vblankDivider: Int = 1,
+        rightMouseRestoreEnabled: Bool = false
+    ) -> AmigaProgramModel {
+        let boundedDivider = max(1, min(vblankDivider, 4))
+        var expectations = [
+            "Graphics view, DMA, interrupt, copper pointer, and COLOR00 state are saved before takeover.",
+            "Every user exit path calls RestoreSystem before returning.",
+            "RestoreSystem restores COLOR00, COP1LC, DMACON, INTENA, INTREQ, LoadView(oldView), and CloseLibrary.",
+            "Color cycling is paced by vertical blank."
+        ]
+        if paletteMode == "green" {
+            expectations.append("Cycling palette uses green tones.")
+        }
+        if copperSplitEnabled {
+            expectations.append("Copper split is enabled while preserving restore.")
+        }
+        if boundedDivider == 2 {
+            expectations.append("Color cycling updates every other vblank.")
+        }
+        if rightMouseRestoreEnabled {
+            expectations.append("Right mouse also routes through RestoreSystem.")
+        }
+
+        return AmigaProgramModel(
+            id: cleanTakeoverRestoreID,
+            kind: .effect,
+            routines: [
+                AmigaProgramModel.Routine(id: "wait_vblank", label: "WaitVBlank", purpose: "Paces the takeover effect to vertical blank."),
+                AmigaProgramModel.Routine(id: "check_restore_input", label: "CheckRestoreInput", purpose: "Checks mouse restore exits without bypassing RestoreSystem."),
+                AmigaProgramModel.Routine(id: "cycle_color", label: "CycleColor", purpose: "Advances COLOR00 through the modeled palette."),
+                AmigaProgramModel.Routine(id: "restore_system", label: "RestoreSystem", purpose: "Restores every saved OS display, DMA, interrupt, copper, and palette state.")
+            ],
+            stateVariables: [
+                AmigaProgramModel.StateVariable(id: "gfx_base", symbol: "GfxBase", purpose: "Opened graphics.library base pointer.", initialValue: nil),
+                AmigaProgramModel.StateVariable(id: "old_view", symbol: "OldView", purpose: "Saved graphics View pointer.", initialValue: nil),
+                AmigaProgramModel.StateVariable(id: "old_dmacon", symbol: "OldDMACON", purpose: "Saved readable DMACONR value.", initialValue: "0"),
+                AmigaProgramModel.StateVariable(id: "old_intena", symbol: "OldINTENA", purpose: "Saved readable INTENAR value.", initialValue: "0"),
+                AmigaProgramModel.StateVariable(id: "old_cop1lc", symbol: "OldCOP1LC", purpose: "Saved original copper list pointer.", initialValue: nil),
+                AmigaProgramModel.StateVariable(id: "old_color00", symbol: "OldColor00", purpose: "Saved COLOR00 value.", initialValue: "0"),
+                AmigaProgramModel.StateVariable(id: "color_phase", symbol: "ColorPhase", purpose: "Current index into ColorTable.", initialValue: "0"),
+                AmigaProgramModel.StateVariable(id: "frame_skip_counter", symbol: "FrameSkipCounter", purpose: "Counts vblanks between color updates.", initialValue: "0"),
+                AmigaProgramModel.StateVariable(id: "vblank_divider", symbol: "VBlankDivider", purpose: "Number of vblanks between color updates.", initialValue: "\(boundedDivider)"),
+                AmigaProgramModel.StateVariable(id: "palette_mode", symbol: "PaletteMode", purpose: "One selects green cycling palette, zero selects amber palette.", initialValue: paletteMode == "green" ? "1" : "0"),
+                AmigaProgramModel.StateVariable(id: "copper_split_enabled", symbol: "CopperSplitEnabled", purpose: "One when the owned copper list includes a mid-screen split.", initialValue: copperSplitEnabled ? "1" : "0"),
+                AmigaProgramModel.StateVariable(id: "right_mouse_restore_enabled", symbol: "RightMouseRestoreEnabled", purpose: "One when right mouse can trigger RestoreSystem.", initialValue: rightMouseRestoreEnabled ? "1" : "0")
+            ],
+            hardware: [.exec, .graphics, .cia, .copper],
+            verificationExpectations: expectations
+        )
+    }
+
+    static func cleanTakeoverRestoreSource(model suppliedModel: AmigaProgramModel? = nil) throws -> String {
+        let model = suppliedModel ?? cleanTakeoverRestoreModel()
+        let paletteMode = cleanTakeoverStateValue("palette_mode", in: model, fallback: "0") == "1" ? "green" : "amber"
+        let copperSplitEnabled = cleanTakeoverStateValue("copper_split_enabled", in: model, fallback: "0") == "1"
+        let rightMouseRestoreEnabled = cleanTakeoverStateValue("right_mouse_restore_enabled", in: model, fallback: "0") == "1"
+        let vblankDivider = Int(cleanTakeoverStateValue("vblank_divider", in: model, fallback: "1")) ?? 1
+        let boundedDivider = max(1, min(vblankDivider, 4))
+        let colors = paletteMode == "green"
+            ? ["$0020", "$0040", "$0060", "$0080"]
+            : ["$0040", "$0060", "$0080", "$00a0"]
+        let colorComment = paletteMode == "green" ? "green tone" : "amber tone"
+        let rightMouseLines = rightMouseRestoreEnabled ? """
+            move.w     RightMouseRestoreEnabled(pc),d1
+            beq.s      .noRestoreInput
+            btst       #2,$dff016
+            beq.s      .restoreRequested
+.noRestoreInput:
+""" : """
+.noRestoreInput:
+"""
+        let copperSplitLines = copperSplitEnabled ? """
+            dc.w       $7f07,$fffe
+            dc.w       $0180,$0020          ; optional copper split color
+""" + "\n" : ""
+
+        return """
+\(try AmigaSourceIndexer.modelRegion(for: model))
+; Clean takeover skeleton template.
+; Saves view, DMA, interrupts, copper pointer, and COLOR00, runs a
+; vblank-paced color cycle, then restores every saved state on exit.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            movem.l    d2-d7/a2-a6,-(sp)
+            move.l     $4.w,a6
+            lea        GfxName(pc),a1
+            moveq      #0,d0
+            jsr        -408(a6)             ; OpenLibrary("graphics.library")
+            move.l     d0,GfxBase
+            beq        .exit
+
+            move.l     d0,a6
+            move.l     34(a6),OldView       ; save OS view
+            sub.l      a1,a1
+            jsr        -222(a6)             ; LoadView(NULL)
+            jsr        -270(a6)             ; WaitTOF
+            jsr        -270(a6)
+
+            lea        $dff000,a6
+            move.w     $02(a6),OldDMACON    ; save DMACONR
+            move.w     $1c(a6),OldINTENA    ; save INTENAR
+            move.l     $80(a6),d0           ; save COP1LC
+            move.l     d0,OldCOP1LC
+            move.w     $180(a6),OldColor00  ; save palette color 0
+            move.w     #$7fff,$9c(a6)       ; acknowledge pending INTREQ bits
+            move.w     #$7fff,$9a(a6)       ; disable interrupts during takeover
+            move.w     #$7fff,$96(a6)       ; clear old DMA before installing copper
+            lea        CopperList(pc),a0
+            move.l     a0,$80(a6)           ; COP1LC
+            move.w     #0,$88(a6)           ; COPJMP1
+            move.w     #$8280,$96(a6)       ; DMAEN + COPEN
+
+.main:
+            bsr        CheckRestoreInput
+            tst.w      d0
+            bne.s      .restore
+            bsr        WaitVBlank
+            addq.w     #1,FrameSkipCounter
+            move.w     FrameSkipCounter(pc),d0
+            cmp.w      VBlankDivider(pc),d0
+            blt.s      .main
+            clr.w      FrameSkipCounter
+            bsr        CycleColor
+            bra.s      .main
+
+.restore:
+            bsr        RestoreSystem
+
+.exit:
+            movem.l    (sp)+,d2-d7/a2-a6
+            moveq      #0,d0
+            rts
+
+            ; @amiga:region controls begin
+            ; @amiga:region controls end
+
+            ; @amiga:region draw_controls begin
+            ; @amiga:region draw_controls end
+
+            ; @amiga:region hit_test begin
+WaitVBlank:
+            lea        $dff000,a6
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leaveVBlank:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leaveVBlank
+            rts
+
+CheckRestoreInput:
+            moveq      #0,d0
+            btst       #6,$bfe001
+            beq.s      .restoreRequested
+\(rightMouseLines)            rts
+.restoreRequested:
+            moveq      #1,d0
+            rts
+            ; @amiga:region hit_test end
+
+            ; @amiga:region input_dispatch begin
+            ; @amiga:region input_dispatch end
+
+            ; @amiga:region routines begin
+CycleColor:
+            lea        $dff000,a6
+            move.w     ColorPhase(pc),d0
+            addq.w     #1,d0
+            and.w      #$0003,d0
+            move.w     d0,ColorPhase
+            lea        ColorTable(pc),a0
+            add.w      d0,d0
+            move.w     (a0,d0.w),$180(a6)
+            rts
+
+RestoreSystem:
+            lea        $dff000,a6
+            move.w     OldColor00(pc),$180(a6)
+            move.l     OldCOP1LC(pc),d0
+            move.l     d0,$80(a6)
+            move.w     #0,$88(a6)
+            move.w     #$7fff,$96(a6)
+            move.w     OldDMACON(pc),d0
+            or.w       #$8000,d0
+            move.w     d0,$96(a6)
+            move.w     #$7fff,$9a(a6)
+            move.w     OldINTENA(pc),d0
+            or.w       #$8000,d0
+            move.w     d0,$9a(a6)
+            move.w     #$7fff,$9c(a6)
+            move.l     GfxBase(pc),a6
+            move.l     OldView(pc),a1
+            jsr        -222(a6)             ; LoadView(oldView)
+            jsr        -270(a6)
+            jsr        -270(a6)
+            move.l     $4.w,a6
+            move.l     GfxBase(pc),a1
+            jsr        -414(a6)
+            clr.l      GfxBase
+            rts
+            ; @amiga:region routines end
+
+            ; @amiga:region state begin
+GfxBase:    dc.l       0
+OldView:    dc.l       0
+OldDMACON:  dc.w       0
+OldINTENA:  dc.w       0
+OldCOP1LC:  dc.l       0
+OldColor00: dc.w       0
+ColorPhase: dc.w       0
+FrameSkipCounter: dc.w 0
+VBlankDivider: dc.w    \(boundedDivider)
+PaletteMode: dc.w      \(paletteMode == "green" ? 1 : 0)
+CopperSplitEnabled: dc.w \(copperSplitEnabled ? 1 : 0)
+RightMouseRestoreEnabled: dc.w \(rightMouseRestoreEnabled ? 1 : 0)
+            ; @amiga:region state end
+
+            ; @amiga:region chip_data begin
+GfxName:    dc.b       "graphics.library",0
+            EVEN
+ColorTable: dc.w       \(colors[0]),\(colors[1]),\(colors[2]),\(colors[3]) ; \(colorComment) cycle
+
+CopperList:
+            dc.w       $0100,$0200
+            dc.w       $0180,$004
+\(copperSplitLines)            dc.w $ffff,$fffe
+            ; @amiga:region chip_data end
+"""
+    }
+
+    static func verifiedCleanTakeoverRestoreSource(model: AmigaProgramModel? = nil) throws -> String {
+        let source = try cleanTakeoverRestoreSource(model: model)
+        return try verifiedModelBackedSource(source)
+    }
+
+    static func doubleBufferedBitplaneSource(frontColor: String = "yellow", backColor: String = "cyan") throws -> String {
+        let normalizedFrontColor = normalizedColorName(frontColor, fallback: "yellow")
+        let normalizedBackColor = normalizedColorName(backColor, fallback: "cyan")
+        let frontValue = colorValue(named: normalizedFrontColor) ?? "$0ff0"
+        let backValue = colorValue(named: normalizedBackColor) ?? "$00ff"
+        let model = AmigaProgramModel(
+            id: "double-buffer-bitplane",
+            kind: .effect,
+            routines: [
+                AmigaProgramModel.Routine(id: "draw_buffer_a", label: "DrawBufferA", purpose: "Draws the next frame into front buffer A.", calls: ["CopyPattern"]),
+                AmigaProgramModel.Routine(id: "draw_buffer_b", label: "DrawBufferB", purpose: "Draws the next frame into back buffer B.", calls: ["CopyPattern"]),
+                AmigaProgramModel.Routine(id: "copy_pattern", label: "CopyPattern", purpose: "Copies the selected bitplane pattern into the hidden buffer."),
+                AmigaProgramModel.Routine(id: "patch_copper_bitplane", label: "PatchCopperBitplane", purpose: "Patches the owned copper list with the currently visible bitplane pointer."),
+                AmigaProgramModel.Routine(id: "patch_copper_sprite", label: "PatchCopperSprite", purpose: "Patches the owned copper list with the sprite pointer used as overlay evidence."),
+                AmigaProgramModel.Routine(id: "wait_vblank", label: "WaitVBlank", purpose: "Paces bitplane pointer swaps to vertical blank.")
+            ],
+            stateVariables: [
+                AmigaProgramModel.StateVariable(id: "front_color", symbol: "FrontColor", purpose: "COLOR01 value used while BufferA is visible.", initialValue: frontValue),
+                AmigaProgramModel.StateVariable(id: "back_color", symbol: "BackColor", purpose: "COLOR01 value used while BufferB is visible.", initialValue: backValue)
+            ],
+            hardware: [.bitplanes, .sprites, .copper, .cia],
+            verificationExpectations: [
+                "Front buffer color is \(normalizedFrontColor).",
+                "Back buffer color is \(normalizedBackColor).",
+                "An owned copper list refreshes the display, palette, and sprite pointers.",
+                "Sprite DMA overlays the bitplane buffer as runtime interaction evidence.",
+                "Bitplane pointer swaps are paced by vblank.",
+                "Left mouse click exits cleanly."
+            ]
+        )
+
+        return """
+\(try AmigaSourceIndexer.modelRegion(for: model))
+; Double-buffered bitplane animation template.
+            SECTION    Code,CODE,CHIP
+            XDEF       _Start
+_Start:
+            movem.l    d2/a2-a4/a6,-(sp)
+            lea        $dff000,a6
+            move.w     #$7fff,$9a(a6)      ; disable OS interrupts for owned hardware frame
+            move.w     #$7fff,$9c(a6)      ; clear pending interrupt requests
+            move.w     #$7fff,$96(a6)      ; stop inherited DMA before display setup
+            lea        BufferA,a2
+            lea        BufferB,a3
+            lea        SpriteData,a4
+            move.w     #$1200,$100(a6)      ; BPLCON0: one low-res bitplane
+            move.w     #$0000,$102(a6)      ; BPLCON1
+            move.w     #$0000,$104(a6)      ; BPLCON2
+            move.w     #$0000,$108(a6)      ; BPL1MOD
+            move.w     #$0000,$10a(a6)      ; BPL2MOD
+            move.w     #$0000,$180(a6)
+            move.w     FrontColor(pc),$182(a6)
+            move.l     a2,$e0(a6)           ; BPL1PT
+            move.l     a4,$120(a6)          ; SPR0PT
+            move.l     a2,d0
+            bsr.w      PatchCopperBitplane
+            move.l     a4,d0
+            bsr.w      PatchCopperSprite
+            lea        CopperList,a0
+            move.l     a0,$80(a6)           ; COP1LC
+            move.w     #$0000,$88(a6)       ; COPJMP1
+            move.w     #$83a0,$96(a6)       ; master + bitplane + copper + sprite DMA
+
+            moveq      #0,d2
+.main:
+            btst       #6,$bfe001
+            beq.s      .done
+            bsr.s      WaitVBlank
+            tst.b      d2
+            bne.s      .showB
+.showA:
+            move.w     FrontColor(pc),$182(a6) ; COLOR01 for BufferA/front frame
+            move.l     a2,$e0(a6)           ; BPL1PT
+            move.l     a2,d0
+            bsr.w      PatchCopperBitplane
+            bsr.s      DrawBufferB
+            moveq      #1,d2
+            bra.s      .main
+.showB:
+            move.w     BackColor(pc),$182(a6) ; COLOR01 for BufferB/back frame
+            move.l     a3,$e0(a6)           ; BPL1PT
+            move.l     a3,d0
+            bsr.w      PatchCopperBitplane
+            bsr.s      DrawBufferA
+            moveq      #0,d2
+            bra.s      .main
+
+.done:
+            move.w     #$03a0,$96(a6)
+            movem.l    (sp)+,d2/a2-a4/a6
+            moveq      #0,d0
+            rts
+
+            ; @amiga:region controls begin
+            ; @amiga:region controls end
+
+            ; @amiga:region draw_controls begin
+            ; @amiga:region draw_controls end
+
+            ; @amiga:region hit_test begin
+WaitVBlank:
+            cmp.b      #$ff,$06(a6)
+            bne.s      WaitVBlank
+.leave:
+            cmp.b      #$ff,$06(a6)
+            beq.s      .leave
+            rts
+
+PatchCopperBitplane:
+            lea        CopperBplHi,a0
+            swap       d0
+            move.w     d0,(a0)
+            swap       d0
+            move.w     d0,4(a0)
+            move.w     #$0000,$88(a6)
+            rts
+
+PatchCopperSprite:
+            lea        CopperSpr0Hi,a0
+            swap       d0
+            move.w     d0,(a0)
+            swap       d0
+            move.w     d0,4(a0)
             rts
             ; @amiga:region hit_test end
 
@@ -6728,6 +8171,33 @@ PatternA:
             dcb.l      32,$aaaaaaaa
 PatternB:
             dcb.l      32,$55555555
+CopperList:
+            dc.w       $0100,$1200          ; BPLCON0: one low-res bitplane
+            dc.w       $00e0
+CopperBplHi:
+            dc.w       0
+            dc.w       $00e2
+CopperBplLo:
+            dc.w       0
+            dc.w       $0120
+CopperSpr0Hi:
+            dc.w       0
+            dc.w       $0122
+CopperSpr0Lo:
+            dc.w       0
+            dc.w       $0180,$0000
+            dc.w       $0182,\(frontValue)
+            dc.w       $ffff,$fffe
+SpriteData:
+            dc.w       $4060,$4800
+            dc.w       $03c0,$03c0
+            dc.w       $07e0,$07e0
+            dc.w       $0ff0,$0ff0
+            dc.w       $1ff8,$1ff8
+            dc.w       $0ff0,$0ff0
+            dc.w       $07e0,$07e0
+            dc.w       $03c0,$03c0
+            dc.w       $0000,$0000
             ; @amiga:region chip_data end
 """
     }
@@ -6773,6 +8243,7 @@ PatternB:
             verificationExpectations: [
                 "Play dispatches to PlayMOD.",
                 "Stop dispatches to StopMOD.",
+                "Startup previews PlayMOD for emulator-visible Paula register evidence.",
                 "Playback state is preserved as data for follow-up edits."
             ]
         )
@@ -6783,6 +8254,7 @@ PatternB:
             SECTION    Code,CODE
             XDEF       _Start
 _Start:
+            bsr        PlayMOD              ; boot-time preview for runtime Paula register evidence
             bsr        DrawControls
 .mainLoop:
             bsr        WaitVBlank
@@ -7061,6 +8533,271 @@ Sample:     dc.b       0,64,127,64,0,-64,-127,-64
         return try verifiedModelBackedSource(source)
     }
 
+    static func intuitionWindowToolModel() -> AmigaProgramModel {
+        AmigaProgramModel(
+            id: intuitionWindowToolID,
+            kind: .utility,
+            controls: [
+                AmigaProgramModel.Control(id: "play", label: "Play", action: "PlayAction", bounds: .init(x: 14, y: 18, width: 78, height: 18)),
+                AmigaProgramModel.Control(id: "stop", label: "Stop", action: "StopAction", bounds: .init(x: 104, y: 18, width: 78, height: 18))
+            ],
+            routines: [
+                AmigaProgramModel.Routine(id: "event_loop", label: "EventLoop", purpose: "Waits for Intuition IDCMP messages and exits on close-window."),
+                AmigaProgramModel.Routine(id: "dispatch", label: "InputDispatch", purpose: "Dispatches IDCMP_GADGETUP messages to modeled gadget action routines.", calls: ["PlayAction", "StopAction"]),
+                AmigaProgramModel.Routine(id: "cleanup", label: "CleanupAndExit", purpose: "Closes the window before closing intuition.library."),
+                AmigaProgramModel.Routine(id: "play", label: "PlayAction", purpose: "Records that the Play gadget was activated."),
+                AmigaProgramModel.Routine(id: "stop", label: "StopAction", purpose: "Records that the Stop gadget was activated.")
+            ],
+            stateVariables: [
+                AmigaProgramModel.StateVariable(id: "intuition_base", symbol: "IntuitionBase", purpose: "Opened intuition.library base pointer.", initialValue: "0"),
+                AmigaProgramModel.StateVariable(id: "window_ptr", symbol: "WindowPtr", purpose: "OpenWindow result pointer that must be closed before library shutdown.", initialValue: "0"),
+                AmigaProgramModel.StateVariable(id: "status_state", symbol: "StatusState", purpose: "Small state word changed by gadget actions.", initialValue: "0")
+            ],
+            hardware: [.exec, .intuition],
+            verificationExpectations: [
+                "OpenLibrary and CloseLibrary for intuition.library are balanced.",
+                "OpenWindow and CloseWindow are balanced.",
+                "IDCMP_CLOSEWINDOW exits through cleanup.",
+                "Every modeled gadget has an Intuition Gadget record and dispatch branch."
+            ]
+        )
+    }
+
+    static func intuitionWindowToolSource(model: AmigaProgramModel? = nil) throws -> String {
+        let model = model ?? intuitionWindowToolModel()
+        let controls = model.controls
+        let gadgetData = intuitionGadgetDataLines(for: controls)
+        let textData = intuitionTextDataLines(for: controls, includeStatusText: model.stateVariables.contains { $0.id == "status_text" })
+        let dispatchLines = intuitionDispatchLines(for: controls)
+        let actionLines = intuitionActionRoutineLines(for: controls)
+        let controlMarkers = controls.map { control in
+            let markerLabel = amigaMarkerAttributeText(for: control.label)
+            if let bounds = control.bounds {
+                return #"            ; @amiga:model control id=\#(control.id) label="\#(markerLabel)" action=\#(control.action) bounds=\#(bounds.x),\#(bounds.y),\#(bounds.width),\#(bounds.height)"#
+            }
+            return #"            ; @amiga:model control id=\#(control.id) label="\#(markerLabel)" action=\#(control.action)"#
+        }.joined(separator: "\n")
+
+        return """
+\(try AmigaSourceIndexer.modelRegion(for: model))
+; Intuition windowed tool template.
+; Opens intuition.library, creates modeled gadgets, waits for IDCMP close-window
+; or gadget-up messages, then closes the window before the library.
+IDCMP_GADGETUP      equ        $00000040
+IDCMP_CLOSEWINDOW   equ        $00000200
+WFLG_DRAGBAR        equ        $00000002
+WFLG_DEPTHGADGET    equ        $00000004
+WFLG_CLOSEGADGET    equ        $00000008
+WFLG_ACTIVATE       equ        $00001000
+WFLG_GIMMEZEROZERO  equ        $00000400
+GFLG_GADGHCOMP      equ        $0000
+GACT_RELVERIFY      equ        $0001
+GTYP_BOOLGADGET     equ        $0001
+JAM1                equ        $0001
+WBENCHSCREEN        equ        $0001
+
+            SECTION    Code,CODE
+            XDEF       _Start
+_Start:
+            movem.l    d2-d7/a2-a6,-(sp)
+            move.l     $4.w,a6
+            lea        IntuitionName(pc),a1
+            moveq      #0,d0
+            jsr        -552(a6)             ; OpenLibrary("intuition.library")
+            move.l     d0,IntuitionBase
+            beq        ProgramExit
+
+            move.l     d0,a6
+            lea        NewWindow(pc),a0
+            jsr        -204(a6)             ; OpenWindow(&NewWindow)
+            move.l     d0,WindowPtr
+            beq        CloseLibraryOnly
+            bra        EventLoop
+
+            ; @amiga:region controls begin
+\(controlMarkers)
+            ; @amiga:region controls end
+
+            ; @amiga:region draw_controls begin
+            ; Intuition renders the modeled Gadget and IntuiText records.
+            ; @amiga:region draw_controls end
+
+            ; @amiga:region hit_test begin
+EventLoop:
+            move.l     WindowPtr(pc),a0
+            move.l     86(a0),a0            ; Window.UserPort
+            move.l     $4.w,a6
+            jsr        -384(a6)             ; WaitPort(UserPort)
+
+.nextMessage:
+            move.l     WindowPtr(pc),a0
+            move.l     86(a0),a0            ; Window.UserPort
+            move.l     $4.w,a6
+            jsr        -372(a6)             ; GetMsg(UserPort)
+            move.l     d0,d1
+            beq.s      EventLoop
+            move.l     d0,a1
+            move.l     20(a1),d2            ; IntuiMessage.Class
+            move.l     28(a1),a2            ; IntuiMessage.IAddress, used for gadget dispatch
+            move.l     d0,a1
+            move.l     $4.w,a6
+            jsr        -378(a6)             ; ReplyMsg(message)
+            cmp.l      #IDCMP_CLOSEWINDOW,d2
+            beq        CleanupAndExit
+            cmp.l      #IDCMP_GADGETUP,d2
+            beq        InputDispatch
+            bra.s      .nextMessage
+            ; @amiga:region hit_test end
+
+            ; @amiga:region input_dispatch begin
+InputDispatch:
+\(dispatchLines)
+            bra        EventLoop
+            ; @amiga:region input_dispatch end
+
+            ; @amiga:region routines begin
+\(actionLines)
+
+CleanupAndExit:
+            move.l     WindowPtr(pc),d0
+            beq.s      CloseLibraryOnly
+            move.l     d0,a0
+            move.l     IntuitionBase(pc),a6
+            jsr        -72(a6)              ; CloseWindow(WindowPtr)
+            clr.l      WindowPtr
+
+CloseLibraryOnly:
+            move.l     IntuitionBase(pc),d0
+            beq.s      ProgramExit
+            move.l     d0,a1
+            move.l     $4.w,a6
+            jsr        -414(a6)             ; CloseLibrary(IntuitionBase)
+            clr.l      IntuitionBase
+
+ProgramExit:
+            movem.l    (sp)+,d2-d7/a2-a6
+            moveq      #0,d0
+            rts
+            ; @amiga:region routines end
+
+            ; @amiga:region state begin
+IntuitionBase: dc.l    0
+WindowPtr:     dc.l    0
+StatusState:   dc.w    0
+\(model.stateVariables.contains { $0.id == "status_text" } ? "StatusTextEnabled: dc.w 1" : "")
+            ; @amiga:region state end
+
+            ; @amiga:region chip_data begin
+            ALIGN      2
+IntuitionName:
+            dc.b       "intuition.library",0
+WindowTitle:
+            dc.b       "Amiga Tool",0
+            EVEN
+
+NewWindow:
+            dc.w       20,20,320,112
+            dc.b       0,1
+            dc.l       IDCMP_CLOSEWINDOW+IDCMP_GADGETUP
+            dc.l       WFLG_CLOSEGADGET+WFLG_DEPTHGADGET+WFLG_DRAGBAR+WFLG_ACTIVATE+WFLG_GIMMEZEROZERO
+            dc.l       \(controls.first.map { "Gadget_\($0.id)" } ?? "0")
+            dc.l       0
+            dc.l       WindowTitle
+            dc.l       0
+            dc.l       0
+            dc.w       120,50,340,170
+            dc.w       WBENCHSCREEN
+
+\(gadgetData)
+\(textData)
+            ; @amiga:region chip_data end
+"""
+    }
+
+    static func verifiedIntuitionWindowToolSource(model: AmigaProgramModel? = nil) throws -> String {
+        let source = try intuitionWindowToolSource(model: model)
+        return try verifiedModelBackedSource(source)
+    }
+
+    private static func intuitionGadgetDataLines(for controls: [AmigaProgramModel.Control]) -> String {
+        controls.enumerated().map { offset, control in
+            let next = offset + 1 < controls.count ? "Gadget_\(controls[offset + 1].id)" : "0"
+            let bounds = control.bounds ?? .init(x: 14 + offset * 90, y: 18, width: 78, height: 18)
+            return """
+Gadget_\(control.id):
+            dc.l       \(next)
+            dc.w       \(bounds.x),\(bounds.y),\(bounds.width),\(bounds.height)
+            dc.w       GFLG_GADGHCOMP
+            dc.w       GACT_RELVERIFY
+            dc.w       GTYP_BOOLGADGET
+            dc.l       0
+            dc.l       0
+            dc.l       Text_\(control.id)
+            dc.l       0
+            dc.l       0
+            dc.w       \(offset + 1)
+            dc.l       0
+"""
+        }.joined(separator: "\n")
+    }
+
+    private static func intuitionTextDataLines(for controls: [AmigaProgramModel.Control], includeStatusText: Bool) -> String {
+        var lines = controls.map { control in
+            """
+Text_\(control.id):
+            dc.b       1,0,JAM1,0
+            dc.w       12,5
+            dc.l       0
+            dc.l       Label_\(control.id)
+            dc.l       0
+Label_\(control.id):
+            dc.b       "\(control.label)",0
+            EVEN
+"""
+        }
+        if includeStatusText {
+            lines.append("""
+StatusText:
+            dc.b       1,0,JAM1,0
+            dc.w       14,82
+            dc.l       0
+            dc.l       StatusLabel
+            dc.l       0
+StatusLabel:
+            dc.b       "Ready",0
+            EVEN
+""")
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    private static func intuitionDispatchLines(for controls: [AmigaProgramModel.Control]) -> String {
+        controls.map { control in
+            """
+            ; @amiga:dispatch \(control.id) -> \(control.action)
+            cmp.l      #Gadget_\(control.id),a2
+            bne.s      .skip_\(control.id)
+            bsr        \(control.action)
+            bra        EventLoop
+.skip_\(control.id):
+"""
+        }.joined(separator: "\n")
+    }
+
+    private static func intuitionActionRoutineLines(for controls: [AmigaProgramModel.Control]) -> String {
+        controls.enumerated().map { offset, control in
+            """
+\(control.action):
+            move.w     #\(offset + 1),StatusState
+            rts
+"""
+        }.joined(separator: "\n")
+    }
+
+    private static func cleanTakeoverStateValue(_ id: String, in model: AmigaProgramModel, fallback: String) -> String {
+        model.stateVariables.first(where: { $0.id == id })?.initialValue ?? fallback
+    }
+
     static func verifiedModelBackedSource(_ source: String) throws -> String {
         let failures = AmigaProgramSourceVerifier.failures(in: source)
         guard failures.isEmpty else {
@@ -7099,7 +8836,35 @@ Sample:     dc.b       0,64,127,64,0,-64,-127,-64
 }
 
 enum AmigaProgramSourceVerifier {
+    private static let failuresCacheLimit = 128
+    private static let failuresCacheLock = NSLock()
+    private static var failuresCache: [String: [String]] = [:]
+    private static var failuresCacheOrder: [String] = []
+
     static func failures(in source: String) -> [String] {
+        failuresCacheLock.lock()
+        if let cached = failuresCache[source] {
+            failuresCacheLock.unlock()
+            return cached
+        }
+        failuresCacheLock.unlock()
+
+        let failures = uncachedFailures(in: source)
+
+        failuresCacheLock.lock()
+        if failuresCache[source] == nil {
+            failuresCache[source] = failures
+            failuresCacheOrder.append(source)
+            if failuresCacheOrder.count > failuresCacheLimit {
+                let evicted = failuresCacheOrder.removeFirst()
+                failuresCache.removeValue(forKey: evicted)
+            }
+        }
+        failuresCacheLock.unlock()
+        return failures
+    }
+
+    private static func uncachedFailures(in source: String) -> [String] {
         let index = AmigaSourceIndexer.index(source)
         let sourceLines = source.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
         let modelRegionFailures = modelRegionEncodingFailures(index: index, sourceLines: sourceLines)
@@ -7108,6 +8873,7 @@ enum AmigaProgramSourceVerifier {
         guard let model = index.model else {
             return ["Missing embedded Amiga program model."] + modelRegionFailures
         }
+        let isIntuitionWindowTool = model.id == AmigaProgramTemplate.intuitionWindowToolID
 
         failures.append(contentsOf: modelRegionCanonicalFailures(index: index, model: model, sourceLines: sourceLines))
 
@@ -7277,9 +9043,11 @@ enum AmigaProgramSourceVerifier {
             failures.append("Duplicate model control actions: \(duplicateControlActions.joined(separator: ", ")).")
         }
         failures.append(contentsOf: controlActionRoutineFailures(model: model))
-        failures.append(contentsOf: boundedControlSupportRoutineFailures(model: model))
-        failures.append(contentsOf: boundedControlSupportRoutineCallFailures(model: model))
-        failures.append(contentsOf: boundedControlStateVariableFailures(model: model))
+        if !isIntuitionWindowTool {
+            failures.append(contentsOf: boundedControlSupportRoutineFailures(model: model))
+            failures.append(contentsOf: boundedControlSupportRoutineCallFailures(model: model))
+            failures.append(contentsOf: boundedControlStateVariableFailures(model: model))
+        }
         failures.append(contentsOf: controlBoundsFailures(model.controls))
         let duplicateRoutineIDs = duplicateValues(model.routines.map(\.id))
         if !duplicateRoutineIDs.isEmpty {
@@ -7338,6 +9106,10 @@ enum AmigaProgramSourceVerifier {
         let hitTestReturnLine = firstReturnLine(afterLabel: "HitTestControls", inRegion: AmigaSourceRegionName.hitTest.rawValue, index: index, sourceLines: sourceLines)
         let dispatchReturnLine = firstReturnLine(inRegion: AmigaSourceRegionName.inputDispatch.rawValue, index: index, sourceLines: sourceLines)
         let inputDispatchLines = linesBeforeReturn(inRegion: AmigaSourceRegionName.inputDispatch.rawValue, index: index, sourceLines: sourceLines)
+        if isIntuitionWindowTool {
+            failures.append(contentsOf: intuitionWindowToolSourceFailures(model: model, index: index, sourceLines: sourceLines))
+            return failures
+        }
         let startupLines = entryStartupLines(sourceLines: sourceLines)
         let mainLoopLines = entryLoopLines(index: index, sourceLines: sourceLines)
         let waitVBlankLines = linesInRoutine("WaitVBlank", inRegion: AmigaSourceRegionName.hitTest.rawValue, index: index, sourceLines: sourceLines)
@@ -7805,7 +9577,18 @@ enum AmigaProgramSourceVerifier {
             }
             allowedLabels = labels
         } else if model.id == AmigaProgramFamilyRegistry.doubleBufferedBitplane.id {
-            allowedLabels = Set(["BufferA", "BufferB", "PatternA", "PatternB"])
+            allowedLabels = Set([
+                "BufferA",
+                "BufferB",
+                "PatternA",
+                "PatternB",
+                "CopperList",
+                "CopperBplHi",
+                "CopperBplLo",
+                "CopperSpr0Hi",
+                "CopperSpr0Lo",
+                "SpriteData"
+            ])
         } else {
             return []
         }
@@ -7877,6 +9660,12 @@ enum AmigaProgramSourceVerifier {
         if !model.hardware.contains(.cia) {
             failures.append("Double-buffered bitplane model is missing CIA hardware dependency.")
         }
+        if !model.hardware.contains(.copper) {
+            failures.append("Double-buffered bitplane model is missing copper hardware dependency.")
+        }
+        if !model.hardware.contains(.sprites) {
+            failures.append("Double-buffered bitplane model is missing sprite hardware dependency.")
+        }
         failures.append(contentsOf: doubleBufferedBitplaneRoutineCallFailures(model: model))
         if !containsLabel("BufferA", inRegion: AmigaSourceRegionName.chipData.rawValue, index: index, sourceLines: sourceLines) {
             failures.append("Double-buffered bitplane source is missing BufferA chip data.")
@@ -7890,6 +9679,12 @@ enum AmigaProgramSourceVerifier {
         if !containsLabel("PatternB", inRegion: AmigaSourceRegionName.chipData.rawValue, index: index, sourceLines: sourceLines) {
             failures.append("Double-buffered bitplane source is missing PatternB chip data.")
         }
+        if !containsLabel("CopperList", inRegion: AmigaSourceRegionName.chipData.rawValue, index: index, sourceLines: sourceLines) {
+            failures.append("Double-buffered bitplane source is missing owned copper list data.")
+        }
+        if !containsLabel("SpriteData", inRegion: AmigaSourceRegionName.chipData.rawValue, index: index, sourceLines: sourceLines) {
+            failures.append("Double-buffered bitplane source is missing sprite overlay data.")
+        }
         if !containsLabel("FrontColor", in: stateLines) || !containsLabel("BackColor", in: stateLines) {
             failures.append("Double-buffered bitplane source is missing front/back color state.")
         }
@@ -7900,8 +9695,14 @@ enum AmigaProgramSourceVerifier {
         if !startupLines.contains(where: { doubleBufferedMoveWordImmediateLine($0, value: 0x1200, destinationDisplacement: 0x100, register: "a6") }) {
             failures.append("Double-buffered bitplane startup does not configure one low-res bitplane.")
         }
-        if !startupLines.contains(where: { doubleBufferedMoveWordImmediateLine($0, value: 0x8300, destinationDisplacement: 0x96, register: "a6") }) {
-            failures.append("Double-buffered bitplane startup does not enable bitplane DMA.")
+        if !startupLines.contains(where: { doubleBufferedMoveWordImmediateLine($0, value: 0x83a0, destinationDisplacement: 0x96, register: "a6") }) {
+            failures.append("Double-buffered bitplane startup does not enable bitplane, copper, and sprite DMA.")
+        }
+        if !startupLines.contains(where: { doubleBufferedMoveLongRegisterLine($0, source: "a4", destinationDisplacement: 0x120, register: "a6") }) {
+            failures.append("Double-buffered bitplane startup does not program the sprite overlay pointer.")
+        }
+        if !startupLines.contains(where: { doubleBufferedMoveLongRegisterLine($0, source: "a0", destinationDisplacement: 0x80, register: "a6") }) {
+            failures.append("Double-buffered bitplane startup does not install an owned copper list.")
         }
         if !mainLoopLines.contains(where: { doubleBufferedBtstLine($0, bit: 6, destination: "$bfe001") }) ||
             !containsOrderedLineEvidence([
@@ -8067,8 +9868,11 @@ enum AmigaProgramSourceVerifier {
         guard lowerBound < upperBound else {
             return []
         }
-        return sourceLines[lowerBound..<upperBound].flatMap { line in
-            AmigaSourceIndexer.index(line).labels.filter { !$0.hasPrefix(".") }
+        return sourceLines[lowerBound..<upperBound].compactMap { line in
+            guard let label = AmigaSourceIndexer.labelName(from: line), !label.hasPrefix(".") else {
+                return nil
+            }
+            return label
         }
     }
 
@@ -8197,6 +10001,119 @@ enum AmigaProgramSourceVerifier {
                 continue
             }
         }
+        return failures
+    }
+
+    private static func intuitionWindowToolSourceFailures(
+        model: AmigaProgramModel,
+        index: AmigaSourceIndex,
+        sourceLines: [String]
+    ) -> [String] {
+        var failures: [String] = []
+        let source = sourceLines.joined(separator: "\n")
+        let stateLines = lines(inRegion: AmigaSourceRegionName.state.rawValue, index: index, sourceLines: sourceLines)
+        let chipDataLines = lines(inRegion: AmigaSourceRegionName.chipData.rawValue, index: index, sourceLines: sourceLines)
+
+        let requiredSnippets: [(String, String)] = [
+            ("Intuition source is missing intuition.library name.", "\"intuition.library\""),
+            ("Intuition source is missing OpenLibrary call.", "jsr        -552(a6)             ; OpenLibrary(\"intuition.library\")"),
+            ("Intuition source is missing OpenWindow call.", "jsr        -204(a6)             ; OpenWindow(&NewWindow)"),
+            ("Intuition source is missing WaitPort event wait.", "jsr        -384(a6)             ; WaitPort(UserPort)"),
+            ("Intuition source is missing GetMsg event read.", "jsr        -372(a6)             ; GetMsg(UserPort)"),
+            ("Intuition source is missing ReplyMsg call.", "jsr        -378(a6)             ; ReplyMsg(message)"),
+            ("Intuition source is missing close-window IDCMP test.", "cmp.l      #IDCMP_CLOSEWINDOW,d2"),
+            ("Intuition source is missing gadget-up IDCMP test.", "cmp.l      #IDCMP_GADGETUP,d2"),
+            ("Intuition close-window path does not branch to cleanup.", "beq        CleanupAndExit"),
+            ("OpenWindow failure does not route to library cleanup.", "beq        CloseLibraryOnly"),
+            ("Intuition source is missing CloseWindow cleanup.", "jsr        -72(a6)              ; CloseWindow(WindowPtr)"),
+            ("Intuition source is missing CloseLibrary cleanup.", "jsr        -414(a6)             ; CloseLibrary(IntuitionBase)")
+        ]
+        for (failure, snippet) in requiredSnippets where !source.contains(snippet) {
+            failures.append(failure)
+        }
+
+        if let closeWindow = source.range(of: "jsr        -72(a6)              ; CloseWindow(WindowPtr)"),
+           let closeLibrary = source.range(of: "jsr        -414(a6)             ; CloseLibrary(IntuitionBase)"),
+           closeWindow.lowerBound > closeLibrary.lowerBound {
+            failures.append("Intuition cleanup closes the library before the window.")
+        }
+
+        for stateVariable in model.stateVariables {
+            if !containsLabel(stateVariable.symbol, in: stateLines) {
+                failures.append("Intuition state symbol \(stateVariable.symbol) is not declared in the state region.")
+            }
+        }
+
+        guard containsLabel("NewWindow", in: chipDataLines) else {
+            failures.append("Intuition source is missing NewWindow data.")
+            return failures
+        }
+
+        for (offset, control) in model.controls.enumerated() {
+            let slot = offset + 1
+            let gadgetLabel = "Gadget_\(control.id)"
+            let textLabel = "Text_\(control.id)"
+            let labelSymbol = "Label_\(control.id)"
+
+            guard let gadgetIndex = labelLineIndex(gadgetLabel, inRegion: AmigaSourceRegionName.chipData.rawValue, index: index, sourceLines: sourceLines) else {
+                failures.append("Intuition control \(control.label) is missing Gadget_\(control.id) data.")
+                continue
+            }
+            if let bounds = control.bounds {
+                let expectedBounds = [bounds.x, bounds.y, bounds.width, bounds.height]
+                let gadgetWindow = sourceLines[(gadgetIndex + 1)...].prefix(14)
+                let boundsValues = gadgetWindow
+                    .compactMap { line -> [Int]? in
+                        let normalized = normalizedAssemblyLine(line)
+                        guard normalized.hasPrefix("dc.w ") else { return nil }
+                        let values = normalized
+                            .dropFirst("dc.w ".count)
+                            .split(separator: ",", omittingEmptySubsequences: false)
+                            .compactMap { controlRectWordValue(String($0)) }
+                        return values.count == 4 ? values : nil
+                    }
+                    .first
+                if boundsValues != expectedBounds ||
+                    !gadgetWindow.map(normalizedAssemblyLine).contains("dc.w \(slot)") {
+                    failures.append("Intuition Gadget_\(control.id) data does not match model bounds and slot.")
+                }
+            }
+            if !sourceLines[(gadgetIndex + 1)...].prefix(12).contains(where: { normalizedAssemblyLine($0) == "dc.l \(textLabel.lowercased())" }) {
+                failures.append("Intuition Gadget_\(control.id) does not point to \(textLabel).")
+            }
+            if labelLineIndex(textLabel, inRegion: AmigaSourceRegionName.chipData.rawValue, index: index, sourceLines: sourceLines) == nil {
+                failures.append("Intuition control \(control.label) is missing \(textLabel) data.")
+            }
+            if let labelIndex = labelLineIndex(labelSymbol, inRegion: AmigaSourceRegionName.chipData.rawValue, index: index, sourceLines: sourceLines) {
+                if !labelDataMatches(control.label, after: labelIndex, sourceLines: sourceLines) {
+                    failures.append("Intuition label data for \(control.label) does not match the model label.")
+                }
+            } else {
+                failures.append("Intuition control \(control.label) is missing \(labelSymbol) label data.")
+            }
+
+            let dispatchMarker = "@amiga:dispatch \(control.id) -> \(control.action)"
+            guard let markerIndex = firstLineIndex(containing: dispatchMarker, inRegion: AmigaSourceRegionName.inputDispatch.rawValue, index: index, sourceLines: sourceLines) else {
+                failures.append("Intuition control \(control.label) is missing dispatch marker.")
+                continue
+            }
+            let dispatchWindow = sourceLines[(markerIndex + 1)...].prefix(5).map(normalizedAssemblyLine)
+            if !dispatchWindow.contains("cmp.l #\(gadgetLabel.lowercased()),a2") {
+                failures.append("Intuition dispatch for \(control.label) does not compare IAddress with \(gadgetLabel).")
+            }
+            if !dispatchWindow.contains(where: { $0 == "bsr \(control.action.lowercased())" }) {
+                failures.append("Intuition dispatch for \(control.label) does not call \(control.action).")
+            }
+            if labelLineIndex(control.action, inRegion: AmigaSourceRegionName.routines.rawValue, index: index, sourceLines: sourceLines) == nil {
+                failures.append("Intuition action routine \(control.action) is not inside the routines region.")
+            }
+        }
+
+        if model.stateVariables.contains(where: { $0.id == "status_text" }) &&
+            labelLineIndex("StatusText", inRegion: AmigaSourceRegionName.chipData.rawValue, index: index, sourceLines: sourceLines) == nil {
+            failures.append("Intuition model declares status_text without StatusText data.")
+        }
+
         return failures
     }
 
@@ -8364,6 +10281,21 @@ enum AmigaProgramSourceVerifier {
         }) {
             proofs.insert(.exec)
         }
+        if sourceLines.contains(where: { $0.lowercased().contains("\"intuition.library\"") }) ||
+            containsLabel("NewWindow", inRegion: AmigaSourceRegionName.chipData.rawValue, index: index, sourceLines: sourceLines) ||
+            executableInstructions.contains(where: { instruction in
+                sizedCallMnemonic(instruction.mnemonic) == "jsr" &&
+                    instruction.operands.contains("-204(a6)")
+            }) {
+            proofs.insert(.intuition)
+        }
+        if sourceLines.contains(where: { $0.lowercased().contains("\"graphics.library\"") }) ||
+            executableInstructions.contains(where: { instruction in
+                sizedCallMnemonic(instruction.mnemonic) == "jsr" &&
+                    (instruction.operands.contains("-222(a6)") || instruction.operands.contains("-270(a6)"))
+            }) {
+            proofs.insert(.graphics)
+        }
         return proofs
     }
 
@@ -8444,6 +10376,14 @@ enum AmigaProgramSourceVerifier {
                 }
                 if !playbackStateExpectationMatches(model: model, index: index, sourceLines: sourceLines) {
                     failures.append("Verification expectation requires PlayMOD to set and StopMOD to clear PlaybackState.")
+                }
+                continue
+            }
+
+            if trimmed == "Startup previews PlayMOD for emulator-visible Paula register evidence." {
+                let startupLines = entryStartupLines(sourceLines: sourceLines)
+                if !startupLines.contains(where: { isDirectSubroutineCallLine($0, target: "PlayMOD") }) {
+                    failures.append("Verification expectation requires startup to call PlayMOD.")
                 }
             }
         }
@@ -8875,10 +10815,10 @@ enum AmigaProgramSourceVerifier {
 
     private static func entryStartupLines(sourceLines: [String]) -> [String] {
         guard let startIndex = sourceLines.firstIndex(where: {
-            AmigaSourceIndexer.index($0).labels.contains("_Start")
+            AmigaSourceIndexer.labelName(from: $0) == "_Start"
         }),
               let mainLoopIndex = sourceLines[(startIndex + 1)...].firstIndex(where: {
-                  AmigaSourceIndexer.index($0).labels.contains(".mainLoop")
+                  AmigaSourceIndexer.labelName(from: $0) == ".mainLoop"
               }),
               startIndex + 1 < mainLoopIndex else {
             return []
@@ -8888,7 +10828,7 @@ enum AmigaProgramSourceVerifier {
 
     private static func entryLoopLines(index: AmigaSourceIndex, sourceLines: [String]) -> [String] {
         guard let mainLoopIndex = sourceLines.firstIndex(where: {
-            AmigaSourceIndexer.index($0).labels.contains(".mainLoop")
+            AmigaSourceIndexer.labelName(from: $0) == ".mainLoop"
         }) else {
             return []
         }
@@ -8903,7 +10843,7 @@ enum AmigaProgramSourceVerifier {
 
     private static func linesAfterLabel(_ label: String, untilFirstRegionUsing index: AmigaSourceIndex, sourceLines: [String]) -> [String] {
         guard let labelIndex = sourceLines.firstIndex(where: {
-            AmigaSourceIndexer.index($0).labels.contains(label)
+            AmigaSourceIndexer.labelName(from: $0) == label
         }) else {
             return []
         }
@@ -8912,7 +10852,10 @@ enum AmigaProgramSourceVerifier {
             .filter { $0 > labelIndex }
             .min() ?? sourceLines.count
         let nextTopLevelLabelIndex = sourceLines[(labelIndex + 1)..<firstRegionStartIndex].firstIndex { line in
-            AmigaSourceIndexer.index(line).labels.contains { !$0.hasPrefix(".") }
+            guard let label = AmigaSourceIndexer.labelName(from: line) else {
+                return false
+            }
+            return !label.hasPrefix(".")
         } ?? firstRegionStartIndex
         let endIndex = min(nextTopLevelLabelIndex, sourceLines.count)
         guard labelIndex + 1 < endIndex else { return [] }
@@ -8997,7 +10940,7 @@ enum AmigaProgramSourceVerifier {
 
     private static func containsLabel(_ label: String, in lines: [String]) -> Bool {
         lines.contains { line in
-            AmigaSourceIndexer.index(line).labels.contains(label)
+            AmigaSourceIndexer.labelName(from: line) == label
         }
     }
 
@@ -9223,7 +11166,7 @@ enum AmigaProgramSourceVerifier {
             if trimmed.isEmpty || trimmed.hasPrefix(";") {
                 continue
             }
-            if AmigaSourceIndexer.index(line).labels.isEmpty == false {
+            if AmigaSourceIndexer.labelName(from: line) != nil {
                 return false
             }
             if isReturnInstructionLine(line) {
@@ -9241,7 +11184,7 @@ enum AmigaProgramSourceVerifier {
     }
 
     private static func stateWordValue(for label: String, in lines: [String]) -> String? {
-        guard let labelIndex = lines.firstIndex(where: { AmigaSourceIndexer.index($0).labels.contains(label) }) else {
+        guard let labelIndex = lines.firstIndex(where: { AmigaSourceIndexer.labelName(from: $0) == label }) else {
             return nil
         }
         if let value = stateWordValue(label: label, line: lines[labelIndex]) {
@@ -9257,7 +11200,7 @@ enum AmigaProgramSourceVerifier {
         let code = assemblyCodePrefix(beforeCommentIn: line)
         var trimmed = code.trimmingCharacters(in: .whitespaces)
         if let label {
-            guard AmigaSourceIndexer.index(line).labels.contains(label),
+            guard AmigaSourceIndexer.labelName(from: line) == label,
                   let colonIndex = trimmed.firstIndex(of: ":") else {
                 return nil
             }
@@ -9293,7 +11236,7 @@ enum AmigaProgramSourceVerifier {
         let regionEndIndex = min(endLine - 1, sourceLines.count)
         guard startIndex < regionEndIndex else { return nil }
         return sourceLines[startIndex..<regionEndIndex].firstIndex { line in
-            AmigaSourceIndexer.index(line).labels.contains(label)
+            AmigaSourceIndexer.labelName(from: line) == label
         }
     }
 
@@ -9391,6 +11334,41 @@ enum AmigaProgramFollowUpPlanner {
         case notRecognized
     }
 
+    enum DoubleBufferedBitplaneFollowUpIntent: Equatable {
+        case spriteDownward
+        case vblankWaits(Int)
+        case copperAccentColor(String)
+        case rejected([String])
+        case notRecognized
+    }
+
+    enum BlitterBOBFollowUpIntent: Equatable {
+        case horizontalSpeed(Int)
+        case targetRectangle(left: Int, right: Int)
+        case collisionColor(String)
+        case directionControl
+        case rejected([String])
+        case notRecognized
+    }
+
+    enum MouseSpriteMultiplexFollowUpIntent: Equatable {
+        case followerOffset(Int)
+        case horizontalWrapping(Bool)
+        case followerLag(Bool)
+        case spriteColor(String)
+        case rejected([String])
+        case notRecognized
+    }
+
+    enum CopperRasterFollowUpIntent: Equatable {
+        case barCount(Int)
+        case bounceStep(Int)
+        case blueWhitePalette
+        case topStatusBand
+        case rejected([String])
+        case notRecognized
+    }
+
     static func modPlayerControlsMatch(for prompt: String) -> AssistantPromptTemplateMatch? {
         let normalized = prompt.lowercased()
         guard hasMODModuleSignal(in: normalized),
@@ -9430,6 +11408,69 @@ enum AmigaProgramFollowUpPlanner {
         let index = AmigaSourceIndexer.index(source)
         guard let model = index.model else { return .notRecognized }
         do {
+            if model.id == AmigaProgramTemplate.blitterBOBCollisionBoundsID {
+                switch blitterBOBFollowUpIntent(from: prompt) {
+                case .horizontalSpeed(let speed):
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.updateBlitterBOBHorizontalSpeed(speed, in: source)))
+                case .targetRectangle(let left, let right):
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.updateBlitterBOBTargetRectangle(left: left, right: right, in: source)))
+                case .collisionColor(let color):
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.updateBlitterBOBCollisionColor(color, in: source)))
+                case .directionControl:
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.addBlitterBOBDirectionControl(in: source)))
+                case .rejected(let reasons):
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .rejected(reasons)
+                case .notRecognized:
+                    return .notRecognized
+                }
+            }
+            if model.id == "mouse-sprite-multiplex" {
+                switch mouseSpriteMultiplexFollowUpIntent(from: prompt) {
+                case .followerOffset(let offset):
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.updateMouseSpriteFollowerOffset(offset, in: source)))
+                case .horizontalWrapping(let enabled):
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.updateMouseSpriteHorizontalWrapping(enabled: enabled, in: source)))
+                case .followerLag(let enabled):
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.updateMouseSpriteFollowerLag(enabled: enabled, in: source)))
+                case .spriteColor(let color):
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.updateMouseSpriteColor(color, in: source)))
+                case .rejected(let reasons):
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .rejected(reasons)
+                case .notRecognized:
+                    return .notRecognized
+                }
+            }
+            if model.id == "bouncing-copper-bars" {
+                switch copperRasterFollowUpIntent(from: prompt) {
+                case .barCount(let count):
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.updateCopperRasterBarCount(count, in: source)))
+                case .bounceStep(let step):
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.updateCopperRasterBounceStep(step, in: source)))
+                case .blueWhitePalette:
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.updateCopperRasterBlueWhitePalette(in: source)))
+                case .topStatusBand:
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.updateCopperRasterTopStatusBand(in: source)))
+                case .rejected(let reasons):
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .rejected(reasons)
+                case .notRecognized:
+                    return .notRecognized
+                }
+            }
             if model.id == AmigaProgramFamilyRegistry.doubleBufferedBitplane.id {
                 switch bitplaneColorIntent(from: prompt) {
                 case .request(let role, let color):
@@ -9473,8 +11514,99 @@ enum AmigaProgramFollowUpPlanner {
                         "Unsupported \(role) buffer color. Supported colors: \(supportedColors.joined(separator: ", "))."
                     ])
                 case .notRecognized:
-                    return .notRecognized
+                    switch doubleBufferedBitplaneFollowUpIntent(from: prompt) {
+                    case .spriteDownward:
+                        try verifyCurrentSourceBeforePatching(source)
+                        return .patched(try verified(AmigaProgramPatcher.moveDoubleBufferedSpriteDownward(in: source)))
+                    case .vblankWaits(let count):
+                        try verifyCurrentSourceBeforePatching(source)
+                        return .patched(try verified(AmigaProgramPatcher.updateDoubleBufferedVBlankWaits(count, in: source)))
+                    case .copperAccentColor(let color):
+                        try verifyCurrentSourceBeforePatching(source)
+                        return .patched(try verified(AmigaProgramPatcher.updateDoubleBufferedCopperAccentColor(color, in: source)))
+                    case .rejected(let reasons):
+                        try verifyCurrentSourceBeforePatching(source)
+                        return .rejected(reasons)
+                    case .notRecognized:
+                        return .notRecognized
+                    }
                 }
+            }
+            if model.id == AmigaProgramTemplate.cleanTakeoverRestoreID {
+                let normalized = prompt.lowercased()
+                if normalized.contains("disable interrupts") && normalized.contains("without restoring") {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .rejected(["Cannot disable interrupts without restoring INTENA from the saved state."])
+                }
+                if normalized.contains("skip") && normalized.contains("saving") && (normalized.contains("copper pointer") || normalized.contains("cop1lc")) {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .rejected(["Cannot skip saving COP1LC; the original copper pointer is required for RestoreSystem."])
+                }
+                if normalized.contains("exit directly") && normalized.contains("rts") {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .rejected(["Cannot exit the takeover loop with raw RTS; every exit must call RestoreSystem first."])
+                }
+                if normalized.contains("overwrite") && normalized.contains("dma") && normalized.contains("zero") {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .rejected(["Cannot overwrite saved DMA state; RestoreSystem must re-enable the saved OldDMACON mask."])
+                }
+                if normalized.contains("green") && (normalized.contains("palette") || normalized.contains("color") || normalized.contains("colour")) {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.updateCleanTakeoverPaletteToGreen(in: source)))
+                }
+                if normalized.contains("copper split") {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.enableCleanTakeoverCopperSplit(in: source)))
+                }
+                if normalized.contains("every other vblank") || normalized.contains("every other vertical blank") ||
+                    (normalized.contains("slow") && normalized.contains("vblank")) {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.slowCleanTakeoverEveryOtherVBlank(in: source)))
+                }
+                if normalized.contains("right mouse") && (normalized.contains("restore") || normalized.contains("emergency")) {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.enableCleanTakeoverRightMouseRestore(in: source)))
+                }
+                return .notRecognized
+            }
+            if model.id == AmigaProgramTemplate.intuitionWindowToolID {
+                let normalized = prompt.lowercased()
+                if normalized.contains("skip") && normalized.contains("closing") && normalized.contains("window") {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .rejected(["Cannot skip CloseWindow; Intuition windows must be closed before intuition.library is closed."])
+                }
+                if normalized.contains("open intuition twice") || (normalized.contains("intuition") && normalized.contains("twice") && normalized.contains("close it once")) {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .rejected(["Cannot unbalance intuition.library OpenLibrary and CloseLibrary calls."])
+                }
+                if normalized.contains("no bounds") {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .rejected(["Intuition gadgets require explicit bounds in the model and Gadget data."])
+                }
+                if normalized.contains("jumping into data") || normalized.contains("jump into data") {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .rejected(["Close-window handling must branch to CleanupAndExit, not into data regions."])
+                }
+                if normalized.contains("status text") || normalized.contains("status field") {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.addIntuitionStatusText(in: source)))
+                }
+                if (normalized.contains("move") || normalized.contains("place")) &&
+                    normalized.contains("button") &&
+                    normalized.contains("bottom") {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.moveIntuitionButtonsToBottom(in: source)))
+                }
+                if normalized.contains("rename") && normalized.contains("stop") && normalized.contains("halt") {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.renameIntuitionGadget(currentLabel: "Stop", newLabel: "Halt", in: source)))
+                }
+                if normalized.contains("volume up") &&
+                    (normalized.contains("add") || normalized.contains("third") || normalized.contains("gadget") || normalized.contains("button")) {
+                    try verifyCurrentSourceBeforePatching(source)
+                    return .patched(try verified(AmigaProgramPatcher.addIntuitionGadget(label: "Volume Up", to: source)))
+                }
+                return .notRecognized
             }
             guard model.id == AmigaProgramFamilyRegistry.modPlayerControls.id else {
                 return .notRecognized
@@ -11124,6 +13256,219 @@ enum AmigaProgramFollowUpPlanner {
         return (role, color)
     }
 
+    static func doubleBufferedBitplaneFollowUpIntent(from prompt: String) -> DoubleBufferedBitplaneFollowUpIntent {
+        let normalized = prompt.lowercased()
+        let supportedColors = ["white", "yellow", "green", "cyan", "blue", "purple", "magenta", "red", "orange"]
+        let hasEditSignal = containsWord("set", in: normalized) ||
+            containsWord("change", in: normalized) ||
+            containsWord("update", in: normalized) ||
+            containsWord("make", in: normalized) ||
+            containsWord("slow", in: normalized)
+        guard hasEditSignal else { return .notRecognized }
+
+        if containsWord("sprite", in: normalized),
+           containsWord("downward", in: normalized) || containsWord("down", in: normalized) {
+            return .spriteDownward
+        }
+
+        if (containsWord("slow", in: normalized) || containsWord("wait", in: normalized) || containsWord("waiting", in: normalized)),
+           containsWord("vblank", in: normalized) || containsWord("vblanks", in: normalized) || containsPhrase("vertical blank", in: normalized) {
+            if containsWord("two", in: normalized) || firstInteger(in: normalized) == 2 {
+                return .vblankWaits(2)
+            }
+            return .rejected(["Specify a supported double-buffered vblank wait count: 2."])
+        }
+
+        if containsWord("copper", in: normalized),
+           containsWord("accent", in: normalized) || containsWord("background", in: normalized) || containsWord("color", in: normalized) || containsWord("colour", in: normalized) {
+            for color in supportedColors where containsWord(color, in: normalized) {
+                return .copperAccentColor(color)
+            }
+            return .rejected(["Specify a supported copper accent color: \(supportedColors.joined(separator: ", "))."])
+        }
+
+        return .notRecognized
+    }
+
+    static func blitterBOBFollowUpIntent(from prompt: String) -> BlitterBOBFollowUpIntent {
+        let normalized = prompt.lowercased()
+        let supportedColors = ["white", "yellow", "green", "cyan", "blue", "purple", "magenta", "red", "orange"]
+
+        if containsWord("blitter", in: normalized),
+           containsWord("start", in: normalized),
+           containsWord("without", in: normalized),
+           (containsWord("wait", in: normalized) || containsWord("waiting", in: normalized)) {
+            return .rejected(["Cannot start the blitter without a DMACONR wait before programming and after BLTSIZE."])
+        }
+        if containsWord("outside", in: normalized),
+           containsWord("bounds", in: normalized) || containsPhrase("screen bounds", in: normalized) {
+            return .rejected(["Cannot move the BOB outside the verified screen bounds contract."])
+        }
+        if containsWord("negative", in: normalized),
+           containsPhrase("blit size", in: normalized) || containsWord("bltsize", in: normalized) {
+            return .rejected(["Cannot use a negative BLTSIZE; the blitter size field must remain positive and hardware-valid."])
+        }
+        if containsWord("remove", in: normalized),
+           containsWord("mask", in: normalized),
+           containsWord("masked", in: normalized) || containsWord("collision", in: normalized) {
+            return .rejected(["Cannot remove the BOB mask while preserving the masked collision contract."])
+        }
+
+        let hasEditSignal = containsWord("make", in: normalized) ||
+            containsWord("move", in: normalized) ||
+            containsWord("change", in: normalized) ||
+            containsWord("set", in: normalized) ||
+            containsWord("update", in: normalized) ||
+            containsWord("add", in: normalized)
+        guard hasEditSignal else { return .notRecognized }
+
+        if (containsWord("keyboard", in: normalized) || containsWord("joystick", in: normalized)),
+           (containsWord("direction", in: normalized) || containsWord("movement", in: normalized) || containsWord("control", in: normalized)) {
+            return .directionControl
+        }
+
+        if containsWord("faster", in: normalized),
+           containsWord("horizontally", in: normalized) || containsWord("horizontal", in: normalized),
+           containsWord("object", in: normalized) || containsWord("bob", in: normalized) {
+            return .horizontalSpeed(4)
+        }
+        if containsWord("target", in: normalized) || containsWord("rectangle", in: normalized),
+           containsPhrase("right side", in: normalized) || containsWord("right", in: normalized) {
+            return .targetRectangle(left: 208, right: 256)
+        }
+        if containsWord("collision", in: normalized),
+           containsWord("color", in: normalized) || containsWord("colour", in: normalized) {
+            for color in supportedColors where containsWord(color, in: normalized) {
+                return .collisionColor(color)
+            }
+            return .rejected(["Specify a supported collision color: \(supportedColors.joined(separator: ", "))."])
+        }
+
+        return .notRecognized
+    }
+
+    static func mouseSpriteMultiplexFollowUpIntent(from prompt: String) -> MouseSpriteMultiplexFollowUpIntent {
+        let normalized = prompt.lowercased()
+        let supportedColors = ["white", "yellow", "green", "cyan", "blue", "purple", "magenta", "red", "orange"]
+
+        if (containsWord("sprite", in: normalized) || containsWord("sprites", in: normalized)) &&
+            (containsPhrase("outside chip memory", in: normalized) || containsPhrase("outside chip", in: normalized)) {
+            return .rejected(["Cannot write sprite pointers outside chip memory."])
+        }
+        if (containsWord("remove", in: normalized) || containsWord("delete", in: normalized)) &&
+            (containsWord("second", in: normalized) || containsWord("follower", in: normalized) || containsWord("multiplex", in: normalized)) &&
+            (containsWord("sprite", in: normalized) || containsWord("copy", in: normalized)) {
+            return .rejected(["Cannot remove the second sprite while preserving the multiplex contract."])
+        }
+        if (containsWord("outside", in: normalized) || containsWord("without", in: normalized)) &&
+            (containsWord("vblank", in: normalized) || containsPhrase("vertical blank", in: normalized)) &&
+            (containsWord("sprite", in: normalized) || containsWord("sprites", in: normalized)) {
+            return .rejected(["Cannot update multiplexed sprite control words outside the vblank-paced path."])
+        }
+
+        let hasEditSignal = containsWord("set", in: normalized) ||
+            containsWord("change", in: normalized) ||
+            containsWord("update", in: normalized) ||
+            containsWord("make", in: normalized) ||
+            containsWord("adjust", in: normalized) ||
+            containsWord("add", in: normalized) ||
+            containsWord("enable", in: normalized)
+        guard hasEditSignal else { return .notRecognized }
+
+        if (containsWord("follower", in: normalized) || containsWord("second", in: normalized) || containsWord("copy", in: normalized)) &&
+            containsWord("offset", in: normalized) {
+            guard let offset = firstInteger(in: normalized) else {
+                return .rejected(["Specify a numeric follower offset."])
+            }
+            return .followerOffset(offset)
+        }
+
+        if (containsWord("wrap", in: normalized) || containsWord("wrapping", in: normalized)) &&
+            (containsWord("horizontal", in: normalized) || containsWord("horizontally", in: normalized) || containsWord("follower", in: normalized) || containsWord("sprite", in: normalized)) {
+            let disabling = containsWord("disable", in: normalized) ||
+                containsPhrase("turn off", in: normalized) ||
+                containsWord("remove", in: normalized) ||
+                containsPhrase("without wrapping", in: normalized)
+            return .horizontalWrapping(!disabling)
+        }
+
+        if (containsWord("lag", in: normalized) || containsPhrase("one frame", in: normalized) || containsPhrase("one-frame", in: normalized)) &&
+            (containsWord("follower", in: normalized) || containsWord("second", in: normalized) || containsWord("copy", in: normalized)) {
+            let disabling = containsWord("disable", in: normalized) ||
+                containsPhrase("turn off", in: normalized) ||
+                containsWord("remove", in: normalized) ||
+                containsPhrase("without lag", in: normalized)
+            return .followerLag(!disabling)
+        }
+
+        if containsWord("sprite", in: normalized) || containsWord("sprites", in: normalized) {
+            for color in supportedColors where containsWord(color, in: normalized) {
+                return .spriteColor(color)
+            }
+            if containsWord("color", in: normalized) || containsWord("colour", in: normalized) {
+                return .rejected(["Specify a supported sprite color: \(supportedColors.joined(separator: ", "))."])
+            }
+        }
+
+        return .notRecognized
+    }
+
+    static func copperRasterFollowUpIntent(from prompt: String) -> CopperRasterFollowUpIntent {
+        let normalized = prompt.lowercased()
+
+        if (containsWord("wait", in: normalized) || containsPhrase("copper wait", in: normalized)) &&
+            (containsPhrase("past the end", in: normalized) || containsPhrase("end of display", in: normalized) || containsWord("outside", in: normalized)) {
+            return .rejected(["Cannot create copper WAIT positions past the verified display range."])
+        }
+        if containsWord("odd", in: normalized),
+           (containsPhrase("copper instruction", in: normalized) || containsWord("address", in: normalized)) {
+            return .rejected(["Cannot use an odd copper instruction address; copper list words must remain word-aligned."])
+        }
+        if (containsWord("remove", in: normalized) || containsWord("delete", in: normalized)) &&
+            (containsWord("copjmp1", in: normalized) || containsPhrase("copper jump", in: normalized)) {
+            return .rejected(["Cannot remove COPJMP1 while preserving the owned copper-list activation contract."])
+        }
+        if (containsWord("zero", in: normalized) || containsPhrase("no bars", in: normalized)) &&
+            (containsWord("bar", in: normalized) || containsWord("bars", in: normalized)) {
+            return .rejected(["Cannot set zero bars; at least six visible copper bands are required for runtime evidence."])
+        }
+
+        let hasEditSignal = containsWord("set", in: normalized) ||
+            containsWord("change", in: normalized) ||
+            containsWord("update", in: normalized) ||
+            containsWord("make", in: normalized) ||
+            containsWord("add", in: normalized) ||
+            containsWord("increase", in: normalized)
+        guard hasEditSignal else { return .notRecognized }
+
+        if containsWord("bar", in: normalized) || containsWord("bars", in: normalized) {
+            if containsWord("eight", in: normalized) || firstInteger(in: normalized) == 8 {
+                return .barCount(8)
+            }
+            if let count = firstInteger(in: normalized), count <= 0 {
+                return .rejected(["Cannot set zero bars; at least six visible copper bands are required for runtime evidence."])
+            }
+        }
+
+        if (containsWord("slower", in: normalized) || containsPhrase("bounce slower", in: normalized)) &&
+            (containsWord("bounce", in: normalized) || containsWord("bars", in: normalized)) {
+            return .bounceStep(1)
+        }
+
+        if (containsWord("palette", in: normalized) || containsWord("color", in: normalized) || containsWord("colour", in: normalized)) &&
+            containsWord("blue", in: normalized) &&
+            containsWord("white", in: normalized) {
+            return .blueWhitePalette
+        }
+
+        if containsPhrase("top status band", in: normalized) ||
+            (containsWord("status", in: normalized) && containsWord("band", in: normalized)) {
+            return .topStatusBand
+        }
+
+        return .notRecognized
+    }
+
     static func bitplaneColorIntent(from prompt: String) -> BitplaneColorIntent {
         let normalized = prompt.lowercased()
         let hasEditSignal = containsWord("set", in: normalized) ||
@@ -12553,9 +14898,6 @@ enum AmigaProgramFollowUpPlanner {
               updates.count + rejectedReasons.count > 0 else {
             return .notRecognized
         }
-        if placement.label != rename.currentLabel {
-            rejectedReasons.append("Specify the same control for rename and bounds changes.")
-        }
         if !rejectedReasons.isEmpty {
             return .rejected(Array(Set(rejectedReasons)).sorted())
         }
@@ -12623,9 +14965,6 @@ enum AmigaProgramFollowUpPlanner {
         guard let rename,
               let placement else {
             return .notRecognized
-        }
-        if placement.label != rename.currentLabel {
-            rejectedReasons.append("Specify the same control for rename and bounds changes.")
         }
         if !rejectedReasons.isEmpty {
             return .rejected(Array(Set(rejectedReasons)).sorted())
@@ -15296,7 +17635,10 @@ enum AmigaProgramFollowUpPlanner {
             containsWord("update", in: normalized) ||
             containsWord("adjust", in: normalized) ||
             containsWord("make", in: normalized)
-        return hasEditSignal &&
+        let hasImplicitSetSignal = containsPhrase("volume step to", in: normalized) ||
+            containsPhrase("volume increment to", in: normalized) ||
+            containsPhrase("volume amount to", in: normalized)
+        return (hasEditSignal || hasImplicitSetSignal) &&
             containsWord("volume", in: normalized) &&
             (containsWord("step", in: normalized) || containsWord("increment", in: normalized) || containsWord("amount", in: normalized))
     }
@@ -15313,7 +17655,11 @@ enum AmigaProgramFollowUpPlanner {
             containsWord("update", in: normalized) ||
             containsWord("adjust", in: normalized) ||
             containsWord("make", in: normalized)
-        guard hasEditSignal,
+        let hasImplicitSetSignal = containsPhrase("initial volume to", in: normalized) ||
+            containsPhrase("default volume to", in: normalized) ||
+            containsPhrase("starting volume to", in: normalized) ||
+            containsPhrase("start volume to", in: normalized)
+        guard hasEditSignal || hasImplicitSetSignal,
               containsWord("volume", in: normalized),
               !containsWord("step", in: normalized),
               !containsWord("increment", in: normalized),
@@ -15973,7 +18319,51 @@ enum AmigaProgramFollowUpPlanner {
             bounds.x = targetBounds.x + targetBounds.width + gap
             bounds.y = center ? centeredCoordinate(sourceSize: sourceBounds.height, targetOrigin: targetBounds.y, targetSize: targetBounds.height) : targetBounds.y
         }
+        bounds = boundsByAvoidingControlOverlap(
+            bounds,
+            movingControlID: sourceControl.id,
+            placement: separator.placement,
+            controls: model.controls,
+            gap: gap
+        )
         return (sourceControl.label, bounds)
+    }
+
+    private static func boundsByAvoidingControlOverlap(
+        _ initialBounds: AmigaProgramModel.Bounds,
+        movingControlID: String,
+        placement: RelativeControlPlacement,
+        controls: [AmigaProgramModel.Control],
+        gap: Int
+    ) -> AmigaProgramModel.Bounds {
+        let occupiedBounds = controls.compactMap { control -> AmigaProgramModel.Bounds? in
+            guard control.id != movingControlID else { return nil }
+            return control.bounds
+        }
+        var bounds = initialBounds
+        for _ in 0..<(occupiedBounds.count + 1) {
+            guard occupiedBounds.contains(where: { controlBoundsOverlap(bounds, $0) }) else {
+                return bounds
+            }
+            switch placement {
+            case .above:
+                bounds.y -= bounds.height + gap
+            case .below:
+                bounds.y += bounds.height + gap
+            case .leftOf:
+                bounds.x -= bounds.width + gap
+            case .rightOf:
+                bounds.x += bounds.width + gap
+            }
+        }
+        return bounds
+    }
+
+    private static func controlBoundsOverlap(_ left: AmigaProgramModel.Bounds, _ right: AmigaProgramModel.Bounds) -> Bool {
+        left.x < right.x + right.width &&
+            left.x + left.width > right.x &&
+            left.y < right.y + right.height &&
+            left.y + left.height > right.y
     }
 
     private static func addedControlPlacementBounds(

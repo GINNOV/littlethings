@@ -27,7 +27,7 @@ enum AssemblySemanticValidator {
         }
 
         if lowerPrompt.contains("blitter") || lowerPrompt.contains("blit") {
-            failures.append(contentsOf: validateBlitterRules(in: strippedSource))
+            failures.append(contentsOf: validateBlitterRules(in: strippedSource, prompt: lowerPrompt))
         }
 
         if lowerPrompt.contains("bitplane") || lowerPrompt.contains("screen") {
@@ -158,7 +158,7 @@ enum AssemblySemanticValidator {
         return failures
     }
 
-    private static func validateBlitterRules(in source: String) -> [String] {
+    private static func validateBlitterRules(in source: String, prompt: String) -> [String] {
         var failures: [String] = []
         let blitterWaitPattern = #"(?i)btst\s+#(?:6|14)\s*,\s*\$02\s*\(\s*a[0-7]\s*\)"#
 
@@ -188,6 +188,53 @@ enum AssemblySemanticValidator {
 
         if !contains(pattern: #"(?i)\$(64|66)\s*\(\s*a[0-7]\s*\)"#, in: source) {
             failures.append("missing blitter modulo setup")
+        }
+
+        if prompt.contains("bob") || prompt.contains("object") || prompt.contains("collision") || prompt.contains("bounds") {
+            failures.append(contentsOf: validateBlitterBOBRules(in: source, prompt: prompt))
+        }
+
+        return failures
+    }
+
+    private static func validateBlitterBOBRules(in source: String, prompt: String) -> [String] {
+        var failures: [String] = []
+
+        if prompt.contains("bob") || prompt.contains("object") {
+            for label in ["BOBX", "BOBY", "BOBDX", "BOBDY", "BOBMask", "BOBImage"] {
+                if !contains(pattern: #"(?im)^\#(label)\s*:"#, in: source) {
+                    failures.append("missing blitter BOB \(label) state")
+                }
+            }
+        }
+
+        if prompt.contains("bounds") {
+            for value in ["#16", "#288", "#32", "#176"] {
+                let escapedValue = NSRegularExpression.escapedPattern(for: value)
+                if !contains(pattern: #"(?i)\bcmp\.w\s+\#(escapedValue)\s*,"#, in: source) {
+                    failures.append("missing bounds clamp \(value)")
+                }
+            }
+            if !contains(pattern: #"(?i)neg\.w\s+BOBDX"#, in: source) {
+                failures.append("missing horizontal bounds bounce")
+            }
+            if !contains(pattern: #"(?i)neg\.w\s+BOBDY"#, in: source) {
+                failures.append("missing vertical bounds bounce")
+            }
+        }
+
+        if prompt.contains("collision") {
+            for label in ["TargetLeft", "TargetTop", "TargetRight", "TargetBottom", "CollisionState"] {
+                if !contains(pattern: #"(?im)^\#(label)\s*:"#, in: source) {
+                    failures.append("missing collision \(label) state")
+                }
+            }
+            if !contains(pattern: #"(?i)move\.w\s+(#\$[0-9a-f]{3,4}|CollisionColor\s*\(\s*pc\s*\))\s*,\s*\$182\s*\(\s*a[0-7]\s*\)"#, in: source) {
+                failures.append("missing collision color evidence")
+            }
+            if !contains(pattern: #"(?i)move\.w\s+#1\s*,\s*CollisionState"#, in: source) {
+                failures.append("missing collision state set")
+            }
         }
 
         return failures
