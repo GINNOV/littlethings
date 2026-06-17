@@ -173,6 +173,7 @@ if ! create-dmg \
     --hide-extension "$APP_NAME" \
     --app-drop-link "$APP_LINK_POS_X" "$APP_LINK_POS_Y" \
     --no-internet-enable \
+    --skip-jenkins \
     "$DMG_PATH" \
     "$TEMP_DIR"; then
     echo "Error: Failed to create DMG"

@@ -14,7 +14,7 @@
   ],
   "purpose" : "Stored in ROM (or loaded from disk on early A1000 setups), Kickstart initializes custom chips, brings up Chip RAM, installs core libraries, and hands control to boot media or the Workbench desktop.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803407365.668755,
+  "researchedAt" : 803408194.773049,
   "romID" : "kickstart\/v1-3-r34-005\/a3000\/hack-unknown-hack\/kickstart-v1-3-r34-005-1987-12-commodore-a3000-h-unknown-hack.rom",
   "summary" : "Kickstart is the Amiga's resident operating system firmware. This hack \/ crack image targets Amiga 3000 and provides the Exec kernel, device drivers, Intuition GUI, and DOS library needed to boot Workbench or games.",
   "technicalInsights" : [

@@ -31,6 +31,7 @@
 		A11100002E80011400000000 /* App/UpdaterCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80011300000000 /* App/UpdaterCommands.swift */; };
 		A11100002E80011600000000 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A11100002E80011500000000 /* Sparkle */; };
 		A11100002E80012000000000 /* Services/AmigaProgramModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80011F00000000 /* Services/AmigaProgramModel.swift */; };
+		A11100002E80012200000000 /* Services/AmigaRuntimeEvidence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80012100000000 /* Services/AmigaRuntimeEvidence.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +79,7 @@
 		A11100002E80011100000000 /* App/UpdaterController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/UpdaterController.swift; sourceTree = "<group>"; };
 		A11100002E80011300000000 /* App/UpdaterCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/UpdaterCommands.swift; sourceTree = "<group>"; };
 		A11100002E80011F00000000 /* Services/AmigaProgramModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AmigaProgramModel.swift; sourceTree = "<group>"; };
+		A11100002E80012100000000 /* Services/AmigaRuntimeEvidence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AmigaRuntimeEvidence.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -164,6 +166,7 @@
 			isa = PBXGroup;
 			children = (
 				A11100002E80011F00000000 /* Services/AmigaProgramModel.swift */,
+				A11100002E80012100000000 /* Services/AmigaRuntimeEvidence.swift */,
 				A11100002E8000B100000000 /* Services/AssistantChatSession.swift */,
 				A11100002E8000F100000000 /* Services/AssemblySemanticValidator.swift */,
 				A11100002E80001300000000 /* Services/CompilerService.swift */,
@@ -345,6 +348,7 @@
 				A11100002E80002900000000 /* Services/VAmigaValidationService.swift in Sources */,
 				A11100002E8000F200000000 /* Services/AssemblySemanticValidator.swift in Sources */,
 				A11100002E80012000000000 /* Services/AmigaProgramModel.swift in Sources */,
+				A11100002E80012200000000 /* Services/AmigaRuntimeEvidence.swift in Sources */,
 				A11100002E80010200000000 /* Services/DemoSchoolMetadata.swift in Sources */,
 				A11100002E80010400000000 /* Views/DemoSchoolLibraryComponents.swift in Sources */,
 				A11100002E8000C400000000 /* Views/PromptLibraryView.swift in Sources */,

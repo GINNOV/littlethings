@@ -14,7 +14,7 @@
   ],
   "purpose" : "Enables CD-based boot, audio CD playback, and console-style startup on CDTV\/CD32, or CD-ROM expansion on A500-class machines.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803407365.657122,
+  "researchedAt" : 803408194.760053,
   "romID" : "extended-rom\/cd32\/r40-60\/standard\/cd32-extended-rom-r40-60-1993-commodore-cd32.rom",
   "summary" : "Extended ROM firmware for Amiga CD32. Adds CD filesystem support, audio\/CD streaming helpers, and boot logic beyond standard Kickstart.",
   "technicalInsights" : [

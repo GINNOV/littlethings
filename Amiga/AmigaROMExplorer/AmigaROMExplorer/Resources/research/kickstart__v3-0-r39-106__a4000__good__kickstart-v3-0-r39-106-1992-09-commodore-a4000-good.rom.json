@@ -15,7 +15,7 @@
   ],
   "purpose" : "Stored in ROM (or loaded from disk on early A1000 setups), Kickstart initializes custom chips, brings up Chip RAM, installs core libraries, and hands control to boot media or the Workbench desktop.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803407365.679906,
+  "researchedAt" : 803408194.786847,
   "romID" : "kickstart\/v3-0-r39-106\/a4000\/good\/kickstart-v3-0-r39-106-1992-09-commodore-a4000-good.rom",
   "summary" : "Kickstart is the Amiga's resident operating system firmware. This verified good image targets Amiga 4000 and provides the Exec kernel, device drivers, Intuition GUI, and DOS library needed to boot Workbench or games.",
   "technicalInsights" : [

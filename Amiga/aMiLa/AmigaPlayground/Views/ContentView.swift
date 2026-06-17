@@ -1683,11 +1683,12 @@ SineWave:
     // Simple helper to isolate block between markdown fences and overwrite the editor
     private func injectCodeBlock(from responseText: String) {
         let prompt = assistantChat.promptPrecedingAssistantMessage(responseText) ?? "Manual assistant code injection"
+        let strippedResponse = AssistantChatSession.stripPlanningBlocks(from: responseText)
         generatedCodeTemplateMatch = nil
-        if let range = responseText.range(of: "```[a-zA-Z0-9]*\n", options: .regularExpression) {
-            let codeStart = responseText.index(range.upperBound, offsetBy: 0)
-            if let endRange = responseText[codeStart...].range(of: "```") {
-                let codeContent = responseText[codeStart..<endRange.lowerBound]
+        if let range = strippedResponse.range(of: "```[a-zA-Z0-9]*\n", options: .regularExpression) {
+            let codeStart = strippedResponse.index(range.upperBound, offsetBy: 0)
+            if let endRange = strippedResponse[codeStart...].range(of: "```") {
+                let codeContent = strippedResponse[codeStart..<endRange.lowerBound]
                 injectGeneratedCode(
                     AssemblySourceFormatter.vasmReadySource(
                         from: String(codeContent).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1701,7 +1702,7 @@ SineWave:
 
         // Fallback if no code fences are found
         injectGeneratedCode(
-            AssemblySourceFormatter.vasmReadySource(from: responseText),
+            AssemblySourceFormatter.vasmReadySource(from: strippedResponse),
             prompt: prompt,
             consoleMessage: "Injected full assistant text block."
         )

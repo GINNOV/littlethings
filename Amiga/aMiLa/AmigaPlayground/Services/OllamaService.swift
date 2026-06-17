@@ -27,6 +27,8 @@ class OllamaService: ObservableObject {
     static let defaultSystemPrompt = """
 You are AntigravityAmiga, an elite Amiga 68000 Motorola assembly programmer. Write highly optimized, clean, and 100% compilable Motorola 68k assembly code.
 
+Before the assembly code block, you MUST write your implementation plan inside <planning>...</planning> tags.
+
 CRITICAL DIRECTIVES:
 - DO NOT leak C-style preprocessor directives (#define, #include, #ifdef) into assembly code.
 - DO NOT use C-style comments (// or /* */). All assembly comments MUST start with a semicolon (;).
@@ -39,7 +41,7 @@ CRITICAL DIRECTIVES:
 """
 
     static let generationContractPrompt = """
-When the user asks you to generate Amiga code, return exactly one fenced code block tagged assembly and no prose outside the code block. The code block must contain complete VASM-compatible source, not a fragment.
+When the user asks you to generate Amiga code, write your implementation plan inside <planning>...</planning> tags before the assembly code block. Immediately after the planning tags, return exactly one fenced code block tagged assembly. Do not write any other prose outside the planning tags and the code block. The code block must contain complete VASM-compatible source, not a fragment.
 
 General VASM/68000 rules learned from compiler validation:
 - Include SECTION Code,CODE and XDEF _Start for runnable AmigaDOS executables. Do not split SECTION Code,CODE across separate SECTION and CODE lines.
@@ -365,9 +367,63 @@ Code comment preference:
         return task
     }
 
+    func injectRAGContext(for prompt: String) -> String {
+        var contextPieces: [String] = []
+        let lowerPrompt = prompt.lowercased()
+        
+        if lowerPrompt.contains("blitter") || lowerPrompt.contains("blit") {
+            contextPieces.append("""
+            Blitter Registers:
+            - BLTCON0 ($dff040): Blitter control register 0
+            - BLTCON1 ($dff042): Blitter control register 1
+            - BLTSIZE ($dff058): Blitter start and size register
+            """)
+        }
+        
+        if lowerPrompt.contains("copper") || lowerPrompt.contains("cop") {
+            contextPieces.append("""
+            Copper Registers:
+            - COP1LC ($dff080): Copper first location register (pointer)
+            - COPJMP1 ($dff088): Copper first instruction strobe (trigger)
+            """)
+        }
+        
+        if lowerPrompt.contains("sprite") || lowerPrompt.contains("spr") {
+            contextPieces.append("""
+            Sprite Registers:
+            - SPRxPTH ($dff120 + 4*x) / SPRxPTL ($dff122 + 4*x): Sprite pointers (0-7)
+            - SPRxPOS ($dff140 + 8*x): Sprite position (x, y)
+            - SPRxCTL ($dff142 + 8*x): Sprite control (height, x/y v-start/stop)
+            - SPRxDATA ($dff144 + 8*x): Sprite data A
+            - SPRxDATB ($dff146 + 8*x): Sprite data B
+            """)
+        }
+        
+        if lowerPrompt.contains("graphics") || lowerPrompt.contains("loadview") || lowerPrompt.contains("waittof") {
+            contextPieces.append("""
+            graphics.library LVOs:
+            - _LVOLoadView (-222 / -$DE): Tells the graphics system to display a new View.
+            - _LVOWaitTOF (-270 / -$10E): Pauses the task until the next vertical blank (top of frame).
+            """)
+        }
+        
+        if contextPieces.isEmpty {
+            return ""
+        }
+        
+        return "\n\n=== Amiga Hardware & API RAG Context ===\n" + contextPieces.joined(separator: "\n\n")
+    }
+
     private func requestMessages(from messages: [ChatMessage]) -> [[String: String]] {
         var formattedMessages: [[String: String]] = []
-        let trimmedSystemPrompt = systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        let userPrompts = messages.filter { $0.role == "user" }.map { $0.content }.joined(separator: " ")
+        let ragContext = injectRAGContext(for: userPrompts)
+        
+        var trimmedSystemPrompt = systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !ragContext.isEmpty {
+            trimmedSystemPrompt += ragContext
+        }
 
         if !trimmedSystemPrompt.isEmpty {
             formattedMessages.append(["role": "system", "content": trimmedSystemPrompt])

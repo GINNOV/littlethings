@@ -21,6 +21,7 @@ enum AssemblySemanticValidator {
         failures.append(contentsOf: validateGlobalRules(in: strippedSource))
         failures.append(contentsOf: validateExecutableStructure(in: strippedSource))
         failures.append(contentsOf: validateAmigaProgramModelRules(in: source))
+        failures.append(contentsOf: validateUnstructuredPromptCompleteness(source: source, prompt: prompt))
 
         if lowerPrompt.contains("copper") {
             failures.append(contentsOf: validateCopperRules(in: strippedSource, prompt: lowerPrompt))
@@ -57,6 +58,77 @@ enum AssemblySemanticValidator {
         guard source.contains("; @amiga:region model begin") else { return [] }
         return AmigaProgramSourceVerifier.failures(in: source)
             .map { "model source invariant: \($0)" }
+    }
+
+    private static func validateUnstructuredPromptCompleteness(source: String, prompt: String) -> [String] {
+        guard !source.contains("; @amiga:region model begin") else { return [] }
+        var failures: [String] = []
+        let lowerSource = source.lowercased()
+        let lowerPrompt = prompt.lowercased()
+
+        // 1. Quoted text check
+        let quotePattern = #"(?:"|'|“|”|‘|’)([^"'“”‘’\n\r]+)(?:"|'|“|”|‘|’)"#
+        if let regex = try? NSRegularExpression(pattern: quotePattern) {
+            let range = NSRange(prompt.startIndex..<prompt.endIndex, in: prompt)
+            let matches = regex.matches(in: prompt, range: range)
+            for match in matches {
+                if let matchRange = Range(match.range(at: 1), in: prompt) {
+                    let quotedText = String(prompt[matchRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !lowerSource.contains(quotedText.lowercased()) {
+                        let isScrolling = lowerPrompt.contains("scroll")
+                        let failureMsg = isScrolling
+                            ? "Generated source is missing requested scrolling text '\(quotedText)'"
+                            : "Generated source is missing requested text '\(quotedText)'"
+                        failures.append(failureMsg)
+                    }
+                }
+            }
+        }
+
+        // 2. Hardware systems check
+        if lowerPrompt.contains("blitter") || lowerPrompt.contains("blit") {
+            let keywords = ["blitter", "blit", "$40", "$58", "$50", "$54", "$64", "$66"]
+            if !keywords.contains(where: { lowerSource.contains($0) }) {
+                failures.append("Generated source is missing requested hardware system 'blitter'")
+            }
+        }
+
+        if lowerPrompt.contains("copper") {
+            let keywords = ["copper", "cop", "$80", "$88", "$96"]
+            if !keywords.contains(where: { lowerSource.contains($0) }) {
+                failures.append("Generated source is missing requested hardware system 'copper'")
+            }
+        }
+
+        if lowerPrompt.contains("sprite") {
+            let keywords = ["sprite", "spr", "$120"]
+            if !keywords.contains(where: { lowerSource.contains($0) }) {
+                failures.append("Generated source is missing requested hardware system 'sprite'")
+            }
+        }
+
+        if lowerPrompt.contains("audio") || lowerPrompt.contains("sound") {
+            let keywords = ["audio", "sound", "paula", "aud", "$a0", "$a4", "$a6", "$a8"]
+            if !keywords.contains(where: { lowerSource.contains($0) }) {
+                failures.append("Generated source is missing requested hardware system 'audio'")
+            }
+        }
+
+        if lowerPrompt.contains("cia") || lowerPrompt.contains("joystick") || lowerPrompt.contains("mouse") || lowerPrompt.contains("keyboard") || lowerPrompt.contains("input") {
+            let keywords = ["cia", "joystick", "joy", "mouse", "keyboard", "input", "$bfe001", "$dff00a"]
+            if !keywords.contains(where: { lowerSource.contains($0) }) {
+                failures.append("Generated source is missing requested hardware system 'input'")
+            }
+        }
+
+        if lowerPrompt.contains("interrupt") || lowerPrompt.contains("irq") {
+            let keywords = ["interrupt", "irq", "intena", "intreq", "$9a", "$9c"]
+            if !keywords.contains(where: { lowerSource.contains($0) }) {
+                failures.append("Generated source is missing requested hardware system 'interrupt'")
+            }
+        }
+
+        return failures
     }
 
     private static func validateGlobalRules(in source: String) -> [String] {

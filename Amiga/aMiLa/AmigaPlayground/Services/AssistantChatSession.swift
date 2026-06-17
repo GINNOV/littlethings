@@ -226,8 +226,23 @@ final class AssistantChatSession: ObservableObject {
         return extractCodeForEditor(from: responseText)
     }
 
+    static func stripPlanningBlocks(from text: String) -> String {
+        let pattern = "(?s)<planning>.*?</planning>"
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+            return text
+        }
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+        var result = regex.stringByReplacingMatches(in: text, options: [], range: range, withTemplate: "")
+        
+        if let planningRange = result.range(of: "<planning>", options: .caseInsensitive) {
+            result = String(result[..<planningRange.lowerBound])
+        }
+        return result
+    }
+
     private static func injectableCodeCandidate(from reasoningText: String) -> String? {
-        let trimmedReasoning = reasoningText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let stripped = stripPlanningBlocks(from: reasoningText)
+        let trimmedReasoning = stripped.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedReasoning.isEmpty else { return nil }
 
         if let range = trimmedReasoning.range(of: "```[a-zA-Z0-9]*\n", options: .regularExpression),
@@ -246,9 +261,10 @@ final class AssistantChatSession: ObservableObject {
     }
 
     private func extractCodeForEditor(from responseText: String) -> AssistantChatCompletion {
-        if let range = responseText.range(of: "```[a-zA-Z0-9]*\n", options: .regularExpression),
-           let endRange = responseText[range.upperBound...].range(of: "```") {
-            let codeContent = responseText[range.upperBound..<endRange.lowerBound]
+        let strippedResponse = Self.stripPlanningBlocks(from: responseText)
+        if let range = strippedResponse.range(of: "```[a-zA-Z0-9]*\n", options: .regularExpression),
+           let endRange = strippedResponse[range.upperBound...].range(of: "```") {
+            let codeContent = strippedResponse[range.upperBound..<endRange.lowerBound]
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             return AssistantChatCompletion(
                 injectedCode: AssemblySourceFormatter.vasmReadySource(from: codeContent),
@@ -256,9 +272,9 @@ final class AssistantChatSession: ObservableObject {
             )
         }
 
-        if isLikelyInjectableCode(responseText) {
+        if isLikelyInjectableCode(strippedResponse) {
             return AssistantChatCompletion(
-                injectedCode: AssemblySourceFormatter.vasmReadySource(from: responseText),
+                injectedCode: AssemblySourceFormatter.vasmReadySource(from: strippedResponse),
                 consoleMessage: "Injected full assistant text block."
             )
         }

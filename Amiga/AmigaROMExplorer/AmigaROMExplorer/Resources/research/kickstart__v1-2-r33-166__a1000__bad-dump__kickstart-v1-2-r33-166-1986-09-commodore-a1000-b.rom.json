@@ -14,7 +14,7 @@
   ],
   "purpose" : "Stored in ROM (or loaded from disk on early A1000 setups), Kickstart initializes custom chips, brings up Chip RAM, installs core libraries, and hands control to boot media or the Workbench desktop.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803407365.663678,
+  "researchedAt" : 803408194.766997,
   "romID" : "kickstart\/v1-2-r33-166\/a1000\/bad-dump\/kickstart-v1-2-r33-166-1986-09-commodore-a1000-b.rom",
   "summary" : "Kickstart is the Amiga's resident operating system firmware. This bad dump image targets Amiga 1000 and provides the Exec kernel, device drivers, Intuition GUI, and DOS library needed to boot Workbench or games.",
   "technicalInsights" : [

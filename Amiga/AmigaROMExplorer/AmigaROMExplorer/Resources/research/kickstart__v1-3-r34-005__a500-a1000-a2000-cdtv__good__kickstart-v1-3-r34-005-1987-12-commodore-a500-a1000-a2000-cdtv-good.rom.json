@@ -17,7 +17,7 @@
   ],
   "purpose" : "Stored in ROM (or loaded from disk on early A1000 setups), Kickstart initializes custom chips, brings up Chip RAM, installs core libraries, and hands control to boot media or the Workbench desktop.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803407365.692669,
+  "researchedAt" : 803408194.802716,
   "romID" : "kickstart\/v1-3-r34-005\/a500-a1000-a2000-cdtv\/good\/kickstart-v1-3-r34-005-1987-12-commodore-a500-a1000-a2000-cdtv-good.rom",
   "summary" : "Kickstart is the Amiga's resident operating system firmware. This verified good image targets Amiga 1000, Amiga 2000, Amiga 500, Commodore CDTV and provides the Exec kernel, device drivers, Intuition GUI, and DOS library needed to boot Workbench or games.",
   "technicalInsights" : [

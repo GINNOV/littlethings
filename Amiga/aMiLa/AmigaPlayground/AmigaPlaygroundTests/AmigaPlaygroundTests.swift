@@ -918,6 +918,44 @@ CopperList:
         XCTAssertEqual(result.consoleMessage, "Injected code block from Amiga Assistant.")
     }
 
+    func testAssistantChatSessionStripsPlanningBlocksBeforeEditorInjection() {
+        let session = AssistantChatSession()
+        _ = session.submit("build an animated copper list")
+
+        let response = """
+        <planning>
+        1. Set background to blue.
+        2. Wait for mouse button.
+        </planning>
+        Here is the generated copper list:
+
+        ```asm
+        SECTION Code,CODE,CHIP
+        CopperList:
+            dc.w $180,$00f
+            dc.w $ffff,$fffe
+        ```
+        """
+
+        let result = session.complete(fullResponse: response, streamedResponse: "")
+
+        XCTAssertFalse(session.isGenerating)
+        XCTAssertEqual(session.messages.map(\.role), ["user", "assistant"])
+        // Check that messages contains the planning block (full text preserved)
+        XCTAssertTrue(session.messages[1].content.contains("<planning>"))
+        XCTAssertTrue(session.messages[1].content.contains("1. Set background to blue."))
+        
+        // Check that injected code has stripped the planning block
+        XCTAssertEqual(result.injectedCode, """
+            SECTION Code,CODE,CHIP
+CopperList:
+    dc.w $180,$00f
+    dc.w $ffff,$fffe
+""")
+        XCTAssertEqual(result.consoleMessage, "Injected code block from Amiga Assistant.")
+    }
+
+
     func testAssistantChatSessionStoresTokenUsageOnAssistantMessage() {
         let session = AssistantChatSession()
         _ = session.submit("build an animated copper list")
@@ -1184,6 +1222,68 @@ CopperList:
 
             XCTAssertTrue(result.passed, "Flying saucer text template should pass semantic gate for prompt:\n\(prompt)\nFailures:\n\(result.summary)")
         }
+    }
+
+    func testUnstructuredPromptCompletenessGate() {
+        // 1. Test case: Prompt requests "ALIENS" text, but assembly code is missing it.
+        let sourceMissingText = """
+                    SECTION    Code,CODE,CHIP
+                    XDEF       _Start
+        _Start:
+                    rts
+        """
+        
+        let result1 = AssemblySemanticValidator.validate(
+            source: sourceMissingText,
+            prompt: "make the words \"ALIENS\" scroll"
+        )
+        XCTAssertTrue(result1.failures.contains("Generated source is missing requested scrolling text 'ALIENS'"))
+        
+        // 2. Test case: Prompt requests "hello" text (non-scrolling), but assembly code is missing it.
+        let result2 = AssemblySemanticValidator.validate(
+            source: sourceMissingText,
+            prompt: "center the words “hello”"
+        )
+        XCTAssertTrue(result2.failures.contains("Generated source is missing requested text 'hello'"))
+
+        // 3. Test case: Prompt requests "blitter", but assembly is missing it.
+        let result3 = AssemblySemanticValidator.validate(
+            source: sourceMissingText,
+            prompt: "use the blitter to clear screen"
+        )
+        XCTAssertTrue(result3.failures.contains("Generated source is missing requested hardware system 'blitter'"))
+
+        // 4. Test case: Prompt requests "copper", but assembly is missing it.
+        let result4 = AssemblySemanticValidator.validate(
+            source: sourceMissingText,
+            prompt: "set up a copper list"
+        )
+        XCTAssertTrue(result4.failures.contains("Generated source is missing requested hardware system 'copper'"))
+
+        // 5. Test case: All elements are present.
+        let sourceWithEverything = """
+                    SECTION    Code,CODE,CHIP
+                    XDEF       _Start
+        _Start:
+                    ; blit setup
+                    move.w #$8000, $40(a6)
+                    ; copper setup
+                    move.l #CopperList, $80(a6)
+                    rts
+        
+        TextData:
+                    dc.b "ALIENS",0
+                    dc.b 'hello',0
+        
+        CopperList:
+                    dc.w $ffff,$fffe
+        """
+        let result5 = AssemblySemanticValidator.validate(
+            source: sourceWithEverything,
+            prompt: "make the words \"ALIENS\" scroll, center the words “hello”, use the blitter, and set up a copper list"
+        )
+        // Ensure no completeness failures are present
+        XCTAssertFalse(result5.failures.contains { $0.contains("missing requested") })
     }
 
     func testAssistantPromptTemplateGoal2BenchmarkPromptsClassifyAndContainParameters() {
@@ -25758,6 +25858,87 @@ PatternC:
 
         service.streamChat(
             messages: [OllamaService.ChatMessage(role: "user", content: "read joystick state")],
+            onChunk: { _ in },
+            onCompletion: { _ in expectation.fulfill() },
+            onError: { error in
+                XCTFail("Unexpected error: \(error.localizedDescription)")
+            }
+        )
+
+        waitForExpectations(timeout: 2.0)
+        MockLLMURLProtocol.requestHandler = nil
+    }
+
+    func testOllamaServiceInjectsRAGContextForKeywords() {
+        let service = OllamaService()
+        
+        // Test no match
+        let contextNone = service.injectRAGContext(for: "tell me a joke")
+        XCTAssertTrue(contextNone.isEmpty)
+        
+        // Test blitter
+        let contextBlit = service.injectRAGContext(for: "how to do a blit copy")
+        XCTAssertTrue(contextBlit.contains("BLTCON0"))
+        XCTAssertTrue(contextBlit.contains("BLTSIZE"))
+        
+        // Test copper
+        let contextCopper = service.injectRAGContext(for: "setup a copper list")
+        XCTAssertTrue(contextCopper.contains("COP1LC"))
+        XCTAssertTrue(contextCopper.contains("COPJMP1"))
+        
+        // Test sprite
+        let contextSprite = service.injectRAGContext(for: "draw a spr pattern")
+        XCTAssertTrue(contextSprite.contains("SPRxPTH"))
+        XCTAssertTrue(contextSprite.contains("SPRxPOS"))
+        
+        // Test graphics
+        let contextGraphics = service.injectRAGContext(for: "calling waittof in graphics library")
+        XCTAssertTrue(contextGraphics.contains("_LVOLoadView"))
+        XCTAssertTrue(contextGraphics.contains("_LVOWaitTOF"))
+    }
+
+    func testOllamaServiceRequestMessagesAppendsRAGContextToSystemPrompt() {
+        let defaultsName = "AmigaPlaygroundTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: defaultsName)!
+        defer { defaults.removePersistentDomain(forName: defaultsName) }
+
+        let service = OllamaService(userDefaults: defaults)
+        service.provider = .lmStudio
+        service.customUrl = "http://local-mlx.test"
+        service.modelName = ""
+        service.systemPrompt = "My Base System Prompt."
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockLLMURLProtocol.self]
+        service.urlSessionConfiguration = configuration
+
+        let expectation = self.expectation(description: "OpenAI-compatible request includes RAG context")
+
+        MockLLMURLProtocol.requestHandler = { request in
+            let bodyData = try XCTUnwrap(request.testHTTPBodyData)
+            let body = try XCTUnwrap(JSONSerialization.jsonObject(with: bodyData) as? [String: Any])
+
+            let messages = try XCTUnwrap(body["messages"] as? [[String: String]])
+            
+            // The first message is system role, its content should contain the base system prompt AND RAG context
+            let systemMsg = try XCTUnwrap(messages.first)
+            XCTAssertEqual(systemMsg["role"], "system")
+            let content = try XCTUnwrap(systemMsg["content"])
+            XCTAssertTrue(content.contains("My Base System Prompt."))
+            XCTAssertTrue(content.contains("BLTCON0"))
+            XCTAssertTrue(content.contains("BLTSIZE"))
+
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "text/event-stream"]
+            ))
+            return (response, Data("data: [DONE]\n\n".utf8))
+        }
+
+        service.streamChat(
+            messages: [OllamaService.ChatMessage(role: "user", content: "Implement a blitter fill")],
             onChunk: { _ in },
             onCompletion: { _ in expectation.fulfill() },
             onError: { error in
