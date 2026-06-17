@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # Disable both version and security updates for xbook-console Node dependencies
+  - package-ecosystem: "npm"
+    directory: "/Web_Apps/xbook-console"
+    schedule:
+      interval: "monthly"
+    open-pr-limit: 0
+    ignore:
+      - dependency-name: "*"
+
+  # Disable both version and security updates for xbook-console Rust/Tauri dependencies
+  - package-ecosystem: "cargo"
+    directory: "/Web_Apps/xbook-console/src-tauri"
+    schedule:
+      interval: "monthly"
+    open-pr-limit: 0
+    ignore:
+      - dependency-name: "*"
