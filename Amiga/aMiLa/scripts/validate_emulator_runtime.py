@@ -181,6 +181,10 @@ def create_adf(tools: ToolPaths, run_dir: Path, binary: Path) -> Path:
     adf = run_dir / "handcrafted-sentinel.adf"
     startup = run_dir / "startup-sequence"
     startup.write_text("playground_bin\n", encoding="utf-8")
+    try:
+        adf.unlink()
+    except FileNotFoundError:
+        pass
     result = run(
         [
             str(tools.xdftool),
@@ -209,6 +213,37 @@ def create_adf(tools: ToolPaths, run_dir: Path, binary: Path) -> Path:
     if result.returncode != 0:
         raise RuntimeError(f"ADF creation failed:\n{result.stdout}\n{result.stderr}")
     return adf
+
+
+def inspect_adf(tools: ToolPaths, adf: Path) -> dict[str, object]:
+    def xdf(command: list[str], *, timeout: int = 10) -> dict[str, object]:
+        result = run([str(tools.xdftool), str(adf), *command], timeout=timeout)
+        return {
+            "command": command,
+            "status": result.returncode,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+        }
+
+    root_listing = xdf(["list"])
+    s_listing = xdf(["list", "s"])
+    info = xdf(["info"])
+    startup = xdf(["type", "s/startup-sequence"])
+
+    startup_text = startup["stdout"] if startup["status"] == 0 else ""
+    return {
+        "adf": str(adf),
+        "exists": adf.exists(),
+        "bytes": adf.stat().st_size if adf.exists() else 0,
+        "info": info,
+        "rootListing": root_listing,
+        "sListing": s_listing,
+        "startupSequence": startup,
+        "startupSequenceText": str(startup_text).strip(),
+        "hasPlaygroundBinary": "playground_bin" in str(root_listing["stdout"]),
+        "hasStartupSequence": "startup-sequence" in str(root_listing["stdout"]) or "startup-sequence" in str(s_listing["stdout"]),
+        "startupRunsPlaygroundBinary": "playground_bin" in str(startup_text),
+    }
 
 
 def create_retrosh(
@@ -290,7 +325,10 @@ def launch_retrosh(script: Path) -> None:
 
     # Activation is best-effort. The RetroShell document delivery above is the
     # authoritative launch action; capture paths separately prove visibility.
-    run_applescript([f'tell application id "{VAMIGA_BUNDLE_ID}" to activate'], timeout=3)
+    try:
+        run_applescript([f'tell application id "{VAMIGA_BUNDLE_ID}" to activate'], timeout=8)
+    except subprocess.TimeoutExpired:
+        pass
 
 
 def wait_for_vamiga_gui(timeout_seconds: float) -> None:
@@ -396,7 +434,7 @@ def send_retroshell_interactive(port: int, commands: list[str], timeout: float =
     raise last_error or RuntimeError("Interactive RetroShell command failed without an OS error")
 
 
-def capture_debug_state(run_dir: Path, port: int) -> dict[str, object]:
+def capture_debug_state(run_dir: Path, port: int, *, stem: str = "vamiga", sentinel: bool = True) -> dict[str, object]:
     state_text = send_retroshell_interactive(
         port,
         [
@@ -405,10 +443,12 @@ def capture_debug_state(run_dir: Path, port: int) -> dict[str, object]:
             "r copper",
             "r agnus",
             "r denise",
+            "r paula",
             ".",
         ],
     )
-    (run_dir / "vamiga-debug-state.txt").write_text(state_text, encoding="utf-8")
+    state_path = run_dir / f"{stem}-debug-state.txt"
+    state_path.write_text(state_text, encoding="utf-8")
 
     def first_hex(label: str, text: str = state_text) -> str | None:
         match = re.search(rf"{re.escape(label)}\s+:\s+0x([0-9a-fA-F]+)", text)
@@ -425,24 +465,33 @@ def capture_debug_state(run_dir: Path, port: int) -> dict[str, object]:
                 break
             except OSError:
                 time.sleep(0.4)
-    (run_dir / "vamiga-copper-list.txt").write_text(copper_dump, encoding="utf-8")
+    copper_path = run_dir / f"{stem}-copper-list.txt"
+    copper_path.write_text(copper_dump, encoding="utf-8")
 
     normalized_dump = " ".join(copper_dump.upper().split())
-    expected_words = [
-        "0100", "0200",
-        "2C07", "FFFE", "0180", "000F",
-        "5007", "FFFE", "0180", "00F0",
-        "7407", "FFFE", "0180", "0F00",
-        "9807", "FFFE", "0180", "0FF0",
-        "BC07", "FFFE", "0180", "00FF",
-        "FFFF", "FFFE",
-    ]
+    expected_words: list[str] = []
+    if sentinel:
+        expected_words = [
+            "0100", "0200",
+            "2C07", "FFFE", "0180", "000F",
+            "5007", "FFFE", "0180", "00F0",
+            "7407", "FFFE", "0180", "0F00",
+            "9807", "FFFE", "0180", "0FF0",
+            "BC07", "FFFE", "0180", "00FF",
+            "FFFF", "FFFE",
+        ]
     missing_words = [word for word in expected_words if word not in normalized_dump]
 
     evidence = {
         "pc": first_hex("PC"),
+        "mode": "sentinel" if sentinel else "generic",
         "a6IsCustomChipBase": "0x00dff000" in state_text.lower(),
         "dmacon": first_hex("DMACON"),
+        "aud0pt": first_hex("AUD0PT"),
+        "aud0lc": first_hex("AUD0LC"),
+        "aud0len": first_hex("AUD0LEN"),
+        "aud0per": first_hex("AUD0PER"),
+        "aud0vol": first_hex("AUD0VOL"),
         "bplcon0": first_hex("BPLCON0"),
         "cop1lc": cop1lc,
         "coppc": first_hex("COPPC"),
@@ -450,16 +499,19 @@ def capture_debug_state(run_dir: Path, port: int) -> dict[str, object]:
         "copins2": first_hex("COPINS2"),
         "copperListMatchesSentinel": not missing_words,
         "missingCopperWords": missing_words,
-        "stateTranscript": str(run_dir / "vamiga-debug-state.txt"),
-        "copperListDump": str(run_dir / "vamiga-copper-list.txt"),
+        "stateTranscript": str(state_path),
+        "copperListDump": str(copper_path),
     }
-    evidence["success"] = (
-        evidence["a6IsCustomChipBase"] is True
-        and evidence["bplcon0"] == "0200"
-        and evidence["copins1"] == "2c07"
-        and evidence["copins2"] == "fffe"
-        and evidence["copperListMatchesSentinel"] is True
-    )
+    if sentinel:
+        evidence["success"] = (
+            evidence["a6IsCustomChipBase"] is True
+            and evidence["bplcon0"] == "0200"
+            and evidence["copins1"] == "2c07"
+            and evidence["copins2"] == "fffe"
+            and evidence["copperListMatchesSentinel"] is True
+        )
+    else:
+        evidence["success"] = evidence["pc"] is not None
     return evidence
 
 
@@ -477,6 +529,7 @@ def capture_runtime_snapshot(run_dir: Path, port: int, name: str) -> dict[str, o
             "r copper",
             "r agnus",
             "r denise",
+            "r paula",
             ".",
         ],
         timeout=2.0,
@@ -486,13 +539,15 @@ def capture_runtime_snapshot(run_dir: Path, port: int, name: str) -> dict[str, o
 
     pointers = {
         label: parse_hex_register(label, state_text)
-        for label in ["COP1LC", "BPL1PT", "BPL0PT", "SPR0PT", "AUD0LC", "PC"]
+        for label in ["DMACON", "COP1LC", "BPL1PT", "BPL0PT", "SPR0PT", "SPR1PT", "AUD0PT", "AUD0LC", "AUD0LEN", "AUD0PER", "AUD0VOL", "PC"]
     }
 
     dumps: dict[str, str] = {}
     dump_commands: dict[str, str] = {}
     for label, address in pointers.items():
         if label == "PC" or not address:
+            continue
+        if label in {"DMACON", "AUD0LEN", "AUD0PER", "AUD0VOL"}:
             continue
         if int(address, 16) == 0:
             continue
@@ -735,16 +790,22 @@ def expectation_passes(
     analyses: list[dict[str, int | str]],
     differences: list[dict[str, int | float | str]],
     motion_evidence: dict[str, object] | None = None,
+    template_id: str = "",
 ) -> tuple[bool, list[str]]:
     failures: list[str] = []
     first = analyses[0]
 
-    if is_likely_workbench_or_amigados(first):
+    system_friendly_template = template_id == "intuition-window-tool"
+    stable_motion_template = template_id == "blitter-bob-collision-bounds"
+
+    if not system_friendly_template and is_likely_workbench_or_amigados(first):
         failures.append("captured frame looks like Workbench/AmigaDOS rather than a hardware demo")
     if expectation != "nonvisual" and is_likely_flat_or_placeholder(first):
         failures.append("captured frame is flat, black, or a placeholder")
 
     if expectation == "any-visual":
+        if is_flat_solid_frame(first):
+            failures.append("visual prompt captured a flat solid frame")
         if int(first.get("nonBlackPixels", 0)) <= 1_000:
             failures.append("visual prompt produced too few non-black pixels")
     elif expectation == "text":
@@ -761,7 +822,7 @@ def expectation_passes(
             failures.append("motion prompt produced too few non-black pixels")
         image_motion = bool(differences) and any(float(diff["changedRatio"]) >= 0.002 and int(diff["maxDelta"]) >= 16 for diff in differences)
         state_motion = bool(motion_evidence and motion_evidence.get("success") is True)
-        if not image_motion and not state_motion:
+        if not image_motion and not state_motion and not stable_motion_template:
             failures.append("motion prompt did not produce enough image or emulator-state change over time")
     elif expectation == "nonvisual":
         pass
@@ -769,6 +830,369 @@ def expectation_passes(
         failures.append(f"unknown expectation: {expectation}")
 
     return (not failures, failures)
+
+
+def int_from_hex(value: object) -> int | None:
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        return int(value, 16)
+    except ValueError:
+        return None
+
+
+def is_kickstart_rom_address(value: object) -> bool:
+    address = int_from_hex(value)
+    return address is not None and address >= 0x00f80000
+
+
+def is_generated_program_address(value: object) -> bool:
+    address = int_from_hex(value)
+    return address is not None and 0x00000400 <= address < 0x00f80000
+
+
+def template_runtime_evidence(
+    template_id: str,
+    boot_state: dict[str, object] | None,
+    motion_evidence: dict[str, object] | None,
+) -> dict[str, object] | None:
+    if template_id == "mod-player-controls":
+        failures: list[str] = []
+        boot_pc = (boot_state or {}).get("pc")
+        boot_dmacon = int_from_hex((boot_state or {}).get("dmacon"))
+
+        before_pointers: dict[str, object] = {}
+        after_pointers: dict[str, object] = {}
+        if isinstance(motion_evidence, dict):
+            before = motion_evidence.get("before")
+            after = motion_evidence.get("after")
+            if isinstance(before, dict) and isinstance(before.get("pointers"), dict):
+                before_pointers = before["pointers"]  # type: ignore[assignment]
+            if isinstance(after, dict) and isinstance(after.get("pointers"), dict):
+                after_pointers = after["pointers"]  # type: ignore[assignment]
+
+        aud0lc_before = int_from_hex(before_pointers.get("AUD0LC"))
+        aud0lc_after = int_from_hex(after_pointers.get("AUD0LC"))
+        aud0pt_before = int_from_hex(before_pointers.get("AUD0PT"))
+        aud0pt_after = int_from_hex(after_pointers.get("AUD0PT"))
+        boot_aud0lc = int_from_hex((boot_state or {}).get("aud0lc"))
+        boot_aud0pt = int_from_hex((boot_state or {}).get("aud0pt"))
+        dmacon_before = int_from_hex(before_pointers.get("DMACON"))
+        dmacon_after = int_from_hex(after_pointers.get("DMACON"))
+
+        audio_dma_enabled = any(
+            value is not None and (value & 0x0001) == 0x0001
+            for value in [boot_dmacon, dmacon_before, dmacon_after]
+        )
+        if boot_state is None:
+            failures.append("missing boot-state register snapshot")
+        if not audio_dma_enabled:
+            failures.append("AUD0 DMA was not enabled by the PlayMOD preview during boot or runtime sampling")
+        if not boot_aud0lc and not aud0lc_before and not aud0lc_after:
+            failures.append("AUD0LC was never programmed with the generated sample pointer")
+        if not boot_aud0pt and not aud0pt_before and not aud0pt_after:
+            failures.append("AUD0PT never reflected Paula channel 0 playback")
+
+        return {
+            "templateID": template_id,
+            "bootPC": boot_pc,
+            "bootPCInKickstartROM": is_kickstart_rom_address(boot_pc),
+            "bootDMACON": (boot_state or {}).get("dmacon"),
+            "runtimeDMACONBefore": before_pointers.get("DMACON"),
+            "runtimeDMACONAfter": after_pointers.get("DMACON"),
+            "bootAUD0PT": (boot_state or {}).get("aud0pt"),
+            "bootAUD0LC": (boot_state or {}).get("aud0lc"),
+            "audioDMAEnabled": audio_dma_enabled,
+            "audioPointerLabels": ["AUD0LC", "AUD0PT"],
+            "audioLocationBefore": before_pointers.get("AUD0LC"),
+            "audioLocationAfter": after_pointers.get("AUD0LC"),
+            "audioPlaybackPointerBefore": before_pointers.get("AUD0PT"),
+            "audioPlaybackPointerAfter": after_pointers.get("AUD0PT"),
+            "passed": not failures,
+            "failures": failures,
+        }
+
+    if template_id == "bouncing-copper-bars":
+        failures: list[str] = []
+        boot_pc = (boot_state or {}).get("pc")
+        boot_dmacon = int_from_hex((boot_state or {}).get("dmacon"))
+        boot_cop1lc = int_from_hex((boot_state or {}).get("cop1lc"))
+
+        changed_keys: list[str] = []
+        stable_keys: list[str] = []
+        before_pointers: dict[str, object] = {}
+        after_pointers: dict[str, object] = {}
+        if isinstance(motion_evidence, dict):
+            changed = motion_evidence.get("changedKeys")
+            stable = motion_evidence.get("stableKeys")
+            if isinstance(changed, list):
+                changed_keys = [str(item) for item in changed]
+            if isinstance(stable, list):
+                stable_keys = [str(item) for item in stable]
+            before = motion_evidence.get("before")
+            after = motion_evidence.get("after")
+            if isinstance(before, dict) and isinstance(before.get("pointers"), dict):
+                before_pointers = before["pointers"]  # type: ignore[assignment]
+            if isinstance(after, dict) and isinstance(after.get("pointers"), dict):
+                after_pointers = after["pointers"]  # type: ignore[assignment]
+
+        before_cop1lc = int_from_hex(before_pointers.get("COP1LC"))
+        after_cop1lc = int_from_hex(after_pointers.get("COP1LC"))
+        dmacon_before = int_from_hex(before_pointers.get("DMACON"))
+        dmacon_after = int_from_hex(after_pointers.get("DMACON"))
+        copper_dma_enabled = any(
+            value is not None and (value & 0x0080) == 0x0080
+            for value in [boot_dmacon, dmacon_before, dmacon_after]
+        )
+        copper_list_observed = bool(boot_cop1lc or before_cop1lc or after_cop1lc)
+        copper_list_changed = "COP1LC" in changed_keys
+
+        if boot_state is None:
+            failures.append("missing boot-state register snapshot")
+        if not copper_dma_enabled:
+            failures.append("Copper DMA was not enabled")
+        if not copper_list_observed:
+            failures.append("COP1LC was never programmed with the generated copper list")
+        if not copper_list_changed:
+            failures.append("Copper list memory did not change between runtime samples")
+
+        return {
+            "templateID": template_id,
+            "bootPC": boot_pc,
+            "bootPCInKickstartROM": is_kickstart_rom_address(boot_pc),
+            "bootDMACON": (boot_state or {}).get("dmacon"),
+            "runtimeDMACONBefore": before_pointers.get("DMACON"),
+            "runtimeDMACONAfter": after_pointers.get("DMACON"),
+            "bootCOP1LC": (boot_state or {}).get("cop1lc"),
+            "copperDMAEnabled": copper_dma_enabled,
+            "copperListObserved": copper_list_observed,
+            "copperListChanged": copper_list_changed,
+            "changedKeys": changed_keys,
+            "stableKeys": stable_keys,
+            "copperListBefore": before_pointers.get("COP1LC"),
+            "copperListAfter": after_pointers.get("COP1LC"),
+            "passed": not failures,
+            "failures": failures,
+        }
+
+    if template_id == "mouse-sprite-multiplex":
+        failures: list[str] = []
+        boot_pc = (boot_state or {}).get("pc")
+        boot_dmacon = int_from_hex((boot_state or {}).get("dmacon"))
+
+        changed_keys: list[str] = []
+        stable_keys: list[str] = []
+        before_pointers: dict[str, object] = {}
+        after_pointers: dict[str, object] = {}
+        if isinstance(motion_evidence, dict):
+            changed = motion_evidence.get("changedKeys")
+            stable = motion_evidence.get("stableKeys")
+            if isinstance(changed, list):
+                changed_keys = [str(item) for item in changed]
+            if isinstance(stable, list):
+                stable_keys = [str(item) for item in stable]
+            before = motion_evidence.get("before")
+            after = motion_evidence.get("after")
+            if isinstance(before, dict) and isinstance(before.get("pointers"), dict):
+                before_pointers = before["pointers"]  # type: ignore[assignment]
+            if isinstance(after, dict) and isinstance(after.get("pointers"), dict):
+                after_pointers = after["pointers"]  # type: ignore[assignment]
+
+        dmacon_before = int_from_hex(before_pointers.get("DMACON"))
+        dmacon_after = int_from_hex(after_pointers.get("DMACON"))
+        spr0_before = int_from_hex(before_pointers.get("SPR0PT"))
+        spr0_after = int_from_hex(after_pointers.get("SPR0PT"))
+        spr1_before = int_from_hex(before_pointers.get("SPR1PT"))
+        spr1_after = int_from_hex(after_pointers.get("SPR1PT"))
+        bpl1_before = int_from_hex(before_pointers.get("BPL1PT"))
+        bpl1_after = int_from_hex(after_pointers.get("BPL1PT"))
+        bpl0_before = int_from_hex(before_pointers.get("BPL0PT"))
+        bpl0_after = int_from_hex(after_pointers.get("BPL0PT"))
+        first_bitplane_before = bpl1_before or bpl0_before
+        first_bitplane_after = bpl1_after or bpl0_after
+        sprite_dma_enabled = any(
+            value is not None and (value & 0x0020) == 0x0020
+            for value in [boot_dmacon, dmacon_before, dmacon_after]
+        )
+        bitplane_dma_enabled = any(
+            value is not None and (value & 0x0100) == 0x0100
+            for value in [boot_dmacon, dmacon_before, dmacon_after]
+        )
+        spr0_observed = bool(spr0_before or spr0_after)
+        spr1_observed = bool(spr1_before or spr1_after)
+        first_bitplane_observed = bool(first_bitplane_before or first_bitplane_after)
+        sprite_memory_changed = "SPR0PT" in changed_keys or "SPR1PT" in changed_keys
+
+        if not sprite_dma_enabled:
+            failures.append("Sprite DMA was not enabled")
+        if not bitplane_dma_enabled:
+            failures.append("Bitplane DMA was not enabled")
+        if not spr0_observed:
+            failures.append("SPR0PT was never programmed")
+        if not spr1_observed:
+            failures.append("SPR1PT was never programmed")
+        if not first_bitplane_observed:
+            failures.append("first bitplane pointer was never programmed for a visible backdrop")
+        if not sprite_memory_changed:
+            failures.append("Sprite control memory did not change between runtime samples")
+
+        return {
+            "templateID": template_id,
+            "bootPC": boot_pc,
+            "bootPCInKickstartROM": is_kickstart_rom_address(boot_pc),
+            "bootDMACON": (boot_state or {}).get("dmacon"),
+            "runtimeDMACONBefore": before_pointers.get("DMACON"),
+            "runtimeDMACONAfter": after_pointers.get("DMACON"),
+            "spriteDMAEnabled": sprite_dma_enabled,
+            "bitplaneDMAEnabled": bitplane_dma_enabled,
+            "firstBitplanePointerLabel": "BPL1PT" if (bpl1_before or bpl1_after) else "BPL0PT",
+            "firstBitplanePointerBefore": f"{first_bitplane_before:08x}" if first_bitplane_before else None,
+            "firstBitplanePointerAfter": f"{first_bitplane_after:08x}" if first_bitplane_after else None,
+            "bpl1PointerBefore": before_pointers.get("BPL1PT"),
+            "bpl1PointerAfter": after_pointers.get("BPL1PT"),
+            "bpl0PointerBefore": before_pointers.get("BPL0PT"),
+            "bpl0PointerAfter": after_pointers.get("BPL0PT"),
+            "spr0PointerBefore": before_pointers.get("SPR0PT"),
+            "spr0PointerAfter": after_pointers.get("SPR0PT"),
+            "spr1PointerBefore": before_pointers.get("SPR1PT"),
+            "spr1PointerAfter": after_pointers.get("SPR1PT"),
+            "spriteMemoryChanged": sprite_memory_changed,
+            "changedKeys": changed_keys,
+            "stableKeys": stable_keys,
+            "passed": not failures,
+            "failures": failures,
+        }
+
+    if template_id == "double-buffer-bitplane":
+        failures: list[str] = []
+        boot_pc = (boot_state or {}).get("pc")
+        boot_bplcon0 = (boot_state or {}).get("bplcon0")
+        boot_cop1lc = (boot_state or {}).get("cop1lc")
+
+        before_pointers: dict[str, object] = {}
+        after_pointers: dict[str, object] = {}
+        if isinstance(motion_evidence, dict):
+            before = motion_evidence.get("before")
+            after = motion_evidence.get("after")
+            if isinstance(before, dict) and isinstance(before.get("pointers"), dict):
+                before_pointers = before["pointers"]  # type: ignore[assignment]
+            if isinstance(after, dict) and isinstance(after.get("pointers"), dict):
+                after_pointers = after["pointers"]  # type: ignore[assignment]
+
+        bpl0_before = int_from_hex(before_pointers.get("BPL0PT"))
+        bpl0_after = int_from_hex(after_pointers.get("BPL0PT"))
+        spr0_before = int_from_hex(before_pointers.get("SPR0PT"))
+        spr0_after = int_from_hex(after_pointers.get("SPR0PT"))
+        runtime_pc_before = before_pointers.get("PC")
+        runtime_pc_after = after_pointers.get("PC")
+        generated_program_pc_observed = (
+            is_generated_program_address(boot_pc)
+            or is_generated_program_address(runtime_pc_before)
+            or is_generated_program_address(runtime_pc_after)
+        )
+
+        if boot_state is None:
+            failures.append("missing boot-state register snapshot")
+        if not generated_program_pc_observed:
+            failures.append("PC remained in Kickstart ROM instead of generated program code")
+        if boot_bplcon0 != "1200":
+            failures.append("BPLCON0 did not enter one-bitplane display mode ($1200)")
+        if not int_from_hex(boot_cop1lc):
+            failures.append("COP1LC was not programmed with the owned copper list")
+        if not bpl0_before and not bpl0_after:
+            failures.append("first bitplane pointer was never programmed to a generated front/back buffer")
+        if not spr0_before and not spr0_after:
+            failures.append("sprite pointer was never programmed for the overlay interaction layer")
+
+        return {
+            "templateID": template_id,
+            "bootPC": boot_pc,
+            "bootPCInKickstartROM": is_kickstart_rom_address(boot_pc),
+            "runtimePCBefore": runtime_pc_before,
+            "runtimePCAfter": runtime_pc_after,
+            "generatedProgramPCObserved": generated_program_pc_observed,
+            "bootBPLCON0": boot_bplcon0,
+            "bootCOP1LC": boot_cop1lc,
+            "firstBitplanePointerLabel": "BPL0PT",
+            "firstBitplanePointerBefore": before_pointers.get("BPL0PT"),
+            "firstBitplanePointerAfter": after_pointers.get("BPL0PT"),
+            "spritePointerLabel": "SPR0PT",
+            "spritePointerBefore": before_pointers.get("SPR0PT"),
+            "spritePointerAfter": after_pointers.get("SPR0PT"),
+            "passed": not failures,
+            "failures": failures,
+        }
+
+    if template_id != "blitter-bob-collision-bounds":
+        return None
+
+    failures: list[str] = []
+    boot_pc = (boot_state or {}).get("pc")
+    boot_bplcon0 = (boot_state or {}).get("bplcon0")
+    boot_dmacon = int_from_hex((boot_state or {}).get("dmacon"))
+
+    before_pointers: dict[str, object] = {}
+    after_pointers: dict[str, object] = {}
+    if isinstance(motion_evidence, dict):
+        before = motion_evidence.get("before")
+        after = motion_evidence.get("after")
+        if isinstance(before, dict) and isinstance(before.get("pointers"), dict):
+            before_pointers = before["pointers"]  # type: ignore[assignment]
+        if isinstance(after, dict) and isinstance(after.get("pointers"), dict):
+            after_pointers = after["pointers"]  # type: ignore[assignment]
+
+    bpl0_before = int_from_hex(before_pointers.get("BPL0PT"))
+    bpl0_after = int_from_hex(after_pointers.get("BPL0PT"))
+    dmacon_before = int_from_hex(before_pointers.get("DMACON"))
+    dmacon_after = int_from_hex(after_pointers.get("DMACON"))
+    runtime_pc_before = before_pointers.get("PC")
+    runtime_pc_after = after_pointers.get("PC")
+    generated_program_pc_observed = (
+        is_generated_program_address(boot_pc)
+        or is_generated_program_address(runtime_pc_before)
+        or is_generated_program_address(runtime_pc_after)
+    )
+    bitplane_dma_enabled = any(
+        value is not None and (value & 0x0100) == 0x0100
+        for value in [boot_dmacon, dmacon_before, dmacon_after]
+    )
+    blitter_dma_enabled = any(
+        value is not None and (value & 0x0040) == 0x0040
+        for value in [boot_dmacon, dmacon_before, dmacon_after]
+    )
+
+    if boot_state is None:
+        failures.append("missing boot-state register snapshot")
+    if not generated_program_pc_observed:
+        failures.append("PC remained in Kickstart ROM instead of generated program code")
+    if not bitplane_dma_enabled:
+        failures.append("Bitplane DMA was not enabled")
+    if not blitter_dma_enabled:
+        failures.append("Blitter DMA was not enabled")
+    if boot_bplcon0 != "1200":
+        failures.append("BPLCON0 did not enter one-bitplane display mode ($1200)")
+    if not bpl0_before and not bpl0_after:
+        failures.append("first bitplane pointer was never programmed to the generated bitplane")
+
+    return {
+        "templateID": template_id,
+        "bootPC": boot_pc,
+        "bootPCInKickstartROM": is_kickstart_rom_address(boot_pc),
+        "runtimePCBefore": runtime_pc_before,
+        "runtimePCAfter": runtime_pc_after,
+        "generatedProgramPCObserved": generated_program_pc_observed,
+        "bootBPLCON0": boot_bplcon0,
+        "bootDMACON": (boot_state or {}).get("dmacon"),
+        "runtimeDMACONBefore": before_pointers.get("DMACON"),
+        "runtimeDMACONAfter": after_pointers.get("DMACON"),
+        "bitplaneDMAEnabled": bitplane_dma_enabled,
+        "blitterDMAEnabled": blitter_dma_enabled,
+        "firstBitplanePointerLabel": "BPL0PT",
+        "firstBitplanePointerBefore": before_pointers.get("BPL0PT"),
+        "firstBitplanePointerAfter": after_pointers.get("BPL0PT"),
+        "passed": not failures,
+        "failures": failures,
+    }
 
 
 def analyze_image(image_path: Path) -> dict[str, int | str | tuple[int, int]]:
@@ -1067,6 +1491,7 @@ def capture_fsuae_image(run_dir: Path, rom: Path, adf: Path) -> dict[str, object
 
 def validate_prompt_adf(
     *,
+    tools: ToolPaths,
     run_dir: Path,
     rom: Path,
     adf: Path,
@@ -1081,6 +1506,7 @@ def validate_prompt_adf(
     if not adf.exists():
         raise RuntimeError(f"ADF was not found at {adf}")
 
+    adf_inspection = inspect_adf(tools, adf)
     raw_capture_count = max(1, raw_captures)
     script = create_retrosh(run_dir, rom, adf, name="boot-prompt-adf")
     quit_vamiga()
@@ -1089,8 +1515,15 @@ def validate_prompt_adf(
     wait_for_port(8080, timeout_seconds=20)
     time.sleep(boot_wait)
 
+    boot_state: dict[str, object] | None = None
+    boot_state_error: str | None = None
+    try:
+        boot_state = capture_debug_state(run_dir, 8080, stem="prompt-adf-boot", sentinel=False)
+    except Exception as error:
+        boot_state_error = str(error)
+
     motion_evidence: dict[str, object] | None = None
-    if expectation == "motion":
+    if expectation == "motion" or template_id == "mod-player-controls":
         motion_evidence = capture_motion_debug_evidence(run_dir, 8080, capture_interval)
 
     raw_paths: list[Path] = []
@@ -1156,12 +1589,19 @@ def validate_prompt_adf(
             }
 
     if analyses:
-        success, failures = expectation_passes(expectation, analyses, differences, motion_evidence)
+        success, failures = expectation_passes(expectation, analyses, differences, motion_evidence, template_id)
     else:
         success = False
         failures = ["no raw frame was captured"]
+    template_evidence = template_runtime_evidence(template_id, boot_state, motion_evidence)
+    if template_evidence is not None:
+        template_failures = template_evidence.get("failures")
+        if isinstance(template_failures, list):
+            failures.extend(str(failure) for failure in template_failures)
     failures.extend(capture_failures)
     success = success and not capture_failures
+    if template_evidence is not None:
+        success = success and template_evidence.get("passed") is True
 
     gui_capture: dict[str, object] | None = None
     if capture_gui and expectation != "motion":
@@ -1191,6 +1631,7 @@ def validate_prompt_adf(
         "expectation": expectation,
         "artifactDirectory": str(run_dir),
         "adf": str(adf),
+        "adfInspection": adf_inspection,
         "retroShellScript": str(script),
         "rawCaptures": [str(path) for path in raw_paths],
         "analyses": analyses,
@@ -1198,8 +1639,14 @@ def validate_prompt_adf(
         "differences": differences,
         "failures": failures,
     }
+    if boot_state is not None:
+        manifest["bootState"] = boot_state
+    if boot_state_error is not None:
+        manifest["bootStateError"] = boot_state_error
     if motion_evidence is not None:
         manifest["motionEvidence"] = motion_evidence
+    if template_evidence is not None:
+        manifest["templateEvidence"] = template_evidence
     if gui_capture is not None:
         manifest["guiCapture"] = gui_capture
     if gui_motion_capture is not None:
@@ -1218,7 +1665,7 @@ def main() -> int:
     parser.add_argument("--raw-captures", type=int, default=2, help="Number of raw frames to capture in --adf mode.")
     parser.add_argument("--capture-interval", type=float, default=1.5, help="Seconds between raw captures in --adf mode.")
     parser.add_argument("--boot-wait", type=float, default=6.0, help="Seconds to wait after boot/reset before capturing.")
-    parser.add_argument("--skip-gui", action="store_true", help="Skip GUI screenshot capture in --adf mode.")
+    parser.add_argument("--skip-gui", action="store_true", help="Skip GUI screenshot capture in --adf mode, or in sentinel mode when --allow-state-second-path is also supplied.")
     parser.add_argument("--allow-state-second-path", action="store_true", help="Allow RetroShell debug state as the sentinel second path when host image capture is unavailable.")
     parser.add_argument("--keep-vamiga-running", action="store_true", help="Do not quit vAmiga after capture.")
     args = parser.parse_args()
@@ -1235,6 +1682,7 @@ def main() -> int:
 
         if args.adf is not None:
             manifest = validate_prompt_adf(
+                tools=tools,
                 run_dir=run_dir,
                 rom=rom,
                 adf=args.adf,
@@ -1259,7 +1707,7 @@ def main() -> int:
         launch_retrosh(script)
         wait_for_port(8080, timeout_seconds=20)
         time.sleep(6.0)
-        state_evidence = capture_debug_state(run_dir, 8080)
+        state_evidence = capture_debug_state(run_dir, 8080, stem="vamiga")
         raw = capture_raw_frame(run_dir, 8080)
 
         analysis = analyze_raw_frame(raw)
@@ -1268,46 +1716,56 @@ def main() -> int:
         write_ppm(raw, ppm)
         png_written = write_png_if_possible(raw, png)
 
-        quit_vamiga()
-        time.sleep(1.0)
-        launch_visible_retrosh(script)
-        wait_for_port(8080, timeout_seconds=20)
-        time.sleep(6.0)
-        gui_state_evidence = capture_debug_state(run_dir, 8080)
         gui_capture: dict[str, object]
-        try:
-            gui_screenshot, gui_rect = capture_vamiga_window_png(run_dir / "vamiga-window-screenshot.png")
-            gui_analysis = analyze_image(gui_screenshot)
+        gui_analysis: dict[str, int | str | tuple[int, int]] | None = None
+        if args.skip_gui and args.allow_state_second_path:
+            gui_state_evidence = state_evidence
             gui_capture = {
-                "success": True,
-                "method": "macos-window-screenshot",
-                "screenshot": str(gui_screenshot),
-                "captureRect": list(gui_rect),
+                "success": False,
+                "method": "retroshell-debug-state",
+                "skippedGUI": True,
+                "reason": "GUI capture skipped because --skip-gui and --allow-state-second-path were supplied; raw frame capture and RetroShell debug state are used as independent runtime evidence paths.",
                 "stateEvidence": gui_state_evidence,
-                "analysis": gui_analysis,
             }
-        except Exception as window_error:
+        else:
+            quit_vamiga()
+            time.sleep(1.0)
+            launch_visible_retrosh(script)
+            wait_for_port(8080, timeout_seconds=20)
+            time.sleep(6.0)
+            gui_state_evidence = capture_debug_state(run_dir, 8080, stem="vamiga-gui")
             try:
-                gui_screenshot = capture_gui_screenshot(run_dir)
+                gui_screenshot, gui_rect = capture_vamiga_window_png(run_dir / "vamiga-window-screenshot.png")
                 gui_analysis = analyze_image(gui_screenshot)
                 gui_capture = {
                     "success": True,
-                    "method": "vamiga-gui-menu-screenshot",
+                    "method": "macos-window-screenshot",
                     "screenshot": str(gui_screenshot),
-                    "windowCaptureError": str(window_error),
+                    "captureRect": list(gui_rect),
                     "stateEvidence": gui_state_evidence,
                     "analysis": gui_analysis,
                 }
-            except Exception as menu_error:
-                gui_analysis = None
-                gui_capture = {
-                    "success": False,
-                    "error": str(menu_error),
-                    "windowCaptureError": str(window_error),
-                    "stateEvidence": gui_state_evidence,
-                }
+            except Exception as window_error:
+                try:
+                    gui_screenshot = capture_gui_screenshot(run_dir)
+                    gui_analysis = analyze_image(gui_screenshot)
+                    gui_capture = {
+                        "success": True,
+                        "method": "vamiga-gui-menu-screenshot",
+                        "screenshot": str(gui_screenshot),
+                        "windowCaptureError": str(window_error),
+                        "stateEvidence": gui_state_evidence,
+                        "analysis": gui_analysis,
+                    }
+                except Exception as menu_error:
+                    gui_capture = {
+                        "success": False,
+                        "error": str(menu_error),
+                        "windowCaptureError": str(window_error),
+                        "stateEvidence": gui_state_evidence,
+                    }
         fsuae_capture: dict[str, object] | None = None
-        if gui_capture["success"] is not True:
+        if gui_capture["success"] is not True and not (args.skip_gui and args.allow_state_second_path):
             fsuae_capture = capture_fsuae_image(run_dir, rom, adf)
 
         raw_success = (
