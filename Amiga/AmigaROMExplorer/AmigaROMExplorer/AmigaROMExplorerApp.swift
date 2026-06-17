@@ -4,7 +4,7 @@ import SwiftUI
 struct AmigaROMExplorerApp: App {
     @Environment(\.openWindow) private var openWindow
     @State private var viewModel = ExplorerViewModel()
-    private let updaterController = UpdaterController()
+    private let updaterController = UpdaterController(startingUpdater: !UITestingSupport.isActive)
 
     init() {
         if CommandLine.arguments.contains("--export-bundled-cache") {

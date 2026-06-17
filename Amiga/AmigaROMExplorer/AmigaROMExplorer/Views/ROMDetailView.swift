@@ -3,6 +3,8 @@ import SwiftUI
 struct ROMDetailView: View {
     @Environment(ExplorerViewModel.self) private var viewModel
 
+    private var research: ROMResearchService { viewModel.research }
+
     var body: some View {
         Group {
             if let item = viewModel.selectedItem {
@@ -22,16 +24,25 @@ struct ROMDetailView: View {
             Text("Browse your manifest-backed firmware collection. Sub-agents will deep-research each ROM for hardware context, history, and technical insights.")
         } actions: {
             Button("Research All") {
-                viewModel.researchAll()
+                viewModel.researchAll(forceRefresh: viewModel.enableSubAgents)
             }
             .buttonStyle(.borderedProminent)
             .tint(AmigaTheme.accentOrange)
+            .accessibilityIdentifier(UITestingSupport.AccessibilityID.Research.researchAll)
+
+            if let message = viewModel.bulkResearchFeedback ?? research.bulkResearchMessage {
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .accessibilityIdentifier(UITestingSupport.AccessibilityID.Research.bulkMessageWelcome)
+            }
         }
     }
 
     @ViewBuilder
     private func detailContent(for item: ROMCatalogItem) -> some View {
-        let state = viewModel.research.state(for: item)
+        let state = research.state(for: item)
 
         VStack(spacing: 0) {
             ScrollView {
@@ -44,7 +55,7 @@ struct ROMDetailView: View {
 
                     switch state {
                     case .idle, .queued:
-                        if viewModel.research.isCacheReady {
+                        if research.isCacheReady {
                             quickFacts(for: item)
                         } else {
                             ResearchLoadingView(progress: "Loading reference cache…")
@@ -68,7 +79,7 @@ struct ROMDetailView: View {
             hardwareModelFooter(for: item)
         }
         .task(id: item.id) {
-            viewModel.research.requestResearch(for: item)
+            research.requestResearch(for: item)
         }
     }
 

@@ -17,18 +17,37 @@ final class ExplorerViewModel {
     var showOnboarding: Bool
     var ollamaStatusMessage: String = "Not tested"
     var isTestingOllama = false
+    var bulkResearchFeedback: String?
 
     let catalog = ROMCatalogStore()
-    let research = ROMResearchService()
+    let research: ROMResearchService
 
     init() {
+        let uiTesting = UITestingSupport.isActive
+
         firmwareDirectoryPath = AppSettings.firmwareDirectoryURL()?.path ?? ""
         catalogMode = AppSettings.catalogMode
         ollamaBaseURL = UserDefaults.standard.string(forKey: AppSettings.ollamaBaseURLKey) ?? AppSettings.defaultOllamaBaseURL
         ollamaModel = UserDefaults.standard.string(forKey: AppSettings.ollamaModelKey) ?? AppSettings.defaultOllamaModel
-        enableSubAgents = UserDefaults.standard.object(forKey: AppSettings.enableSubAgentsKey) as? Bool ?? true
+        var resolvedEnableSubAgents = UserDefaults.standard.object(forKey: AppSettings.enableSubAgentsKey) as? Bool ?? true
         prefetchResearch = UserDefaults.standard.object(forKey: AppSettings.prefetchResearchKey) as? Bool ?? false
-        showOnboarding = !AppSettings.hasCompletedOnboarding
+
+        if uiTesting {
+            if ProcessInfo.processInfo.arguments.contains(UITestingSupport.disableSubAgentsArgument) {
+                resolvedEnableSubAgents = false
+            }
+            showOnboarding = false
+            AppSettings.hasCompletedOnboarding = true
+        } else {
+            showOnboarding = !AppSettings.hasCompletedOnboarding
+        }
+
+        enableSubAgents = resolvedEnableSubAgents
+        research = ROMResearchService(
+            autoHydrate: true,
+            runsAgents: !uiTesting,
+            useSubAgents: resolvedEnableSubAgents
+        )
 
         catalog.updateLocalDirectory(AppSettings.firmwareDirectoryURL())
         catalog.reload()
@@ -120,8 +139,10 @@ final class ExplorerViewModel {
         selectedItemID = item?.id
     }
 
-    func researchAll() {
-        research.researchAll(items: catalog.items)
+    func researchAll(forceRefresh: Bool = false) {
+        persistSettings()
+        research.researchAll(items: catalog.items, forceRefresh: forceRefresh)
+        bulkResearchFeedback = research.bulkResearchMessage
     }
 
     func setLocalFirmwareDirectory(_ path: String?) {

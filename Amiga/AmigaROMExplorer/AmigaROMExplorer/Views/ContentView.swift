@@ -24,5 +24,6 @@ struct ContentView: View {
                 viewModel.reloadCatalog()
             }
         }
+        .accessibilityIdentifier(UITestingSupport.AccessibilityID.explorerRoot)
     }
 }

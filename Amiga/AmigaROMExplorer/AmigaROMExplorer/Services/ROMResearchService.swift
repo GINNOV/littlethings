@@ -39,18 +39,32 @@ final class ROMResearchService {
     private(set) var activeAgentCount = 0
     private(set) var completedCount = 0
     private(set) var isCacheReady = false
+    private(set) var bulkResearchMessage: String?
+    private(set) var queuedResearchCount = 0
 
-    private let cache = ResearchCache.shared
+    private let cache: ResearchCache
     private let agentPool = ResearchAgentPool(maxConcurrent: 4)
     private var ollamaClient: OllamaClient
     private var useSubAgents: Bool
+    private let runsAgents: Bool
 
-    init() {
+    init(
+        autoHydrate: Bool = true,
+        runsAgents: Bool = true,
+        cache: ResearchCache = .shared,
+        useSubAgents: Bool? = nil
+    ) {
+        self.cache = cache
+        self.runsAgents = runsAgents
         ollamaClient = OllamaClient(
             baseURL: UserDefaults.standard.string(forKey: AppSettings.ollamaBaseURLKey) ?? AppSettings.defaultOllamaBaseURL,
             model: UserDefaults.standard.string(forKey: AppSettings.ollamaModelKey) ?? AppSettings.defaultOllamaModel
         )
-        useSubAgents = UserDefaults.standard.object(forKey: AppSettings.enableSubAgentsKey) as? Bool ?? true
+        self.useSubAgents = useSubAgents
+            ?? UserDefaults.standard.object(forKey: AppSettings.enableSubAgentsKey) as? Bool
+            ?? true
+
+        guard autoHydrate else { return }
 
         Task {
             await cache.loadAll()
@@ -64,12 +78,24 @@ final class ROMResearchService {
     }
 
     func hydrateFromCache() async {
-        let cached = await cache.allResearch()
+        await hydrateFromCache(merging: await cache.allResearch())
+    }
+
+    func hydrateFromCache(merging cached: [ROMResearch]) async {
         for research in cached {
-            states[research.romID] = .completed(research)
+            switch states[research.romID] ?? .idle {
+            case .queued, .researching:
+                continue
+            case .idle, .failed, .completed:
+                states[research.romID] = .completed(research)
+            }
         }
-        completedCount = cached.count
+        completedCount = states.values.filter { if case .completed = $0 { true } else { false } }.count
         isCacheReady = true
+    }
+
+    func setState(_ state: ResearchState, for item: ROMCatalogItem) {
+        states[item.id] = state
     }
 
     func state(for item: ROMCatalogItem) -> ResearchState {
@@ -91,10 +117,10 @@ final class ROMResearchService {
         switch states[item.id] ?? .idle {
         case .idle, .failed:
             states[item.id] = .queued
-            spawnAgent(for: item)
+            spawnAgent(for: item, forceRefresh: forceRefresh)
         case .completed where forceRefresh:
             states[item.id] = .queued
-            spawnAgent(for: item)
+            spawnAgent(for: item, forceRefresh: true)
         case .queued, .researching, .completed:
             break
         }
@@ -106,23 +132,51 @@ final class ROMResearchService {
         }
     }
 
-    func researchAll(items: [ROMCatalogItem]) {
-        for item in items where states[item.id] == nil || states[item.id] == .idle {
-            requestResearch(for: item)
+    func researchAll(items: [ROMCatalogItem], forceRefresh: Bool = false) {
+        var queued = 0
+
+        for item in items where ResearchBulkPlanner.shouldQueue(state: states[item.id], forceRefresh: forceRefresh) {
+            requestResearch(for: item, forceRefresh: forceRefresh)
+            queued += 1
         }
+
+        queuedResearchCount = ResearchBulkPlanner.queuedCount(in: states)
+        bulkResearchMessage = ResearchBulkPlanner.bulkMessage(
+            queued: queued,
+            total: items.count,
+            forceRefresh: forceRefresh,
+            useSubAgents: useSubAgents,
+            activeAgentCount: activeAgentCount,
+            queuedResearchCount: queuedResearchCount
+        )
     }
 
-    private func spawnAgent(for item: ROMCatalogItem) {
+    private func refreshBulkResearchCompletionState() {
+        queuedResearchCount = ResearchBulkPlanner.queuedCount(in: states)
+
+        guard activeAgentCount == 0, queuedResearchCount == 0 else { return }
+
+        let researching = states.values.contains { if case .researching = $0 { true } else { false } }
+        guard !researching else { return }
+
+        bulkResearchMessage = "Research complete — \(completedCount) profiles ready."
+    }
+
+    private func spawnAgent(for item: ROMCatalogItem, forceRefresh: Bool = false) {
+        guard runsAgents else { return }
+
         Task {
             await agentPool.acquire()
             activeAgentCount = await agentPool.activeCount
+            bulkResearchMessage = "Researching \(item.displayTitle)…"
 
             let agent = ResearchSubAgent(ollama: ollamaClient, useLLM: useSubAgents)
             states[item.id] = .researching(progress: "\(agent.name) starting…")
 
-            let result = await agent.research(item: item) { progress in
+            let result = await agent.research(item: item, forceRefresh: forceRefresh) { progress in
                 Task { @MainActor in
                     self.states[item.id] = .researching(progress: progress)
+                    self.bulkResearchMessage = progress
                 }
             }
 
@@ -134,6 +188,7 @@ final class ROMResearchService {
 
             await agentPool.release()
             activeAgentCount = await agentPool.activeCount
+            refreshBulkResearchCompletionState()
         }
     }
 }

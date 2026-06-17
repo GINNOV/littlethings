@@ -20,8 +20,12 @@ actor ResearchSubAgent {
 
     nonisolated var name: String { "Agent-\(agentID.prefix(6))" }
 
-    func research(item: ROMCatalogItem, onProgress: (@Sendable (String) -> Void)? = nil) async -> ROMResearch {
-        if let cached = await cache.research(for: item.id) {
+    func research(
+        item: ROMCatalogItem,
+        forceRefresh: Bool = false,
+        onProgress: (@Sendable (String) -> Void)? = nil
+    ) async -> ROMResearch {
+        if !forceRefresh, let cached = await cache.research(for: item.id) {
             return cached
         }
 

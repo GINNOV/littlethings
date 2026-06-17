@@ -11,7 +11,7 @@
   ],
   "purpose" : "Adds convenience utilities and enhancements when the cartridge is inserted at boot.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803405427.864166,
+  "researchedAt" : 803407365.691248,
   "romID" : "cartridges\/nordic-power\/v2-0\/standard\/nordic-power-v2-0-1990-data-and-electronics.rom",
   "summary" : "Nordic Power expansion cartridge firmware by Data & Electronics.",
   "technicalInsights" : [

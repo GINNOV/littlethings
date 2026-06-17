@@ -3,6 +3,8 @@ import SwiftUI
 struct SidebarView: View {
     @Environment(ExplorerViewModel.self) private var viewModel
 
+    private var research: ROMResearchService { viewModel.research }
+
     var body: some View {
         List {
             Section {
@@ -55,13 +57,58 @@ struct SidebarView: View {
             }
 
             Section("Research") {
-                Label("\(viewModel.research.completedCount) cached profiles", systemImage: "checkmark.seal.fill")
-                Label("\(viewModel.research.activeAgentCount) active agents", systemImage: "antenna.radiowaves.left.and.right")
+                Label("\(research.completedCount) cached profiles", systemImage: "checkmark.seal.fill")
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("\(research.completedCount) cached profiles")
+                    .accessibilityIdentifier(UITestingSupport.AccessibilityID.Research.cachedProfiles)
+                    .accessibilityValue("\(research.completedCount)")
+
+                if research.isCacheReady {
+                    Text("Cache ready")
+                        .font(.system(size: 1))
+                        .opacity(0.01)
+                        .accessibilityIdentifier(UITestingSupport.AccessibilityID.Research.cacheReady)
+                        .accessibilityLabel("Cache ready")
+                }
+                Label("\(research.activeAgentCount) active agents", systemImage: "antenna.radiowaves.left.and.right")
+
+                if research.activeAgentCount > 0 || research.queuedResearchCount > 0 {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text("Research in progress…")
+                            .font(.caption)
+                            .foregroundStyle(AmigaTheme.accentOrange)
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier(UITestingSupport.AccessibilityID.Research.researchInProgress)
+                }
+
+                if let message = viewModel.bulkResearchFeedback ?? research.bulkResearchMessage {
+                    Text(message)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier(UITestingSupport.AccessibilityID.Research.bulkMessageSidebar)
+                }
+
                 Button("Refresh Missing Research") {
-                    viewModel.researchAll()
+                    viewModel.researchAll(forceRefresh: false)
                 }
                 .buttonStyle(.borderless)
                 .foregroundStyle(AmigaTheme.accentOrange)
+                .disabled(research.activeAgentCount > 0)
+                .accessibilityIdentifier(UITestingSupport.AccessibilityID.Research.refreshMissing)
+
+                if viewModel.enableSubAgents {
+                    Button("Re-research All with Ollama") {
+                        viewModel.researchAll(forceRefresh: true)
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(AmigaTheme.accentCyan)
+                    .disabled(research.activeAgentCount > 0)
+                    .accessibilityIdentifier(UITestingSupport.AccessibilityID.Research.reresearchAll)
+                }
             }
         }
         .listStyle(.sidebar)

@@ -14,7 +14,7 @@
   ],
   "purpose" : "Enables CD-based boot, audio CD playback, and console-style startup on CDTV\/CD32, or CD-ROM expansion on A500-class machines.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803405427.832588,
+  "researchedAt" : 803407365.659772,
   "romID" : "extended-rom\/cdtv\/v2-30\/standard\/cdtv-extended-rom-v2-30-1992-commodore-cdtv-u35.rom",
   "summary" : "Extended ROM firmware for Commodore CDTV. Adds CD filesystem support, audio\/CD streaming helpers, and boot logic beyond standard Kickstart.",
   "technicalInsights" : [
