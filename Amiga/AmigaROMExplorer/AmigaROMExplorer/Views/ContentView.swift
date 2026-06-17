@@ -15,7 +15,9 @@ struct ContentView: View {
         } detail: {
             ROMDetailView()
         }
-        .background(AmigaBackground())
+        .background {
+            AmigaBackground()
+        }
         .searchable(text: $viewModel.searchText, prompt: "Search ROMs, machines, versions…")
         .task {
             if viewModel.catalog.items.isEmpty {

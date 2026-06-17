@@ -163,10 +163,12 @@ struct OnboardingWizardView: View {
     private var ollamaStep: some View {
         OnboardingCard(
             title: "Optional: Ollama sub-agents",
-            subtitle: "Deep LLM research runs locally. The shipped reference cache already works offline.",
+            subtitle: "Deep LLM research runs locally on your Mac. The bundled reference cache already works offline — Ollama only enriches entries that are not cached yet.",
             symbol: "brain"
         ) {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 16) {
+                ollamaSetupInstructions
+
                 Toggle("Enable Ollama sub-agents", isOn: $wantsOllama)
                     .toggleStyle(.switch)
                     .onChange(of: wantsOllama) { _, enabled in
@@ -174,28 +176,104 @@ struct OnboardingWizardView: View {
                     }
 
                 if wantsOllama {
-                    TextField("Ollama base URL", text: ollamaURLBinding)
-                    TextField("Model name", text: ollamaModelBinding)
+                    VStack(alignment: .leading, spacing: 12) {
+                        TextField("Ollama base URL", text: ollamaURLBinding)
+                        TextField("Model name", text: ollamaModelBinding)
 
-                    HStack {
-                        Button("Test Connection") {
-                            viewModel.testOllamaConnection()
+                        Button("Use recommended model (llama3.2)") {
+                            viewModel.ollamaBaseURL = AppSettings.defaultOllamaBaseURL
+                            viewModel.ollamaModel = AppSettings.defaultOllamaModel
                         }
-                        .disabled(viewModel.isTestingOllama)
+                        .buttonStyle(.borderless)
+                        .foregroundStyle(AmigaTheme.accentCyan)
 
-                        if viewModel.isTestingOllama {
-                            ProgressView().controlSize(.small)
-                        } else {
-                            Text(viewModel.ollamaStatusMessage)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                        HStack(alignment: .center, spacing: 12) {
+                            Button("Test Connection") {
+                                viewModel.testOllamaConnection()
+                            }
+                            .disabled(viewModel.isTestingOllama)
+
+                            if viewModel.isTestingOllama {
+                                ProgressView().controlSize(.small)
+                            } else {
+                                Text(viewModel.ollamaStatusMessage)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
+
+                        Text("If the test fails, confirm Ollama is running in the menu bar and that you ran `ollama pull \(viewModel.ollamaModel)`.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-
-                    Text("Install from https://ollama.com, run `ollama pull \(viewModel.ollamaModel)`, then test the connection.")
-                        .font(.caption)
+                } else {
+                    Text("You can enable Ollama later from Settings. The app works fully without it.")
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+            }
+        }
+    }
+
+    private var ollamaSetupInstructions: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("How to set up Ollama")
+                .font(.subheadline.weight(.semibold))
+
+            VStack(alignment: .leading, spacing: 4) {
+                setupStep(
+                    number: 1,
+                    title: "Download and install Ollama",
+                    detail: "Install the macOS app, launch it, and keep it running. Ollama lives in the menu bar and serves models at http://127.0.0.1:11434."
+                )
+                Link("Download from ollama.com", destination: URL(string: "https://ollama.com/download")!)
+                    .font(.caption)
+                    .padding(.leading, 30)
+            }
+
+            setupStep(
+                number: 2,
+                title: "Pull a small local model",
+                detail: "Open Terminal and download a compact model suited for structured research. We recommend llama3.2 (about 2 GB) — fast on Apple Silicon and good at concise technical summaries."
+            )
+
+            Text("ollama pull llama3.2")
+                .font(.caption.monospaced())
+                .textSelection(.enabled)
+                .foregroundStyle(AmigaTheme.accentCyan)
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(AmigaTheme.cardFill, in: RoundedRectangle(cornerRadius: 10))
+
+            setupStep(
+                number: 3,
+                title: "Keep Ollama running",
+                detail: "Leave the Ollama app open in the background while you research ROMs. You can switch to a different model later, but the name here must match what `ollama list` shows."
+            )
+
+            Text("Even smaller/faster options: llama3.2:1b or qwen2.5:3b. Larger models (llama3.1:8b) give richer answers but need more RAM.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(12)
+        .background(AmigaTheme.cardFill.opacity(0.65), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func setupStep(number: Int, title: String, detail: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text("\(number)")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(AmigaTheme.accentOrange)
+                .frame(width: 20, height: 20)
+                .background(AmigaTheme.accentOrange.opacity(0.18), in: Circle())
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

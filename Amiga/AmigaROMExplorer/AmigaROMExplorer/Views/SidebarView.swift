@@ -4,19 +4,30 @@ struct SidebarView: View {
     @Environment(ExplorerViewModel.self) private var viewModel
 
     var body: some View {
-        List(selection: Binding(
-            get: { viewModel.selectedCategory },
-            set: { viewModel.selectedCategory = $0; viewModel.selectedItemID = nil }
-        )) {
+        List {
             Section {
-                sidebarRow(category: nil, count: viewModel.catalog.items.count)
+                sidebarRow(
+                    title: "All ROMs",
+                    symbol: "square.grid.2x2",
+                    count: viewModel.catalog.items.count,
+                    isSelected: viewModel.selectedCategory == nil
+                ) {
+                    selectCategory(nil)
+                }
             } header: {
                 header
             }
 
             Section("Collections") {
                 ForEach(ROMCategory.allCases.filter { $0 != .other }) { category in
-                    sidebarRow(category: category, count: viewModel.categoryCounts[category, default: 0])
+                    sidebarRow(
+                        title: category.title,
+                        symbol: category.symbolName,
+                        count: viewModel.categoryCounts[category, default: 0],
+                        isSelected: viewModel.selectedCategory == category
+                    ) {
+                        selectCategory(category)
+                    }
                 }
             }
 
@@ -39,18 +50,16 @@ struct SidebarView: View {
                 .buttonStyle(.borderless)
                 .foregroundStyle(AmigaTheme.accentOrange)
             }
-
-            Section {
-                Button("Setup Wizard…") {
-                    viewModel.showOnboarding = true
-                }
-                .buttonStyle(.borderless)
-            }
         }
         .listStyle(.sidebar)
         .scrollContentBackground(.hidden)
         .background(AmigaTheme.backgroundTop.opacity(0.35))
         .navigationTitle("Explorer")
+    }
+
+    private func selectCategory(_ category: ROMCategory?) {
+        viewModel.selectedCategory = category
+        viewModel.selectedItemID = nil
     }
 
     private var header: some View {
@@ -74,17 +83,34 @@ struct SidebarView: View {
     }
 
     @ViewBuilder
-    private func sidebarRow(category: ROMCategory?, count: Int) -> some View {
-        let title = category?.title ?? "All ROMs"
-        let symbol = category?.symbolName ?? "square.grid.2x2"
-
-        HStack {
-            Label(title, systemImage: symbol)
-            Spacer()
-            Text("\(count)")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+    private func sidebarRow(
+        title: String,
+        symbol: String,
+        count: Int,
+        isSelected: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack {
+                Label(title, systemImage: symbol)
+                Spacer()
+                Text("\(count)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .contentShape(Rectangle())
         }
-        .tag(category)
+        .buttonStyle(.plain)
+        .listRowBackground(rowBackground(isSelected: isSelected))
+    }
+
+    @ViewBuilder
+    private func rowBackground(isSelected: Bool) -> some View {
+        if isSelected {
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(Color.accentColor.opacity(0.22))
+        } else {
+            Color.clear
+        }
     }
 }

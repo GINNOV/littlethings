@@ -40,6 +40,7 @@ struct AmigaBackground: View {
             )
         }
         .ignoresSafeArea()
+        .allowsHitTesting(false)
     }
 }
 

@@ -94,7 +94,7 @@ cat > "$APPCAST_PATH" <<EOF
         <item>
             <title>Version ${VERSION}</title>
             <description><![CDATA[
-Initial public release of Amiga ROM Explorer with bundled reference catalog, setup wizard, and Sparkle updates.
+Build ${BUILD_NUMBER}: sidebar interaction fixes, improved Ollama setup wizard, and Sparkle auto-updates.
 ]]></description>
             <sparkle:releaseNotesLink>https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/changelogs.html#amigaromexplorer</sparkle:releaseNotesLink>
             <pubDate>${PUB_DATE}</pubDate>
