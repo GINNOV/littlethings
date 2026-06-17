@@ -1,0 +1,131 @@
+import Foundation
+import Observation
+
+@MainActor
+@Observable
+final class ExplorerViewModel {
+    var selectedCategory: ROMCategory?
+    var selectedItemID: ROMCatalogItem.ID?
+    var searchText = ""
+    var firmwareDirectoryPath: String
+    var catalogMode: CatalogMode
+    var ollamaBaseURL: String
+    var ollamaModel: String
+    var enableSubAgents: Bool
+    var prefetchResearch: Bool
+    var showOnboarding: Bool
+    var ollamaStatusMessage: String = "Not tested"
+    var isTestingOllama = false
+
+    let catalog = ROMCatalogStore()
+    let research = ROMResearchService()
+
+    init() {
+        firmwareDirectoryPath = AppSettings.firmwareDirectoryURL()?.path ?? ""
+        catalogMode = AppSettings.catalogMode
+        ollamaBaseURL = UserDefaults.standard.string(forKey: AppSettings.ollamaBaseURLKey) ?? AppSettings.defaultOllamaBaseURL
+        ollamaModel = UserDefaults.standard.string(forKey: AppSettings.ollamaModelKey) ?? AppSettings.defaultOllamaModel
+        enableSubAgents = UserDefaults.standard.object(forKey: AppSettings.enableSubAgentsKey) as? Bool ?? true
+        prefetchResearch = UserDefaults.standard.object(forKey: AppSettings.prefetchResearchKey) as? Bool ?? false
+        showOnboarding = !AppSettings.hasCompletedOnboarding
+
+        catalog.updateLocalDirectory(AppSettings.firmwareDirectoryURL())
+        catalog.reload()
+    }
+
+    var filteredItems: [ROMCatalogItem] {
+        let base = catalog.items(for: selectedCategory)
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return base }
+
+        return base.filter { item in
+            let haystack = [
+                item.displayTitle,
+                item.manifest.source,
+                item.manifest.destination,
+                item.machines.map(\.name).joined(separator: " "),
+                item.parsed.variantLabel,
+                item.versionLabel
+            ].joined(separator: " ").lowercased()
+
+            return haystack.contains(query.lowercased())
+        }
+    }
+
+    var selectedItem: ROMCatalogItem? {
+        guard let selectedItemID else { return nil }
+        return catalog.item(withID: selectedItemID)
+    }
+
+    var categoryCounts: [ROMCategory: Int] {
+        Dictionary(grouping: catalog.items, by: \.category).mapValues(\.count)
+    }
+
+    var isReferenceOnlyMode: Bool {
+        catalogMode == .referenceOnly || catalog.localFirmwareDirectory == nil
+    }
+
+    func reloadCatalog() {
+        persistSettings()
+        catalog.updateLocalDirectory(firmwareDirectoryPath.isEmpty ? nil : URL(fileURLWithPath: firmwareDirectoryPath, isDirectory: true))
+    }
+
+    func select(_ item: ROMCatalogItem?) {
+        selectedItemID = item?.id
+    }
+
+    func researchAll() {
+        research.researchAll(items: catalog.items)
+    }
+
+    func setLocalFirmwareDirectory(_ path: String?) {
+        if let path, !path.isEmpty {
+            firmwareDirectoryPath = path
+            catalogMode = .localLibrary
+            AppSettings.catalogMode = .localLibrary
+            UserDefaults.standard.set(path, forKey: AppSettings.firmwareDirectoryKey)
+            catalog.updateLocalDirectory(URL(fileURLWithPath: path, isDirectory: true))
+        } else {
+            firmwareDirectoryPath = ""
+            catalogMode = .referenceOnly
+            AppSettings.catalogMode = .referenceOnly
+            AppSettings.clearFirmwareDirectory()
+            catalog.clearLocalDirectory()
+        }
+    }
+
+    func completeOnboarding(referenceOnly: Bool) {
+        if referenceOnly {
+            setLocalFirmwareDirectory(nil)
+        }
+        persistSettings()
+        AppSettings.hasCompletedOnboarding = true
+        showOnboarding = false
+    }
+
+    func testOllamaConnection() {
+        isTestingOllama = true
+        ollamaStatusMessage = "Testing…"
+        let client = OllamaClient(baseURL: ollamaBaseURL, model: ollamaModel)
+
+        Task {
+            let available = await client.isAvailable()
+            ollamaStatusMessage = available ? "Ollama is reachable." : "Could not reach Ollama at \(ollamaBaseURL)."
+            isTestingOllama = false
+        }
+    }
+
+    func persistSettings() {
+        if firmwareDirectoryPath.isEmpty {
+            AppSettings.clearFirmwareDirectory()
+        } else {
+            UserDefaults.standard.set(firmwareDirectoryPath, forKey: AppSettings.firmwareDirectoryKey)
+            AppSettings.catalogMode = catalogMode
+        }
+        UserDefaults.standard.set(ollamaBaseURL, forKey: AppSettings.ollamaBaseURLKey)
+        UserDefaults.standard.set(ollamaModel, forKey: AppSettings.ollamaModelKey)
+        UserDefaults.standard.set(enableSubAgents, forKey: AppSettings.enableSubAgentsKey)
+        UserDefaults.standard.set(prefetchResearch, forKey: AppSettings.prefetchResearchKey)
+        research.configure(ollamaBaseURL: ollamaBaseURL, model: ollamaModel, enableSubAgents: enableSubAgents)
+    }
+}

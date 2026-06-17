@@ -1,0 +1,26 @@
+{
+  "compatibilityNotes" : "Emulators and real hardware require a legally obtained ROM matching the target machine. This verified-good dump is suitable for archival emulation.",
+  "contentsDescription" : "Mature OCS Kickstart with stable Workbench 1.2\/1.3, improved graphics\/audio support, and broad game library compatibility.",
+  "hardwareIDs" : [
+    "a1000"
+  ],
+  "history" : "1986–1987: Kickstart 1.2\/1.3 powered the Amiga 500 and became the gold standard for OCS gaming.",
+  "notableLibraries" : [
+    "exec.library",
+    "graphics.library",
+    "intuition.library",
+    "dos.library",
+    "icon.library"
+  ],
+  "purpose" : "Stored in ROM (or loaded from disk on early A1000 setups), Kickstart initializes custom chips, brings up Chip RAM, installs core libraries, and hands control to boot media or the Workbench desktop.",
+  "researchSource" : "knowledgeBase",
+  "researchedAt" : 803402338.674943,
+  "romID" : "kickstart\/v1-2-r33-166\/a1000\/good\/kickstart-v1-2-r33-166-1986-09-commodore-a1000-good.rom",
+  "summary" : "Kickstart is the Amiga's resident operating system firmware. This verified good image targets Amiga 1000 and provides the Exec kernel, device drivers, Intuition GUI, and DOS library needed to boot Workbench or games.",
+  "technicalInsights" : [
+    "1.3 is the most requested ROM for WHDLoad and classic gaming.",
+    "512 KB ROM size is standard for this generation.",
+    "Manifest status: Installed"
+  ],
+  "title" : "Kickstart v1.2 r33.166"
+}

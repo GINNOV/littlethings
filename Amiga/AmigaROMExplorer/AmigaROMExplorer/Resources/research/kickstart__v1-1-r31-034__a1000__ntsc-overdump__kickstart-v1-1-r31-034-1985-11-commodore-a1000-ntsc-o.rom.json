@@ -1,0 +1,25 @@
+{
+  "compatibilityNotes" : "Emulators and real hardware require a legally obtained ROM matching the target machine. Non-good variants may be useful for preservation study but can behave differently in emulators.",
+  "contentsDescription" : "Early Exec, minimal Intuition, floppy-based tooling. NTSC\/PAL variants and frequent beta builds.",
+  "hardwareIDs" : [
+    "a1000"
+  ],
+  "history" : "1985–1986: Kickstart co-evolved with the Amiga 1000 and early developer machines. Versions were delivered on disk before ROM chips stabilized.",
+  "notableLibraries" : [
+    "exec.library",
+    "graphics.library",
+    "dos.library"
+  ],
+  "purpose" : "Stored in ROM (or loaded from disk on early A1000 setups), Kickstart initializes custom chips, brings up Chip RAM, installs core libraries, and hands control to boot media or the Workbench desktop.",
+  "researchSource" : "knowledgeBase",
+  "researchedAt" : 803402338.673755,
+  "romID" : "kickstart\/v1-1-r31-034\/a1000\/ntsc-overdump\/kickstart-v1-1-r31-034-1985-11-commodore-a1000-ntsc-o.rom",
+  "summary" : "Kickstart is the Amiga's resident operating system firmware. This overdump image targets Amiga 1000 and provides the Exec kernel, device drivers, Intuition GUI, and DOS library needed to boot Workbench or games.",
+  "technicalInsights" : [
+    "Very early builds may lack libraries present in Kickstart 1.2 and later, affecting game compatibility.",
+    "NTSC vs PAL splits matter for video timing.",
+    "Manifest status: Installed",
+    "Dump class: Overdump — verify behavior before relying on it for production emulation."
+  ],
+  "title" : "Kickstart v1.1 r31.034"
+}

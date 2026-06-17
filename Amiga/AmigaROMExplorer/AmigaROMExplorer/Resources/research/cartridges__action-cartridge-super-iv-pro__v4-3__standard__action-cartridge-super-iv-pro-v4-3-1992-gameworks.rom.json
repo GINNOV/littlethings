@@ -1,0 +1,26 @@
+{
+  "compatibilityNotes" : "Verify slot compatibility with target hardware.",
+  "contentsDescription" : "Cartridge-resident tools and boot-time utilities.",
+  "hardwareIDs" : [
+    "action",
+    "cartridge",
+    "iv",
+    "pro",
+    "super"
+  ],
+  "history" : "Early 1990s third-party cartridge from GameWorks.",
+  "notableLibraries" : [
+
+  ],
+  "purpose" : "System enhancement and game-related tooling.",
+  "researchSource" : "knowledgeBase",
+  "researchedAt" : 803402338.664249,
+  "romID" : "cartridges\/action-cartridge-super-iv-pro\/v4-3\/standard\/action-cartridge-super-iv-pro-v4-3-1992-gameworks.rom",
+  "summary" : "GameWorks Action Cartridge Super IV Pro utility ROM.",
+  "technicalInsights" : [
+    "Catalogued as a preservation reference in TOSEC naming.",
+    "Manifest status: Installed",
+    "Dump class: Unknown — verify behavior before relying on it for production emulation."
+  ],
+  "title" : "Action Cartridge Super IV Pro v4.3"
+}
