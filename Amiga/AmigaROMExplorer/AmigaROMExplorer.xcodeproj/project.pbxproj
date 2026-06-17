@@ -16,9 +16,22 @@
 		ARE000030 /* AmigaROMExplorerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AmigaROMExplorerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		ARE000040 /* Exceptions for "AmigaROMExplorer" folder in "AmigaROMExplorer" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = ARE000008 /* AmigaROMExplorer */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		ARE000004 /* AmigaROMExplorer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				ARE000040 /* Exceptions for "AmigaROMExplorer" folder in "AmigaROMExplorer" target */,
+			);
 			path = AmigaROMExplorer;
 			sourceTree = "<group>";
 		};
@@ -406,12 +419,8 @@
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Amiga ROM Explorer";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_SUFeedURL = "https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/appcast-amigaromexplorer.xml";
-				INFOPLIST_KEY_SUPublicEDKey = "Oq4b/BX26tC2nXfh+dmMFoHFP9RN8lyqxcgrZPY+Pd8=";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AmigaROMExplorer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -438,12 +447,8 @@
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Amiga ROM Explorer";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_SUFeedURL = "https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/appcast-amigaromexplorer.xml";
-				INFOPLIST_KEY_SUPublicEDKey = "Oq4b/BX26tC2nXfh+dmMFoHFP9RN8lyqxcgrZPY+Pd8=";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AmigaROMExplorer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
