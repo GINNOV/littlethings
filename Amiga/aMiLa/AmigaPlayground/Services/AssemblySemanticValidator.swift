@@ -20,6 +20,7 @@ enum AssemblySemanticValidator {
 
         failures.append(contentsOf: validateGlobalRules(in: strippedSource))
         failures.append(contentsOf: validateExecutableStructure(in: strippedSource))
+        failures.append(contentsOf: validateAmigaProgramModelRules(in: source))
 
         if lowerPrompt.contains("copper") {
             failures.append(contentsOf: validateCopperRules(in: strippedSource, prompt: lowerPrompt))
@@ -50,6 +51,12 @@ enum AssemblySemanticValidator {
         }
 
         return AssemblySemanticValidationResult(failures: orderedUnique(failures))
+    }
+
+    private static func validateAmigaProgramModelRules(in source: String) -> [String] {
+        guard source.contains("; @amiga:region model begin") else { return [] }
+        return AmigaProgramSourceVerifier.failures(in: source)
+            .map { "model source invariant: \($0)" }
     }
 
     private static func validateGlobalRules(in source: String) -> [String] {
@@ -352,6 +359,10 @@ enum AssemblyRepairPromptBuilder {
 
         if haystack.contains("copper") {
             return "Install CopperList through COP1LC $80(a6), strobe COPJMP1 $88(a6), enable copper DMA through DMACON $96(a6), and terminate with dc.w $ffff,$fffe."
+        }
+
+        if haystack.contains("model source invariant") || haystack.contains("@amiga:dispatch") {
+            return "For every embedded Amiga program control, preserve the @amiga:model marker, the @amiga:dispatch marker, a nearby bsr/jsr to the action label, the action routine label, and any modeled state symbols."
         }
 
         return "Return a complete VASM-compatible source file that preserves the original requested behavior."

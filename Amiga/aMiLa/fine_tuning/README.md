@@ -36,7 +36,48 @@ Generated model artifacts are intentionally ignored by GitHub and should be down
 - **Dynamic Hot-Swapping**: Supported out-of-the-box! Pass `"adapters": "adapters_asm"` or `"adapters": "adapters_c"` in the OpenAI completions request body to dynamically swap adapter weights instantly.
 - **Hub Tags**: `mlx`, `m68k`, `assembly`, `retrocomputing`, `amiga`, `c`, `vasm`, `multi-adapter`
 
-The adapters reduce language interference, but reliability comes from the compiler, semantic validator, repair loop, and promotion ladder. Do not promote a new ASM adapter based on loss alone.
+The adapters reduce language interference, but reliability comes from the compiler, semantic validator, template router, repair loop, runtime smoke checks, and promotion ladder. Do not promote a new ASM adapter based on loss alone.
+
+---
+
+## Current Reliability Status
+
+As of the June 2026 app-side producer update, the best user outcomes come from a hybrid path:
+
+1. route supported prompts to deterministic Amiga templates,
+2. embed a canonical `AmigaProgramModel` contract in generated source,
+3. patch same-conversation follow-ups through structured model/source mutation,
+4. reject unsafe or ambiguous recognized edits without mutating the editor state,
+5. run source-contract and semantic validation,
+6. compile with VASM,
+7. package a bootable ADF,
+8. run runtime-oriented smoke checks where available.
+
+This substantially improves the practical result users see from the model: common prompts no longer depend entirely on free-form generation, and the UI now reports when a template is being used. The most recent improvement stream focuses on holistic same-conversation code production rather than new model weights. A first prompt such as "Generate play and stop controls for a tracker module" routes to a model-backed MOD controls program; compatible follow-ups can add, rename, remove, reorder, retarget, reposition, and parameterize controls while preserving the existing program model, routines, state, and source regions.
+
+Side-by-side with the earlier flow:
+
+| area | previous app-side path | current app-side producer path |
+| --- | --- | --- |
+| source contract | Generated text plus template hints. | Source embeds a canonical `AmigaProgramModel` with family, kind, controls, routines, state, hardware, and verification expectations. |
+| follow-ups | Follow-ups could become ad hoc edits. | Supported follow-ups patch the embedded model and owned source regions together. |
+| rejection behavior | Malformed or ambiguous edits could fall through to generic editing. | Recognized structured failures are terminal and preserve the current editor source unchanged. |
+| conversation recovery | Recovery after a rejected turn was mostly implicit. | Representative recovery chains prove the rejected turn does not mutate source/model and that the next compatible request continues from the preserved state. |
+| promotion proof | Compile and smoke checks were useful but could be indirect for conversation continuity. | Routed first-shot sources, accepted follow-up artifacts, pre-rejection setup states, recovery outputs, and final conversation artifacts all pass source verification and bootable ADF generation gates. |
+
+Current benchmark evidence:
+
+| prompt | template | compile | semantic | ADF | emulator smoke | result |
+| --- | --- | --- | --- | --- | --- | --- |
+| generate static copper bars | Static copper bars | pass | pass | pass | pass | pass |
+| generate bouncing copper bars | Bouncing copper bars | pass | pass | pass | pass | pass |
+| generate a starfield demo | Starfield | pass | pass | pass | pass | pass |
+| generate a bouncing sprite object | Bouncing sprite | pass | pass | pass | pass | pass |
+| make a color-cycling logo that says "amiga" | Color-cycling text | pass | pass | pass | pass | pass |
+
+The runtime smoke benchmark stores per-prompt artifacts, including the generated ADF, captured emulator screenshot, manifest JSON, and a markdown scorecard. Text-oriented prompts also require bright pixels in the expected central region instead of merely accepting a non-crashing emulator launch.
+
+Important caveat: this scorecard measures the integrated local app path, not raw model weights in isolation. Unsupported prompts still fall back to model generation with warnings and nearest supported template suggestions.
 
 ---
 

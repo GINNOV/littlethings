@@ -3,8 +3,8 @@ import Foundation
 class CompilerService {
     static let shared = CompilerService()
     
-    let vasmPath = "/usr/local/bin/vasmm68k_mot"
-    let ndkInclude = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/Dataset/corpus3/amiga-dev/targets/m68k-amigaos/ndk/include_i"
+    let vasmPath = CompilerService.resolveVasmPath()
+    let ndkInclude = CompilerService.resolveRepoPath("Dataset/corpus3/amiga-dev/targets/m68k-amigaos/ndk/include_i")
     
     func compile(assemblyCode: String, completion: @escaping (Bool, String) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
@@ -60,13 +60,13 @@ class CompilerService {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    completion(false, "Failed to execute vasm: \(error.localizedDescription)\nEnsure /usr/local/bin/vasmm68k_mot is installed.")
+                    completion(false, "Failed to execute vasm: \(error.localizedDescription)\nChecked: /usr/local/bin/vasmm68k_mot, /opt/homebrew/bin/vasmm68k_mot, /usr/local/bin/vasm, /opt/homebrew/bin/vasm.")
                 }
             }
         }
     }
     
-    let xdftoolPath = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/fine_tuning/.venv/bin/xdftool"
+    let xdftoolPath = CompilerService.resolveRepoPath("fine_tuning/.venv/bin/xdftool")
 
     func generateBootableADF(assemblyCode: String, targetADFPath: String, completion: @escaping (Bool, String) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
@@ -193,5 +193,31 @@ class CompilerService {
                 }
             }
         }
+    }
+
+    private static func resolveVasmPath() -> String {
+        let candidates = [
+            "/usr/local/bin/vasmm68k_mot",
+            "/opt/homebrew/bin/vasmm68k_mot",
+            "/usr/local/bin/vasm",
+            "/opt/homebrew/bin/vasm"
+        ]
+
+        return candidates.first { FileManager.default.isExecutableFile(atPath: $0) } ?? candidates[0]
+    }
+
+    private static func resolveRepoPath(_ relativePath: String) -> String {
+        let sourceFile = URL(fileURLWithPath: #filePath)
+        let repoRoot = sourceFile
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let repoPath = repoRoot.appendingPathComponent(relativePath).path
+
+        if FileManager.default.fileExists(atPath: repoPath) {
+            return repoPath
+        }
+
+        return relativePath
     }
 }

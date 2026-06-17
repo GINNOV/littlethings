@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>IFFViewer Changelog</title>
+        <item>
+            <title>Version 1.0</title>
+            <sparkle:releaseNotesLink>https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/changelogs.html#iffviewer</sparkle:releaseNotesLink>
+            <pubDate>Fri, 29 May 2026 16:33:00 +0200</pubDate>
+            <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/IFFViewer-1.0_36.dmg" sparkle:version="36" sparkle:shortVersionString="1.0" length="10465114" type="application/octet-stream" />
+        </item>
+    </channel>
+</rss>

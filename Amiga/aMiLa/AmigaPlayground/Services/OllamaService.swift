@@ -1,9 +1,21 @@
 import Foundation
 import Combine
 
+struct TokenUsage: Codable, Equatable {
+    let inputTokens: Int
+    let outputTokens: Int
+    let totalTokens: Int
+
+    var displayText: String {
+        "Tokens: in \(inputTokens) / out \(outputTokens) / total \(totalTokens)"
+    }
+
+}
+
 class OllamaService: ObservableObject {
     static let shared = OllamaService()
     static let publishedModelID = "bmove/antigravity-amiga-68k"
+    static let publishedModelDisplayName = publishedModelID
     static let modelCardURL = URL(string: "https://huggingface.co/bmove/antigravity-amiga-68k")!
     static let mlxServerRequestModelName = "default_model"
 
@@ -55,6 +67,17 @@ For blitter requests:
 - Use the canonical DMACONR byte busy wait: btst #6,$02(a6), followed by bne.s back to the wait label.
 - Do not output a wait-only routine. A valid blitter routine must set BLTCON0 at $40(a6), configure source/destination pointers or destination-only clear state, configure needed modulos, start the operation through BLTSIZE at $58(a6), and wait again after BLTSIZE.
 - Prefer concrete $dff000 offsets such as $40(a6), $42(a6), $44(a6), $50(a6), $54(a6), $64(a6), $66(a6), and $58(a6). Do not use bare BLTCON0 or BLTSIZE unless you define them.
+"""
+
+    static let generateCodeCommentsPrompt = """
+Code comment preference:
+- Add an explanatory semicolon comment to every generated assembly code line, describing what that line does.
+- Keep comments concise and VASM-compatible. Use semicolon comments only.
+"""
+
+    static let omitGeneratedCodeCommentsPrompt = """
+Code comment preference:
+- Do not add line-by-line explanatory comments to generated code unless the user explicitly asks for them.
 """
     
     enum Provider: String, CaseIterable, Identifiable {
@@ -228,12 +251,14 @@ For blitter requests:
         let role: String
         var content: String
         var reasoning: String?
+        var tokenUsage: TokenUsage?
         
-        init(id: UUID = UUID(), role: String, content: String, reasoning: String? = nil) {
+        init(id: UUID = UUID(), role: String, content: String, reasoning: String? = nil, tokenUsage: TokenUsage? = nil) {
             self.id = id
             self.role = role
             self.content = content
             self.reasoning = reasoning
+            self.tokenUsage = tokenUsage
         }
     }
     
@@ -244,7 +269,7 @@ For blitter requests:
             adapterPath: adapterPath,
             onContentChunk: onChunk,
             onReasoningChunk: onChunk,
-            onCompletion: { content, reasoning in
+            onCompletion: { content, reasoning, _ in
                 let combined = content.isEmpty ? reasoning : content
                 onCompletion(combined)
             },
@@ -259,6 +284,27 @@ For blitter requests:
         onContentChunk: @escaping (String) -> Void,
         onReasoningChunk: @escaping (String) -> Void,
         onCompletion: @escaping (String, String) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> URLSessionDataTask? {
+        streamChat(
+            messages: messages,
+            adapterPath: adapterPath,
+            onContentChunk: onContentChunk,
+            onReasoningChunk: onReasoningChunk,
+            onCompletion: { content, reasoning, _ in
+                onCompletion(content, reasoning)
+            },
+            onError: onError
+        )
+    }
+
+    @discardableResult
+    func streamChat(
+        messages: [ChatMessage],
+        adapterPath: String? = nil,
+        onContentChunk: @escaping (String) -> Void,
+        onReasoningChunk: @escaping (String) -> Void,
+        onCompletion: @escaping (String, String, TokenUsage?) -> Void,
         onError: @escaping (Error) -> Void
     ) -> URLSessionDataTask? {
         let endpoint = provider == .ollama ? "\(apiUrl)/api/chat" : "\(apiUrl)/v1/chat/completions"
@@ -328,9 +374,17 @@ For blitter requests:
         }
 
         formattedMessages.append(["role": "system", "content": Self.generationContractPrompt])
+        formattedMessages.append(["role": "system", "content": codeCommentPreferencePrompt()])
 
         formattedMessages.append(contentsOf: messages.map { ["role": $0.role, "content": $0.content] })
         return formattedMessages
+    }
+
+    private func codeCommentPreferencePrompt() -> String {
+        let storedValue = userDefaults.object(forKey: AppPreferenceDefaults.generateCodeCommentsKey) as? Bool
+        return (storedValue ?? AppPreferenceDefaults.generateCodeComments)
+            ? Self.generateCodeCommentsPrompt
+            : Self.omitGeneratedCodeCommentsPrompt
     }
 }
 
@@ -338,28 +392,40 @@ For blitter requests:
 class StreamingDelegate: NSObject, URLSessionDataDelegate {
     let onContentChunk: (String) -> Void
     let onReasoningChunk: (String) -> Void
-    let onCompletion: (String, String) -> Void
+    let onCompletion: (String, String, TokenUsage?) -> Void
     let onError: (Error) -> Void
     
     var fullContentResponse = ""
     var fullReasoningResponse = ""
     var fullResponse = "" // For backwards compatibility
+    var tokenUsage: TokenUsage?
     private var lineBuffer = ""
     private var didFinish = false
     private var didFail = false
     
-    init(onContentChunk: @escaping (String) -> Void, onReasoningChunk: @escaping (String) -> Void, onCompletion: @escaping (String, String) -> Void, onError: @escaping (Error) -> Void) {
+    init(onContentChunk: @escaping (String) -> Void, onReasoningChunk: @escaping (String) -> Void, onCompletion: @escaping (String, String, TokenUsage?) -> Void, onError: @escaping (Error) -> Void) {
         self.onContentChunk = onContentChunk
         self.onReasoningChunk = onReasoningChunk
         self.onCompletion = onCompletion
         self.onError = onError
+    }
+
+    convenience init(onContentChunk: @escaping (String) -> Void, onReasoningChunk: @escaping (String) -> Void, onCompletion: @escaping (String, String) -> Void, onError: @escaping (Error) -> Void) {
+        self.init(
+            onContentChunk: onContentChunk,
+            onReasoningChunk: onReasoningChunk,
+            onCompletion: { content, reasoning, _ in
+                onCompletion(content, reasoning)
+            },
+            onError: onError
+        )
     }
     
     convenience init(onChunk: @escaping (String) -> Void, onCompletion: @escaping (String) -> Void, onError: @escaping (Error) -> Void) {
         self.init(
             onContentChunk: onChunk,
             onReasoningChunk: onChunk,
-            onCompletion: { content, reasoning in
+            onCompletion: { content, reasoning, _ in
                 let combined = content.isEmpty ? reasoning : content
                 onCompletion(combined)
             },
@@ -392,7 +458,7 @@ class StreamingDelegate: NSObject, URLSessionDataDelegate {
             }
             if !didFail {
                 DispatchQueue.main.async {
-                    self.onCompletion(self.fullContentResponse, self.fullReasoningResponse)
+                    self.onCompletion(self.fullContentResponse, self.fullReasoningResponse, self.tokenUsage)
                 }
             }
         }
@@ -429,6 +495,10 @@ class StreamingDelegate: NSObject, URLSessionDataDelegate {
                 self.onError(NSError(domain: "OllamaService", code: 502, userInfo: [NSLocalizedDescriptionKey: "\(error)"]))
             }
             return
+        }
+
+        if let parsedTokenUsage = Self.parseTokenUsage(from: dict) {
+            tokenUsage = parsedTokenUsage
         }
 
         if let choices = dict["choices"] as? [[String: Any]],
@@ -489,5 +559,34 @@ class StreamingDelegate: NSObject, URLSessionDataDelegate {
                 scalar.value == 13 ||
                 (scalar.value >= 32 && scalar.value != 127)
         })
+    }
+
+    static func parseTokenUsage(from dict: [String: Any]) -> TokenUsage? {
+        if let usage = dict["usage"] as? [String: Any],
+           let inputTokens = integerValue(for: "prompt_tokens", in: usage),
+           let outputTokens = integerValue(for: "completion_tokens", in: usage) {
+            let totalTokens = integerValue(for: "total_tokens", in: usage) ?? inputTokens + outputTokens
+            return TokenUsage(inputTokens: inputTokens, outputTokens: outputTokens, totalTokens: totalTokens)
+        }
+
+        if let inputTokens = integerValue(for: "prompt_eval_count", in: dict),
+           let outputTokens = integerValue(for: "eval_count", in: dict) {
+            return TokenUsage(inputTokens: inputTokens, outputTokens: outputTokens, totalTokens: inputTokens + outputTokens)
+        }
+
+        return nil
+    }
+
+    private static func integerValue(for key: String, in dict: [String: Any]) -> Int? {
+        if let value = dict[key] as? Int {
+            return value
+        }
+        if let value = dict[key] as? Double {
+            return Int(value)
+        }
+        if let value = dict[key] as? String {
+            return Int(value)
+        }
+        return nil
     }
 }

@@ -4,6 +4,16 @@ import AppKit
 @main
 struct AmigaPlaygroundApp: App {
     @Environment(\.openWindow) private var openWindow
+    private let updaterController = UpdaterController()
+
+    init() {
+        if CommandLine.arguments.contains("-UITestMode") {
+            UserDefaults.standard.removeObject(forKey: "promptLibraryItems")
+            UserDefaults.standard.removeObject(forKey: "promptLibraryDefaultSeedVersion")
+            UserDefaults.standard.removeObject(forKey: "exampleLibraryItems")
+            UserDefaults.standard.removeObject(forKey: "exampleLibraryDefaultSeedVersion")
+        }
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -16,6 +26,8 @@ struct AmigaPlaygroundApp: App {
                     openWindow(id: "about")
                 }
             }
+
+            UpdaterCommands(updaterController: updaterController)
 
             CommandGroup(after: .newItem) {
                 Button("Prompt Library") {
