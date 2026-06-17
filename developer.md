@@ -168,6 +168,29 @@ This will compile the Next.js production build, copy all backend assets (includi
 - **Secure Auto-Updater:** The app checks for signed releases automatically on boot. Update payloads are signed and cryptographically verified using the public key configured in `tauri.conf.json`.
 - **Default Browser OAuth:** OAuth logins launch in the default system browser to support existing sessions and prevent Google's embedded webview block, returning credentials back to the local app.
 
+## Versioning and Releases
+
+XBook Console versions are defined in:
+1. `package.json` (`"version": "0.1.0"`)
+2. `src-tauri/tauri.conf.json` (`"version": "0.1.0"`)
+3. `src-tauri/Cargo.toml` (`version = "0.1.0"`)
+
+Tauri does not auto-increment these versions during compilation. To manage versioning and updates:
+
+### Bumping Versions
+- **Manual Syncing:** You can configure `tauri.conf.json` to read the version dynamically from `package.json` by updating its version configuration to:
+  ```json
+  "version": "../package.json"
+  ```
+  This allows you to bump both frontend and Tauri package versions simultaneously using standard package manager tools, e.g., `npm version patch`.
+
+- **Release Automation:** Use tools like `standard-version` or `release-it` to auto-bump configs, draft logs, and create git tags based on conventional commits.
+
+### Building and Signing Releases (CI/CD)
+When deploying a production version of the desktop application, you must sign the update package using your generated private key:
+1. Configure `TAURI_SIGNING_PRIVATE_KEY` as a secret environment variable in your build pipeline.
+2. Use the official `tauri-apps/tauri-action` GitHub Action to automate building, signing, and uploading macOS `.app` bundles directly to GitHub Releases.
+
 ## Troubleshooting
 
 If the app starts but fails with a `better_sqlite3.node` `NODE_MODULE_VERSION` error, rebuild the native SQLite dependency for your current Node version:
