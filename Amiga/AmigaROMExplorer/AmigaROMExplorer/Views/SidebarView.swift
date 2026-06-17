@@ -10,9 +10,9 @@ struct SidebarView: View {
                     title: "All ROMs",
                     symbol: "square.grid.2x2",
                     count: viewModel.catalog.items.count,
-                    isSelected: viewModel.selectedCategory == nil
+                    isSelected: viewModel.selectedCategory == nil && viewModel.selectedHardwareModel == nil
                 ) {
-                    selectCategory(nil)
+                    viewModel.selectAllROMs()
                 }
             } header: {
                 header
@@ -24,9 +24,22 @@ struct SidebarView: View {
                         title: category.title,
                         symbol: category.symbolName,
                         count: viewModel.categoryCounts[category, default: 0],
-                        isSelected: viewModel.selectedCategory == category
+                        isSelected: viewModel.selectedCategory == category && viewModel.selectedHardwareModel == nil
                     ) {
-                        selectCategory(category)
+                        viewModel.selectCategory(category)
+                    }
+                }
+            }
+
+            Section("Amiga Models") {
+                ForEach(viewModel.hardwareModelCounts, id: \.model.id) { entry in
+                    sidebarRow(
+                        title: entry.model.name,
+                        symbol: entry.model.symbolName,
+                        count: entry.count,
+                        isSelected: viewModel.selectedHardwareModel?.id == entry.model.id
+                    ) {
+                        viewModel.selectHardwareModel(entry.model)
                     }
                 }
             }
@@ -55,11 +68,6 @@ struct SidebarView: View {
         .scrollContentBackground(.hidden)
         .background(AmigaTheme.backgroundTop.opacity(0.35))
         .navigationTitle("Explorer")
-    }
-
-    private func selectCategory(_ category: ROMCategory?) {
-        viewModel.selectedCategory = category
-        viewModel.selectedItemID = nil
     }
 
     private var header: some View {

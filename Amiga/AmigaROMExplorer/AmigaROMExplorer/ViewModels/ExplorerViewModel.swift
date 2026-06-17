@@ -5,6 +5,7 @@ import Observation
 @Observable
 final class ExplorerViewModel {
     var selectedCategory: ROMCategory?
+    var selectedHardwareModel: HardwareModel?
     var selectedItemID: ROMCatalogItem.ID?
     var searchText = ""
     var firmwareDirectoryPath: String
@@ -34,7 +35,7 @@ final class ExplorerViewModel {
     }
 
     var filteredItems: [ROMCatalogItem] {
-        let base = catalog.items(for: selectedCategory)
+        let base = catalog.items(for: selectedCategory, hardwareModel: selectedHardwareModel)
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return base }
 
@@ -59,6 +60,51 @@ final class ExplorerViewModel {
 
     var categoryCounts: [ROMCategory: Int] {
         Dictionary(grouping: catalog.items, by: \.category).mapValues(\.count)
+    }
+
+    var hardwareModelCounts: [(model: HardwareModel, count: Int)] {
+        HardwareModel.catalog.compactMap { model in
+            let count = catalog.items(for: nil, hardwareModel: model).count
+            return count > 0 ? (model, count) : nil
+        }
+    }
+
+    var listTitle: String {
+        if let selectedHardwareModel {
+            return selectedHardwareModel.name
+        }
+        if let selectedCategory {
+            return selectedCategory.title
+        }
+        return "All ROMs"
+    }
+
+    var listSubtitle: String {
+        if let selectedHardwareModel {
+            return selectedHardwareModel.chipset
+        }
+        if let selectedCategory {
+            return selectedCategory.subtitle
+        }
+        return isReferenceOnlyMode ? "Reference catalog" : "\(catalog.installedCount) installed"
+    }
+
+    func selectAllROMs() {
+        selectedCategory = nil
+        selectedHardwareModel = nil
+        selectedItemID = nil
+    }
+
+    func selectCategory(_ category: ROMCategory?) {
+        selectedCategory = category
+        selectedHardwareModel = nil
+        selectedItemID = nil
+    }
+
+    func selectHardwareModel(_ model: HardwareModel) {
+        selectedHardwareModel = model
+        selectedCategory = nil
+        selectedItemID = nil
     }
 
     var isReferenceOnlyMode: Bool {

@@ -11,7 +11,7 @@ struct ROMListView: View {
             } else if let error = viewModel.catalog.lastError {
                 ContentUnavailableView("Manifest Error", systemImage: "exclamationmark.triangle", description: Text(error))
             } else if viewModel.filteredItems.isEmpty {
-                ContentUnavailableView("No ROMs", systemImage: "opticaldisc", description: Text("Try another category or search term, or rerun the setup wizard."))
+                ContentUnavailableView("No ROMs", systemImage: "opticaldisc", description: Text("Try another category, Amiga model, or search term."))
             } else {
                 List(viewModel.filteredItems, selection: Binding(
                     get: { viewModel.selectedItemID },
@@ -30,8 +30,8 @@ struct ROMListView: View {
         }
         .scrollContentBackground(.hidden)
         .background(AmigaTheme.backgroundBottom.opacity(0.25))
-        .navigationTitle(viewModel.selectedCategory?.title ?? "All ROMs")
-        .navigationSubtitle(viewModel.isReferenceOnlyMode ? "Reference catalog" : "\(viewModel.catalog.installedCount) installed")
+        .navigationTitle(viewModel.listTitle)
+        .navigationSubtitle(viewModel.listSubtitle)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Reload", systemImage: "arrow.clockwise") {

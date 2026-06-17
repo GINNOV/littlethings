@@ -52,9 +52,14 @@ final class ROMCatalogStore {
         items.filter(\.isOnDisk).count
     }
 
-    func items(for category: ROMCategory?) -> [ROMCatalogItem] {
-        guard let category else { return items }
-        return items.filter { $0.category == category }
+    func items(for category: ROMCategory?, hardwareModel: HardwareModel? = nil) -> [ROMCatalogItem] {
+        items.filter { item in
+            let matchesCategory = category.map { item.category == $0 } ?? true
+            let matchesHardware = hardwareModel.map { model in
+                item.machines.contains(where: { $0.id == model.id })
+            } ?? true
+            return matchesCategory && matchesHardware
+        }
     }
 
     func item(withID id: String) -> ROMCatalogItem? {

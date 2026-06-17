@@ -33,42 +33,100 @@ struct ROMDetailView: View {
     private func detailContent(for item: ROMCatalogItem) -> some View {
         let state = viewModel.research.state(for: item)
 
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                ROMHeroHeader(item: item, state: state)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    ROMHeroHeader(item: item, state: state)
 
-                if !item.machines.isEmpty {
-                    sectionHeader("Compatible Hardware", symbol: "desktopcomputer")
-                    HardwareGrid(models: item.machines)
-                }
-
-                if !item.isOnDisk && viewModel.isReferenceOnlyMode {
-                    referenceModeBanner
-                }
-
-                switch state {
-                case .idle, .queued:
-                    if viewModel.research.isCacheReady {
-                        quickFacts(for: item)
-                    } else {
-                        ResearchLoadingView(progress: "Loading reference cache…")
+                    if !item.isOnDisk && viewModel.isReferenceOnlyMode {
+                        referenceModeBanner
                     }
-                case .researching(let progress):
-                    ResearchLoadingView(progress: progress)
-                    quickFacts(for: item)
-                case .failed(let message):
-                    ResearchSectionView(title: "Research Error", symbol: "exclamationmark.triangle", content: message)
-                    quickFacts(for: item)
-                case .completed(let research):
-                    researchPanels(research)
-                }
 
-                manifestPanel(item)
+                    switch state {
+                    case .idle, .queued:
+                        if viewModel.research.isCacheReady {
+                            quickFacts(for: item)
+                        } else {
+                            ResearchLoadingView(progress: "Loading reference cache…")
+                        }
+                    case .researching(let progress):
+                        ResearchLoadingView(progress: progress)
+                        quickFacts(for: item)
+                    case .failed(let message):
+                        ResearchSectionView(title: "Research Error", symbol: "exclamationmark.triangle", content: message)
+                        quickFacts(for: item)
+                    case .completed(let research):
+                        researchPanels(research)
+                    }
+
+                    manifestPanel(item)
+                }
+                .padding(24)
+                .padding(.bottom, 8)
             }
-            .padding(24)
+
+            hardwareModelFooter(for: item)
         }
         .task(id: item.id) {
             viewModel.research.requestResearch(for: item)
+        }
+    }
+
+    @ViewBuilder
+    private func hardwareModelFooter(for item: ROMCatalogItem) -> some View {
+        HStack(alignment: .center, spacing: 14) {
+            if let primary = item.machines.first {
+                Image(systemName: primary.symbolName)
+                    .font(.title2)
+                    .foregroundStyle(AmigaTheme.accentOrange)
+                    .frame(width: 28)
+            } else {
+                Image(systemName: "questionmark.circle")
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 28)
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Compatible Amiga")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+
+                if item.machines.isEmpty {
+                    Text("No specific model mapped")
+                        .font(.subheadline.weight(.semibold))
+                } else {
+                    Text(item.machines.map(\.name).joined(separator: " · "))
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(2)
+                }
+            }
+
+            Spacer(minLength: 12)
+
+            if !item.machines.isEmpty {
+                VStack(alignment: .trailing, spacing: 3) {
+                    Text("Chipset")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .textCase(.uppercase)
+                    Text(uniqueChipsets(for: item.machines))
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(AmigaTheme.accentCyan)
+                        .multilineTextAlignment(.trailing)
+                        .lineLimit(2)
+                }
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.ultraThinMaterial)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(AmigaTheme.cardStroke)
+                .frame(height: 1)
         }
     }
 
@@ -155,6 +213,13 @@ struct ROMDetailView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    private func uniqueChipsets(for models: [HardwareModel]) -> String {
+        var seen = Set<String>()
+        return models.compactMap { model in
+            seen.insert(model.chipset).inserted ? model.chipset : nil
+        }.joined(separator: " · ")
     }
 
     private func sectionHeader(_ title: String, symbol: String) -> some View {
