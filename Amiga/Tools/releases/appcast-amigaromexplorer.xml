@@ -5,11 +5,11 @@
         <item>
             <title>Version 1.0</title>
             <description><![CDATA[
-Amiga ROM Explorer 1.0 (build 4)
+Amiga ROM Explorer 1.0 (build 5)
 ]]></description>
             <sparkle:releaseNotesLink>https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/changelogs.html#amigaromexplorer</sparkle:releaseNotesLink>
-            <pubDate>Wed, 17 Jun 2026 16:43:03 +0000</pubDate>
-            <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AmigaROMExplorer-1.0_4.dmg" sparkle:version="4" sparkle:shortVersionString="1.0" length="8037204" type="application/octet-stream" />
+            <pubDate>Wed, 17 Jun 2026 16:56:53 +0000</pubDate>
+            <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AmigaROMExplorer-1.0_5.dmg" sparkle:version="5" sparkle:shortVersionString="1.0" length="8072030" type="application/octet-stream" />
         </item>
     </channel>
 </rss>

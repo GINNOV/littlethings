@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 
 struct AboutView: View {
@@ -18,19 +17,12 @@ struct AboutView: View {
 
     var body: some View {
         VStack(spacing: 15) {
-            if let icon = NSApp.applicationIconImage {
-                Image(nsImage: icon)
-                    .resizable()
-                    .scaledToFit()
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
-                    .frame(width: 128, height: 128)
-            } else {
-                Image("AppLogo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 96, height: 96)
-            }
+            Image("AppLogo")
+                .resizable()
+                .scaledToFit()
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                .frame(width: 128, height: 128)
 
             Text(appName)
                 .font(.title2.weight(.semibold))

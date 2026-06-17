@@ -30,6 +30,13 @@ struct AmigaROMExplorerApp: App {
 
             CommandGroup(replacing: .newItem) {}
 
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") {
+                    openWindow(id: "settings")
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
+
             CommandGroup(after: .appSettings) {
                 Button("Show Setup Wizard") {
                     viewModel.showOnboarding = true
@@ -37,10 +44,13 @@ struct AmigaROMExplorerApp: App {
             }
         }
 
-        Settings {
+        Window("Settings", id: "settings") {
             SettingsView()
                 .environment(viewModel)
+                .preferredColorScheme(.dark)
         }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
 
         Window("About Amiga ROM Explorer", id: "about") {
             AboutView()
