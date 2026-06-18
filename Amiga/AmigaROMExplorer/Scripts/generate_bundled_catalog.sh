@@ -12,5 +12,17 @@ xcodebuild -project "$ROOT/AmigaROMExplorer.xcodeproj" -scheme AmigaROMExplorer 
 
 MANIFEST_PATH="$MANIFEST" "$APP" --export-bundled-cache "$OUTPUT"
 
+FIRMWARE_ROOT="$(cd "$(dirname "$MANIFEST")" && pwd)"
+CHECKSUMS="$OUTPUT/checksums.tsv"
+{
+  printf 'destination\tmd5\n'
+  find "$FIRMWARE_ROOT" -type f \( -iname '*.rom' -o -iname '*.bin' \) ! -name '.*' | sort | while read -r file; do
+    rel="${file#$FIRMWARE_ROOT/}"
+    md5=$(md5 -q "$file")
+    printf '%s\t%s\n' "$rel" "$md5"
+  done
+} > "$CHECKSUMS"
+
 COUNT=$(find "$OUTPUT/research" -name '*.json' | wc -l | tr -d ' ')
-echo "Bundled catalog ready: manifest.tsv + $COUNT research profiles in $OUTPUT"
+CHECKSUM_COUNT=$(($(wc -l < "$CHECKSUMS") - 1))
+echo "Bundled catalog ready: manifest.tsv + $COUNT research profiles + $CHECKSUM_COUNT checksums in $OUTPUT"

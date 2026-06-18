@@ -125,7 +125,7 @@ struct OnboardingWizardView: View {
     private var scanStep: some View {
         OnboardingCard(
             title: "Scan your ROM folder",
-            subtitle: "Optional. Point the app at a local library to mark which reference entries are installed and compute checksums.",
+            subtitle: "Optional. Point the app at a flat or organized ROM folder — files are matched by checksum, filename, and common aliases like kick13.rom.",
             symbol: "folder.badge.gearshape"
         ) {
             VStack(alignment: .leading, spacing: 14) {

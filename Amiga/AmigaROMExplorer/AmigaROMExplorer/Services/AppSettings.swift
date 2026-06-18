@@ -18,6 +18,7 @@ enum AppSettings {
     static let defaultOllamaModel = "llama3.2"
 
     static let bundledManifestName = "manifest"
+    static let bundledChecksumsName = "checksums"
     static let bundledResearchFolderName = "research"
 
     static func firmwareDirectoryURL() -> URL? {

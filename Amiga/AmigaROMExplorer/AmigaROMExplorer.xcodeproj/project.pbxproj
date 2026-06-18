@@ -10,6 +10,23 @@
 		ARE000011 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = ARE000013 /* Sparkle */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		ARE000026 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ARE000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ARE000008;
+			remoteInfo = AmigaROMExplorer;
+		};
+		ARE000036 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ARE000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ARE000008;
+			remoteInfo = AmigaROMExplorer;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		ARE000002 /* AmigaROMExplorer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AmigaROMExplorer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ARE000020 /* AmigaROMExplorerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AmigaROMExplorerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -46,23 +63,6 @@
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
-
-/* Begin PBXContainerItemProxy section */
-		ARE000026 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = ARE000001 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = ARE000008;
-			remoteInfo = AmigaROMExplorer;
-		};
-		ARE000036 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = ARE000001 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = ARE000008;
-			remoteInfo = AmigaROMExplorer;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		ARE000005 /* Frameworks */ = {
@@ -415,7 +415,7 @@
 				CODE_SIGN_ENTITLEMENTS = AmigaROMExplorer/AmigaROMExplorer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -443,7 +443,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -564,6 +564,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		ARE00000C /* Build configuration list for PBXProject "AmigaROMExplorer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ARE00000D /* Debug */,
+				ARE00000E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		ARE00002A /* Build configuration list for PBXNativeTarget "AmigaROMExplorerTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -578,15 +587,6 @@
 			buildConfigurations = (
 				ARE000038 /* Debug */,
 				ARE000039 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		ARE00000C /* Build configuration list for PBXProject "AmigaROMExplorer" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				ARE00000D /* Debug */,
-				ARE00000E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

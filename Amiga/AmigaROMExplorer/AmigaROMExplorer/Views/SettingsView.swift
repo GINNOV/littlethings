@@ -16,7 +16,7 @@ struct SettingsView: View {
 
                     OnboardingCard(
                         title: "Catalog Mode",
-                        subtitle: "Browse the shipped reference atlas on its own, or enrich it by scanning a local ROM folder.",
+                        subtitle: "Browse the shipped reference atlas on its own, or enrich it by scanning a local ROM folder. Flat folders and TOSEC-style names are matched by checksum.",
                         symbol: "books.vertical"
                     ) {
                         VStack(alignment: .leading, spacing: 18) {

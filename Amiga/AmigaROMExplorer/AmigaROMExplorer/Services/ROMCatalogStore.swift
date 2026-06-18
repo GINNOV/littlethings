@@ -67,12 +67,20 @@ final class ROMCatalogStore {
     }
 
     private func buildCatalog(entries: [ManifestEntry], localRoot: URL?) -> [ROMCatalogItem] {
-        entries.map { entry in
+        let localIndex = localRoot.map(LocalROMIndex.build(root:))
+        let checksums = ROMChecksumIndex.loadBundled()
+
+        return entries.map { entry in
             let parsed = ROMPathParser.parse(manifest: entry)
             let fileInfo: ROMFileInfo?
-            if let localRoot {
-                let absolute = localRoot.appendingPathComponent(entry.destination)
-                fileInfo = Self.inspectFile(at: absolute)
+            if let localRoot, let localIndex {
+                let matchedURL = LocalROMMatcher.match(
+                    entry: entry,
+                    localRoot: localRoot,
+                    index: localIndex,
+                    checksums: checksums
+                )
+                fileInfo = matchedURL.flatMap { Self.inspectFile(at: $0) }
             } else {
                 fileInfo = nil
             }
@@ -84,7 +92,14 @@ final class ROMCatalogStore {
         let manager = FileManager.default
         guard manager.fileExists(atPath: url.path) else { return nil }
 
-        let values = try? url.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
+        let values = try? url.resourceValues(forKeys: [
+            .fileSizeKey,
+            .contentModificationDateKey,
+            .isDirectoryKey,
+            .isRegularFileKey
+        ])
+        if values?.isDirectory == true { return nil }
+        if values?.isRegularFile == false { return nil }
         let data = try? Data(contentsOf: url, options: [.mappedIfSafe])
         let md5 = data.map { digestMD5($0) }
 
