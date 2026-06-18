@@ -25649,7 +25649,7 @@ PatternC:
         configuration.protocolClasses = [MockLLMURLProtocol.self]
         service.urlSessionConfiguration = configuration
 
-        let expectedPrompt = "write a custom animated copper list"
+        let expectedPrompt = "write a custom animated pattern"
         let expectation = self.expectation(description: "Mock LLM response parsed")
         var receivedChunks: [String] = []
         var completedResponse = ""
@@ -25745,7 +25745,7 @@ PatternC:
         }
 
         service.streamChat(
-            messages: [OllamaService.ChatMessage(role: "user", content: "draw a copper gradient")],
+            messages: [OllamaService.ChatMessage(role: "user", content: "draw a color gradient")],
             adapterPath: "adapters_asm",
             onChunk: { _ in },
             onCompletion: { _ in expectation.fulfill() },
@@ -25787,7 +25787,7 @@ PatternC:
                 ["role": "system", "content": "Keep answers focused on Amiga 68k assembly."],
                 ["role": "system", "content": OllamaService.generationContractPrompt],
                 ["role": "system", "content": OllamaService.generateCodeCommentsPrompt],
-                ["role": "user", "content": "draw a copper gradient"]
+                ["role": "user", "content": "draw a color gradient"]
             ])
 
             let response = try XCTUnwrap(HTTPURLResponse(
@@ -25800,7 +25800,7 @@ PatternC:
         }
 
         service.streamChat(
-            messages: [OllamaService.ChatMessage(role: "user", content: "draw a copper gradient")],
+            messages: [OllamaService.ChatMessage(role: "user", content: "draw a color gradient")],
             onChunk: { _ in },
             onCompletion: { _ in expectation.fulfill() },
             onError: { error in
