@@ -41,5 +41,10 @@ struct ROMCatalogStoreTests {
 
         try await Task.sleep(for: .seconds(2))
         #expect(store.installedCount >= 3)
+
+        let report = try #require(store.localScanReport)
+        #expect(report.scannedFirmwareFiles == 3)
+        #expect(report.matchedCatalogEntries >= 3)
+        #expect(report.summaryLine.contains("matched catalog"))
     }
 }

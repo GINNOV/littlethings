@@ -176,9 +176,17 @@ struct SettingsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(AmigaTheme.cardFill, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-                Text("\(viewModel.catalog.installedCount) of \(viewModel.catalog.items.count) reference entries found on disk")
-                    .font(.subheadline)
-                    .foregroundStyle(AmigaTheme.accentOrange)
+                if let report = viewModel.catalog.localScanReport {
+                    LocalROMScanSummaryView(report: report)
+                } else if viewModel.catalog.isLoading {
+                    Text("Scanning ROM folder…")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("\(viewModel.catalog.installedCount) of \(viewModel.catalog.items.count) reference entries found on disk")
+                        .font(.subheadline)
+                        .foregroundStyle(AmigaTheme.accentOrange)
+                }
             }
 
             HStack(spacing: 12) {

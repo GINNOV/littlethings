@@ -136,9 +136,17 @@ struct OnboardingWizardView: View {
                     Text(viewModel.firmwareDirectoryPath)
                         .font(.caption.monospaced())
                         .textSelection(.enabled)
-                    Text("\(viewModel.catalog.installedCount) of \(viewModel.catalog.items.count) reference entries found on disk")
-                        .font(.subheadline)
-                        .foregroundStyle(AmigaTheme.accentOrange)
+                    if let report = viewModel.catalog.localScanReport {
+                        LocalROMScanSummaryView(report: report)
+                    } else if viewModel.catalog.isLoading {
+                        Text("Scanning ROM folder…")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("\(viewModel.catalog.installedCount) of \(viewModel.catalog.items.count) reference entries found on disk")
+                            .font(.subheadline)
+                            .foregroundStyle(AmigaTheme.accentOrange)
+                    }
                 }
 
                 HStack {

@@ -128,20 +128,22 @@ enum LocalROMMatcher {
             return file.url
         }
 
+        let expectedMD5 = checksums.md5(for: entry.destination)
+
         let destinationBasename = (entry.destination as NSString).lastPathComponent.lowercased()
-        if let file = singleCandidate(index.byBasename[destinationBasename]) {
+        if let file = verifiedCandidate(index.byBasename[destinationBasename], expectedMD5: expectedMD5) {
             return file.url
         }
 
         let sourceBasename = ((entry.source as NSString).lastPathComponent as NSString)
             .deletingPathExtension
             .lowercased()
-        if let file = singleCandidate(index.byBasename["\(sourceBasename).rom"]) {
+        if let file = verifiedCandidate(index.byBasename["\(sourceBasename).rom"], expectedMD5: expectedMD5) {
             return file.url
         }
 
         let normalizedSource = LocalROMIndex.normalizeName((entry.source as NSString).lastPathComponent)
-        if let file = singleCandidate(index.byNormalizedName[normalizedSource]) {
+        if let file = verifiedCandidate(index.byNormalizedName[normalizedSource], expectedMD5: expectedMD5) {
             return file.url
         }
 
@@ -153,12 +155,17 @@ enum LocalROMMatcher {
         return nil
     }
 
-    private static func singleCandidate(_ candidates: [LocalROMFile]?) -> LocalROMFile? {
+    private static func verifiedCandidate(
+        _ candidates: [LocalROMFile]?,
+        expectedMD5: String?
+    ) -> LocalROMFile? {
         guard let candidates, candidates.count == 1 else { return nil }
-        return candidates[0]
+        let candidate = candidates[0]
+        if let expectedMD5, candidate.md5 != expectedMD5 { return nil }
+        return candidate
     }
 
-    private static func aliasKeys(for entry: ManifestEntry) -> [String]? {
+    static func aliasKeys(for entry: ManifestEntry) -> [String]? {
         let destination = entry.destination.lowercased()
         let source = entry.source.lowercased()
         let combined = "\(destination) \(source)"
@@ -192,7 +199,7 @@ enum LocalROMMatcher {
         return nil
     }
 
-    private static func extractKickstartVersion(from text: String) -> (major: Int, minor: Int)? {
+    static func extractKickstartVersion(from text: String) -> (major: Int, minor: Int)? {
         if let match = text.range(of: #"v(\d+)[\-\.](\d+)"#, options: .regularExpression) {
             let token = String(text[match])
             let digits = token.split(whereSeparator: { !$0.isNumber }).compactMap { Int($0) }
@@ -228,11 +235,12 @@ enum LocalROMMatcher {
         }
 
         guard !candidates.isEmpty else { return nil }
-        if candidates.count == 1 { return candidates[0] }
 
         if let md5 = checksums.md5(for: destination) {
             return candidates.first { $0.md5 == md5 }
         }
+
+        if candidates.count == 1 { return candidates[0] }
 
         return nil
     }

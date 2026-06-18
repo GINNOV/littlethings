@@ -8,6 +8,7 @@ final class ROMCatalogStore {
     private(set) var isLoading = false
     private(set) var lastError: String?
     private(set) var localFirmwareDirectory: URL?
+    private(set) var localScanReport: LocalROMScanReport?
     private(set) var catalogSource: CatalogSource = .bundled
 
     enum CatalogSource: String {
@@ -26,13 +27,17 @@ final class ROMCatalogStore {
         Task {
             do {
                 let entries = try BundledCatalogLoader.loadManifest()
-                let built = buildCatalog(entries: entries, localRoot: localFirmwareDirectory)
-                items = built.sorted { $0.displayTitle.localizedStandardCompare($1.displayTitle) == .orderedAscending }
+                let buildResult = buildCatalog(entries: entries, localRoot: localFirmwareDirectory)
+                items = buildResult.items.sorted {
+                    $0.displayTitle.localizedStandardCompare($1.displayTitle) == .orderedAscending
+                }
+                localScanReport = buildResult.scanReport
                 catalogSource = localFirmwareDirectory == nil ? .bundled : .bundledWithLocalFiles
                 isLoading = false
             } catch {
                 lastError = error.localizedDescription
                 items = []
+                localScanReport = nil
                 isLoading = false
             }
         }
@@ -66,26 +71,47 @@ final class ROMCatalogStore {
         items.first { $0.id == id }
     }
 
-    private func buildCatalog(entries: [ManifestEntry], localRoot: URL?) -> [ROMCatalogItem] {
-        let localIndex = localRoot.map(LocalROMIndex.build(root:))
-        let checksums = ROMChecksumIndex.loadBundled()
+    private struct CatalogBuildResult {
+        let items: [ROMCatalogItem]
+        let scanReport: LocalROMScanReport?
+    }
 
-        return entries.map { entry in
-            let parsed = ROMPathParser.parse(manifest: entry)
-            let fileInfo: ROMFileInfo?
-            if let localRoot, let localIndex {
-                let matchedURL = LocalROMMatcher.match(
-                    entry: entry,
-                    localRoot: localRoot,
-                    index: localIndex,
-                    checksums: checksums
-                )
-                fileInfo = matchedURL.flatMap { Self.inspectFile(at: $0) }
-            } else {
-                fileInfo = nil
-            }
-            return ROMCatalogItem(manifest: entry, parsed: parsed, fileInfo: fileInfo)
+    private func buildCatalog(entries: [ManifestEntry], localRoot: URL?) -> CatalogBuildResult {
+        guard let localRoot else {
+            return CatalogBuildResult(items: entries.map { makeCatalogItem($0, fileInfo: nil) }, scanReport: nil)
         }
+
+        let scanBundle = LocalROMScanner.scan(root: localRoot)
+        let checksums = ROMChecksumIndex.loadBundled()
+        var matchedURLs: Set<URL> = []
+
+        let items = entries.map { entry in
+            let matchedURL = LocalROMMatcher.match(
+                entry: entry,
+                localRoot: localRoot,
+                index: scanBundle.index,
+                checksums: checksums
+            )
+            if let matchedURL {
+                matchedURLs.insert(matchedURL.standardizedFileURL)
+            }
+            let fileInfo = matchedURL.flatMap { Self.inspectFile(at: $0) }
+            return makeCatalogItem(entry, fileInfo: fileInfo)
+        }
+
+        let scanReport = LocalROMScanAnalyzer.makeReport(
+            scanBundle: scanBundle,
+            matchedURLs: matchedURLs,
+            entries: entries,
+            checksums: checksums,
+            matchedCatalogEntries: items.filter(\.isOnDisk).count
+        )
+
+        return CatalogBuildResult(items: items, scanReport: scanReport)
+    }
+
+    private func makeCatalogItem(_ entry: ManifestEntry, fileInfo: ROMFileInfo?) -> ROMCatalogItem {
+        ROMCatalogItem(manifest: entry, parsed: ROMPathParser.parse(manifest: entry), fileInfo: fileInfo)
     }
 
     private static func inspectFile(at url: URL) -> ROMFileInfo? {
