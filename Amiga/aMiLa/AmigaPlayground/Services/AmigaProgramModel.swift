@@ -15865,6 +15865,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var placements: [(label: String, bounds: AmigaProgramModel.Bounds)]?
         var updates: [ModParameterUpdate] = []
         var rejectedReasons: [String] = []
@@ -15874,18 +15882,16 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
-            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: filteredModel) {
                 rejectedReasons.append(rejection)
                 continue
             }
-            if let groupPlacement = controlGroupBoundsRequest(from: clause, model: model) {
+            if let groupPlacement = controlGroupBoundsRequest(from: clause, model: filteredModel) {
                 if placements != nil {
                     rejectedReasons.append("Specify only one control bounds change.")
                 } else {
@@ -15893,7 +15899,7 @@ enum AmigaProgramFollowUpPlanner {
                 }
                 continue
             }
-            if let placement = controlBoundsRequest(from: clause, model: model) {
+            if let placement = controlBoundsRequest(from: clause, model: filteredModel) {
                 if placements != nil {
                     rejectedReasons.append("Specify only one control bounds change.")
                 } else {
@@ -15944,6 +15950,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var placements: [(label: String, bounds: AmigaProgramModel.Bounds)]?
         var rejectedReasons: [String] = []
         for clause in clauses {
@@ -15953,18 +15967,16 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
-            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: filteredModel) {
                 rejectedReasons.append(rejection)
                 continue
             }
-            if let groupPlacement = controlGroupBoundsRequest(from: clause, model: model) {
+            if let groupPlacement = controlGroupBoundsRequest(from: clause, model: filteredModel) {
                 if placements != nil {
                     rejectedReasons.append("Specify only one control bounds change.")
                 } else {
@@ -15972,7 +15984,7 @@ enum AmigaProgramFollowUpPlanner {
                 }
                 continue
             }
-            if let placement = controlBoundsRequest(from: clause, model: model) {
+            if let placement = controlBoundsRequest(from: clause, model: filteredModel) {
                 if placements != nil {
                     rejectedReasons.append("Specify only one control bounds change.")
                 } else {
@@ -16014,6 +16026,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var placements: [(label: String, bounds: AmigaProgramModel.Bounds)]?
         var move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String)?
         var updates: [ModParameterUpdate] = []
@@ -16025,18 +16045,16 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
-            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: filteredModel) {
                 rejectedReasons.append(rejection)
                 continue
             }
-            if let groupPlacement = controlGroupBoundsRequest(from: clause, model: model) {
+            if let groupPlacement = controlGroupBoundsRequest(from: clause, model: filteredModel) {
                 if placements != nil {
                     rejectedReasons.append("Specify only one control bounds change.")
                 } else {
@@ -16044,7 +16062,7 @@ enum AmigaProgramFollowUpPlanner {
                 }
                 continue
             }
-            if let placement = controlBoundsRequest(from: clause, model: model) {
+            if let placement = controlBoundsRequest(from: clause, model: filteredModel) {
                 if placements != nil {
                     rejectedReasons.append("Specify only one control bounds change.")
                 } else {
@@ -16052,12 +16070,12 @@ enum AmigaProgramFollowUpPlanner {
                 }
                 continue
             }
-            if let rejection = ordinalControlMoveRejection(from: clause, model: model) ??
-                ambiguousControlMoveRejection(from: clause, model: model) {
+            if let rejection = ordinalControlMoveRejection(from: clause, model: filteredModel) ??
+                ambiguousControlMoveRejection(from: clause, model: filteredModel) {
                 rejectedReasons.append(rejection)
                 continue
             }
-            if let request = moveControlRequest(from: clause, model: model) {
+            if let request = moveControlRequest(from: clause, model: filteredModel) {
                 if move != nil {
                     rejectedReasons.append("Specify only one control move.")
                 } else {
@@ -16113,6 +16131,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var rename: (currentLabel: String, newLabel: String)?
         var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
         var moveClause: String?
@@ -16125,10 +16151,8 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
@@ -16145,11 +16169,11 @@ enum AmigaProgramFollowUpPlanner {
                 }
                 continue
             }
-            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: filteredModel) {
                 rejectedReasons.append(rejection)
                 continue
             }
-            if let request = controlBoundsRequest(from: clause, model: model) {
+            if let request = controlBoundsRequest(from: clause, model: filteredModel) {
                 if placement != nil {
                     rejectedReasons.append("Specify only one control bounds change.")
                 } else {
@@ -16190,7 +16214,7 @@ enum AmigaProgramFollowUpPlanner {
         if placement.label.caseInsensitiveCompare(rename.currentLabel) != .orderedSame {
             rejectedReasons.append("Specify the same control for rename, bounds, and move changes.")
         }
-        if let move = moveControlRequest(from: moveClause, model: model),
+        if let move = moveControlRequest(from: moveClause, model: filteredModel),
            move.label.caseInsensitiveCompare(label) == .orderedSame ||
             move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
             rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
@@ -16294,6 +16318,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var rename: (currentLabel: String, newLabel: String)?
         var moveClause: String?
         var updates: [ModParameterUpdate] = []
@@ -16305,10 +16337,8 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
@@ -16351,7 +16381,7 @@ enum AmigaProgramFollowUpPlanner {
         if rename.currentLabel.caseInsensitiveCompare(label) == .orderedSame {
             rejectedReasons.append("Cannot rename a removed control.")
         }
-        if let move = moveControlRequest(from: moveClause, model: model),
+        if let move = moveControlRequest(from: moveClause, model: filteredModel),
            move.label.caseInsensitiveCompare(label) == .orderedSame ||
             move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
             rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
@@ -16382,6 +16412,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var rename: (currentLabel: String, newLabel: String)?
         var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
         var updates: [ModParameterUpdate] = []
@@ -16393,10 +16431,8 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
@@ -16413,11 +16449,11 @@ enum AmigaProgramFollowUpPlanner {
                 }
                 continue
             }
-            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: filteredModel) {
                 rejectedReasons.append(rejection)
                 continue
             }
-            if let request = controlBoundsRequest(from: clause, model: model) {
+            if let request = controlBoundsRequest(from: clause, model: filteredModel) {
                 if placement != nil {
                     rejectedReasons.append("Specify only one control bounds change.")
                 } else {
@@ -16546,6 +16582,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var structuralClauses: [String] = []
         var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
         var updates: [ModParameterUpdate] = []
@@ -16557,10 +16601,8 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
@@ -16574,11 +16616,11 @@ enum AmigaProgramFollowUpPlanner {
             case .notRecognized:
                 break
             }
-            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: filteredModel) {
                 rejectedReasons.append(rejection)
                 continue
             }
-            if let request = controlBoundsRequest(from: clause, model: model) {
+            if let request = controlBoundsRequest(from: clause, model: filteredModel) {
                 if placement != nil {
                     rejectedReasons.append("Specify only one control bounds change.")
                 } else {
@@ -16636,6 +16678,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var structuralClauses: [String] = []
         var moveClause: String?
         var updates: [ModParameterUpdate] = []
@@ -16647,10 +16697,8 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
@@ -16689,7 +16737,7 @@ enum AmigaProgramFollowUpPlanner {
         if change.currentLabel.caseInsensitiveCompare(label) == .orderedSame {
             rejectedReasons.append("Cannot change label or behavior for a removed control.")
         }
-        if let move = moveControlRequest(from: moveClause, model: model),
+        if let move = moveControlRequest(from: moveClause, model: filteredModel),
            move.label.caseInsensitiveCompare(label) == .orderedSame ||
             move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
             rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
@@ -16721,6 +16769,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var structuralClauses: [String] = []
         var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
         var moveClause: String?
@@ -16733,10 +16789,8 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
@@ -16758,11 +16812,11 @@ enum AmigaProgramFollowUpPlanner {
                 }
                 continue
             }
-            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: filteredModel) {
                 rejectedReasons.append(rejection)
                 continue
             }
-            if let request = controlBoundsRequest(from: clause, model: model) {
+            if let request = controlBoundsRequest(from: clause, model: filteredModel) {
                 if placement != nil {
                     rejectedReasons.append("Specify only one control bounds change.")
                 } else {
@@ -16794,7 +16848,7 @@ enum AmigaProgramFollowUpPlanner {
         if placement.label.caseInsensitiveCompare(change.currentLabel) != .orderedSame {
             rejectedReasons.append("Specify the same control for label, behavior, bounds, and move changes.")
         }
-        if let move = moveControlRequest(from: moveClause, model: model),
+        if let move = moveControlRequest(from: moveClause, model: filteredModel),
            move.label.caseInsensitiveCompare(label) == .orderedSame ||
             move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
             rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
@@ -16900,6 +16954,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var behavior: (label: String, action: String)?
         var moveClause: String?
         var updates: [ModParameterUpdate] = []
@@ -16911,10 +16973,8 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
@@ -16957,7 +17017,7 @@ enum AmigaProgramFollowUpPlanner {
         if behavior.label.caseInsensitiveCompare(label) == .orderedSame {
             rejectedReasons.append("Cannot change behavior for a removed control.")
         }
-        if let move = moveControlRequest(from: moveClause, model: model),
+        if let move = moveControlRequest(from: moveClause, model: filteredModel),
            move.label.caseInsensitiveCompare(label) == .orderedSame ||
             move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
             rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
@@ -16989,6 +17049,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var behavior: (label: String, action: String)?
         var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
         var updates: [ModParameterUpdate] = []
@@ -17000,10 +17068,8 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
@@ -17020,11 +17086,11 @@ enum AmigaProgramFollowUpPlanner {
                 }
                 continue
             }
-            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: filteredModel) {
                 rejectedReasons.append(rejection)
                 continue
             }
-            if let request = controlBoundsRequest(from: clause, model: model) {
+            if let request = controlBoundsRequest(from: clause, model: filteredModel) {
                 if placement != nil {
                     rejectedReasons.append("Specify only one control bounds change.")
                 } else {
@@ -17083,6 +17149,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var behavior: (label: String, action: String)?
         var placement: (label: String, bounds: AmigaProgramModel.Bounds)?
         var moveClause: String?
@@ -17095,10 +17169,8 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
@@ -17115,11 +17187,11 @@ enum AmigaProgramFollowUpPlanner {
                 }
                 continue
             }
-            if let rejection = ambiguousControlBoundsRejection(from: clause, model: model) {
+            if let rejection = ambiguousControlBoundsRejection(from: clause, model: filteredModel) {
                 rejectedReasons.append(rejection)
                 continue
             }
-            if let request = controlBoundsRequest(from: clause, model: model) {
+            if let request = controlBoundsRequest(from: clause, model: filteredModel) {
                 if placement != nil {
                     rejectedReasons.append("Specify only one control bounds change.")
                 } else {
@@ -17160,7 +17232,7 @@ enum AmigaProgramFollowUpPlanner {
         if placement.label.caseInsensitiveCompare(behavior.label) != .orderedSame {
             rejectedReasons.append("Specify the same control for behavior, bounds, and move changes.")
         }
-        if let move = moveControlRequest(from: moveClause, model: model),
+        if let move = moveControlRequest(from: moveClause, model: filteredModel),
            move.label.caseInsensitiveCompare(label) == .orderedSame ||
             move.targetLabel.caseInsensitiveCompare(label) == .orderedSame {
             rejectedReasons.append("Cannot move a removed control or move another control relative to it.")
@@ -17190,6 +17262,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String)?
         var updates: [ModParameterUpdate] = []
         var rejectedReasons: [String] = []
@@ -17200,19 +17280,17 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
-            if let rejection = ordinalControlMoveRejection(from: clause, model: model) ??
-                ambiguousControlMoveRejection(from: clause, model: model) {
+            if let rejection = ordinalControlMoveRejection(from: clause, model: filteredModel) ??
+                ambiguousControlMoveRejection(from: clause, model: filteredModel) {
                 rejectedReasons.append(rejection)
                 continue
             }
-            if let request = moveControlRequest(from: clause, model: model) {
+            if let request = moveControlRequest(from: clause, model: filteredModel) {
                 if move != nil {
                     rejectedReasons.append("Specify only one control move.")
                 } else {
@@ -17264,6 +17342,14 @@ enum AmigaProgramFollowUpPlanner {
         }
 
         var label: String?
+        for clause in clauses {
+            if let request = removeControlRequest(from: clause, model: model) {
+                label = request
+                break
+            }
+        }
+        let filteredModel = modelByRemovingControl(label: label, from: model)
+
         var move: (label: String, placement: AmigaProgramControlPlacement, targetLabel: String)?
         var rejectedReasons: [String] = []
         for clause in clauses {
@@ -17273,19 +17359,17 @@ enum AmigaProgramFollowUpPlanner {
                 continue
             }
             if let request = removeControlRequest(from: clause, model: model) {
-                if label != nil {
+                if label != nil && label != request {
                     rejectedReasons.append("Specify only one control removal.")
-                } else {
-                    label = request
                 }
                 continue
             }
-            if let rejection = ordinalControlMoveRejection(from: clause, model: model) ??
-                ambiguousControlMoveRejection(from: clause, model: model) {
+            if let rejection = ordinalControlMoveRejection(from: clause, model: filteredModel) ??
+                ambiguousControlMoveRejection(from: clause, model: filteredModel) {
                 rejectedReasons.append(rejection)
                 continue
             }
-            if let request = moveControlRequest(from: clause, model: model) {
+            if let request = moveControlRequest(from: clause, model: filteredModel) {
                 if move != nil {
                     rejectedReasons.append("Specify only one control move.")
                 } else {
@@ -17902,6 +17986,17 @@ enum AmigaProgramFollowUpPlanner {
         let boundedLocation = max(0, min(location, tokens.count))
         return tokens[..<boundedLocation].joined(separator: " ")
     }
+
+    private static func modelByRemovingControl(label: String?, from model: AmigaProgramModel) -> AmigaProgramModel {
+        guard let label else { return model }
+        var updated = model
+        updated.controls.removeAll(where: {
+            $0.label.caseInsensitiveCompare(label) == .orderedSame ||
+            $0.id.caseInsensitiveCompare(label) == .orderedSame
+        })
+        return updated
+    }
+
 
     static func controlBoundsRequest(from prompt: String, model: AmigaProgramModel) -> (label: String, bounds: AmigaProgramModel.Bounds)? {
         let normalized = prompt.lowercased()

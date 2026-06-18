@@ -8520,7 +8520,7 @@ InputDispatch:
                 return XCTFail("Expected routed first-shot artifact collection to fail verification, got: \(error)")
             }
             XCTAssertTrue(
-                failures.contains("double-buffer-bitplane: first-shot prompt embedded model kind effect instead of demo for prompt: Generate double-buffered bitplane animation that swaps front (red) and back (green) bitplane pointers on vblank and exits on left mouse click."),
+                failures.contains("double-buffer-bitplane: first-shot prompt embedded model kind effect instead of demo for prompt: Generate double-buffered bitplane animation that swaps front red and back green bitplane pointers on vblank, overlays a small sprite, updates a copper color register, and exits on left mouse click."),
                 "Expected embedded model kind mismatch, got: \(failures)"
             )
         }
