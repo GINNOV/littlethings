@@ -4378,6 +4378,7 @@ CopperList:
         if ProcessInfo.processInfo.environment["AMIGA_SMOKE_HOST_SCREEN_CAPTURE"] != "1" {
             validatorArguments.append("--skip-gui")
         }
+        validatorArguments.append(contentsOf: ["--boot-wait", "25"])
         process.arguments = ["asuser", "\(getuid())", "/usr/bin/python3"] + validatorArguments
         process.environment = ProcessInfo.processInfo.environment
 

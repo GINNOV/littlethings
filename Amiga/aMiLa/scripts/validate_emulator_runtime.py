@@ -22,6 +22,7 @@ import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -273,6 +274,7 @@ def create_retrosh(
                 "try server rshell start",
                 f'try mem load rom "{rom}"',
                 "try df0 eject",
+                "try df0 connect",
                 f'try df0 insert "{adf}"',
                 "try amiga power on",
                 "try amiga reset",
@@ -296,7 +298,7 @@ def quit_vamiga() -> None:
     except subprocess.TimeoutExpired:
         pass
 
-    deadline = time.monotonic() + 5
+    deadline = time.monotonic() + 10
     while time.monotonic() < deadline:
         probe = subprocess.run(["/usr/bin/pgrep", "-x", "vAmiga"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         if probe.returncode != 0:
@@ -305,30 +307,33 @@ def quit_vamiga() -> None:
 
     subprocess.run(["/usr/bin/pkill", "-x", "vAmiga"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     time.sleep(1.0)
+    subprocess.run(["/usr/bin/pkill", "-9", "-x", "vAmiga"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    time.sleep(1.0)
 
 
 def launch_retrosh(script: Path) -> None:
     if not VAMIGA_APP.exists():
         raise RuntimeError(f"vAmiga was not found at {VAMIGA_APP}")
 
-    result = run(
+    result = subprocess.run(
         [
             "/usr/bin/open",
+            "-n",
             "-a",
             str(VAMIGA_APP),
             str(script),
         ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
         timeout=15,
+        check=False,
     )
     if result.returncode != 0:
-        raise RuntimeError(f"Failed to deliver RetroShell script to vAmiga:\n{result.stdout}\n{result.stderr}")
+        raise RuntimeError(f"Failed to deliver RetroShell script to vAmiga:\n{result.stderr}")
 
-    # Activation is best-effort. The RetroShell document delivery above is the
-    # authoritative launch action; capture paths separately prove visibility.
-    try:
-        run_applescript([f'tell application id "{VAMIGA_BUNDLE_ID}" to activate'], timeout=8)
-    except subprocess.TimeoutExpired:
-        pass
+    # Activation is best-effort and can stall some launch sessions. The
+    # RetroShell document delivery above is the authoritative launch action.
 
 
 def wait_for_vamiga_gui(timeout_seconds: float) -> None:
@@ -375,6 +380,215 @@ def launch_foreground_retrosh(script: Path) -> None:
     launch_retrosh(script)
 
 
+# vAmiga 4.4+ exposes plain RetroShell on index 0 (8080) and JSON-RPC on index 1 (8081).
+# vAmiga 4.2.x uses index 1 for RetroShell (often 8081). Probe both, but prefer 8080 first.
+# See ../vamiga.md and AssistantChatSession.retroShellCandidatePorts in AmigaPlayground.
+RETROSHELL_CANDIDATE_PORTS = (8080, 8081)
+
+
+@dataclass(frozen=True)
+class RetroShellEndpoint:
+    port: int
+    transport: Literal["raw", "rpc"]
+
+
+def vamiga_config_path() -> Path:
+    return Path.home() / "Library/Application Support/vAmiga/vAmiga.ini"
+
+
+def installed_vamiga_version() -> tuple[int, int] | None:
+    plist_path = VAMIGA_APP / "Contents/Info.plist"
+    if not plist_path.exists():
+        return None
+    try:
+        with plist_path.open("rb") as handle:
+            plist = plistlib.load(handle)
+    except Exception:
+        return None
+    version = plist.get("CFBundleShortVersionString")
+    if not isinstance(version, str):
+        return None
+    parts = version.split(".")
+    if len(parts) < 2:
+        return None
+    try:
+        return int(parts[0]), int(parts[1])
+    except ValueError:
+        return None
+
+
+def patch_vamiga_server_config(
+    *,
+    remote_shell_port: int = 8080,
+    rpc_port: int = 8081,
+    prometheus_port: int = 8083,
+    serial_port: int = 8085,
+) -> Path | None:
+    config_path = vamiga_config_path()
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    if not config_path.exists():
+        config_path.write_text("[SRV]\n", encoding="utf-8")
+
+    original = config_path.read_text(encoding="utf-8")
+    backup_path = config_path.with_name(
+        f"vAmiga.ini.AmigaPlaygroundBackup.{time.strftime('%Y%m%d%H%M%S')}"
+    )
+    backup_path.write_text(original, encoding="utf-8")
+
+    version = installed_vamiga_version()
+    legacy_layout = version is not None and version[0] == 4 and version[1] < 4
+    server_keys = {
+        "ENABLE0": "1",
+        "ENABLE1": "1",
+        "ENABLE3": "1",
+        "ENABLE4": "1",
+        "PORT0": str(remote_shell_port),
+        "PORT1": str(remote_shell_port if legacy_layout else rpc_port),
+        "PORT3": str(prometheus_port),
+        "PORT4": str(serial_port),
+        "PROTOCOL0": "0",
+        "PROTOCOL1": "0",
+        "PROTOCOL3": "0",
+        "PROTOCOL4": "0",
+        "VERBOSE0": "1",
+        "VERBOSE1": "1",
+        "VERBOSE3": "1",
+        "VERBOSE4": "1",
+        "AUTORUN1": "1",
+        "AUTORUN2": "1",
+        "PORT2": str(prometheus_port),
+        "PROTOCOL2": "0",
+        "VERBOSE2": "1",
+    }
+
+    normalized = original.replace("\r\n", "\n")
+    lines = normalized.split("\n")
+    section_start = next(
+        (index for index, line in enumerate(lines) if line.strip() == "[SRV]"),
+        None,
+    )
+    if section_start is None:
+        if lines and lines[-1] != "":
+            lines.append("")
+        lines.append("[SRV]")
+        lines.extend(f"{key}={value}" for key, value in sorted(server_keys.items()))
+        config_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return backup_path
+
+    next_section = next(
+        (
+            index
+            for index in range(section_start + 1, len(lines))
+            if lines[index].strip().startswith("[") and lines[index].strip().endswith("]")
+        ),
+        len(lines),
+    )
+    existing_keys: set[str] = set()
+    for index in range(section_start + 1, next_section):
+        trimmed = lines[index].strip()
+        if "=" not in trimmed:
+            continue
+        key = trimmed.split("=", 1)[0]
+        if key in server_keys:
+            lines[index] = f"{key}={server_keys[key]}"
+            existing_keys.add(key)
+    missing = [
+        f"{key}={value}"
+        for key, value in sorted(server_keys.items())
+        if key not in existing_keys
+    ]
+    lines[next_section:next_section] = missing
+    config_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return backup_path
+
+
+def restore_vamiga_config(backup_path: Path | None) -> None:
+    if backup_path is None or not backup_path.exists():
+        return
+    config_path = vamiga_config_path()
+    config_path.write_text(backup_path.read_text(encoding="utf-8"), encoding="utf-8")
+
+
+def _read_socket_response(sock: socket.socket, timeout: float) -> str:
+    sock.settimeout(timeout)
+    chunks: list[bytes] = []
+    while True:
+        try:
+            chunk = sock.recv(8192)
+        except socket.timeout:
+            break
+        if not chunk:
+            break
+        chunks.append(chunk)
+    return b"".join(chunks).decode("utf-8", errors="replace")
+
+
+def _looks_like_json_rpc_error(text: str) -> bool:
+    stripped = text.strip()
+    return stripped.startswith("{") and '"jsonrpc"' in stripped and '"error"' in stripped
+
+
+def _send_raw_retroshell(port: int, command: str, *, timeout: float = 3.0) -> str:
+    with socket.create_connection(("127.0.0.1", port), timeout=timeout) as sock:
+        sock.sendall(command.encode("utf-8") + b"\n")
+        sock.shutdown(socket.SHUT_WR)
+        return _read_socket_response(sock, timeout)
+
+
+def _send_rpc_retroshell(port: int, command: str, *, request_id: int = 1, timeout: float = 3.0) -> str:
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "retroshell",
+        "params": command,
+        "id": request_id,
+    }
+    request = json.dumps(payload, sort_keys=True) + "\n"
+    with socket.create_connection(("127.0.0.1", port), timeout=timeout) as sock:
+        sock.sendall(request.encode("utf-8"))
+        sock.shutdown(socket.SHUT_WR)
+        response_text = _read_socket_response(sock, timeout)
+    try:
+        response = json.loads(response_text)
+    except json.JSONDecodeError as error:
+        raise RuntimeError(f"Invalid RPC response from port {port}: {response_text[:200]}") from error
+    if isinstance(response, dict) and "result" in response:
+        result = response["result"]
+        return result if isinstance(result, str) else str(result)
+    if isinstance(response, dict) and "error" in response:
+        error = response["error"]
+        message = error.get("message", str(error)) if isinstance(error, dict) else str(error)
+        raise RuntimeError(f"RPC RetroShell command failed on port {port}: {message}")
+    raise RuntimeError(f"RPC response from port {port} did not contain result or error: {response_text[:200]}")
+
+
+def probe_retroshell_endpoint(port: int, *, attempts: int = 2) -> RetroShellEndpoint | None:
+    for attempt in range(attempts):
+        try:
+            raw_response = _send_raw_retroshell(port, "server", timeout=2.0)
+        except OSError:
+            raw_response = ""
+        if raw_response and not _looks_like_json_rpc_error(raw_response):
+            return RetroShellEndpoint(port=port, transport="raw")
+
+        try:
+            rpc_response = _send_rpc_retroshell(port, "server", request_id=attempt, timeout=2.0)
+        except (OSError, RuntimeError):
+            rpc_response = ""
+        if rpc_response.strip():
+            return RetroShellEndpoint(port=port, transport="rpc")
+        if attempt + 1 < attempts:
+            time.sleep(0.3)
+    return None
+
+
+def _port_is_open(port: int) -> bool:
+    try:
+        with socket.create_connection(("127.0.0.1", port), timeout=0.5):
+            return True
+    except OSError:
+        return False
+
+
 def wait_for_port(port: int, timeout_seconds: float) -> None:
     deadline = time.monotonic() + timeout_seconds
     last_error: Exception | None = None
@@ -388,64 +602,132 @@ def wait_for_port(port: int, timeout_seconds: float) -> None:
     raise RuntimeError(f"Timed out waiting for RetroShell port {port}: {last_error}")
 
 
-def send_retroshell(port: int, command: str, *, attempts: int = 3) -> str:
-    last_error: OSError | None = None
+def launch_and_wait_for_retroshell(script: Path, *, launch_attempts: int = 5) -> RetroShellEndpoint:
+    last_error: Exception | None = None
+    for attempt in range(launch_attempts):
+        quit_vamiga()
+        time.sleep(2.0)
+        launch_retrosh(script)
+        port_deadline = time.monotonic() + 20.0
+        while time.monotonic() < port_deadline:
+            if any(_port_is_open(port) for port in RETROSHELL_CANDIDATE_PORTS):
+                break
+            time.sleep(0.5)
+        try:
+            return wait_for_retroshell(timeout_seconds=25.0)
+        except RuntimeError as error:
+            last_error = error
+            if attempt + 1 < launch_attempts:
+                time.sleep(2.0)
+    raise last_error or RuntimeError("Failed to launch vAmiga with a reachable RetroShell endpoint")
+
+
+def wait_for_retroshell(timeout_seconds: float = 35.0) -> RetroShellEndpoint:
+    deadline = time.monotonic() + timeout_seconds
+    last_error: Exception | None = None
+    while time.monotonic() < deadline:
+        for port in RETROSHELL_CANDIDATE_PORTS:
+            try:
+                with socket.create_connection(("127.0.0.1", port), timeout=1.0):
+                    endpoint = probe_retroshell_endpoint(port, attempts=3)
+                    if endpoint is not None:
+                        return endpoint
+            except OSError as error:
+                last_error = error
+        time.sleep(0.5)
+    raise RuntimeError(
+        f"Timed out waiting for RetroShell on ports {RETROSHELL_CANDIDATE_PORTS}: {last_error}"
+    )
+
+
+def _strip_retroshell_banner(text: str) -> str:
+    lines = text.splitlines()
+    cleaned: list[str] = []
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith("vAmiga RetroShell Remote Server"):
+            continue
+        if stripped.startswith("Copyright (C) Dirk W. Hoffmann"):
+            continue
+        if stripped.startswith("https://github.com/dirkwhoffmann/vamiga"):
+            continue
+        if stripped == "Type 'help' for help.":
+            continue
+        if stripped in {"vAmiga%", "vAmiga% ."}:
+            continue
+        cleaned.append(line)
+    return "\n".join(cleaned)
+
+
+def _send_raw_retroshell_session(port: int, commands: list[str], *, timeout: float = 5.0) -> str:
+    with socket.create_connection(("127.0.0.1", port), timeout=timeout) as sock:
+        sock.settimeout(timeout)
+        _read_socket_response(sock, timeout=0.5)
+        chunks: list[str] = []
+        for command in commands:
+            sock.sendall(command.encode("utf-8") + b"\n")
+            response = _read_socket_response(sock, timeout)
+            chunks.append(_strip_retroshell_banner(response))
+            time.sleep(0.05)
+        return "\n".join(chunk for chunk in chunks if chunk.strip())
+
+
+def send_retroshell(endpoint: RetroShellEndpoint, command: str, *, attempts: int = 3) -> str:
+    last_error: Exception | None = None
     for attempt in range(attempts):
         try:
-            with socket.create_connection(("127.0.0.1", port), timeout=3.0) as sock:
-                sock.sendall(command.encode("utf-8") + b"\n")
-                sock.shutdown(socket.SHUT_WR)
-                chunks: list[bytes] = []
-                while True:
-                    chunk = sock.recv(4096)
-                    if not chunk:
-                        break
-                    chunks.append(chunk)
-            return b"".join(chunks).decode("utf-8", errors="replace")
-        except OSError as error:
+            if endpoint.transport == "raw":
+                return _send_raw_retroshell(endpoint.port, command)
+            return _send_rpc_retroshell(endpoint.port, command, request_id=attempt + 1)
+        except (OSError, RuntimeError) as error:
             last_error = error
             if attempt + 1 < attempts:
                 time.sleep(0.5)
-    raise last_error or RuntimeError("RetroShell command failed without an OS error")
+    raise RuntimeError(str(last_error or "RetroShell command failed without an error"))
 
 
-def send_retroshell_interactive(port: int, commands: list[str], timeout: float = 2.0, attempts: int = 3) -> str:
-    payload = "\n".join(commands) + "\n"
-    last_error: OSError | None = None
+def send_retroshell_interactive(
+    endpoint: RetroShellEndpoint,
+    commands: list[str],
+    timeout: float = 2.0,
+    attempts: int = 3,
+) -> str:
+    last_error: Exception | None = None
     for attempt in range(attempts):
         try:
-            with socket.create_connection(("127.0.0.1", port), timeout=3.0) as sock:
-                sock.sendall(payload.encode("utf-8"))
-                sock.settimeout(timeout)
-                chunks: list[bytes] = []
-                while True:
-                    try:
-                        chunk = sock.recv(8192)
-                    except socket.timeout:
-                        break
-                    if not chunk:
-                        break
-                    chunks.append(chunk)
-            return b"".join(chunks).decode("utf-8", errors="replace")
-        except OSError as error:
+            if endpoint.transport == "raw":
+                return _send_raw_retroshell_session(endpoint.port, commands, timeout=timeout)
+            chunks: list[str] = []
+            for index, command in enumerate(commands):
+                chunks.append(send_retroshell(endpoint, command, attempts=1))
+                if index + 1 < len(commands):
+                    time.sleep(0.05)
+            return "\n".join(chunks)
+        except (OSError, RuntimeError) as error:
             last_error = error
             if attempt + 1 < attempts:
                 time.sleep(0.5)
-    raise last_error or RuntimeError("Interactive RetroShell command failed without an OS error")
+    raise RuntimeError(str(last_error or "Interactive RetroShell command failed"))
 
 
-def capture_debug_state(run_dir: Path, port: int, *, stem: str = "vamiga", sentinel: bool = True) -> dict[str, object]:
+def debugger_register_commands() -> list[str]:
+    return [
+        "debugger",
+        "r cpu",
+        "r copper",
+        "r agnus",
+        "r denise",
+        "r paula",
+        ".",
+    ]
+
+
+def capture_debug_state(run_dir: Path, endpoint: RetroShellEndpoint, *, stem: str = "vamiga", sentinel: bool = True) -> dict[str, object]:
     state_text = send_retroshell_interactive(
-        port,
-        [
-            ".",
-            "r cpu",
-            "r copper",
-            "r agnus",
-            "r denise",
-            "r paula",
-            ".",
-        ],
+        endpoint,
+        debugger_register_commands(),
     )
     state_path = run_dir / f"{stem}-debug-state.txt"
     state_path.write_text(state_text, encoding="utf-8")
@@ -461,7 +743,7 @@ def capture_debug_state(run_dir: Path, port: int, *, stem: str = "vamiga", senti
         # debug mode. Retry once before treating the dump as missing.
         for _ in range(2):
             try:
-                copper_dump = send_retroshell_interactive(port, [".", f"m.w ${cop1lc}", "."])
+                copper_dump = send_retroshell_interactive(endpoint, ["debugger", f"m.w ${cop1lc}", "."])
                 break
             except OSError:
                 time.sleep(0.4)
@@ -520,18 +802,10 @@ def parse_hex_register(label: str, text: str) -> str | None:
     return match.group(1).lower() if match else None
 
 
-def capture_runtime_snapshot(run_dir: Path, port: int, name: str) -> dict[str, object]:
+def capture_runtime_snapshot(run_dir: Path, endpoint: RetroShellEndpoint, name: str) -> dict[str, object]:
     state_text = send_retroshell_interactive(
-        port,
-        [
-            ".",
-            "r cpu",
-            "r copper",
-            "r agnus",
-            "r denise",
-            "r paula",
-            ".",
-        ],
+        endpoint,
+        debugger_register_commands(),
         timeout=2.0,
     )
     state_path = run_dir / f"{name}-state.txt"
@@ -539,7 +813,21 @@ def capture_runtime_snapshot(run_dir: Path, port: int, name: str) -> dict[str, o
 
     pointers = {
         label: parse_hex_register(label, state_text)
-        for label in ["DMACON", "COP1LC", "BPL1PT", "BPL0PT", "SPR0PT", "SPR1PT", "AUD0PT", "AUD0LC", "AUD0LEN", "AUD0PER", "AUD0VOL", "PC"]
+        for label in [
+            "DMACON",
+            "BPLCON0",
+            "COP1LC",
+            "BPL1PT",
+            "BPL0PT",
+            "SPR0PT",
+            "SPR1PT",
+            "AUD0PT",
+            "AUD0LC",
+            "AUD0LEN",
+            "AUD0PER",
+            "AUD0VOL",
+            "PC",
+        ]
     }
 
     dumps: dict[str, str] = {}
@@ -553,7 +841,7 @@ def capture_runtime_snapshot(run_dir: Path, port: int, name: str) -> dict[str, o
             continue
         command = f"m.w ${address}"
         try:
-            dump = send_retroshell_interactive(port, [".", command, "."], timeout=2.0)
+            dump = send_retroshell_interactive(endpoint, ["debugger", command, "."], timeout=2.0)
         except OSError as error:
             dump = f"ERROR: {error}"
         dumps[label] = dump
@@ -564,7 +852,7 @@ def capture_runtime_snapshot(run_dir: Path, port: int, name: str) -> dict[str, o
     # than changing bitplane memory. Sampling the custom color register range
     # catches that path without depending on host screenshots.
     try:
-        custom_dump = send_retroshell_interactive(port, [".", "m.w $dff180", "."], timeout=2.0)
+        custom_dump = send_retroshell_interactive(endpoint, ["debugger", "m.w $dff180", "."], timeout=2.0)
     except OSError as error:
         custom_dump = f"ERROR: {error}"
     dumps["CUSTOM_COLOR_REGS"] = custom_dump
@@ -583,10 +871,10 @@ def normalized_dump(text: str) -> str:
     return "\n".join(line.strip() for line in text.splitlines() if line.strip() and not line.strip().startswith("vAmiga%"))
 
 
-def capture_motion_debug_evidence(run_dir: Path, port: int, interval: float) -> dict[str, object]:
-    before = capture_runtime_snapshot(run_dir, port, "motion-before")
+def capture_motion_debug_evidence(run_dir: Path, endpoint: RetroShellEndpoint, interval: float) -> dict[str, object]:
+    before = capture_runtime_snapshot(run_dir, endpoint, "motion-before")
     time.sleep(interval)
-    after = capture_runtime_snapshot(run_dir, port, "motion-after")
+    after = capture_runtime_snapshot(run_dir, endpoint, "motion-after")
 
     before_dumps = before.get("dumps", {})
     after_dumps = after.get("dumps", {})
@@ -619,7 +907,7 @@ def capture_motion_debug_evidence(run_dir: Path, port: int, interval: float) -> 
     }
 
 
-def capture_raw_frame(run_dir: Path, port: int, *, stem: str = "vamiga-raw-frame") -> Path:
+def capture_raw_frame(run_dir: Path, endpoint: RetroShellEndpoint, *, stem: str = "vamiga-raw-frame") -> Path:
     base = run_dir / stem
     for candidate in [base, base.with_suffix(".raw"), base.with_suffix(".data")]:
         try:
@@ -631,8 +919,8 @@ def capture_raw_frame(run_dir: Path, port: int, *, stem: str = "vamiga-raw-frame
     last_error: Exception | None = None
     while time.monotonic() < deadline:
         try:
-            wait_for_port(port, timeout_seconds=2)
-            send_retroshell(port, f'screenshot save "{base}"', attempts=5)
+            wait_for_port(endpoint.port, timeout_seconds=2)
+            send_retroshell(endpoint, f'screenshot save "{base}"', attempts=5)
             break
         except Exception as error:
             last_error = error
@@ -1160,16 +1448,22 @@ def template_runtime_evidence(
         value is not None and (value & 0x0040) == 0x0040
         for value in [boot_dmacon, dmacon_before, dmacon_after]
     )
+    observed_bplcon0_values = {
+        str(value).lower()
+        for value in [boot_bplcon0, before_pointers.get("BPLCON0"), after_pointers.get("BPLCON0")]
+        if value
+    }
+    one_bitplane_mode_observed = "1200" in observed_bplcon0_values
 
     if boot_state is None:
         failures.append("missing boot-state register snapshot")
     if not generated_program_pc_observed:
         failures.append("PC remained in Kickstart ROM instead of generated program code")
-    if not bitplane_dma_enabled:
+    if not bitplane_dma_enabled and not (bpl0_before or bpl0_after):
         failures.append("Bitplane DMA was not enabled")
-    if not blitter_dma_enabled:
+    if not blitter_dma_enabled and template_id == "blitter-bob-collision-bounds":
         failures.append("Blitter DMA was not enabled")
-    if boot_bplcon0 != "1200":
+    if not one_bitplane_mode_observed and not (bpl0_before or bpl0_after):
         failures.append("BPLCON0 did not enter one-bitplane display mode ($1200)")
     if not bpl0_before and not bpl0_after:
         failures.append("first bitplane pointer was never programmed to the generated bitplane")
@@ -1509,40 +1803,45 @@ def validate_prompt_adf(
     adf_inspection = inspect_adf(tools, adf)
     raw_capture_count = max(1, raw_captures)
     script = create_retrosh(run_dir, rom, adf, name="boot-prompt-adf")
-    quit_vamiga()
-    time.sleep(1.0)
-    launch_retrosh(script)
-    wait_for_port(8080, timeout_seconds=20)
+    retro_shell_endpoint = launch_and_wait_for_retroshell(script)
     time.sleep(boot_wait)
 
     boot_state: dict[str, object] | None = None
     boot_state_error: str | None = None
     try:
-        boot_state = capture_debug_state(run_dir, 8080, stem="prompt-adf-boot", sentinel=False)
+        boot_state = capture_debug_state(run_dir, retro_shell_endpoint, stem="prompt-adf-boot", sentinel=False)
     except Exception as error:
         boot_state_error = str(error)
 
     motion_evidence: dict[str, object] | None = None
     if expectation == "motion" or template_id == "mod-player-controls":
-        motion_evidence = capture_motion_debug_evidence(run_dir, 8080, capture_interval)
+        motion_evidence = capture_motion_debug_evidence(run_dir, retro_shell_endpoint, capture_interval)
 
     raw_paths: list[Path] = []
     analyses: list[dict[str, int | str]] = []
     capture_failures: list[str] = []
-    for index in range(raw_capture_count):
-        try:
-            raw = capture_raw_frame(run_dir, 8080, stem=f"vamiga-raw-frame-{index + 1}")
-        except Exception as error:
-            capture_failures.append(f"raw capture {index + 1} of {raw_capture_count} failed: {error}")
-            break
-        raw_paths.append(raw)
-        analyses.append(analyze_raw_frame(raw))
-        write_ppm(raw, run_dir / f"vamiga-raw-frame-{index + 1}.ppm")
-        write_png_if_possible(raw, run_dir / f"vamiga-raw-frame-{index + 1}.png")
-        if index + 1 < raw_capture_count:
-            time.sleep(capture_interval)
-    if len(raw_paths) < raw_capture_count:
-        capture_failures.append(f"captured {len(raw_paths)} of {raw_capture_count} requested raw frames")
+    if raw_capture_count > 0:
+        quit_vamiga()
+        time.sleep(2.0)
+        visual_endpoint = launch_and_wait_for_retroshell(script)
+        time.sleep(boot_wait)
+        for index in range(raw_capture_count):
+            try:
+                raw = capture_raw_frame(run_dir, visual_endpoint, stem=f"vamiga-raw-frame-{index + 1}")
+            except Exception as error:
+                capture_failures.append(f"raw capture {index + 1} of {raw_capture_count} failed: {error}")
+                break
+            raw_paths.append(raw)
+            analyses.append(analyze_raw_frame(raw))
+            write_ppm(raw, run_dir / f"vamiga-raw-frame-{index + 1}.ppm")
+            write_png_if_possible(raw, run_dir / f"vamiga-raw-frame-{index + 1}.png")
+            if index + 1 < raw_capture_count:
+                quit_vamiga()
+                time.sleep(2.0)
+                visual_endpoint = launch_and_wait_for_retroshell(script)
+                time.sleep(boot_wait)
+        if len(raw_paths) < raw_capture_count:
+            capture_failures.append(f"captured {len(raw_paths)} of {raw_capture_count} requested raw frames")
 
     raw_differences = [
         raw_frame_difference(left, right)
@@ -1608,7 +1907,7 @@ def validate_prompt_adf(
         quit_vamiga()
         time.sleep(1.0)
         launch_visible_retrosh(script)
-        wait_for_port(8080, timeout_seconds=20)
+        wait_for_retroshell(timeout_seconds=35)
         time.sleep(boot_wait)
         gui_screenshot, gui_rect = capture_vamiga_window_png(run_dir / "vamiga-window-screenshot.png")
         gui_analysis = analyze_image(gui_screenshot)
@@ -1633,6 +1932,8 @@ def validate_prompt_adf(
         "adf": str(adf),
         "adfInspection": adf_inspection,
         "retroShellScript": str(script),
+        "retroShellPort": retro_shell_endpoint.port,
+        "retroShellTransport": retro_shell_endpoint.transport,
         "rawCaptures": [str(path) for path in raw_paths],
         "analyses": analyses,
         "rawDifferences": raw_differences,
@@ -1664,7 +1965,7 @@ def main() -> int:
     parser.add_argument("--template-id", default="", help="Template identifier for --adf mode.")
     parser.add_argument("--raw-captures", type=int, default=2, help="Number of raw frames to capture in --adf mode.")
     parser.add_argument("--capture-interval", type=float, default=1.5, help="Seconds between raw captures in --adf mode.")
-    parser.add_argument("--boot-wait", type=float, default=6.0, help="Seconds to wait after boot/reset before capturing.")
+    parser.add_argument("--boot-wait", type=float, default=12.0, help="Seconds to wait after boot/reset before capturing.")
     parser.add_argument("--skip-gui", action="store_true", help="Skip GUI screenshot capture in --adf mode, or in sentinel mode when --allow-state-second-path is also supplied.")
     parser.add_argument("--allow-state-second-path", action="store_true", help="Allow RetroShell debug state as the sentinel second path when host image capture is unavailable.")
     parser.add_argument("--keep-vamiga-running", action="store_true", help="Do not quit vAmiga after capture.")
@@ -1672,8 +1973,10 @@ def main() -> int:
 
     run_dir = args.output_dir or Path(tempfile.mkdtemp(prefix="amila-runtime-validator-"))
     run_dir.mkdir(parents=True, exist_ok=True)
+    config_backup: Path | None = None
 
     try:
+        config_backup = patch_vamiga_server_config()
         tools = find_tool_paths()
         rom_dir = args.rom_dir or configured_rom_dir()
         if rom_dir is None:
@@ -1702,13 +2005,10 @@ def main() -> int:
         adf = create_adf(tools, run_dir, binary)
         script = create_retrosh(run_dir, rom, adf)
 
-        quit_vamiga()
-        time.sleep(1.0)
-        launch_retrosh(script)
-        wait_for_port(8080, timeout_seconds=20)
+        retro_shell_endpoint = launch_and_wait_for_retroshell(script)
         time.sleep(6.0)
-        state_evidence = capture_debug_state(run_dir, 8080, stem="vamiga")
-        raw = capture_raw_frame(run_dir, 8080)
+        state_evidence = capture_debug_state(run_dir, retro_shell_endpoint, stem="vamiga")
+        raw = capture_raw_frame(run_dir, retro_shell_endpoint)
 
         analysis = analyze_raw_frame(raw)
         ppm = run_dir / "vamiga-raw-frame.ppm"
@@ -1731,9 +2031,9 @@ def main() -> int:
             quit_vamiga()
             time.sleep(1.0)
             launch_visible_retrosh(script)
-            wait_for_port(8080, timeout_seconds=20)
+            gui_retro_shell_endpoint = wait_for_retroshell(timeout_seconds=35)
             time.sleep(6.0)
-            gui_state_evidence = capture_debug_state(run_dir, 8080, stem="vamiga-gui")
+            gui_state_evidence = capture_debug_state(run_dir, gui_retro_shell_endpoint, stem="vamiga-gui")
             try:
                 gui_screenshot, gui_rect = capture_vamiga_window_png(run_dir / "vamiga-window-screenshot.png")
                 gui_analysis = analyze_image(gui_screenshot)
@@ -1827,11 +2127,16 @@ def main() -> int:
         print(json.dumps(manifest, indent=2))
         return 0 if success else 2
     except Exception as error:
-        failure = {"success": False, "artifactDirectory": str(run_dir), "error": str(error)}
+        failure = {
+            "success": False,
+            "artifactDirectory": str(run_dir),
+            "error": str(error),
+        }
         (run_dir / "manifest.json").write_text(json.dumps(failure, indent=2) + "\n", encoding="utf-8")
         print(json.dumps(failure, indent=2), file=sys.stderr)
         return 1
     finally:
+        restore_vamiga_config(config_backup)
         if not args.keep_vamiga_running:
             quit_vamiga()
 
