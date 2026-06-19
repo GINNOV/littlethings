@@ -5,10 +5,9 @@ struct HardwareCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            HardwareModelImage(model: model, height: 110)
+
             HStack {
-                Image(systemName: model.symbolName)
-                    .font(.title2)
-                    .foregroundStyle(AmigaTheme.accentOrange)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(model.name)
                         .font(.headline)

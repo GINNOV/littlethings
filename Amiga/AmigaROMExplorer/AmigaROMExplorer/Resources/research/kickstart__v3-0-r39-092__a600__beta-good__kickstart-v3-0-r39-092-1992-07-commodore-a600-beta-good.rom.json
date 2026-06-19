@@ -15,7 +15,7 @@
   ],
   "purpose" : "Stored in ROM (or loaded from disk on early A1000 setups), Kickstart initializes custom chips, brings up Chip RAM, installs core libraries, and hands control to boot media or the Workbench desktop.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803408194.785872,
+  "researchedAt" : 803470027.616884,
   "romID" : "kickstart\/v3-0-r39-092\/a600\/beta-good\/kickstart-v3-0-r39-092-1992-07-commodore-a600-beta-good.rom",
   "summary" : "Kickstart is the Amiga's resident operating system firmware. This verified good image targets Amiga 600 and provides the Exec kernel, device drivers, Intuition GUI, and DOS library needed to boot Workbench or games.",
   "technicalInsights" : [

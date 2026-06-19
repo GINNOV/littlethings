@@ -49,6 +49,10 @@ struct ROMDetailView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     ROMHeroHeader(item: item, state: state)
 
+                    if !item.machines.isEmpty {
+                        CompatibleHardwareGallery(models: item.machines)
+                    }
+
                     if !item.isOnDisk && viewModel.isReferenceOnlyMode {
                         referenceModeBanner
                     }
@@ -87,15 +91,13 @@ struct ROMDetailView: View {
     private func hardwareModelFooter(for item: ROMCatalogItem) -> some View {
         HStack(alignment: .center, spacing: 14) {
             if let primary = item.machines.first {
-                Image(systemName: primary.symbolName)
-                    .font(.title2)
-                    .foregroundStyle(AmigaTheme.accentOrange)
-                    .frame(width: 28)
+                HardwareModelImage(model: primary, height: 52, cornerRadius: 8)
+                    .frame(width: 72)
             } else {
                 Image(systemName: "questionmark.circle")
                     .font(.title2)
                     .foregroundStyle(.secondary)
-                    .frame(width: 28)
+                    .frame(width: 72, height: 52)
             }
 
             VStack(alignment: .leading, spacing: 3) {

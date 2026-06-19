@@ -10,7 +10,7 @@
   ],
   "purpose" : "Allows the A1000 to boot despite shipping before mask-programmed Kickstart ROMs were ready.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803408194.758779,
+  "researchedAt" : 803470027.591507,
   "romID" : "bootstrap\/a1000\/unknown\/amiga-1000-rom-bootstrap-1985-commodore-a1000-u.rom",
   "summary" : "Amiga 1000 Write-Control Store (WCS) bootstrap. The A1000 does not have full Kickstart in ROM; instead this tiny loader pulls Kickstart from disk.",
   "technicalInsights" : [

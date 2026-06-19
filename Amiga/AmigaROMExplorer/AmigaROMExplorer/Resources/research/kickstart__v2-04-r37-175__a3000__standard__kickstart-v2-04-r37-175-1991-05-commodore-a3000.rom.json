@@ -14,7 +14,7 @@
   ],
   "purpose" : "Stored in ROM (or loaded from disk on early A1000 setups), Kickstart initializes custom chips, brings up Chip RAM, installs core libraries, and hands control to boot media or the Workbench desktop.",
   "researchSource" : "knowledgeBase",
-  "researchedAt" : 803408194.780027,
+  "researchedAt" : 803470027.611897,
   "romID" : "kickstart\/v2-04-r37-175\/a3000\/standard\/kickstart-v2-04-r37-175-1991-05-commodore-a3000.rom",
   "summary" : "Kickstart is the Amiga's resident operating system firmware. This unknown image targets Amiga 3000 and provides the Exec kernel, device drivers, Intuition GUI, and DOS library needed to boot Workbench or games.",
   "technicalInsights" : [
