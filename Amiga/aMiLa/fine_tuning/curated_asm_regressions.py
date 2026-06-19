@@ -958,6 +958,93 @@ _Start:
 Bitplane:   ds.b    4*16
 """
 
+BLITTER_COPY_SOURCE = """
+            SECTION Code,CODE,CHIP
+            XDEF    _Start
+_Start:
+            lea     $dff000,a6
+            lea     BlitBuffers,a0
+            lea     4*16(a0),a1
+.waitBefore:
+            btst    #6,$02(a6)
+            bne.s   .waitBefore
+            move.w  #$09f0,$40(a6)
+            move.w  #$0000,$42(a6)
+            move.l  a0,$50(a6)
+            move.l  a1,$54(a6)
+            move.w  #$0000,$64(a6)
+            move.w  #$0000,$66(a6)
+            move.w  #(16*64)+2,$58(a6)
+.waitAfter:
+            btst    #6,$02(a6)
+            bne.s   .waitAfter
+            rts
+
+            SECTION ChipData,DATA,CHIP
+BlitBuffers: ds.b   4*16*2
+"""
+
+BLITTER_FILL_SOURCE = """
+            SECTION Code,CODE,CHIP
+            XDEF    _Start
+_Start:
+            lea     $dff000,a6
+            lea     FillBuffer,a0
+.waitBefore:
+            btst    #6,$02(a6)
+            bne.s   .waitBefore
+            move.w  #$0100,$40(a6)
+            move.w  #$0000,$42(a6)
+            move.w  #$ffff,$44(a6)
+            move.w  #$ffff,$46(a6)
+            move.l  a0,$54(a6)
+            move.w  #$0000,$64(a6)
+            move.w  #$0000,$66(a6)
+            move.w  #(16*64)+2,$58(a6)
+.waitAfter:
+            btst    #6,$02(a6)
+            bne.s   .waitAfter
+            rts
+
+            SECTION ChipData,DATA,CHIP
+FillBuffer: ds.b    4*16
+"""
+
+BLITTER_MASKED_BOB_SOURCE = """
+            SECTION Code,CODE,CHIP
+            XDEF    _Start
+_Start:
+            lea     $dff000,a6
+            lea     BobBlock,a0
+            lea     16*16(a0),a1
+            lea     16*16*2(a0),a2
+.waitBefore:
+            btst    #6,$02(a6)
+            bne.s   .waitBefore
+            move.w  #$0fca,$40(a6)
+            move.w  #$0000,$42(a6)
+            move.l  a0,$50(a6)
+            move.l  a1,$52(a6)
+            move.l  a2,$54(a6)
+            move.w  #$0000,$64(a6)
+            move.w  #$0000,$66(a6)
+            move.w  #(16*16)+2,$58(a6)
+.waitAfter:
+            btst    #6,$02(a6)
+            bne.s   .waitAfter
+            rts
+
+            SECTION ChipData,DATA,CHIP
+BobBlock:
+BobSource:  dc.b    $ff,$00,$ff,$00
+            dc.b    $00,$ff,$00,$ff
+            ds.b    16*16-8
+BobMask:    dc.b    $ff,$ff,$ff,$ff
+            dc.b    $ff,$ff,$ff,$ff
+            ds.b    16*16-8
+BobDest:    ds.b    16*16
+"""
+
 BITPLANE_SOURCE = """
             SECTION Code,CODE,CHIP
             XDEF    _Start
@@ -1096,11 +1183,66 @@ CURATED_ASM_REGRESSIONS.extend(
             "Create a complete AmigaDOS executable that uses the blitter to clear CHIP memory.",
             "Generate a canonical btst #6,$02(a6) blitter clear routine with BLTSIZE start.",
             "Write Amiga 68000 code that clears a bitplane with the blitter, then returns.",
+            "Generate an Amiga 68000 assembly program that clears a CHIP memory bitplane with the blitter and waits for completion.",
+            "Generate an Amiga 68000 assembly program that copies a small CHIP memory block with the blitter and waits for completion.",
+            "Generate an Amiga 68000 assembly program that starts a simple blitter fill operation and waits for completion.",
+            "Generate an Amiga 68000 assembly routine that sets up a masked bob blit using source and mask data and waits for completion.",
         ],
         BLITTER_CLEAR_SOURCE,
         [
             "Repair this blitter wait-only answer: it waits on btst #6,$02(a6) and returns without BLTCON0, BLTDPTH, BLTDMOD, or BLTSIZE.",
             "Repair this non-canonical blitter answer: replace btst #14,$02(a6) with btst #6,$02(a6), configure BLTCON0, and start through BLTSIZE.",
+            "Repair this blitter copy answer: it compiles but omits BLTSPT, BLTDPT, BLTAMOD, BLTDMOD, and the post-BLTSIZE wait.",
+            "Repair this blitter fill answer: it starts BLTSIZE without a pre-blitter btst #6,$02(a6) busy wait.",
+            "Repair this masked bob answer: it uses invalid registers d8-d10 and never writes BLTAPT, BLTSPT, and BLTDPT.",
+        ],
+    )
+)
+
+CURATED_ASM_REGRESSIONS.extend(
+    capability_records(
+        "blitter",
+        [
+            "Generate an Amiga 68000 assembly program that copies a small CHIP memory block with the blitter and waits for completion.",
+            "Write VASM code that copies CHIP source to CHIP destination through BLTSPT, BLTDPT, and BLTSIZE.",
+            "Create a complete Amiga blitter copy with waits before and after BLTSIZE.",
+        ],
+        BLITTER_COPY_SOURCE,
+        [
+            "Repair this blitter copy answer: it has BLTSIZE but no BLTSPT or BLTDPT pointer setup.",
+            "Repair this blitter copy answer: replace btst #14,$02(a6) with btst #6,$02(a6) and add the missing post-BLTSIZE wait.",
+        ],
+    )
+)
+
+CURATED_ASM_REGRESSIONS.extend(
+    capability_records(
+        "blitter",
+        [
+            "Generate an Amiga 68000 assembly program that starts a simple blitter fill operation and waits for completion.",
+            "Write a VASM blitter fill using BLTCON0, BLTDPT, BLTDMOD, and BLTSIZE.",
+            "Create a complete Amiga blitter fill routine with canonical busy waits.",
+        ],
+        BLITTER_FILL_SOURCE,
+        [
+            "Repair this blitter fill answer: it omits BLTCON0 at $40(a6) and BLTSIZE at $58(a6).",
+            "Repair this blitter fill answer: it uses a single blitter wait instead of waits before and after BLTSIZE.",
+        ],
+    )
+)
+
+CURATED_ASM_REGRESSIONS.extend(
+    capability_records(
+        "blitter",
+        [
+            "Generate an Amiga 68000 assembly routine that sets up a masked bob blit using source and mask data and waits for completion.",
+            "Write a masked bob blit with BLTSPT, BLTAPT, BLTDPT, and canonical btst #6,$02(a6) waits.",
+            "Create a subroutine-style masked bob setup that waits for blitter completion.",
+        ],
+        BLITTER_MASKED_BOB_SOURCE,
+        [
+            "Repair this masked bob answer: it compiles but uses non-canonical blitter waits and omits BLTAPT.",
+            "Repair this masked bob answer: it emits d8-d10 and never starts the blit through BLTSIZE.",
         ],
     )
 )

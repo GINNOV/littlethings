@@ -188,7 +188,8 @@ open -n -a /Applications/vAmiga.app /tmp/session.retrosh
 ```
 
 4. Wait in the controller/test process for the program to render.
-5. Connect to RetroShell TCP on candidate ports such as `8080`, `8081`.
+5. Connect to RetroShell TCP on candidate ports such as `8081`, `8080` (probe both; do not assume 8080).
+   `scripts/validate_emulator_runtime.py` and `AssistantChatSession.retroShellCandidatePorts` already do this.
 6. Send:
 
 ```text
