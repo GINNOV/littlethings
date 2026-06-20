@@ -1,0 +1,23 @@
+Short:        Remove comments from asm-sourcecode
+Author:       tretti-a@rzbt.fh-hamburg.de (Andre` Trettin)
+Uploader:     tretti-a rzbt fh-hamburg de (Andre` Trettin)
+Type:         dev/asm
+Architecture: m68k-amigaos
+
+$VER: BangerKommKurz 1.3 (04-Sep-96)
+BangerKommKurz remove all comments of a asm-sorucecode and asm-includes
+
+Parameter:  FILES/A/M,ALL/S,QUIET/S
+FILES: one file or multi files or a directory
+ALL  : doing with subdirectories
+QUIET: no message
+
+BangerKommKurz is copyright 1996 by Andre´ Trettin and is FREEWARE
+Autor: Andre´ Trettin
+       Duwockskamp 33
+       21029 Hamburg
+Tele:  040/7246861
+EMail: tretti-a@rzbt.fh-hamburg.de
+
+new:
+-fix EmptyLine

@@ -1,0 +1,456 @@
+							Mark Meany,
+							1 Cromwell Road,
+							Southampton,
+							Hant's.
+							SO1 2JH
+
+
+				Rotations
+				=========
+
+ Introduction
+ ************
+
+ After being blessed with the Fractal docs from Dave Edwards ( which I'm
+still working on ), I have decided to cover the subject of rotational
+geometry, the difference being that I know the theory, but have never put
+it into practise. I intend to approach the subject from the beginning,
+covering all the basic principles.
+
+ Before I get heaps of mail telling me about Matrix Algebra, let me just
+say I was reared on traditional mathematics and relate better to the
+geometrical approach to this subject. I can and do use matracies, but only
+as a last resort.
+
+ Trigonometric Principles
+ ************************
+
+ I expect most of you are familiar with the Sine, CoSine and Tangent of an
+angle, but here is a refresher anyhow:
+
+ Figure 1
+ --------
+ A typical right-angled triangle.
+
+			A	define angle ABC = b
+		       /|		     BCA = c
+		      / |		     BAC = a
+		     /	|
+		    /	|
+		   /	|	       length AB = y
+		  /	|		      BC = x
+		 /	|		      AC = h
+	     	/	|
+	       /	|	AC is the hypotemuse ( side opposite the
+	     h/		|y	right-angle ).
+	     /		|
+	    /		|
+	   /		|
+	  /		|
+	 / 	       _|
+       C/_____________|_|B
+	       x
+
+
+ Sine of an Angle
+ ----------------
+
+ The Sine of an angle is defined as the ratio of the length of the side
+opposite the angle to the length of the hypotemuse in a right angled
+triangle. 
+
+	ie          Opposite
+	    Sine = ----------
+		   Hypotemuse
+
+  So in the above example, the Sine of angle a is x/h.
+
+ sin is a recognised abreviation for the Sine of an angle, so the Sine of
+angle a would be expressed 
+
+	sin (a) = x/h
+
+ CoSine of an Angle
+ ------------------
+ The CoSine of an angle is defined as the ratio of the length of the side
+adjacent to the angle to the length of the hypotemuse in a right angled
+triangle. 
+
+	ie           Adjacent
+	   CoSine = ----------
+		    Hypotemuse
+
+  So in the above example, the CoSine of angle a is y/h.
+
+ cos is a recognised abreviation for the CoSine of an angle, so the CoSine of
+angle a would be expressed
+
+	cos (a) = y/h
+
+ Tangent of an Angle
+ -------------------
+ The Tangent of an angle is defined as the ratio of the length of the side
+opposite the angle to the length of the side adjacent to it in a right
+angled triangle. 
+
+	ie             Opposite
+	    Tangent = ----------
+		       Adjacent
+
+  So in the above example, the Tangent of angle a is x/y.
+
+ tan is a recognised abreviation for the Tangent of an angle, so the
+Tangent of angle a would be expressed 
+
+	tan (a) = x/y
+
+ Polar Coordinates
+ *****************
+
+ Any point plotted in the cartesian plane can be defined by it's x and y
+coordinate. This is often used to plot points on the screen. There is an
+alternative method of defining the position of a point known as the points
+polar coordinate.
+
+ Figure 2
+ --------
+ Rectangular and Polar Coordinates
+
+			* (x,y)
+		       /.
+		      / .
+		     /	.
+		    /	.
+		   /	.
+		  /	.
+		 /	.
+	       r/	.y
+	       /	.
+	      /		.
+	     /		.
+	    /		.
+	   /		.
+	  /		.
+	 / þ	       _.
+        /.............|..
+ Orogin		x
+
+ The cartesian coordinate of the point denoted by the asterix is (x,y)
+
+ The polar coordinates of the point are rþ where r is the distance from the
+orogin and þ is the angle made with the horizontal measured in an anti
+clockwise direction.
+
+ Converting from one system of coordinates to the other is very straight
+forward, for instance given a point (x,y) the polar coordinates are
+calculated as follows using the basic trig identities:
+
+			   2     2
+		r = sqr ( x  +  y  )	sqr being the square root of.
+
+		þ = arctan ( y/x )	arctan is the inverse Tangent.
+
+
+ From the Polar form, the rectangular coordinates can be calculated as
+follows:
+
+		x = r cos( þ )			  ----- (eq1)
+
+		y = r sin( þ )			  ----- (eq2)
+
+ Some Trig Formulae
+ ******************
+
+ I am not going to prove the following, just take them as gospel.
+
+ sin( A+B ) = sin( A )cos( B ) + cos( A )sin( B ) ----- (eq3)
+ sin( A-B ) = sin( A )cos( B ) - cos( A )sin( B ) ----- (eq4)
+
+ cos( A+B ) = cos( A )cos( B ) - sin( A )sin( B ) ----- (eq5)
+ cos( A-B ) = cos( A )cos( B ) + sin( A )sin( B ) ----- (eq6)
+
+ Rotating About The Orogin
+ *************************
+
+ First let me remind you that a posotive angle represents a rotation in an
+anti clockwise direction. Suppose we wish to rotate a point (x,y) about the
+orogin by through an angle ø. How do we calculate the position of the point
+after rotation?
+
+ Well the easiest way of following this through is by considering the polar
+coordinates of the point, suppose these are r and þ respectively. The
+rotation causes the angle of the point to change from þ to þ+ø. So the
+rotation can be expressed as follows:
+
+  ( r,þ ) rotated through angle ø around the orogin :--> ( r,þ+ø )
+
+ Now by converting the new polar coordinate of the point into rectangular
+coordinates we will obtain values easy to plot:
+
+	X = r cos( þ+ø )			 -----(eq7)
+	Y = r sin( þ+ø ) 			 -----(eq8)
+
+ We do not really want to have to calculate the angle þ or the distance r,
+so they must be eliminated from the equations. We first use equations 3 and
+5 stated above ( denoted as (eq3) and (eq5) ) to expand equations 7 and 8:
+
+	X = r.cos( þ ).cos( ø ) - r.sin( þ ).sin( ø ) -----(eq9) 
+ 
+	Y = r.sin( þ ).cos( ø ) + r.cos( þ ).sin( ø ) -----(eq10)
+
+ We know that  x = r.cos( þ )  and that  y = r.sin( þ ), these can be
+rewritten as:
+
+	        x			y
+	r =  --------		r =  --------
+	     cos( þ )		     sin( þ )
+
+ These expressions for r can be substituted into equations 9 and 10:
+
+         x                             y
+ X = -------- . cos( þ ).cos( ø ) - -------- . sin( þ ).sin( ø )
+     cos( þ )			    sin( þ )
+
+         y                             x
+ Y = -------- . sin( þ ).cos( ø ) + -------- . cos( þ ).sin( ø )
+     sin( þ )			    cos( þ )
+
+ All that now remains is to tidy up the expressions:
+
+		X = x.cos( ø ) - y.sin( ø )
+
+		Y = y.cos( ø ) + x.sin( ø )
+
+ The above two equations give the position of a point after rotation about
+the orogin given only the initial position of the point and the angle of
+rotation! This is a basic 2D rotation.
+
+ 3D Rotations
+ ************
+
+ Rotation about a point in 2D is equivalent to rotation about a line in 3D,
+take my word for it. Rotating about the orogin in a 2D system is equivalent
+to rotating about the Z axis in a 3D system since the z coordinate will not
+be changed by the rotation.
+
+ So to determine the rotation about the other two axis we follow the same
+technique as outlined above. Oh no we don't, we substitute into the
+equations we have already formed as this saves all the repetition!
+
+ Below is the best I could do to illustrate the three coordinate axis used
+in the 3D system. When dealing with each pair of axis in turn, refer back
+to this figure to help visualise whats going on.
+ 
+		|y
+		|   /z
+		|  /
+		| /		
+      ----------*----------
+     -x	       /|         x
+	      /	|
+	     /	|
+	  -z/	|-y
+
+
+ About Z Axis
+ ------------
+		|y
+		|
+		|
+		|		
+      ----------+----------
+     -x		|         x
+		|
+		|
+		|-y
+
+ The Z Axis passes through the orogin on the above figure and is +ve going
+into the screen, -ve coming out of it. We have already derived the
+equations for this rotation:
+
+		X = x.cos( ø ) - y.sin( ø )
+
+		Y = y.cos( ø ) + x.sin( ø )
+
+ About Y Axis
+ ------------
+		|z
+		|
+		|
+		|		
+      ----------+----------
+     -x		|         x
+		|
+		|
+		|-z
+
+ The Y Axis passes through the orogin on the above figure and is +ve going
+into the screen, -ve coming out of it. We derive the equations required by
+substituting y=z in the original pair of rotation equations:
+
+		X = x.cos( ø ) - z.sin( ø )
+
+		Z = z.cos( ø ) + x.sin( ø )
+
+ About X Axis
+ ------------
+		|y
+		|
+		|
+		|		
+      ----------+----------
+     -z		|         z
+		|
+		|
+		|-y
+
+ The X Axis passes through the orogin on the above figure and is +ve going
+into the screen, -ve coming out of it. To derive the equations for the
+rotation we 
+
+		Z = z.cos( ø ) - y.sin( ø )
+
+		Y = y.cos( ø ) + z.sin( ø )
+
+
+ Combining Rotations
+ -------------------
+
+ The equations given above will allow you to calculate the position of a
+point after a rotation about ONE of the axis. In general you will want your
+object to be rotating around all three axis at different rates for the
+best wibbly wobbly effect. There is a convention to follow here: rotate
+around the Z axis first, then the Y Axis and finally the X Axis.
+
+ Things are a little more involved as you require a z coordinate, this just
+represents the distance 'into' the screen and is only used to calculate the
+perspective factor or to order a set of bobs if rendering bob anim. You can
+ignore the z coordinate as far as positioning the point is concerned.
+
+ The rotations when applied in the order suggested give rise to the
+following sequence of events:
+
+ (x,y,z) --- Rz --> (x1,y1,z) --- Ry --> (x2,y1,z1) --- Rx --> (x2,y2,z2)
+
+ If the point was originaly displayed at (x,y) on the screen, it will be
+displayed at (x2,y2) after all three rotations ( remember you can ignore
+the z component if you are not concerned with perspective or bob ordering ).
+
+ You must include the z coordinate in the calculation, but it is not used
+when plotting to the screen.
+
+ Implementing Sine and Cosine In Code
+ ************************************
+
+ In order to be able to work out the position of a point after a given
+rotation, you must be able to calculate the Sine and Cosine of the angles
+of rotation. Some thought needs to be given to this as using the maths
+libraries would slow your code down to a disasterous pace. What is needed
+is a means of approximating the sine function from assembler.
+
+ Normally, the smallest angle we will be interested in is 1 degree. Fractions
+of a degree would be to difficult to manipulate. So we could build a table of
+the sines of all angles between 0 and 360 degrees ( the Sine function is 
+periodic and repeats itself every 360 degrees ). This would look something
+like:
+
+SinTable	dc.w		0,0.0175,0.0349,0.0523,0.0698,......
+
+ See the problem? The sines themselves are fractions and this will cause an
+error. To get around this, we can multiply each Sine by a constant, a very
+large constant, and forget the fractional part. A good constant to use is
+16384 (2^14). Why? well to convert any result generated using our beefed up
+sine value we must divide it by 16384. Dividing is slow and better replaced
+by shifting if possible, to divide by 16384 just shift right 14 times.
+
+ This method will generate integer results that are very close to the correct
+result, but much faster to achieve. An example:
+
+		150 x Sin (60) = 129.904	( Sin (60) = 0.8660 )
+
+ Our Sine table will contain the sine of 60 degrees multiplied by 16384, or
+14189. Taking the calculation one step at a time then:
+
+		150 x Sin (60)
+
+	     =  150 x 14189
+
+	     =  2128344
+
+Now divide the result by 16384:
+
+		150 x Sin (60) = 2128344 / 16384
+
+			       = 130
+
+ See what I mean, not a bad estimate.
+
+ So what about the Cosine then? Well, that's easy since as we all know
+
+	Cos (x) = Sin (x+90)
+
+so to get the Cosine of an angle, add 90 to it and read the Sine. This also
+means only one table is needed to calculate both Sine and Cosines. In fact,
+if ever needed, the tangent of an angle can also be approximated using this
+table since
+
+		  sin (x)
+	tan (x) = -------
+		  cos (x)
+
+ The Code
+ ********
+
+ Well on disc 2 ( and 1->4 compact ) I used the above principles to implement
+2D rotation of a stick man. Not that good, but the code was mine. These days
+I prefer to use a routine I found by a guy called Shadow. The routine works
+on a set of coordinates as apposed to just one coordinate, so only needs to
+be called once to rotate all the verticies in an object. I have added a few
+bits of my own to the routine to implement an add angle after each rotation,
+this can be used to generate effects seen most demos where an object spins 
+around in an eccentric fashion.
+
+ A word of warning about the rotate subroutine, it corrupts just about every
+register available. Save what you need prior to calling it!!! The routine can
+be found on this disc along with example source.
+
+ Footnote -- Homogeneous Matracies For 3D Rotations
+ **************************************************
+
+ No explanation with these I'm afraid, just to say the forth coordinate is
+a scaling factor and should be set to 1 if you do not wish to be continualy
+dividing ( time wasting ) the other ordinates.
+
+	 _                                   _
+	|				      |
+	|      1         0         0       0  |
+ Rx =	|      0      cos(a)   -sin(a)     0  |
+	|      0      sin(a)    cos(a)     0  |
+	|      0         0         0       1  |
+        |_				     _|
+
+	 _                                   _
+	|  				      |
+	|   cos(b)       0      sin(b)     0  |
+ Ry =	|      0         1         0       0  |
+	|  -sin(b)       0      cos(b)     0  |
+	|      0         0         0       1  |
+        |_				     _|
+
+	 _                                   _
+	|				      |
+	|   cos(c)    sin(c)       0       0  |
+ Rz =	|  -sin(c)    cos(c)       0       0  |
+	|      0         0         1       0  |
+	|      0         0         0       1  |
+        |_				     _|
+
+
+ Where a, b and c are the angles of rotation about the X, Y and Z axis
+respectively. I can supply further matracies for translation, scaling and
+perspective ( I new the notes would come in handy one day! ) if anyone
+wants them.
+
+ Confused? So was I at first!
+
+			Have fun, Mark.

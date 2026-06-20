@@ -1,0 +1,74 @@
+
+                    SELCO Source Optimizer 1.0
+                   ----------------------------
+
+Der Source Optimizer 1.0 ist Public Domain.
+Keine Veränderungen, keine kommerzielle Nutzung,
+kein Verkauf für mehr als 5.- DM
+
+Die Weitergabe ist nur komplett gestattet, d.h. englische und deutsche Dokumen-
+tation sowie das Programm sourcopt.
+
+Der SELCO Source Optimizer ist ein kleines Utility zur Optimierung von Assem-
+blerprogrammen. Nun haben zwar die meisten Assembler bereits eine Optimierungs-
+funktion eingebaut, aber meiner Meinung nach hat dieses Verfahren einen 
+entscheidenden Nachteil. Wenn man als Programmierer sein Programm mit einem
+Debugger oder Monitor zum Laufen bringen will, sieht man dort einen Code, der
+sich auf Grund der (automatischen) Optimierung des Assemblers mehr oder weniger 
+von dem ursprünglich geschriebenem Programm unterscheidet. Deshalb erschien es
+sinnvoll ein Programm zu schreiben, das eine Optimierung im Quellfile, also vor
+der Assemblierung vornimmt. Auf diese Weise erhält man ein kurzes und schnelles
+Assembler-Programm, das sich nach dem Assemblieren nur wenig vom Original unter-
+scheidet.
+
+Benutzung des SELCO Source Optimizers
+
+Das Programm muß vom CLI oder der SHELL gestartet werden. Eine Hilfestellung
+erhält man durch Eingabe von 'sourcopt'.
+Die Syntax ist dabei Folgende:   'sourcopt InputFile OutputFile / Flags'
+Zwischen allen Teilen der Kommandozeile müssen Leerzeichen stehen.
+Für OutputFile ist ein anderer Name als für InputFile zu wählen. Es ist
+wenigstens ein Flag anzugeben. Zwischen den Flags müssen ebenfalls Leerzeichen
+stehen.
+gültige Flags sind:
+a - ändert move.l #x,Dn     -> moveq #x,Dn wenn x 0...127 (x dez bin oder hex)
+b - ändert move.l #Label,An -> lea Label(pc),An
+c - ändert move.l Label,... -> move.l Label(pc),...
+d - ändert move.l #0,An     -> suba.l An,An               (0 dez bin oder hex)
+
+Im Falle einer fehlerhaften Eingabe wird die Hilfestellung angezeigt.
+
+Die Arbeitsweise des SELCO Source Optimizer 1.0
+
+Der Source Optimizer sucht zuerst alle Label im Programm. Auf diese Weise kann 
+dann später zwischen Labels und Konstanten unterschieden werden. Als Label wird
+ein Text erkannt, der in der ersten Spalte beginnt und dem kein '=', 'equ' oder
+'macro' folgt. Kommentare werden natürlich nicht bearbeitet. Als Kommentar 
+werden Zeilen oder Teile von Zeilen gewertet, die mit ';' oder '*' beginnen.
+In einer geänderten Zeile wird nur das alte Kommando durch das neue ersetzt, 
+Labels, Konstanten und Kommentare bleiben unberührt. Während des Programm-
+laufes wird die gerade bearbeitete Zeile und im Pass 1 die Anzahl der gefundenen
+Labels und im Pass 2 die Anzahl der optimierten Zeilen und die dabei gesparten
+Bytes angezeigt.
+
+Der Source Optimizer nimmt keinen Syntax-Test vor sondern geht bei seiner Ar-
+beit von korrekter Syntax aus. Man sollte deshalb vorher einen Probelauf mit 
+seinem Assembler vornehmen.
+
+Hinweise, Fehlerbeschreibungen usw. bitte an folgende Adresse:
+
+                          SELCO
+                          Alexander Fritsch
+                          Hafenstr. 20
+                          O-2355 Saßnitz/Rg
+                          Deutschland
+
+P.S. Der SELCO Source Optimizer wurde mit M. Dillons DICE Compiler übersetzt.
+     (Demo-Version) Ich hoffe, daß die Vollversion in den nächsten Wochen bei
+     mir eintrifft. Vielen Dank an M. Dillon für dieses großartige Programm.
+       
+                                        Saßnitz, den 9.11.92   A. Fritsch                                
+ 
+ 
+ 
+

@@ -1,0 +1,36 @@
+****************************************************************************
+*
+*			BumpRev  v1.0
+*
+*	(C) Copyright 1991 by Torsten Jürgeleit
+*
+*		THIS IS TRULY PUBLIC DOMAIN!
+*
+****************************************************************************
+
+	This program is a completely rewritten version of DoRevision
+	(Fish 325) from	Olaf Barthel.
+
+
+Differences to DoRevision:
+
+	It now can be used for assembler source files too, because BumpRev
+	examines the file extension ('.c' or '.h' for C sources and '.asm'
+	or '.i' for assembler sources).
+	The size of the executable was reduced to 3.7 kb, but now the
+	program is NOT portable anymore - it uses the ARP library and only
+	three functions from c.lib (strrchr, strcpy and strlen).
+	In this version the current day, date and time strings are
+	generated with the function StampToStr from ARP library and it
+	does not require DClock.
+
+
+Author:	Torsten Jürgeleit
+	Am Sandberg 4
+	W-5270 Gummersbach
+	Germany
+	Phone: ++49 2261 27400
+
+	Bug reports, flames, donations etc. are welcome !
+	I may be reached via eMail: mike@miba.obb.sub.org
+	Since this is a neighbour, it may take some time to answer :)

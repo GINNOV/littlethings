@@ -1,0 +1,22 @@
+Short:     A GUI for accessing the clipboard device, source included.
+Uploader:  jimbot@frontiernet.net (Jim Steichen)
+Author:    jimbot@frontiernet.net (Jim Steichen)
+Type:      dev/c
+Requires:  68020+, V3.1+ Amiga OS or PowerPC & AmigaOS4+
+Version:   2.0
+
+ClipIt! is a GUI that allows the User to access the Clipboard system in 
+AmigaDOS.  It was created with GadToolsBox V2.0b & the SAS-C Compiler 
+V6.58.  The Program was re-written to use gcc V3.4.4 & works on the AmigaOne
+PowerPC & AmigaOS4.  The classic version can no longer be tested by me
+(sorry about that).  The source code can be used & modified as long as you acknowledge
+the original Author.  You need the functions in CommonFuncs.o in order to
+re-compile this program.  Very few non-ANSI functions were used to make 
+this program, specifically stci_d(), which is an Integer to ASCII convertor
+function from the SAS-C link library (this does not apply to the PowerPC
+version!).  Only FTXT & ILBM clip types are recognized by the program (what
+other kinds are there??).
+
+WARNING:  There might still be some bugs in this program, so only use it on
+          copies of your clips!
+

@@ -1,0 +1,11 @@
+Short:        CAMD developer kit for MorphOS
+Author:       Ilkka Lehtoranta (ilkleht@yahoo.com)
+Uploader:     Ilkka Lehtoranta (ilkleht@yahoo.com)
+Type:         dev/c
+Version:      37.1
+Architecture: ppc-morphos
+
+CAMD -- Commodore Amiga MIDI Driver -- is the standard MIDI API for Amiga.
+
+This CAMD developer kit is for MorphOS. Archive contains standard header
+files (fd, clib, proto etc) but documentation youmust download separately.

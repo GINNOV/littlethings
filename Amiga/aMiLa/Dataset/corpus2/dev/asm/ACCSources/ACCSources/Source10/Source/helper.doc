@@ -1,0 +1,118 @@
+							22.2.91
+
+     			HELPER DOCUMENT
+		       --------------------
+
+					By Raistlin
+ General
+---------
+I wrote helper so that while I am programing I can quickly check ASCII codes,
+the copper set, DMA addresses etc. So it is designed to be run while you are
+running DEVPAC. While I am writing this doc helper is running in the
+background. The only fault is that it seems to be slowing the system down. to
+make this a smaller program give it less processor time (you should be able to
+do this with the CLI command Taskpri or some other such program.
+
+For those of you that got ACC 9 (if you didnt buy a copy,get it from 
+Amiganuts now,its got some ace stuff on),you may be wondering what happened
+to the Glossary,& trouble shooting section. I scraped these sections for two
+reasons:-
+i)They took up too much memory (Helper is already very big!)
+ii)Glossary was not really relevant (not for coding anyway)
+However as a consilation I have added a table of DMA registers & installed
+the control sequence section. If you want the trouble shooting info check
+my refernece doc. (not yet complete).
+
+You will also notice that FKEYs are used. Much better than ie Q, V etc.
+
+If you check the source you will notice that I have commented on Ricks part
+of the source, if something is commented wrongly then sos!
+
+ The sections
+--------------
+
+ASCII TABLE   -What it says. Not all ASCII is here but the most common is.
+
+GURU HELP   -Documentation to help you find that bug that keeps causing guru.
+
+COPPER ISET -A quick glance guide to the copper instruction set, for hardware
+	   level programers.
+
+DOS.LIB     -I included this for those programers that use function offsets
+	   (like me) instead of labels. Initialy for HEARWIG! Note I will
+	   not be documenting EXEC,INTUITION etc!!
+
+68000 HELPER    -Mark let us all down! What happened to 68000 helper? Anyway
+ 	      I decided one would be useful (this section by HEARWIG)
+
+ADDRESSING MODES -For those beginners who have not quite gotten to grips
+	        with the 68000 addressing modes & experts who forget!!
+
+MEMORY MAP      -simply a table detailing the different sections of memory
+	      of the Amiga (i.e. Chip, DMA, reserved etc)
+
+DMA REGISTERS   -This is the bonus one. It lists every single DMA register.
+   	       Usefull when looking at code with the register address' used
+	       instead of labels etc.
+
+CONTROL SEQUENCES -How to change text colout, write in italic, etc.
+
+QUIT	        -Quits, after writing a little message to CLI (orr!)
+
+ Notes
+-------
+Pressing the right mouse button scrolls/exits current screen. At first the
+LMB was used but that meant you couldnt move the window! Then L&RMB where
+used. However this felt to uncomfortble. Finally (at last!!) RMB was used
+
+
+Dont know if I've mentioned this else where but here are the changes
+1. Prints to CLI on exit
+2. No DOS error on exit (didnt think there was any harm done though!)
+3. FKEYS used!
+4. Source cleaned-up (just for you!)
+5. Added DMA register table
+6. Added Control sequece table
+7. Altered greets!!!
+8. ermed!!
+
+
+ Closing notes
+---------------
+68000 helper was about to be scraped. However Mark asked me to finish it. I
+did (3 hours of work!) I hope Mark uses it on ACC10/11.
+
+I would like to be able to scroll the text up/down. Mybe in V1.1?
+
+I would like to make helper V2. Using intution (better presentation) & make
+it a hardware specific helper. If anybody thinks this is a good idea tell
+me! It would encourage me to write it!!
+
+Helper was written for ACC. Feel free to alter it, add to it & generaly
+disect it! 
+
+Finaly thanks to:- Hearwig (Rick Sandiford) for writting the 68000 helper
+& addressing modes. Without Rick, Helper would never have got past the
+scrap paper (drawing board?). Mark Meany for produciong THE best coding
+mag, its the best piece of PD there is! (licenceware, sorry!). Miked Cross,
+Your tutorials are brill! I can know scroll (see my scrolly piccy if its
+used!), use the blitter (at last!!) & generaly abuse the hardware. The
+guy that writes the reference material (oops forgot his name, is it Dave
+Edwards?), Nipper (yep I got the idea for helper from Squidkick, hope you
+dont mind.). And finally everyone that contributes to this utterly brill
+disk mag!!!
+
+(With regards to Leon's comment about this LICENCED disk,see readme file),Ray.
+
+
+	HOPE I'VE NOT FORGOTTEN OWT. YES I HAVE!!
+
+Thanks AMIGA for being THE BEST!!
+
+			Raistlin............(Enjoy!) 
+
+Please send bug reports to (wot bugs?) LEON SKELDON (Raistlin)
+			         55 CHESTER ROAD
+			         POYNTON
+			         CHESHIRE
+			         MARS   > (joking)

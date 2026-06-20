@@ -1,0 +1,13 @@
+Short:    AmigaGuide Designer (C source)
+Author:   michael@weiser.saale-net.de
+Uploader: karibu@gmx.net
+Type:     dev/src
+Kurz:     AmigaGuideDesigner (C Source)
+
+This is a very large and unfinished AmigaGuide designer done with
+SAS/C. Executables also included. If you have questions, then mail to
+Michael Weiser <michael@weiser.saale-net.de>.
+
+This program is explicitly placed under the GNU General Public License.
+Do with it whatever you want, especially further development, as long
+as it stays free.

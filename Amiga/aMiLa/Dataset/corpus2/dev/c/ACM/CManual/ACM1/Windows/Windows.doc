@@ -1,0 +1,1095 @@
+2    WINDOWS
+
+2.1  INTRODUCTION
+
+Windows are rectangular boxes which can be as big as the screen
+or only 1 pixel wide. They can be resized, moved around on the
+screen, put in front or behind other windows and so on. All
+this is taken care of Intuition, and your program does not even
+need to know about it if you do not want.
+
+The aim with Windows is to make the communication between the
+user and the computer as easy as possible. Windows gives the
+user a structured display which is easy to understand. It also
+allows the user to interact with the programs through graphics
+symbols (gadgets) which can be connected to the windows. (See
+chapter 4 GADGETS for more information about gadgets.)
+
+Windows are working close together with screens, since the
+screen's resolution etc affects the way the windows are drawn.
+Moving a screen will also result in moving all the windows
+connected to that screen.
+
+
+
+2.2  SPECIAL WINDOWS
+
+The normal windows are rectangular boxes with a border around.
+However, there exist some special types of windows:
+
+
+
+2.2.1  BACKDROP WINDOWS
+
+Backdrop Windows will always be behind any other windows. This
+allows you to have a window in the bottom of the display, and
+it will stay there, even if the user is using the "depth-
+arrange gadgets".
+
+Backdrop Windows differ from other windows since:
+
+- It will always open behind all other windows, including other
+  already opened Backdrop Windows.
+
+- The "close-window gadget" is the only System Gadget you can
+  attach to a Backdrop Window. (You can of course attach your
+  own gadgets as usual.)
+
+- It will always be behind of any other windows. 
+
+The Backdrop Window is very handy when you want to have a
+bottom drawing (for example your main display), with some tools
+etc on top of the bottom window. This allows the user to move
+around your tools as he/she wants without needing to worry
+about hiding the windows behind the main display.
+
+Drawing into a Backdrop Window instead of the screen itself is
+very common since you can then not draw anything at the wrong
+moment. If a menu (See chapter 5 MENUS for more information) is
+displayed, the drawing routines will wait automatically, and
+will therefore not destroy the menu, as it would have happened
+if you were drawing directly into the screen.
+
+
+
+2.2.2  BORDERLESS WINDOWS
+
+Borderless windows are as normal windows except that they
+(surprise, surprise) do not have any borders. It is very common
+to combine a Borderless window with a Backdrop window, to cover
+a screen.
+
+It can be confusing for the user if a Borderless window does
+not cover the entire display, since he/she will not be able to
+see where the window's edges are. It is therefore normally
+best to make a Borderless window as big as the screen.
+
+
+
+2.2.3  GIMMEZEROZERO WINDOWS
+
+A Gimmezerozero Window is as a normal window, except that it
+consist of two drawing areas: one Outer and one Inner window.
+The Outer window is used for displaying the borders, system
+gadgets etc, while the Inner window is only used by yourself.
+
+If you are drawing into a normal window you need to start some
+pixels down/out (11, 1), so you don not draw into the borders
+etc. However, if you are drawing into a Gimmezerozero Window
+you do not need to make any adjustments. The top left corner of
+your inner window is always at the position (0,0).
+
+Gimmezerozero Windows are therefore very handy if you want to
+make a lot of drawings, without wanting to worry about the
+borders. The disadvantages is that it takes more memory and
+processing time than a normal window.
+
+
+
+2.2.4  SUPERBITMAP WINDOWS
+
+If you are using a SuperBitMap Window you allocate display
+memory yourself for the window instead of letting Intuition
+take care of it. The advantage is that you can define a larger
+drawing area then the size of the window. You can then scroll
+the drawing area inside the window. A good example of this are
+the demo programs that followed with you Workbench disk when
+you bought your computer.
+
+It normally best to combine a SuperBitMap Window together with
+a Gimmezerozero Window. The borders etc will then NOT be drawn
+into your SuperBitMap, and will instead be drawn in the Outer
+window. This allows you to make whatever you want with the
+inner window without destroying any borders etc.
+
+
+
+2.3  SYSTEM GADGETS
+
+The System Gadgets enables the user to move the window, resize
+it, push it behind other windows etc, without your program even
+knowing about it. The System Gadgets are controlled by
+Intuition, and are always looking the same. The only thing you
+need to do is to tell Intuition which gadgets you want, and the
+rest is done for you.
+
+The five System Gadgets are placed like this:
+
+ 1       2       3  4
+[*][***********][*][*]
+|                    |
+|       WINDOW       |
+|                    |
+|                    |
+|__________________[*]
+                    5
+
+1  Close Gadget. Press this to close the window. (This is the
+   only System Gadget which your program have to respond to.
+   Your program will be told that the user has clicked on the
+   Close Gadget, but you need to close the window yourself by
+   calling the function CloseWindow().)
+
+2  Drag Gadget. Pressing the left mouse button somewhere on it
+   and move the mouse while the button is still pressed, will
+   move the window. If your window has a title it will be
+   displayed over the Drag Gadget, but will not interfere with
+   it.
+
+3  Depth-Arrangement Gadget BACK. Clicking on this gadget will
+   push the window behind all other windows.
+
+4  Depth-Arrangement Gadget UP. Clicking on this gadget will
+   put the window in front of all other windows.
+
+5  Sizing Gadget. Pressing the left mouse button somewhere on
+   it and move the mouse while the button is still pressed,
+   will change the size of the window.
+
+
+
+2.4  REDRAWING THE WINDOW DISPLAY
+
+Since windows can be dragged around the screen it is very
+common that they sometimes overlap each other. If the user is
+then moving away the top window, the bottom window has to be
+refreshed.
+
+There exist two methods of redrawing the window:
+- Simple Refresh. Intuition will only tell you that you need
+  to refresh it, and your program has to redraw everything
+  itself.
+- Smart Refresh. Intuition saves the oscured pieces, and
+  replaces them automatically. Needs more memory than Simple
+  Refresh, but redraws the display much faster.
+
+If you have a SuperBitMap Window, you have allocated the
+display memory yourself, and your window will therefore not be
+destroyed by other windows.
+
+If you change the size of a Simple Refresh Window, or it is
+reveled after having been overlapped, Intuition will tell you
+that you need to refresh the window. A Smart Refresh Window
+will only ask you to redraw its display if you enlarged it.
+
+The IDCMP message "REFRESHWINDOW" tells you that the window
+needs to be refreshed. (See chapter 8 IDCMP for more about
+IDCMP flags.)
+
+IMPORTANT! If your program receive a REFRESHWINDOW message you
+must call the functions BeginRefresh() - EndRefresh():
+
+- BeginRefresh() will make the redrawing as fast as possible.
+  Only the destroyed pieces of the window will be refreshed.
+
+- EndRefresh() tells Intuition that you are finished with the
+  redrawing.
+
+If you receive a REFRESHWINDOW message and you do not want to
+redraw the display, you should still call the two functions.
+This will clear up the system and reorganize the Layer Library.
+
+
+
+2.5  INITIALIZE A WINDOW
+
+Before you can open a window you need to initialize a NewWindow
+structure which look like this:
+
+struct NewWindow
+{
+  SHORT LeftEdge, TopEdge;
+  SHORT Width, Height;
+  UBYTE DetailPen, BlockPen;
+  ULONG IDCMPFlags;
+  ULONG Flags;
+  struct Gadget *FirstGadget;
+  struct Image *CheckMark;
+  UBYTE *Title;
+  struct Screen *Screen;
+  struct BitMap *BitMap;
+  SHORT MinWidth, MinHeight;
+  SHORT MaxWidth, MaxHeight;
+  USHORT Type;
+};
+
+LeftEdge:     Initial x position of the window.
+
+TopEdge:      Initial y position of the window.
+
+Width:        Initial width of the window. If the window is
+              connected to a high-resolution screen, it can be
+              anything between 1 and 640. Otherwise (low-
+              resolution screen) it can be between 1 and 320.
+
+Height:       Initial height of the window. Can be anything
+              between 1 and the height of the screen.
+
+DetailPen:    The colour register used to draw the text with.
+
+BlockPen:     The colour register used for block fills etc.
+
+IDCMPFlags:   See chapter 8 IDCMP for a list and explanations
+              of the flags.
+              
+Flags:        If you want any System Gadgets, a special window
+              (Borderless, Backdrop etc), you set the desired
+              flags:
+
+              System Gadgets:
+
+              WINDOWCLOSE
+                This will put the Close Gadget into the top
+                left corner of your window. (Remember that this
+                is the only System Gadget your program need to
+                response to. Intuition will simply inform you
+                that the user wants to close the window, but
+                you need to close the window yourself by
+                calling the CloseWindow() function.
+
+              WINDOWDRAG
+                This makes the whole title bar into a gadget,
+                which allows the user to move around the
+                Window.
+
+              WINDOWDEPTH
+                If you want that the user should be able to
+                push the window in front, or behind all other
+                windows you set this flag. The gadgets (to the
+                back and to the front) will be placed in the
+                top right corner of the window.
+
+              WINDOWSIZING
+                This enables the user to resize the window as
+                desired. (You can specify the maximum and
+                minimum size of the window by setting the
+                MinWidth/MinHeight/MaxWidth/MaxHeight
+                variables)
+                
+                The Size Gadget will be placed in the right
+                border as default (SIZEBRIGHT), but can also be
+                put in the bottom border (set the flag 
+                SIZEBOTTOM) if you want the window display to
+                be as wide as possible.
+
+
+              Special Windows:
+              
+              BACKDROP
+                Set this flag if you want a Backdrop Window.
+
+              BORDERLESS
+                Set this flag if you want a Borderless Window.
+
+              GIMMEZEROZERO
+                Set this flag if you want a Gimmezerozero
+                Window.
+
+              SUPER_BITMAP
+                Set this flag if you want a SuperBitMap Window.
+                (If you are going to use your own allocated
+                BitMap you also need to set the BitMap variable
+                to point to your BitMap structure. Explained
+                later in this chapter.)
+
+
+              Refreshing Flags. If you do not use a SuperBitMap
+              Window you need to set one of these two flags:
+
+              SIMPLE_REFRESH
+                Your program must redraw the display itself.
+
+              SMART_REFRESH
+                Intuition will automatically redraw the display
+                if necessary. It is only when the user make the
+                window bigger you need to redraw the display
+                yourself.
+
+
+              Other flags:
+
+              REPORTMOUSE
+                Set this flag if you want to receive the pointer
+                movements as x,y coordinates. (See chapter 8
+                IDCMP for more information.)
+
+              NOCAREREFRESH
+                Set this flag if you do not want to receive any
+                messages telling you to redraw your window.
+
+              RMBTRAP
+                Set this flag if you do not want that the user
+                to be able to access any menus while this
+                window is active. (If you want that the right
+                mouse button on the mouse should be used for
+                something else than menu operations, you
+                should set this flag. See chapter 8 IDCMP for
+                more information.)
+
+              ACTIVATE
+                Set this flag if you want the window to become
+                active when it is opened. The user can of
+                course activate some other window later if
+                he/she wants. (Clicking inside a window will
+                activate it, and all input will go to the new
+                active window. All other widows will become
+                inactive, and their title bars will become
+                "ghosted".)
+
+FirstGadget:  A pointer to the first Gadget in your list, or
+              NULL if you do not have any own gadgets connected
+              to the window. (See chapter 4 GADGETS for more
+              information about gadgets.)
+
+CheckMark:    A pointer to an Image structure (See chapter 3
+              GRAPHICS for more information about Image
+              structures) which will be used for selected menus
+              items. (See chapter 7 MENUS for more information
+              about menus.) If no pointer is given (NULL)
+              Intuition will use the default checkmark.
+
+Title:        A pointer to a NULL-terminated string that will
+              be used as window's title. The string will appear
+              on the title bar, at the top of the window.
+
+Screen:       A pointer to your Custom Screen, or NULL if the
+              window should be connected to the Workbench
+              Screen. (If the window is connected to the
+              Workbench Screen set the Type variable to
+              WBENCHSCREEN, otherwise set it to CUSTOMSCREEN.)
+
+BitMap:       If you are going to use a SuperBitMap Window,
+              then you need to give Intuition a pointer to your
+              own initialized BitMap structure, otherwise write
+              NULL. (Remember to set the Flag SUPER_BITMAP, and
+              you should probably also make the window into a
+              Gimmezerozero Window.)
+
+If you have asked for the System Gadget WINDOWSIZING you need
+to decide the minimum/maximum size of your window, otherwise
+you can ignore these variables. If any variable is set to zero
+the initial size (Width/Height) will be used as max/min size:
+
+MinWidth:     Minimum width of the window.
+
+MinHeight:    Minimum height of the window.
+
+MaxWidth:     Maximum width of the window.
+
+MaxHeight:    Maximum height of the window.
+
+Type:         If your window should be connected to the
+              Workbench Screen you write WBENCHSCREEN,
+              otherwise you write CUSTOMSCREEN. (If you set
+              the CUSTOMSCREEN flag you need to give the Screen
+              variable a pointer to your already opened Custom
+              Screen.
+              
+              It is common that you declare and initialize the
+              NewWindow structure with your requirements,
+              except that you ignore (NULL) the Screen pointer.
+              You then open your Custom Screen, and first now
+              initialize the Screen pointer with the pointer
+              returned from the OpenScreen() function. (See
+              Example 2 for more information.)
+
+
+
+2.6  OPEN A WINDOW
+
+The procedure to open windows is very similar to open Custom
+Screens. The idea is that you declare a NewWindow structure
+(similar to NewScreen) and initialize it with the requirements.
+You then simply call the function OpenWindow() (similar to
+OpenScreen()) with your NewWindow structure, and the function
+returns a pointer to your Window structure. You will now not
+need the NewWindow structure any more (if you do not want to
+open more windows using the same structure of course).
+
+This is how you call the OpenWindow() function:
+
+my_window = OpenWindow( &my_new_window );
+
+my_window has been declared as:
+  struct Window *my_window;
+  
+my_new_window has been declared as:
+  struct NewWindow *my_new_window;
+  and has been initialized with your requirements.
+
+OpenWindow() will return a pointer to your Window structure. If
+it could not open the Window (for example, not enough memory)
+it will return NULL. Remember therefore to check what
+OpenWindow() returned:
+
+if( my_window == NULL )
+{
+  /* PANIC! Could not open the window */
+}
+
+
+
+2.7  WINDOW STRUCTURE
+
+Once you have opened the window you will receive a pointer
+(my_window) to a Window structure:
+
+struct Window
+{
+    struct Window *NextWindow;  /* Pointer to next window. */
+    SHORT LeftEdge, TopEdge;    /* Position of the window. */
+    SHORT Width, Height;        /* Size of the window. */
+    SHORT MouseY, MouseX;       /* Position of the pointer */
+                                /* relative to the top left */
+                                /* corner of the window. */
+    SHORT MinWidth, MinHeight;  /* Minimum/Maximum size of */
+    USHORT MaxWidth, MaxHeight; /* the window. */
+
+    ULONG Flags;                /* The window's flags. */
+
+    struct Menu *MenuStrip;     /* Pointer to the window's */
+                                /* first menu. */
+
+    UBYTE *Title;               /* The window's title. */
+
+    struct Requester *FirstRequest;
+    struct Requester *DMRequest;
+    SHORT ReqCount;
+
+    struct Screen *WScreen;     /* A pointer to the Screen */
+                                /* which the window is */
+                                /* connected to. */
+    struct RastPort *RPort;     /* The window's RastPort. */
+
+    BYTE BorderLeft, BorderTop, BorderRight, BorderBottom;
+
+    struct RastPort *BorderRPort; /* If your window is a */
+                                  /* Gimmezerozero this a */
+                                  /* pointer the the Outer */
+                                  /* window's RastPort. */
+
+    struct Gadget *FirstGadget;
+    struct Window *Parent, *Descendant;
+
+    USHORT *Pointer;            /* Data for the Pointer. */
+    BYTE PtrHeight;             /* Height of the pointer. */
+    BYTE PtrWidth;              /* Width of the pointer. */
+    BYTE XOffset, YOffset;      /* "Hot Spot" of the pointer. */
+
+    ULONG IDCMPFlags;           /* The IDCMP flags. */
+
+    struct MsgPort *UserPort, *WindowPort;
+    struct IntuiMessage *MessageKey;
+
+    UBYTE DetailPen, BlockPen;
+    struct Image *CheckMark;
+
+    UBYTE *ScreenTitle;         /* The title of the screen */
+                                /* which the window is */
+                                /* connected to. */
+
+    /* These are only used if you have opened a */
+    /* Gimmezerozero window: */
+    SHORT GZZMouseX; /* Position of the mouse relative to */
+    SHORT GZZMouseY; /* the inner window. */
+    SHORT GZZWidth;  /* Size of the inner window. */
+    SHORT GZZHeight;
+
+    UBYTE *ExtData;
+    BYTE *UserData;
+    struct Layer *WLayer;
+    struct TextFont *IFont;
+};
+
+
+
+2.8  OPEN A SUPERBITMAP WINDOW
+
+The difference in opening a normal window and a SuperBitMap
+window is that Intuition will allocate display memory for the
+normal window automatically, while a SuperBitMap window has to
+allocate the memory itself. However, it is actually not so
+hard as it may seem. You just need to follow these steps:
+
+1. Declare and initialize a NewWindow structure with your
+   requirements.
+   (Set the Flags = SUPER_BITMAP, and BitMap=NULL)
+
+   struct NewWindow my_new_window={ .... };
+
+
+2. Declare a BitMap structure:
+
+   struct BitMap my_bitmap;
+
+
+3. Initialize your own BitMap by calling the function:
+
+   InitBitMap( &my_bitmap, Depth, Width, Height );
+     &my_bitmap: A pointer to the my_bitmap structure.
+     Depth:      Number of bitplanes to use.
+     Width:      The width of the BitMap.
+     Height:     The height of the BitMap.
+
+
+4. Allocate display memory for the BitMap:
+
+   for( loop=0; loop < Depth; loop++)
+     if( (my_bitmap.Planes[loop] = AllocRaster( Width,
+       Height )) == NULL )
+     {
+       /* PANIC! Not enough memory */
+     }
+
+
+5. After you have allocated the display memory, it normally
+   best to clear the Bitplanes:
+
+   for( loop=0; loop < Depth; loop++)
+     BltClear(my_bitmap.Planes[loop], RASSIZE(Width, Height), 0);
+
+
+6. Make sure the NewWindow's BitMap pointer is pointing to your
+
+   BitMap structure:
+     my_new_window.BitMap=&my_bitmap;
+
+
+7. At last you can open the window:
+
+   my_window = OpenWindow( &my_new_window );
+
+
+8. Do not forget to close the window, AND deallocate the
+   display memory:
+
+   CloseWindow( my_window );
+
+   for( loop=0; loop < Depth; loop++)
+    if( my_bitmap.Planes[loop] )
+      FreeRaster( my_bitmap.Planes[loop], Width, Height );
+
+
+
+2.9  MAKE YOUR OWN CUSTOM POINTER
+
+Each window can have its individual pointer. When the window
+becomes active the pointer can change image. This makes it
+easier for the user to see which window is active, and can
+also give the user a hint about what the computer is doing.
+For example, a wordprocessor can have a pointer that looks
+similar to a pencil, and when the computer is busy, the pointer
+change to a little Zzz symbol.
+
+If your window is going to use a "custom" pointer you need to:
+  1. Allocate and initialize a Sprite data structure.
+  2. Use the function SetPointer() to change the window's
+     pointer.
+
+When you are going to make a new image for your pointer, you
+first need to sketch how it should look like. The pointer is
+actually a Sprite (See chapter 10 SPRITES for more information
+about Sprites), and can therefore be up to 16 pixels wide, and
+be as tall as you want. You may use 3 colours, and transparent.
+(Since the pointer is a Sprite (no. 0) it can move between
+different screens with different resolutions, without destroying
+the display.)
+
+A nice "arrow" pointer (16 pixels wide, 16 lines high) may look
+something like this:
+
+0000000200000000      0: Transparent
+0000002200000000      1: Red
+0000023200000000      2: Black
+0000231200000000      3: White
+0002311200000000
+0023111222222200
+0231111133333320
+2311111111111132
+0211111111111112
+0021111222221112
+0002111200023112
+0000211200023112
+0000021200023112
+0000002200023112
+0000000200023112
+0000000000022222
+
+You now need to translate this into Sprite Data. Each line of
+the pointer will be translated into two words of data. The
+first word represents the first Bitplane, and the second word
+the second Bitplane. The idea is that if you want colour 0 both
+Bitplane zero and one should be 0, if you want colour 1 Bitplane
+zero should be 1 and Bitplane one 0 and so on:
+
+Colour  Bitplane One   Bitplane Zero           Since
+------------------------------------------------------------
+  0           0              0         Binary 00 = Decimal 0
+  1           0              1            "   01 =    "    1
+  2           1              0            "   10 =    "    2
+  3           1              1            "   11 =    "    3
+
+The data for the pointer would then look like this:
+
+   Bitplane ZERO          Bitplane ONE
+
+0000 0000 0000 0000    0000 0001 0000 0000
+0000 0000 0000 0000    0000 0011 0000 0000
+0000 0010 0000 0000    0000 0111 0000 0000
+0000 0110 0000 0000    0000 1101 0000 0000
+0000 1110 0000 0000    0001 1001 0000 0000
+0001 1110 0000 0000    0011 0001 1111 1100
+0011 1111 1111 1100    0111 0000 1111 1110
+0111 1111 1111 1110    1100 0000 0000 0011
+0011 1111 1111 1110    0100 0000 0000 0001
+0001 1110 0000 1110    0010 0001 1111 0001
+0000 1110 0000 1110    0001 0001 0001 1001
+0000 0110 0000 1110    0000 1001 0001 1001
+0000 0010 0000 1110    0000 0101 0001 1001
+0000 0000 0000 1110    0000 0011 0001 1001
+0000 0000 0000 1110    0000 0001 0001 1001
+0000 0000 0000 0000    0000 0000 0001 1111
+
+The last step is to translate the binary numbers to base
+hexadecimal. Group the binary number in four and translate it
+to Hexadecimal:
+
+0000 =  0
+0001 =  1
+0010 =  2
+0011 =  3
+0100 =  4
+0101 =  5
+0110 =  6
+0111 =  7
+1000 =  8
+1001 =  9
+1010 =  A
+1011 =  B
+1100 =  C
+1101 =  D
+1110 =  E
+1111 =  F
+
+The result will look like this:
+
+  ZERO:    ONE:
+  ------------
+  0000    0100
+  0000    0300
+  0200    0700
+  0600    0d00
+  0E00    1900
+  1E00    31FC
+  3FFC    60FE
+  7FFE    c003
+  3FFE    4001
+  1E0E    21F1
+  0E0E    1119
+  060E    0919
+  020E    0519
+  000E    0319
+  000E    0119
+  0000    001F
+
+Since the Amiga need to store the position of the pointer, the
+size etc, you should also declare two empty words at the top,
+and to empty words at the bottom of the Sprite data. These
+words will be initialized and maintained by Intuition, so you
+do not need to bother about them.
+
+A declaration and initialization of a nice arrow as Sprite data
+for a pointer would therefore be: (A hexadecimal number as 3FFE
+will written in C be 0x3FFE.)
+
+UWORD chip my_sprite_data[36]=
+{
+ 0x0000, 0x0000, /* Used by Intuition only. */
+
+ 0x0000, 0x0100,
+ 0x0000, 0x0300,
+ 0x0200, 0x0700,
+ 0x0600, 0x0D00,
+ 0x0E00, 0x1900,
+ 0x1E00, 0x31FC,
+ 0x3FFC, 0x60FE,
+ 0x7FFE, 0xC003,
+ 0x3FFE, 0x4001,
+ 0x1E0E, 0x21F1,
+ 0x0E0E, 0x1119,
+ 0x060E, 0x0919,
+ 0x020E, 0x0519,
+ 0x000E, 0x0319,
+ 0x000E, 0x0119,
+ 0x0000, 0x001F,
+
+ 0x0000, 0x0000  /* Used by Intuition only. */
+};
+
+It is actually not so complicated once you got used to it, but
+to make the life a bit easier I have written some utilities
+which will help you with translating graphics to sprite data.
+See the TOOL drawer for more information.
+
+
+The last step is to call the function SetPointer() which would
+look like this:
+
+SetPointer( my_window, my_sprite_data, 16, 16, 0, -7);
+
+  my_window:      Pointer to the window.
+  my_sprite_data: Pointer to the Sprite Data.
+  16:             Height.
+  16:             Width. (Must be 16 or less!)
+  0:              XOffset, left side. (Position of the Hot Spot)
+  -7:             YOffset, 7 lines down.         -"-
+
+The "Hot Spot" is the pixel which should be the sensitive spot
+on the pointer. On the default pointer it is on the top left
+side, but on our custom pointer it should be on the left side
+(0), half way down (-7).
+
+To restore the default pointer you simply call the function
+ClearPointer():
+
+ClearPointer( my_window );
+
+
+Since you are going to use graphics data it is important that
+the data is placed in the Chip Memory. Chip Memory is the first
+512 KB of RAM, and the graphics routines in the Amiga demands
+that Sprite Data, as well as other graphics data, is placed
+there. (The reason why is that the CPU on the Amiga can reach
+the first 9MB of RAM, while the Blitter (a graphics co-processor)
+only can reach the first 512 KB.
+
+There will soon be a new Chip set for the Amiga 500 and 2000
+which enables the Blitter etc to reach the first 1 MB, but up
+to now the data MUST be placed somewhere in the memory between
+$00000 to $7FFFF.)
+
+If you are using Lattice C Compiler V5.0 or higher it is very
+simple. You only need to place the little word "chip" in front
+of the data. Eg:
+  UWORD chip graphics_data[]={ ... };
+
+On the Lattice C Compiler V4.0 you can compile the source with
+the added command: "-acdb" which will load everything into the
+Chip Memory. Eg:
+  lc -acdb -Lm my_program.c
+
+  This will do both the lc1 and lc2 compilation, and it will
+  also link the code together with the standard math library. 
+  Everything is loaded into Chip Memory.
+
+If you do not have one of these C compilers you will probably
+find out how to do it in your manual. REMEMBER! If you do not
+tell the compiler to always put the graphics in the Chip Memory
+you can end up with horrible bugs. It may sometimes work,
+especially if you have an unexpanded Amiga, but it will
+probably crash on an expanded Amiga.
+
+
+
+2.10  FUNCTIONS
+
+Here are some functions that are often used together with
+windows:
+
+OpenWindow()
+
+  This function will open a window with the characteristics
+  defined in the NewWindow structure. It returns a pointer
+  to a Window structure.
+  
+  If you are going to use the Workbench screen, and it has
+  been closed, it will automatically reopen. If you on the
+  other hand is going to connect the window to a Custom screen,
+  you need to open it yourself before calling the OpenWindow()
+  function.
+  
+  Synopsis:      my_window = OpenWindow( my_new_window );
+
+  my_window:     (struct Window *) Pointer to a Window structure
+                 or NULL if the window could not be opened.
+
+  my_new_window: (struct NewWindow *) Pointer to a NewWindow
+                 structure which has been initialized with
+                 your requirements.
+
+
+CloseWindow()
+
+  This function will close a window you have previously opened.
+  Remember that you need to close all windows connected to a
+  screen before you may close the screen, and all opened
+  windows must have been closed before your program quits.
+
+  Synopsis:  CloseWindow( my_window );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+
+MoveWindow()
+
+  This function will move a window. It has the same effect as
+  if the user would have moved the window by using the Drag
+  Gadget.
+
+  Synopsis:  MoveWindow( my_window, delta_x, delta_y );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+  delta_x:   (long) Deltamovement horizontally.
+
+  delta_y:   (long) Deltamovement vertically.
+
+
+SizeWindow()
+
+  This function will change the size of the window as desired.
+  It has the same effect as if the user would have resized the
+  window by using the Size Gadget.
+
+  Synopsis:  SizeWindow( my_window, delta_x, delta_y );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+  delta_x:   (long) Number of pixels the horizontally size of
+             the window will change.
+
+  delta_y:   (long) Number of pixels the vertically size of the
+             window will change.
+
+
+WindowToFront()
+
+  This function will put the window in front of all other
+  windows.
+
+  Synopsis:  WindowToFront( my_window );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+
+WindowToBack()
+
+  This function will push the window behind all other windows.
+
+  Synopsis:  WindowToBack( my_window );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+
+SetWindowTitles()
+
+  This function allows you to change the window title after the
+  window has been opened.
+  
+  Synopsis:  SetWindowTitles( my_window, window_t, screen_t );
+  
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+  window_t:  (char *) Pointer to a NULL-terminated string which
+             will become the window's title, or
+                0 : clear title bar, or
+               -1 : keep the old title.
+
+  screen_t:  (char *) Pointer to a NULL-terminated string which
+             will become the window's screen title, or
+                0 : clear title bar, or
+               -1 : keep the old title.
+
+
+WindowLimits()
+
+  This function will change the maximum/minimum size limits of
+  the window. Any values which are set to 0 will remain
+  unchanged.
+
+  Synopsis:  WindowLimits( my_window, min_w, min_h, max_w, max_h );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+  min_w:     (long) Minimum width of the window.
+
+  min_h:     (long) Minimum height of the window.
+
+  max_w:     (long) Maximum width of the window.
+
+  max_h:     (long) Maximum height of the window.
+
+
+SetPointer()
+
+  This function allows you to change the window's pointer.
+  
+  Synopsis:  SetPointer( my_window, data, height, width, x, y );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+  data:      (short *) Pointer to the Sprite data.
+
+  width:     (long) The width of the pointer. Less or equal
+             to 16.
+
+  height:    (long) The height of the pointer. Can be any
+             height.
+
+  x:        (long) The pointer's "Hot Spot" x position.
+
+  y:        (long) The pointer's "Hot Spot" y position.
+
+
+ClearPointer()
+
+  This will remove the "custom" pointer, and replace it with
+  Intuition's default pointer.
+  
+  Synopsis:  ClearPointer( my_window );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+
+ReportMouse()
+
+  You can call this function if you want the window to start/
+  stop reporting the mouse position. (See chapter 8 IDCMP for
+  more information about REPORTMOUSE.)
+  
+  Synopsis:  ReportMouse( my_window, boolean );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+  boolean:   (long) Set to TRUE if you want the window to start
+             reporting mouse position, else set to FALSE, and
+             the window will stop reporting.
+
+
+BeginRefresh()
+
+  This function will speed up your redrawing of the window. You
+  should call this function before you start to refresh the
+  window, and only the parts that needs to be redrawn are
+  redrawn.
+
+  Synopsis:  BeginRefresh( my_window );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+
+EndRefresh()
+
+  This function will tell Intuition that you have finished with
+  your redrawings. IMPORTANT! If you receive a REFRESHWINDOW
+  message, you must call the functions BeginRefresh() and
+  EndRefresh(), even if you do not want to redraw anything.
+  
+  Synopsis:  EndRefresh( my_window );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+
+
+2.11  EXAMPLES
+
+We have now looked at different types of windows, how to
+connect System Gadgets, the steps to customize your pointer
+and much more. It is now again time to look at some examples:
+
+Example1
+  This program will open a normal window which is connected to
+  the Workbench Screen. It will display it for 30 seconds, and
+  then close it.
+
+Example2
+  This program will open a high resolution 16 colour Custom
+  Screen and a normal window which is connected to it. It will
+  display it for 30 seconds, and then close the Custom Screen
+  and the window.
+
+Example3
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System Gadgets,
+  and will automatically Activate the window. It will display
+  it for 30 seconds, and then close it. (Remember that the
+  Close Gadget does NOT close the window by itself, it will
+  only inform you that the user wants to close it. But in
+  this example we will not listen to what the user wants.)
+
+Example4
+  This program will open two normal windows which are connected
+  to the Workbench Screen. The windows will use all System
+  Gadgets. It will display them for 30 seconds, and then close
+  them.
+
+Example5
+  This program will open a Borderless window which is connected
+  to the Workbench Screen. It will display it for 30 seconds,
+  and then quit.
+
+Example6
+  Same as Example5 except that the window will also use all
+  System Gadgets.
+
+Example7
+  This program will open three windows, two are normal and the
+  third is a Backdrop window. The windows will use all System
+  Gadgets, except the Backdrop window, which only can use the
+  close-window gadget. After 30 seconds the program quits. (Try
+  to push either window 1 or 2 behind the Backdrop window.)
+
+Example8
+  This program will open a SuperBitMap window which is
+  connected to the Workbench Screen. Since it is a SuperBitMap
+  we also make the window into a Gimmezerozero window. The
+  window will use all System Gadgets, and some boxes will be
+  drawn. It will display the window for 30 seconds, and then
+  close it. (Shrink the window, and then enlarge it again, and
+  you will noticed that the lines are still there!)
+
+Example9
+  This program will open a normal window with all system
+  gadgets connected to it. If you activate the window, the
+  pointer will change shapes into a "nice" arrow.
+
+Example10
+  This program will open a two normal windows with all system
+  gadgets connected to them. If the first window is Activated,
+  the pointer will change shapes into a Zzz symbol, if the
+  second window is activated, the pointer will look like a
+  pistol.

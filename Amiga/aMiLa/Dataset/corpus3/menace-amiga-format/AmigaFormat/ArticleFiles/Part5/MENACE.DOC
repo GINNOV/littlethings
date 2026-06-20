@@ -1,0 +1,30 @@
+[33mDAVE JONES' LOCKER[0m
+
+Everything in Dave Jones' Locker (drawer) goes with the feature on games
+programming in the June issue (number 11) of Amiga Format.
+
+This month Psygnosis programmer Dave Jones puts together smooth scrolling
+with alien movement. 
+
+You can double click on the MENACE program icon to see the result of
+combining the scroll with the ship animation and alien flight paths. Click
+the left mouse button to quit.
+
+All the additional source for producing and animating the aliens
+is contained in the assembler source files MENACE.S, PATHS.S and SHIPS.S.
+
+By combining these source it's possible to assemble the complete thing 
+into the compiled demo on this disk. Alternatively you can modify the 
+combined source to produce something completely different.
+
+Use something like Devpac 2 or Argasm to compile the source.
+
+The files in the drawer DAVE JONES' LOCKER include:
+
+MENACE - compiled demo
+MENACE.S - demo source
+SHIPS.S - craft source
+PATHS.S - alien flight paths source
+
+Please note ALIENS, FOREGROUNDS, MAP and PANEL also make part of the Menace
+program. These can be found on previous Amiga Format disks.

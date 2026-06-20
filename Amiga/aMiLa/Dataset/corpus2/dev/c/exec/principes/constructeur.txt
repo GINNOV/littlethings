@@ -1,0 +1,22 @@
+Remarques sur les optimisations de la taille du code grâce aux constructeurs.
+En effet, les constructeurs représentent de gros code, en général.
+
+o D'une part, si la classe ne définit pas de nouveaux champs par rapport
+  à son ancêtre, les initialisations supplémentaires n'existent pas.
+  (Sauf peut-être si elle devient virtuelle)
+  Conséquence: le constructeur peut être en ligne.
+  Par exemple: les classes Tache et Bibliotheque qui héritent
+  respectivement des classes TacMin et BibliMin.
+
+o D'autre part, lorqu'une classe racine n'initialise pas beaucoup !
+  Le constructeur peut être en ligne car d'autres classes hériteront
+  d'elles et auront, elles, un constructeur non en ligne.
+
+o Il faut savoir si on n'interface pas ce constructeur avec un autre
+  langage, par exemple langage machine (s'il est en ligne, il n'a pas
+  d'existance dans la classe compilée).
+
+Conseils pratiques:
+o Regarder la taille du constructeurs (avec omd).
+o Se demander si cette classe sera utiliser directement ou pas
+  (classe abstraite).

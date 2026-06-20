@@ -1,0 +1,166 @@
+Short: Program to scroll Texts with (Color-)IFF-Fonts in a Window
+Type: dev/c
+Author: Reinhard Katzmann
+Uploader: Reinhard Katzmann
+
+GScroll - A program which scrolls a text in a window
+====================================================
+
+(C) 1995 Reinhard Katzmann. All rights reserved.
+
+Introduction
+------------
+
+I've written this program as I got a CD with many colour fonts and IFF Fonts
+on it and thought one some so calles "Intros" which are mostly written in
+Assembler and not very system friendly.
+
+This program uses only system functions (for scrolling, blitting and remapping.)
+In the current form, remapping is only done under OS3.x and higher.
+The program should also work on OS2.x but I could not test this.
+
+One example font is included and also an example usage with topaz/11. This
+only works, if you have installed the Font Datatype (can be found on aminet).
+
+I cannot make clear statements on the speed of the program. On my A4000/040
+it is quite a smooth scrolling. At least it should not flicker somehow.
+Also the speed much depends on the size of the font. While topaz/11 is so fast
+that you cannot read it, with the font14 color font it is acceptable.
+
+Disclaimer & Copyright
+----------------------
+
+GScroll is (C) 1995 Reinhard Katzmann. All rights reserved.
+GScroll is Public Domain in this Version (actually no version). I've included
+the source code which you are allowed to use in your own applications. The
+only condition is that you add to you documentation:
+This program is based/uses parts of GScroll (C) 1995 Reinhard Katzmann.
+
+I keep the right to change all the above conditions of the program.
+
+There is no guarantee in the usage of the program and/or sourcecode. Use
+it at your own risk!
+
+Installation & Requirements
+---------------------------
+
+For full functionality, you should have OS3.x installed. If you want to use
+normal fonts you also need to have installed the Font Datatype which is
+(C) 1995 Michael Letowski.
+
+Of course you need an Amiga. Probably it is good to have at least an 68020.
+(No panic, the program is not compiled with an 68020+ option ;-)
+
+OS3.x is also needed for remapping of the colors of a font. I've planned
+to add this to OS2.x somewhen, too, if I know what to do with the program 
+itself. The program fully relies on datatypes picture class(es).
+
+If you use OS2.x, you also must have iff.library installed which can be
+found on aminet (iff_library_23_2, util/libs).
+
+Installation is done as follows:
+
+Copy the main executable to a directory in your path. It only runs from CLI.
+
+If you want to use the included Font14, copy the gscroll.font14 to firstly
+ENVARC:gscroll and secondly ENV:gscroll.
+
+Copy this doc in you favourite Doc drawer, for example HELP:English.
+
+Usage
+-----
+
+GScroll. Copyright (C) 1995 by Reinhard Katzmann. All Rights Reserved.
+Usage: gscroll IFFFONT/A,TEXTFILE/A,W=WIDTH/K,H=HEIGHT/K,D=DEPTH/K,N=NUMCROW/K,R=ROWS/K,C=CHARS
+
+IFFFONT/A: Required Argument. This must be an IFF picture (or an picture which
+can be produced by using datatypes picture class(es). So you can use f.e. the
+Font Datatype for using "normal" or color fonts.
+
+TEXTFILE/A: Required Argument. This is the text which should be scrolled. It
+can have several lines (newline characters are replaced by blank characters).
+
+W=WIDTH/K: Optional. The Width of the font (defaults to 32). This includes 
+spacing between the font characters (Important if you count the pixels with
+the help of a paint program).
+
+H=Height/K Optional. Height of the font (defaults to 32).
+
+D=Depth/K: The Depth of the Font (defaults to 3). A "normal" font has 1
+depth, i.e. two colors). Warning: The Font Datatype seems to have some
+problems with Color Fonts who have Depth>3 (at least with my CD).
+
+N=NUMROW/K: Optional. Number of Font Charakters in a row. (defaults to 10).
+
+R=ROWS/K: Optional. Number of Rows of Font Charakters (Defaults to 6).
+
+C=CHARS: Array of Charakters which must have the same sequence as in the font.
+(look at gscroll.font14 and FONT14 itself for an example usage.)
+
+
+Bugs/Known Bugs
+---------------
+
+Resizing: If you resize the program, the current displayed scroll line diss-
+appears. I was too lazy to write a proper restore function for that.
+
+OS2.x: Remapping does not work. You can add it by changing every pixel using
+ReadPixel/WritePixel. This is not too fast though. You should also skip the
+first four colours which are used for the standard Window/Menu look.
+
+Speed: I've found no way how to slow down the scrolling a bit optionally. The
+Delay() function slows the scrolling much too much down. Any Ideas welcome!
+
+If you have found a serious Bug, let me know about it or repair it yourself ;)
+but send me a copy of your work.
+
+Ideas/Future Improvements
+-------------------------
+
+As I stated in the introduction I've written this program mainly to test if it
+is possible, to write a system friendly scroll routine. Now I need some ideas
+of you what could be done with the scroll function. Some ideas from me:
+
+- Create a BOOPSI (for me BGUI Boopsi) Class to be able to have a Scroller
+  Info Gadget. Critical problem: Multitasking with other gadgets (slows down
+  or even stops the scroller for some time if not properly implemented).
+
+- Improve Speed and add some fancy features like sinus scrolling (any ideas ?)
+  (and solve the delay problem by the way :-)
+
+- A GUI which lets you choose all necessary parameters (Width, Height, Depth,
+  Picture etc.) and lets the scroller optionally run on an own/public screen.
+
+Send me your ideas and/or comments to GScroll (EMAIL prefered) and I will see
+what I can make out of this program. FIrst and Foremost programming hints are
+very welcome (for Adress see Author address section below).
+
+Author Address
+--------------
+
+E-MAIL (prefered):
+------------------
+
+  suamor@student.uni-tuebingen.de
+  katzmann@gemmi.informatik.uni-tuebingen.de
+
+SnailMail:
+----------
+
+  Reinhard Katzmann
+  Schellingstraße 41
+
+  D - 72072 Tübingen
+
+BBS'es
+------
+
+You can try to reach me through BBS'es near Tübingen. Some of the Sysops
+might know me or have contact to the Internet. I'm only User of one BBS:
+
+Onkel Helmut's Hütte
+
+Line 1: (0049) +7157/64546 (28800 Baud)
+Line 2: (0049) +7157/65428 (14400 Baud)
+
+My usual Nickname on the internet or at this BBS is Suamor.

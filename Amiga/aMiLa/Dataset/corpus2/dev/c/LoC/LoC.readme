@@ -1,0 +1,28 @@
+Short:    Count contents of c-files V1.2 *REUPLOAD*
+Uploader: rschuet@imn.htwk-leipzig.de (Ronny Schuetz)
+Author:   rschuet@imn.htwk-leipzig.de (Ronny Schuetz)
+Type:     dev/c
+Requires: KS 2.0
+Version:  1.2
+Replaces: dev/c/LoC*
+
+This program count the content of (a) C-File(s) and produce
+statistics about each file and one about all files.
+
+It counts code lines, comment lines (also C++ comments (//)), blank lines,
+bytes of code, bytes of spaces and bytes of comments and also display the
+code content, means the percentage of code in the file(s).
+
+Changes since V1.0 :
+
+- some bugs fixed
+- CRLFs not used to calculate code content now
+- AmigaDOS argument line parsing used
+- bug at differencing of code, comment and blank lines fixed
+- Multiple file argument line now possible (also multiple patterns)
+- LowMem-Option added (more than 3 times faster without LowMem than
+  with LowMem, without LowMem, the complete file will be loaded in
+  memory and scanned there, otherwise, the file will be read line
+  by line)
+
+It's PD.

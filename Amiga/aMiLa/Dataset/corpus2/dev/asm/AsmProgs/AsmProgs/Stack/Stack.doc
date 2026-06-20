@@ -1,0 +1,8 @@
+Documentation for Stack
+
+       This is a replacement for the BCPL stack program, written in assembler. 
+The only difference that the user should see is a smaller executable file, and a
+slightly improved error message when bad parameters are used.  The minimum stack
+limit is identical (1600 bytes), and there is a check that the stack size
+requested is not too large.  I assembled using Metacomco version 10.178, and
+linked with BLINK version 6.5.  

@@ -1,0 +1,6 @@
+Short:        Tutorial & example for exec multitasking
+Author:       Leo L Schwab
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Tutorial and example program for multitasking at the Exec level.  

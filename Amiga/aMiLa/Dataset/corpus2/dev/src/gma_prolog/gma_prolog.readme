@@ -1,0 +1,12 @@
+Short:        Some PROLOG-programs, use them with SBProlog 3.1
+Author:       galbrech@csmd.cs.uni-magdeburg.de (Gerrit M. Albrecht)
+Uploader:     galbrech csmd cs uni-magdeburg de (Gerrit M  Albrecht)
+Type:         dev/src
+Version:      1.0
+Architecture: m68k-amigaos
+Www:          http://www.cs.uni-magdeburg.de/~galbrech/galbrech.html
+Date:         1996.06.01
+
+Ein paar Programme aus meiner PROLOG-Vorlesung.
+
+Gerrit.

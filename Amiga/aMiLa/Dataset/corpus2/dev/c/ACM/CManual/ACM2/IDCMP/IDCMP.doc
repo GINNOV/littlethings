@@ -1,0 +1,603 @@
+8    IDCMP
+
+8.1  INTRODUCTION
+
+We have in the last four chapters talked about IDCMP, but have
+never actually explained what it is. But in this chapter we
+will at last satisfy your hunger for more information. IDCMP
+stands for Intuition's Direct Communications Messages Ports
+(nice), and is the most commonly used way of receiving messages
+from Intuition, and the only way to communicate to Intuition.
+
+
+
+8.2  IDCMP PORTS
+
+When something happens inside the Amiga, a disk is inserted, a
+gadget is selected etc, a message is automatically created.
+Intuition will then examine the messages and check if your
+program is interested to hear about it. (Every window has a
+list of none or more IDCMP flags which tells Intuition what
+this window is interested of.) If a program is interested of
+the message, that program will receive a special message
+(IntuiMessage), which contains interesting information about
+the message.
+
+---------------------------   Messages created inside the Amiga.
+| DISKINSERTED   MENUPICK |   For example, a disk is inserted,
+|    CLOSEWINDOW          |   a menu is activated, a window is
+|  NEWSIZE    GADGETDOWN  |   closed etc...
+---------------------------
+    |   |   |   |   |
+    V   V   V   V   V
+      -------------           Intuition examines every message
+      | INTUITION |           and checks if any program is
+      -------------           interested of it.
+     /            \
+DISKINSERTED   GADGETDOWN     If program A is interested of
+    |              |          DISKINSERTED messages, Intuition
+    V              V          will pass that one along to
+------------- -------------   program A. If program B is 
+| PROGRAM A | | PROGRAM B |   interested in GADGETDOWN messages
+------------- -------------   program B will receive a message
+                              every time a gadget is selected
+                              in program B's window.
+
+                              All other messages which no
+                              program were interested in will
+                              be thrown away.
+
+
+Intuition will always start to examine the active window
+first, and many IDCMP messages will probably be "swallowed".
+If program B is active, and Intuition has found a GADGETDOWN
+message, that message would be passed to program B, and all
+other programs would never hear about it.
+
+Some messages are important for all programs, such as
+DISKINSERTED, and will be passed to ALL "interested" windows.
+(If a window has its IDCMPFlags field set to DISKINSERTED, that
+window is interested about disk inserted messages.)
+
+
+
+8.3  HOW TO RECEIVE IDCMP MESSAGES
+
+If you want to receive messages from Intuition you need to:
+
+  1. Open an IDCMP port.
+  2. Wait for messages.
+  3. Collect the messages.
+  4. Examine them.
+  5. Reply. (Tell Intuition that you have read the message)
+
+
+
+8.3.1  OPEN IDCMP PORTS
+
+The IDCMP port can be automatically allocated by Intuition when
+you open a window. You only need to specify in the NewWindow
+structure's IDCMPFlags field which messages you want to receive
+from Intuition, and the rest is done for you. For example, if
+you open a window with the IDCMPFlags field set to GADGETDOWN,
+a port would be allocated for you, and your program would
+receive a message every time a gadget has been selected.
+
+If you already have opened a window you can later change the
+IDCMP ports by calling the function ModifyIDCMP().
+
+
+
+8.3.2  WAIT FOR MESSAGES
+
+Once an IDCMP port has been opened your program only need to
+wait until one or more messages arrives. There are two
+different ways of waiting for messages:
+
+1. The Passive Way. Your program is halted and will only wake
+                    up when a message arrives. This will
+                    increase the speed of other applications
+                    since the CPU does not need to bother about
+                    your program as long as it is sleeping. Use
+                    the function Wait().
+
+2. The Active Way.  Your program tries to collect a message,
+                    and if it could not find any message it
+                    tries again. This is necessary if you want
+                    your program to continue doing something,
+                    and not stop waiting for a message to
+                    arrive.
+
+
+
+8.3.3  COLLECT MESSAGES
+
+When you collect a message you should use the function
+GetMsg(). It will return a pointer to an IntuiMessage
+structure, which contains all important information about the
+message, or NULL if it could not collect any message.
+
+
+
+8.3.4  EXAMINE THE MESSAGE
+
+Once you have collected a message successfully you can examine
+the IntuiMessage structure. The IntuiMessag structure look like
+this:
+
+struct IntuiMessage
+{
+  struct Message ExecMessage;
+  ULONG Class;
+  USHORT Code;
+  USHORT Qualifier;
+  APTR IAddress;
+  SHORT MouseX, MouseY;
+  ULONG Seconds, Micros;
+  struct Window *IDCMPWindow;
+  struct IntuiMessage *SpecialLink;
+};
+
+ExecMessage:  Used by the Exec so do not touch it.
+
+Class:        Contains the IDCMP flag.
+
+Code:         Contains some special values which is closely
+              related to the IDCMP flag (Class). For example,
+              if you receive a MENUVERIFY message you can
+              examine the Code field to see if it is your
+              program's Menu (Code == MENUHOT) or some
+              other program's Menu (Code == MENUWAITING) that
+              will be displayed. If you on the other hand
+              receives RAWKEY or VANILLAKEY messages the Code
+              field will contain the key code and so on.
+
+Qualifier:    If your program receives RAWKEY messages
+              (untranslated keycodes), this field contains
+              information like if the SHIFT or CTRL key was
+              pressed or not. (A copy of the ie_Qualifier.)
+
+MouseX:       X position of the pointer relative to the top
+              left corner of your window.
+
+MouseY:       Y position of the pointer relative to the top
+              left corner of your window.
+
+Seconds:      Copy of the system clock's seconds.
+
+Micros:       Copy of the system clock's microseconds.
+
+IAddress:     Pointer to that object that created the message.
+              For example, if you receive a GADGETDOWN message,
+              this field contains a pointer to the Gadget that
+              was selected.
+
+IDCMPWindow:  Pointer back to the window that sent this message.
+
+SpecialLink:  Used by Exec and Intuition so do not touch it.
+
+
+The best way to examine this structure is to copy all important
+values and then reply as fast as possible. (Intuition will be
+slowed down if you do not reply fast.) You can then (after you
+have replied) check the copied values. (Remember! Do not use
+the IntuiMessage structure any more once you have replied.)
+
+
+
+8.3.5  REPLY
+
+Once your program has read everything it is interested of it
+should reply back to Intuition by calling the function
+ReplyMsg(). This tells Intuition that you have finished with
+reading the message.
+
+Important! Once you have replied you may NOT examine/change the
+IntuiMessage structure any more. Some other program or Intuition
+may use it!
+
+
+
+8.3.6  EXAMPLE
+
+Here is an example of how your program should collect and
+process IDCMP messages: (This is the Passive Way of collecting
+messages.)
+
+
+/* 1. Wait until a message arrive: */
+Wait( 1 << my_window->UserPort->mp_SigBit );
+
+/* (my_window is a pointer to a window.)     */
+/* (Do not bother to much about the funny formula.) */ 
+
+
+/* 2. Try to collect a message: */
+my_message = GetMsg( my_window->UserPort );
+
+
+/* Could we collect a message? (If message == NULL we have */
+/* not collected any message.                              */
+if( my_message )
+{
+  /* YES! We have collected a message successfully. */
+
+
+  /* 3. We should now examine the IntuiMessage structure, */
+  /*    and save any important values. (If we save the    */
+  /*    information we can reply as soon as possible, and */
+  /*    later examine the values.)                        */
+  class   = my_message->Class;
+  code    = my_message->Code;
+  address = my_message->IAddress;
+  
+
+  /* 4. We should now reply since we have finished reading */
+  /*    the IntuiMessage structure. (Your program should   */
+  /*    always reply as fast as possible.)                 */
+  ReplyMsg( my_message );
+  
+  
+  /* 5. We can now examine what the message actually was */
+  /*    about: (We have replied so we may NOT examine    */
+  /*    the IntuiMessage structure any more, but we may  */
+  /*    of course check the variables: class, code and   */
+  /*    address.)                                        */
+  switch( class )
+  {
+    case GADGETDOWN: /* A gadget has been pressed.       */
+    case GADGETUP:   /* A gadget has been released.      */
+    case MENUPICK:   /* A menu item has been selected... */
+    /* And so on...                                      */
+  }
+}
+
+
+This example is very fine, but what happens if two messages
+arrives at the same time? Well, the first message would be
+dealt with as normal, but the second message would never be
+processed. After we have waited for a message we should
+actually be prepared to process many messages. We should
+therefore use a while-loop, and stay in the loop as long as we
+can collect messages successfully. Once we could not collect
+any more we should put our task to sleep again.
+
+Here is a modified, and better, version of the example:
+
+
+/* 1. Wait until a message arrive: */
+Wait( 1 << my_window->UserPort->mp_SigBit );
+
+
+/* As long as we can collect messages successfully we stay */
+/* in the while-loop: */
+while( my_message = GetMsg( my_window->UserPort ) )
+{
+  /* The rest is as normal... */
+
+
+  /* 3. We should now examine the IntuiMessage structure, */
+  /*    and save any important values. (If we save the    */
+  /*    information we can reply as soon as possible, and */
+  /*    later examine the values.)                        */
+  class   = my_message->Class;
+  code    = my_message->Code;
+  address = my_message->IAddress;
+  
+
+  /* 4. We should now reply since we have finished reading */
+  /*    the IntuiMessage structure. (Your program should   */
+  /*    always reply as fast as possible.)                 */
+  ReplyMsg( my_message );
+  
+  
+  /* 5. We can now examine what the message actually was */
+  /*    about: (We have replied so we may NOT examine    */
+  /*    the IntuiMessage structure any more, but we may  */
+  /*    of course check the variables: class, code and   */
+  /*    address.)                                        */
+  switch( class )
+  {
+    case GADGETDOWN: /* A gadget has been pressed.       */
+    case GADGETUP:   /* A gadget has been released.      */
+    case MENUPICK:   /* A menu item has been selected... */
+    /* And so on...                                      */
+  }
+}
+  
+
+
+8.4  IDCMP FLAGS
+
+We have used several IDCMP flags in the last chapter, such as
+GADGETDOWN, MENUPICK, REQVERIFY etc, but here is the total list
+of all IDCMP flags:
+
+Here are the three IDCMP flags which are closely related to
+gadgets:
+
+GADGETDOWN:     Your program will this message if a gadget has
+                been selected. (Note, the gadget must have the
+                GADGIMMEDIATE flag set in its Activation field.
+                If not there will be no GADGETDOWN message
+                created.)
+
+GADGETUP:       Your program will this message if a gadget has
+                been released. (Note, the gadget must have the
+                RELVERIFY flag set in its Activation field. If
+                not there will be no GADGETUP message created.)
+
+CLOSEWINDOW:    Your program will receive this message if the
+                user selects the Close Window gadget (System
+                Gadget). Remember, the window will not be
+                automatically closed. It is up to your program
+                if it want to close it or not.
+
+
+Here are the three IDCMP flags which are closely related to
+requesters:
+
+REQSET:         Your program will receive this message if a
+                requester has been opened in your window. This
+                is very handy way to detect if a Double-menu
+                requester has been activated in your window.
+                (You will receive a message both when a DM-
+                requester as well as a normal requester has
+                been activated.)
+
+REQCLEAR:       This message tells you that a requester has
+                been cleared from your window. Note, you will
+                receive this message only when all requesters
+                in your window has been cleared.
+
+REQVERIFY:      Your program will receive this message if a
+                requester is going to be activated. However,
+                the requester will first be displayed once you
+                have replied, and this will therefore allow you
+                to finish of with something before the requester
+                will be activated. Note, your program will only
+                receive this message when the first requester
+                is opening in the window. Intuition will then
+                assume that you have stopped any output to that
+                window.
+
+
+Here are the two IDCMP flags which are closely related to
+menus:
+
+MENUPICK:       Your program will receive this message if the
+                user has pressed the right mouse button. (Note,
+                It does not necessarily mean that an item has
+                been selected.) The Code field of the message
+                will contain the menu number. If no item was
+                selected Code will be equal to MENUNULL. Use
+                the Macros described in chapter 7 MENUS, to
+                check which menu/item/subitem was selected.
+
+MENUVERIFY:     Your program will receive this message if a
+                menu is going to be activated. The menu will,
+                however, first be displayed once you have
+                replied, and this will therefore allow you to
+                finish of with something before the menu will
+                be opened.
+                
+                Check if the Code field of the message is equal
+                to MENUHOT which means it is your menu that
+                will be displayed, or if Code is equal to
+                MENUWAITING, which means that some other
+                window's menustrip will be displayed. You can
+                even cancel the whole menu-operation if you want
+                by changing the Code field to MENUCANCEL before
+                you reply.
+
+
+Here are the three IDCMP flags which are closely related to the
+mouse:
+
+MOUSEBUTTONS:   Your program will receive this message if any
+                of the mouse buttons have been pressed or
+                released. Examine the Code field of the message
+                to see if it is equal to:
+
+                SELECTDOWN: The left mouse button has been
+                            pressed.
+                SELECTUP:   The left mouse button has been
+                            released.
+                MENUDOWN:   The right mouse button has been
+                            pressed.
+                MENUUP:     The right mouse button has been
+                            released.
+
+                Important! If the user presses the left mouse
+                button while the pointer is somewhere on a
+                gadget's select box, your program will NOT
+                receive any message. Remember also that if the
+                user presses the right mouse button a menu
+                strip will be displayed, and your program will
+                not receive any MENUDOWN message. You need to
+                set the RMBTRAP flag in the NewWindow
+                structure's Flags field in order to receive any
+                right mouse buttons event. (No menu can then be
+                used for that window.)
+ 
+MOUSEMOVE:      Your program will receive this message if the
+                mouse has been moved. Note, your window needs
+                to have the REPORTMOUSE flag set in the
+                NewWindow structure's Flags field, or a gadget
+                in the window needs to have the FOLLOWMOUSE
+                flag set in the Gadget structure's Activation
+                field.
+
+                (Be prepared to receive many messages!)
+
+DELTAMOVE:      Same as MOUSEMOVE except that the movements
+                will be reported as delta movements instead of
+                absolute positions. Note, your program will
+                continue to receive delta movements even if the
+                pointer has reached the border of the display.
+
+                (Be prepared to receive many messages!)
+
+
+Here are the five IDCMP flags which are closely related to
+windows:
+
+NEWSIZE:        Your program will receive this message if the
+                user has resized the window. Check the windows'
+                Window structure's Width and Height fields to
+                discover the new size.
+
+SIZEVERIFY:     Your program will receive this message if the
+                user tries to resize the window. However,
+                Intuition will change the size first when your
+                program has replied, and this allows you to
+                finish of with something before the window will
+                change size.
+
+REFRESHWINDOW:  Your program will receive this message if the
+                window needs to be redrawn. This applies only
+                to SIMPLE_REFRESH and SMART_REFRESH windows.
+                Remember, if you receive a REFRESHWINDOW event,
+                you need to call the functions BeginRefresh()
+                and EndReresh() even if you do not redraw
+                anything.
+
+ACTIVEWINDOW:   Your program will receive this message if your
+                window is activated.
+
+INACTIVEWINDOW: Your program will receive this message if your
+                window is deactivated.
+
+
+Other IDCMP flags:
+
+RAWKEY:         Your program will receive this message every
+                time the user presses a key. The Code field of
+                the message will contain the raw keykodes (see
+                Appendix C), and the Qualifier field of the
+                message contains the qualifier (SHIFT, CTRL
+                etc).
+
+VANILLAKEY:     Your program will receive this message every
+                time the user presses a key. The Code field of
+                the message will contain the ASCII character
+                (see Appendix D).
+
+DISKINSERTED:   Your program will receive this message if a
+                disk is inserted. All interested programs will
+                hear about it.
+
+DISKREMOVED:    Your program will receive this message if a
+                disk is removed. All interested programs will
+                hear about it.
+
+NEWPREFS:       If the the system Preferences is changed (by the
+                user or another program), your program will
+                receive a NEWPREFS message. Call the function
+                GetPrefs() to get the new system Preferences.
+                (See chapter 9 MISCELLANEOUS for more
+                information about Preferences etc.)
+
+INTUITICKS:     Your program will receive this message ten
+                times a second (approximately). However, if you
+                have not replied on the first INTUITICKS
+                message, the next message will not be sent.
+
+WBENCHMESSAGE:  If the workbench is opened or closed by a
+                program (calling the functions OpenWorkBench()/
+                CloseWorkBench() your program will receive a
+                WORKBENCHMESSAGE. The Code field of the message
+                will be equal to WBENCHOPEN if the WorkBench
+                was opened, or WBENCHCLOSE if the workbench was
+                closed.
+
+
+
+8.5  FUNCTIONS
+
+GetMsg()
+
+  This function tries to get a message from a message port.
+
+  Synopsis:        my_message = GetMsg( my_message_port );
+
+  my_message:      (struct Message *) Pointer to a Message
+                   structure, in this case a pointer to an
+                   IntuiMessage structure, or NULL if no
+                   message was collected.
+
+  my_message_port: (struct MsgPort *) Pointer to an MsgPort. If
+                   you have opened a window, you can find your
+                   window's message port in the Window
+                   structure. ( my_window->UserPort ) 
+
+
+ReplyMsg()
+
+  This function tells Intuition that you have finished reading
+  the message. Remember, once you have replied you may not
+  examine or change the IntuiMessage structure any more.
+  
+  Synopsis:   ReplyMsg( my_message );
+  
+  my_message: (struct Message *) Pointer to a Message
+              structure, in this case a pointer to an
+              IntuiMessage structure.
+
+
+ModifyIDCMP()
+
+  This function changes the Window structure's IDCMPFlags
+  field.
+
+  Synopsis:  ModifyIDCMP( my_window, IDCMPFlags );
+  
+  my_window:  (struct Window *) Pointer to an already opened
+              window.
+
+  IDCMPFlags: (long) None or more IDCMP flags.
+
+  If you call this function with no IDCMP flags set, the
+  window's IDCMP Ports will be closed. On the other hand, if
+  you call this function, with one or more IDCMP flags set, a
+  Port will be, if necessary, opened for you.
+
+
+
+8.6  EXAMPLES
+
+See the examples in chapter 4 (GADGETS) to 7 (MENUS). They will
+explain how to use the IDCMP flags: GADGETDOWN, GADGETUP,
+CLOSEWINDOW, REQSET, REQCLEAR, REQVERIFY, MENUPICK and
+MENUVERIFY.
+
+Example1
+  This program explains how to use the IDCMP flag MOUSEBUTTONS.
+ 
+Example2
+  This program explains how to use the IDCMP flag MOUSEMOVE.
+
+Example3
+  This program explains how to use the IDCMP flags: NEWSIZE,
+  ACTIVEWINDOW and INACTIVEWINDOW.
+
+Example4
+  This program explains how to use the IDCMP flag SIZEVERIFY.
+
+Example5
+  This program explains how to use the IDCMP flag RAWKEY.
+
+Example6
+  This program explains how to use the IDCMP flag VANILLAKEY.
+
+Example7
+  This program explains how to use the IDCMP flags:
+  DISKINSERTED and DISKREMOVED.
+
+Example8
+  This program explains how to use the IDCMP flag INTUITICKS.
+
+Example9
+  This program explains how to use the IDCMP flag
+  REFRESHWINDOW, and how to optimize the redrawing of the
+  window.

@@ -1,0 +1,18 @@
+
+I took a screenshot and converted it to 2x2 (it only got 32 colors. would
+look better with 256). Then I masked it like it's done by blitterscreen.
+Imagine that beeing a screenshot of a clone running on A1200 :)
+
+IMHO possible at quite high framerate: this amount of pixels is done
+at about 10fps by texdemo57 on a A1200 with fastmem.
+In more dungeon-like rooms that need not that much z-stuff calculation
+etc. it even does 15fps. The time needed for c2p was about 20%.
+
+So let's imagine there would be a chunky 256 color 2x2 screen needing
+almost no cpu time ;)
+
+result: 1/(1-20%) * 15fps = 18fps !
+
+playing a game with gfx like in the pic in 18fps on A1200+fastmem,
+a crazy thought ? who knows...
+

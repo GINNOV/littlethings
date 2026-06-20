@@ -1,0 +1,8 @@
+
+ The Library.s file is all you need for assembly programming. The rest is
+ for C programmers - I just compiled it anyway. You will need to make your
+ own FD file. I thought the LVO_Maker.s and Stubs.s files were going to do
+ the FD file automatically but, although LIBINIT and LIBDEF do the actually
+ *6 counting of the LVOs, the code does nothing for assembly programmers
+ from what I can gather. I.e. there is no Write() out of an FD file within
+ the code.

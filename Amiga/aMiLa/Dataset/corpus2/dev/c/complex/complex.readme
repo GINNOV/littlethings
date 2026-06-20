@@ -1,0 +1,15 @@
+Short:        Complex number functions for C
+Author:       daltern@ic.ac.uk (Nick d'Alterio)
+Uploader:     daltern ic ac uk (Nick d\\'Alterio)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+A set of functions to carry out the basic complex number
+operations in C. Includes-
+
+Add
+Subtract
+Divide
+Multiply
+Modulus
+Argument

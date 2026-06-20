@@ -1,0 +1,23 @@
+Short:        Integrated environment for Sozobon C . V1.0
+Author:       HCE by Jason Petty
+Type:         dev/c
+Version:      1.0
+Requires:     Requires OS2.x + and 1MB RAM minimum
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+A new release of the HCC Sozobon C Compiler from AmigaLibDisk 508.
+Now has a Text Editor front end which uses intuition menus and 
+gadtools gadgets.  Can do common editor commands such as Cut/Copy/
+Insert/Print/Find/Replace.  Can also do basic file commands such as 
+Copy/Delete/Makedir/Assign/Rename.  Can handle all processes required
+to make an executable program.  Can recompile itself and complete 
+source is provided.  Includes, own version of Amiga.lib, Original HCC 
+C libraries with bug fixes and enhancements, standard include files,
+documentation, and everything required to make your own C programs. 
+
+HCE by Jason Petty
+32 Balder Road
+Norton
+Stockton-on-Tees
+Cleveland, TS20 1BE

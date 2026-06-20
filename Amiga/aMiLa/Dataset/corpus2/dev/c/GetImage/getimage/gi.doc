@@ -1,0 +1,52 @@
+Article 510 of net.micro.amiga:
+Relay-Version: version B 2.10.3 4.3bsd-beta 6/6/85; site unisoft.UUCP
+Posting-Version: version B 2.10.3 4.3bsd-beta 6/6/85; site well.UUCP
+Path: unisoft!lll-lcc!lll-crg!well!farren
+From: farren@well.UUCP (Mike Farren)
+Newsgroups: net.micro.amiga
+Subject: gi - a DPaint to C converter
+Message-ID: <589@well.UUCP>
+Date: 2 Feb 86 09:15:56 GMT
+Date-Received: 2 Feb 86 15:11:11 GMT
+Organization: Whole Earth Lectronic Link, Sausalito, CA
+Lines: 37
+
+
+     I have posted the sources for "gi" to net.sources.  gi is a program
+I whipped up to assist on a project I am currently working on, and which
+I felt would be of general use to a lot of us Amigoids.
+
+    gi reads a DeluxePaint "brush" file, and produces an output file which
+contains the C statements necessary to create an Image structure, including
+height, width, depth, and color information, as well as the array of data
+which represents the bit planes of an image.  gi also allows re-assignment
+of the color registers used by an image (particularly useful for sprites).
+
+    The syntax of gi is as follows:
+	 gi <DP brush filename> <output filename>
+gi will read the brush file, analyze its data, and produce a list of the
+color register assignments used for the image.	It then allows the re-
+assignment of color registers.	When color register assignment is complete,
+it produces the output file containing the C statements.
+
+NOTES  -   The color map data is output in packed RGB format, and is
+   meant as advisory information only - the output file WILL need
+   to be edited before it is suitable for use.
+
+BUGS   -   Lord knows.	Probably some, although I think it mostly works.
+   It does enough to get MY job done, anyway.
+
+IMPROVEMENTS POSSIBLE - Infinite.  Currently, gi does not allow duplicate
+   color register assignments, nor does it allow for output in "Sprite"
+   format.  It would be nice to "Intuitionize" gi, allowing display
+   of the image, menus, gadgets, etc.,	but I'll let someone else do
+   that.
+
+   Have fun!
+
+-- 
+           Mike Farren
+           uucp: {your favorite backbone site}!hplabs!well!farren
+           Fido: Sci-Fido, Fidonode 125/84, (415)655-0667
+
+

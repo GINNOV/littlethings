@@ -1,0 +1,368 @@
+				   
+			      sas-c-mode
+			      ~~~~~~~~~~
+
+			      Beta V0.3
+
+	     Copyright (C) 1993-1994 by Anders Lindgren.
+				   
+
+				   
+			     DISTRIBUTION
+
+	sas-c-mode is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published 
+	by the Free Software Foundation; either version 1, or (at your 
+	option) any later version.
+
+	GNU Emacs is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public
+	License along with GNU Emacs; see the file COPYING.  If not,
+	write to the Free Software Foundation, 675 Mass Ave, Cambridge,
+	MA 02139, USA.
+
+
+	SAS and SAS/C are registrated trademarks of SAS Institute Inc.
+
+				   
+			     INTRODUCTION
+
+This package is the glue that ties the SAS/C message handler, SCMSG,
+to GNUEmacs for automatic error message reporting. The package gives
+Emacs all the knowledge about errors normally stored in the SCMSG
+utility. It also enables SCMSG to automatically bring Emacs to the
+front, place the cursor on the correct line in the correct file, and
+display the error information in the minibuffer.
+
+sas-c-mode is in GNU Emacs terms a minor mode. This means that it is
+an addition to the current major mode, such as c-mode. When enabled
+the text "SAS/C" will be present to the right of the the name of the
+current mode. The sas-c-mode rebinds keys of the current local keymap,
+when it is terminated the original definitions are restored.
+
+The idea behind makeing sas-c-mode a minor, as opposed to major, mode
+is to be able to use the features of c-mode. It can also be enabled
+when editing smakefiles or assmebler files.
+
+
+			     REQUIREMENTS
+
+Atleast SAS/C V6.0 and Emacs V1.28 are required for this program.
+However SAS/C V6.50 is recomended.
+
+
+				FILES
+
+Files contained in this package:
+
+sas-c.doc		This file.
+sas-c.el		Source code in elisp.
+sas-c.elc		Byte-compiled version of the above.
+SCMSG.opt.SC_EMACS	Options for SCMSG.
+sc_emacs.rexx		Handler for SCMSG->Emacs communication.
+quithost.rexx		Terminates sc_emacs.
+slashquote/
+  slashquote.library	A ARexx host library containing two functions.
+  slashquote.doc	A small docfile for the above.
+  slashquote.c		The sourcecode.
+  slashquote.fd		Library description file, used by slink to build
+			the library.
+  smakefile		file containing rules for building 
+			slashquote.library
+
+
+			       INSTALL
+
+* The library "slashquote.library" should be placed in LIBS:
+
+* Place the file `sas-c-mode.elc' into a lisp directory (for 
+  example GNUEmacs:lisp)
+
+* Move sc_emacs.rexx and quithost.rexx to your rexx: directory.
+
+* Copy SCMSG.opt.SC_EMACS to ENV:sc/SCMSG and ENVARC:sc/SCMSG.
+
+* Turn on the ErrorRexx option in SCOPTS.
+
+* The following line should be placed in s:.emacs
+
+	(autoload 'sas-c-mode "sas-c" nil t)
+
+* If you would like the sas-c-minor mode to be activated automagically
+  when editing C-files, place the following lines into your s:.emacs
+
+	(setq c-mode-hook 
+	      (function (lambda ()
+			  ;;; Other thing to do when entering 
+			  ;;; c-mode goes here.
+			  (sas-c-mode 1))))
+
+	
+If you know how to give the command "evaluate-region" on the lines
+entered into s:.emacs, do it. Otherwise quit and restart emacs.
+
+
+			       EXAMPLE
+
+A normal sequence of events is the following:
+
+* You compile a program, and an error occur. If no error occured, 
+  something must be very unnormal :-)
+* The SCMSG is started by the compiler, if it's option RexxOnly
+  is activated, no window is opened.
+* Automatically (if AUTOEDIT is enabled), or when an error is
+  doubleclicked, the SC_EMACS host is started. (Please see the section
+  `KNOWN PROBLEMS' below).
+* Emacs is started, if it isn't already running.
+* The cursor is placed on the correct line in the correct file
+  and the current errormessage is displayed in the minibuffer.
+* The message will disappear if the cursor is moved; press
+  C-c C-l to redisplay it.
+* Press C-c C-n to see next error, or C-c C-d to delete the current and
+  see next.
+* The SCMSG utility can be used to browse errors. Just doubleclick on
+  the errors to edit it in Emacs.
+* When done, press C-c C-c to rebuild the project.
+
+
+				USAGE
+
+The following keys are defined by default when sas-c-mode is
+active:
+
+C-c C-a		Display the alternative file, if any.
+C-c C-c		Build a project (normally execute smake).
+C-c C-d		Delete the current message and display next.
+C-c C-h		Hide the SCMSG window.
+C-c C-l		Redisplay current error message.
+C-c C-n		Display next error message.
+C-c <down>		---- " ----
+C-c C-p		Display previous error message.
+C-c <up>		---- " ----
+C-c C-q		Remove all messages for a certain primary file.
+C-c C-s		Show the SCMSG window.
+C-c <		Go to the first error message.
+C-c <sh. up>		---- " ----
+C-c >		Go to the last error message.
+C-c <sh. down>		---- " ----
+
+When an error is displayed, the mark is set at the previous cursor
+position. Press C-x C-x to return to the old position.
+
+
+The message is displayed in the following forms:
+
+	Class #: text
+
+Where Class is "Error", "Warning" or "Info". # is the error number and
+text is the actual message. If there exists an alternate file the string
+"(Alt)" is placed immediately to the left of the colon. To see it, press
+C-c C-a. The primary file can always be reviewed by pressing C-c C-l.
+
+
+			      VARIABLES
+
+sas-c-mode	non-nil if in sas-c minor mode. READ ONLY.
+
+sas-c-compile-command
+		Command to use when building project (default "sc:c/smake").
+
+
+			      FUNCTIONS
+
+sas-c-bottom	Go to the last message.
+
+sas-c-build	Rebuild the current project. This is done by executing
+		the command in the variable sas-c-compile-command.
+		
+sas-c-delete	Delete the current error message and move to the next.
+
+sas-c-delcomp-current	
+		Delete all messages with the same primary filename
+		as the current error. NOTE: This function does not take
+		the filename from the current buffer.
+		Also note: This function is not bound to a key since
+		I belive it's a little bit unintuitive.
+
+sas-c-delcomp	Prompt for a for a filename to remove from the error list.
+		Default is current buffer.
+
+sas-c-delfile-current	
+		Same as sas-c-delcomp-current, but for secondary file.
+
+sas-c-delfile	Same as sas-c-delcomp, but for secondary filename.
+
+sas-c-display-altfile
+		This function displays the alternate file and places
+		the cursor on the corrent line.
+
+sas-c-display-error
+		This function displays the current error and places the
+		cursor on the offending line.
+
+sas-c-hide	Close the SCMSG window.
+
+sas-c-next	Move to the next error message.
+
+sas-c-prev	move to the previous error message.
+
+sas-c-show	Show the SCMSG window. If called with an argument
+		the window gets unactivated. (i.e. call if called
+		with C-u M-x sas-c-show RET.)
+
+sas-c-top	Go to the top of error messages.
+
+
+			    CUSTOMIZATION
+
+The sac-c-mode can be custimized. a special variable sas-c-mode-hook
+is defined for this purpose. It shall be defined as below:
+
+(setq sas-c-mode-hook 
+      (function (lambda ()
+		  ;;; Things to do here
+		  )))
+
+When defining new keys the function sas-c-define-key must be used. If
+not, the mechanism which removes the keybindings when sas-c-mode is
+terminated won't work.
+
+For example:
+
+(setq sas-c-mode-hook 
+      (function (lambda ()
+		  (sas-c-define-key "\C-x`" 'sas-c-next)
+		  (sas-c-define-key "\C-c\C-q" 'sas-c-delcomp-current))))
+
+This defines C-x ` as sas-c-next. This is quite useful for people
+who are used to the old "compile" macro. It also redefines the
+key C-c C-q to use sas-c-delcomp-current, instead of sas-c-delcomp.
+
+
+			     TIPS n'TRIX
+
+If you are going to compile from within emacs, I recomend using
+the NOERRORHIGHLIGHT and BATCH flags.
+
+It is useful to be able to compile (C-c C-c) from a makefile. I normally
+places the following lines into the header of the makefile to make it
+use the sas-c minor mode:
+(According to Emacs rules the local variables should be placed on
+the last page of the file.)
+
+#       Local Variables:
+#       eval:(sas-c-mode 1)
+#       End:
+
+
+			    HOW TO EXPAND
+
+sas-c-mode can be expanded with new clever commands, just start up
+your brain!
+
+The following ELisp functions can be useful:
+
+(sas-c-view-message file line text class errnum)
+	Display the actual error message. It reads in the file, if
+	it's not in any buffer. It then shows the buffer and places
+	the cursor on the correct line and displays the errortext.
+
+(sas-c-get-file file)
+	Used by above.
+
+(sas-c-scmsg command)
+	Send a ARexx command to SCMSG without requesting a resultstring.
+
+(sas-c-scmsg-str command)
+	Send a ARexx command to SCMSG and return the resultstring.
+
+(sas-c-scmsg-str command)
+	Send a ARexx command to SCMSG and return a number.
+
+
+			    KNOWN PROBLEMS
+
+1) SCMSG has given me quite a headache during the development due to a
+unfoutnate combination of bad design and bugs. The main problem is
+that the mechanism which calls the editor can't be used directly since
+it often emits strings with quotes, resulting in syntactically
+incorrect ELisp statements. It also only quotes filenames containing
+spaces resulting in inconsistency when writing a template of the form:
+
+	(sas-c-get-file "%f")
+
+which is expanded into:
+
+	(sas-c-get-file ""foo bar.c"")
+
+which also is an incorrent ELisp statement.
+
+The solution to the problem is the sc_emacs ARexx host which
+translates all SCMSG messages into lisp statements.
+
+
+2) When scmsg is started for the first time the option `AutoEdit' is
+ignored. The result is that Emacs isn't activated until the second
+compilation. A simple workaround is to start SCMSG once, before
+starting to compile. If you compile a lot and you've got a lot of
+memory you can start scmsg at boot time.
+
+The following line does the trick:
+	run scmsg HIDDEN
+
+
+				 TODO
+
+Sometime, I would like to write an installer script and to TeXInfo:ify
+this documentation. However, I have been waiting for some spare time
+to do it on the past six months, without luck. Finally I decided that
+you folks probably would like to have it even without the fancy
+stuff...  and here it is.
+
+When is V1.0 about to come? Soon, I just want to run this one through
+the toughest test avaiable; the Amiga development community.
+
+
+			       HISTORY
+
+24-Mar-93 V0.1  - First release 
+
+09-Jun-93 V0.2  - sc_emacs.rexx added, enabeling SCMSG => Emacs
+		  communication.
+		- Requires Emacs 1.28. (Old ARexx result `bazooka'
+		  method removed.) 
+
+08-Jul-93 V0.2pl1
+		- Now it actually jumps to the correct line :-)
+
+27-Sep-94 V0.3	- SAS/C 6.50:ifyed.
+
+
+			     FINAL WORDS
+
+I would like to thank the guys at SAS, especially Doug Walker and
+James Cooper, for their GREAT C compiler environment and their immense
+support. 
+
+The english probably contains a lot of spelling and gramatical errors,
+please consider that english is not my native toung. Should somebody
+find the time to correct the language, nobody would appreciate it
+more than myself.
+
+Suggestions, new ideas and (positive) criticism are highly
+appreciated. Please email them to:
+
+	d91ali@student.csd.uu.se
+
+	or snail mail them to:
+
+		Anders Lindgren
+		Kantorsg. 2-331
+		754 24 Uppsala
+		Sverige
+
+					/Anders Lindgren, 27-Sep-94

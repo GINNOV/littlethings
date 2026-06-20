@@ -1,0 +1,118 @@
+
+    iff2c  - a short guide
+    -----
+    another tool to convert iff-pics into C-language code for "hardcoding"
+    pics or sprites in your code
+
+    FREEWARE
+
+    © Mar 2004 Alfred Faust <alfred.j.faust@gmx.de>
+
+    This program bases on the 
+    iff2c v0.30, by Gauthier Groult & Jm Forgeas
+
+    History:
+
+    v0.41  15-Mar-2004 Left/TopEdge to 0 added; bug outpath removed
+    v0.40  26-Feb-2004 complete reworked for MorphOS
+                       and enhanced with a more userfriendly GUI  by  Alfred
+                       Faust <alfred.j.faust@gmx.de>
+
+    v0.30, 12-May-89,  fixed minor output bug, -ghg-
+    v0.29, 01-May-89,  plane pick option now works, -ghg-
+    v0.28, 30-Apr-89,  -lsdh options added, jm Forgeas
+    v0.27, 13-Nov-88,  original coding by Gauthier Groult
+
+
+    Disclaimer:
+    -----------
+
+    I'm a poor man, so I must write this:
+
+    This program is given to Public Domain with sourcecode as FREEWARE.  You
+    may use it, like you want.
+
+    If you want cook coffee with it ... feel free, to do it ... ;-))
+
+    You can use the source complete or partially for your  own  product,  as
+    long as you give a short remark in the source, from where you had gotten
+    it.
+
+    I held NOT liable in any manner, if by the use  of  the  source  or  the
+    program occure any damage on hard- or software. Use it at your own risk.
+
+    How to use:
+    -----------
+
+    1. Start the program by:
+        - doublecklick the IFFtoC-icon or
+        - in the CLI with : iff2c
+
+       Don't be confused by the different names.  The  icon  only  starts  a
+       small script, which calls iff2c.
+
+
+    2. The program opens at first a little window, in which you  can  choose
+       some options for the converting process:
+
+       Sprite Header:    If you want to convert a  pic  for  a  sprite  (for
+                         example  for  a  custom pointer) the program writes
+                         the output as a sprite.
+                         Default: off - no sprite
+
+       Image Structures: Sometimes it maybe  not  neccessary  to  write  the
+                         Image Structur for the pic (maybe if you convert  a
+                         sprite) you can switch it off.
+                         Default: on - Image Structure will be written
+
+       Comments:         If this  switch  is  on,  the  program  writes  the
+                         bitpattern  of  each  line  as a comment behind the
+                         line. So you can roughly see your pic.
+                         Default: On - comments will be written
+
+       Left/TopEdge = 0: The LeftEdge and the TopEdge-values in  the  Image
+                         structure are set to 0. This is usefull if you had
+                         saved the pic as a iff-brush from a paintprogram.
+                         The brush mostly contains the  Left/TopEdge-values
+                         from the cutting.
+
+       If all is choosen, click OK.
+
+
+    3. The program then asks for the destination dir. This maybe  the  same,
+       like the dir, in which your iff-files are placed.
+
+    4. The program asks now for the iff-file(s). You may do a multiselect by
+       holding down the Shift - key.
+
+    5. By clicking OK, the program starts  the  conversion.  This  is  done,
+       mostly  very  fast.  The  program  gives a message, which iff-file is
+       current converted.
+
+       The program creates each time a outputfile with the same  name,  like
+       the  pic-file,  with  the  difference,  that  the extension ".iff" is
+       exchanged by ".c". The filename is also used in the code (without the
+       extension). You may alter it later, like you want.
+
+       If there is already a file in the desination-dir, which have the same
+       name,  like  the  oufile of the current for converting prepared file,
+       you will get a warning, to decide if the file shall be overwritten or
+       not.
+
+    6. After the last conversion the program ask you, if you want to convert
+       away (more files). So you can convert for example pics in another dir
+       without to restart the program.
+
+       If you answer with "Yes" the program starts again at number 3.
+
+       If you want to alter the options, you must choose  "No"  and  restart
+       the program.
+
+
+       Alfred Faust
+       alfred.j.faust@gmx.de
+       26-Feb-2004
+
+
+
+

@@ -1,0 +1,38 @@
+Short:    makes comments compatible
+Author:   lombi@iprimus.com.au (Lorence Lombardo)
+Uploader: lombi@iprimus.com.au (Lorence Lombardo)
+Type:     dev/c
+Version:  1.1 
+Architecture: m68k-amigaos
+
+
+vbcc_com v1.1  (C) 2011-2014  Lorence Lombardo.
+
+vbcc_com makes comments from other C flavours compatible with VBCC's
+default behaviour. At the time that I orignally wrote vbcc_com I was not
+aware of the "-cpp-comments" option. Anyway perhaps this program may still
+be of use to someone. Also I found this program to be useful with GCC
+when certain options are specified "//" comments may then become no longer
+compatible.
+
+
+ Usage:- 
+
+ vbcc_com <in_file> <out_file>
+
+ eg. spat vbcc_com src/#?.c new_src/%n
+
+Do you remember SPat ?
+
+SPat is usually located in your "S:" assign and should have the "S"
+protection flag enabled.
+
+All tested sources have worked so far but ultimately you should always have
+your orignal source backed up. 
+
+
+Feeling bored ?  :)
+Why not check out this URL ?
+
+http://home.iprimus.com.au/lombi/1/homepage.htm
+

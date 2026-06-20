@@ -1,0 +1,172 @@
+
+Il Plasma		(Lezione by The Dark Coder)
+
+In questo testo parleremo dell'effetto "plasma". In particolare vedremo come
+realizzare degli effetti plasma utilizzando tecniche impiegabili su tutti gli
+amiga. Al giorno d'oggi, infatti, grazie al chipset AGA e a processori 68020
+e superiori si realizzano anche dei plasmi differenti, basati su tecniche 
+"chunky pixel". Gli effetti di cui parleremo in questo testo, invece, sono
+impiegabili anche sul buon vecchio Amiga 500.
+La tecnica di base per realizzare un plasma e` costituita dall'utilizzo di
+una copperlist che cambia continuamente alcuni registri colore, mediante delle
+"copper moves" consecutive. Abbiamo gia` visto come costruire e utilizzare
+molte copperlists di questo tipo nella lezione 11. In particolare negli esempi
+lezione11g1.s, lezione11g2.s e lezione11g3.s abbiamo realizzato sfumatore di
+colori mediante copperlists che cambiavano il contenuto di COLOR00. Si tratta,
+pero`, di copperlists statiche. La differenza principale tra quegli esempi e un
+plasma e` proprio questa: in un effetto plasma si usa una copperlist
+strutturata in quel modo, ma dinamica, in modo che in ogni frame cambino i
+colori scritti nel registro COLOR00. Ogni "copper move" e` composta da 2 words:
+
+	dc.w	$180,COLORE	; struttura di una "copper move"
+
+La prima word contiene l'indirizzo di COLOR00 e la seconda il valore da
+scrivere in tale registro. Per ottenere l'effetto plasma dobbiamo far variare
+questo valore ad ogni frame, ovvero dobbiamo scrivere ogni volta un valore
+diverso nella seconda word che costituisce la "copper move".
+Il problema e` che dobbiamo ripetere questa operazione per tutte le "copper
+moves" che fanno parte della copperlist. Si tratta quindi di una gran quantita`
+di dati da modificare. Poiche` la copperlist si trova in CHIP-RAM possiamo
+usare il blitter per effettuare le modifiche. In conclusione, dunque l'effetto
+plasma e` realizzato mediante una routine che (usando il blitter) legge da una
+tabella i colori e li copia nella copperlist. Facendo variare ad ogni frame i
+colori copiati, il plasma e` fatto. Notate che questo effetto non richiede
+l'uso di bitplane, visto che si fa tutto modificando il colore di sfondo.
+Per questo lo si indica come plasma "a 0 bitplanes", in contrasto con altre
+varianti che vedremo successivamente. Un esempio di plasma 0-bitplanes e`
+plasm1.s.
+Un significativo miglioramento dell'effetto e` costituito dal plasma RGB.
+Esso si differenzia dal plasma normale, perche` i colori non vengono
+semplicemente copiati da una tabella, ma "calcolati" nel seguente modo:
+vengono lette separatamente (da 3 sorgenti diverse) le componenti R, G e B
+di un colore, e vengono poi unite insieme con un OR. In questo modo poiche`
+le componenti R,G B variano continuamente tra una "copper move" e l'altra si
+produrra` un maggior numero di colori. In pratica, invece di un'operazione
+di copia si utilizza una blittata che esegue un OR tra 3 sorgenti che
+contengono rispettivamente le componenti R, G e B. Un primo esempio di plasma
+RGB e` plasm2.s
+Per migliorare ulteriormente l'effetto, si cerca di rendere piu` vario il 
+plasma. Un modo semplice per farlo e` rendere variabile la posizione di
+partenza di ogni riga del plasma. Cio` puo` essere fatto molto facilmente
+dato che la posizione di partenza e` determinata dall'istruzione WAIT che
+compare all'inizio di ogni riga della copperlist. Una variante del genere
+e` illustrata in plasm3.s. Purtroppo, pero` le posizioni orizzontali delle
+WAIT hanno una risoluzione di 4 pixel, il che vuol dire che e` possibile 
+variare la posizione di partenza del plasma a "scatti" di 4 pixel. Variando
+opportunamente i parametri dell'esempio plasm3.s si puo` evidenziare tale
+fenomeno. per ottenere delle oscillazioni meno scattose useremo una tecnica
+diversa, che fa uso di un bitplane, e pertanto si chiama plasma "1-bitplane".
+La tecnica e` la seguente: si usa un bitplane "a strisce" verticali larghe 8
+pixel. In questo modo l'immagine avra` 8 pixel colorati con COLOR00, poi 8
+colorati con COLOR01, poi di nuovo 8 con COLOR00 e cosi` via. In corrispondenza
+usiamo una copperlist simile a quelle viste negli esempi precedenti, ma che
+alterna una "copper move" in COLOR00 con una in COLOR01. La situazione e`
+rappresentata dalla figura seguente:
+
+destinazione
+della 
+"copper move":	| COL.0 | COL.1 | COL.0 | COL.1 | COL.0 | COL.1  - - -
+
+
+linea del
+bitplane:	000000001111111100000000111111110000000011111111 - - -
+
+come vedete c'e` una corrispondenza esatta tra il colore visualizzato e
+il registro modificato dalla copperlist. Un registro colore mantiene costante
+il suo valore per uno spazio di 16 pixel, ma quel colore viene visualizzato per
+i soli 8 pixel del bitplane che lo selezionano (cioe` per i soli 8 pixel a 0
+nel caso di COLOR00 e i soli pixel a 1 nel caso di COLOR01). Fin qui abbiamo
+utilizzato il nostro bitplane per fare esattamente la stessa cosa che prima
+facevamo senza. Ora pero` viene la novita`. Possiamo utilizzare lo scroll
+hardware per spostare il bitplane orizzontalmente. Notate che se il valore
+di scroll varia da 0 a 7, ogni gruppo di 8 pixel mantiene sempre lo stesso
+colore. Infatti il valore contenuto in un registro varia ogni 16 pixel. Con
+valori dello scroll da 0 a 7 noi spostiamo il gruppo di 8 pixel sempre
+all'interno di questa "fascia" di 16 pixel. Se invece usiamo valori maggiori,
+alcuni dei pixel del gruppo usciranno fuori dalla fascia, assumendo pertanto
+un nuovo colore.
+Guardiamo in dettaglio il fenomeno con l'ausilio di alcune figure. Potete
+notare come i registri colore mantengano costante il loro valore per fascie
+di 16 pixel. Le fasce dei 2 registri si sovrappongono: le fasce di COLOR01
+iniziano e finiscono a meta` di quelle di COLOR00, e viceversa.
+Quando usiamo un valore di scroll pari a 0 si ha la seguente situazione:
+
+valore in
+COLOR01		        |    valore 1  |    valore 2  |    valore 3  |   - - 
+			V	       V	      V	       
+scroll=0:	000000001111111100000000111111110000000011111111 - - -
+		^	       ^	      ^		     ^
+valore in	|	       |	      |		     |
+COLOR00		|    valore 1  |    valore 2  |    valore 3  |   - - 
+
+come vedete ogni gruppo di 8 pixel di valore 0 si trova in corrispondenza dei
+primi 8 pixel (cioe` quelli piu` a sinistra) di ogni fascia di 16 per i quali
+COLOR00 assume valore costante. Lo stesso discorso vale per i gruppi di 8 pixel
+settati a 1 in relazione con le fascie di 16 pixel per i quali COLOR01 rimane
+costante. All' aumentare del valore di scroll, i gruppi di 8 pixel si spostano
+verso i bordi destri delle fascie. Per es. ecco cosa accade quando lo scroll
+e` di 4 pixel:
+
+valore in
+COLOR01		        |    valore 1  |    valore 2  |    valore 3  |   - - 
+			V	       V	      V	       
+scroll=4:	1111000000001111111100000000111111110000000011111111 - - -
+		^	       ^	      ^		     ^
+valore in	|	       |	      |		     |
+COLOR00		|    valore 1  |    valore 2  |    valore 3  |   - - 
+
+Quando lo scroll e` di 7 pixel, i gruppi di 8 pixel sono allineati con i bordi
+destri delle fascie (rispettivamente i pixel a 0 con le fascie di COLOR00 e i
+pixel a 1 con le fascie di COLOR01): 
+
+
+valore in
+COLOR01		        |    valore 1  |    valore 2  |    valore 3  |   - - 
+			V	       V	      V	       
+scroll=7:	1111111000000001111111100000000111111110000000011111111 - - -
+		^	       ^	      ^		     ^
+valore in	|	       |	      |		     |
+COLOR00		|    valore 1  |    valore 2  |    valore 3  |   - - 
+
+
+Non appena lo scroll supera il valore 8, i gruppi di 8 pixel superano i bordi
+delle fasce. Questo significa che gli 8 pixel del gruppo non avranno piu` lo
+stesso valore. La figura seguente rappresenta la situazione per uno scroll di
+8 pixel.
+
+valore in
+COLOR01		        |    valore 1  |    valore 2  |    valore 3  |   - - 
+			V	       V	      V	       
+scroll=8:	11111111000000001111111100000000111111110000000011111111 - - -
+		^	       ^	      ^		     ^
+valore in	|	       |	      |		     |
+COLOR00		|    valore 1  |    valore 2  |    valore 3  |   - - 
+
+In questa situazione i primi 7 pixel di ogni gruppo di 8 rientrano in una
+fascia e pertanto appaiono con il colore contenuto nel registro colore in
+questa fascia, mentre l'ultimo rientra nella fascia seguente e appare del
+colore assunto dal registro colore nella nuova fascia. Questo fenomeno crea
+dei bruschi cambi di colore che rendono poco gradevole il plasma, dato che 
+questo effetto si basa sull'impressione di "mescolamento" dei colori.
+Nell'esempio plasm4.s viene applicata questa tecnica.
+L'utilizzo dei bitplane ci permette anche di usare delle maschere da
+sovrapporre al plasma. Un esempio e` in plasm5.s.
+La tecnica vista negli ultimi 2 esempi ha il limite che le oscillazioni
+orizzontali sono limitate ad un'ampiezza di 8 pixel. Cio` e` dovuto al fatto
+che ogni registro colore rimane costante in una fascia di 16 pixel, e che ogni
+gruppo di pixel e` largo 8 pixel: per questo motivo, il gruppo puo` spostarsi
+all'interno della fascia di 16-8=8 pixel. Per aumentare l'ampiezza delle
+oscillazioni e` necessario allargare le fascie, e per far questo e` necessario
+utilizzare piu` registri colore, dato che e` sempre necessario cambiare un
+registro ogni 8 pixel. In conclusione, quindi e` necessario usare un maggior
+numero di bitplanes. Notate che negli esempi precedenti abbiamo realizzato le
+oscillazioni con lo scroll hardware, che ci consente movimenti di massimo 16
+pixel. Questa ulteriore limitazione e` superabile facendo oscillare i bitplanes
+con il blitter. Naturalmente in questo caso l'oscillzione richiede una routine
+molto piu` lenta, e si usano trucchi particolari per realizzarla.
+Nell'esempio plasm6.s, che conclude questa "monografia" sul plasma vedremo
+come realizzare un plasma con oscillazione orizzontale di 56 pixel.
+Tutti i plasmi che abbiamo visto possono essere resi piu` interessanti variando
+durante l'esecuzione i parametri che li contraddistinguono e le tabelle che
+contengono i colori (o le loro componenti).
+

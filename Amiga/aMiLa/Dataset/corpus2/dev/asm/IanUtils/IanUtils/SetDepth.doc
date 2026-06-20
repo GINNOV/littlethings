@@ -1,0 +1,57 @@
+SetDepth
+
+POSTMORTEM****This program FAILS under Kickstart 3.0!!!
+But great for 1.3 peoples!!!!!
+
+SetDepth is a utility to change the number of colors available on any screen.
+It is very flexible and powerful.
+
+USES:
+
+If you do not yet have version 2.0 of the operating system, you can use SetDepth
+to give yourself an 8 color Workbench screen, allowing you to use 8 color icons.
+
+(Use SetColor to set the extra four colors.)
+
+If you are running low on memory, set the Workbench depth to 1 (2 colors), and
+you will have more memory to work with.
+
+If a program crashes and hangs, but you still have work to complete before
+you can reset, set that program's screen to a depth of 1 so you have more
+memory to work with.
+
+If you have Workbench 2.0, you probably are using 8 or 16 colors.  If so, when
+you do a lot of Shell work you can temporarily set the number of colors to 2
+or 4 and text display will be accelerated considerably.  Then, when you are
+done, set the depth back to where it was originally.
+
+If certain programs' graphics operate too slowly for your taste, or take up a lot
+of memory, try stripping a bitplane or two off of them.
+
+SetDepth can also tell you how many bitplanes a particular screen has currently.
+
+LIMITATIONS:
+
+Some programs do not make any usage of extra colors you might give them, so
+adding bitplanes may do nothing observable.  Other programs may not take kindly
+to having bitplanes removed.  I have not seen any programs crash after I removed
+bitplanes, but I'm sure someone has figured out how to make my program crash 
+their program.
+
+ERRORS:
+
+Workbench 1.x does not seem to support 16 colors very well.  It sometimes crashed
+my A3000 running 1.3, my A500 running 1.2, and an A2000HD running 1.3.
+
+SetDepth requires no memory, (it uses the stack), opens only libraries that are
+in every Amiga's ROM, and appears bug-free under 1.2, 1.3, 2.0 on A500's, A2000's,
+and A3000's.
+
+
+
+If you have any problems using it, please contact me
+
+Ian J. Einman
+P.O. Box 5711
+Bellingham, WA 98227
+U.S.A.

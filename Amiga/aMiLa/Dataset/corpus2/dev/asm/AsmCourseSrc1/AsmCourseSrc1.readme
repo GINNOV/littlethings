@@ -1,0 +1,106 @@
+Short:        Assembler intro sources plus ALL tools
+Author:       Geert Coelmont (gc@tyana.denkart.be)
+Uploader:     Mike Erasmus (horror smartnet co za)
+Type:         dev/asm
+Architecture: m68k-amigaos
+
+
+Hi!!!
+
+
+Quick -- whats this?? 
+Various work-in-progress sources dating back to around 1991.  Please read
+this .readme!!!!
+
+
+
+             Net vinnig die blitsig in Afrikaans, then English
+             -------------------------------------------------
+
+
+
+** Wats is die ?? **
+--------------------
+
+Dit is een argief bestaande uit 'n paar intros en sources vir  demos en
+intros wat me vriend van België, Geert gedoen het.
+Tydens een van sy besoeke hier na Suid-Afrika het hy so paar stiffies saam
+gebring, toe koieër ek die goedjies wat jy nou hier sal kry.
+
+Dalk is daar nog iemand hier in Amiga-land wat hierdie goed sal waardeer,
+dis al reeds 70 7-jaar oud maar nou-ja...
+
+Let wel. Daar is byna geen dox in die sources nie.  Alles nodig om aan die
+gang te kom is in die argief.  Hoe om dit te gebruik?  Dis nou ongelukkig JOU
+probleem.  Kyk na die assembler_course wat ook op aminet is, daar is
+allerhande infos oor hou om die RAW en al daai goed te gebruik en hoe om
+modules in jou intro te sit.
+
+In een van die dirs is AsmOne.  Dis iewers op Aminet en dit was onlangs ook
+op 'n CU Amiga cover CD.  Die 1997 weergawe.
+
+Hierdie goed dateer uit so ongeveer >=1990 tot < 1993.  Moenie verwag dat
+dit op AGA gaan werk nie.
+
+
+
+
+
+                  ^^^^^^^^^ Now in the English ^^^^^^^^^
+
+What is this?
+------------
+
+An archive containing various work-in-progress things from mt friend from
+Belgium.  This is all his sources and things he did, when he still had an
+Amiga.  I thought I'd put it up on Aminet maybe there are still some
+people who will appreciate it and then you can use the assembler course
+also on Aminet to get going. That have lot of infos you will need here this
+is for advanced coders.
+
+Please, I have not a lot of know-how about programming assembler on Amiga
+coz I cant remember anthing from way back in 1992 when I did some small
+scale things.  SO, you will not get a lot of help from me. You are welcome
+to ask however.
+
+
+BTW. These date back to before there was even rumours of AGA.  Do not
+expect miracles.  After all, the sources is for your help.
+
+
+Credits:
+--------
+Geert Coelmont (maiilto:gc@tyana.denkart.be)
+
+
+!!IMPORTANT!!
+-------------
+You will *not* get _any_ help (if at all) from Geert since he is now
+looooong time not using his A1200 anymore.  He is now a BIG peecee freak.
+That say it all.
+
+
+Distribution
+------------
+Hope not Geert mind me spreading this, apart from that I suppose lets make
+this E-mailware :-))
+
+
+Requirements
+------------
+* An 100% Amiga-compatible.
+* Assembler.  Try AsmOne. Somewhere on Aminet, else found in the assembler
+  course in dev/asm.
+* Patience
+
+
+WHAAAAT???  South Africa???
+--------------------------
+Surprise surprise.  I am from a so-called civilzed part of Africa called
+Pretoria, with a local Internet dialup  ;-))
+
+
+
+
+Greets from KatseNova on #amiga.
+Pretoria, South Africa -- 07-Mrt-1998

@@ -1,0 +1,122 @@
+Short:    ASAP - Amiga Software Authoring Platform
+Uploader: hfx@fox.nstn.ca
+Author:   hfx@fox.nstn.ca
+Type:     dev/c
+Requires: One of Storm or SAS or GNU C++
+Version:  1.0b beta
+Replaces: dev/c/ASAP.lha
+
+Update: June 12th '98:
+
+      Sorry for the delay, working :)
+
+      Added ObtainGIRPort to the ARastPort class (oops!)
+      Also added operator new and delete to ARastPort which
+      calls ObtainGIRPort and ReleaseGIRPort.
+
+      Made the AFileLock and AFileHandle classes inherit privately
+      from the AmigaDOS structures because they are BPTRs, not APTRs.
+      I could have overloaded operator -> and * to handle conversion
+      between APTR and BPTR, but there is no good reason to do so.
+
+      This is still a beta because I'm not sure what to do with
+      the files I've named with a trailing underscore.
+
+      Thanks to Matt Sergeant for testing ASAP with gcc and instructions
+      for compiling the lines demo with gcc.
+
+      Now that we know AmigaDOS 4 is going to be a developer release,
+      I'll be looking into encapsulating it with ASAP. My initial feeling
+      is that ASAP should help insulate you from API changes.
+
+What: Zero overhead, inlined C++ wrapper classes for the Amiga API.
+      A collection of 90 header files, each having one class which derive
+      from the corresponding Amiga system structure, adding no data members,
+      only inlined methods which call the corresponding global prototype
+      substituting the 'this' pointer for the structure pointer.
+
+Why: I'm a C++ programmer, and I think in terms of objects. The Amiga API
+     is a "flat" API. It helps me, and I hope many of you, to categorize these
+     functions into "classes" or "categories". Many of you may be concerned about
+     overhead using these. See below, there is absolutely *no* overhead. There are
+     several benefits, including fewer bugs, such as CloseWindow(pNotAWindow); Also,
+     if you want to work with a Window, or RastPort, for instance, you needn't worry
+     about what include's you need, just:
+       
+     #include <ASAP/Window.h>
+     #include <ASAP/RastPort.h>
+
+How: A tool called ClassBuilder which I wrote for this purpose.
+
+When: Part time work started in late January.
+
+How it works: Firstly, there is no run time overhead when your compiler allows
+              inline optimization. In effect, these are a lot of #define's. As far
+              as storage is concerned, these classes *are* the Amiga structures.
+              You can treat these classes 100% as if they were the Amiga structures,
+              because ultimately, they are.
+
+              Consider a structure, "Structure". There are some functions
+              which operate upon it, for example OpenStructure(Structure *) and
+              CloseStructure(Structure *). To simplify this for the beginner and
+              those who grow tired of typing, I write the following code:
+
+              class AStructure : public Structure
+              {
+               public:
+               void Open() { ::OpenStructure(this); }
+               void Close() { ::CloseStructure(this); }
+              }; 
+
+              Now the instance is tied to its methods, and there is less typing.
+              Also, I have overloaded operator new and delete where desirable.
+              Now you can create/destroy a window as follows:
+
+              AWindow *pThis_Window = new(&The_NewWindow) AWindow;
+              delete pThis_Window;
+            
+              instead of:
+
+              struct Window *pThis_Window = OpenWindow(&The_NewWindow); 
+              CloseWindow(pThis_Window);
+
+Updates: These have all been compiled, but there might be one or two
+         logic errors (perhaps in the more obscure classes).
+
+         Additional version of the collection with abbreviated names for
+         those who do not mind aliases for the Amiga API functions.
+
+         eg. pThis_Window->Zip(); // instead of pThis_Window->ZipWindow();
+
+         Also, default parameters, where the OS defines special parameter
+         values or they are otherwise meaningful, must be added.
+         This is coming next.
+
+Future:  This collection is fairly comprehensive, but not complete. I'm relying
+         on you for feedback. Also, this is just phase I. I've got some nice code
+         built on top of this to allow simple, dynamic IDCMP/Boopsi event handling
+         (dispatching) which I hope to release some time this summer.
+
+Installation:
+
+	Decompress the archive wherever you wish.
+
+	SAS/C: Move the ASAP classes directory into your
+	       cxxinclude directory (sc:cxxinclude)
+
+	Storm C: Put the ASAP class directory wherever you want,
+                 only make certain the directory is in your
+                 include path.
+
+	The files should be reachable as follows:
+	
+	#include <ASAP/HeaderName.h>
+
+Important:
+
+Note that I have wrappers for the wizard.library and msql.library also.
+Thanks to Christophe Sollet for the msql.library, and also to everyone
+who has written with encouraging comments.
+
+Please, please email me if you have any problems or suggestions/complaints.
+I want to hear from you! :)

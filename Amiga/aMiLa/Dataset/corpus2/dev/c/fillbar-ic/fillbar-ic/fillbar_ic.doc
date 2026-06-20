@@ -1,0 +1,76 @@
+TABLE OF CONTENTS
+
+fillbar.image/--datasheet--
+fillbar.image/--datasheet--                               fillbar.image/--datasheet--
+ 
+     NAME
+        fillbar.image-- Show the percentage of some work using a image.                 (V43)
+ 
+     SUPERCLASS
+        imageclass
+ 
+     DESCRIPTION
+        The fillbar.image image class provides a gauge that displays some
+        ammount of work being done.
+ 
+     METHODS
+        OM_NEW--Create the FILLBAR image.  Passed to superclass, then OM_SET.
+ 
+        OM_DISPOSE--Dispose the composite objects used by our class. Next
+            control is passed to the superclass OM_DISPOSE method.
+ 
+        OM_SET--Set object attributes.  Passed to superclass first.
+ 
+        OM_UPDATE--Set object notification attributes.  Passed to superclass
+            first.
+ 
+        IM_DRAW--Renders the images.  Overrides the superclass.
+ 
+        All other methods are passed to the superclass, including OM_DISPOSE.
+ 
+     ATTRIBUTES
+        SYSIA_DrawInfo (struct DrawInfo *) -- Contains important pen
+            information.  This is required if IA_BGPen and IA_FGPen are
+            not specified.
+ 
+        IA_FGPen (LONG)    -- Pen to use to draw the Frame around the fillbar
+            and all rendered text. If -1 is specified then TEXTPEN is used.
+            Defaults to the -1 case.
+ 
+        IA_BGPen (LONG)    -- Pen to use to draw the unlit segments or
+            background.  If -1 is specified then BACKGROUNDPEN is used.
+            Defaults to the -1 case.
+        
+        IA_FillPen  (LONG) -- Pen to use to draw the filled part of the
+            fillbar. If -1 is specified then the FILLPEN is used.
+            Defaults to the -1 case.
+        
+        IA_LeftEdge (LONG) -- Left edge to position image.
+
+        IA_TopEdge  (LONG) -- Top edge to position image.
+        
+        IA_Width    (LONG) -- Width of the image.
+ 
+        IA_Height   (LONG) -- Height of the image.
+ 
+        FILLBAR_FillPen (LONG) -- Pen to use to fill the image. If -1 is
+            specified then FILLPEN is used.
+ 
+        FILLBAR_LabelLeft, FILLBAR_LabelRight (BOOL) -- if TRUE show the 0%
+            and/or 100% labels in the fillbar. Defaults to TRUE.
+        
+        FILLBAR_LabelLeftString, FILLBAR_LabelRightString (STRPTR) -- choose
+            the strings to the corresponding labels.
+            Default to "  0%" and "100%".
+        
+        FILLBAR_LabelInside (BOOL) -- if TRUE show a floating % value in
+            the middle of the fillbar. Defaults to TRUE.
+            
+        FILLBAR_FrameAround (BOOL) -- if TRUE the composite fillbar image
+            object has a embossed frame around it. Defaults to TRUE.
+            
+        FILLBAR_FrameInside (BOOL) -- if TRUE the fillbar has a embossed frame
+            around it. Defaults to TRUE.
+        
+        FILLBAR_Value (LONG) -- set the current value of the fillbar.
+            Defaults to 0.

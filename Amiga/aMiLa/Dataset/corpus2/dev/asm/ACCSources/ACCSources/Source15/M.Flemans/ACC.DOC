@@ -1,0 +1,48 @@
+        .               .            .                     .         .
+.      _______ _______ _______
+      / ___  // _____// _____/.                 .         DATE : 27.07.91
+  .  / /  / // /     / /                                  BY MARK FLEMANS
+    / /__/ // /  .  / /   .           . 
+   / ___  // /____ / /____       .                  .              .
+  /_/  /_/ \_____/ \_____/
+ 
+ Yo there hords of fans,
+                         after a totally awsome delay of a few months
+ I am back spewing out more source from Devpac for you to curse and 
+ swear at. I bet you havn't been wondering where I've been well I got
+ a job ( of course !! ). Yup I'm now a professional programmer. ( Cor
+ look at all this structured source !!! ).
+
+ Any how, what you should find on this disk is the following bits  ...
+ 
+ 
+ DUAL-TEXT EXAMPLE
+ -----------------
+
+ A very small intro that I wrote to make a nice and fancy text display
+ It uses one plane of text but the second plane has a difference of a
+ few bytes ( the screen width ) and is offset by the scroll register.
+ The idea came off an LSD intro ( Thanxs Guyz ).
+  
+ MOUSE-MENU EXAMPLE
+ ------------------
+
+ Fed up of all those demo compacts with the boring press F1 - F10 well
+ this could be the answer. I wrote this because my Amiga keyboard is
+ playing up and not allowing me to type anything. Its sooooooo easy to
+ use but the speed of the bar moves a bit to fast ( only a bit !!!).
+ 
+ F-KEY MENU V2 EXAMPLE
+ ---------------------
+
+ Fed up of using my mouse menu already, ok this is a mixture of the 
+ Dual-text Intro and my F-key menu which appeared on Issue 6 ( I think
+ a long time ago !! ). Its small and compact and powerpacker will
+ crucnch it to about Ohhh, 2k !. So its brilliant to use.
+
+
+ Well thats it so now, so long and happy assembling 
+                                     ( GURUing Ha,ha!!)
+                                                         Mark
+
+  

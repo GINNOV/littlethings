@@ -1,0 +1,22 @@
+Short:        Low level custom console IO C source code
+Author:       cbloom@mail.utexas.edu (Charles Bloom)
+Uploader:     cbloom mail utexas edu (Charles Bloom)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+
+
+ConMan README
+
+by Charles Bloom cbloom@mail.utexas.edu
+
+6-25-96
+
+These are two, rather old, source libraries.
+
+ConMan does CON: IO but gives the calling task complete control
+over the Gfx and the character IO.  i.e. character can be filtered,
+you can put multiple cons in one window, you can do an iskbhit() etc. etc.
+
+	( ConMan has a little bug : the cursor doesn't show up when it's
+		at position Zero )

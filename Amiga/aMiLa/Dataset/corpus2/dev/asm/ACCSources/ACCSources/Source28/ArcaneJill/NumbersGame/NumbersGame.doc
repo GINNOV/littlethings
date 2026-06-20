@@ -1,0 +1,343 @@
+
+NumbersGame
+~~~~~~~~~~~
+
+For all devotees of Channel 4's game show "Countdown", this is my
+solution to the numbers game.
+
+For those of you who have never heard of Countdown, I should explain
+that the numbers game works like this: Six small integers are chosen
+from the set {1,2,3,4,5,6,7,8,9,10,25,50,75,100} (duplicates are
+allowed) and a target value is picked by computer at random somewhere
+in the range 100-999. The contestants then have only thirty seconds
+to construct the target value out of the starting values, by
+combining them in any order using only the operations of add, subtract,
+multiply and divide.
+
+This game is surprisingly difficult, although Channel 4 employ a
+resident genius by the name of Carol Vorderman who makes it look
+easy. She is usually able to come up with a solution even when both
+contestants have failed.
+
+This program SOLVES the numbers game. You give it a problem, and it
+will solve it. This program is slightly more general than the TV
+version, in that it can accept any number of starting values between
+two and eight, and that these can be any value. Also, the upper limit
+on the target value is 16383 rather than 999.
+
+For a six-seed problem, the program does not always come up with a
+solution within the thirty second deadline, but will usually take
+around 45 seconds. This is reasonably fast, and it means that you can
+play it against yourself, the Countdown contestants, and Carol
+Vorderman, all in real time.
+
+Note that if a solution is possible then this program will find it.
+If this program cannot find a solution then the puzzle then it's
+because the puzzle is impossible to solve!
+
+Program history
+~~~~~~~~~~~~~~~
+
+There is a long history attached to this program. This is actually the
+fourth variation I've tried out, and the best so far.
+
+The very first version was terrible. I reasoned like this: Suppose
+there are six seeds. In the worst possible case, all seeds are
+different. That means that there would be six factorial (720) ways of
+ordering them. These are connected by five operators, each of which
+may take one of four possible values - so that's four to the power of
+five (1024) possibilities. Finally, the operators can be applied in
+any order, so if we assign a precedence level between one and five to
+each operator it is then easy to see that there are five factorial
+(120) permutations of precedence. This gives us a grand total of
+720 × 1024 × 120 (or 88473600) possibilities. Therefore, all I have
+to do is try each one in turn until I find one which matches the
+target value. This is the so called "Brute Force" approach.
+
+Unfortunately, this didn't work out quite so well as I'd hoped. To
+be sure, it DID find the solution eventually, but it took rather a
+long time to do it. It was S...L...O...W..., taking (in the worst
+possible case) about eight hours to come up with the right answer.
+This was a bit too far outside the thirty second time limit for my
+liking. I could see that I had work to do.
+
+The second version did not use the brute force method outlined above.
+Its algorithm was very similar to the algorithm used in the current
+version. The idea is that you store in memory a series of partial
+results (or "Methods") each of which represents either a seed value
+or else two simpler methods connected together by an operator. Thus
+you eventually build up a network of possible outcomes, and you never
+have to perform the same operation twice - a big saving in time.
+Now all I had to do was advance two independant pointers through the
+partial-results and at each stage construct new partial-results, until
+one of them matched. This is also a kind of brute force approach, just
+quicker. I succeeded in getting the time down to twenty minutes, but
+this was not good enough.
+
+The third version was the fastest version of all - faster even than
+the current version. It could solve the worst possible case six-seed
+problem in a staggering ten seconds! It used basically the same
+algorithm as the current version, but with a few tricks to speed it
+up. The main difference between version two and versions three/four is
+that I had figured out how to prune the network (thus keeping the
+number of partial results down) without throwing away anything
+important. The idea is that a partial-result is considered "redundant"
+if it's value has already been obtained using a subset of the seeds
+used. For instance, if the result 2*3=6 had already been obtained,
+then 1+2+3=6 would be considered redundant because 6 could be made by
+a simpler method. Redundant results are thrown away, instead of being
+added into the network.
+
+In order to check whether or not a given method was redundant, I needed
+a way to quickly look up all methods which equate to a given value. In
+the current version I used a binary tree (which is pretty fast), but in
+version three I went all out for speed and used a massive great 64K
+lookup table, with one element for each integer between 1 and 16383.
+I used other tricks to speed it up too - instead of using AllocMem()
+to obtain memory for each new structure I maintained chains of very
+large arrays of structures, then instead of allocating I could just
+advance a pointer by one array element. AllocMem() is pretty slow
+really, so this speeded things up phenomenally. Thirdly, I ran the
+calculations as a separate task from the user interface. Every time
+the user-interface-task learned of the next seed or target value, it
+would signal this information to the calculator-task. The advantage of
+doing this is that calculations can begin BEFORE the target value is
+actually known. In fact, that task started building the network as
+soon as it had two seeds to work on, so that by the time you entered
+the fifth seed, it had already worked out all possible values which
+could be constructed from the first four. The timer did not start
+running until the target was entered. In a way this is cheating, but on
+the other hand, it's exactly what human beings do when playing the
+game for real. Oh yes - and the calculator-task ran at a priority of
+one, so it had precedence over all those priority zero tasks and so got
+a smidgen more CPU time.
+
+When I ran it for the first time I was highly disappointed - it was
+just TOO fast. You couldn't compete against it. Well, version three is
+no longer available, due to a few minor mishaps and a bad case of not
+backing things up as often as I should have (there's a lesson there).
+
+But version four - THIS version - IS. I decided I didn't need quite
+such phenomenal speed, so I threw away all the speed-up tricks, but
+kept the basic algorithm. So, instead of a look-up table we have a
+binary tree; instead of large arrays, I use AllocMem(), I don't run
+two separate tasks, and I don't start the calculations before the
+target is known. It turns out that this version takes twenty to
+fifty seconds (on an unaccellerated Amiga, by the way) to solve the
+puzzle. Not quite fast enough to meet the 30 second time limit, but
+close enough.
+
+NumbersGame as an example program
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+I have included the source code for this program, because it's a good
+example of just about everything I've ever contributed to ACC disc
+magazine.
+
+For a start, it uses "earth.library" functions to maintain its binary
+trees ("earth.library" has very powerful tree handling functions) and
+also to do string manipulations.
+
+It also uses "earthrexx.library" to add an ARexx interface. This is
+the easiest way I know of to add an ARexx interface - after all, that's
+what "earthrexx.library" was written for. If you look at the source
+file "RexxInterface.s" you'll see just how easy adding an ARexx
+interface can be.
+
+NumbersGame was written using EarthMagic, which means that there is
+global data in the source code which is magically transformed into
+private data at link-time, and the program remains PURE. You'll also
+notice that several libraries are opened and closed "by magic". They
+are declared in the source file "Main.s", but you won't find a single
+call to OpenLibrary() anywhere in the source code.
+
+Although the executable version is included, you can build your own
+executable by reassembling the source code. If you want to build an
+exact copy then you need the following:
+
+(1) Devpac 3
+	Devpac 2 will assemble it, but will not make as many
+	optimisations as Devpac 3.
+(2) EStartA.o version 3.4.
+	This is a startup-file which is necessary for EarthMagic.
+	Version 3.2 was published in ACC issue 25.
+(3) PPLink version 3.4
+	EarthSoft's excellent linker, also necessary for EarthMagic.
+	Version 3.2 was published in ACC issue 25.
+
+I would have included the above files, but my own distribution
+conditions forbid me to do so unless I also include all the docs,
+which I didn't really want to do as adeqate versions and docs are all
+available on other ACC discs.
+
+I would, however, strongly advise anyone interested in using any
+EarthSoft program to write to me for the latest versions of everything,
+as I'm always updating things, adding new features, and fixing minor
+bugs.
+
+Run-time requirements
+~~~~~~~~~~~~~~~~~~~~~
+
+Well, you need the following:
+
+	"earth.library" version 1.0+;
+	"earthrexx.library" version 2.1+;
+	"arp.library" version 34.0+.
+
+All of these libraries are included on this disc. Please note that the
+version of "earthrexx.library" which was supplied on ACC disc 26 was
+version 2.0. The version on THIS disc is an update. Version 2.0 had a
+minor bug which prevented it from working properly under Workbench 2.
+This is now fixed. All of the documentation for version 2.0 remains
+valid for 2.1.
+
+Running the NumbersGame from the CLI
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Childsplay. Just type NumbersGame and press return. You then return the
+seed values one at a time, pressing return after each seed. Press
+newline once more, to show that there are no more seeds. Type in the
+target value, press return, and wait.
+
+When the Amiga has solved the problem, you can type in alternative
+target values, to be calculated using the same seed set. These problems
+will be answered IMMEDIATELY.
+
+To exit the program, just press newline again.
+
+The ARexx Interface
+~~~~~~~~~~~~~~~~~~~
+
+You can run NumbersGame as an ARexx command host. To achieve this,
+just type at the command line:
+
+	Run >NIL: NumbersGame ARexx
+
+Once running, you will then be able to create and run ARexx scripts
+which can solve NumbersGame problems. Each ARexx script will need the
+lines:
+	address NUMBERGAME
+	options results
+
+somewhere near the start of the script, so that commands get sent to
+the right place, and so that results can be returned (in the special
+ARexx variable RESULT).
+
+There are only four ARexx commands - they are all you need.
+The commands supported are:
+
+GETSCHEME seed_values
+	This calculates all possible results for the given set of
+	seed values. You can provide between two and eight seeds, and
+	each seed must be separated by spaces. The value returned in
+	RESULT is very important. It is the address of a structure
+	called a "Scheme", which you will need to pass in to the other
+	ARexx commands.
+
+GETMETHOD scheme target [index]
+	This provides you with one solution to one puzzle. The first
+	parameter is the scheme address returned from an earlier
+	GETSCHEME command. The second parameter is the target value
+	you wish to obtain. In all cases, if an exact solution is
+	possible, it will be returned.
+
+	If the optional third parameter is omitted, then the command
+	will return the closest match, if an exact match is not
+	possible.
+
+	If you supply "1" as the third parameter then the command will
+	return the empty string if an exact match is not possible.
+
+	If you supply any other (numerical) argument then the command
+	will return alternative non-equivalent solutions to the
+	problem (if possible).
+
+FREESCHEME scheme
+	This MOST IMPORTANT command frees the memory occupied by the
+	Scheme structure. Since we are talking about LOTS AND LOTS of
+	memory here, it is most important that you free it.
+
+	By the way, if your ARexx script should bomb out before the
+	FREESCHEME command is executed, then there is then no way of
+	freeing the memory, except by resetting the machine. This is
+	a problem with ARexx scripts in general, and is not the fault
+	of NumbersGame.
+
+QUIT
+	As you would expect, this shuts down the NUMBERSGAME ARexx
+	command host. Therefore, if you type at the command line:
+
+	RX 'address NUMBERSGAME quit'
+
+	then you will terminate the process which was started by an
+	earlier "Run >NIL: NumbersGame ARexx" command.
+
+Example ARexx script
+~~~~~~~~~~~~~~~~~~~~
+
+You will find on this disc an example ARexx script called "Test.rexx".
+This evaluates all possible outcomes of the seed set {1,2,3,4,5,6}
+and will then print (1) the largest possible result, (2) several
+different ways of calculating the number 100, and (3) all consecutive
+results from 1 upwards. Being a good program, it then frees the
+scheme memory using the FREESCHEME command.
+
+Have a look at this program to see how to use the various ARexx
+commands. Note that it usually takes two lines to carry out a given
+command - one to perform the command itself, and one to move the
+result from the ARexx special variable RESULT into a more permanent
+variable.
+
+===============================================================================
+PUBLIC DOMAIN NOTICE
+===============================================================================
+
+NumbersGame was written by Arcane Jill.
+Copyright 1992, EarthSoft.
+
+This program is FREEWARE.
+It is NOT shareware.
+
+     +------------------------------------------------------------------+
+     |									|
+     |	With only one exception, NumbersGame version 1.0 may be		|
+     |	reproduced as many times as you like, supplied with any		|
+     |	application, and distributed with no restrictions whatsoever,	|
+     |	PROVIDED that the following condition is adhered to:		|
+     |									|
+     |	THE FOLLOWING FILES MUST BE SUPPLIED TOGETHER ON ONE DISC:	|
+     |		NumbersGame						|
+     |		NumbersGame.doc						|
+     |		libs/arp.library					|
+     |		libs/earth.library					|
+     |		libs/earthrexx.library					|
+     |									|
+     +------------------------------------------------------------------+
+
+The exception is as follows. Channel 4 may not use this program on
+"Countdown" without my written permission.
+
+You can even use the program in commerical applications, free of charge.
+No further permission is required, but you absoultely MUST include the
+above-listed documents with the application.
+
+WHO ARE EARTHSOFT?
+
+    EarthSoft are a group of Amiga enthusiasts who believe wholeheartedly
+    in the principle of PUBLIC DOMAIN. You should never have to pay
+    money for an EARTHSOFT product. Our aim is to provide high quality
+    software, fully documented, and absolutely free of charge.
+
+    Please support us in our beliefs by distributing our products
+    far and wide across the globe, sticking them on BBs and in PD
+    libraries, etc.
+
+    Our address is:
+
+	EarthSoft
+	5 Dumergue Avenue
+	Queenborough
+	Kent
+	ME11 5BJ
+	England
+

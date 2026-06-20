@@ -1,0 +1,15 @@
+Short:        Unit for KickPascal/MaxonPascal3 for fontsensitive GUIs
+Author:       Björn Schotte <bjoern@bomber.mayn.de>
+Type:         dev/src
+Architecture: m68k-amigaos
+
+This unit, called OS2-Unit, is a unit for easier programming
+GadTools-Gadgets... It offers a lot of functions, e.g.
+fontsensitive Routines, drawing a fontsensitive BevelBox/BevelLine,
+Setting a ListView-Gadget, ghosting gadgets, setting MX-Gadgets
+etc...
+
+It is very powerful and easy to use!
+
+OS2Unit is GIFTWARE and ©1995,96 by Björn Schotte. The author
+isn't reliable for any damage this unit makes!!

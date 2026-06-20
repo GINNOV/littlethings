@@ -1,0 +1,10 @@
+Short:        Source code of an old Aga intro!
+Author:       granata@mail.caribusiness.it (Paolo D'Urso)
+Uploader:     granata mail caribusiness it (Paolo D\\'Urso)
+Type:         dev/asm
+Architecture: m68k-amigaos
+
+This's the Asm source of an old Aga intro by X-ZoNe! To run it, just change
+the incdir at the beginning and then jump with AsmOne or AsmPro. A long time
+passed since I released this intro, so if you find some bugs don't stress me.
+For newer thigs from me, get Darkage productions from Aminet.

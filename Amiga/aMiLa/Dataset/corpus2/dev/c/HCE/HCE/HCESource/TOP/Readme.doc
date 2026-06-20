@@ -1,0 +1,32 @@
+(21.4.94)
+
+
+      HOW TO MAKE THE OPTIMIZER - (TOP)
+      ---------------------------------
+
+      FROM HCE:
+      
+      1) Select 'Load (c/a-source)' from the 'Disk' menu and then 
+         load this document (if you haven`t already).
+         You can then view the instructions from the editor.
+      2) Select 'Lock?' from the 'Other' menu and then Lock the
+         'HceSrc:TOP/Source/' directory.
+      3) Select 'Compiler-options' from the 'Compile' menu.
+      4) Select 'Load Compile List' and load the file called 'TOP.CL'.
+      5) Click on the 'Compile' gadget until it shows 'FROM-LIST'.
+      6) Exit the options window.
+      7) Set the 'Outpath' gadget in the  'Assembler-options' window to
+         a path of your choice. (Default is, RAM:)
+      8) Select the 'Compile+Optimize+Assemble' gadget.
+      9) Wait until all files have been compiled.(10-20 mins)
+     10) Select 'Linker-options' from the 'Link' menu.
+     11) Select 'Load Link List' and load the file called 'TOP.LL' from
+         this directory.( HceSrc:TOP/TOP.LL )
+     12) If you do not have enough memory then change the 'OutName' gadget
+         to a name+path of your choice.  
+     13) Exit the options window.
+     14) Select 'Link List' from the Link menu and wait.(1-2 mins)
+
+
+
+

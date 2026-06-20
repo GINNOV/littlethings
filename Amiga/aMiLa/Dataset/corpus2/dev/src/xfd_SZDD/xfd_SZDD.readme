@@ -1,0 +1,27 @@
+Short: sources of SZDD xfdmaster client
+Author: Kyzer/CSG <kyzer@4u.net>
+Uploader: Kyzer/CSG <kyzer@4u.net>
+Type: dev/src
+Requires: util/pack/xfdmaster.lha
+
+This is the source code of XFD's SZDD slave, for the curious.
+
+SZDD is a weak LZSS compressor, which was used by Microsoft for many years
+in their installation software - all those files with a letter taken from
+the end of their extension, eg HELLO.EX_
+
+Thankfully, one day Johnathan Forbes decided to work for Microsoft, and
+happened to sell them his LZX compression technology, which is state of the
+art as far as LZH is concern. So now Microsoft use LZX compression in their
+installation archives, now under the guise of "CAB" files (I'm working on a
+CAB slave for xadmaster).
+
+This SZDD slave has only been tested on a few files, so it may not be
+entirely perfect. If you have a file it can't extract, please send it to
+me.
+
+Note that this slave does not support 'KWAJ' files, which replaced SZDD as
+the secret undocumented piss-poor compression format in the 1996 Microsoft
+Setup Toolkit. If you have an actual algorithim for this format (or are a
+skilled Windows programmer and could hack it out of MSINSSTF.DLL), please
+contact me.

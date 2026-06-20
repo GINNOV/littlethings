@@ -1,0 +1,416 @@
+;bungy jumping.......
+
+;********** yobtris **********
+;screen layout
+
+- = platform
+P = player
++ = tetris piece
+= = tetris wall
+
+;player picks up a piece (fire) and falls off the ledge
+;and runs along the approp pform and dumps it over the edge to mak the line
+;try and find some tetrisy backdrops and some tetrisy music (jolly n irritatin)
+
+----       ++           ----	;pieces fall between these walls
+----        +           ----	;
+----        +           ----	;
+----                    ----	;
+----		----	;bottom platforms out of reach by players
+
+        ++   +++
+ P      ++    +           P	;players stay here
+ --------------------------
+    --------  ----------
+   --------    ----------
+  --------      ----------
+ --------        ----------
+--------          ----------
+========          ==========	;tetris WALL 
+========          ==========	;tetris WALL 
+========          ==========	;tetris WALL 
+========          ==========	;tetris WALL 
+========          ==========	;tetris WALL 
+========          ==========	;tetris WALL 
+============================
+;V 122
+;LAZER more of
+;writing the kill all that the lazer touches!!!!!!!!!
+;the best place (i thought) to put the rtn was in the go_collision rtn
+;but when that happens, the bobs have already been placed.
+;It may be better to put it the GRAB rtns 
+;(besides theres more change of an addr reg free)
+;written all the other routines that work out the zone for the lazers!
+;just got to do the bits for the bobs
+;starting with the baddies (Theres on there to start with)
+;^^^ written but does no work!!!!!!! Hmmm have to think about that for a bit.
+;gives me summink to do while lisa drives me to town (Car MOT)
+;FIXED. make sure its a lazer that your doing the lazerzone on
+;baddy one works ok, lets try killing the players!
+;Players die HAHAHAHAHAHAHAHAAHAHAHAHAAHAHAHAHHA
+;little bug with the bullets.
+;i think it gets confused and the lazer decides it hit itself and kills itself off
+;FIXED it all...
+;NOW just got to write the DESTROY PLATFORMS bit for the lazer
+
+
+;fixed the lazers, so thazt they only blit 1 word wide
+;this clears up the lazer residue on the lazers shooting to the right!
+;it also make the rtn a little faster (less blitting)
+
+;fixed the baddy rtn so rhat when he dies, he stops grabbing/restoring
+
+;Forgot about dbl buffering... it work better now though
+;Gonna fix double buffering...... FUCK.. fuck.. fuckity,fuck.. fuckfuckfuck
+;screen switch when you con to PRINT players etc!!!!!!!!!!
+
+;started to write the Lazer beam rtn (cannon are baddies)
+;it now prints up the lazer
+;now all we have to do is zone it....
+;kill all baddies/players who touch it!
+;destory platforms in it
+;and restore behind it when the lazer dies.
+
+;LAZER
+;Destroy the platforms n players n baddies n bullets !!!!!!!!!!!
+
+;the reason there is lazer residue on the right hand lazer, is
+;because of the cannon grabbing and restoring all the time
+;solution 1. (easy)
+;in grab/restore/print baddy rtns
+;if weapon = lazer then only blit 1 word wide!
+
+;solution 2. (hard) (also wont work) (work for lazer though)
+;if baddy = in lazer zone then grab from other temp (not screen)
+;if cannon = in lazer zone then grab from other temp (not screen)
+
+;take out the yobtitle rtn. do a complete rewrite of the little shit
+
+;How about changing the colours of the platform to do level?
+
+
+
+
+;V 121h
+
+;LAZER
+;Destroy the platforms!!!!!!!!!!!
+
+;There are bugs and they go as so,
+;the actual copy to temp buffer will not work with more than 2 lazers (DONE)
+
+;the restore restore wrong for right (left not written) (DONE)
+;when its initially grabbed. make it grab from the start of the line (DONE)
+;and not from the position of the cannon
+;this should fix the right lazer! (YES)
+
+;** Make the lazer do NO collision with the player (bouncing lazers?) ** (DONE)
+;ok, when you create the lazer cannon, it saves the LBnk (restore bank no.)
+;so you know where to restore from. (DONE)
+;to get the starting point, grab the cannons Xmap and add 1,
+;count (bull_Lcnt) up to scrwid for going right
+;count (bull_lcnt) down to 0 for going left!
+
+;when you initially draw the backdrop on the screen, (DONE)
+;nab a strip 320*16*5 where the lazer shoot
+;you will need to allocate scrwid*(16*4)*5 for this..... (DONE alloc lazertempBase)
+;for lazers shooting right restore from the lefthand side to right
+;for lazers shooting left restore from the righthand side to left
+;
+
+;* at the mo, the lazer dies like any normal bullet *
+;instead of falling to gravity, it just sits there like a lemon (DONE)
+;taking up 1 bullet bob (if both cannons shoot 2 bullets, you get no baddy
+;bullets). To fix this, whil lazer is going make the bull_randg=random+1
+;when the lazer is actually dead the bull_life count = 0.
+;this is when you can start restoring the screen again!
+
+;there is a bug somewhere..
+;if a baddy is stationary (cannon,question marks) then it uses a default R gfk
+;please huunt and fix (DOOOOIIIIIIIY. Put bad_an_off in create baddy!) (DONE)
+
+;V 120baab
+;curious bug, i you kill player2 off, player1 gets shitty autofire
+;probably to do with both guys being run from the same port...<-NO
+;its all to do the the liveplayers struct which i should have
+;completely removed when i created it in the player structure....DONE
+
+;V 111ffb
+;doing collsion of the baddys n bullets (player)
+;removed the pixel perfect collision for the players bullets
+;it didnt seem very accurate. sometime the bullets went straight through!
+
+;Changing levels works ok...
+;have to write a rtn that kills off all bullets/baddies/players etc though ?
+
+;Now writing the title screen...
+;Put in the MAIN bit,
+;copy chip gfx (i.e. player,bullet etc) into fast (if present)
+;and use that memory.
+;use normal screens 
+
+;Editing a rtn called back to front..... DONE
+;make it use the processor to copy the background picture ont the screens.
+;this is so that the background piccy can be loaded into fast (if present)
+
+;Summink to do when youre bored.. DONE
+;write a rtn that loads the backdrop piccy into fast (if avail)
+;and then copy it onto the screen to use (saving 40k) 
+;you could also do this for some of the other rtns (can't think of any yet)
+
+;there is another bug with the player shooting routine.... DONE
+;if you move into the border and shoot, you lose your bullet.....
+;Solution
+;edit the kill bullet on edge of screen routine. to dec the bullcnt
+
+;V108 Mem requirements
+;316480 chip
+;123904 fast
+;440384 total
+
+;V104 Mem requirements....
+;336928 bytes chip (+ 16k code)
+;66704  bytes fast
+;403632 total
+
+;V103 Mem requirements...
+;400928 bytes chip (16k code)
+;6000   bytes fast
+;406928 total
+
+
+;V 103
+;wrote the players fire routines.
+;Well made a little patch to use the baddy bullet routines..
+;and a bug which took a whole half a day to fix....
+;FIXED IT ABOUT FUCKING TIME.....
+;IT WAS D7 IN THE PLAYER FIREING RTn
+;the fire proggy changed d7 so when i returned. it went looking for players
+;2 - 65535 and player with all the pointers along the way......
+;There is a bug with the bullets or collsion....
+
+;Hmmmmm ......
+;let the baddy shoot LEFT
+;the press fire....
+;the baddies bullet disappears...( To Where??? )
+
+
+;the baddy bullets work fine without player bullets
+;the player bullets work find without the baddy bullets!
+;its nothing to do with going over the vblank (although it makes a mess)
+
+;it seems to be in the move bullet rtn..
+
+
+
+;V100
+; play aronud version but will save if it works out....
+;the only problem with the new gfx for the baddies.
+;is that they still use the origonal baddy collision gfk (FIXED)
+
+;create a TAGLIST for the baddies...
+;i.e. when you make a baddy clear out the memory for him
+;and put the default values in for him...
+;then look through the file for his specific attr.
+;i.e. only l/r or seeking etc....
+;in file:	-> yoblev1.inc <- at bottom of screen.. sort out later
+;dc.b	"LEVEL01",0
+;incbin	yob:lev/kk-lev03.lvl
+;dc.b	"BADDY01",0
+;dc.b	bad_gun,WeapSmart
+;dc.b	bad_hp,99
+;dc.b	0
+;dc.b	"BADDY02",0
+;this does limit the baddy structure a bit...
+;you can now only have 255 bytes per baddy (using 79 at the mo)
+;And if i need to use any words in the structure i will have to change
+;this routine a bit (at the mo all changes attr are bytes)
+
+;also may be a good idea instead of loading in individual levels
+;load in say a batch of 5 or 10 (complete with baddy file [see above])
+;and then load the EOL baddy in after that!
+
+
+V89a
+;another bug in the collision rtn. whenever the plauer got hit by a
+;baddy or a bullet, the rtn said make player HURT.
+;But in the check rtn it sez if player hurt go onto next player...
+;this way we were getting hurt player images left on the collision screen!
+;NOT Good...
+
+;i also discovered an old bug that only just turned up!!!
+;for some reason with some of the seek bullets, when they are in their
+;straight line (initial) phase somehow the UP bit gets set in its go var.
+;so, when i said hey go down... it did nothing....
+;fixed by setting down and clearing up....
+
+V89
+;there was a little bug when i remade the collision routines...
+;the collision worked perfectly but when the player died the bullets
+;carried on homing in on him.....
+;this was because the origonal verssion pre-inc the player counter
+;and the new one doesnt... So when it killed him off, it was actually killing
+;off the first player!!!!
+;i.e. if player 2 got killed, the computer would kill off player 1!
+
+V88d
+;rewrote the baddy and bullet collision routines and
+;combined them together. also fixed a little gfk bug
+;in the bullet... i never saw it occure but the bullet structure should
+;have been A5 and it was A2.
+
+V87ab
+;Fixed a little bug with the players animation....
+;when he walked l/r his gfx would fuckup. I tried blaming the gfx
+;(as i usually do) but i went through every frame and they were fine.
+;it was in the actual animation routine. when framecnt got to its
+;max (7) i set it to -1 and then expected the next routine (frame update to 
+;and a 1 to it.. But it didnt always do it. so I now set it to 0 and reset the
+;frame updata counter too...
+
+V87a
+;ever since i made it load in all the files from disk
+;i seemed to lose about a few hundred bytes.  I never worried about
+;it as ive go loadsa bytes but just no i had a brainwave
+;(dunno why i didnt think of it before)
+;when i load a file i LOCK it to get the size.
+;this creates a structure!! did i free up that structure (guess kiddies)
+;to free it up, just UNLOCK it...... groovy!!!!!
+
+V87
+;wrote the player to bullet routines... Could be improved by
+;mingling it with the player to baddy routines... ahh well maybe later
+;also wrote nifty little bit of code for when the bullet actually
+;hits the player.  It bounces off of him... its fun. try bunging it
+;on 1 player with loadsa bullets and 1 baddy!
+
+V86
+;write the player hitpoints routine....
+;makes player white (with a little edit to color map) when hit by baddy
+;and kills him off when hes out of hit points!!!!!
+;as yet have not written a routine to exit program when all players
+;are dead
+
+V84pe
+;wrote the player jump. it was a bit bodged...
+;i nabbed the baddies jump and frigged it a bit to get it too work 
+;for the player too.  works perfectly!!!!!
+;I seem to have created 2 labels in the player structure that
+;do the same thing. im gonna have a look at that later on.
+;ive got labels called doing and going which both seem to be
+;used for the same thing, but are used seperately!!!!
+
+V84p
+;re wrote the gfx prggies so that they all look through T:intset for the
+;graphics to use. all the players/bullets etc are loaded frm disk
+;and then converted from iff into the format that i want
+;this has taken the source down to about 25k groovy!!!
+;***REMEMBER***
+;This version need yob.inc.gs to work!!!!!!!!!!!!!!
+;byebye all include s!!!!!!!
+
+;There is a minor bug,	(FIXED)
+;if the player is facing right he is indestructable (maybe gfx)
+
+;the problem with the player jumping is as follows.
+;he jumps fine perfectly brill fantastic, but..
+;when hes at the top of his jump (about 3 pix onto the platform above)
+;he sez hey im on top a platform bung me on it. and he mysteriously
+;jumps 13 pixies just like that... gotta fix.
+;best way is not to start checking for the platforms until he has
+;has fallen to or across a word boundary
+
+;it would seem that either ifflib is fucked or im accessing it wrongly
+;and it crashes every second run
+;What the problem was, sometimes it would try and load the ifflib and fail
+;there was no trap to say hey i cant find it and it tried a function
+;anyway
+;O sodit, lets use commodores iffparse libray instead!!!!!!!!!!
+
+;*** THIS IS NOW VERY SYSTEM FRIENDLY
+;It will not mind any sort of disk access what so ever!
+;It does not use forbids or disables so disks should just carry on
+;(well when i disown blitter anyway) ***
+
+;for the walk_on routine. It would be a good idea to 
+;make this a between 2-12 routine instead of 123456789101112
+
+;BUG
+;got 2 routines to write.
+;EDGE : make bullet bounce off edge of screen
+;GRAV : make bullet fall when out of energy
+;also AGRAV : always fall to gravity
+
+
+;V80
+;written the player to baddy blitter collision.
+;I think it works properly now after a little typo
+;I was checking the bullet status instead of the baddy status (DuuuuUUH)
+
+
+;V79fc
+;There was a little bug from the very beginning..
+;when the player dropped onto a platform. on occasion he
+;would shift down 8 pixels when he should still be falling
+;Fixed it by making the progs think hes only 16 high and
+;letting mr blitter do the extra 8 pixels.  After millions 
+;of out of memory errors I finally got it to work! (I think!)
+
+;made normal bullets too. but when they have been fired (DONE)
+;summink stops the bullets being fired again!
+;either bullet flags still thinks its alive
+;or baddy still thinks hes shooting, so doesnt do another one!
+
+;If youve got more baddies on the level than the prg can handle... it crashes! (DONE)
+;If youve got more players on the level than the prg can handle... it crashes! (DONE)
+
+;written the slow bullet down when bullets run out of life but DONE
+;ive fucked up a bit. routine at start of moving_bulls but
+;needs to be split up a bit to put half where it is and the
+;2nd bit in the right rtn to skip the add to speedx bit
+
+;GONNA try and write a smart missle routine for the baddies now.
+;player is in a lot of shit now.
+
+;BUG
+;written the fall pform collision.
+;all works fine except when you go off the bottom and appear at the top (DONE)
+;again. it all seems to get out of sync
+;after further investigation, it looks okay as long as you stay on the screen
+;in the x. as soon as you wrap it seems to go doolaly (like my dancing)
+
+;^It was all to do with loadsa move.w instead of move.b for mapx
+
+;This is not a bug.. but its summink id like changed.. (DONE)(v66a)
+;when the baddy is a platformer (no FALL), would it be
+;possible to make him stop on the edge of the gfk as opposed
+;to 16 pixies off the edge. (needed for fall baddies)
+;i.e	this one    not this one (+ = baddy/- = block)
+;	+	+
+;           ----	 ----
+
+;Version 66 has had the start l/r random element removed!
+;added is the rand jump conuter of +57 per baddy
+;see create_baddy for changes (load yob65 bit if ya want it)
+
+;This is another bug.. (FIXED)(V66)
+;if a baddy has NOT got fall ability (i.e. hes a platformer)
+;and jumps. when his jump is completed (up n down)
+;the l/r routine jumps in saying hey im in the air turn me around
+
+;This is a proper bug.. (FIXED)(Pre v66)
+;if the players_max is bigger than the no. of players on level you get ghost
+;players at the very top!. I think they corrupt memory....
+
+;Make a new label called num_players and use that instead
+
+;*** (Do I still need to do this?)
+;write a check to look above if going up and
+;below when looking down
+;***
+
+;when they are jumping left through an inpenetrable block they (FIXED)
+;are pushed to the left. it should be the right (i dunno if right does it)
+;what it does (I think)
+;when you run out of puff I say set down to make hime fall to gravity (if set)
+;but what down says. if im outa puff then kill me off.. Voila!!

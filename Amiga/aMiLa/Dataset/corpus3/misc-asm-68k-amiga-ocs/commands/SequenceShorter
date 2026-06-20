@@ -1,0 +1,103 @@
+	include	"/includes/exec/exec_lib.i"
+	include	"/includes/intuition/intuition_lib.i"
+	include	"/includes/libraries/dos_lib.i"
+	move.l	4.w,a6
+	lea	dosname,a1
+	moveq	#0,d0
+	jsr	OpenLibrary(a6)
+	move.l	d0,_DosBase
+	moveq	#0,d0
+	lea	intname,a1
+	jsr	OpenLibrary(a6)
+	move.l	d0,_IntBase
+	move.l	_DosBase,a6
+	jsr	Output(a6)
+	move.l	d0,d3
+	move.l	_IntBase,a6
+	jsr	OpenWorkBench(a6)
+	move.l	d0,a0
+	move.w	$10(a0),d1
+	move.w	$12(a0),d0
+	cmpi.w	#10,d1
+	blt	NoOption
+	sub.w	#10,d1
+	lsr.w	#7,d0
+	lsr.w	#6,d1
+	mulu	#3,d0
+	add.w	d1,d0
+	moveq.l	#0,d1
+	tst.w	d0
+	bne	No00
+	move.l	#Video,d1
+	bra	MoveIt
+No00	sub.w	#1,d0
+	bne	No01
+	move.l	#DirOpus,d1
+	bra	MoveIt
+No01	sub.w	#1,d0
+	bne	No02
+	move.l	#Basic,d1
+	bra	MoveIt
+No02	sub.w	#1,d0
+	bne	No10
+	move.l	#Assem,d1
+	bra	MoveIt
+No10	sub.w	#1,d0
+	bne	No11
+	move.l	#Blitz,d1
+	bra	MoveIt
+No11	sub.w	#1,d0
+	bne	No12
+	move.l	#DPaint,d1
+	bra	MoveIt
+No12	sub.w	#1,d0
+	bne	No20
+	move.l	#C64Loader,d1
+	bra	MoveIt
+No20	sub.w	#1,d0
+	bne	No21
+	move.l	#Shell,d1
+	bra	MoveIt
+No21	sub.w	#1,d0
+	bne	No22
+	move.l	#DianHua,d1
+	bra	MoveIt
+No22	sub.w	#1,d0
+	bne	No31
+	move.l	#Reminder,d1
+	bra	MoveIt
+No31	sub.w	#1,d0
+	bne	No32
+	move.l	#CChess,d1
+	bra	MoveIt
+No32	sub.w	#1,d0
+	bne	No33
+	move.l	#CangJie,d1
+	bra	MoveIt
+No33	bra	NoOption
+MoveIt	moveq	#0,d2
+	move.l	_DosBase,a6
+	jsr	Execute(a6)
+NoOption	move.l	_DosBase,a1
+	move.l	4.w,a6
+	jsr	CloseLibrary(a6)
+	move.l	_IntBase,a1
+	jsr	CloseLibrary(a6)
+	rts
+_DosBase	dc.l	0
+_IntBase	dc.l	0
+intname	INTNAME
+dosname	DOSNAME
+DirOpus	dc.b	"dh1:DirectoryOpus2.03",0
+Assem	dc.b	"dh1:c/genam2",0
+Basic	dc.b	"dh9:prg-sprachen/basic/amigabasic",0
+C64Loader	dc.b	"dh9:c64/c64-loader",0
+Blitz	dc.b	"dh9:prg-sprachen/blitz/blitz2",0
+Video	dc.b	"dh9:prg-sprachen/basic/amigabasic basics:Video",0
+DPaint	dc.b	"dh9:graphik/dpaint/dpaint",0
+Shell	dc.b	"newshell newcon:0/55/640/200/Phoyh's_Special-Shell",0
+DianHua	dc.b	"dh9:prg-sprachen/basic/amigabasic basics:DianHua",0
+Reminder	dc.b	"dh9:prg-sprachen/basic/amigabasic basics:Reminder",0
+CChess	dc.b	"cd dh2:CChess",10,"chess2",0
+CangJie	dc.b	"dh9:prg-sprachen/basic/amigabasic dh9:cangjie/CangJie",0
+

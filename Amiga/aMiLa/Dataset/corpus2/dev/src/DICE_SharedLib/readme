@@ -1,0 +1,95 @@
+//
+//		Example Shared Library Code
+//		Compiles with DICE
+//		
+//		By Wez Furlong <wez@twinklestar.demon.co.uk>
+//
+//		Based on code by Geert Uytterhoeven and Matt Dillon
+//
+//		This source was produced:	Monday 23-Jun-1997 
+//
+//		DISCLAIMER
+//
+//		Please read the code FULLY before use... I could have put ANYTHING in
+//		here; I may have the code format your bootdrive for example.
+//
+//		NEVER trust example code without fully understanding what it does.
+//
+//		This code comes with no warranty; I am NOT responsible for any damage
+//		that may ensue from its use, be it physical, mental or otherwise.
+//
+//		This code may be modified, so long as the names of myself, Geert and
+//		Matt are mentioned within any release or distribution produced using it,
+//		and a copy sent to myself.
+//
+//		This code may be redistributed freely; no profit is allowed to be made
+//		from its distribution.
+//
+//		This code may be included on an Aminet or Fred Fish CD.
+//
+
+This is an example of how to program a shared library under DICE.
+
+It builds the library, pragmas and a link-lib (for stubs).
+
+It does NOT make any fancy auto-open tags; it is generally better programming
+practice to open the libraries you need yourself anyway.
+
+Defined in the example.h file is the library base structure that your library
+will use. This can be extended with Semaphores, Locks, Lists etc. to suit the
+purpose of your library.
+
+Please read the code fully and try and understand what each part does before
+you compile and run it. If you don't understand it, then its useless to you.
+
+
+Building & Extending
+--------------------
+
+The library is built using the DMakefile. Simply type 'dmake' and it will
+build for you.
+
+If you alter the headers, use 'dmake clean' to wipe out any objects that may
+have incorrect structure definitions, and then type 'dmake'.
+
+Add extra modules in the SRCS= line, but make sure that the LibHeader module
+is first in the link chain - this will prevent the library from being run
+accidentally.
+
+The name of the file produced by dmake is set by the PROJECT= line in the
+Dmakefile. Change this to alter the name of the final library file. If you do
+this (which is quite likely (and a good idea), otherwise there would be loads of
+'example.library's around... :), then make sure that you change the names of
+the files that are used to build others by dmake (the .fd file is one), and
+also that you change the library name in the magic structures that tell Exec
+the object is a library. And also anywhere else it may crop up... :)
+
+The library has automated revision control, provided by uprev. The files with
+the .rev and .ver suffixes contain the revision and version numbers for the
+library. It is strongly suggested that you use a version number of 37 for 3.0
+compatible or 39 for 3.0 compatible: ie: keep in line with the version number
+of your target machines kickstart. This will make it easier for the end user
+to figure out what version and how compatible the library is.
+
+Testing
+-------
+
+Included is a very simple program that posts some strings into the library,
+and then recalls them.
+
+To build it, type 'dcc -Iobjects/ test.c', after you have built the
+library.
+
+References
+----------
+
+The relevant Rom Kernel Manuals (if you can get them!) and the Developer CD
+from Amiga International.
+
+The Dev CD is highly recommended for any programming you may do on the amiga.
+
+Thats All
+---------
+
+Hope I haven't left out anything important :)
+

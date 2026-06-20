@@ -1,0 +1,157 @@
+####################################################################
+#
+#             MAKEFILE FOR ProgramLauncherPPC program(s)
+#
+####################################################################
+#
+# -------- SAS-C Compiler stuff: -------------------------------------------------------
+#
+COPTS    = opt optsize strmer cpu=68040 ignore=100,225,304,147,315 nostkchk idir=Include:
+#
+LIBS     = LIB:scm.lib,LIB:sc.lib,LIB:Amiga.lib
+#
+DOPTS    = DEBUG=SYMBOL nostkchk ansi strmer cpu=68040 ignore=51,147,100,225 idir=INCLUDE:
+#
+GLO      = CPGM:GlobalObjects/
+#
+GLOB     = $(GLO)CommonFuncs.o
+#
+# -------- gcc Compiler stuff: ---------------------------------------------------------
+#
+MAKE     = SDK:C/make
+#
+CC       = GCC:Bin/gcc
+#
+CFLAGS   = -c -ISDK:Local/Include
+#
+DBGFLAGS = -c -ggdb -DDEBUG=1 -ISDK:Local/Include
+#
+PPCLIBS  = -lm -lstringfuncs -lamiga -lauto
+#
+PPCGLOB  = GlobalObjects/CommonFuncsPPC.o
+#
+PPCGLOB2 = GlobalObjects/IniFuncsPPC.o
+#
+clean :
+	Delete *.o *.lha QUIET
+#
+all   :
+	$(MAKE) ProgramLauncherPPC
+#
+# -------------------- Final target(s): ----------------------------------
+#
+ProgramLauncher: ProgramLauncher.o $(GLOB)
+	SLink LIB:c.o,ProgramLauncher.o,$(GLOB) TO ProgramLauncher LIB $(LIBS) STRIPDEBUG
+#
+ProgramLauncher.o : ProgramLauncher.c ProgramLauncherLocale.h
+	SC $(COPTS) ProgramLauncher.c
+#
+#
+ProgramLauncherPPC : ProgramLauncherPPC.o ReadAmiDockFile.o
+	$(CC) ProgramLauncherPPC.o ReadAmiDockFile.o CPGM:$(PPCGLOB) CPGM:$(PPCGLOB2) -o $@ $(PPCLIBS)
+#
+ProgramLauncherPPC.o : ProgramLauncher.c ProgramLauncherLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(CFLAGS) -o $@ $<
+#
+ReadAmiDockFile.o : ReadAmiDockFile.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(CFLAGS) -o $@ $<
+#
+# -------------------- Debug target(s): ----------------------------------
+#
+ReadAmiDockFileDBG : ReadAmiDockFileD.o
+	$(CC) -ggdb $< -o $@ $(PPCLIBS) -lnet -lz
+#
+ReadAmiDockFileD.o : ReadAmiDockFile.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -o $@ $<
+#
+ReadAmiDockFile.c : ReadAmiDockFile.flex
+	FLeX -L -o$@ $<
+#
+ProgramLauncherDBG: ProgramLauncherDBG.o $(GLOB)
+	SLink LIB:c.o,ProgramLauncherDBG.o,$(GLOB) TO ProgramLauncherDBG LIB $(LIBS) ADDSYM
+#
+ProgramLauncherDBG.o : ProgramLauncher.c ProgramLauncherLocale.h
+	SC $(DOPTS) objname=ProgramLauncherDBG.o ProgramLauncher.c
+#
+ProgramLauncherPPCDBG : ProgramLauncherPPCDBG.o ReadAmiDockFile.o
+	$(CC) -ggdb ProgramLauncherPPCDBG.o ReadAmiDockFile.o CPGM:$(PPCGLOB) CPGM:$(PPCGLOB2) -o $@ $(PPCLIBS) -lnet -lz
+#
+ProgramLauncherPPCDBG.o : ProgramLauncher.c ProgramLauncherLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -o $@ $<
+#
+# -------------------- Misc Targets: -------------------------------------
+#
+ProgramLauncherLocale.h : ProgramLauncher.cd
+	CatComp $< CFILE  $@ NOCODE NOARRAY NOBLOCK
+	CatComp $< CTFILE ProgramLauncher.ct
+#
+# -------------------- Archive Target: -----------------------------------
+#
+ACMD     = LhArc
+#
+ARCOPTS  = -x -a 
+#
+ProgramLauncherPPC.lha : ProgramLauncherPPC
+	FileNote $< "(C) 2005 by J.T. Steichen, Compiled for AmigaOS4.0 & PowerPC AmigaOne!"
+	$(ACMD) $(ARCOPTS) add $@ $<
+	$(ACMD) $(ARCOPTS) add $@ ProgramLauncherPPC.info
+	$(ACMD) $(ARCOPTS) add $@ ProgramLauncherPPC.readme
+	$(ACMD) $(ARCOPTS) add $@ ProgramLauncherPPC.guide
+	$(ACMD) $(ARCOPTS) add $@ ProgramLauncherPPC.guide.info
+	$(ACMD) $(ARCOPTS) add $@ ProgramLauncher.install
+	$(ACMD) $(ARCOPTS) add $@ ProgramLauncher.install.info
+	$(ACMD) $(ARCOPTS) add $@ LauncherStart.ini
+	$(ACMD) $(ARCOPTS) add $@ MakeFile
+	$(ACMD) $(ARCOPTS) add $@ ProgramLauncher.cd
+	$(ACMD) $(ARCOPTS) add $@ ProgramLauncher.ct
+	$(ACMD) $(ARCOPTS) add $@ ProgramLauncherLocale.h
+	$(ACMD) $(ARCOPTS) add $@ ProgramLauncher.c
+	$(ACMD) $(ARCOPTS) add $@ ProgramLauncherPPC.o
+	$(ACMD) $(ARCOPTS) add $@ ReadAmiDockFile.c
+	$(ACMD) $(ARCOPTS) add $@ ReadAmiDockFile.flex
+	$(ACMD) $(ARCOPTS) add $@ ReadAmiDockFile.o
+	COPY CPGM:GlobalObjects/CommonFuncsPPC.o       CPGM:MyTools/ProgramLauncher/
+	COPY CPGM:GlobalObjects/CommonFuncs.h          CPGM:MyTools/ProgramLauncher/
+	COPY CPGM:GlobalObjects/CommonFuncs.guide      CPGM:MyTools/ProgramLauncher/
+	COPY CPGM:GlobalObjects/CommonFuncs.guide.info CPGM:MyTools/ProgramLauncher/
+	COPY CPGM:GlobalObjects/IniFuncsPPC.o    IniFuncsPPC.o
+	COPY CPGM:GlobalObjects/IniFuncs.h       IniFuncs.h
+	$(ACMD) $(ARCOPTS) add $@ IniFuncsPPC.o
+	$(ACMD) $(ARCOPTS) add $@ IniFuncs.h
+	$(ACMD) $(ARCOPTS) add $@ CommonFuncsPPC.o
+	$(ACMD) $(ARCOPTS) add $@ CommonFuncs.h
+	$(ACMD) $(ARCOPTS) add $@ CommonFuncs.guide
+	$(ACMD) $(ARCOPTS) add $@ CommonFuncs.guide.info
+	DELETE CommonFuncs#? IniFuncs#? QUIET
+	COPY SDK:Local/Include/AmigaDOSErrs.h    AmigaDOSErrs.h 
+	COPY SDK:Local/Include/Author.h          Author.h 
+	COPY SDK:Local/Include/StringFunctions.h StringFunctions.h 
+	COPY SDK:Local/lib/libstringfuncs.a      libstringfuncs.a
+	$(ACMD) $(ARCOPTS) add $@ AmigaDOSErrs.h
+	$(ACMD) $(ARCOPTS) add $@ Author.h
+	$(ACMD) $(ARCOPTS) add $@ StringFunctions.h
+	$(ACMD) $(ARCOPTS) add $@ libstringfuncs.a
+	DELETE Author.h AmigaDOSErrs.h StringFunctions.h libstringfuncs.a QUIET
+	COPY CPGM:MyTools/ToolTypesEditor/ToolTypesEditorPPC         ToolTypesEditorPPC
+	COPY CPGM:MyTools/ToolTypesEditor/ToolTypesEditorPPC.info    ToolTypesEditorPPC.info
+	COPY CPGM:MyTools/ToolTypesEditor/ToolTypesEditor.guide      ToolTypesEditor.guide
+	COPY CPGM:MyTools/ToolTypesEditor/ToolTypesEditor.guide.info ToolTypesEditor.guide.info
+	$(ACMD) $(ARCOPTS) add $@ ToolTypesEditorPPC
+	$(ACMD) $(ARCOPTS) add $@ ToolTypesEditorPPC.info
+	$(ACMD) $(ARCOPTS) add $@ ToolTypesEditor.guide
+	$(ACMD) $(ARCOPTS) add $@ ToolTypesEditor.guide.info
+	DELETE ToolTypesEditor#? ToolTypesEditor#?.info QUIET
+	ECHO "Archive Built successfully!"
+#

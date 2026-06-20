@@ -1,0 +1,11 @@
+
+MACRO FUNCTIONS FOR LITTEL v 18
+
+© Leif Salomonsson 1999-2000
+
+Theese functions are actually PhxAss macros
+and will be put INLINE LITTEL code.
+
+Wrappers for all Amiga Standard System Shared Libraries
+are included.
+

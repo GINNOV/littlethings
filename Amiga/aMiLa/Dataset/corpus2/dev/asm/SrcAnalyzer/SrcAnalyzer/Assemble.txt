@@ -1,0 +1,45 @@
+Notes on re-assembling files.
+-----------------------------
+
+Nearly all my source files include the file "std" which contains loads
+of handy macros and equates. This file is in the root directory.
+
+All assembler source files on this disk have been assembled using
+Hisoft's latest "Devpac 3.01" 68030 assembler.
+As such the source files do not contain any assembler option directives
+since these are set thru a much friendlier Intuition-based control panel.
+
+The options which I set for my source files are:
+
+"Assembler Control"
+-------------------
+all defaults except Include set to "INCLUDE:"
+
+"Assembler Options"
+-------------------
+all defaults except Processor set to "68030"
+
+"Assembler Optimisations"
+-------------------------
+Options which are ON   mean the conversion takes place without warning.
+Options which are WARN mean the conversion takes place with    warning.
+
+MOVE.L to QUICK		ON
+MOVEA.L	to SHORT	WARN
+ADD/SUB to QUICK	ON
+ADDA/SUBA to LEA	ON
+LEA to ADDQ/SUBQ	ON
+Absolute addressing	ON
+Indirect displacements	ON
+Base Displacements	WARN
+Outer Displacements	WARN
+Forward Branches	WARN
+Backward Branches	ON
+Null Branches to NOP	WARN
+
+
+This information should enable anyone to produce EXACT copies of the binaries
+on this disk (using Devpac 3).
+
+Laurence Vanhelsuwé
+25/FEB/92

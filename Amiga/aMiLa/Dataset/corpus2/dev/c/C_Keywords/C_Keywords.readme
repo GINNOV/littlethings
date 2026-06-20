@@ -1,0 +1,86 @@
+Short:    Online documentation for C keywords. vbcc autodocs harlock
+Author:   pfharlock@yahoo.com
+Uploader: pfharlock@yahoo.com
+Version:  1.0
+Type:     dev/c
+
+This is online documentation for the C language keywords.  It is a
+standard commodore autodoc so any program written to interpret the
+commodore autodocs will also work on this file.
+
+History
+I got the commodore autodocs a while back, and was very happy at the
+prospect of having online documentation for all the standard
+functions, much like those spoiled PC types have with visual C++ or
+Borland or something.  I quickly learned however, that, while all the
+functions in the amiga shared libraries are documented, the standard
+C functions and keywords common to all C implementations were not.
+The solution of course is what you see before you, Complete online
+documentation of all the standard C keywords in autodoc format.
+
+Usage
+There are several programs on the aminet which will allow you to
+impliment autodocs in a variety of ways.  Of these, GoldEd is my
+favorite.  I use GoldEd to edit all of my source code.  It comes with
+a feature called references which will allow you to put the cursor on
+any word in your source code, go to the find menu and select the
+reference command, then GoldEd will pull up online help for that
+command.  For this feature of GoldEd to work properly you must
+configure it before hand.  You can specify that it should look
+through all your headers, and it will pull up the appropriate header
+and place your cursor at the start of the definition of the
+identifier you wanted help on.  Also if you tell it where the
+commodore autodocs are then you can have online help for all the
+standard amiga specific functions.
+To use this file with GoldEd, simply go to the config menu, and then
+to references.  A dialogue will appear, then you have to supply it
+the path to C_Keywords.doc.  After you have the path typed in you
+must also hit the create button near the bottom to create the file
+s:GoldEd.refs, which is where GoldEd stores the info on how to find
+the appropriate online doc for the keyword you have the cursor over. 
+That's it, if you have the commodore autodocs, then follow the same
+steps for them, in fact you could just copy this file into the same
+directory as the commodore autodocs.
+
+There used to be an old registered version of GoldEd on aminet, which
+wasn't crippled, unfortunately I just found out that it has since
+been removed.  It was called ged314r.lha.  You can download the trial
+version of GoldEd 4.7.0, from aminet, but I believe that it will only
+save files if they are smaller than 100k or something.  In light of
+this, I suggest that you try one of the other proggy's on the aminet
+for interpreting autodocs and combine it with your own favorite text
+editor, Unless of course you already have GoldEd or can afford to buy
+it or something.
+
+FUTURE
+In This file I have only documented the C Keywords.  I have yet to
+document the standard ANSI functions.  When I'm able to document them,
+I'll probably upload them as separate files from this one.  They will
+most likely be assorted by header file, (I.E. stdio.h, stdlib.h, etc),
+and probably be called C_stdio.lha and C_stdlib.lha etc etc.  Also
+in light of the fact that golded is no longer freely available I'm
+seriously considering writing a command that will parse autodocs and
+then zip your favorite text viewer or editor to the correct location
+of the command you wanted help on.  If I do decide to write such a
+command then it will most likely be after I've finished with the
+documentation.  Also if and when I do write it, I will include
+the source code, and it should be portable enough to compile on other
+platforms, (IE Unix, the next gen Amiga or even windows if you really
+wanted).
+
+LEGAL STUFF AND MISCELLANEOUS RAMBLINGS
+If you need help getting this to work, my email is up there.  If you
+find gross mistakes, and are disgusted with my flagrant disregard
+for reality, then please let me know.  Any mistakes are unintentional
+and I won't guarantee that there are none.As such I accept no
+responsibility for loss of data, money, or life that may occur
+through the use of these online documents.  This project is Copyright
+to me.  This being said, anybody can do anything they like with it,
+except keep anybody else from doing whatever they want with it.
+I require that this readme file and the source to the autodocs
+accompany any other releases of this project, IE aminet CD's or
+whatever.  If you do release a modified version of these autodocs
+then you should indicate that you have modified them so as not to
+confuse people about who did the authoring.
+
+      Tanks all, hope to get the rest done soon.

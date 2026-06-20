@@ -1,0 +1,43 @@
+Short:        Amiga C Manual - PDF version
+Uploader:     cha05e90 (frank/ruthe.info)
+Author:       Anders Bjerin
+Type:         dev/c
+Requires:     http://aminet.net/dev/c/ACM.lha
+Version:      2.0
+Distribution: Aminet
+Architecture: generic
+
+This is the PDF version of Anders Bjerin's excellent "ACM - Amiga C Manual".
+I assembled the original text files and example sources into two books.
+
+Book One consists of all 15 chapters of the parts I - III, Book Two holds
+part IV - the complete appendices including all example source codes from
+part I - III. Both books are composed into two nicely print- and browsable
+PDF documents. Only the additonal example source codes (see chapter H of
+Book Two) are included in this archive for convenience.
+
+I think Anders marvellous work is some kind of "mini RKRM" - it is a really
+nice and comprehensive starting point in Amiga C programming, regardless of
+the underlying OS platform (AmigaOS, MorphOS, AROS).
+
+So "Thanks!" goes to Anders Bjerin for ACM and to Simon "Rigo" Archer for
+pointing out this work.
+
+From Anders original readme:
+
+ACM
+
+		The complete boiled-down C manual for the Amiga which
+		describes how to open and work with Screens, Windows,
+		Graphics, Gadgets, Requesters, Alerts, Menus, IDCMP,
+		Sprites, VSprites, AmigaDOS, Low Level Graphics Routines,
+		Hints and Tips, etc.  The manual also explains how to use
+		your C Compiler and gives you important information about
+		how the Amiga works and how your programs should be designed.
+		The manual consists of 15 chapters together with more than
+		100 fully executable examples with source code.
+		Author:  Anders Bjerin
+
+The original ACM including *all* source code examples can be found here:
+
+http://aminet.net/dev/c/ACM.lha

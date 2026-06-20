@@ -1,0 +1,67 @@
+Short:        A clean-up and re-compiile of DICE
+Author:       Matt Dillon
+Uploader:     richard drummond u-net com (Richard Drummond)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+
+Introduction
+============
+
+This archive is basically a cleanup and re-compile of DICE from the
+dice-3.15.lha archive posted to the Aminet last year. I have called
+it version 3.16 for no other reasons than it is a newer release than
+3.15. There are no significant modifications.
+
+DICE is a superb C programming environment - Matt did the Amiga
+community a huge favour by releasing the source code. However, it
+was a non-trivial task to produce an actual working compiler from the
+dice source archive. Most notably, the amiga.lib linker libraries
+for OS2.0 and 3.0 were missing.
+
+So - rather than let DICE fester in a near unusable state - I have
+performed a quick overhaul. What I have done is to re-compile all the
+main compiler executables (in many cases the source code provided was
+a higher revision than the supplied executables), rebuild all the
+linker libraries, reorganize the directory tree a bit, and restore
+some of the icons. What is here should be a fully functioning copy of
+DICE (you need to supply the OS includes yourself - see below.)
+
+I have done this overhaul for several reasons:
+
+1. I have been mucking about with the DICE source code for some time
+   now with the vague notion of doing something with it. I put it
+   aside when I signed up with CU, but, now I am no longer gainfully
+   employed, have dug it out again. (I was always intrigued by
+   compiler design.)
+
+2. I have a great fondness for DICE. We go back a long way - I started
+   using DICE in, I suppose, about 1990. (I never had enough money to
+   get the commercial version, though - hey, I was a student.) I guess
+   this is also an act of homage to the great Matt Dillon ;-)
+
+3. There has been a few posting concerning DICE to the CU mailing list
+   recently and I received a not insignificant number of responses to
+   a post from myself asking whether there would be any interest in a
+   more readily usuable version of DICE. So everybody who mailed me
+   saying it was a "cool idea" - this is down to you.
+
+4. DICE is still very usable. OK, it doesn't produce code for 040,
+   060, or PPC - but it would have been a shame to see it
+   languishing in the state that it was. I just hope some more Amigans
+   get some use out of it.
+
+
+Distribution
+============
+
+DICE is still copyrighted by Matt Dillon and Obvious Implementations
+Corp. Read the file DICE-LICENSE.txt
+
+
+Installation
+============
+
+The archive is rather large when unpacked (about 10MB), so de-lha it
+to where you want DICE to live on your hard drive. Read the file
+ReadMe.1st for full installation details.

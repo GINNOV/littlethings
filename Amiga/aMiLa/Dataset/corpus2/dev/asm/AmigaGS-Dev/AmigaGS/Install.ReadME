@@ -1,0 +1,17 @@
+;
+; How to install Amiga GS ?
+;
+It is quite simply.
+
+1 / You must have to make an assign that refer to the drawer AmigaGS
+	You can add it to your user-startup if you want )
+	Ex: Assign AmigaGS: DH0:AmigaGS/
+
+2 / Reset your Amiga
+
+3 / You can test all demos and try to program with AmigaGS.
+
+
+WARNINGS !!!
+Be careful because the libraries given in that archive are BETA VERSION.
+There can be some changes in future !!!!

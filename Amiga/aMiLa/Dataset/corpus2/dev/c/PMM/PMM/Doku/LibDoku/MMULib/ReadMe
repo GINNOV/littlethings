@@ -1,0 +1,60 @@
+
+mmu.lib for vbcc
+================
+
+Created at 15.03.00 from MMU_Lib.FD (v 41.1)
+also included the Disassembler_Lib and the
+68040_lib/680x0_lib.
+
+I have also included the lvo-files and the vbcc
+autolib-.c-files. Please follow the instructions in the
+vbcc doc for using the autolib function. The files
+MuAutoLib_xxx.xxx are Autolibs for all four library's.
+
+This libfiles can be used by vbcc and directly linked
+to your programs.
+To use the library under vbcc this files are recommended.
+I don't know to with other compilers they are compatible.
+It works correct by use of PhxLnk and vlink.
+
+I generate the libs for myself with an own tool, the
+project-make-manager (PMM) and so it is only one command
+for me to create them.
+I think, other users of vbcc can use them and must not do
+same work.
+Because I changed the generator scripts to created a lot
+of additional include files, I add them also to the MMUlib
+file for all people who need them.
+
+I give this without copyright or anything else free to use
+for everybody.
+
+Used tools:
+-----------
+Stubs and lvo created from fd-file with FD2Lib, FD2LibPPC,
+FD2LibWOS, FDtoM, FDFix and FD2Pragma.
+Stubs assembled with PhxAss and vasm.
+.Lib generated with PmmLibr.
+.a generated with ppc-amigaos-ar.
+Autolib-files created with autolib.
+
+Some copyrights:
+----------------
+All library's are copyright by Thomas Richter / THOR.
+
+vbcc, FD2Lib, FD2LibPPC and ppc-amigaos-ppc are part of the
+vbcc(PPC)-package copyright by Volker Barthelmann
+
+PD2LibWOS is part of the vbcc-WOS-extension from Frank Wille.
+PhxAss, PhxLnk, vasm, vlink and autolib are parts of the
+vbcc-package copyright by Frank Wille
+
+PmmLibr is part of the ProjectMakeManager(beta) copyright
+by Michaela Prüß
+
+PowerUP is copyright and trademark by Phase-5.
+
+WarpOS ist copyright and reserved by Haage & Partner.
+
+
+15.03.00 / Michaela Prüß

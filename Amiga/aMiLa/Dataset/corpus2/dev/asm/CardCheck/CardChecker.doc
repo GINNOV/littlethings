@@ -1,0 +1,72 @@
+
+           ========================================================
+                               CardChecker v1.1
+           ========================================================
+                          Copyright © 1996 Dave Jones
+                              All rights reversed
+           --------------------------------------------------------
+                    GiftWare - Please send me **anything!**
+           --------------------------------------------------------
+
+*************
+Distribution:
+*************
+It is forbidden to include this on a magazine coverdisk without first
+writing to me to make sure you include the latest version, and also,
+I'd appreciate a copy of the magazine featuring my program.
+No other limitations are implied on the distribution.
+
+If you include this routine in your programs, please consider giving
+me credit for what I've done, and why not send me a copy of the program?
+
+
+***********
+BackGround:
+***********
+I came across an algorithm for checking credit card numbers, and decided
+to write this short program to put the algorithm to the test.
+I can't actually think of a use for this (Except maybe you'd like to
+incorporate the routines in an automated ordering program like the SASG
+registration program)
+If you can think of a use for this, please mail me, and I'll do more work on
+this ;^)
+
+This program will check the checksum of a card, and report it as valid/invalid,
+as an added bonus, it will print the issuer of the card if known.
+I only know the prefix of a few banks, If you send me the name of your Bank
+or Building Society, and the first four numbers of your credit/debit card, I'll
+add support for them.
+
+*NB* This is not a means for me to get credit card numbers for fraudulent
+purposes. I only need the first four numbers of your card, this is useless
+to a fraudster, but allows me to identify cards from different banks/building
+societies.
+
+
+********
+History:
+********
+
+v1.0: Release date 28-Sep-96
+ First version.
+
+v1.1: Release date 05-Dec-96
+ Added some more Issuers.
+
+***********
+Programmer:
+***********
+
+ Dave Jones
+ 40,Heol Edward Lewis
+ Gelligaer
+ Hengoed
+ Mid Glam
+ Cf82 8ej
+ South Wales.
+
+ Email: DJones@CardiffCyberCafe.Co.Uk
+ IRC:   Termy on #Amiga (Regularly on saturday afternoons)
+
+I'm a 22 year old hobby programmer, interested in anything Amiga, currently
+working as a Data Entry Clerk (Which sucks) Job offers welcome ;^)

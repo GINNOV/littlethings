@@ -1,0 +1,26 @@
+;History
+
+;Version 1.0  This was the first attempt at a menu front end for my
+;	  utilities compilation disk's,everything worked fine 
+;	  but it was a little crude.
+
+;Version 1.1  Added logo to top of window.Fixed a bug which after selecting
+;	  the about window,and pressing left mouse button to close the
+;	  about window,the gadget's behind were selected.
+
+;Version 1.2  Removed the sleep routine as this part was just a cheat but
+;	  it worked,this was to be re-written in another version.
+
+;Version 1.3a Re-arranged the gadget's and added another coloum,the menu
+;	  now has 56 Gadget's for selection,also added code to disable
+;	  gadget's while a program is running,and when it is finished
+;	  check's to see if it's the active window before enabling
+;	  the gadget's again.
+
+;Version 1.3b Added info text to bottom of the window,and a menu status
+;	  line,to display waiting or executing.Re-wrote the loader 
+;	  routine,this now only takes about 20 lines of code,before
+;	  it was a shitty attempt taking numerous lines.
+;	    Routine was added to read in script file for gadget text
+;	  and colour of text,and the command line.
+

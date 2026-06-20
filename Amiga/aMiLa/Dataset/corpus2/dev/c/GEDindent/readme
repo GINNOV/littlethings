@@ -1,0 +1,55 @@
+GoldED Indent
+=============
+
+Hiya folks, here are two small macros to indent C sourcecode via GoldED.
+It uses the Gnu Indent programm, available e.g on aminet in /dev/c/...
+Usage is quite simple. Copy these two files to GoldED:Arexx/ and set them
+up e.g by building a new menu entry for them. Set the entry to e.g
+
+    GOLDED:ARexx/blockindent.ged
+
+and switch the Radio Button to ARexx.
+
+1.) blockindent.ged
+
+    Mark a block of sourcecode, it's recommended to mark a whole function
+    as a block, otherwise it won't work. Now select the menu entry you've
+    created for this script. The script will make a temporary copy of this
+    block, it runs indent over this copy, deletes the old block and inserts
+    the new one. In the end it'll delete the temporary copies.
+
+2.) sourceindent.ged
+
+    This will mark the whole sourcecode as a block and will handle it like
+    in 1.)
+
+Somethings you'd like to change in these macros.
+================================================
+
+a.) The temporary path.
+
+    This path is set to dtmp:, but you could set it to t: or whatever you'd
+    like.
+
+b.) The temporary filenames
+
+    They're golded.indent for the copy and golded.new for the indented
+    new version.
+
+c.) The options for indent.
+
+    I've set them to e.g -br (put the brackets behind e.g if-else 
+    constructions), -i4 (set tab indentation to 4 spaces). For the rest
+    of my options take a look at the indent documentation.
+
+Legal stuff:
+============
+
+This is just a little hack I've done for my personal use, if you'd like to
+use it you can simply DO it, this stuff is PD, change it or leave it or
+throw it away. I won't take any responsibility for any lost files or any
+damage done with these scripts. If you're changing these files in a way
+that you think they're working better than now, please send me a copy.
+
+Michael Bauer (bauermichael@student.uni-tuebingen.de, Gutgolf@IRC)
+

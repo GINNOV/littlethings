@@ -1,0 +1,46 @@
+Short: V2.0 Update of ListBrowserExample (ReAction code example)
+Uploader: jimbot@frontiernet.net (The Author)
+Author:   jimbot@frontiernet.net (James T. Steichen)
+Type:     dev/src
+Version:  V2.0
+
+ListBrowserExample V2.0 is an example of how to use the ListBrowser available
+via BOOPSI.  The original source code has been rewritten to compile with
+gcc & works on the AmigaOne PPC under AmigaOS4.0.  I Have not verified that
+the rewrite will work on the Classic line of Amigas.
+
+   ListBrowserExamplePPC Copyright (c) 2004. by J.T. Steichen
+
+The original source code states:
+
+   Unless otherwise noted, all files are Copyright (c) 1999 Amiga, Inc.
+   All rights reserved.
+
+   If Amiga Inc. has a problem with my re-write, I suggest that they get off 
+   of their dead asses & update their code themselves!
+
+REQUIREMENTS
+~~~~~~~~~~~~
+   
+   68000 or better microprocessor.
+   AmigaDOS 3.5+
+   Hard disk (1MB of space).
+
+   or 
+      AmigaOS4.0+
+      AmigaOne PPC
+      Hard disk (1MB of space)
+      
+WHAT YOU GET:
+~~~~~~~~~~~~~
+   ListBrowserExample            - The original executable program.
+   ListBrowserExamplePPC         - AmigaOS4 & PPC executable program.
+   ListBrowserExamplePPCDBG      - AmigaOS4 & PPC executable program with gdb support.
+   ListBrowserExample.c          - AmigaOS4 & PPC source code file.
+   ListBrowserExample.c.original - the original source code file.
+   ListBrowserExamplePPC.readme  - This file.
+   EnsureASCII                   - Command to filter out non-ASCII characters in source files
+                                 - (gcc chokes on non-ASCII characters [> 0x7F]).
+   AmigaDOSErrs.h                - A central header file for AmigaDOS error codes.
+   MakeFile                      - gcc & AmigaOS4 make file for the PPC targets.
+   SMakeFile                     - SAS-C smakefile for AmigaOS3.5+.

@@ -1,0 +1,368 @@
+@DATABASE HelloWorld v1.2 docs.
+
+@NODE Main "HelloWorld v1.2 docs."
+@{B}Power Programs documentation,                            HelloWorld
+@{uB}
+@{B}Preface:@{uB}
+
+@{I}    The powers of modern computers and operating
+    systems continue to grow, but many programs still
+    halt when waiting for user input or cannot seem to
+    do two things at the same time. With the Amiga OS,
+    these things are not nessecarry. I hope that this
+    document ( and it's code ) will inspire more people
+    to write multitasking code, so we won't have to
+    click that OK requester to keep make our program
+    continue it's task..
+@{uI}                                                Jeroen Knoester,
+                                                Coder Power Programs.
+@{B}Contents:@{uB}
+
+    @{"Disclaimer, Copyright, Lisence" LINK wara}
+
+    @{"Extra conditions for usage" LINK os35}
+
+    @{"Our Adress" LINK adre}
+
+    @{"1. Introduction." LINK intro}
+
+    @{"2. The programs and included files." LINK progr} 
+
+    @{"3. Amiga Multitasking." LINK mult} 
+
+    @{"4. The code - Tasks." LINK task}
+
+    @{"5. The code - Processes." LINK proc}
+ 
+    @{"6. Some things to remember." LINK reme}  
+
+The programs, sources and documentation in this archive
+are part of Power Programs Amiga Features. 
+
+Read the included AmigaFeatures.html or go to
+http://www.infothuis.nl/jeroen/amigafeatures.html for more information.
+
+(C) 2000, Jeroen Knoester / Power Programs.
+
+@{B}Power Programs documentation,                                   Page 1
+@{uB}
+@ENDNODE
+@NODE adre "Our Adress"
+@{B}Power Programs documentation,                            HelloWorld
+@{uB}
+@{I}Power Programs,
+Candidaschouw 20,
+2726KB Zoetermeer,
+Holland,
+Europe.@{uI}
+
+Our web-pages are at @{I}http://www.infothuis.nl/jeroen@{uI}.
+
+You can e-mail us with questions at @{I}jeroen@infothuis.nl@{uI}.
+Flames are ignored!
+
+@{B}Power Programs documentation,                                   Page 3
+@{uB}
+@ENDNODE
+@NODE intro "1. Introduction."
+@{B}Power Programs documentation,                                   HelloWorld
+@{uB}
+
+   Multitasking and threading have always fascinated me. Knowing
+   that a computer can keep track of several dozen of different
+   programs and fairly share their run-times seemed virtually
+   imposible, seeing that I had trouble tracking more than three or
+   four things at the same time. 
+
+   After checking the Aminet, I found that there was very little
+   documentation regarding multitasking, so I decided to create
+   a small explantation of how multitasking is done. For this end,
+   I wrote three small programs and a small extra utility.
+
+   This document requires the reader to know the C programming
+   language. Ideally, he or she should also have acces to an Amiga
+   computer plus the Amiga OS include files and their documentation.
+
+   You can find the includes and documentation on the Amiga Developer
+   CD.
+
+   Next, @{"2. The programs and included files." LINK progr}.
+
+@{B}Power Programs documentation,                                   Page 4
+@{uB}
+@ENDNODE
+@NODE progr "2. The programs and included files."
+@{B}Power Programs documentation,                                   HelloWorld
+@{uB}
+
+   The four included programs are:
+
+   * HelloWorld         - A single tasking version of Hello World.
+   * HelloWorld_Process - A multitasking version of Hello World, using
+                          Amiga processes.
+   * HelloWorld_Task    - A multitasking version of Hello World, using
+                          Amiga tasks and processes.
+   * Multi_Print        - A small utility, showing how to print text to
+                          a console in a multitasking 'safe' way.
+
+   All these programs need Kickstart 2.0 or up. They shouldn't require great
+   ammounts of memory or other resources.
+
+   Extra files:
+
+   * HelloWorld.doc - This documentation
+   * HelloWorld.c - The source for HelloWorld
+   * HelloWorld_Process.c - The source for HelloWorld_Process
+   * HelloWorld_Task.c - The source for HelloWorld_Task
+   * Multi_Print.c - The source for Multi_Print
+
+   In the directory HTML:
+
+   * AmigaFeatures.html - Information about Power Program's Amiga Features.
+   * programming.html - The programming subsection of the Amiga Features.
+   * PPAmiFeature1.html - The Power Programs Amiga Feature about multitasking.
+   * PPAmiFeature1-2.html - Continued...
+   * PPAmiFeature1-3.html - Continued...
+
+   In the directory HTML/Pictures/
+
+   * ppfeature.gif - The header picture.
+   * line1.gif - The seperator picture.
+   * V.gif - A checkmark picture.
+   * tasklist.gif - A sample tasklist.
+   * tasklist_2.gif - A sample tasklist.
+   * tasklist.html - The HTML for the tasklist.
+
+   Next, @{"3. Amiga Multitasking." LINK mult}.
+
+@{B}Power Programs documentation,                                   Page 5
+@{uB}
+@ENDNODE
+@NODE wara "Power Programs Disclaimer and Copyright"
+@{B}Power Programs documentation,                            HelloWorld
+@{uB}
+
+   Terms of usage / liscense:
+
+   In the following disclaimer "The author" represents the main
+   programmer on this product, in this case: Jeroen Knoester.
+
+   In the following disclaimer "THE SOFTWARE" represents the
+   software package HelloWorld, including, but not limited to,
+   the executable code, the documentation and any datafiles.
+
+       The author makes no warranties, conditions or representations express
+       or implied, with respect to THE SOFTWARE, its quality, merchantability
+       or fitness for any particular purpose. THE SOFTWARE is provided "AS IS".
+       In no event shall the author be liable for any special, indirect or
+       conseqeuntial damages.
+
+   HelloWorld is free software, wich means:
+
+   HelloWorld can be used, copied, edited, remade, etc. As long as the
+   original authors, package name and these terms are clearly mentioned
+   in the documentation of the so-changed software.
+
+   It also means that all source and datafiles are available for
+   free and should have been included in this package.
+ 
+   Remember, HelloWorld is (C) 2000 Jeroen Knoester / Power Programs.
+
+@{B}Power Programs documentation,                                   Page 2
+@{uB}
+@ENDNODE
+@NODE os35 "Conditions for usage"
+@{B}Power Programs documentation,                            HelloWorld
+@{uB}
+In additions to all the terms specified in the @{"liscense" LINK wara} there
+is another condition for using this program.
+
+If you like this program, or the tutorial which comes with it and wish to 
+express this feeling, buy OS 3.5 ( If you haven't done already )!!
+
+The Amiga community needs OS 3.5 to be a succes, so show YOUR support
+for the platform today and buy OS 3.5!
+
+Thank you for your support!
+
+@{I}Note:@{uI}
+
+I am not an Amiga or Haage and Partner employee, I just believe the Amiga
+community needs OS 3.5 to become succesfull!
+
+@{B}Power Programs documentation,                                   Page 10
+@{uB}
+@ENDNODE
+@NODE mult "3. Amiga Multitasking."
+@{B}Power Programs documentation,                                   HelloWorld
+@{uB}
+
+   If you have not done so already, I reccomend reading the included
+   PPAmiFeature1.html.
+
+   The Amiga's model of multitasking is based on Tasks and Processes.
+   A Task is a low-level entity used by Exec() to handle multitasking. A
+   process is a high-level entity used by Amiga Dos.
+
+   Task's are not allowed to acces the Amiga Dos library, which means they
+   cannot in themselves create output on screen or in a file. Most programs
+   will therefore use processes instead of tasks.
+
+   A process is allowed to do pretty much everything that is possible trough the
+   operating system. All user started programs start as a process ( think shells 
+   and the like ).
+
+   Tasks and processes may both generate new Tasks and processes at will. Both
+   are allowed to create both Tasks and processes. Tasks and processes created
+   by other Tasks and processes share information with the parent task. This 
+   means tasks can exhange data, if they are part of one and the same parent.
+
+   ( Note, I will use the term Task to indicate an Exec() task and the word task
+     to indicate either am process or a task. )
+
+   For programmers this means that global variables are shared with all tasks they
+   have running, so a change of this variable in task #15 means *all* tasks now
+   have that new value in their copy of the variable.
+
+   This behaviour is a godsend to programmers who wish to write multitasking
+   programs, because they now have an easy way to communicate with their tasks.
+   
+   The helloworld programs use this feature to set a task_id and to find out if
+   some things are done already.
+
+   Next, @{"4. The code - Tasks." LINK task}.
+
+@{B}Power Programs documentation,                                   Page 6
+@{uB}
+@ENDNODE
+@NODE task "4. The code - Tasks."
+@{B}Power Programs documentation,                                   HelloWorld
+@{uB}
+
+   Creating a new Task is done using either the low-level Exec() function AddTask(),
+   or using amiga.lib's CreateTask(). We will focus on the later, because AddTask()
+   is far more tricky to use.
+
+   Let's look at CreateTask's prototype:
+
+   struct Task *CreateTask ( STRPTR name , LONG pri, funcEntry initPC, ULONG
+                             stackSize );
+
+   The function returns either a fully initialized Task structure ( and therefore, a
+   running task will have been created ) or 0 in case of errors.
+
+   The first argument is the name of the task. It should be unique and have a
+   trailing \0.
+
+   The second argument is the task's priority. It really should be between -5 and +5.
+   Personally, I think 0L is a nice default.
+
+   The third argument is a functionpointer. Basically, it is the name of the function
+   you wish to call. This function should have the following prototype form:
+   APTR name (); ( Or: void name () );. This is the function that will become the new
+   task.
+
+   The last argument is the stacksize. It's usually better to guess to high than too
+   low. At least 4000 bytes are required. If you plan to do a lot on the stack, you
+   should have a higher number than that.
+
+   So to create a running task for my function hello_task() I'd do:
+
+   task = CreateTask ( "really_uniquename 1\0", 0L, hello_task, 4096L );
+
+   This would create a running task for me with name really_uniquename 1, a
+    priority of 0, starting with the function hello_task() with a stack of 4096 bytes.
+
+   To stop this task, we'd need to call RemTask() from Exec, or DeleteTask() from
+   amiga.lib. I think you'd be best off using the later. ( And yes, I do know these
+   two currently are the same, but you never know what kind of improvements there
+   will be in amiga.lib, so I reccomend using the highlevel stuff. )
+
+   From the main program we'd do:
+
+   Forbid();
+      DeleteTask ( task );
+   Permit();
+
+   If we want to exit our task from it's own code, we'd do:
+
+   DeleteTask ( 0L );
+
+   Note that deleting tasks is dangerous. You should make sure you can delete the
+   task safely at this point in time. Also know that any allocations you've made 
+   *won't* be freed by DeleteTask(), you have to do this yourself.
+
+   Next, @{"5. The code - Processes." LINK proc}.
+
+@{B}Power Programs documentation,                                   Page 7
+@{uB}
+@ENDNODE
+@NODE proc "5. The code - Processes."
+@{B}Power Programs documentation,                                   HelloWorld
+@{uB}
+
+   Creating processes is done by various functions in the dos.library. There are
+   (currently) four different functions, but they are basically the same with 
+   different ways of calling them. The one that is easiest to use is
+   CreateNewProcTags(). This function requires V36+ of the OS.
+
+   The prototype:
+
+   struct Process *CreateNewProcTags(ULONG, ... )
+
+   This function uses taglists, so it is really easy to use. The basic form is:
+
+   process = CreateNewProcTags ( NP_Entry, funcEntry ); 
+
+   This basically works just like the CreateTask() call above: funcEntry is the
+   function you want to call, with tha following prototype form: int name (). It
+   returns the process or 0.
+
+   So for my hello_process() process to be created I'd do:
+
+   process = CreateNewProcTags ( NP_Entry, hello_process );
+
+   There is no way to stop a process by the dos library, so to stop this process, 
+   we'd need to call RemTask() from Exec, or DeleteTask() from amiga.lib. 
+
+   From the main program we'd do:
+
+   Forbid();
+      DeleteTask ( process->pr_Task );
+   Permit();
+
+   If we want to exit our process from it's own code, we'd do:
+
+   DeleteTask ( 0L );
+
+   Next, @{"6. Some things to remember." LINK reme}.
+
+@{B}Power Programs documentation,                                   Page 8
+@{uB}
+@ENDNODE
+@NODE reme "6. Some things to remember."
+@{B}Power Programs documentation,                                   HelloWorld
+@{uB}
+
+   There are a few things to think about when using a tasking model in your
+   program:
+
+   * All things done on global variables happen in all of your tasks.
+
+   * Stdio functions for input and output to the screen or files will most
+     likely fail, so you'll have to use your own versions of these. ( This is
+     compiler/library dependent, so it's best to asume things will not work )
+
+   * The execution order of your program is not guaranteed.
+
+   * Debugging can be quite difficult if you have a lot of different tasks running
+     when 'something' goes wrong.
+
+   * Concurrent access to files or other shared resources is a very bad
+     thing.
+
+   * If you don't really need tasking, you probably should not use it.
+
+@{B}Power Programs documentation,                                   Page 9
+@{uB}
+@ENDNODE

@@ -1,0 +1,479 @@
+
+
+
+			  Defender - The Source
+			  =====================
+
+				Update 04
+				=========
+
+			     By Dave Edwards
+			     ===============
+
+
+
+Assuming that you're reading this in order to find out about the ACC Defender
+program that I'm working on, and that you already have the old source file,
+then this update is devoted to the latest additions as of 22/11/92.
+
+
+Assembly Changes
+----------------
+
+	None since Update 03:you just bung the code into DevPac or whatever
+and assemble it. You'll need the 3 include files also, one being just a big
+list of hardware equates, the other two being the Defender1.i include file &
+the Defender2.i include file containing all of the title screen stuff, alien
+handling and mine/missile handling. Also, and this is a ***BIG*** change, I
+have packed all of the graphics include files into one large file, thus sav-
+ing both disc directory space (no doubt Mark will now be immensely happy!) &
+assembly time (since only one file has to be loaded instead of 30!) This file
+is called graphics.bin, and is included with the other files.
+
+
+	Users who want the original graphics files in their original format,
+see the "Help Wanted" section below for my address, and then send me a blank
+disc plus stamped, self-addressed jiffy bag for return. Mark your mail with
+the legend:
+
+
+			ACC DEFENDER GRAPHICS FILES
+
+
+so that I can differentiate your mail from DOC DISCS requests, and I'll send
+you the files in their original format (since there are now more attempts at
+Defender clones from other ACC members materialising, they might like to use
+my graphics, so send me a disc & use/abuse the graphics at leisure).
+
+
+	Since I'm using an interleaved bitmap, the graphics are saved in the
+RAW BLIT format. Users of the Kefrens IFF-Converter will be familiar with the
+RAW BLIT format, as it's provided as one of the standard converter options.
+If you're really stuck, however, I'll also provide (if requested) an IFF ver-
+sion suitable for loading into DPaintII/III/IV for those in real trouble. Oh,
+I've also supplied on this ACC disc a utility for constructing big files of
+bob/sprite graphics from lots of little ones (plus source!), so you can use
+that to create your own concatenated graphics files! I'll also supply copies
+of the MakeGraf utility for concatenating graphics files which I've written
+and sent to Mark (it should be on the same ACC disc as this file, but if you
+lose it because your younger brother plays with magnets near your discs, then
+I'll send you the source, executable & DOC file just as I did for Mark). See
+MakeGrafRT.s, its include files and MakeGraf.DOC for more info!
+
+
+Debugging Routines
+------------------
+
+	All of the routines from Update 03 still exist. If you want to play
+with the code, feel free, but take advantage of the debug routines so that if
+something terrible happens, you'll be able to pinpoint it unless you're un-
+fortunate enough to have the Guru knocking on your door...even then, so far
+I've been lucky and it's been pretty obvious where the problem lies when the
+program commits hara-kiri!
+
+
+Laser Firing Changes
+--------------------
+
+	The file Defender2.i contains MANY changes. First of these is a new
+set of routines for firing the laser. This is a vast improvement on the old
+routines, which chew up valuable CHIP RAM because they need pre-defined blit-
+ter graphics, and which don't allow laser shots to reach the extreme edges of
+the visible screen. The new ones do!
+
+
+	To implement this I defined YET ANOTHER new data structure, whose de-
+finition lies within the Defender2.i include file. The theory is actually not
+too hard for this one!
+
+
+	First, create a 'round robin' list (where the tail is linked back to
+the head of the list) of the defined data structure entries. Then, two rou-
+tines perform the laser firing sequence. One pre-processes the input coordin-
+ates (passed by the NewFire() routine into the appropriate LaserList entry as
+the FIRE key is pressed) and pre-computes screen addresses for plotting the
+laser beam. It also pre-computes (from a table in the main variable list) the
+exact left hand and right hand graphic images before plotting. This pre-proc-
+essing routine is called MakeLaserList().
+
+
+	Then, the PlotLaserList() routine does just that-using the 68000 ins-
+tead of the Blitter. Basically, I had better control over the 68000, and this
+allowed me to make sure that the laser beam behaved itself properly, AND also
+allowed me to write a new collision routine that ensured that hit objects in
+the collision list WERE hit and died. Part of the problem Mark Meany encoun-
+tered (beam travel through the Alien prior to death) still occurs, but is not
+as bad. The principal reasons for this are:
+
+
+		1) If the ship is moving quickly, then it is
+		   possible for an alien to move closer to the
+		   ship by a fair amount, and the laser beam
+		   will then 'overshoot' because it isn't cor-
+		   rected for movement. In any case, the effect
+		   isn't severe.
+
+		2) Some aliens have a prolonged death (as many
+		   as 5 animation frames) during which they'll
+		   persist on screen until all animation frames
+		   are exhausted even after the laser beam has
+		   passed through them.
+
+
+Again, the code is REPLETE with comments describing what's going on in accor-
+dance with my usual coding standards, so working out how the routines perform
+their allotted tasks won't be too hard!
+
+
+Starfield
+---------
+
+	Now Defender has a Starfield!
+
+
+	Well, it's simple really. YET ANOTHER data structure is defined for
+it, and methods similar to the Laser firing are used (the starfield contains
+entries for pre-computed screen plot addresses). InitStarField() performs the
+task of generating the starfield entries (including what colour the stars are
+since you can have 7 colours!) and PlotStarField() performs the plotting (in
+similar fashion to PlotLaserList()-a quick bit of ORing into the display bit-
+map).
+
+
+	Movement is again simple-the stars move at a quarter of the speed of
+the Defender ship. The Defender speed is shifted right two places, then added
+to or subtracted from (according to the movement direction) the x position,
+and this is used to create the pixel plot value (and to add 2 or subtract 2
+from the plot address if the star moves into the next or previous memory word
+on screen). Once again, LOTS of comments are there to help you!
+
+
+	Woops! The source says that the stars move at HALF the speed of the
+Defender ship. This is because the parallax effect is still visible at half
+speed, but the visual cues are less deceptive (at 1/4 speed, I find that it
+is possible to delude oneself into thinking that the ship is travelling slow-
+ly, only to find that the aliens appear on screen at one hell of a speed! So
+I changed it to half speed.
+
+
+Bodies
+------
+
+	Bodies can now be shot (either by accident or by design). This makes
+gameplay more complex than in Defender Phase Four, because the Landscape also
+disappears if all the Bodies die (see 'Deep Space' below!).
+
+
+	Debugging this was a NIGHTMARE. First, rewrites to the various Body-
+Code() routines had to be done, THEN rewrites to the Lander handler to take
+account of Bodies shot from the underside of Landers. Also, I had to add code
+to make the Landers resume terrain following in something approximating to a
+sensible manner and begin hunting for another Body to kidnap. I won't bother
+describing it here because in this case, the in-code comments tell the WHOLE
+STORY, partly to help me keep track of what was happening so that I could de-
+bug it when it went wrong!
+
+
+	Oh, yes. Now you get 500 points for rescuing a Body and returning it
+to the surface!
+
+
+Deep Space
+----------
+
+	One of the nastier features of the classic Defender arcade machine,
+and one that will ALWAYS be remembered, was the sudden disappearance of the
+landscape once all of the Bodies were dead, and the replacement of every last
+Lander by a Mutant. Again, I had to write this in a way that was compatible
+with two-player games, so that if Player 1 lost his landscape, Player 2 kept
+his until all of HIS Bodies died.
+
+
+	Basically, I used the NoLand(a6) variable in the main variable table
+plus corresponding entries added to the PlayerData structure so that each of
+the players had their own private copy. This is tested for by the PlotLand-
+Scape() routine (and if this variable is TRUE, PlotLandScape() stops plotting
+the landscape), and set or cleared in various places.
+
+
+	Places where NoLand(a6) is SET are:BodyCode routines (if player kills
+the last Body by accident, or a Lander picks it up successfully), the Lander
+handler (after successful body snatch) and InitPlayer() (if all of the bodies
+are now dead). InitPlayer() is also responsible for CLEARING NoLand(a6) once
+the player has suffered a set number of levels of landscape-free play. I use
+the wave number to decide this:if the value:
+
+
+			( (attack wave) MOD 4 )
+
+
+equals zero, then I re-enable the landscape and bring back a fresh set of 10
+bodies to defend.
+
+
+	During land-less attack waves, the Landers make no appearance. Repla-
+cing them are HORDES of Mutants. Be warned, on the higher attack levels there
+are LOTS of them! If you die, it's possible for the ship to be moved about &
+repositioned within the attack wave so that it ends up in the middle of one
+of the Mutant swarms, so it pays not to die! Oh, and if they're this bad now
+just imagine what they'll be like when I give the Mutants some intelligence!
+
+
+Smart Bombs
+-----------
+
+	This has been tidied massively. Now, it's possible to crack open Pods
+in the classic manner without having to shoot them first (although shooting a
+Pod in the middle of a group of five THEN hitting the Smart Bomb will have a
+truly devastating effect upon ALL alien forms entering the screen!).
+
+
+	Also, I found out the source of the weird Swarmer behaviour! The old
+Smart Bomb code was to blame, because it didn't check if an alien on the dis-
+play had already been 'hit' (or was already dead), and kept altering the ob-
+ject's flags to AOF_HIT regardless. This resulted in future Swarmer eruptions
+containing spurious dying ones that 'sparkled' on the screen. Note that only
+Swarmers killed by Smart Bombs were thus affected-shot ones behaved properly!
+
+
+	To force the Smart Bomb to crack open Pods properly, it now tests to
+see if a Pod has been hit, and prolongs the Smart Bomb activity by adding a
+random value to the Smart Bomb countdown variable used to determine if aliens
+should still be killed off. However, it is STILL possible for Pods to split
+AND for some Swarmers to survive, just as on the arcade original! If there is
+another Alien on screen at the same time, then you stand more chance of kill-
+ing all the Swarmers, just as you do with three or more Pods on screen at the
+moment of Smart Bomb detonation!
+
+
+Defender Plus
+-------------
+
+	And just to spice things up, now you can play Defender Plus!
+
+
+	The extra features that have been added to the game are in the form
+of 'power-ups' that are dropped occasionally by Landers or Mutants. These are
+small blobs with a character on the side, which gives an indication of exact-
+ly what feature your ship can now take advantage of.
+
+
+	The features are:1) turbo thrust for the ship; 2) anti-alien shields
+for the ship; 3) anti-Baiter homing missiles for when a Baiter arrives on the
+screen. There is also a 'mystery' power-up (with a question mark on the side)
+which randomly bestows one of the above three features upon the Defender ship
+when picked up.
+
+
+	When Defender Plus is enabled, Landers and Mutants randomly drop one
+of the power-ups when shot. The power-up only lasts for a limited period, and
+the Defender ship MUST pick up the power-up during this time limit, or else
+it disappears. To aid gameplay, the screen flashes yellow briefly when one of
+the power-ups is dropped (I originally put this in for debugging, but it was
+so handy a feature during play-testing that I decided to leave it in!).
+
+
+	Now for the code! First, adjustments to the Lander & Mutant handlers
+decide randomly if it's time to drop a power-up. If this is so, then a vari-
+able in the main variable block (called PuPtr) is set to point to the Alien-
+Object data structure of the dying alien. Otherwise, the pointer is cleared.
+Then, the DoPowerUp() routine checks this pointer to see if it exists. If so,
+it then checks to see if the _ANF_DISABLED flag is set (i.e., the alien has
+genuinely died - this is to ensure that when an alien dies, the scoring and
+end-of-level detection code, which relies upon this flag and the alien count
+in the PlayerData structure, are conditioned correctly, and that the Alien-
+Object structure for the dead alien is free to be re-used).
+
+
+	Once the pointer exists and _ANF_DISABLED is set, DoPowerUp() sets up
+the AlienObject structure with the correct graphics pointers for the required
+power-up, and the correct AO_SpecialCode entry for the required power-up. The
+BlitPreComp()/BlitPlot() routines then handle the power-ups in an identical
+manner to the aliens, plotting them on screen & calling the AO_SpecialCode as
+required. Now you can see why I went to the trouble of building this system-
+it amkes additions such as this SOOOO easy to do! The only proviso is that a
+SpecialCode routine MUST preserve register A0-it can trash D0-D7 and A1-A4 in
+any desired fashion (NOTE - A5 must ALWAYS point to the custom chip array at
+$DFF000, and A6 must ALWAYS point to the main variable block! Corrupt these &
+it's curtains for the program...) and it must write to the AO_ structure en-
+tries in a sensible manner (e.g., no y coordinates greater than 255!). So, if
+a power-up is enabled, DoPowerUp() sets it up. Which one is dropped is deter-
+mined randomly (using the Random() routine to create a random number).
+
+
+	Each power-up has its own SpecialCode entry. The common core consists
+of code to test if the Defender ship has picked it up. If the power-up is not
+picked up, then a countdown clock is decremented until it hits zero, at which
+point _ANF_DISABLED is set & the power-up is gone forever.
+
+
+	Once the power-up is picked up, then the SpecialCodes differ at this
+point. The turbo thrust SpecialCode sets up a countdown clock, and while this
+countdown clock remains nonzero, the Defender ship has a vastly increased top
+speed (and I mean VASTLY increased-don't put the hammer down if heading for a
+crowded region of space or the resulting collision will be spectacular!). If
+turbo thrust is enabled after picking up a turbo thrust power-up (which has a
+letter 'T' on its side and is light blue in colour for those with access to a
+colour display) then it lasts for approximately 5 seconds (if this is not the
+case, changing the initial countdown clock value is required in the code).
+
+
+	If a shield power-up is picked up, then again, a countdown clock is
+set up, and while this countdown clock is non-zero (again, I've tried to aim
+for a 5 second duration) then your Defender ship will be invulnerable to mine
+or missile attack, and to collision. However, collision with aliens will not
+kill them off (why should you have it that easy?) but you'll be able to slip
+through nests of Swarmers, for example, without dire consequences while your
+ship is thus shielded. Once the shield wears off, though, it's time to exer-
+cise the usual due care & attention once more! Shield power-ups are green &
+have a letter 'S' on the side.
+
+
+	If a missile power-up is picked up, the anti-Baiter homing missiles
+are provided. Once enabled, if you stay on the current attack wave too long
+and a Baiter makes its appearance, firing the laser also deploys a missile,
+which waits until the Baiter is at the same height on-screen as itself. Once
+this occurs, the missile 'locks-on' and starts to pursue the Baiter! The mis-
+sile has a top speed of twice that of the Baiter, and can also turn round 180
+degrees in a flash if the Baiter shoots past it. It destroys the Baiter once
+it gets close enough (it doesn't have to hit the Baiter directly, but kills
+via a proximity fuse) and if the Baiter is on-screen at the time of impact,
+the Baiter explodes quite nicely. You can track the missile homing using the
+scanner too...missile power-ups are dark blue with a letter 'M' on the side.
+
+
+	The Mystery power-up works slightly differently (this one is bright
+red with a '?' on the side). This determines randomly which one of the above
+features is to become active. Just to make life interesting, you're not told
+which one is active-you find out the hard way!
+
+
+	The homing missile is activated in a manner similar to the power-ups.
+A pointer variable (MsPtr) in the main variable block is set to point to the
+AlienObject structure for the power-up, and once _ANF_DISABLED is set, this
+structure can be re-used for the missile. Its graphics pointers are set de-
+pending upon which way the Defender ship is facing upon launch, and its in-
+itial speed matches that of the launching Defender ship. Missile launch will
+ONLY occur when a Baiter is on screen, and it helps if you match your height
+to the Baiter to assist in rapid homing and lock-on! Once it locks on to the
+Baiter, it flies off and tries to destroy it. The MissileOn() code (called by
+the fire routine) checks to see if a Baiter has arrived (using a variable in
+the main variable block called BAlert), and if so, checks to see if MsPtr is
+pointing to a valid AO_ structure with _ANF_DISABLED set. If so, the missile
+is created and set off on its merry way using its own SpecialCode (which per-
+forms the lock-on, homing and destruct function).
+
+
+Turning On Defender Plus
+------------------------
+
+	To see these features, press F4 when the title screens are being dis-
+played. This takes you to a set-up screen. You press the following keys when
+this set-up screen is on-line:
+
+
+		F1	: Select Classic Defender (no power-ups)
+
+		F2	: Select Defender Plus (power-ups on)
+
+		F3	: Toggle Turbo Thrust On/Off
+
+		F4	: Toggle Shield On/Off
+
+		F5	: Toggle Missiles On/Off
+
+
+When a given feature is enabled, it is shown in white text, and when disabled
+it is shown in red text. Press ENTER to confirm your choices and use them for
+the next game played, and ESC to abort and retain the previous set-up. If you
+allow any two or all three power-ups, then the Mystery power-up is automati-
+cally enabled. It doesn't make sense if there's only one or none of the other
+three power-ups enabled, and in this case the Mystery power-up is automatic-
+ally disabled. Scoring is the same in each case.
+
+
+Bug Corrections
+---------------
+
+	Weird swarmer behaviour has now ceased (see Smart Bombs above). Also
+the Mutants now behave themselves (although why I just can't figure out-the
+old code shouldn't have created off-screen Mutants).
+
+
+	Scanner dots from kidnapped Bodies are now erased properly. Also, I
+have tidied the scanner up, so that the scanner dots bear some proper rela-
+tion to the actual position of an object relative to the ship (which now has
+its own scanner dot!). I've also created a distinction between the ship and
+the flame in the Anim_ID entry (which required MUCH tinkering with such rou-
+tines as BlitPreComp() to accomodate the change!) which allowed me to prevent
+the flame having a scanner entry. Also, collision detection is more selective
+(Bodies are only tested for laser strikes, laser strike on Aliens is much ti-
+dier) and the laser fire bears a better resemblance to the original.
+
+
+	Also, some of the bugs (but NOT all!) have been removed from the two-
+player game. Now, the various attack waves/deaths/game ends are handled pro-
+perly. But some bugs still remain (see below for more info on these).
+
+
+Help Wanted!
+------------
+
+	I'm so busy debugging this damn program, and filling in lots of ap-
+plication forms for employment (and writing specialist, one-off DOC files on
+request for some people about such things as the Transputer instruction set
+and assembly syntax), that I haven't the time to play with OctaMED or any of
+my collection of Trackers. So if anyone has some nice, Defender-ish samples,
+could they please send them to me! I'll take samples in any form that is com-
+patible with OctaMED. Send on disc to:
+
+
+			Dave Edwards
+			232 Hale Road
+			WIDNES
+			Cheshire
+			WA8 8QA
+			England
+
+
+marking your envelope "DEFENDER SAMPLES", and I'll return your disc with some
+goodies added on for your trouble (e.g., disc repairers & things).
+
+
+Yet To Implement
+----------------
+
+	For now, the list of 'things to do' comprises:hyperspace (so far ig-
+nored completely), allowing 'all time greatest' high scores to be saved to &
+loaded from disc (not a high priority one, this), and sound. Also, I'm going
+to give Mutants and Swarmers a bit of intelligence in future (assuming that
+some of the remaining bugs can be cured first!).
+
+
+Bugs Still Remaining
+--------------------
+
+	Two-player games are interesting. Sometimes Landers crawl up to the
+top of the screen as though picking a Body up, but there isn't one! I've yet
+to find out why this is-it only happens on two-player games.
+
+
+	When entering Deep Space for the first time, Mutant conversion is not
+complete. You only score 100 points (i.e., the original Lander score) instead
+of 150 points for killing them. Minor bug-it'll be dealt with.
+
+
+	That wraps up Update 04. Have fun with it, and as you all know and
+love:
+
+
+
+		Live fast, code hard & die in a beautiful way
+
+
+
+				Dave Edwards.
+
+
+
+

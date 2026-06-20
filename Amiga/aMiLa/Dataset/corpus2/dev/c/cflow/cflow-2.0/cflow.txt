@@ -1,0 +1,198 @@
+
+
+
+CFLOW(1)                                                 CFLOW(1)
+
+
+NNAAMMEE
+       cflow - print a function call hierarchy
+
+SSYYNNOOPPSSIISS
+       cflow [-Aagivx] [-d n] [-w n] [-r name] [cpp-opts] files
+
+DDEESSCCRRIIPPTTIIOONN
+       The  ccffllooww  command  reads  _f_i_l_e_s  as  program  source and
+       attempts to print a graph of the program's  function  call
+       hierarchy  to  the  standard output.  Called functions are
+       indented with respect  to  their  calling  functions,  and
+       printed only once, in the order they occur.
+
+       The  first  reference to function _f_u_n_c is printed with the
+       name of the file and line  number  where  it  is  defined,
+       e.g.,
+
+              func {file.c n}.
+
+       Subsequent references are printed as:
+
+              func ... {mm},
+
+       where  mm is the line number in  the graph of _f_u_n_c's first
+       reference.  Global variable references appear (if  invoked
+       with the _-_v option) as:
+
+              var {v file.c n}.
+
+       External  functions  and variables are printed with a null
+       source, i.e.,
+
+              func {}.
+
+       An ellipsis precedes the name of a function called  recur-
+       sively, e.g.,
+
+               ... func ... {mm}
+
+   OOPPTTIIOONNSS
+       -a        Print a separate call graph for each function.
+
+       -A        Eliminate ansi keywords
+
+       -P        Eliminate POSIX keywords
+
+       -d _n_n     Print the call graph to at most depth _n_n.
+
+       -g        Add to the list of C keywords GNU CC keywords.
+
+       -i        Print  an  inverted graph of depth 2, i.e.,  for
+                 each function (or variable if used with  the  _-_v
+                 option),  print  a  list of functions which call
+                 it.
+
+
+
+                              PUBLIC                            1
+
+
+
+
+
+CFLOW(1)                                                 CFLOW(1)
+
+
+       -r _n_a_m_e   Print a call graph  with  function  or  variable
+                 _n_a_m_e  as  root  (in the case of a variable, this
+                 only makes sense if used with  the  _-_i  option).
+                 This option may be repeated.
+
+       -v        Print  references  to  global  variables.   Only
+                 functions calls are printed by default.
+
+       -x        Print each sub-graph in  full.   This  overrides
+                 the  default  format where subsequent references
+                 are abbreviated as described above.
+
+       -D_m_a_c_r_o or -U_m_a_c_r_o or -I_d_i_r
+                 Invoke cpp with the corresponding  options.   If
+                 there  is  a  makefile, then the command _m_a_k_e _-_n
+                 should indicate the proper flags to invoke _c_f_l_o_w
+                 with.
+
+       -X        eliminate  header files (empty files are made to
+                 a temporary location).  This often makes  better
+                 results  occur.   Files  to  look at eliminating
+                 are:
+                      stdio.h
+                      errno.h
+                      ctypes.h
+                      stdlib.h
+
+       -V        Echo commands as they are being executed.
+
+AAUUTTHHOORRSS
+       The graph printing command _p_r_c_g is essentially the one  in
+       M.  M. Taylor's _c_a_l_l_s(1) as posted to the Usenet newsgroup
+       comp.sources.unix.  A new parser, _p_r_c_c, is based on Steven
+       Kirkendall's  _c_t_a_g_s(1)  command  which is distributed with
+       the vi-clone _e_l_v_i_s(1).
+       Marty Leisner (leisner@sdsp.mc.xerox.com) got this working
+       on  SunOS  and  Linux,  and added a plethora of options to
+       cflow; rewriting cflow to use bash.
+
+EENNVVIIRROONNMMEENNTT
+       Uses _$_C_P_P, which is  normally  $CC  -E.   If  $CC  is  not
+       define, use gcc.
+       _P_R_C_G is defaulted to be the prcg program.
+       _P_R_C_C is defaulted to be the prcc program.
+
+HHIINNTTSS
+       Sometimes  redefine  CPP as cat will produce output if you
+       see known.
+
+
+BBUUGGSS
+       An extern variable declaration is overridden by an  actual
+       (global)  variable declaration.  A complaint is written to
+       stderr whether there is a conflict or not.
+
+
+
+                              PUBLIC                            2
+
+
+
+
+
+CFLOW(1)                                                 CFLOW(1)
+
+
+       Function parameters  are  ignored.   If  these  parameters
+       share  the  names  of global variables, then references to
+       them are  flagged as external references.
+
+       The _s_t_a_t_i_c qualifier is ignored.  Only the  first  defini-
+       tion of a function or variable is recognized.
+
+       It appears a definition like
+       mmaaiinn(()) {{ ffoooo(());; causes problems.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                              PUBLIC                            3
+
+

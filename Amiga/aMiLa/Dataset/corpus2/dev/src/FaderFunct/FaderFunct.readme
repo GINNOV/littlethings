@@ -1,0 +1,27 @@
+Short:        Fade functions for fading colortables.
+Author:       mad.nano@mailcity.com
+Uploader:     mad nano mailcity com
+Type:         dev/src
+Architecture: m68k-amigaos
+
+5 fade functions written in C for fading colortables same as for LoadRGB32().
+
+    FadeBlack()
+    FadeWhite()
+    FadeCol2Col()
+    FadeBlack2Col()
+    FadeWhite2Col()
+============================= Archive contents =============================
+
+LhA Evaluation V1.32 - Copyright (c) 1991,92 Stefan Boberg.
+All rights reserved. Not for commercial use.
+
+Listing of archive 'FaderFunct.lha':
+Original  Packed Ratio    Date     Time    Name
+-------- ------- ----- --------- --------  -------------
+    1413     480 66.0% 22-Feb-99 23:30:18 +Fader_protos.h
+    3803    1068 71.9% 22-Feb-99 23:31:06 +FaderFunctions.c
+-------- ------- ----- --------- --------
+    5216    1548 70.3% 22-Feb-99 23:54:22   2 files
+
+Operation successful.

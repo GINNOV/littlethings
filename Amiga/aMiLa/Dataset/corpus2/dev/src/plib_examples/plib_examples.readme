@@ -1,0 +1,11 @@
+Short:        Example programs and demonstrations
+Author:       sjbaker1@airmail.net (Steve J. Baker), port by uploader
+Uploader:     polluks sdf lonestar org (Stefan Haubenthal)
+Type:         dev/src
+Architecture: generic
+URL:          http://plib.sourceforge.net
+
+TODO
+PW is not supported
+SL/DSP is not supported
+JS is a dummy

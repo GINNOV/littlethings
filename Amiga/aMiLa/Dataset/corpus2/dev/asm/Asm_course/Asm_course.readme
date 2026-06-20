@@ -1,0 +1,74 @@
+Short:    Assembler course, for beginners. AWESOME!!
+Author:   gc@tyana.denkart.be (Geert Coelmont)
+Uploader: horror@smartnet.co.za (Mike Erasmus)
+Type:     dev/asm
+
+Intro:
+-----
+This is a Motorola 68000 assembler course on which the emphasis is on the
+Amiga, what else?
+
+It starts at the verrrrry beginning - introducing you to loops and decision
+making using amiga assembler. The whole purpose is to create a an "intro".
+Look at demo/intro for the basic ideas on Aminet.
+
+NB!!NB!! The hard coded assembler and copper addresses etc (spare me the
+techy stuff, please?!?) was supposed to work on pre-AGA machines like the
+A500, A600, A2000, A3000 etc etc. It will however still work on AGA
+machines. I reccomend using the tool KillAGA  on Aminet if you want to test
+out your masterpiece. Remeber, that was 1992.
+
+The little "demo" was one we actually used, put together by C00L-G/Silents.
+
+Requirements:
+------------
+1. An Amiga, duhhh? Whats that? Is it PeeCee compatible...
+2. An assembler, like DevPac 3 or Barfly(on Aminet). I have, however
+   included AsmOne. Which is quite old, but will do the job.
+3. Get the Amiga Includes for assembler, it sounds difficult but it should
+   be on the Amiga developersCD, as well as on numerous Fish CD-ROMs
+   available from http://www.ninemoons.com.  You will have to know your
+   stuff to be able to work without that includes, if you want to write
+   system frienldy things.
+4. Amiga ROM Kernel Manuals. Not needed, but believe me, verrrrry handy.
+   You may just need it. If you just want to code demos, then it may not be
+   needed.
+
+
+Copyright:
+--------
+I was asked not to spread this, that was 5 years ago. Well, since the Amiga
+is in pretty dire straightsI reason there may be people who want to start
+asm coding on Amiga, but hopefully Geert won't mind this being put on
+Aminet for the sake of the Amiga's future ;-))
+
+The reason I have upped this is coz i have had this for over 5 years now,
+yes - since April 1992 when Geert sent me this, at that stage there was no
+such thing as e-mail. The Internet was still 2 years away...
+
+
+Credits:
+-------
+1. Geert Coelmont (gc@tyana.denkart.be - present e-mail address). If you
+  have any queries rather contact Geert, please take note that his Amiga is
+  gathering dust, so don't think you will get any luck with him these days.
+
+
+End Notes:
+--------
+The .za in my e-mail address is NOT Zambia or Zaire as many of you think,
+it is Zuid-Afrika!!! South Africa, hard to believe but the Internet is old
+news here, so are telephones fax machines, cellphones, satellite T.V and
+houses made of stone with tarred roads. There is(hard to believe) some
+civilized life in Afrika. Yea thats true! 4 airlines fly in total *25*
+flights weekly to the U.K, and you can catch DAILY flights from Miami, Los
+Angeles and New York to our wonderful country.
+
+Sorry for the above geography lessons but I dunno what you think, you know
+we have Amigas here so then it MUST be a civilized place !!!
+
+Please xcuse my English, I am actually Afrikaans! :-)))
+
+This text was written on 10-May-1997 by Mike Erasmus
+(horror@smartnet.co.za) as I am awaiting both the new A\Box and PIOS One.
+

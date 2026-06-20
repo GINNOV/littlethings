@@ -1,0 +1,79 @@
+                          PRODATA 1.0 Turbo
+
+                       coded by Ornaghi Alfredo
+
+                       E-Mail : ted@intercom.it
+
+
+                          FREEWARE VERSION !!!
+
+
+
+
+
+ProData is a simple program that converts any binary file to assembler
+source code, it works in a simple Workbench window.
+This version is 100% assembler, wrote to be as fast as possible...
+
+
+SYSTEM REQUIREMENTS:
+  Any Amiga.
+
+
+USE:
+  Input file name  : source file's name
+  Output file name : file's name after conversion
+  Data on each row : number of bytes, words or longs for each line
+  Prefix           : example : dc.b, dc.w, dc.l or anything you want
+  Output type      : b,w,l if you want respectively Byte,Word or Long
+                     conversion
+
+
+WARNING : To exit from the program type a single character "!" at any time.
+
+
+HISTORY:
+  1.0 Turbo : this is the first public release!
+
+
+
+
+
+
+                              LEGAL INFORMATION
+
+
+COPYRIGHT:
+  ProData is COPYRIGHT © 1996 by Ornaghi Alfredo.
+
+
+DISCLAIMER:
+  This software is provided "as it is". No warranties are made. The use of this
+  software is at your own risk. The author assumes no responsibility for any
+  damage caused by the use of this software.
+
+
+DISTRIBUTION:
+  The permission to distribute copies of ProData on disk is granted provided
+  that NO MONEY is charged beyond the cost of the disk.
+  
+  The permission to distribute ProData electronically on computer network and
+  Bulletting Board System (BBS) is granted provided that NO MONEY is charged
+  for accessing or download the archive.
+  The permission to distribute ProData on all CD archives is granted.
+
+  Commercial distributors of freely distributable software are NOT allowed to
+  distribute ProData. 
+
+
+
+
+
+If someone finds some bugs or someone have new ideas, plaese write me!
+
+
+          ------------------------------------------------------------
+         |     //          | Alfredo Ornaghi (Amiga user!)            |
+         |    //  Amiga    | E-Mail   : ted@intercom.it               |
+         | \\X/ forever!!! | Web site : http://www.intercom.it/~ted/  |
+          ------------------------------------------------------------

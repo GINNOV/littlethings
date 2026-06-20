@@ -1,0 +1,32 @@
+{
+	"title": "Minimal",
+	"width": 14,
+	"height": 10,
+	"author": "kain@piwnica.ws",
+	"mode": "conquest",
+	"tiles": [
+		"..............",
+		".            .",
+		". 1########o .",
+		".   #    #   .",
+		".s-s#s-| #   .",
+		".   # |-S#S-S.",
+		".   #    #   .",
+		". o########2 .",
+		".            .",
+		".............."
+	],
+
+	"controlPoints": [
+		{
+			"name": "Northeast",
+			"capture": [11, 2],
+			"polygon": [[10,1], [12,1], [12,3], [10,3]]
+		},
+		{
+			"name": "Southwest",
+			"capture": [2, 7],
+			"polygon": [[1,6], [3,6], [3,8], [1,8]]
+		}
+	]
+}

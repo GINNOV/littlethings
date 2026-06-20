@@ -1,0 +1,48 @@
+*------------------------------------------------------------------------------
+* PRO-PACK MC68000 Unpack Source Code - Method 2, Key, Verify
+*
+* Copyright (c) 1991,92 Rob Northen Computing, U.K. All Rights Reserved.
+*
+* File: MC68_2KV.S
+*
+* Date: 5.3.92
+*------------------------------------------------------------------------------
+
+*------------------------------------------------------------------------------
+* MC68000 Unpack Routine - Method 2, Key, Verify
+*
+* on entry,
+*	d0.w = key
+*	a0.l = start address of packed file
+*	a1.l = start address to unpack file
+*	stack space required: $244 bytes
+*
+* on exit,
+*	d0.l = length of the unpacked file in bytes OR error code
+*	    0 = not a packed file
+*	   -1 = packed data CRC error
+*	   -2 = unpacked data CRC error
+*
+*	all other registers are preserved
+*------------------------------------------------------------------------------
+unpack
+		dc.l $48E7FFFE,$28006100,$02107200,$B0BC524E,$43026600,$01FC6100,$02002E80,$47E8000A
+		dc.l $2A494DF5,$08006100,$01F049F3,$0800224B,$610001F2,$41EBFFFA,$610001DE,$72FFB042
+		dc.l $660001CE,$48403F00,$4267BBCC,$64507000,$102BFFFE,$41F60800,$B1CC6342,$544F200C
+		dc.l $08000000,$6704524C,$52482008,$08000000,$67025248,$7000BDC8,$67081220,$3F015200
+		dc.l $60F43F00,$D1C03F04,$49ECFFE0,$4CD400FF,$48E0FF00,$B9CB62F0,$97CCD7C8,$381F7E80
+		dc.l $DE071E1B,$DF07DE07,$600000D2,$1E1BDF07,$60301E1B,$DF076056,$1E1BDF07,$60561E1B
+		dc.l $DF076058,$1E1BDF07,$605E1E1B,$DF07605E,$1E1BDF07,$605E1E1B,$DF076064,$7A03DE07
+		dc.l $67CADD46,$51CDFFF8,$5446101B,$B9001AC0,$101BB900,$1AC0101B,$B9001AC0,$101BB900
+		dc.l $1AC051CE,$FFE6E25C,$6072DE07,$67A4DB45,$DE0767A4,$640E5345,$DE0767A2,$DB45BA3C
+		dc.l $000967B8,$DE07679C,$641ADE07,$679CDD46,$DE07679C,$657E4A46,$66085246,$DE076796
+		dc.l $DD46E15E,$1C1B204D,$90C65348,$E24D6402,$1AD85345,$4A46660C,$1C101AC6,$1AC651CD
+		dc.l $FFFA6018,$1AD81AD8,$51CDFFFA,$600E1E1B,$DF07651A,$101BB900,$1AC0E25C,$DE07650C
+		dc.l $101BB900,$1AC0E25C,$DE0764E8,$67E07A02,$7C00DE07,$67346400,$FF72DE07,$673264A4
+		dc.l $5245DE07,$67306400,$FF7C1A1B,$673A5045,$6000FF72,$DE076724,$DD460046,$0004DE07
+		dc.l $67206500,$FF7E6000,$FF741E1B,$DF0760C6,$1E1BDF07,$60C81E1B,$DF0760CA,$1E1BDF07
+		dc.l $60D61E1B,$DF0760DA,$DE076604,$1E1BDF07,$658A301F,$670A204D,$321F10C1,$530066F8
+		dc.l $202F0002,$9BC0224D,$611A72FE,$B45F6702,$2E814CDF,$7FFF4E75,$7203E188,$101851C9
+		dc.l $FFFA4E75,$4FEFFE00,$204F7600,$22037407,$E2496404,$0A41A001,$51CAFFF6,$30C15203
+		dc.l $66EA7400,$1219B302,$32020242,$00FFD442,$34372000,$E049B302,$538066E8,$4FEF0200
+		dc.w $4E75

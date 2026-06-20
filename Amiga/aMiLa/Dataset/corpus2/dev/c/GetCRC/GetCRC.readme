@@ -1,0 +1,94 @@
+Short:    V1.19 calculates different checksums
+Author:   stoecker@epost.de (Dirk Stoecker)
+Uploader: stoecker@epost.de (Dirk Stoecker)
+Version:  1.19
+Type:     dev/c
+
+This program has 2 aims. First it allows to calculate different types
+of checksums including CRC and much other types and thus allows to
+identify a given checksum. Second its source code shows how to create
+these checksums, so they can be used in own projects.
+
+It is plain and portable ANSI-C code. The program is called like
+"GetCRC <filename>" and prints the resulting checksums of this file.
+
+Text modes aren't supported, but it always uses binary mode. The file
+must fit completely in memory. These are no restrictions to the
+algorithms, but are restrictions of using all of them in one program.
+
+When choosing own algorithms, I suggest usage of "CRC-32 2", which
+is one of the reliable standard algorithms.
+
+In the output the lines with (M/I) always have two numbers, where
+the first is Motorola byte ordering and the second Intel byte
+ordering. The Word and Longword checksums can't be calculated, if the
+file size isn't a multiple of 2 or 4. GetCRC calculates the checksum
+of the largest part, which is such an multiple and prints the
+additional bytes after the checksum. Depending on the checksum generator
+such bytes are either ignored, added to the higher bytes or added to
+the lower bytes of the result.
+
+Here is the list of currently supported checksums. It also includes
+a list, where these are used. Tell me other places, so I may update
+this list. Send me new algorithms, source comments, better or different
+calculation methods, ...
+
+CRC-16 1          : PCompress2, Arc, DMS, ProPack, LhA, Zoo, Shrink
+CRC-16 2          : CCITT, XModem, LU
+CRC-16 3          : Donald Kindred's CRC
+CRC-16 4          : old Zoom, CompDisk
+CRC-32 1          : Olaf Barthel's CRC, PCompress, Zoom 5, LhPak
+CRC-32 2          : Zip, GZip, LZX, RAR, Arj
+CRC-32 3          : Brik (Binary mode), Ace
+CRC-32 4          : GPatch (old)
+CRC-32 5          : BZip2
+CRC-32 6          : BZip2 inverted
+CRC-32 7          : chksum utility
+CHS-16 1          : PowerPacker Passwords
+CHS-16 2          : BSD sum
+CHS-16 3          : SYSV sum
+CHS-32 1M (WRAP)  : Olaf Barthel's CRC, Bootblock of OFS/FFS
+CHS-32 1I         : 
+CHS-32 2          : LightFileSystem
+EOR Byte          : 
+EOR Word (M/I)    : 
+EOR Long (M/I)    : ByteKiller, RSI-Packer
+Sum Byte Signed   : 
+Sum Byte Unsigned : SQ
+Sum Word Si (M/I) : 
+Sum Word Un (M/I) : 
+Sum Long M	  : Root-, Bitmap-, File-, Datablock of OFS/FFS
+Sum Long I        : 
+MD4               : EDonkey, Samba
+MD5               : 
+SHA1              :
+
+Normally the numbers are segadecimal (with the exception of CRC32-7,
+CHS16-2 and CHS16-3 which are decimal).
+
+GetCRC maybe used to calculate only one CRC and only print this one.
+This is done by passing a number as 3rd argument. Currently the long
+and word parts of Sum and EOR are not supported:
+
+CRC16-1, CRC16-2, CRC16-3, CRC16-4,
+CRC32-1, CRC32-2, CRC32-3, CRC32-4, CRC32-5, CRC32-6, CRC32-7
+CHS16-1, CHS16-2, CHS16-3, CHS32-1M, CHS32-1I, CHS32-2,
+EOR-Byte, Sum-Byte, Sum-ByteU,
+MD4, MD5, SHA1
+
+The result is the checksum printed to output with carriage return.
+This maybe used in scripts, with pipes and ...
+
+Use this tool as you want, but WITHOUT ANY WARRANTY!
+
+Contact me at:
+
+*********************************************************************
+* snail-mail:                  * e-mail:                            *
+*   Dirk Stoecker              *   stoecker@epost.de                *
+*   Geschwister-Scholl-Str. 10 *   dirk@dstoecker.de                *
+*   01877 Bischofswerda        * world wide web:                    *
+*   GERMANY                    *   http://www.dstoecker.de/         *
+* phone:                       * pgp key:                           *
+*   GERMANY +49 (0)3594/706666 *   get from WWW pages or keyservers *
+*********************************************************************

@@ -1,0 +1,16 @@
+
+This is a simple example server that reads lines of text from the client
+and echoes them back. An echo server is usually running on TCP
+port 7 of Unix machines. 
+
+Start it running someplace on your network, then use 'telnet' to
+connect to it on port 8000:
+
+   telnet localhost 8000
+
+...notice that you can open multiple telnet sessions - and the
+server echoes the right data back to the right client.
+
+You can choose a port number other than 8000 by putting it on the
+command line of the echo server.
+

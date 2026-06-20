@@ -1,0 +1,8 @@
+Short:        Collection of useful C-macros
+Author:       kost@imn.th-leipzig.de (Stefan Kost)
+Uploader:     kost imn th-leipzig de (Stefan Kost)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+This is a collection of some nice macros for c-programmers. Not much today,
+but I hope you help me to let it grows.

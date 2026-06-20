@@ -1,0 +1,10 @@
+Name: Indent 2.2.6
+Short: ANSI C source code formatter
+Author: mail@dietmar-eilert.de (Dietmar Eilert)
+Uploader: mail@dietmar-eilert.de (Dietmar Eilert)
+Version: 2.2.6 (18/Feb/2001)
+Type: dev/c
+
+This is GNU Indent 2.2.6 compiled for AmigaOS, an ANSI C source code formatter
+(not for C++). To recompile the source code with SAS/C, use the provided make
+file. To install, copy the indent program somewhere in your path.

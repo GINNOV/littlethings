@@ -1,0 +1,472 @@
+			       VERSION.DOC
+				  DICE
+VERS DES COMMENT
+    VERS    = Release Version
+    DES     = bug fixed / feature designator
+	XB  - major bug fixed in main compiler
+	      (use of routine in question could have caused a crash)
+	B   - minor bug fixed in main compiler
+	F   - feature added
+	E   - enhancement to existing feature
+	O   - optimization added
+
+	ADD - feature added or fixed that is standard C but was not previously
+	      implemented or working.
+
+	XBL - major bug fixed to library
+	BL  - minor bug fixed to library
+	FL  - feature added to library
+	OL  - optimization added to library
+
+	XBA - major bug fixed in support program (i.e. not DCC or sub programs)
+	BA  - minor bug fixed in support program
+	FA  - feature added to support program (or new support program)
+	OA  - optimization added to support program
+
+    COMMENT = comment or bug, feature
+
+2.06.37
+    B	arrays are now aligned the same as their element type
+	alignment.  Thus, char a[3]; is byte aligned while short a[3];
+	is word aligned. Previously arrays were always word aligned.
+	(not really a bug, but required to work with Amiga cia structures)
+
+    F	PROFILING ADDED.  New -prof option to DCC, LIBMAKE, and FDTOLIB.
+	This tool gives you unmatched profiling capabilities.  You may
+	profile just your source, standard C calls, amiga library calls,
+	or any combination.  A <programname>.dprof file is automatically
+	generated when your program exits and may be turned into a
+	textual representation	with the DPROF program.
+
+	Profiling routines have a 1 uS granularity under 2.0, 20 mS
+	granularity under 1.3.
+
+	__noprof qualifier for procedures added -- prevents a procedure
+	from being profiled (used by the system to prevent the profiler
+	routine from getting profiled itself)
+
+    F	C.LIB renamed to CS.LIB to generalize library names.  Infix IDs
+	are now generalized as follows:
+
+	L   large data model
+	S   small data model
+	R   registered args, else stack args (registered release only)
+	P   profiled, else not profiled.
+
+	DCC will now use the -prof and -md/-mD options to determine which
+	c.lib and amiga.lib to use.  The more useful combinations are
+	included in the distribution and registered users may make
+	additional versions as needed.
+
+	Note that you may mix options -- it is perfectly valid to compile
+	source modules with -mD but link small-data.
+
+    BL	bug in fread() fixed relating to an fread() occuring after an
+	ungetc().
+
+    E	ALL LIBRARIES IN THE SYSTEM REORGANIZED.  There are now many
+	more libraries.  Registered users now have a means of remaking
+	*ANY* library from scratch by unpacking the library source code
+	and typeing 'dmake' with no arguments for instructions. Generally
+	only the DTMP: assignment and -2.0 in your DCCOPTS is required.
+
+	Since there are many more libraries possible then I can fit in the
+	distribution, this means may be used to create esoteric libraries
+	that the majority of people will never use.
+
+    F	Fixed two major bugs with constant floating point arithmatic...
+	addition and subtraction would not work correctly in a few cases
+	(it would get the sign wrong), the exponent would get screwed up
+	in some cases (usually after a negation), and I was overflowing
+	the single-precision exponent range for conversions to type float.
+
+	Ooooo this stuff should have been caught long ago!
+
+    F	Fixed a pointer arithmatic bug, yet another case where a scratch
+	register would get overwritten due to a procedure call.
+
+2.06.36
+    B	register allocation bug fixed, related to floating point
+	routines mainly.  Would generate a 'Too many redos' error
+	in some cases (bug did not generate bad code).
+
+    F	PRECOMPILED INCLUDES ADDED, see -H option in DOC/DCC.DOC.
+
+
+2.06.35
+    FL	under 2.0 (V37), getenv() now checks for local enviroment variables
+	before global ENV: variables.  Under 1.3 only global ENV: variables
+	are checked for.
+
+    BL	fixed %U and %W in strftime(), would generate incorrect week-of-year
+
+    B	fixed stringize operator for \n, i.e. quoteme(fubar\n) -> "fubar\n",
+	would previously generate incorrect result (I think)
+
+    B	fixed bugs in integer multiply & divide, some cases would generate
+	fatal errors (all caught by DICE)
+
+    B	fixed bug &= operator, would generate assembly error in
+	conditional:	while (x &= (x - 1)) ...
+
+    F	optimizations made to mulitply & divide, handles 16 bit expressions
+	better.
+
+    F	minor optimization added for procedure calls within the same
+	module.  If call is within a byte offset then BSR.B will be
+	used, else BSR.W is used.
+
+    F	DLink now checks for illegal small-data references to far objects
+	and generates the appropriate error message.  This was added for
+	completeness and also because __far or -mD data objects are no
+	longer A4-relative.  The check will catch illegal model mixing.
+
+2.06.34
+    BL	bug in <varargs.h> (old style var-args) fixed, was skipping first
+	argument.  Note that all ANSI projects should use <stdarg.h>
+
+2.06.33
+    B	bug in offsetof(type, array_elm) fixed, previously caused error
+	message.
+
+2.06.32
+    B	fixed bug in dlink Introduced in .31 that would cause a machine
+	crash.
+
+
+2.06.31
+    B	fixed floating point bug relating to array indexing, would
+	clobber A0 in some cases
+
+    B	fixed preprocessor bug relating to the use of hex constants
+	in #if expressions (they wouldn't work)
+
+    E	redid the handling of the ?: routine to allocate its result
+	storage (a temporary register) after running the sub-expressions
+	instead of before, which allows you to nest ?: indefinitely without
+	generating an too-many-redos error.
+
+    B	register allocation bug (would generate fatal error) in
+	&array (redundant & operator) has been fixed.
+
+    B	DCPP now accepts null directives.  # with no directive.
+
+2.06.30
+
+    F	DCPP now evaluates undefined symbols in #if expressions as 0
+	instead of generating an error message, as per ANSI.
+
+    B	Yet another bug in the # (stringtize) operator found.  Fixed.
+	Really really really should work right this time!
+
+    B	bug in switch/case fixed, case <enumid>: would generate an
+	error message.
+
+    BA	I was shipping the wrong mathieeedoub*.library shared libraries,
+	would cause erronous float->double conversion.
+
+    B	another floating point bug found in && and || of the
+	form 'fp && fp' or 'fp || fp', would cause incorrect
+	evaluation and/or assembly error
+
+    B	small bug in fread() would sometimes set error flag
+	when returning EOF, and fseek() would not reset this
+	flag (it does now).
+
+    BL	bug in *scanf(), %c would overwrite the char by one byte
+	(i.e. store into two chars instead of one).  fixed.
+
+    B	DCPP didn't handle a quoted /* in directives correctly.
+
+    F	Large programs that have more than 64K of *initialized* data
+	may now use either __far for selected items (preferable) or -mD
+	without causing link errors.  Previously dlink would combine far
+	data along with near data making all small-data referenced bss
+	items out of range if more than 64K of initialized data had been
+	declared, __far or not.  Now, DC1 generates 'fardata' sections
+	properly when -mD or __far is used (previously only worked with
+	__far), and dlink will not combine any section name beginning with
+	'far' into the small data model.
+
+	This is only of major import when compiling incredibly huge
+	programs.  Note that having greater than 64K of bss with -mD or
+	__Far has always been supported since library bss is always forced
+	in front of program bss.
+
+    F	DLink now takes approximately 15% less memory.	While it still
+	requires memory to hold the combined size of all objects and
+	libraries, incidental memory requirements now reuse much of this
+	memory from unlinked sections instead of allocate new memory.
+
+2.06.29
+    B	another long standing bug found: short a = i * j; where i and j
+	are long's and *also* a memory reference (not in regs),
+	the multiplication short-result optimization was screwed up.
+
+    B	register allocation bug (would produce a fatal error) fixed,
+	registers would not be deallocated in constant conditional
+	expressions such as:	1 ? (a = 4) : b;
+
+2.06.28
+    B	really dumb bug fixed, made retroactive to 2.06.27 (all 2.06.27
+	dists were redone with this fixed).  Had been introduced in 2.06.27
+
+2.06.27
+    E	add -// option to DCC and DCPP, enables C++ style // comments.
+	If not specified, // style comments are ignored.  Generally
+	one puts -// in DCCOPTS.
+
+    E	added -no-env option for DCC.  If specified, DCC will *not*
+	load options from DCCOPTS.
+
+    B	fixed bug:  static int fio(), fio();  (procedure declared twice
+	on same line) would force procedure to be non-static.
+
+	fixed bug:  __geta4 int fio(), bar(); ... __geta4 would apply
+	only to first procedure.
+
+    B	fixed bug w/ labels ...  label: case ...  would generate error
+	message (case or default following directly after label).  Was
+	introduced when I initially fixed labels.
+
+    E	AUTO-AGGREGATE INITIALIZATION ADDED, e.g.
+	main() { int a[] = { 1, 2, 3 }; ... }.
+
+	static & global initialization has been re-vamped.  Note that
+	bit-field aggregate initialization is NOT supported yet.
+
+    B	Fixed bug that has been in there from the beginning.
+	int *a; a[20000] = 1; ... would not multiply the constant by 4 to
+	get the index.	ONLY EFFECTED CONSTANT INDEXES WHOS OFFSET WOULD BE
+	LARGER THAN A SIGNED SHORT, which is why it was not caught.
+
+    B	Fixed bug in float point stack allocation... temporary fp variables
+	from the previous procedure would not properly be cleared from the
+	cache, causing erronous stack offsets (that overlap other variables)
+	in the next procedure.
+
+    E	Added ANSI 'U' extension for constants, e.g. 123U.  DICE now
+	automatically promotes a constant to unsigned if it does not fit in
+	a signed long, such as 4000000000.  Note, however, the int->float
+	conversion is currently always signed due to lack of
+	unsigned->float calls in the amiga's shared fp libraries.
+
+    B	small bug in fread(), would not set the EOF flag when an EOF
+	occurs for an fread() requesting a buffer size larger than the
+	stdio buffer size.
+
+    B	when making a registered-args call (-mr, -mR, -mRR) where a
+	pointer - int subtraction occurs, i.e. foo(ptr - int, int),
+	arguments after the argument containing the ptr - int would
+	be incorrect (registers would get squashed).  ONLY applies
+	to registered-args calls.  This has been fixed!
+
+    B	bug in preprocessor fixed, #define fubar(x) "a x a" would replace
+	the 'x' in the string, which is wrong.
+
+    B	bug with bitfields has been found and fixed.  Essentially, bitfield
+	operations in routines that need to run a retry pass can get
+	munged.  This is usually caused by routines that declare lots of
+	local variables.
+
+2.06.26
+    B	Fixed bug in floating pt compare of the form:  x = (f1 == f2);
+	i.e. a compare where the result is a boolean 0/1 when not in
+	a conditional.	Was caught by DICE (caused a fatal error).
+
+    B	Fixed bug w/ bitfields (was caught by DICE), would give fatal
+	error if destination was not a register for field extraction.
+
+    B	fixed bugs with stringtize operator in macros, should now work
+	according to the ANSI spec.
+
+	#define fubar(x) #x
+
+    BL	month was off by one for %m operator in strftime()
+
+     E	PROCEDURES MAY NOW RETURN STRUCTURES.  YOU MUST PROTOTYPE ALL SUCH
+	PROCEDURES.
+
+     E	added // comments to DCPP (C++ style comments)
+
+2.06.25
+    E	doc/errors.doc now exists, error handling centralized.
+
+    E	a printer driver and exec device driver example has been added to
+	examples/ ... so now I have a shared library example, dos device
+	driver example, EXEC device driver and printer driver example.
+
+2.06.24
+    B	stack allocation changes in 2.06.23 were broken, broke floating point.
+	(got the stack tracking mixed up w/ variable allocation)
+
+    B	?: fix in 2.06.23 was broken (sigh), fixed ... 'default:' would
+	not be properly tokenized.
+
+    E	*scanf() now supports %e/E/f/g/G and %[..]
+
+2.06.23 BETA
+    B	goto labels are now in their own name space, no more conflicts
+	with  int a; ... goto a; ... a: ...
+
+    F	added stack tracking for fp temporaries, meaning that subroutines
+	containing floating point expressions do not take up anywhere near
+	the amount of stack they used to.
+
+    F	allows declarations after switch() { and before first case.
+
+    F	fixed problem with  ... ? symbol : ...	(symbol was being
+	interpreted as a label instead of a variable within a ?:
+	conditional
+
+    F	fixed problems with conditional returns from fp operations,
+	such as:	double a, b; int c = (a < b);  that must
+	generate a 0/1 result instead of a branch (as in an if()).
+	Would generate error before.
+
+2.06.22
+    B	fixed problem with GOTO labels, a goto label semantically is
+	not a statement unto itself.  The problem is a line like the
+	below:
+
+	    if (i) j = 1; else x: j = 2;
+
+	Currently j = 2; is completely outside the if in DICE.	This
+	is incorrect,  'x: j = 2;' counts as a single statement.
+
+    E	libmake is now documented, it wasn't before!  New options have
+	been added to libmake and fdtolib.  For libmake, DCC's -D
+	option has been added.	For fdtolib, a new -p option is specifiable
+	to set the prefix used on exported symbols (to support creation
+	of dynamic.library compatible object modules)
+
+    B	fixed bug in string constant array initialization,
+	char x[1] = "a";  previously generated an error
+
+    B	fixed infinite ERROR printing loop
+
+    F	revamped constant-address handling (i.e. when you map a
+	complex structure over IO space at a known address, useful when
+	generating ROM'd apps for 68000 based uP's.
+
+    F	dynamic.library & support routines now part of the distribution.
+
+2.06.21
+    E	fixed register reallocation, should now do a better job
+	allocating registers in complex subroutines.  Hopefully squashed
+	'maximum retries exceeded' error for all but the most incredibly
+	complex expressions.
+
+    B	fixed bug in int->float conversion, expressions such as:
+		double x = (double)(a * b);
+
+    E	fixed somestuff that generated an infinite WARN loop.
+
+    F	DCC now creates the destination directory heirarchy if it does
+	not exist.  For example, when you DCC com/x.c the object file
+	will be T:com/x.o, with T:com created if necessary.
+
+    F	DYNAMIC FUNCTION/VAR LIBARARY SUPPORT ADDED, see __dynamic
+	explanation in DYNAMIC.DOC .
+
+    F	DCPP now accepts -Ddefine(vars..)=definition, it used to be
+	able to only accept -Ddefine=value
+
+2.06.20
+    F	TimerBase, for timer.device library calls, now has auto-open
+	capability, meaning that you can simply call AddTime(), CmpTime(),
+	SubTime(), and the new 2.0 calls (GetSysTime() & ReadEClock())
+	without having to open the timer.device and set up TimerBase
+	yourself.
+
+    B	bug in if (ptr & 1) and similar constructs doing a logical and
+	in a compare against a pointer rather than an int produced
+	bad code caught by DAS.
+
+    B	x.o was in c.lib, this is wrong... x.o must be the LAST file in
+	any link and is included automatically by DCC when it runs DLINK.
+
+    F	additional example code in DCC2:examples -- a DOS handler and
+	a shared library.
+
+2.06.19
+    B	bug in dynamic stack code under 1.3 fixed
+    B	bug in workbench startup under 1.3 fixed
+    B	bug in register allocation fixed (would cause fatal error
+	message 'too many retries' sometimes when procedure args
+	declared as arrays instead of pointers)
+
+2.06.18
+    F	several more libraries have auto-open capability
+
+    B	bug in DLINK fixed -- would GURU on large links due to an error
+	in the allocation routines (relocation info larger than 4K would
+	cause a GURU)
+
+2.06.17
+    F	DCPP now scans DINCLUDE:PD/ for include files.	This is where I
+	will be putting .H files for various ports (such as the UNIX
+	regexp port).  This was done so as not to clutter the main
+	DINCLUDE: and to differentiate between PD files and non-PD
+	files.
+
+	UNIX compatible .H files are usually placed in DINCLUDE: or
+	DINCLUDE:SYS/
+
+    F	preprocessor now handles #if defined(symbol) properly (was
+	previously not implemented)
+
+    F	BITFIELDS now 99% implemented!	including signed/unsigned
+	qualifications.  The only thing that does not work is ++bitfield
+	and --bitfield.  Single-bit bitfields have been optimized.
+	aggregate initialization of bitfields is still wanting.  executable
+	actually got smaller when I finally got down and fixed these up.
+	No 020/030 support yet.
+
+    F	startup code modified to allow writes to desc 0, reads from desc 1,
+	etc...	at the file descriptor level but not the stdio level.  This
+	is to support some UNIX programs which do this.
+
+    BL	bug in [f]putc() fixed -- [f]putc() is supposed to return the put character,
+		    but did not do so in the case of a new line (putc), or
+		    at all (fputc).
+
+    F	NEW LIBRARY ROUTINESE:	stat(), fstat(), getenv(), opendir(),
+	readdir(), closedir(), rewinddir() (see MAN/UNIX.DOC)
+
+    F	chdir() now restores the original directory on exit
+
+    F	Dynamic Stacking added (-gs option).  Somewhat primitive, but will
+	get much better.  This allows subroutines to be as deeply nested as
+	required, allocating and deallocating stack frames when low stack
+	conditions exist.
+
+    F	longjmp()/setjmp() now properly handle dynamic stacks
+
+    B	fixed another bug, this one having to do with the index address
+	mode (An,Dn.x) combined with a binary operator.
+
+    B	fixed bug in FDTOLIB that screwed up register ordering.
+
+2.06.16
+    B	fixed EXG bug in DAS, EXG As,Ad would generate Ds,Dd.. screwed
+	up registered args (-mRR).
+
+    B	fixed bug in *= and /= combined w/ array indexing, things like
+	temp[i] /= 23; would use the scratch regs for storage across
+	the divide call.
+
+2.06.15
+    F	BASIC REGISTERED ARGUMENTS ADDED.  See -mr, -mR, and -mRR options
+
+    F	prototype optimization.  If a prototype says a procedure takes a
+	short, then DICE pushes a long (as usual).  However, DICE will
+	no longer EXT the object before pushing it (upper word is garbage).
+	This works because the procedure, having declared the argument a
+	short, will only access the lower 16 bits.
+
+    B	fixed token pasting bug in dcpp, a ## b ## c now works properly.
+
+    F	first registered distribution that includes the 2.0 includes,
+	restructuring of 1.3 includes (now called 'amiga13' instead of
+	'amiga'), and restructuring of disks to make more space.

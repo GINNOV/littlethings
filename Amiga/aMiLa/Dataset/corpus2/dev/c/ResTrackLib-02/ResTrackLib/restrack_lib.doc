@@ -1,0 +1,62 @@
+
+		   Resource Tracking Library V0.1
+
+		 (C) 1994, Aaron "Optimizer" Digulla
+
+
+ OVERVIEW
+ --------
+
+One of the major advantages of the Amiga is that the OS does not track
+resources. This is one of the main reasons that the OS is so fast and small
+(the other is that many parts have been written in assembler).
+
+    While this is great for the user (he needs only few RAM and small
+harddisks), the situation is quite different for programmers. While the
+user has no need nor intention to make mistakes that may crash the machine
+(he is guided by a more or less bug-free software that does not allow him
+to do dangerous things like calling functions with wrong arguments), this
+is exactly what the developer does. So for developing software, resource
+tracking is a must be.
+
+    Several tools were and are lurking around which allow to track and/or
+protect resources (like Enforcer, Mungwall, SnoopDos and DosTrace), there
+is none that work likes the OS under UNIX which frees all allocated
+resources after the program exited or crashed. And this is where RTL comes
+into play.
+
+    The resource tracking library (RTL) is a link library with the following
+features:
+
+    - Resource tracking only for the program you are developing right now
+      and only where you need it. This saves as much speed and resources
+      as possible.
+    - You can check the currently used resources at any time.
+    - Not only the creation and disposal of resources is checked but also
+      the usage. If you, for example, lock a file and the duplicate the
+      lock, the argument to DupLock() is checked and the return value
+      of DupLock is tracked, too.
+    - Gives a list of all still allocated resources at the end of the
+      program.
+    - All messages come show the file and line where the resource was
+      allocated or a function was called with illegal parameters.
+    - Source is included :-)
+
+For a list of all currently tracked resources, have a look into restack.h.
+
+For debugging, RTL offers the following functions:
+
+    StartResourceTracking - Begin resource tracking for a specified list of
+		resources (no need to track when we know it works).
+    SetResourceTracking - Change the tracked resources.
+    PrintTrackedResources - Print a list of all known resources.
+    SetResourceTrackingLevel - Temporarily disable/enable all resource
+		tracking.
+    IncResourceTrackingLevel/DecResourceTrackingLevel - Same as
+		SetResourceTrackingLevel, but can be nested
+    EndResourceTracking - Stop resource tracking and free everything that's
+		still allocated.
+
+Aaron "Optimizer" Digulla
+digulla@fh-konstanz.de
+

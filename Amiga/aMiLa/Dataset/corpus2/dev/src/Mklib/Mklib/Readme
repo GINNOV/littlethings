@@ -1,0 +1,42 @@
+Mklib                   Copyright 1988 Edwin Hoogerbeets
+Version 1.0             12/08/88
+
+Some time ago, I started a project that was to use an Amiga shared library
+for some of its functions. Unfortunately, almost all libraries before this
+were written in assembler, and mine were written in C. So after some
+searching, some kind soul (I forgot who, sorry) told me of elib of Fish 87.
+I played with that and got it working. (Thanks, Jimm!) What I wanted,
+though, was to write my routines in C and not fiddle with the assembler
+interface, etc. So, I decided to write mklib and keep my fiddling with the
+assembler to this one session. (thud thud <- knock on wood)
+
+I know the scanner/parser is a kludge: it was quick and dirty. But it
+works. Some assumptions are made about the C code: that the number of {
+matches the number of } in a functions, that declarations only occur when
+the numbers of { and }'s are equal, that the only valid functions are LONG
+or ULONG and that everything else is rubbish.
+
+I don't own the Lattice C compiler, so this code is not guaranteed to work
+with it. If someone out there who does have Lattice hacks it into useable
+code, please send me your changes and I will incorperate them into the next
+(?) release.
+
+Now the default stuff:
+
+This software is freely redistributable as long as there is no charge
+beyond resonable copy fees and as long as this notice stays intact.
+
+Thanks to Jimm Mackraz for Elib on Fish 87, from which much of this program
+is lifted. Also thanks to Neil Katin for his mylib.asm upon which elib is
+based.
+
+My address is:
+
+Work:  {backbone}!utai!utcsri!hcr!edwin            Until Sept. 88
+School:{backbone}!watmath!trillium!ehoogerbeets    From Sept. to Dec. 88
+
+(In Jan-Apr, back to work, then to school, every 4 months, etc...)
+
+Now back to my original project that needed this library...
+(it's like, properly nested projects, ya know)
+

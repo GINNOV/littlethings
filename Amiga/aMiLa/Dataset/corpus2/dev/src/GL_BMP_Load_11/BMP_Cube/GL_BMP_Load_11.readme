@@ -1,0 +1,102 @@
+Short:    OpenGL BMP texture loader routines
+Author:   walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Uploader: walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Version:  1.1
+Replaces: GL_BMP_Load.lha
+Type:     dev/src
+Requires: C Compiler (e.g. StormC, gcc), StormMesa
+
+By now i have only seen some texture loader routines for quite exotic
+bitmap formats like sgi-rgb or ptt.
+So why don't have a BMP loader routine?
+
+
+Requirements:
+-------------
+The executable included in this archive requires 68030 cpu and 68881 fpu or better.
+A 68060 or PowerPC CPU and a fast 3D-accelerator is highly recommended.
+
+Expilicit: You NEED to install StormMesa to run the executable.
+For compiling you need the linker librarys.
+
+Download StormMesa from:
+
+http://www.haage-partner.com/3dworld/index-e.htm
+
+To run the executable, you need the user archive.
+If you want to compile your own sources, you will need the developer
+archive.
+
+Install the packages according to their manuals.
+
+Make sure to link the linker librarys to your executable while compiling.
+
+GCC example: gcc demosource.c -o demo -lGL
+
+Where "demosource.c" is the source code of your OpenGL program and "demo"
+is the executable.
+
+To obtain hardware-acceleration, you will need a GFX-card with 3D-Chip
+(for example CyberVision 64/3D, CyberVisionPPC, Voodoo, etc.) AND
+a Warp3D driver for your 3D-hardware.
+OpenGL programs will run without 3D-hardware anyway, but slower.
+
+
+Features:
+---------
+- Loads uncompressed 24 bit (Windows-)BMP textures
+- Example with hardware acceleration where available
+- System friendly as possible
+- It`s fast, even on my good old A4000/030 with CV64/3D
+
+
+New in this Version:
+--------------------
+- Simple intuition progress bar for texture loading
+
+Remember:
+---------
+The S3 Virge can only perform hardware acceleration within 15 Bit screenmodes.
+
+Testet on Amiga 4000/30 with CyberVision64/3D,
+AmigaOS 3.5, CyberGraphX 3, Warp3D 3.
+
+
+Books on C programming and OpenGL:
+----------------------------------
+Brian W. Kernighan, Dennis M. Ritchie:
+The C Programming Language
+
+Andrew Koenig: 
+C Traps and Pitfalls
+
+Robert Sedgewick:
+Algorithms in C
+
+Mason Woo, Jackie Neider, Tom David, Dave Shriner, Tom Davis:
+OpenGL 1.2 Programming Guide
+
+Renate Kempf and Chris Frazier:
+OpenGL Reference Manual
+
+Mark Kilgar:
+The OpenGL Utility Toolkit (GLUT) Programming Interface API
+
+Kevin Hawkins, Dave Astle:
+OpenGL Game Programming
+
+
+World Wide Web:
+---------------
+
+http://www.norman-interactive.com (my Homepage)
+
+http://www.informatik.uni-stuttgart.de (University Stuttgart, Dept. of Computer Science)
+
+http://www.ninemoons.com (GeekGadgets)
+
+http://www.haage-partner.com (Haage & Partner Homepage)
+
+http://www.sgi.com (Silicon Graphics - Inventor of OpenGL)
+
+http://www.OpenGL.org (OpenGL Homepage)

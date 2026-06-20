@@ -1,0 +1,122 @@
+  Welcome to the wonderful, but incomplete world of giraffe.
+This library was written out of frustration with the graphics
+library and after years of incubation and different version,
+I've decided to share the fruit of my loin with the world.
+  This library is meant to provide much of the funtionality
+of both the graphics and layers libraries.  In its original
+form, it was to be an RTG library, but implementing line
+drawing etc. was too much of a pain.  So enter EGS which I
+use for abstracting the graphics hardware.  If you don't like
+that, then get out your editor/compiler and rewrite the
+driver.* files.
+
+What can giraffe do?
+ 1.  nice set of primitives: pixels, lines, polygons, ellipses, 
+    etc.  each has a consistent API.
+ 2.  all the functions of the layers library.
+ 3.  notion of layer is expanded to include all aspects of
+    the user interface.  Layers can have children, so that
+    buttons etc are themselves layers.
+ 4.  ideas are stolen from MUI et. al. to make layers self-
+    arranging, so font sensitive GUIs should be possible.
+ 
+What will giraffe do?
+ I'm planning the following for the future:
+ 1.  providing a complete set of font tools.
+ 2.  more primitives: splines, blitting, etc..
+ 3.  graphics stacks. interpreted tokens for creating a
+    list of graphics commands to be executed in order.
+ 4.  software sprites for drag-drop operations.
+ 5.  any other good suggestions you may have.  if it's not
+    here, then create it yourself and maybe i'll add it to
+    the distribution.
+
+  I used the lattice C v5.10 compiler to develope this library.
+So you'll have to tweak the makefile to get it to work with
+anything else.  I'm not familiar with any other compiler, so
+send me ways to generalize my code and I'll make the changes
+the next time I release this archive.
+
+
+  For now, I just wanted to release the library.  I'll try 
+to create better documentation as time permits.  If anyone
+is interested in collaborating I have no problem with that.
+The source code is included so send me suggestions for 
+improvement.  You can use the code as much as you'd like,
+but if I have acknowledged someone, then please leave it
+in there.
+
+  I've recently been side-tracked by some demonstration programs
+that will generate a simple OO gui.  If you'd like to see those
+then I can make another archive and put it into the aminet
+private upload space.  Those programs however are much less
+polished than these are so I didn't want to include them
+until there was something really nice to show.  Just to poke
+your interest, I've made a window server with a few window 
+classes that can automatically create multi-threaded programs.
+I've made a objects library similar to ShadowV by David Navas
+using ppipc library for all communications between processes.
+
+  I await your opinions by e-mail:
+    luke@raj2.tn.cornell.edu or if that doesn't work, try
+    lemming@cmpm.mst.lanl.gov
+
+-luke
+
+
+
+This archive contains the following:
+
+readme           -- This file.
+
+docs    (Giraffe library documentation)
+/giraffe.doc     -- library function autodocs
+
+include (The public header files)
+/giraffe.h          -- General header file.
+/giraffe_pragmas.h  -- pragmas for use with SAS/C
+/giraffe_protos.h   -- ANSI style function prototypes.
+
+libs   (Shared libraries for your use)
+/giraffe.library   -- giraffe library binary.
+
+source (The library source code)
+/common.h      -- header file for source.
+/common.i      -- same.
+/driver.h      -- header file to EGS functions.
+/layers.h      -- header file for layers structures.
+/arrange.c     -- layer arrange code.
+/clip.c        -- primitive clipping and clip list code.
+/draw.c        -- primitive drawing functions.
+/driver.c      -- interface functions to EGS libraries.
+/ellipse.c     -- primitive outline generators.
+/font.c        -- font resource functions.
+/giraffe.c     -- basic library and memory management.
+/layers.c      -- huge file for all layers operations.
+/regions.c     -- region manipulation functions.
+/stack.c       -- graphics stack interpreter.
+/giraffe.library.asm -- library skeleton code.
+/giraffe_rev.h -- Revision header made by RevCo, by
+			Litrik De Roy.
+/makefile      -- generates the library.
+/giraffe.fd    -- Descritions for library API.  Use to create
+                  pragmas.
+
+examples
+/readme       -- Introduces the examples and
+                 how to configure screen mode.
+/binary       -- Contains executables of all the examples.
+//example1    -- Shows layers and depth control.
+//example2    -- Creates an Intuition like window.
+//example3    -- Demonstrates a smart refresh layer.
+//example4    -- Just draws a bunch of random primitives.
+//example5    -- Automatic arrangement of button gadget like
+                 thingies.
+
+/source       -- Directory containing sources files.
+//example1.c
+//example2.c
+//example3.c
+//example4.c
+//example5.c
+//makefile    -- Generates the binary.

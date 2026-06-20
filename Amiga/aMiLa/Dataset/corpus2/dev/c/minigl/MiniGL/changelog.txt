@@ -1,0 +1,36 @@
+Short list of changes since first Aminet release:
+
+
+09-JUL-02: (Christian Michael/Olivier Fabre)
+
+gl.h:
+- GL_NO_ERROR corrected to 0
+
+
+10-JUL-02: (Christian Michael)
+vertexarrays.c:
+vertexelements.c:
+draw.c:
+ - improved vertexcount validation
+
+
+12-JUL-02 (Christian Michael/Olivier Fabre)
+context.c:
+- Fixed a bug in MGLLockBack that was intruduced in last version
+vertexarrays.c:
+- Fixed bad "type" check in GLVertexPointer
+
+
+15-JUL-02 (Christian Michael)
+vertexarrays.c
+vertexelements.c:
+- fixed various vertexarray clipping/culling-bugs
+
+vertexarrays.c
+vertexelements.c:
+draw.c:
+- PolyBuffer struct used more efficiently to avoid potential problems with high vertexcount strips/fans.
+
+AUG-02 (Christian Michael)
+draw.c:
+- made d_drawMtexPoly return if the buffer is about to be overflowed

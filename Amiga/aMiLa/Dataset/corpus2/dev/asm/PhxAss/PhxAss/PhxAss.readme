@@ -1,0 +1,62 @@
+Short:        PhxAss V4.40 68xxx Macro Assembler
+Author:       frank@phoenix.owl.de (Frank Wille)
+Uploader:     frank@phoenix.owl.de
+Type:         dev/asm
+Version:      4.40
+Requires:     OS2.04
+
+PhxAss V4.40 is a highly optimizing macro assembler for Motorola's 680x0
+CPUs, 6888x FPUs and 68851 MMU (of course, the 030, 040 and 060 MMUs are
+also supported). It requires OS2.04 (V37) and 1 MB RAM as minimum.
+
+Most important features:
+o PhxAss is FREEWARE.
+o Symbolic and Source Level Debugging. Possibility to enable Source
+  Level Debugging for high level languages too.
+o Automatic generation of executables (if possible).
+o Creates relocatable Amiga-DOS objects or absolute code (written into
+  a file (raw or Motorola S-Format), into memory or directly onto disk).
+o Small Code and Small Data support (also support for __MERGED sections).
+o Listing file, Cross Reference Listing, Equates file.
+o Complete floating point support: You can use complex floating point
+  expressions, including float functions (sine, logarithm, square root,
+  power, etc.), everywhere in your source, e.g. defining float EQUates or
+  SETs.
+o Switches for ten different optimizations.
+o Locale symbols (xxx$ and .xxx type, also AsmOne-style: global/.local).
+o Up to 36 macro parameters.
+o Support for Motorola's old and new operand style (even in 68000 mode).
+o locale.library usage (english, german, swedish, norwegian, italian,
+  danish, dutch, hungarian and french ).
+o Nearly all directives of the most popular assemblers like Seka, DevPac or
+  AS (Aztec) are supported, and even a lot of AsmOne. Example: INCBIN,
+  INCDIR, CODE_C, REPT, RS, RSRESET, EQUR, REG, OFFSET, XDEF, XREF,
+  PUBLIC, OUTPUT, BASEREG, ENDASM, ...
+o PhxAss is able to stay resident in memory.
+
+
+CHANGES SINCE PHXASS V4.39 (last Aminet release):
+
+Fixed Bugs:
+o (d.W,PC...) / (d.L,PC...) addressing modes generated wrong displacements
+  in pass 2.
+o Esc-Code \e was erroneously replaced by $27 instead of $1b.
+o There was no error message on non-existing include files, whenever the
+  environment variable PhxAss/PHXASSINC was set.
+o OR/AND Dn,CR/SR generate an error message now.
+o B<cc> currentaddr+2 will no longer be optimized into $6000.
+o More than 271 parts with local symbols lead to a crash, as a second
+  chunk was not correctly deallocated.
+o Wrong references with absolute code starting at >= $80000000.
+o 020+ addressing mode (relocsym,An,Dn.x*s) was always assembled as
+  (relocsym,An,D0.w).
+o CALLM was no longer recognized since V4.38(?).
+o (bd.x,An...) generated a syntax error for addresses >= $80000000.
+
+New Features:
+o AsmOne-compatibility: BASEREG and ENDB.
+o New option REL=RELOCATABLE/S generates an error message, as soon as
+  an instruction is not relocatable.
+o New directive PALMRES defines a resource section for PalmOS (3Com).
+o There is no special "GigaPhxAss" version anymore. PhxAss has no
+  more limitations on the number of source text lines by default.

@@ -1,0 +1,132 @@
+TABLE OF CONTENTS
+
+EasySound/GetClockSpeed
+EasySound/LoadIff
+EasySound/PlayIff
+EasySound/RemoveIff
+EasySound/StopIff
+EasySound/GetClockSpeed                               EasySound/GetClockSpeed
+
+   NAME
+       GetClockSpeed -- Determine the clock speed for PAL / NTSC
+
+   SYNOPSIS
+       clock = GetClockSpeed()
+
+       LONG GetClockSpeed( void )
+
+   FUNCTION
+       This function returns the clockspeed for e.g samples depending
+       on the system you use (NTSC or PAL).
+
+   SEE ALSO
+       RKRM, Guru Book page 62/63
+EasySound/LoadIff                                           EasySound/LoadIff
+
+   NAME
+       LoadIff -- Load an external sample in the chip memory
+
+   SYNOPSIS
+       info = LoadIff(filename)
+
+       struct SoundInfo *LoadIff(STRPTR)
+
+   FUNCTION
+       Loads an external 8svx sample in chip memory and returns a pointer
+       to the SoundInfo structure or NULL if the whole thing failed.
+
+   INPUTS
+       filename    - Name of the file, eventually with path.
+
+   SEE ALSO
+       PlayIff, StopIff, LoadIff
+EasySound/PlayIff                                           EasySound/PlayIff
+
+   NAME
+       PlayIff -- Play an IFF sample
+
+   SYNOPSIS
+       success = PlayIff(info, vol, chan, prio, drate, times, start,
+                         time, wait)
+       BOOL PlayIff
+           (struct SoundInfo *, UWORD, UBYTE, BYTE, WORD, UWORD, ULONG,
+            ULONG, BOOL)
+
+   FUNCTION
+       Plays an IFF sample. The sample has to be converted to an include
+       file with the aid of the external program 'iff2src'. The resulting 
+       sound data has to be placed in chip memory using e.g. the __chip 
+       keyword.
+
+   INPUTS
+       info        - A (struct SoundInfo *) pointer to the structure.
+       vol         - The volume of the sound (between 0 and 64).
+       chan        - The channel on which the sample will be played, can
+                     be either left or right ;-) . You may use the magic
+                     cookies L0, L1, R0, R1.
+       prio        - State a priority for the sample. (may be something
+                     between -127 and 128.
+       drate       - The sample rate is already stored in the SoundInfo
+                     structure. If you don't want to change the rate,
+                     leave this value 0.
+       times       - How many times do you want this sound to be played.
+                     If you set this value to 0 the sound will be played
+                     nonstop. (You may stop it with StopIff)
+       start       - Where do you want to start the sample, leave this
+                     value to 0 if you want to start at the beginning.
+       time        - How long do you want to play this sound, leave this
+                     value to 0 if you want to play the whole sample.
+       wait        - If you set this value to TRUE your program will wait
+                     until the Sample is played. If it's set to FALSE your
+                     program will continue to run while the sample is
+                     played.
+
+   RESULT
+       success     - Returns TRUE if the sound was played with success,
+                     otherwise the function will return FALSE.
+
+   EXAMPLE
+       PlayIff(&splat_data,64,L0,-35,0,1,0,0,0);
+
+   SEE ALSO
+       StopIff, RemoveIff, LoadIff
+EasySound/RemoveIff                                       EasySound/RemoveIff
+
+   NAME
+       RemoveIff -- Remove a previous loaded Sound.
+
+   SYNOPSIS
+       RemoveIff(info)
+
+       void RemoveIff (struct SoundInfo *)
+
+   FUNCTION
+       Will flush a loaded sample and free the memory.
+
+   INPUTS
+       info        - Pointer to the SoundInfo structure
+
+   SEE ALSO
+       PlayIff, StopIff, LoadIff
+EasySound/StopIff                                           EasySound/StopIff
+
+   NAME
+       StopIff -- Stop an IFF sample
+
+   SYNOPSIS
+       StopIff(chan)
+
+       void StopIff (UBYTE)
+
+   FUNCTION
+       Will stop the sound on the specified audio channel. It'll close the
+       the devices and ports and free the allocated memory. If you call 
+       this function without any sound being played it'll simply return.
+
+   INPUTS
+       chan        - The channel that should be stopped. You may use the
+                     magic cookies L0,L1,R0,R1 for this task.
+
+   SEE ALSO
+       PlayIff, RemoveIff, LoadIff
+

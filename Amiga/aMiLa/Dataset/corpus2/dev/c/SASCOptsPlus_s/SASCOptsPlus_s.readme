@@ -1,0 +1,25 @@
+Short:        SAS/C SCOpts replacement
+Author:       Manolis S. Pappas (ms.pappas@freemail.objsystem.it)
+Uploader:     Manolis S  Pappas (ms pappas freemail objsystem it)
+Type:         dev/gui
+Architecture: m68k-amigaos
+
+Project Type: an unfinished next generation SAS/C frontend.
+Compiler: SAS/C v6.5 and up
+AmigaOS: 2.0 and up
+Requires: MUI includes
+Description: an attempt I've made to create a new frontend for 
+             SAS/C, using MUI. Unfortunately, university studies
+             never let me finish it...
+
+**************************** DISCLAMER ***************************
+*	This source code is released to the public under the     *
+* Amiga Community Source Project (tm) license. This means that   *
+* the copyright for the source remains with the original author  *
+* (Manolis S. Pappas) and the only reason of this source release *
+* is to permit to other Amiga programmers to adapt the code to   *
+* future AMIGA systems and OS'es, so that future Amiga users can *
+* benefit.                                                       *
+*	Should anyone wish to make adaptions, corrections or     *
+* porting the code, must contact me.                             *
+******************************************************************

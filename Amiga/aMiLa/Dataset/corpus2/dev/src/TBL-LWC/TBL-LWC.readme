@@ -1,0 +1,11 @@
+Short:        TBL's 3D-converter for LightWave.
+Author:       Daniel.Hansen@bdi.bonnier.se (Equalizer)
+Uploader:     Daniel Hansen bdi bonnier se (Equalizer)
+Type:         dev/src
+Architecture: m68k-amigaos
+
+3D scene converter for AMIGA and PC. Used in TBL's
+demo captured dreams etc... Supports ALOT of things like:
+
+Texture,Bumpmapps,Reflection mapps,animated mapps.
+Morphing, movements, flares blah blah blah...:)

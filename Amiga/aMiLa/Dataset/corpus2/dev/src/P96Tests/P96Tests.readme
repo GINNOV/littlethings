@@ -1,0 +1,55 @@
+Short:        P96 Test programs
+Author:       jens@icomp.de (iComp)
+Uploader:     thomas richter alumni tu-berlin de (Thomas Richter)
+Type:         dev/src
+Version:      1.1
+Requires:     P96 >= 2.1.0
+Architecture: generic
+
+----------------------------------------------------------------------
+
+This archive contains various test programs that may serve useful
+when developing P96 drivers. They run though multiple graphics
+primitivities implemented both by the rtg.library of P96 and the
+corresponding hardware driver.
+
+Note that the implementations of these tests are "quick and dirty"
+and should not be used as a basis for productive software. Their
+sole purpose is to test P96 and its drivers.
+
+----------------------------------------------------------------------
+
+New in release 1.1:
+
+- This version includes the prototypes and pragmas for the
+  rtg.library. Note that the rtg.library is *not* a public
+  interface of P96 and application programs should not depend
+  on this library, but rather go through Picasso96API.library.
+
+----------------------------------------------------------------------
+
+New in release 1.0:
+
+- This is the first Aminet release.
+
+----------------------------------------------------------------------
+
+This source code is available under the 0-clause BSD license:
+
+    Copyright (C) 2024 iComp
+
+    Permission to use, copy, modify, and/or distribute this software for 
+    any purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
+    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
+    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+----------------------------------------------------------------------
+
+Thomas Richter, March 2024
+

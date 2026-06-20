@@ -1,0 +1,26 @@
+;DiskMaster 2.7b7
+Reset
+Pens 0 1 1 2 9 11 1 0 12 1 0 243 247 0 240 239 251 250 0 10 249 248 6 8 242 241 0 1 247 246 12 2 245 244 14 0 9 0 1 4 5 7 13 14 10
+NewScreen ID=1342247680 D=24 W=1024 H=768 F="Verdana.font" FS=16
+Color OFFSET=0 999999 000000 eeeeee 446688 777777 aaaaaa bbbbbb 665577
+Font DIRWIN="topaz.font" 8 DIRGAD="Verdana.font" 16 REQTEXT="Verdana.font" 16 REQBUTTONS="Verdana.font" 16 MENU="Verdana.font" 16 CMDWIN="topaz.font" 8 READER="Bitstream Vera Sans Mono.font" 14
+SetX BPen=0 DPen=2 FPen=1 SPen=3 Notify defx=1024 defy=768 UserColors=8
+
+Button "parent"
+SetFormat "N S C"
+BarFormat "%A  %V  Total:%P (%O)   %W - %D.%M.20%Y  %T"
+TitleFormat "%N %O/%P - %B/%F  %I/%C  %A"
+
+OpenWindow Path="dh1:" NOCLOSE Left=0 Top=26 Width=410 Height=742 ZoomL=0 ZoomT=14 ZoomW=83 ZoomH=83
+Sort N
+
+OpenWindow Path="dh3:" Left=614 Top=26 Width=410 Height=742 ZoomL=614 ZoomT=14 ZoomW=83 ZoomH=83
+Sort N
+
+OpenWindow CMD NOCLOSE Left=410 Top=26 Width=205 Height=742 ZoomL=410 ZoomT=14 ZoomW=83 ZoomH=83
+
+AddCmd   Suck:, 10, f4, NewDir dh2:Suck/
+AddCmd DMPrefs, 30, DMPrefs
+
+AddMenu Config, Quit, Q, Confirm " Drop dead?" "Yo!" "No way!";Quit
+

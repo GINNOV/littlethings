@@ -1,0 +1,16 @@
+# PowerUp
+
+TARGET = _pup
+TARGETEXTENSION = 
+
+CC = vc +powerup
+CCOUT = -o=
+CFLAGS = -c -merge-strings -DAMIGA -O1 $(OUTFMTS)
+
+LD = $(CC)
+LDOUT = $(CCOUT)
+LDFLAGS = -lm -lamiga
+
+RM = delete force quiet
+
+include make.rules

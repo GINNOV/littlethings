@@ -1,0 +1,8 @@
+{
+    "profiles": {
+      "MyLaunchProfileName": {
+        "commandName": "Project",
+        "commandLineArgs": "${workspaceFolder}/Data/"
+      }
+    }
+  }

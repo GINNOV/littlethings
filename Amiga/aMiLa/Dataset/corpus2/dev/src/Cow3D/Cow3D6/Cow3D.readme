@@ -1,0 +1,149 @@
+Short: Draw a textured 3D cow with Warp3D/Nova
+Author: thellier@free.fr (Alain Thellier) 
+Uploader: thellier@free.fr 
+Type: dev/src 
+Version: 6
+Replaces: dev/src/Cow3D.lha
+Requires: Warp3D or Wazp3D library;Warp3DNova.library
+Architecture: amigaos >= 3.0.0; 
+
+DESCRIPTION 
+The ultimate Warp3D & Nova testing tool (now for Aros & AmigaOS4 ppc)
+It draw a textured cow object then draw upside a quad with a cosmos texture
+Compiled with GCC. Use Warp3D library (needed) or Warp3DNova.library (optionnal)
+Also demonstrate how to code efficiently Warp3D or Nova for OS3 or OS4
+If Warp3D & Nova was too difficult for you this example will change your mind 
+
+French: Le prog ultime pour tester Warp3D ou Nova  en traçant une vache 3D texturee
+puis trace par dessus un rectangle a texture de cosmos
+Compile avec GCC. Bibliotheque Warp3D necessaire
+Montre comment programmer efficacement Warp3D & Nova pour OS3 ou OS4
+Si Warp3D & Nova etait trop complique pour toi Tu changera d'avis avec cet exemple
+
+v3.0 Sept  2011: Draw FPS correctly on Aros too. Now works with Wazp3D using "hard overlay"	
+v4.0 March 2012: Try to use W3D_InterleavedArray() on OS4 									
+v5.0 Sept  2012: Use W3D_DrawElement() on OS4 ==> faster								
+v6.0 Oct   2016: 
+Let the cow turn more before computing FPS
+Now can also use Nova as renderer and test Nova (type "Cow3D6 n")							
+Please note that Cow3D is a very simple program that draw simply a cow 
+without lighting/clipping/perspective so in the better conditions for the simple Warp3D. 
+Therefore the speed difference Nova/Warp3D is not so important in this Cow3D special case.
+SAM460: Nova 457 FPS Warp3D 138 FPS so around X3.3
+
+LICENSE 
+GNU General Public License (GNU GPL) 
+Author: Alain THELLIER - Paris - FRANCE - 2016
+
+INSTALLATION 
+Install Warp3D.library or Wazp3D.library
+Install Warp3DNova (optionnal)
+Copy Cow3D-Amiga and the textures Cow_256X256X32.RAW & Cosmos_256X256X32.RAW where you want
+
+USAGE
+This program is used to test Nova/Warp3D speed, states, functionnalities & zbuffer
+Can also serve to test Nova when lauched with ""Cow3D6 n" or via given icon
+
+Better speed results are obtained with keys 'o' 'e' 'b' and srcfunc=1  dstfunc=0
+(Warp3D only dont concern Nova)
+
+It print all the possible informations for your Nova/Warp3D driver(s) 
+It draw a textured cow object then draw upside a quad with a cosmos texture
+So you can check if a given 3d-driver can really do a feature
+
+OPTIONS KEYS
+
+'f' display frame per seconds and infos on screen
+
+ANIMATION & SPEED:
+-----------------------------------------------------
+'o' use an optimized rotation function  (faster) (default) (Warp3D only dont concern Nova)
+
+'r' rotate object or not
+
+'b' Allocate a big points-buffer. Compute & store the objects for each frame. Then use the buffered objects
+	No more computation = faster . Only the 3d-hardware is used. 
+	WARNING: this options use lots of memory (around 5 MB) (Warp3D only dont concern Nova)
+
+ZBUFFER:
+-----------------------------------------------------
+'z' use zbuffer (default yes)
+
+'u' update zbuffer (default yes) (need to use zbuffer)
+
+'1' to '8' change zbuffer test (default 2 = Z_LESS)
+
+'Z' zbuffer tests
+draw some test-rectangles & zspans
+Zbuffer is cleared with z=0.90 so depending on zmode/zupdate the 7 quads,dotted line or line should appear 
+	1) write a zspan in zbuffer at z=0.9 (with mask 1 pixel,show 1 pixel) but on the the test-rectangles use same z values as the rectangles
+	2) write a zspan in zbuffer at z=0.5 in the midle of the test-rectangles 
+	3) write a zspan in zbuffer from  z=0.01 to 0.99  
+	4) draw 7 quads as various depth with various colors (z values = 0.10,0.20,0.30,0.40,0.90,0.94,0.98}
+	5) draw 7 quads at the same depth = sticked to the face = appears if use a z equal zmode
+	WARNING: 1 to 3 dont works on most drivers. Nova unimplemented
+
+'g' grey = read the zbuffer as grey values
+	WARNING: this options dont works on most drivers
+	if fail draw as red. Nova unimplemented
+
+DRAW METHOD:
+-----------------------------------------------------
+'t' triangle - draw with W3D_DrawTriangle() = slower . For Nova same as 'e'
+
+'e' elements - draw with W3D_DrawElements() = faster (default) 
+
+'p' points - draw as points with W3D_DrawPoint() = slow  
+	WARNING: this options dont works some drivers
+ 
+'l' lines - draw as lines with W3D_DrawLineLoop() = slow  
+	WARNING: this options dont works some drivers & Nova
+
+'0' zero - draw as big points/lines (use it with 'l' or 'p') = very slow
+	WARNING: this options dont works on some drivers & Nova
+
+OTHERS:
+-----------------------------------------------------
+'c' use colors not texture (default no). Nova unimplemented
+
+'h' hide back faces (=culling) (default yes) 
+	WARNING: this options dont works with some drivers
+
+DRAW TESTS:
+-----------------------------------------------------
+'P' point test : draw a small/big point & draw a small/big line (use it also with 'c') 
+	WARNING: this options dont works on some drivers. Nova unimplemented
+
+'L' line  test : same as 'P'. Nova unimplemented
+
+PATCHES:
+-----------------------------------------------------
+'w' warp3d is patched (default no)
+	Reimplement the functions for drawing lines/points (but dont change W3D_Drawelements() nor W3D_Drawarray())
+	Implement Read/WriteZspan/Zpixel() but this dont works on most drivers
+	WARNING: this options dont works on most drivers. Dont concern Nova
+
+BLENDING & TEXENV:
+-----------------------------------------------------
+'s'	change srcfunc
+'d'	change dstfunc
+'S' or 'D' change both srcfunc & dstfunc (so typing 'D' 255 times show all possible effects)
+then do W3D_SetBlendMode(context,srcfunc,dstfunc);
+
+default is srcfunc=1 dstfunc=1
+
+For srcfunc=1 dstfunc=0 dont display the cosmos quad so the cow is still visible
+
+Just remember:
+src is cosmos-quad 
+dst is cow-object & background
+
+'m'	change texenvmode
+then call 	W3D_SetTexEnv() with this texenvmode for the 2  textures
+		envcolor for tex1 is green
+		envcolor for tex2 is blue
+Nova implementation via shaders is not 100% perfect
+
+
+
+

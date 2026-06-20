@@ -1,0 +1,29 @@
+THE CONTENTS OF DAVEJONES
+
+Everything in DaveJones locker (drawer) goes with the feature on games
+programming in the March issue (number 8) of Amiga Format.
+
+This month Psygnosis programmer Dave Jones gives the low down on how
+to produce convincing horizontal scrolling.
+
+You can double click on the MENACE SCROLL file to see the first level 
+of Menace scroll smoothly by.
+
+All the Assembler scource and graphic data is present inside the drawer. 
+These files can only be accessed from the CLI.
+
+The files in the drawer DAVEJONES include:
+
+foregrounds
+map
+panel
+menace scroll.s
+menace scroll
+menace scroll.info
+menace scroll.doc
+menace scroll.doc.info
+
+
+HiSoft's Devpac or another like assembler can be used to examine and modify
+the source code.
+ 

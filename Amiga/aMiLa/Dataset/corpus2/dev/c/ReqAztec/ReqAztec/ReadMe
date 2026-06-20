@@ -1,0 +1,18 @@
+
+        This directory contains all needed to use the req.library with aztec C
+    version  5.0.
+    SimpleRequest()  and  TwoGadRequest()  have been modified and take now one
+    more parameter, the window title of the requester. See req.doc.
+
+
+    readme                This file.
+    reqbase.h             Modified C include file. Put it in include/libraries
+    req_pragmas.h         Pragmas for aztec C 5.0
+    *.asm                 Glues for functions that don't support pragmas.
+    req.lib               Library for manx linker containing the glues.
+    showoffreq.c          The C source code for the req demo program.
+    showoffreq            The req demo executable.
+    makefile              Building instructions for req.lib and showoffreq.
+    req.doc               The modified instructions and calling conventions.
+    glue/                 Directory containing all the useless glues.
+

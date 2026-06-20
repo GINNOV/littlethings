@@ -1,0 +1,30 @@
+
+    DCC
+	2.06.33 :
+		    version bump to track DC1 version
+
+	2.06.21 :
+		    now creates the directory heirarchy for a destination
+		    path if it does not exist, unless -noheir is given.
+
+		    Object file path now correctly based on source file
+		    path, before it was removing the first element of
+		    a relative path.
+
+	2.05.14 :
+		    Fixes bug in DCC's checking of the output file name
+
+	2.05.11 :
+		    Uses 2.0 FindSegment()/RunCommand() system calls for
+		    extremely efficient program startup, especially if
+		    resident.  ^C now propogated properly.
+
+	2.05.09 :
+		    Uses 2.0 System() call if running under 2.0
+
+	2.05.08 :
+		    Massive additions
+
+	2.05.06 :
+		    -U[define] added (undef a define)
+

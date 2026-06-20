@@ -1,0 +1,44 @@
+Short: bzip xadmaster client
+Author: Kyzer/CSG <kyzer@4u.net>, Julian Seward
+Uploader: Kyzer/CSG <kyzer@4u.net>
+Type: dev/src
+Requires: util/arc/xadmaster.lha
+
+--- About this archive ---
+
+This archive contains 68000, 68020 and 68040 optimised versions of the
+bzip client for Dirk Stoecker's XAD system - util/arc/xadmaster.lha - and
+also includes the source code to this client.
+
+To install, unpack this archive somewhere and double click on the Install
+icon. The appropriate version of the client will automatically be
+installed.
+
+--- License ---
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc., 675
+Mass Ave, Cambridge, MA 02139, USA.
+
+--- About the client ---
+
+This client lets XAD view and extract bzip (.bz) files, but _NOT_ bzip2
+(.bz2) files. bzip can only compress a single file, and cannot even
+remember what filename, date or uncompressed size the compressed file had.
+However, it compresses much better than gzip, which is what it intended to
+replace. You are most likely to find bzip used to compress tar files
+(.tar.bz or .tbz)
+
+bzip is mostly the work of Julian Seward, and is an implementation of the
+Burrows-Wheeler block sorting compression algorithim, using MTF and
+arithmetic coding as other stages in compression.

@@ -1,0 +1,46 @@
+Short:        Genetic Algorithm Programming Library
+Author:       Peter Bengtsson <a94petbe@ida.his.se>
+Uploader:     Peter Bengtsson <a94petbe ida his se>
+Type:         dev/c
+Version:      0.82
+Replaces:     dev/c/GAPLib.LhA
+Architecture: m68k-amigaos
+
+
+GAP-Lib, beta3.
+
+A comprehensive programminglibrary for Genetic Algorithms.
+
+Genetic algorithms are a class of fairly recent and remarkably
+powerful and flexible set of optimization/search strategies.
+
+Genetic algorithms can be used for a multitude of problems such
+as function optimization, searching for solutions, best-fit problems, 
+evolving rule-based control systems and much much more.
+
+The basis of genetic algorithms is the population, a set
+of candidate solutions or partial solutions which can
+be evaluated and compared to the other candidates in the set.
+
+For a more in-depth look at genetic algorithms, I recommend
+that one find some introductory book.
+
+This archive contains:
+
+* Source with makefiles
+
+* Documentation
+
+* Examples
+
+* Tutorial
+
+* Source wizard (Generates program skeletons for you)
+
+* Utility code
+
+* C++ wrapper
+
+* Diagnostic source for the libraries.
+
+	-Peter

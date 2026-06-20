@@ -1,0 +1,33 @@
+MACHINE:A1200, will work on all amigas with fast mem
+CODE:Andyrew
+GFX:OJ
+LEFT SHIFT EXIT		 
+
+Twilite4 - this is our own private gfk editor
+	It was never meant to be released, but what the hell.
+
+IMPORTANT:
+	Unless you are using my machine or my artists, you have to
+	do the following.
+	
+	ASSIGN	BOG: ""
+	twilite4
+
+This is another one of my programs that isnt finished.
+It works pretty well, although its screaming for keyboard controls.
+It can load and save in umpteen different formats, all of which ive
+needed at some time or another. It can now load iff 
+thanks to the iff library.
+
+This is the editor we use for all of our character map proggies.
+Most of the buttons work.  Its quite straight forward to use.
+As i say it was just supposed to be for our own use so its not
+polished in anyway.  It does however work properly.
+
+This is the program that I really got used to programming the amiga
+in a system friendly manner (no more supervisor mode for me)
+and the routines im most chuffed with are the disk routines.
+
+Source included.
+
+Email:	The_Widds@MSN.COM	Yes I know its MSN so sue me!

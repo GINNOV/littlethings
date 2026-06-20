@@ -1,0 +1,6 @@
+Short:        Example of creating reentrant processes.
+Author:       Jean-Michel Forgeas
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Example of creating and using reentrant processes.  

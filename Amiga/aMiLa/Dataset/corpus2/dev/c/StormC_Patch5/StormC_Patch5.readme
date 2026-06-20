@@ -1,0 +1,58 @@
+Short:        StormC Patch 5
+Author:       HAAGE & PARTNER Computer
+Uploader:     haage_partner compuserve com (Markus Nerding)
+Type:         dev/c
+Version:      1.0
+Requires:     StormC 2.x
+Architecture: m68k-amigaos
+Distribution: AmiNet
+
+
+
+Dear StormC customer,
+
+you will find new linker libraries and a new AppManger library in
+these drawers.
+
+Please copy the contents of the drawer "Mathlibs" to
+"StormC:StormSYS/lib" and the contents of the drawer "Lib" to
+"StormC:Lib" and the contents of "StormSYS" to "StormC:StormSYS".
+
+
+Best wishes
+HAAGE&PARTNER Support Team
+
+
+=========================================================
+THESE FILES CAN ONLY BE USED WITH VERSION 2 OF STORMC !!!
+=========================================================
+
+
+
+Changes on AppManager.library
+====================================
+
+19.11.96
+
+Repeated opening of a Wizard window brought up strange effects on
+the size of the next window. It was always the size of the biggest
+one opened.
+
+
+Changes on Linker library
+=====================================
+
+19.11.96
+
+- Correction of the "strstr" function.
+
+- Several changes on the parsing of arguments.
+
+
+__________________________________________________________________________
+HAAGE & PARTNER Computer GmbH                   A M I G A  DEVELOPMENTS
+Mainzer Str. 10 A, 61191 Rosbach, Germany        for AmigaOS, PPC, pOS
+internet: haage_partner@compuserve.com          StormC - StormWIZARD
+fon: +49-6007 -93 00 50  fax: -75 43            ArtEfect - DrawStudio
+__________________________________________________________________________
+>> MORE INFO ->  http://ourworld.compuserve.com/homepages/HAAGE_PARTNER <<

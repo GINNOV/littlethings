@@ -1,0 +1,5 @@
+FROM diskcopy.obj
+TO dh1:mac/v1.0/prod/diskcopy
+SMALLCODE
+NODEBUG
+LIBRARY dh0:lib/amiga.lib

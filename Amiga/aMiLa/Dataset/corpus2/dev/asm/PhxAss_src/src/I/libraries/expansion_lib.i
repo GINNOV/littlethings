@@ -1,0 +1,32 @@
+ ifnd LIBRARIES_EXPANSION_LIB_I
+LIBRARIES_EXPANSION_LIB_I set 1
+*
+*  libraries/expansion_lib.i
+*  Release 1.3
+*  for PhxAss
+*
+*  © copyright by F.Wille in 1993
+*
+
+AddConfigDev = -30
+AllocBoardMem = -42
+AllocConfigDev = -48
+AllocExpansionMem = -54
+ConfigBoard = -60
+ConfigChain = -66
+FindConfigDev = -72
+FreeBoardMem = -78
+FreeConfigDev = -84
+FreeExpansionMem = -90
+ReadExpansionByte = -96
+ReadExpansionRom = -102
+RemConfigDev = -108
+WriteExpansionByte = -114
+ObtainConfigBinding = -120
+ReleaseConfigBinding = -126
+SetCurrentBinding = -132
+GetCurrentBinding = -138
+MakeDosNode = -144
+AddDosNode = -150
+
+ endc

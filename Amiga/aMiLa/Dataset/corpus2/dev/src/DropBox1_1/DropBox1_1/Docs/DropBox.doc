@@ -1,0 +1,201 @@
+DropBox by Steve Anichini 
+    A Meef()Ware product
+        2.04+ Only!
+		
+All documentation and program materials included in this archive are 
+Copyright 1993 Steve Anichini. All rights reserved.
+
+This program is FREEWARE. You may distribute it as you wish as long as the following conditions are met:
+	
+    1) The original archive is intact, unmodified, and in its original form.
+    2) The distribution is non-commercial. 
+    or
+    3) You have written permission from the author of the program to break conditions (1) or (2).
+	
+    Fred Fish has permission to distribute this program in his collection
+of PD and Shareware programs.
+
+INTRODUCTION
+
+Why DropBox?
+
+    As a frequenter of ftp sites and bulletin board systems, I always have a lot of archives that need to be de-lha'd, de-arc'd, or whatever. I've always found it inconvenient to enter the shell and manually extract the files from these archives. So I s
+id to myself "Wouldn't it be great if I had a program that did this junk for me?"
+
+    That program is DropBox. But DropBox isn't limited to archivers. Since its database is flexible, there is no reason you can't add iff-file viewers, doc file viewers, or the like.
+	
+    DropBox is also a commodity, so you may use the Commodities Broker to control it.
+
+HISTORY
+
+Version/Date    |   Fix/Feature/Bug/Etc
+--------------------------------------------------------------------------
+
+ 1.0 (6/20/93)      -First released to aminet.
+                
+ 1.01 (6/23/93)     -Somehow I had forgotten to implement the underscore
+                    gadget shortcuts. This is now fixed.
+ 
+ 1.02 (6/26/93)     -Blank string entries in a DropBox prefs file had caused 
+                    the loader to crash. Fixed this.
+                    
+                    -It seems ICON_Y has no effect unless ICON_X is 
+                    present. I think this is a problem with AddAppIcon().
+					 
+INSTALLATION
+
+    Installing DropBox is a breeze. Just "drop" (bad pun) it in your  WBStartup directory, or wherever if you don't want it to be automatically loaded. You might want to copy the file DropBox.prefs to ENVARC:. It has a starter database, which you may or
+may not have to change a few parameters.
+
+USING DROPBOX
+	
+    DropBox is fairly automatic. To "translate" a file (such as decompressing a lha file), just drop its icon onto the AppIcon created after DropBox is started up. DropBox will then search its translation database for a proper translator, and have the t
+anslator act on the file. The file is now "translated" (in our example, uncompressed).
+	
+    If DropBox doesn't find a translator for the file, it will ask you if you want to create a new entry. If you answer yes, it will open the configuration window.
+	 
+DROPBOX TOOLTYPES
+
+    DropBox accepts these tooltypes:
+	 
+CX_POPUP:
+    YES will cause the options window to open on startup. NO will 
+prevent this.
+
+CX_PRI:
+    The Commodities Priority of DropBox. 
+	 
+HOTKEY:	 
+	 The hotkey to call up the options window.
+	 
+PREFS:
+    The path and filename of the prefs file to load at startup.
+
+ICON_X:
+    The x position for the DropBox AppIcon. 
+	 
+ICON_Y:
+    The y position for the DropBox AppIcon. 
+	 
+    If ICON_X or ICON_Y is not present, the workbench will automatically set the x or y value respectively.
+	
+CONFIGURING DROPBOX
+	
+    To configure your translation database, you must call up the options window. Do this by either:
+	
+    1) Double clicking the AppIcon.
+    2) Selecting the AppMenuItem.
+    3) Sending it a "Show" command from the Commodities Broker.
+	 4) Pressing the HotKey.
+	 	
+    There are two things to concern yourself with on the options window:
+		
+GADGETS
+
+    Most of your configuration will be done through the gadgets. 
+		
+Translation Database Listview: 
+    Here you will find the list of translators currently in your database. The string gadget is the name of the currently selected translator. Underneath the database is a row of gadgets for manipulating the items in the listview.
+		
+Add:
+    This gadget adds a new translator at the bottom of the list. The new item will be the selected item.
+			
+Del:
+    This gadget will delete the currently selected translator.
+
+Ins:
+    This gadget will insert a new transltor before the currently selected item.The new item will become the selected item.
+
+Up:
+    This gadget will move the currently selected item up one space in the list. The reason I include this gadget is DropBox currently supports a one to one relationship between translator pattern and translator. It will return the first translator that 
+atches the pattern of the file given.
+
+Dn:
+    This gadget will move the currently selected item down one space in the list.
+
+Sort:
+    This gadget will sort the list alphabetically.
+
+Destination:
+    This string gadget holds the destination of the output file created by the translator. It should be a directory. The getfile gadget next to it will allow you to browse and find the directory.
+
+Command:
+    This string gadget holds the command to use in the translation. For a Lha file, you would use the command Lha. The getfile gadget next to it will allow you to browse and find the command.
+
+Template:
+    This string tells DropBox how to use the destination, source file name (the dropped file), and the command. DropBox uses a simple psuedo-language. [COM] is used for the command file, [SOURCE] for the dropped file name, [DEST] for the destination. An
+ other text will be copied as is. Be careful to enter the template correctly, as DropBox doesn't have the most stringient parsing. Maybe in an upgrade.
+
+Pattern:
+    This string holds a legal AmigaDOS pattern for DropBox to match against a dropped file. Example: For a Lha translator, the pattern would be #?.Lha
+
+Output:
+    If this is checked, DropBox will open a CON: window to display the program's output. 
+
+Input: 
+    If this is checked, DropBox will open a CON: window to accept input. If both Input and Output are checked, DropBox will use the same CON: window.
+
+MENUS
+
+PROJECT MENU
+
+NEW
+    This menu option will erase the current configuration.
+
+OPEN
+    This menu option will load a new preferences file. 
+
+SAVE 
+    This menu option will save the current configuration in a file. If no preferences file was found at startup, the first time you Save will be like a Save as.
+
+SAVE AS
+    This menu option allows you to save the current configuration under a new filename.
+
+ABOUT
+    This menu option displays an about requester with some info about me.
+
+HIDE
+    This option closes the options window. NOTE: closing the options window via the close gadget does NOT quit DropBox.
+
+QUIT
+    This option quits DropBox.
+
+EDIT MENU
+
+CUT
+    This option deletes the currently selected item, and saves it to be pasted.
+
+COPY
+    This option copyies the currently selected item, and saves it to be pasted.
+
+PASTE 
+    This option pastes the saved item onto the currently selected item.
+
+CLOSING
+
+	DropBox is 2.04+ only!!! Just wanted to remind you.
+
+	DropBox was compiled with SAS/C 5.1b. I used GadToolsBox 2.0c to created the gui code (a great program!). I also used ILBM2Image to convert the funky Meef()Ware logo from an iff file to C source.
+
+	Thanks to:
+		Anthony Li for his example of handling underscore gadget shortcuts.	
+About Meef()Ware:
+	This silly name is something me and a bunch of other future cs-students thought up while attending the Illinois Mathematics and Science Academy. Meef is a substitue for foo. So next time you think about naming a file blah.foo, name it blah.meef. 
+	
+To Joe, Steve, and the rest of the Masters of Time And Space: Meef()!
+
+If you have any questions, comments, bug reports, compliments, money, pizza, or beer send it to:
+
+Steve Anichini
+380 Grandview Ct.
+Algonquin, IL 60102
+
+or better yet, use email:
+internet - zucchini@imsa.edu
+
+NOTE: I will be attending Carnegie Mellon in the fall so future versions of DropBox might have a newer address.
+    		
+		
+
+		
+

@@ -1,0 +1,199 @@
+
+**********************************
+**				**
+**      3-D VECTOR GRAPHICS 	**
+**				**
+**********************************
+
+*********************************
+*   DO PERSPECTIVE PROJECTION   *
+*********************************
+
+project:			* (x,y,z)=(d0,d1,d2) , (xc,yc,zc)=(d3,d4,d5)
+	muls	d5,d0		* D0 = (x*zc)
+	muls	d5,d1		* D1 = (y*zc)
+	muls	d2,d3		* D3 = (z*xc)
+	muls	d2,d4		* D4 = (z*yc)
+	sub.w	d5,d2		* D2 = (z-zc)
+	sub.l	d0,d3		* D3 = (z*xc - x*zc)
+	sub.l	d1,d4		* D4 = (z*yc - y*zc)
+	divs	d2,d3		* D2 = (z*xc - x*zc) / (z-zc)
+	divs	d2,d4		* D2 = (z*yc - y*zc) / (z-zc)
+	rts			* d3 = screen x , d4 = screen y !
+
+*******************
+*   DO ROTATION   *
+*******************
+
+rotate:				* Sine/Cosine preset in d4/d5
+	move.w	d0,d2		*Duplicate X,Y for matrix multiply ...
+	move.w	d1,d3
+	muls	d4,d0		* d0 = Xcos0		
+	muls	d4,d3		* d3 = Ycos0
+	muls	d5,d1		* d1 = Ysin0
+	muls	d5,d2		* d2 = Xsin0
+	sub.l	d1,d0		* d0 = Xcos0-Ysin0
+	add.l	d3,d2		* d2 = Xsin0+Ycos0
+	asr.l	#7,d0		* Remove bits of fractional accuracy ...
+	asr.l	#7,d2		*Result in (d0,d2) !
+	rts
+
+
+*********************************
+*				*
+*   VECTOR TRANSFORMATIONS	*
+*				*
+*********************************
+
+calcobject:
+	lea	data_2d,a5
+	move.w	(a6)+,d7
+	lea	sine,a0
+	lea	cosine,a1
+	lea	xangle,a2
+
+	move.w	(a2)+,d2
+	lsl.w	#1,d2
+	move.w	(a0,d2.w),d4	*Get sine 
+	move.w	(a1,d2.w),d5	*And cosine
+	movem.w	d4-d5,xsine
+
+	move.w	(a2)+,d2
+	lsl.w	#1,d2
+	move.w	(a0,d2.w),d4	*Get sine 
+	move.w	(a1,d2.w),d5	*And cosine
+	movem.w	d4-d5,ysine
+
+	move.w	(a2),d2
+	lsl.w	#1,d2
+	move.w	(a0,d2.w),d4	*Get sine 
+	move.w	(a1,d2.w),d5	*And cosine
+	movem.w	d4-d5,zsine
+
+
+calcloop_3d:
+	move.w	yptr(a6),d0	*Get Y in D0
+	move.w	zptr(a6),d1	*Get Z in D1
+	movem.w	xsine,d4/d5
+	jsr	rotate		*Do rotation around X axis
+	move.w	d2,d6		*Store Z in d6
+	move.w	d0,d1		*put Y in D1
+
+	move.w	xptr(a6),d0	*Get x in d0
+	movem.w	zsine,d4/d5	*D1 is already set as Y
+	jsr	rotate		*Do rotation around Z axis
+
+	move.w	d6,d1		*Get Z back from stack,st
+	move.w	d2,d6		*and store Y
+	movem.w	ysine,d4/d5
+	jsr	rotate		*Do rotation around Y axis
+
+	move.w	d6,d1		*get y (d1)co-ord,x & z (d0,d2)are already set
+
+	add.w	xpos,d0
+	add.w	ypos,d1
+	ext.l	d0		* Perspective Projection .....
+	ext.l	d1
+	asl.l	#8,d0		* Screen is 256 units away from eye.....
+	asl.l	#8,d1
+	add.w	zpos,d2
+	divs	d2,d0		* Do inversly proportional shrink...
+	divs	d2,d1
+	add.w	#160,d0		* Set to centre of screen ....
+	add.w	#128,d1		* Done !!!!
+
+	move.w	d0,(a5)+	*Store 2d co-ords
+	move.w	d1,(a5)+
+	addq	#6,a6
+	bsr	demotasks
+	dbra	d7,calcloop_3d	*Do next point of end loop
+	rts
+
+xsine:	dc.w	0,0
+ysine:	dc.w	0,0
+zsine:	dc.w	0,0
+
+
+************************************************
+*  ROTATION ROUTINE (D0,D1,D2)->(D0,D2)        *
+*	sine,cosine->D4,D5		       *
+************************************************
+
+
+Do_Rotate
+	move.w	d0,d2		*Duplicate X,Y for matrix multiply ...
+	move.w	d1,d3
+	muls	d4,d0		* d0 = Xcos0		
+	muls	d4,d3		* d3 = Ycos0
+	muls	d5,d1		* d1 = Ysin0
+	muls	d5,d2		* d2 = Xsin0
+	sub.l	d1,d0		* d0 = Xcos0-Ysin0
+	add.l	d3,d2		* d2 = Xsin0+Ycos0
+	asr.l	#7,d0		* Remove bits of fractional accuracy ...
+	asr.l	#7,d2		*Result in (d0,d2) !
+	rts
+
+*********************************************************
+*							*
+*	SINE TABLE GENERATOR - uses Sines from		*
+*	   (0-126) to complete (0-510) & cosine		*
+*							*
+*********************************************************
+
+makesine:			*Sine...
+	lea	sine+2,a0
+	lea	256(a0),a1
+	lea	256(a0),a2
+	lea	512(a0),a3
+	move.l	#63,d7
+ms_loop1:
+	move.w	(a0),d0
+	move.w	d0,512(a0)
+ 	move.w	d0,(a0)+
+	move.w	d0,-(a1)
+	move.w	d0,512(a1)
+	sub.w	#1,d0
+	neg.w	d0
+	add.w	#2,d0
+	move.w	d0,512(a2)
+	move.w	d0,(a2)+
+	move.w	d0,-(a3)
+	move.w	d0,512(a3)	
+	dbra	d7,ms_loop1
+				*Cosine
+	lea	sine+128,a0
+	lea	cosine,a1
+	lea	512(a1),a2
+	move.l	#127,d7
+mcs_loop:
+	move.w	(a0)+,d0
+	move.w	d0,(a1)+
+	move.w	d0,-(a2)
+	dbra	d7,mcs_loop
+	rts
+
+********************************************
+
+xsin	dc.w	0
+ysin	dc.w	0
+zsin	dc.w	0
+xcos	dc.w	0
+ycos	dc.w	0
+zcos	dc.w	0
+
+line_buffer:
+	ds.b	1024
+
+sine:
+	dc.w	0,3,6,9,12,15,18,22
+	dc.w	25,28,31,34,37,40,43,46
+	dc.w	49,52,55,57,60,63,66,68
+	dc.w	71,74,76,79,81,84,86,88
+	dc.w	90,93,95,97,99,101,103,104
+	dc.w	106,108,109,111,113,114,115,117
+	dc.w	118,119,120,121,122,123,123,124
+	dc.w	125,125,126,126,126,127,127,127,127
+	ds.w	64*3-1
+	ds.w	64*4
+cosine:
+	ds.w	256

@@ -1,0 +1,111 @@
+When programming Blitter, there's another riddle. When we want use minterms for our specific function of channels or unusual set of channel contents.
+In such case would be good to design set of minterms relevant to our configuration and interpretation of data in channels.
+let's say we want to use usual masking for blitter object on a background, workbook says that minterms are in configuration $ca, however it is described for
+situation, when we've got mask in channel A and object in channel B. If in our case channel B is mask and A is object, we have to reshuffle channels or develop
+specific set of minterms for our case:
+
+
+01) let's work the original case of set $ca, using Karnaugh's maps - theory found in "Basics of Digital Technology" by Andrzej Skorupski, or simply in some works of
+Mr. Karnaugh or Wikipedia:
+
+about the fact, what will be visible decides the mask. mask is channel a. if a has bit 1 then visible is channel a with the object (b),
+when a=0 then in output channel D is cisible background from channel c.
+
+simply, there are two cases depending on bit in channel a:
+
+a=1, A
+
+within one mask set, decides bits in channels B and C:
+
+    b b B B
+B = 0 0 1 1
+C = 0 1 0 1
+    c C c C
+
+then in D, remains B:
+
+D = 0 0 1 1
+
+
+a=0, a
+
+other way, when A=0
+
+    b b B B
+B = 0 0 1 1
+C = 0 1 0 1
+    c C c C
+
+in this case in D, C gets through:
+
+D = 0 1 0 1
+
+to get from this plot to the minerms we use method of Karnaugh maps. Simply, for each 1 in channel D, we write configuration of bits in channels A, B and c,
+where D=1 exists. We use small letter of channel name to describe 0 in that channel and capital letter for 1 in such channel.
+
+so, when a=1 we write:
+
+ABc+ABC
+
+and for a=0:
+
+abC+aBC
+
+summarising: ABc+ABC+abC+aBC
+
+then, using the table of truth with all configurations of minterms, we receive set of bits for our transmitantion of channels.
+
+ABc - 6
+ABC - 7
+abC - 1
+aBC - 3
+
+so it is: 11001010 - $ca  - famous $ca, quoted by many Blitter workbooks - there we know, that this reckon is right.
+
+
+02) let's rework this case for our specific exaple, when A is object and B alters between A and C. C is the background.
+
+for mask b=1   (B):
+
+  a a A A
+A 0 0 1 1
+C 0 1 0 1
+  c C c C
+
+D 0 0 1 1
+
+
+for mask b=0  (b):
+
+  a a A A
+A 0 0 1 1
+C 0 1 0 1
+  c C c C
+
+D 0 1 0 1
+
+
+ABc+ABC+abC+AbC - 6, 7, 1, 5 - 11100010 - gives magical value of $e2
+
+
+
+03) for another exaple we will do simple D = A xor B:
+
+
+a a A A
+0 0 1 1
+0 1 0 1
+b B b B
+
+D = 0 1 1 0
+
+aB(C+c)+Ab(C+c)=aBC+aBc+AbC+Abc
+
+and it is: 3, 2, 5, 4 - 00111100 - which is: $3c
+
+
+and so on, and so on...
+
+
+
+Cheers!!!

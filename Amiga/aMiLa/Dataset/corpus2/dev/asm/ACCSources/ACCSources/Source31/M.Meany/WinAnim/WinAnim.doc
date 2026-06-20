@@ -1,0 +1,67 @@
+
+			Animating A Logo In A Window
+			~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ Why? Well I'm not quite sure!
+ 
+ The idea is simple enough. Display a logo or graphic in your window and then
+animate it. If your program was some form of menu or utility then this would
+be a nice touch.
+
+ The code has been designed to tag into any program and can handle animations
+of different length. All this is achieved by using a custom structure defined
+in 'WinAnim.i'.
+
+ How It Works
+ ~~~~~~~~~~~~
+ The actual display routine uses the function ClipBlit() to draw the graphic
+into a specified RastPort. It is up to the calling program to supply the
+destination RastPort and x,y coordinates at which to display a frame.
+
+ ClipBlit() requires source and destination RastPorts. For this reason, I
+included a routine called A_InitAnim that will create a RastPort and BitMap
+for the animation. A_InitAnim should be called as follows:
+
+ error = A_InitAnim( AnimStruct )
+  d0                     a0
+ 
+ The AnimStruct is shown below:
+
+mam_Width	LONG		Width of image in pixels - You fill this in
+mam_Height	LONG		Height of image          - You fill this in
+mam_Depth	LONG		depth of display         - You fill this in
+mam_Rp		LONG		filled in by A_InitAnim
+mam_Bm		LONG		filled in by A_InitAnim
+mam_Frame	LONG		Pointer into vector table- You fill this in
+
+ The mam_Frame field should point to a list of pointers. Each pointer in the
+list will point to the graphics for the next frame of the animation.
+
+ So at the start of your code call A_InitAnim with a pointer to a part filled
+AnimStruct, hopefully d0 will be non zero on return.
+
+ Now whenever you want to display a new frame, call the routine A_NextFrame
+routine with the following parameters:
+
+ A_NextFrame( AnimStruct, RastPort, x, y )
+                  a0         a1    d0 d1
+
+ RastPort should be a pointer to the RastPort into which you want the
+animation to be displayed. A_NextFrame will automatically advance the frame
+pointer for you.
+
+ At the end of your code call A_FreeAnim to release the RastPort and BitMap
+created by A_InitAnim.
+
+ There is a rather crude example that runs from IntuiTicks supplied so you
+can get the general idea!
+
+			Mark.
+
+
+
+
+
+
+
+

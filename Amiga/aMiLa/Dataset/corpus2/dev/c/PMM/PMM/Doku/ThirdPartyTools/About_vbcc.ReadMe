@@ -1,0 +1,97 @@
+vbcc - portable ANSI C compiler (c) in 1995-97 by Volker Barthelmann
+
+
+INTRODUCTION
+
+    vbcc is a free portable and retargetable ANSI C compiler.
+
+    This archive contains the compiler, preprocessor, assembler, linker,
+    frontend, message browser, startup codes, C-libraries, amiga.lib
+    replacements as well as several other tools (mostly with complete
+    source) for 68k as well as PPC.
+
+    This gives you a complete system that allows to develop programs in
+    ANSI C as well as Amiga-specific programs (provided you obtain the
+    OS-includes) running on 68k or PowerUp-boards.
+
+    All major parts of this distribution (including compiler, preprocessor,
+    libraries etc.) have been compiled/assembled with this system and
+    apart from the OS-includes everything is included to rebuilt vbcc,
+    the libraries and many of the other programs.
+
+    Note that the programs in this archive all run on the 68k even when
+    generating PPC-code. There is another archive which contains compilers
+    that run on the PPC.
+
+
+FEATURES
+
+    vbcc..
+
+    - comes with source
+
+    - is free
+
+    - is portable and retargetable
+
+    - comes with a global optimizer that can e.g. do global common
+      subexpression elimination, constant propagation, function inlining
+      and several other optimizations (but is not yet finished and may
+      have some bugs)
+
+    - should be ANSI compliant
+
+    - can generate code that runs on a plain 68000 CPU
+
+    - can generate code optimized for 020/030, 040 or 060
+
+    - can generate code that uses the 68881/2, 68040/060 FPUs directly
+      and comes with appropriate math-libraries
+
+    - can generate code that runs on PowerUp-boards
+
+    - generates standard Amiga-68k-objects or PPC-ELF-objects
+
+    - does not need too much memory
+
+    - comes with a message browser
+
+    - comes with a config program
+
+    - offers a lot of error/warning messages that can be turned on/off
+      separately
+
+
+REQUIREMENTS
+
+    To use vbcc you need:
+
+    - an Amiga with OS 2.0 or higher
+
+    - enough RAM (it is possible to translate small programs with 1MB, but
+      for larger programs much more will be needed)
+
+    Stuff that is not needed, but may be very useful:
+
+    - harddisk
+
+    - editor
+
+    - make, touch etc.
+
+    - the Amiga OS-includes (they can be found on certain CDs)
+
+    - pipe-command (to use the message browser)
+
+    Also you should know how to use the shell and you should know ANSI C
+    (if you need a book I recommend (like everyone) "The C Programming
+    Language, Second Edition, ANSI C" by Kernighan and Ritchie).
+
+
+
+Volker Barthelmann                                      volker@vb.franken.de
+Kennedy-Ring 39
+91301 Forchheim
+Germany
+
+

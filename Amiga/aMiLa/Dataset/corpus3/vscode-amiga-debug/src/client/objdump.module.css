@@ -1,0 +1,224 @@
+/* function */
+.gfxresource_menu {
+	width: initial !important;
+  box-shadow: 0 .25em .5em 0 black;
+}
+
+.function {
+  white-space: nowrap;
+}
+
+.function svg {
+  display: inline-block;
+  height: 1em;
+  margin-right: 0.25em;
+}
+
+.wrapper {
+  font-size: var(--vscode-editor-font-size);
+  margin-bottom: 5px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.container {
+	background: var(--vscode-editor-background);
+	color: var(--vscode-editor-foreground);
+  font-family: var(--vscode-editor-font-family);
+	font-size: var(--vscode-editor-font-size);
+	font-weight: var(--vscode-editor-font-weight);   
+  white-space: pre;
+  flex-grow: 1;
+  overflow: auto;
+  transition: opacity linear 0.2s;
+}
+
+svg .jumpduration {
+  fill: var(--vscode-terminal-ansiYellow);
+  opacity: 0.6;
+}
+
+.row {
+  display: flex;
+  height: calc(var(--vscode-editor-font-size) + 3px);
+	margin-left: 70px; /* for jump */
+}
+
+.jump {
+	position: absolute;
+	width: 70px;
+	stroke-width: 1;
+}
+
+.jumpalways {
+	stroke: lightgrey;
+	fill: lightgrey;
+	z-index: 2;
+}
+
+.jumpcond {
+	stroke: grey;
+	fill: grey;
+	z-index: 1;
+}
+
+.jumpcur {
+	stroke: white;
+	fill: white;
+	stroke-width: 3;
+	z-index: 900;
+}
+
+.duration {
+  flex-grow: 0;
+  flex-shrink: 0;
+  color: var(--vscode-terminal-ansiYellow);
+  margin-right: 8px;
+}
+
+.dim1 {
+  opacity: 0.8;
+}
+
+.dim2 {
+  opacity: 0.6;
+  cursor: help;
+}
+
+.file {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: var(--vscode-font-family);
+  margin-left: 2em;
+  font-size: 0.8em;
+  direction: rtl;
+  flex-grow: 1;
+  margin-left: 2em;
+  opacity: 0.8;
+}
+
+a {
+  color: var(--vscode-terminal-foreground);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--vscode-terminal-foreground);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+a:focus {
+  text-decoration: underline;
+  outline: 1px solid var(--vscode-focusBorder);
+}
+
+/* don't use opacity or filter, it's slow */
+.zero {
+  color: #666; /* TODO: other themes */
+}
+
+.zero a, .zero a:hover, .zero a:focus {
+  color: #666; /* TODO: other themes */
+}
+
+.zero .duration {
+  color: #660; /* TODO: other themes */
+}
+
+.cur {
+	background-color: var(--vscode-editor-selectionBackground);
+	color: var(--vscode-editor-selectionForeground);
+}
+
+.cur_same_loc {
+  background-color: var(--vscode-editor-inactiveSelectionBackground);
+}
+
+.find_hit {
+  background-color: var(--vscode-editor-findMatchHighlightBackground);
+  color: inherit;
+}
+
+/*.find_hit_cur {
+  background-color: var(--vscode-editor-findMatchBackground);
+  color: inherit;
+}*/
+
+/* from copper.css */
+.opcode, .sr_on, .sr_off {
+	text-decoration-line: underline;
+	text-decoration-style: dotted;
+  text-decoration-color: currentColor;
+	cursor: help;
+}
+
+.tooltip_parent {
+	display: flex;
+	flex-direction: column;
+	position: absolute;
+	height: 250px;
+	z-index: 100;
+	pointer-events: none;
+}
+
+/* from resources.module.css */
+.tooltip {
+	vertical-align: bottom;
+	max-height: 250px;
+	width: 550px;
+	box-sizing: border-box;
+	box-shadow: 0 .25em .5em 0 black;
+	padding: 5px;
+	background: var(--vscode-editorWidget-background);
+	border: 1px solid var(--vscode-editorWidget-border);
+	overflow-y: auto;
+}
+
+.timing_tooltip {
+  border: none;
+  padding: 0;
+  width: auto;
+}
+.timing_tooltip table {
+  margin: 0;
+}
+
+/* registers */
+.registers {
+  position: absolute;
+  z-index: 1;
+  width: 220px;
+  max-width: 90%;
+  right: 16px;
+  top: 34px;
+  padding: 4px;
+  box-shadow: 0 .25em .5em 0 black;
+  background: var(--vscode-sideBar-background);
+	color: var(--vscode-editor-foreground);
+  font-family: var(--vscode-editor-font-family);
+	font-size: var(--vscode-editor-font-size);
+	font-weight: var(--vscode-editor-font-weight);   
+  white-space: pre;
+	margin: -5px;
+}
+
+.sr_on {
+  text-transform: uppercase;
+}
+
+.sr_off {
+  text-transform: lowercase;
+  opacity: 0.5;
+}
+
+.toolbar {
+  display: flex;
+}
+.toolbar button {
+  color: var(--vscode-editor-foreground);
+}

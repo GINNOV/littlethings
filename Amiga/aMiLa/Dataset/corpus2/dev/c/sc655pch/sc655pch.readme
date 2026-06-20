@@ -1,0 +1,20 @@
+Short:        SAS/C V6.55 bug fix for SAS/C 6.50 / 6.51.
+Author:       SAS Institute Inc.
+Uploader:     jamie unx sas com
+Type:         dev/c
+Architecture: m68k-amigaos
+
+This is a set of binary patches for the Amiga SAS/C Development System
+with C++, Version 6.50, and the first patch to that version, Version 6.51.
+It requires the original six-disk set that came with the SAS/C Development
+System with C++ package.  It does NOT require the 6.51 patch disk, or that
+the 6.51 patch be applied before this.	This single patch will bring
+whichever version of 6.5x you have up to Version 6.55.
+
+This patch is freely redistributable; further information can be found in
+the archive in the file marked README.
+
+NOTE:  This is the final patch which will be distributed for the Amiga
+SAS/C Development System with C++.  Please spread this patch to every
+system you normally call, so it may reach as many people as possible.
+This patch will ONLY be distributed electronically.

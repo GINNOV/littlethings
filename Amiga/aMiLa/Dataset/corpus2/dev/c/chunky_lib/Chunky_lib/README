@@ -1,0 +1,61 @@
+Short:    Complete 8-bit chunky gfx system for AGA/CGFX
+Author:   oondy@bigfoot.com (Andrew King)
+Uploader: oondy@bigfoot.com (Andrew King)
+Type:     dev/c
+Version:  2.27
+
+CHUNKY GRAPHICS LIBRARY
+Version 2.27 (17-Dec-98)
+Public Release 1
+
+Welcome to the wonderful world of 8-bit chunky!
+
+So, you want a standardised method of reading, writing and displaying chunky
+data in your Amiga application?  Not too hot on the idea of using RTGMaster
+or "rolling your own" methods?  Don't care for system hacks?  In that case,
+you've downloaded the right thing!
+
+This link library for your C compiler (not a shared lib yet until I get my
+copy of StormC)  will handle everything to do with <=256 colour chunky
+pictures.  Features:
+
+* Transparent support for AGA/CGFX
+* High-level and low-level commands available
+* Draw from one chunky buffer to another
+* Uses RastPort's instead of BitMap's
+* Simple transparacy option
+* Read and write chunky data files to and from disk (supports compression
+  as well)
+* Text support (draw Amiga bitmap fonts onto chunky buffers)
+* Features most of the basic graphics.library calls but works with chunky
+  buffers
+* All written in ANSI C (although AGA c2p/p2c stuff isn't)
+* All sources included
+* It's freeware!
+
+That list got your motor running?  Thought so...
+
+Please read the usage.txt and license.txt files in the archive for further
+information.
+
+THIS IS NOT FOR THE FAINT-HEARTED!  If you are learning C or unsure what
+chunky is (why? :) do not download this!
+
+LEGAL
+
+The chunky sub system is written and maintained by Andrew King of Rosande
+Limited.  It is copyrighted to Rosande Limited and all used sources are
+declared as public domain and freely available.  All sources are subject to
+change without notice.  (c) 1998 Rosande Limited, all rights reserved.  See
+license.txt for more legal information.
+
+Andrew King
+Co-director and Head of Technical Development for Rosande Limited
+(A registered company in the United Kingdom)
+
+Remember FUBAR?
+http://www.q-soft.demon.co.uk or see our technical site at
+http://www.q-group.demon.co.uk.  See our publishers at
+http://www.blittersoft.com.
+
+id software rule!

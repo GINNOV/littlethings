@@ -1,0 +1,10 @@
+
+This directory includes examples for the use of fcc.
+
+
+heatpump.fuzzy: Fuzzy controller for controlling a heat pump
+
+heatpump.c         : Main program simulating heatpump, generated from 
+                     heatpump.fuzzy by fcc, options -ansi -main
+heatpump           : Executable linked from heatpump.o
+

@@ -1,0 +1,45 @@
+
+
+			Raistlin Source Docs
+		      ------------------------
+
+Well I've been getting into 3D this month.  The Code I've sent is as follows:-
+
+1. FAST LINE DRAW SOURCE
+Well this is my best attempt at a fast line draw routine.  It basicaly draws
+a line to the screen.
+
+
+2. CIRCLE
+Interesting routine this.  What it does is to take advantage of the formula,
+	
+	X1 = X.cos(0) - Y.sin(0)
+	Y1 = Y.cos(0) + X.sin(0)
+
+which is used to rotate a point in circular motion.  So what we do is to draw 
+a line at 0 degrees & then go through to 360.  This produces a solid (almost)
+circle.
+
+
+3. ROTATED 3D SQUARE
+This routine draws a square to the screen & then uses a rotation formulae to
+rotate the square around the XYZ axis.
+
+
+4. ROTATED 3D CUBE
+A true 3D rotation.  This routine is the same as the No 3 except that it 
+rotates a cube around the XYZ cords.  All thats left now is to fill it!
+
+
+5. ROTATED SOLID 3D SQUARE
+This is exactly the same as No3 except that the square is filled before
+being blitted to the screen.  The time needed to fill the square (alot!)
+means that the screen needs double buffering to avoid flicker.
+
+
+6. MOUSEBOBS
+This proggy keeps track of the mousemovements & moves a number of bobs
+in snake like movement after the mouse.
+
+
+			Raist.

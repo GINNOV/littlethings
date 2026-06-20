@@ -1,0 +1,7 @@
+Short:        Example code for proportional gadgets.
+Author:       Jerry Trantow
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Example code for using proportional gadgets, written in assembly code and
+C, that can be called from your own application.  

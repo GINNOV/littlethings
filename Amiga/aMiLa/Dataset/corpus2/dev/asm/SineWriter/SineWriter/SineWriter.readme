@@ -1,0 +1,62 @@
+Short:    Generate fixed point sine/cosine/hybrid lookup tables
+Author:   Duane McDonnell <tachyon@tolstoi.saccii.net.au>
+Uploader: Duane McDonnell <tachyon@tolstoi.saccii.net.au>
+Type:     dev/asm
+
+INTRODUCTION
+
+Generate sine, cosine and sine/cosine hybrid LUTs for use in game/demo
+code (particularly 3D programming). This might be useful for coders who
+use fixed point math for calculations rather than FPU instructions.
+
+
+USAGE
+
+Here's a quick run-down of the main options:
+
+Table types:
+
+Sine		Generates sine tables from 0..360 deg (0..2pi rad)
+
+Cosine		Generates cosine tables from 0..360 deg (0..2pi rad)
+
+Hybrid		Generates a sine table followed by a cosine table to save
+		memory. Since sine and cosine are 90 deg (pi/2 rad) out
+		of phase you don't need two full-size tables.
+
+Table data size:		Byte, Word, Longword.
+
+Amplitude scaling factor:	The factor to scale the amplitude by (eg:
+				for <2.14> fixed point format, 1.0 equals
+				16384, so 16384 is the scaling factor).
+
+Table resolution:		The number of entries to calculate in a
+				full 360 degree wave. Usually you'd make
+				this a power of two to simplify angular
+				range clipping. Eg: 1024 means there are
+				1024 entries in a 360 degree wave so the
+				"resolution" is 360/1024. Because of the
+				symmetry requirement this value must be
+				divisible by 4.
+
+Save table data as:		Source (68k assembly), Binary.
+				
+The generated tables are 90 deg (pi/2 rad) symmetrical and are
+calculated using a Taylor series polynomial sufficiently accurate
+for the data size selected. No external math libraries are required.
+
+Numerical input can be in decimal or hexadecimal format. Precede hex
+values with a dollar "$" sign.
+
+Pressing RETURN alone at any prompt will return you to the main menu.
+
+
+FINAL WORDS
+
+This is a support tool I wrote years ago during the good ol' days
+of the demo scene ('92 or '93 I think). I came across this while
+rummaging around my hard drive. I'm releasing this in case there are
+demo coders who don't have decent table generation code of their own.
+Note that I cannot support this program as I don't have the time or
+interest but I'll be happy to answer any questions. Excuse the crappy
+shell-GUI, it does the job though :-)

@@ -1,0 +1,53 @@
+Short: MD5-based Random Number Generator (PPC+68k)
+Type: dev/c
+Uploader: info@ar-kleinert.de
+Author: Rich Skrenta, Andreas R. Kleinert (port and sample program)
+
+ *************************************************************************
+
+ After becoming frustrated with the lack of a standalone, portable,
+ decent random number generator, I decided to make one based on a
+ cryptographic one-way hash function.  I chose MD5 since it is fast
+ and free source was readily available.  More cryptographically
+ secure hash functions are available (e.g. SHA-1), but for the
+ purposes of a rand/random/erand48 replacement, MD5 should be more
+ than sufficient.
+
+ MD5 takes an arbitrary amount of input and yields a 16 byte hash.
+ This RNG continually MD5's a 16 byte digest, and uses the bottom N
+ bits as the random number yielded, where N is just large enough to
+ include the largest random number desired.
+
+     To yield a random number between 0 and r:
+
+             create mask which has enough bits to include all of r
+                     (for example, if r is 100, mask would be 0x7F)
+
+             do {
+                     digest = MD5(digest)
+                     number = digest & mask
+             } while (number > r)
+
+ The digest should be loaded and saved to a disk file between
+ invocations of a program using the RNG.
+
+ Random functions appear after the included MD5 code.
+
+ Send comments to:  skrenta@pbm.com (Rich Skrenta)
+
+ *************************************************************************
+
+ The Amiga 68k/PPC version comes with both, makefiles for 68k and PPC,
+ and test programs for both CPUs.
+
+ A few changes had to be made for the Amiga port (#ifdef AMIGA) - and
+ since this random number generator has a "brain", the most important
+ change perhaps was, that the location of this brain now is "s:randseed".
+
+ In case you want to run multiple copies of it, you'll perhaps like
+ to choose a different (process-dependent) name. You also could fetch
+ the "digest" from somewhere else (i.e. using a conventional random
+ number generator).
+ 
+ --
+ ARK, 30/May/2000

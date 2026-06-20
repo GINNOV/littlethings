@@ -1,0 +1,70 @@
+Short:    3D graphic library in xRGB32 format.
+Uploader: rosso@avo.net (Yves Rosso)
+Author:   rosso@avo.net (Yves Rosso)
+Type:     dev/src
+
+Freeware 3D based 030/882 library to develop, for your needs.
+I've no more time and capacities to continue development.
+
+
+----------------------------------------
+TD Render Lib v1.0 Beta  -  FreeWare Lib 
+----------------------------------------
+
+First, i'm not a great coder :(, i've understood the basis of asm 
+and E programming but i've no more time to learn all about mem
+pointers using in asm ... So, i went to aminet to upload this 
+sources of code and base bin, to give it to amiga users who are
+interested in continue development.
+
+The library need more shape drawing routines, effects routines,
+better stars drawing, a better filling routine (mine is a trick,
+no bug but not clean), ect ... Resolution adaptative :) ...
+and certainly angles/vectors calc errors or boost;).
+
+Actually it's seems that display is correct on Cyb060/50 ! but
+what happens on 030/882/50 ? tested only on my A4000 with 060
+and cybergraphic 2.25 on my RetinaZ3.
+
+
+Purpose :   Making a 3D realtime graphic library that's independant
+--------    from the hardware. By buffering all 3D faces tracing in 
+            a fastmem buffer transfered on a double-buffered screen
+            that can handle xRGB32 colors, cybgfx for example.
+            This with high level functions ( draw directly objects
+            with one basic function , to have easy optimized 3D code
+            access through E language or similar.
+            
+Sources :   In E :
+--------    -----
+            For controlling the Asm Library.
+            My E source isn't a lot documented, you will find
+            an example of double-buffered screen use in cgfx
+            mode.
+            
+            You can use any language you want i think, if it 
+            can call asm routines from lib.
+
+            In Asm :
+            -------
+            3D rendering part
+            I think my asm source is enough documented to
+            explain what's done in it.
+            For instance the lib use a 32bit xRGB buffer to
+            prepare frame ( 320x240x32 or more if you modify
+            the lib provided by the E prog or yours, RaceCar
+            or Space Simulation :).
+
+
+============================================================
+ _________
+| _    _  |
+|( )| (_) |
+| (_|____ |
+|  _|____ |
+|   |     |
+|  _____  |
+|_________|
+
+22/06/97,   Yves ROSSO - rosso@avo.net
+============================================================

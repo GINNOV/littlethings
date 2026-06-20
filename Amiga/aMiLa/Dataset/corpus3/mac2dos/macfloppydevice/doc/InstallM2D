@@ -1,0 +1,32 @@
+
+			InstallM2D
+
+You probably expected this program automatically to install
+Mac-2-Dos for you.  Sorry about that; we found that we promised
+more than we can deliver.  But read on...things aren't as bad as
+they might seem.
+
+We have some good news and some bad news.  
+
+The good news is that you can use Mac-2-Dos WITHOUT doing ANY
+software installation at all (of course you still MUST install the
+Mac-2-Dos interface and a Mac drive, as described in the User's
+Guide).  To run Mac-2-Dos, just click on the Mac-2-Dos icon and
+away you go.  If you want to move Mac-2-Dos to another directory,
+drag it (or copy it) to the proper directory.
+
+The bad news is this: if you want to use your Mac drive as an
+AmigaDOS device, you must perform a manual installation of the
+Mac disk device driver, called "macfloppy.device", as described in
+the User's Guide under Software Installation and in Appendix A.
+
+Actually this isn't as bad as it sounds, and is really simple if
+you have ever installed a driver.  Just follow the directions in
+the User's Guide and in the Release-Notes on the Mac-2-Dos master
+disk.
+
+Good Luck and have fun!
+
+George and Betty Chamberlain
+Central Coast Software
+

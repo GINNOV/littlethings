@@ -1,0 +1,81 @@
+Short:     many stringfunctions (linklib vbcc)
+Author:    Michaela Pruess (GatewayBBS@bigfoot.de)
+Uploader:  Michaela Pruess (GatewayBBS@bigfoot.de)
+Kurz:      viele Stringfunktionen (LinkLib vbcc)
+Type:      dev/c
+URL:       http://Gateway.To/Gateway5/index.html
+Version:   1.2
+Replaces:  all previous versions
+
+English:   (deutsch, siehe unten)
+
+About:     This is a freeware linklib for vbcc. Includes a big
+           list of stringfunctions. You find other versions of
+           functions that are included in vbcc and also many
+           more functions that not included in vbcc at this time.
+           If you missing a string-function look first at this
+           lib.
+           This lib is in ALib/Libr-format, usable by all linker they
+           can read this format.
+           This is a first release, more functions will be added in the
+           future.
+           Tell me, if you missing anything else!
+
+Requires:  Amiga :-)
+           vbcc with PhxLnk / vlink or any compiler with a ALib/Libr
+           compatible linker. All CPU's supported.
+
+Install:   For use with vbcc see documents from vbcc.
+
+Copyright: All copyright's reserved by Michaela Pruess.
+           For all additional copyrights see docs in this archive.
+           You have only permission for non-commercial use of this tool.
+           The Aminet has permission to publish this file on all
+           Aminet-sites, Aminet-mirror's and Aminet-CD's.
+           Volker Barthelmann (vbcc) has permission to do anything he like
+           with this.
+           This software is provided as-is, without warranty of any kind,
+           either expressed or implied. In no event will the authoress be
+           liable for direct, indirect, incidental or consequential damages
+           or data loss resulting from the use or application of this software.
+           The entire risk as to the results and performance of this software
+           is assumed by the user. Furthermore, the contents of the archive
+           cannot be altered in any way, although the archive itself can be
+           transmitted electronically via BBS systems or the Internet.
+
+
+
+Deutsch:
+
+Ueber:     Dies ist eine Freeware-Linklib für vbcc, Enthält einige
+           große Zahl von Stringfunktionen. Einige davon sind in
+           anderer Version in vbcc enthalten, viele Funktionen
+           sind bisher nicht in vbcc vorhanden.
+           Wer Stringfunktionen vermisst sollte zunächst mal hier
+           nachsehen.
+           Es ist die erste Version, weitere Funktionen sollen in
+           Zukunft hinzukommen.
+           Wenn was fehlt oder gesucht wird, bitte bei mir melden!
+
+Benoetigt: Amiga :-)
+           vbcc mit PhxLnk / vlink oder einen anderen Compiler mit einem
+           ALib/Libs kompatiblen Linker. Alle CPU's werden unterstützt.
+
+Install.:  Für Nutzung mit vbcc bitte die vbcc-Dokumentation lesen!
+
+Copyright: Alle Copyright's verbleiben bei Michaela Prüß.
+           Für Copyrights dritter siehe Doku in diesem Archiv.
+           Dies File darf nicht kommerziell benutzt werden, ansonsten
+           ist die Nutzung frei.
+           Das Aminet hat die Erlaubnis zur Verbreitung über alle Server,
+           Mirror's und die AmiNet-CD's.
+           Volker Barthelmann (vbcc) hat die Erlaubnis damit zu tun, was
+           immer er möchte.
+           Diese Software wird verbreitet, wie sie ist, ohne eine Garantie
+           jeglicher Art. In keinem Fall, weder direkt noch indirekt ist
+           die Autorin haftbar für Schäden oder Datenverluste die durch die
+           Verwendung dieser Software entstehen. Die Benutzung erfolgt
+           ausschließlich auf eigenes Risiko des Benutzers. Jede Änderung
+           des Archives oder Teilen davon ist verboten. Das Archiv darf
+           auf elektronischm Weg via Mailbox oder Internet verbreitet
+           werden.

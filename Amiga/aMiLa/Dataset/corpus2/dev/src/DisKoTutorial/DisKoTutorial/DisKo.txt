@@ -1,0 +1,67 @@
+Définition, généralités
+
+MUI (Magic User Interface) est développé par Stefan Stuntz et apparaît au début des années 1990. Sa conception et ses capacités d'évolution ont permis à MUI de toujours être incontournable en 2004. Ce puissant système de création d'interfaces graphiques s'est en effet imposé au fil des années, notamment devant ReAction et UIK.
+
+Au niveau de ses possibilités, MUI bénéficie comme JAVA d'un calcul de layout automatique, c'est à dire que la gestion de la position et de la taille des composants est déléguée au moteur de MUI, le programmeur n'a pas à s'en soucier. Le design de MUI a également joué en sa faveur, tout comme sa simplicité de programmation, basée sur des macros C. Et la personnalisation des applications MUI peut atteindre un niveau très poussé dont les limites ont encore été reculées dans sa version 3.9.
+
+Techniquement, MUI repose sur des principes de programmation objet, il étend d'ailleurs BOOPSI, le principe orienté objet de l'AmigaOS. On viendra donc à parler de classes MUI que l'on peut distinguer en 3 catégories :
+- les classes "builtin" qui sont au coeur de MUI et font partie intégrante de sa distribution
+- les classes externes, les fameux fichiers à l'extension MCC (MUI Custom Class) écrits par des développeurs tiers et mis à disposition de la communauté
+- les classes internes à un programme, ou classes privées, qui ne sont pas accessibles par d'autres applications au niveau du système d'exploitation mais dérivent tout de même une classe existante
+
+
+ Notion d'héritage
+
+Nous venons de présenter les types de classes sur lesquelles MUI est fondé. L'arborescence des composants de type builtin, sur lesquels s'attarder en premier, est présentée dans la documentation mais aussi dans le fichier "libraries/mui.h" dont la lecture est toujours utile (pour les constantes, macros, ...). On y apprend par exemple que les classes Text ou Image sont dérivées de la classe de base Area qui représente une zone rectangulaire, ce qui est logique. Mais plus surprenant, on découvre qu'il n'y a pas de classe Button ! Pour MUI, ce qui fait un bouton est avant tout sa représentation, c'est à dire qu'un bouton est une chaîne ou une image avec une visualisation en relief (appelée cadre sous MUI) ... mais nous verrons cela rapidement.
+
+Fidèles à leur orientation objet, les classes ont naturellement toutes les caractéristiques que l'on peut retrouver dans des classes des langages C++ ou JAVA. Pour connaître la nature d'un élément MUI, des préfixes adaptés sont utilisés :
+- MUIC_ pour une classe
+- MUIM_ pour une méthode, c'est à dire une fonction
+- MUIA_ pour un attribut (membre privé, c'est à dire variable interne à la classe)
+- MUIV_ pour une valeur spécifique à un attribut
+Ainsi, chaque classe MUI dispose de ses propriétés et méthodes, y compris son constructeur (méthode particulière qui sert à créer un nouvel objet) et son destructeur (qui supprime et libère ses ressources).
+Si le vocabulaire ne vous est pas familier, je vous renvoie aux articles qui expliquent les principes de la programmation objet.
+
+La création d'une classe dérivée d'une autre permet donc d'écrire de nouvelles méthodes pour enrichir un composant existant mais aussi de compléter l'action des méthodes héritées (par surcharge et appel de la méthode de la classe mère).
+
+
+ Description de l'interface
+
+Une interface MUI est entièrement composée d'objets, à commencer par l'Application qui est obligatoire et sur lequel se greffe un objet Window correspondant à la fenêtre principale. Chaque fenêtre est avant tout constituée d'un groupe obligatoire, dans lequel on va organiser les composants graphiques.
+Lors de la conception d'une interface, il faut donc la dessiner sur papier (ou dans sa tête) et dégager les zones principales qui vont devenir des groupes MUI. Puis on descend dans le détail et pour chaque groupe, on exprime ce qu'il contient (composants ou groupes internes). Et représentant cette organisation sous forme d'un arbre, on obtient le code de base de l'interface :
+
+
+ Application
+
+        Window
+
+                Group
+
+                        Object
+
+                        Object
+
+                        Group
+
+                                Object
+
+                                Object
+
+                                Object
+
+
+
+Cette écriture symbolique pourrait convenir pour une interface qui présenterait deux chaînes de caractères (par exemple) l'une sur l'autre, avec en-dessous une zone contenant trois boutons sur une même ligne. Il suffit de préciser que le deuxième groupe est de type horizontal : ses objets seront alors disposés horizontalement de gauche à droite.
+
+Au niveau des composants, chacun d'entre eux appartient forcément à un groupe et est donc présenté comme enfant (Child) que l'on ajoute comme un jeu de construction. Lors de cette description d'interface, on peut attribuer des valeurs par défauts aux propriétés de cet objet (souvenez-vous des attributs notés MUIA_NomClasse_NomAttribut), comme le texte dans un composant String. Un composant est donc annoncé par "Child, " et sa description se termine par "End,". Le mot-clé "End" est suivi d'un point-virgule et non d'une vrigule uniquement pour terminer la description d'un ensemble d'objets.
+
+La description d'une interface est très logique et utilise des macros pour mettre l'accent sur l'architecture et pas sur le langage de programmation. Normalement, il n'y a aucune difficulté pour passer du dessin papier au code source équivalent. Il faut toutefois être vigilant sur l'encapsulation des objets par Child/End et sur la présence des virgules associées.
+
+
+ Pré-requis pour la suite
+
+Avant de commencer à programmer réellement, il est nécessaire réunir certains éléments. Vous devez donc avoir :
+- un environnement de développement fonctionnel : un éditeur, un compilateur C ainsi que les bibliothèques et includes MUI (mui38dev.lha pour AmigaOS et le SDK correctement installé pour MorphOS).
+- éventuellement d'autres ressources mais elles ne se prêtent pas forcément au débutant : l'archive Calculator sur MDC (fournit des exemples), MUIUndoc, S3DC sur Aminet (exemple de création de classe), ...
+
+Ici, désormais, on connaît MUI dans les grandes lignes et tous les éléments permettant de programmer avec sont installés. Pour en être sûr, compilez un ou des exemples du SDK même si vous n'en comprenez pas le contenu.

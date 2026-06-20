@@ -1,0 +1,7 @@
+Short:        Full featured macro assembler
+Author:       W Wesley Howe
+Version:      1.1.0
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Full featured macro assembler.  Well documented.  

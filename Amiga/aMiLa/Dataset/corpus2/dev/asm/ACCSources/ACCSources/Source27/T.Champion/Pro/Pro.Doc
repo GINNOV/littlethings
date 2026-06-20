@@ -1,0 +1,88 @@
+                        Pro v1.0 (c) 1992, Tom Champion
+                        -------------------------------
+
+    Pro will change the protection flags and comment of any file
+    
+    Pro will ONLY run on AmigaDos 2.04
+
+Note:
+
+    Use Pro at your own risk.
+
+Starting:
+
+    »» Workbench ««
+
+        Click on Pro, press shift and click on files to change,
+        double click on the last file to start Pro.
+
+        Click on Pro twice.
+
+    »» Cli ««
+
+        Pro
+
+Usage:
+
+        Gadgets -
+
+            Name        - File name
+
+            Comment     - File comment, If editing the comment make sure
+                          you press return at the end, or the string will
+                          not be copied to the file when saved.
+
+            Hidden      - Not used.
+
+            Script      - The text file will be executed when called from
+                          the shell.
+
+            Pure        - The file is a pure command and can be made resident.
+
+            Archived    - The file has been archived
+
+            Readable    - The file can be read.
+
+            Writable    - The file can be written to (altered).
+
+            Executable  - The file is executable (a program).
+
+            Deletable   - The file can be deleted.
+
+            Next        - Only Enabled when there is more than one file
+                          Selected from Workbench before starting Pro.
+                          Show next file.
+
+
+            Prev        - Only Enabled when there is more than one file
+                          Selected from Workbench before starting Pro.
+                          Show previous file.
+
+            Load        - Load file, brings up Asl file requester.
+                          Replaces file or files in memory.
+                          Disables Prev and Next Gadgets.
+
+            Save        - Save's file.
+
+            Quit        - Quit program.
+
+Distribution:
+
+    Pro is freely distributable as long as this doc file and the source
+    files are with it and a nominal copy fee is charged.
+
+
+Files in directory:
+
+    Pro         Pro.asm
+    Pro.Doc
+
+
+Correspondence:
+
+    Please sent any bug reports or correspondence to
+
+        Tom Champion
+        62 Sterling Rd.
+        Metung 3904
+        Australia

@@ -1,0 +1,198 @@
+*** CopyBootBlock III by O.Wagner
+* Disk copier bootblock!
+* At Boot time:
+* LEFT mouse:	DiskCopy DF0: --> DF0:
+* RIGHT mouse:	DiskCopy DF0: --> DF1:
+
+Start:
+	MOVE.W	#$006A,$DFF180
+	BTST	#2,$DFF016
+	BEQ.W	LB_00DA
+	BTST	#6,$BFE001
+	BEQ.B	LB_003C
+	LEA	dosname(PC),A1
+	JSR	-96(A6)
+	MOVE.L	D0,A0
+	MOVE.L	20(A0),A0
+	MOVEQ	#0,D0
+	RTS	
+LB_003C	MOVE.L	A1,A5
+	MOVE.L	A5,A4
+	MOVE.L	#$00000140,D0
+	MOVEQ	#0,D1
+	JSR	-$00C6(A6)	;AllocMem()
+	MOVE.L	D0,A3
+	MOVE.L	#$00002C00,D6
+	MOVE.L	D6,D0
+	MOVEQ	#2,D1		;chip mem
+	JSR	-$00C6(A6)	;AllocMem()
+	MOVE.L	D0,D7
+	MOVE.L	A3,A2
+	MOVEQ	#79,D5
+LB_0062	MOVE.L	D6,D0
+	MOVEQ	#0,D1
+	JSR	-$00C6(A6)	;AllocMem()
+	MOVE.L	D0,(A2)+
+	BEQ.W	LB_0178
+	DBF	D5,LB_0062
+	MOVEQ	#0,D6
+	MOVE.L	A3,A2
+LB_0078	BSR.W	LB_0138
+	MOVE.W	D6,D0
+	ANDI.W	#$00F0,D0
+	MOVE.W	D0,$00DFF180
+	MOVE.L	(A2)+,A1
+	MOVE.L	D7,A0
+	MOVE.L	#$00002C00,D0
+	JSR	-$0270(A6)	;CopyMem()
+	ADDQ.W	#1,D6
+	CMPI.W	#$0050,D6
+	BNE.B	LB_0078
+LB_009E	LEA	LB_02D3(PC),A0
+	BSR.W	LB_01D8
+	BEQ.W	LB_0178
+	MOVEQ	#$00,D6
+	MOVE.L	A3,A2
+LB_00AE	MOVE.W	D6,D0
+	ANDI.W	#$00F0,D0
+	ASL.W	#4,D0
+	MOVE.W	D0,$00DFF180
+	MOVE.L	(A2)+,A0
+	MOVE.L	D7,A1
+	MOVE.L	#$00002C00,D0
+	JSR	-$0270(A6)	;CopyMem()
+	BSR.W	LB_0184
+	BNE.B	LB_009E
+	ADDQ.W	#1,D6
+	CMPI.W	#$0050,D6
+	BNE.B	LB_00AE
+	BRA.B	LB_009E
+LB_00DA	MOVE.L	A1,A5
+	MOVE.L	#$00002C00,D0
+	MOVEQ	#2,D1		;chip mem
+	JSR	-$00C6(A6)	;AllocMem()
+	MOVE.L	D0,D7
+	LINK.W	A4,#$FFD0
+	MOVE.L	A5,A0
+	MOVE.L	A4,A1
+	MOVEQ	#$2F,D0
+	JSR	-$0270(A6)	;CopyMem()
+	CLR.L	$14(A4)
+	CLR.L	$18(A4)
+	LEA	trackname(PC),A0
+	MOVEQ	#1,D0
+	MOVE.L	A4,A1
+	MOVEQ	#0,D1
+	JSR	-$01BC(A6)	;OpenDevice()
+	TST.L	D0
+	BNE.B	LB_0178
+	MOVEQ	#0,D6
+LB_0114	MOVE.W	D6,D0
+	ANDI.W	#$00F0,D0
+	MOVE.W	D0,$00DFF180
+	BSR.B	LB_0138
+	BSR.B	LB_0184
+	BNE.B	LB_0178
+	ADDQ.W	#1,D6
+	CMPI.W	#$0050,D6
+	BNE.B	LB_0114
+	LEA	LB_027F(PC),A0
+	BSR.W	LB_01D8
+	BRA.B	LB_0178
+LB_0138	MOVE.W	#$0002,$001C(A5)
+	MOVE.L	D7,$0028(A5)
+	MOVE.L	#$00002C00,D0
+	MOVE.L	D0,$0024(A5)
+	MULU.W	D6,D0
+	MOVE.L	D0,$002C(A5)
+	MOVE.L	A5,A1
+	JSR	-$01C8(A6)	;DoIo()
+	MOVE.B	$001F(A5),D0
+	BNE.B	LB_0160
+	RTS	
+LB_0160	LEA	LB_0245(PC),A0
+	LEA	$0009(A0),A1
+	EXT.W	D0
+	BSR.B	LB_01C0
+	LEA	$0015(A0),A1
+	MOVE.L	D6,D0
+	BSR.B	LB_01C0
+	BSR.B	LB_01D8
+	BNE.B	LB_0138
+LB_0178	MOVE.L	#$F80000,$80.w
+	TRAP	#0
+LB_0184	MOVE.W	#$000B,$001C(A4)
+	MOVE.L	#$00002C00,D0
+	MOVE.L	D7,$0028(A4)
+	MOVE.L	D0,$0024(A4)
+	MULU.W	D6,D0
+	MOVE.L	D0,$002C(A4)
+	MOVE.L	A4,A1
+	JSR	-$01C8(A6)
+	MOVE.B	$001F(A4),D0
+	BNE.B	LB_01AC
+	RTS	
+LB_01AC	LEA	LB_0297(PC),A0
+	LEA	$0015(A0),A1
+	MOVE.W	D6,D0
+	BSR.B	LB_01C0
+	BSR.B	LB_01D8
+	BNE.B	LB_0184
+	MOVEQ	#-$01,D0
+	RTS	
+LB_01C0	DIVU.W	#10,D0
+	MOVE.B	#$30,(A1)
+	ADD.B	D0,(A1)
+	SWAP	D0
+	MOVE.B	#$30,1(A1)
+	ADD.B	D0,1(A1)
+	RTS	
+LB_01D8	MOVE.L	A0,-(A7)
+	CLR.L	$24(A4)
+	CLR.L	$24(A5)
+	MOVE.W	#9,$001C(A4)
+	MOVE.W	#9,$001C(A5)
+	MOVE.L	A4,A1
+	JSR	-$01C8(A6)	;DoIO()
+	MOVE.L	A5,A1
+	JSR	-$01C8(A6)	;DoIO()
+	LEA	intname(PC),A1
+	JSR	-408(A6)
+	MOVE.L	D0,A6
+	MOVE.L	(A7)+,A0
+	MOVEQ	#0,D0
+	MOVEQ	#50,D1		;alert height
+	JSR	-90(A6)		;DisplayAlert()
+	MOVE.L	$0004.W,A6
+	TST.L	D0
+	RTS	
+dosname	dc.b	"dos.library",0
+trackname dc.b	"trackdisk.device",0
+intname	dc.b	"intuition.library",0
+LB_0245
+	DC.B	0
+	DC.B	$DC,$14,'Error xx on track xx',0
+	DC.B	'O',0
+	DC.B	$B4,'#LEFT = Retry    RIGHT = Quit',0
+	DC.B	0
+LB_027F
+	DC.B	0
+	DC.B	$C7,$1C,'Diskcopy complete !',0
+	DC.B	0
+	DC.B	0
+LB_0297
+	DC.B	$B8,$14,'Write error track xx !',0
+	DC.B	1,0
+	DC.B	$9A,'#LEFT = Retry    RIGHT = Quit',0
+	DC.B	0
+LB_02D3
+	DC.B	0
+	DC.B	$82,$14,'Please insert destination disk in DF0:'
+	DC.B	0
+	DC.B	1,0
+	DC.B	$82,'#LEFT = Write disk       RIGHT = Cancel',0
+	DC.B	0,0,0,0
+	DC.B	'CopyBootBlockIII by Oliver Wagner - Landsberge 5'
+	DC.B	' - 4322 Sprockh',$F6,'vel - West Germany <> ',$A9,' '
+	DC.B	'by Ultimate Computer Arts 1989 <> During boot: L'
+	DC.B	'EFT = df0: to df0: * RIGHT = df0: to df1:'

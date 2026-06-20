@@ -1,0 +1,472 @@
+@database PdaLink.guide
+@author "Richard Körber"
+@(c) "1998-2010 Richard Körber"
+@$VER: PdaLink.guide V2.2 (26.3.2010)
+@wordwrap
+
+@Node Main "Table Of Contents"
+
+                       _   _
+                      |_) | \\  /\\    |   | |\\ | |_/
+                      |   |_/ /--\\   |__ | | \\| | \\
+
+                        Amiga connects to the Palm          v2.2
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+                                                                           
+                          @{B}-- TABLE OF CONTENTS --@{UB}
+
+
+        1.   @{" Introduction       " link Einleitung}  how it all started
+        2.   @{" Requirements       " link Required}  what do you need?
+        3.   @{" Copyright          " link Copyright}  distribution
+
+        4.   @{" Installation       " link Installation}  not yet completed
+        5.   @{" Usage              " link Usage}  not yet completed
+        6.   @{" Env Variables      " link EnvVars}  configurations
+
+        A.   @{" MailingList        " link MailingList}  join today
+        B.   @{" Address            " link Adresse}  of the author
+        C.   @{" F A Q              " link FAQ}  questions and answers
+        D.   @{" History            " link History}  all changes
+        E.   @{" Credits            " link Credits}  Thank you!
+
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+  PdaLink © 1998-2010 Richard "Shred" Körber -- LGPLv3 licensed
+
+@EndNode
+@Node Einleitung "Introduction"
+
+@{B} I N T R O D U C T I O N @{UB}
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+
+Once upon a time, a close friend of mine showed me his new Palm Pilot
+Personal. I was impressed of this cute little thing. The only drawback
+was the missing IR interface, so I decided not to buy one yet, and
+finally I forgot it again.
+
+Then, in the March issue of a major German computer magazine, I read
+about 3Com's announcement of the Palm III. The Palm III has an IR
+interface built in, so it was the stuff dreams are made of. :-)
+
+I got more and more curious about the Palm Pilot series, the existing
+large software pool, its hardware and its operating system. I found
+out that the Palm is a kind of 'Amiga lite'. It has an 68000 core.
+Even more, the Palm outperforms a native Amiga 500 due to its 16MHz
+clock. The PalmOS is lean and has preemptive multitasking. I still
+wonder why there are only a few Amiga users who know about it. It is
+an "Amiga" that you can put in your pocket and have it around you
+wherever you are. ;-)
+
+Of course, the Amiga is not supported by 3Com. The only chance we
+had until now was to buy the MacPack and run it on ShapeShifter, or
+to use all the free Un*x sources on NetBSD. Both solutions are not
+very satisfying.
+
+So I had a very close look at the freely available pilot-link source by
+Kenneth Albanowski (thank you very much, Kenneth). Anyhow, I disliked to
+do just another Un*x port. They are slow, memory consuming and require
+the ixemul.library. In other words: they suck a big deal, compared to
+native Amiga applications. (Of course, they are still better than
+nothing. ;-)
+
+So PdaLink is not just a Un*x port. I wrote it from the scratch new,
+with a new (and partially unconventional) concept and use of AmigaOS
+features.
+
+I hope you will enjoy it as much as I do!
+
+
+                                           Richard Körber, in 1998
+
+@EndNode
+@Node Required "Requirements"
+
+@{B} R E Q U I R E M E N T S @{UB}
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+
+PdaLink requires:
+
+   · AmigaOS 2.04 or higher, and at least 1MB of RAM. If you have
+     large files on your Palm, then you must also have more RAM on
+     your Amiga, since all files are cached in RAM. I also suggest
+     to use a harddisk.
+
+   · 68020 or higher (no FPU or MMU). Special 68000 library included.
+
+   · A 3Com Palm III, Palm IIIx, Palm V, or compatible, with PalmOS
+     2.0 or higher.
+
+     PalmOS 1.0 is not supported. The required workarounds would be
+     implemented rather quickly, but there are more important things.
+
+   · The Palm cradle. Currently, simple serial cables without HotSync
+     button are not supported. Also, do not modify your cradle to save
+     battery power! PdaLink won't work then.
+
+   · A serial interface the Palm cradle is connected with. The serial
+     port must be able to use 8N1 at 9600 baud. It may also support
+     higher rates up to 115200. If you use the internal port, I suggest
+     to use the 8n1.device for better performance. BaudBandit.device
+     should work as well, but this is untested.
+
+   · Thanks to a patch by Chris Hodges, you can also connect your
+     Palm via USB and Poseidon.
+   
+@EndNode
+@Node Copyright "Copyright"
+
+@{B} C O P Y R I G H T @{UB}
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+@{B} COPYRIGHT @{UB}
+@{B}===========@{UB}
+
+   PdaLink is Copyright © 1998-2010 Richard "Shred" Körber.
+   
+   The software is released as Open Source Software. The LGPLv3 (Lesser
+Gnu Public License Version 3 or later) license applies to the source
+code.
+
+   For the source code and the latest packages, visit the development
+web site at: http://pdalink.shredzone.org
+
+
+@EndNode
+@Node Installation "Installation"
+
+@{B} I N S T A L L A T I O N @{UB}
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+The document is not completed here. Just a quick guide:
+
+ -> libs                To your system's LIBS:
+                        Choose between the 68020 version and the
+                        68000 version (pdalink.library_000)
+ -> arexx               Some ARexx examples, not required
+ -> developer           A developer should know where to place them
+ -> examples            Only interesting for developers
+ -> PdaLink.guide       To where you collect good documentations ;^)
+ -> PdaTransfer         To C: or any other directory within Shell path
+ -> PdaTime             To C: or any other directory within Shell path
+
+@EndNode
+@Node Usage "Usage"
+
+@{B} U S A G E @{UB}
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+The document is not completed here. Just a quick guide:
+
+
+@{B}  PdaTime  @{UB}
+@{B}-----------@{UB}
+
+  Shows the Palm time
+
+    SHOW/S         Shows the Palm time
+
+    DEVICE/K       Serial device to use (def. serial.device)
+    UNIT/K/N       Unit of this device (def. 0)
+    MAXBAUD/K/N    Maximum baud rate to use (def. 28800)
+
+
+@{B}  PdaTransfer  @{UB}
+@{B}---------------@{UB}
+
+  Makes backups of your Palm databases, or installs new software
+
+    BACKUP/S       Backup the database (DIR)
+                        If a database entry was not changed compared
+                        to the backup, it will not be read. If a
+                        database has been deleted from the Palm,
+                        its file will be deleted as well.
+
+    RESTORE/S      Restore a backup (DIR)
+                        Put all database files back to the Palm.
+                        Also, see @{" FAQ " link FAQ}.
+
+    INSTALL/S      Install a file (FILE)
+                        Installs a .prc or .pdb file. If the database
+                        does already exist, it will be deleted.
+
+    MERGE/S        Merge a file (FILE)
+                        Installs a .prc or .pdb file. If the database
+                        does already exist, it will be merged.
+
+    FETCH/S        Fetch a database (NAME)
+                        Read a database to a .prc or .pdb file.
+
+    DELETE/S       Delete a database (NAME)
+                        Deletes a database from the Palm
+
+    LIST/S         List all databases
+                        A list of all databases in RAM and ROM
+
+    PURGE/S        Purge deleted records
+                        Remove all deleted records from Palm RAM
+
+    DIR/K          Backup directory (if required)
+                        (DIR): The directory for the backup files
+
+    FILE/K         Filename (if required)
+                        (FILE): Name of a .prc or .pdb file
+
+    NAME/K         Database name (if required)
+                        (NAME): Name of a database entry of the
+                        Palm (case sensitive!)
+
+    DEVICE/K       Serial device ("serial.device")
+    UNIT/K/N       Serial unit (0)
+    MAXBAUD/K/N    Maximum baud (57600)
+
+ Examples:
+
+    Backup Palm data using 8n1.device
+
+      PdaTransfer BACKUP DIR Work:PalmArchive SD=8n1.device
+
+
+    Restore the backup on duart.device unit 1 and 115200 bps
+
+      PdaTransfer RESTORE DIR Work:PalmArchive SD=duart.device SU=1 SB=115200
+
+
+    Install a new program
+
+      PdaTransfer INSTALL FILE Work:PalmSoftware/demosoft.prc
+
+
+    Delete a database entry
+
+      PdaTransfer DELETE NAME "ExampleDB"
+
+
+    List all database entries
+
+      PdaTransfer LIST
+
+
+@EndNode
+@Node EnvVars "Env Variables"
+
+@{B} E N V   V A R I A B L E S @{UB}
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+Since V2.0, PdaLink supports these env variables:
+
+  @{B}PDALINK_DEVICE@{UB}        The device to be used by default. If not given,
+                        "serial.device" will be used.
+
+  @{B}PDALINK_UNIT@{UB}          Serial unit to be used by default. If not given,
+                        "0" will be used.
+
+  @{B}PDALINK_RATE@{UB}          Default baud rate to be used. If not given,
+                        "57600" will be used.
+
+
+@{B}Example:@{UB} add these commands into your user-startup, to use your MFC
+board, serial slot 1, at 115200 baud:
+
+  setenv PDALINK_DEVICE duart.device
+  setenv PDALINK_UNIT 1
+  setenv PDALINK_RATE 115200
+
+This are only default settings, which can be overridden as usual (e.g.
+by the PdaTransfer's SD, SU and SB parameters).
+
+@EndNode
+@Node MailingList "MailingList"
+
+@{B} M A I L I N G L I S T @{UB}
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+
+You are invited to join the Amiga-PDA mailing list. This mailing list is
+made for anyone who owns a Palm @{B}and@{UB} an Amiga.
+
+Just send a mail to  @{FG FILL}amiga-pda-subscribe@yahoogroups.com@{FG TEXT}  .
+You don't need to write anything into the subject line or into the body.
+
+After you have joined, you can post to this list by sending a mail to
+@{FG FILL}amiga-pda@yahoogroups.com@{FG TEXT} . Please note that you @{B}must@{UB} join the list and
+you @{B}must@{UB} use the address you have subscribed with, if you want to
+contribute. This is necessary to keep the list spam free.
+
+You can unsubscribe anytime, just send another mail to
+@{FG FILL}amiga-pda-unsubscribe@yahoogroups.com@{FG TEXT} .
+
+The list has a very low traffic, but it still exists.
+
+
+@EndNode
+@Node Adresse "Address"
+
+@{B} A D D R E S S @{UB}
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+You can reach me through one of the following ways:
+
+@{B} E MAIL @{UB}
+@{B}--------@{UB}
+
+   Use e-mails if ever possible. My address is:
+
+        amiga@shredzone.de
+
+@{B} WORLD WIDE WEB @{UB}
+@{B}----------------@{UB}
+
+   Updates are available through the project's web site at:
+
+        http://pdalink.shredzone.org
+
+@EndNode
+@Node FAQ "FAQ"
+
+@{B} F A Q @{UB}
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+@{B}I always get a 'bad baud rate' error. What can I do?@{UB}
+  Your serial device is not able to generate the baud rate that was
+  suggested by the Palm. Try to lower the maximum baud rate
+  that is used by PalmLink. A maximum baud rate of 9600 should work
+  in any case.
+
+@{B}My Palm always falls back to 57600, though I set 115200 bps.@{UB}
+  115200 bps is only supported with PalmOS 3.2 or higher.
+
+@{B}I have modified my cradle to save the battery power.@{UB}
+  By this modification, the DSR line is cut. The DSR line is used by
+  the PdaLink library, because there is NO way on the Amiga to do
+  CTS/RTS handshaking without checking the DSR line as well. This is
+  an AmigaOS restriction. You must fix this line if you want to use
+  PdaLink!
+
+@{B}I have some problems with installing Palm files or restoring backups.@{UB}
+  BlitzBlank seems to be the troublemaker. Remove it from your WBstartup
+  or startup-sequence. This is advisable, anyhow, since the BlitzBlank
+  startup code is rather buggy. ;(
+
+@{B}On restore, some files fail with error code 9@{UB}
+  This means that the file does already exist and is not replaceable.
+  Just ignore this error. It is harmless.
+
+@EndNode
+@Node History "History"
+
+@{B} H I S T O R Y @{UB}
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+V2.2     (26.03.2010)
+        · Maintenance release. Brought the documentation up to date.
+          Announced the new development site at
+          http://pdalink.shredzone.org
+
+V2.1     (15. 6.2004)
+        · Chris Hodges added a patch to connect to Palm devices via
+          USB by using Poseidon.
+        
+V2.0     (17. 7.2001)
+        · PalmLink was violating Palm Inc. trademarks. I have renamed
+          the library to pdalink, and corrected all ARexx function
+          names and ENV variables. I am sorry for the inconvenience.
+
+V2.0     ( 7. 1.2000)
+        · Millennium release :-)
+        · PLTAG_SerialTimeout can now be set to 0. In this case, no
+          timeout checking will occur.
+        · Added env variables PALMLINK_DEVICE, PALMLINK_UNIT and
+          PALMLINK_RATE to set the default connection parameters
+        · Raised default baud rate to 57600. Most Amiga should
+          support this.
+        · Added 115200 baud to the internal list of Palm rates.
+          (Since PalmOS 3.2, this rate is supported! :)
+        · Added PL_GetBaudRate(), to read the baud rate negotiated
+          with the Palm. Bumped to V2 because of this new method.
+          [Ralph Torchia]
+        · Added PALM_GetBaudRate ARexx command
+        · Bugfix: PALM_LastError required three parameters instead
+          of one.
+        · Forgot to document PLTAG_AbortMask, sorry
+        · Reviewed the whole developer documentation, since a lot of
+          people complained about inconsistencies.
+
+V1.2     (24. 4.1999)
+        · Bugfix: A wierd, magic number was written into .prc and .pdb
+          files if there was no backup time available. Now, 0 is written
+          as it should. PalmLink will correct bad files while reading.
+          I suggest to make an entire backup of your Palm, and restore
+          the backup.
+
+V1.1     (28. 2.1999)
+        · Added ARexx port and basic functionalities
+        · Some minor bug fixes
+        · Removed bugs in pragma file
+        · 68000 library included
+
+V1.0     (25. 9.1998)
+        · Fixed the maxbaud recognition, now BSC MultiFace cards are
+          working as well [a lot of people complained]
+        · PalmTransfer can be aborted with CTRL-C. Anyhow, you have
+          to press it twice in some situations... ;-)
+
+V0.7beta ( 1. 7.1998)
+        · Fixed an Enforcer hit in PalmTransfer. It was quite serious,
+          but the backups are all right. [Jens Gelhar]
+        · Added Assembler include files
+        · Added Amiga-E include files [Dominique Dutoit]
+
+V0.6beta (21. 6.1998)
+        · First release
+        · Still beta, please be careful! Before you use PalmLink, try
+          to make a backup of all Palm data using an original 3Com
+          software, or be prepared to lose all your data.
+
+@EndNode
+@Node Credits "Credits"
+
+@{B} C R E D I T S @{UB}
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+I wish to thank all those people (in no special order) :
+
+I also want to credit:
+
+  @{B} Dominique Dutoit @{UB}   for the AmigaE include files
+
+  @{B} Kenneth Albanowski @{UB} for pilot-link (a packet for Un*x). It helped me
+        a LOT, though my library was written from the scratch new.
+
+  @{B} Frank Wille @{UB}        for PhxAss, the best FreeWare assembler available
+
+  @{B} Dietmar Eilert @{UB}     for his great Editor GoldED
+
+And of course, I want to thank all my beta testers, everyone on the
+amiga-pda mailing list, and all the people who sent me a mail! Keep on! :-)
+__________________________________________________________________________
+@{FG SHINE}¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯@{FG TEXT}
+
+            //
+        \\\\ //   -- Amiga - Dream Machine --
+         \\X/
+
+@EndNode
+
+@c END

@@ -1,0 +1,10 @@
+Short:        Remove ifdef'd sections from a file.
+Author:       Dave Yost
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Useful program for removing ifdef'ed sections from a file while otherwise
+leaving the file alone.  Allows one source to be used as a porting base for
+many machines, without shipping the entire source to every source customer.
+(Preprocess for their machine and send them only the source for their
+specific machine).  

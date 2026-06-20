@@ -1,0 +1,65 @@
+
+
+			WindowPrinter
+			=============
+
+				by M.Meany
+				----------
+				© April 1991
+				------------
+
+ This program and it's source are Public Domain.
+
+ I accept no responsability for damage caused through use of this program.
+
+ This program was written to allow graphical printer dumps to be obtained
+from programs that open windows, but have no print option. At present the
+graphics are scaled to full printer page width, the printer device handaling
+the vertical scaling.
+
+ You must ensure that the printer preferences are set up to accomodate your
+printer, failure to do so can lead to Meditations or random patterns being
+printed.
+
+ Usage
+ -----
+
+ The program can be launched from the WorkBench by double clicking on its
+icon or from the CLI by entering its full path name. Once running a window
+opens roughly in the middle of the screen. Clicking in any other visible
+window will cause that window to be printed.
+
+ Credits
+ -------
+
+ I would like to thank Dave Edwards for his exec_support.i assembly file and
+Steve Marshall for getting me interested in devices in the first place.
+
+ Complaints, Critisisms and Suggestions
+ --------------------------------------
+
+ Write to :
+		Mark Meany,
+		1 Cromwell Road,
+		Southampton,
+		Hant's
+		SO1 2JH
+
+ I may be willing to customise this program to more specific needs.
+
+ NOTE : THIS PROGRAM WILL NOT PRINT ITS OWN WINDOW !
+
+ Other Stuff
+ -----------
+A68K Assembler package -- includes a purpose written, Intuitive front end.
+			  makes using A68K as easy as Devpac ( well almost ).
+WORDS --- 3 programs to help solve/create crosswords.
+PPPlay --- NoiseTracker replay program. Runs from WB and plays crunched files
+ArpDecrunch --- File decruncher, runs from WB and uses ARP filerequester.
+PPMuchMore --- Attempt at a multi-file viewer, that displays crunched files.
+
+ Source for all these programs and many more besides is available from
+
+ Amiganuts United, 169 Dale Valley Road, Southampton, Hant's. Ask about the
+ACC discs.
+

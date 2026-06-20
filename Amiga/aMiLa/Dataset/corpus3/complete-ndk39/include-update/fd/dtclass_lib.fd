@@ -1,0 +1,12 @@
+* "dtclass.class"
+##base _DTClassBase
+##bias 30
+##public
+*
+* dtclass.class (V40) fd -- Created by Harry Sintonen.
+* This file is public domain.
+*
+*--- functions in V39 or higher (distributed as Release 3.0) ---
+*
+ObtainEngine()()
+##end

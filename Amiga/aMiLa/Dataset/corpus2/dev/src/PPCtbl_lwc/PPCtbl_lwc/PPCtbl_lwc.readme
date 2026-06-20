@@ -1,0 +1,20 @@
+Short:    TBL's 3D-converter for LightWave (PPC)
+Author:   Daniel Hansen, Andreas R. Kleinert (port)
+Uploader: Andreas_Kleinert@t-online.de
+Type:     dev/src
+
+3D scene converter for AMIGA and PC. Used in TBL's
+demo captured dreams etc... Supports ALOT of things like:
+
+Texture,Bumpmapps,Reflection mapps,animated mapps.
+Morphing, movements, flares blah blah blah...:)
+
+***
+
+Recompiled for powerUP (TM). ELF module can be
+started from Shell by using SAS/C's "RunElf"
+or by installing the new LoadSegPatch of ppc.library.
+
+--
+ARK, 20/Feb/98
+

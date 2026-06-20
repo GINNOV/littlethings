@@ -1,0 +1,37 @@
+Edlib           copyright 1988  Edwin Hoogerbeets 
+Version 1.0     04/08/88
+
+Some time ago, I noticed a lack of certain useful functions in the Manx
+C libraries that were mentioned in the Harbison and Steele C reference
+manual. So, I wrote them. Since then, I have added a few of my own as
+well as some from other people. Now, I think it's big enough to be
+useful to others, so here it is!
+
+This is the source and executable to the edlib runtime libraries. They
+are for Manx 3.6a. (I have tried some of these functions with 3.4b when
+I used to use that and they worked fine) A makefile is included with the
+source. Two version of the library are provided: ed.lib for your normal
+programming needs and the ed32.lib for those extra special 32 bit
+programs.
+
+This software collection is freely redistributable as long as no charge,
+other than reasonable copy fees, is levied for them.
+
+Thanks to Daniel J. Barrett for some of these functions, and to Henry
+Spencer for getopt.
+
+If you find any bugs, or have any other nifty-neato functions that you
+find useful, please mail them to me at:
+
+{backbone}!utai!{utzoo,utcsri}!hcr!edwin   until September '88
+{backbone}!watmath!trillium!ehoogerbeets   Sept '88 to Dec '88
+
+
+------ --------- = -------------------------------------------
+Edwin (Deepthot)                      Waterloo co-op student, HCR Corporation
+Hoogerbeets		                   2A computer science and psychology
+utai!{utzoo,utcsri}!hcr!edwin                                Me Tarzan, Unix.
+                    edwin@hcr       //           Freudian slips? This message
+or:                                //               contains no Freudian sex.
+...!hcr!MsgPort!edwin          \\ //   Amiga        Glider pilots are experts
+A B2000 running UUPC            \X/  Enthusiast             at keeping it up!

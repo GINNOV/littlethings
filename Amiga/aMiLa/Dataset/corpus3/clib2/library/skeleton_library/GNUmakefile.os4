@@ -1,0 +1,80 @@
+#
+# $Id: GNUmakefile.os4,v 1.5 2006-06-22 09:30:25 obarthel Exp $
+#
+# :ts=4
+#
+# Amiga shared library skeleton example
+# Copyright (c) 2002-2015 by Olaf Barthel <obarthel (at) gmx.net>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#   - Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#
+#   - Neither the name of Olaf Barthel nor the names of contributors
+#     may be used to endorse or promote products derived from this
+#     software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+WARNINGS = \
+	-Wall -W -Wshadow -Wpointer-arith -Wsign-compare -Wmissing-prototypes \
+	-Wundef -Wbad-function-cast -Wmissing-declarations -Wconversion
+
+CC = ppc-amigaos-gcc
+CPU =
+OPTIONS = -DNDEBUG -mcrt=clib2-ts
+OPTIMIZE = -O
+DEBUG = -ggdb
+CRTBEGIN = /usr/local/amiga/ppc-amigaos/clib2/lib/crtbegin.o
+CRTEND = /usr/local/amiga/ppc-amigaos/clib2/lib/crtend.o
+
+###############################################################################
+
+CFLAGS = $(WARNINGS) $(OPTIMIZE) $(DEBUG) $(CPU) $(OPTIONS) -I/V/include -I. -Iinclude
+
+###############################################################################
+
+OBJS = \
+	lib_base.o lib_user.o skeleton_68k.o
+
+###############################################################################
+
+LIBS = $(CRTBEGIN) -lc -lamiga $(CRTEND)
+
+###############################################################################
+
+all: skeleton_68k.c skeleton.library
+
+###############################################################################
+
+skeleton.library: $(OBJS)
+	$(CC) -o $@.debug $(OBJS) $(CFLAGS) -Wl,--cref,-M,-Map=$@.map \
+		-nostartfiles -nostdlib $(LIBS)
+	ppc-amigaos-strip -R.comment -o $@ $@.debug
+
+###############################################################################
+
+# This will rebuild the library header files and stub code when necessary
+skeleton_68k.c : skeleton_lib.sfd skeleton.xml
+	idltool --proto --interface --inline skeleton.xml
+	fdtrans --c68k skeleton_lib.sfd
+
+###############################################################################
+
+clean:
+	-rm -f *.o *.debug *.map skeleton.library

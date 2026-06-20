@@ -1,0 +1,231 @@
+*****************************************************************
+
+                        AboutClock V2.01
+
+                   Copyright 1993 Stuart Davis
+                       All Rights Reserved
+
+*****************************************************************
+
+Contents
+                           Distribution
+                           Description
+                           Usage
+                           Development
+                           Author Details
+
+-----------------------------------------------------------------
+
+Distribution
+
+     AboutClock  V2.01 is Shareware  and  NOT  Public Domain, and
+as  such  a  small  registration  fee  of 5  pounds  sterling  is
+required  if  you  decide  that  AboutClock V2.01  should  be  in
+your software collection. This will entitle  you to future  major
+upgrades.
+
+     Payment should be in the form of a crossed cheque drawn from
+a UK mainland bank payable to the author.
+
+     The  distribution  of   AboutClock  V2.01  MUST  be  intact,
+unaltered, and include the following files :
+
+                    AboutClock
+                    AboutClock.info
+                    AboutClock.doc
+
+-----------------------------------------------------------------
+
+Description
+
+     Do you remember the good old days when you asked someone the
+time and they  said, "It's nearly five" and not "It's 4:57 and 28
+seconds" ?
+
+     Well now there is a Workbench clock that does just that! 
+
+     AboutClock  V2.01  is  an  unobtrusive  clock  that  nestles
+neatly at the top  of Workbench, telling  the time  in words in a
+window  that  re-sizes  itself  to  account  for  the  length  of
+message required.
+
+     Also,  for short-sighted Amiga users, there is the option to
+have AboutClock V2.01 speak the time!
+
+     Not  only  is  AboutClock V2.01  simple  and functional, but
+it is compatible with all versions of Workbench!
+
+-----------------------------------------------------------------
+
+Usage - CLI/startup-sequence
+
+     type "run" like this to run the program in the background:
+     
+     run <nil: >nil: path:AboutClock
+     
+     To enable  AboutClock  to  read  it's  preferences, the icon
+     must be present in the  same  directory as the main program.
+
+
+Usage - WorkBench
+      
+     Double click the icon. That's all there is to it.
+     
+
+     AboutClock  V2.01  will  appear  in  the  top left corner of
+the Workbench screen.
+
+     AboutClock  V2.01  now has  two  menus,  PROJECT and SPEECH.
+
+     The Project menu gives the options of ABOUT and QUIT, which
+give details of the author, and quit the  program respectively.
+
+     The  Speech  menu  has TIME?... and  SPEECH. Selecting Time?
+will  make  AboutClock V2.01 tell you the current time, using the
+Amiga's incredible  built in speech  facility, where as selecting
+Speech will force  AboutClock V2.01 to tell you the time whenever
+it changes. This will be indicated  by a tick next to the option.
+
+     In order to use  the speech option,  it is required that the
+following files are present on your setup:
+
+    DEVS:narrator.device
+         audio.device (WB1.2/1.3 only.)
+            
+    LIBS:translator.library
+         icon.library
+      
+If the program fails to  find  these  files it won't allow speech
+after telling you the problem. WB2.x users will find all but 1 of
+these files on their  original  WB  disks. The audio.device is in
+the ROM for these machines.
+
+   * WB3.0 users note :- Commodore have  deemed in their infinite
+                         strangeness  not  to  include  the files
+                         narrator.device  and  translator.library
+                         on the  WB disks!?  Why?  Well I suppose
+                         that they decided  they  have power over
+                         the Amiga voice  and  wanted  to silence
+                         it. (Ahhh...shame on you CBM!)
+                         So I have therefore started the anti-CBM
+                         RAVe motion, (Return the Amiga's VoicE).
+                         This is to persuade  the big C to return
+                         the lost library and device files to the
+                         poor deprived WB3  users  who have never
+                         heard sexy!?!? Paula speak.
+                         If you are a  WB3  owner  then the files
+                         will work on  your  machine  and all you
+                         have to do is get  them from a friend or
+                         a PD library. Then you can hear Paula in
+                         her proudest moment!(PC owners suck...!)
+
+-----------------------------------------------------------------
+
+Icon Tool Types
+
+     AboutClock now checks the  icon for the following recognised
+tool types:
+
+        POSX=x        This can be set  to  any number but for the
+                      program to open its window, the coords must
+                      reside somewhere within the screen.
+                      Default=0
+
+        POSY=y        Ditto..
+
+        SPEECH=ON|OFF An "ON" or "on"  will  turn on regular time
+                      updates  whenever  the  time  changes.  Any
+                      other string value will be ignored.
+
+     
+-----------------------------------------------------------------
+
+Development
+
+V1.12
+     Some  errors  related to  telling the  time occur at certain
+times  of the day.  When  AboutClock  resizes  itself, all active
+processes receiving user input on Workbench are  resized, notably
+ED  and  SID V1.06, when used under Workbench 1.3 which can prove
+to be annoying, but not dangerous.
+     This version NOT released to the public.
+
+V1.14
+     Tells the correct time without errors.  About and Quit menus
+added.  Opens too  large  a  window, and crashes the machine when
+About is selected,  under  Workbench 1.3.  No  problems noted for
+Workbench 2 and above.
+     This version released prior to testing on Workbench 1.3.
+
+V1.14b
+     Window  size  corrected,   and  selecting  About  no  longer
+crashes  the machine,  but  text  is  not  visible   (applies  to
+Workbench 1.3 only).
+
+V1.15
+     About  text  is  now  visible.  Error corrected in  telling,
+the time around 9am which was detected in V1.14b.
+
+V1.16
+     About requester may be selected as often as you wish with no
+delay in updating it. 
+
+V2.01
+     AboutClock is alive! Version 2.00 includes speech. Also, the
+about  requestor  has  been  improved.  It also  works on WB3 but
+requires a copy of a narrator.device to be in the Devs directory,
+which is not supplied with WB3.
+
+     AboutClock V2.01 was  developed  on  a  HiQ Tower containing
+an  Amiga 500  Plus,  4Mb  of  16 Bit Fast RAM, 2Mb Chip RAM, SSL
+68020 Accelerator Board with 1Mb of 32 Bit Fast RAM,twin 3.5 inch
+disk drives, a 105 Mb, 11ms  Quantum  hard  disc drive, a Citizen 
+Swift 24C printer,  two  Zipstick  joysticks, a Technosound Turbo
+sampler  and a  Naksha Mouse.  It  was written in 100%  assembler
+using the most excellent HiSoft Devpac V3.04. Whew..!!
+
+     For Workbench  1.3  compatibility, it was tested on an Amiga
+500 with 4.5Mb 16 bit Fast RAM  and 0.5Mb  Chip RAM switchable to
+4Mb  16  bit  Fast RAM  and  1Mb Chip  RAM,  twin  3.5 inch  disk
+drives,  42Mb  GVP hard disc drive,  SSL 68020  Accelerator Board
+with  1Mb  of  32  bit  Fast RAM  and a  68881 FPU,  and a KCS PC
+Emulator.
+
+     For  Workbench 3  compatibility, it was tested on  an  Amiga
+1200,  2Mb Chip RAM,  4Mb Fast RAM, 68881 FPU, twin 3.5 inch disk
+drives, and a 60Mb hard disc drive.
+
+     Although  not  every  possible configuration of hardware has
+been  tested, (send me an A4000T and I will test AboutClock V2.01
+on it!), it  is  extremely  unlikely  that  AboutClock V2.01 will
+not work on your machine.
+
+     Please report  any errors / problems  to the author when you
+register your copy of AboutClock.
+
+     [ If you don't register, you can't moan ]
+
+     Thanks  go  to  Howard  Manwaring  BEd  MSc  MBCS  CEng  and
+Liz Warriner BMus Dip  Microprocessors  & Prod Des  of West Herts
+College for assistance  with  the  debugging of  the actual code,
+Melville Carrie for  support and for the use  of  his Amiga 1200,
+and Colin Etwell for the icon,  documentation and beta testing on
+his 1.3 Amiga 500.
+
+-----------------------------------------------------------------
+
+Author Details
+
+     Stuart Davis
+     132 Rempstone Road
+     Merley
+     Wimborne
+     Dorset
+     BH21 1SX
+                                //
+     England                  \X/ PC's are crap,
+                                    Archimedes are amoebas,
+                                      There's only one choice,
+                                        And that's the Amiga...
+
+*****************************************************************

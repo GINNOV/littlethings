@@ -1,0 +1,29 @@
+
+===============================  MCAsm  ======================================
+
+IMPORTANT  NOTICE:   This program is (c) Copyright by LT liljetoft, but can
+be FREELY DISTRIBUTED, providing that the following rules are respected.
+
+  - No change is made to the program nor to the accompaning documentation.
+
+  - Every  form  of distribution is allowed and encouraged, but no fee can
+    be charged for this program except for, possibly, the cost of magnetic
+    media.
+
+  - The package is always distributed in its complete form consisting of 4
+    files:     'MCAsm',   'MCAsm.DOC',   'This file came from.TXT'   and
+    'Contents.TXT'.
+
+  - If you find this program useful please send $15 to me on the
+    following address:
+    
+    LT liljetoft
+    Kadettgatan 54C
+    S-254 55 Helsingborg
+    Sweden
+
+
+By  copying,  distributing  and/or  using  the  program  you  indicate your
+acceptance of the above rules.
+
+==============================================================================

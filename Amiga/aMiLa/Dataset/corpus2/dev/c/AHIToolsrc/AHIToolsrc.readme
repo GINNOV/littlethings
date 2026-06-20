@@ -1,0 +1,15 @@
+Short:        Source Code to AHI B&Pipes Tool
+Author:       gi@gj-cent.demon.co.uk (Giles Jones)
+Uploader:     gi gj-cent demon co uk (Giles Jones)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+Source code to AHI Tool, a sample player for Bars & Pipes
+and a sound card using AHI.
+---------------------------------------------------------
+
+The code is freely distributable and may be edited and
+reused under the condition that the final product is
+freeware and I am credited where due.
+
+---------------------------------------------------------

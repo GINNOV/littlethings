@@ -1,0 +1,78 @@
+Short:          AsmStartup2.7 system by Elven 11
+Author:         aspano@dsi.unive.it (Manta/Elven 11)
+Uploader:       aspano@dsi.unive.it
+Type:           dev/asm
+Version:        2.7
+Requires:       68000, OS1.2, OCS or better.
+
+
+  GENERAL
+
+AsmStartup2.7 is a powerful startup system for all assembler coders intended
+to make OS-killer programs in a friendly and compatible way.
+The package contains, together with a very detailed guide, a full programming
+enviroment. Just add a STARTUP: assign to the directory Startup and try it!
+You won't regret...
+
+
+  FEATURES
+
+This system is designed for being as general purpose as possible, i.e. it does
+not include long and useless startup routines for checking CPU, hardware and
+print the configuration, but it assures a friendly take over of the OS in ANY
+situation of memory, display and CPU.
+
+A major feature is the presence of an include file full of complex and useful
+macros and routines for your copperlists and for hardware control: load AGA
+palettes on color regs or on clist, interlace screens, place sprites on screen,
+clear and fill memory are only some of the most powerful, highly parametric and
+easy-to-use macros/routines included.
+
+Yet, some useful flags has been placed at te beginning of the Base source in
+order to make you able to control the Startup init routine from your main
+enviroment: run your code in 680x0 Supervisor mode, leave OS-CIAB music on
+even when executing your routines, make the startup recursive for multiload
+programs, and more, all just setting a couple of flags.
+
+Finally, complete upward compatibility is guarateed: macros and public routines
+(that means not private, i.e. not routines internally used by macros) will
+be updated and improved without affecting compatibility with your old sources.
+
+
+  SYNTAX NOTES
+
+The whole system has been developed using AsmOne, but it should be compatible
+with other assembler using standard Motorola syntax, such as PhxAss, Devpac,
+etc. If something wouldn't work, it surely will be a banal piece where to
+look a bit at.
+
+
+  CONTACTS
+
+For suggestions, questions, bugs or anything else e-mail me at the address
+in my signature.
+If you like this startup system, let me know and I'll give you full support
+answering your questions, sending you more sources and explaining you anything
+you didn't understand.
+
+May the power of coding fill you,
+
+                               ---<<*>>---
+
+              He threw the sword into the moon-flooded sea.
+                 Incredibly, Stormbringer didn't sink.
+  It fell head on and entered the sea, trembling as it had got stuck in wood.
+
+                               ---<<*>>---
+ ___________________________________ __________________________________
+ |:::.:.: .                  . :.:::Y                                  |
+ |::.:.    /\                   .:::|           Manta/Elven11          |
+ |:.  ____/ /   /\__  ___  /\/\  .::!----------------------------------|
+ :.  / __/ / /\/ /  \/  ( / / /   .::        aspano@dsi.unive.it       !
+ .  / _// /_/ / / __/ / / \/\/     .:----------------------------------:
+   /   / / / / / / / / /            :     ChECk oUr pRoDS oN Aminet    .
+ : \__/\__/\  /\__/ /\/  eLVeN   . .!          and pARtY SiTes         :
+ !.         \/    \/    eLeVeN  ..::|----------------------------------!
+ |::.:. .                      .:.::|        FiND Me oN IRC oN:        |
+ |::::.:.: .               . :.::.::| #amigascne  #amigaita  #demo-ita |
+ `----------------------------------+----------------------------------'

@@ -1,0 +1,11 @@
+##base _TowerBase
+##bias 30
+##public
+*--- class functions ---
+##private
+GetTowerClass()()
+##public
+NewExtObjectA(id,attrs)(a0/a1)
+DisposeExtObject(obj)(a0)
+*--- private entries ---
+##end

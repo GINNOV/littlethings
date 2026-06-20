@@ -1,0 +1,14 @@
+Short:    My own translations and codes of the R.K.M - In Assembly.
+Version:  1.0
+Author:   John White <yoingco@hotmail.com>
+Uploader: John White <yoingco@hotmail.com>
+Type:     dev/src
+Date:     May 2001
+
+These codes are NOT examples. Simple read each code, from top-to-bottom,
+and digest what you see! The main reason for writing these codes was my
+frustration of "everything-is-written-in-C" syndrome. Each code has been
+tested. My main aims were to get the right pointers and offsets to objects
+via lea and move.l - when I was a beginner I found getting pointers and
+offsets a challenge. This archive is only the main codes. I have written
+two disks altogether.

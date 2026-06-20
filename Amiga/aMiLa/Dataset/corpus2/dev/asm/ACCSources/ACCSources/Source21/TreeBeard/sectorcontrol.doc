@@ -1,0 +1,28 @@
+---- Included this to see if you can spot the error!
+
+Sector Control
+~~~~~~~~~~~~~~
+Decided to have a go at messing around with the trackdisk device, and found
+it was quite easy to use.  So I decided to make it into a utility which write
+a file to any sector of the disk.  (Apologies to Mark since the front end
+looks remarkably like ArpDecrunch!)
+
+It will load a program which has been assembled to disk using the ORG 
+directive (which tells the assembler to assemble the code at a set
+address - if using trackdisk device to load a program, it usually means
+you've trashed DOS and so you can load it at the same address each time).
+It will also load a binary file.
+
+The sector number is given by the following formula:
+
+(Track * 22)+(Surface * 11)+Sector
+
+Sector   = 0-10
+Surface	= 0 or 1
+Track    = 0-79
+
+With all that over, HELP!  The write function doesn't always work properly - 
+sometimes it works fine, but sometimes it doesn't write anything, but still
+doesn't return an error, and sometimes it misses a few bytes.  It does load
+it properly, so presumably its the write routine.  Anyone who can spot the 
+error, please write in.

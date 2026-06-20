@@ -1,0 +1,12 @@
+Program:  Advanced Lawnmower Simulator Professional
+Format:   Amiga
+Language: AMOS
+Contact:  chris@unsatisfactorysoftware.co.uk (Chris Young)
+
+This is some half-completed source code for ALSPro.  If someone wants to
+finish the project then please e-mail me on the above address.
+
+I'm not sure what state the code is in (it's probably a mess :), but I think
+the basic outline of the game should be pretty clear.  There is a map editor
+included in the archive, along with a few data files.
+

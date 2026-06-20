@@ -1,0 +1,391 @@
+/* makefile documentation tabs=4 */
+
+               **************************************************
+
+                                   make V1.0
+
+                        Written by Alexis WILKE (c) 1994
+
+               **************************************************
+
+					Contact: alexis@netcom.com
+
+
+
+	Usage: %s [-<opts>] [varname=val] [<target>]\n", argv[0]);
+	  where opts are:\n");
+		-ab				auto-build (see -u)
+		-ad				auto-default (always do the .DEFAULT)
+		-as				auto-space
+		-B				not compatible with old makefile (default)
+		-b				compatible with old makefile
+		-E <level>		defines the error level which stop the process
+		-e				forces the environment variable to override internal variables
+		-f <filename>	gives the descriptive file name
+		-h or -?		displays help screen
+		-i				ignores command line errors
+		-k				creates all possible entries without errors
+		-n				no command execution
+		-P				all files are precious and none will be deleted
+		-p				prints target and macro definitions
+		-q				returns TRUE (%d) if the target needs to be updated
+		-r				suppresses the effect of internal .SUFFIX
+		-s				silent
+		-t				touch the targets (no command execution)
+		-u				build all targets unconditionnally
+		-v				verbose (include all following verbose)
+		-vd				target/dependency check verbose
+		-vt				target verbose
+		-vv				variable verbose
+	  where <varname>=<val> is an external variable definition
+	  where <name> is the target to be generated
+			if no name is defined then the .DEFAULT is used instead
+			the default is \"all\" or the environment variable TARGET
+
+	  note: several options can be defined after the same dash except the one
+			which receive some additional informations. And any additional
+			information can be written just after the option letter. There
+			is an example:
+
+				-eipfmkfl -> -e -i -p -f mkfl
+
+
+	Targets:
+
+		The target are defined before one or two colons (:). The colons are
+		followed by dependencies. If the target is older than one or more of
+		the dependencies then it is 'rebuild,' and for this purpose the
+		following command lines are executed like if you were typing them
+		into a shell.
+
+			<targets>:[:] <denpendencies>
+					<command lines>
+
+		If the name of the target has to include a colon, it will be written
+		with a preceding backslash (\) or between quotes (" or ').
+
+		Each target can appear only once, except for '::' because the target
+		is a library. In which case the file within the library will be checked
+		instead...
+
+		If no dependency is defined, the target is automatcally supposed out
+		of date and will be rebuild. We often use the following rule:
+
+			cleanup:
+				-rm *.o				# created by cc
+				-rm grammar.c		# created by yacc
+
+		to delete all files which are not necessary and then have some free
+		disk space... (the '-' forbid errors to stop make)
+
+		make has some internal rules (see below) which does not have to be
+		retyped. If they are retyped then you will suppress the effect of
+		the internal rule. The option -r can also be used to suppress the
+		effect of all internal rules.
+
+	Macros:
+
+		Macros are defined with the equal (=) sign. Usually one name on the
+		left side and a list of words on the right side of the equal. This make
+		also supports several name definition at the same time:
+
+			a b c = d e f
+
+			<name>=<string>
+
+		then a, b and c macros all receive "d e f". Of couse a single name
+		is valid and the previous line could be:
+
+			a = d e f
+			b = d e f
+			c = d e f
+
+		To recall the contains of a macro you can use $(<name>) where the
+		parenthesis are not necessary when the macro as a one letter name.
+		Macros can contain macros: $($(<name>)) for instance... The previous
+		line could have been:
+
+			z = b
+			a = d e f
+			b = $a				get $a also d e f
+			c = $($(z))			get $z also b and then $b also $a then d e f
+
+		The macimum number of macros used within a macro is very hard to
+		determine; however it is around 30.
+
+		make supports an automatic transformation of the words available
+		into a macro. Words are any string of caracters separated by one or
+		more spaces ( ) or a tabulation (\t). For this the long syntax
+		(parenthesis) is necessary:
+
+				$(<name>:[:][<match>][=[<trans>]])
+
+		This syntax will take all words which match <match> and transform
+		them with <trans>, other words are just copied (single colon) or
+		dropped (double colon.) If <match> is an empty string, all words
+		from the source will be transformed.
+
+		Example:   $(OBJECTS::.o=.c)
+
+		It transforms all object file names finishing by '.o' into a '.c'
+		and suppress all other names.
+
+		The <match> and <trans> patterns can be complex and include:
+
+											<match>	<trans>
+			character (A-Z, a-z, etc...)	  Yes	  Yes
+			asterisk (*)					  Yes	  Yes
+			question mark (?)				  Yes	  Yes
+			range ([<from>-<to>])			  Yes	  No
+			not-range ([^<from>-<to>])		  Yes	  No
+			multiple range ([...]*)			  Yes	  No
+			multiple not-range ([^...]*)	  Yes	  No
+			not (^<letter>)					  Yes	  No
+			skip (^)						  No	  Yes
+
+			. characters from match will be erased from the source word and
+			  must perfectly match the source string; characters from the
+			  transformation pattern are copied as is into the resulting string;
+
+			. an asterisk will be used to replace any pattern of any character;
+			  when present into the match pattern, the transformation pattern
+			  can use any other pattern character (? and ^) to get a character;
+			  when present into the transformation pattern, all remaining
+			  character from the last pattern character are copied;
+			  the empty pattern is a valid match for an asterisk;
+
+			. a question mark will be used to replace any one character; the
+			  character must exist;
+
+			. a range can be a single character, when defined by it-self and
+			  a repeated range, when followed by an asterisk; the asterisk
+			  has the same effect and also the empty pattern is a valid match;
+			  a range contents can be inverted when it starts with a '^'
+			  character;
+
+			. the not is a single character preceded by a '^' character; this
+			  enables any character except the one specified;
+
+			. the skip can be used only into the transformation pattern and
+			  will skip a caracter from the source;
+
+			. combinaison are not actually available: ([A-Z]*|foo) is not
+			  possible;
+
+		Range definition is similaire to the one defined for 'grep' or 'lexx'.
+		Also you can define any letter with: [A-Za-z]. You can define any 'legal'
+		file name with:
+
+				[A-Za-z0-9_&.]*
+
+		This is any upper or lower case letter plus all digits and the characters
+		underscore (_) the ampersand (&) and the point (.).
+
+		Then an equivalent to $(OBJECT::.o=.c) is:
+
+				$(OBJECTS::*.o=*.c)
+
+		The following will add a '.c' suffix to any five letters word. Other
+		words are not modified:
+
+				$(OBJECTS:?????=.c)
+
+		The order in which macros are defined is important. A macro can call
+		it-self, also its previous definition, thus:
+
+			a = b
+			a = $a c
+			a = $(a) d
+
+		is an equicalent to:   a = b c d
+
+		The shell can automatically be invoked through a macro with the
+		use of the back-cote (`), and for instance you may type:
+
+			OBJECTS = `ls >%s *.c`			# get source file names
+			OBJECTS = $(OBJECTS:.c=.o)		# we have object file names
+
+		where the '%s' will be changed into the destination file name. The
+		destination will be a temporary file. The syntax '-o %s' for the
+		destination definition is perfectly valid.
+
+		The shell also be invoked with a command line has been written
+		between { and }. However, make will execute the command line
+		every time the macro is invoked, when the back-cote is used (`)
+		the command line is executed only once.
+
+		note: make always generates the macros in real time. Also if you
+			  change some environment variables, you can change the macro
+			  expansion! However it might not work on all unix machines...
+			  But define macros between rules (traget-dependency-command)
+			  as no effect. make manage all macros as if they were defined
+			  at the beginning of the script file.
+
+			foo.o: foo.c
+				setenv CFLAGS -O
+				$(CC) $(CFLAGS) -o $@ $<	# cc -O -o foo.o foo.c
+				setenv CFLAGS
+
+	Special Targets:
+
+		<targets> .IGNORE: [<dependencies>]
+
+				will be used to turn on the -i option and also ignore all
+				errors of executed commands for this list of command. This
+				is not a general switch like -i. You may use the dash (-)
+				in front of the command rather than .IGNORE. This way you
+				can select each command line which can and which can not
+				stop the process.
+
+				For instance:
+
+					cleanup .IGNORE:
+						delete >NIL: *.o
+
+		<targets> .SILENT: [<dependencies>]
+
+				will turn off the verbose mode and all command lines will
+				not be displayed for this list of command. This is not a
+				general switch like -s.
+
+		.DEFAULT: <dependencies>
+
+				will be used when make has been called without target or
+				if the a target does not have all the necessary dependencies.
+				By default this is:
+
+						.DEFAULT: all
+
+		.PRECIOUS: <dependencies>
+
+				will be used to keep the specified dependency files,
+				otherwise make will delete those files before it quits.
+
+		Note: .SILENT and .IGNORE can be defined anywhere within the
+			  target list and both may appear in the same list.
+
+	Command lines:
+
+		Command lines may starts with one or both of - and @, in any order.
+		The @ will disable the printing of the command line (like if the
+		-s option was specified.) And the - sign is an equivalent of
+		-i option for this command line, also errors will not be checked.
+
+		The double quotes (") remain unmodified on command lines.
+
+	Default rules:
+
+		Make has the following default rules available for use by anyone.
+		If you redefine them you will hide those internal definitions.
+
+		.c:
+			$(CC) $(CCFLAGS) $(CFLAGS) -o $@ $<
+
+		.c.o:
+			 $(CC) -c $(CCFLAGS) $(CFLAGS) -o $@ $<
+
+		.s:
+			 $(AS) $(ASFLAGS) $(AFLAGS) -o $@ $<
+
+		.y:
+			 $(YACC) $(YACCFLAGS) $(YFLAGS) -o $@ $<
+
+		.l:
+			$(LEX) $(LEXFLAGS) $(LFLAGS) -o $@ $<
+
+		.f:
+			$(FORTRAN) $(FFLAGS) -o $@ $<
+
+		.p:
+			$(PASCAL) $(PFLAGS) -o $@ $<
+
+		.o:
+			$(LD) $(LDFLAGS) -o $@ $<
+
+		.asm.s:
+			$(ASM) $(ASMFLAGS) $(LFLAGS) -o $@ $<
+
+
+	Suffixes:
+
+		Make automatically handles suffixes (termination of file names.)
+
+		A target will be searched in each plain dependency before to be
+		checked in suffixes dependency. Suffixes dependencies are defined
+		as:
+
+			.{letter}+(.{letter}+)?: <dependency files>
+					<command lines>
+
+		For instance to compile C like programs:
+
+			.c.o:
+				$(CC) -c $(CFLAGS) -o $@ $<
+
+		The variable .SUFFIXES hold suffixes dependencies. A C program for
+		instance will usuly be compiled into an object file. The default
+		.SUFFIXES variable contains:
+
+			.c.o		C source file
+			.s.o		assembler source file
+			.f.o		fortran source file
+			.p.o		pascal source file
+			.asm.s		high level assembler source file
+			.y.c		yacc source file
+			.l.c		lex source file
+			.o			object file
+			.a			archive file
+			.h			header file
+			.sh			shell file
+
+		The usage of the a single suffixe enables the compilation from
+		a suffixed file to a file without suffixe:
+
+			.c:
+				$(CC) $(CFLAGS) -o $@ $<
+
+		this line transform '.c' files in executables (CFLAGS should never
+		include the flag '-c'.)
+
+	Internal variables:
+
+		$(CDW)			the working directory when make started
+		$(FILENAME)		make script file name
+		$(VERSION)		version of the make
+		$(VPATH)		extra paths checked after the current directory
+		$(SHELL)		shell used to execute commands (default "/bin/sh")
+		$(STOPLEVEL)	error value at which the process is stopped
+		$(FAILLEVEL)	error value at which the process is aborted
+		$(TARGETS)		default (and usuly external) targets
+		$(NAMES)		list of targets defined on the command line
+
+		Executable	Flags (*)		Note
+
+		$(MAKE)		$(MAKEFLAGS)	this tool name
+		$(CC)		$(CFLAGS)		C compiler name (default: "cc")
+					$(CCFLAGS)
+		$(LD)		$(LDFLAGS)		linker name (default: "ld")
+		$(AS)		$(AFLAGS)		assembler name (default: "as")
+					$(ASFLAGS)
+		$(AR)		$(ARFLAGS)		archiver (default: "ar")
+		$(LEX)		$(LEXFLAGS)		lexical compiler (default: "lex")
+		$(YACC)		$(YACCFLAGS)	yacc compiler (default: "yacc")
+		$(GET)		$(GETFLAGS)		get tool (default: "get")
+		$(ASM)		$(ASMFLAGS)		high level assembler name (default: "asm")
+		$(FORTRAN)	$(FFLAGS)		fortran compiler name (default: "fortran")
+					$(FORTRANFLAGS)
+		$(PASCAL)	$(PFLAGS)		pascal compiler name (default: "pascal")
+					$(PASCALFLAGS)
+
+	(*) by default flags are undefined, except $(MAKEFLAGS) which receive all
+		flags which have been used on the command line
+
+
+	Special features:
+
+		If the script starts with a sharp (#) and an exclamation mark (!) the
+		following name is an alternative file maker ('#!<make name>'.)
+		The alternative file maker will be executed only if it is not it-self
+		and if it is available. The default is also: '#!make'.
+
+

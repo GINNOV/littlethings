@@ -1,0 +1,201 @@
+
+ASM3210 Version 2.13 - DSP3210 cross-assembler
+elf2exem68k Version 1.2 - Creates an Amiga executable from a final ELF object
+
+This is an implementation of an assembler for the DSP3210 as used on the Amiga
+AA3000 and AA3000+.  The host machine needs to be x86-64 running linux (I use 
+cygwin, so that definitely works but other linux-type OSes ought to work). 
+
+Huge thanks to phx for helping me understand ELF file formats, constructors 
+and destructors and many other things! 
+
+Copyright Wrangler 2021, 2022, 2023
+
+Some code based on the work of Tom Roberts' ASM32 for the DSP32C
+
+
+Wrangler
+
+
+Usage:
+------
+
+asm3210 [options] foo.s
+
+will provide:
+foo.o - an ELF object containing the binary output for linking with vlink and 
+elf2exem68k
+
+Options
+
+-b            Output raw binary file
+-h            Help text
+-i filename   Specify input file instead of filename being the final parameter
+-l            Also output a listing file with name <filename>.lst
+-o filename   Specify output file
+-v            Version information
+
+
+Making an executable
+--------------------
+
+The makefile that links M68K C objects to DSP3210 assembler options will need
+to:
+- compile and link all the M68k objects (including a startup object) to a 
+single relocatable object; 
+- assemble all the DSP objects; 
+- link all the objects together (again to a relocatable object); and then 
+- run elf2exem68k to produce an executable. 
+Typically, that will look like this:
+
+all: myprog.exe
+
+m68kobj1.o: m68kobj1.c
+ vc +aos68k -I$(VBCC_INC) -I$(NDK_INC) -I. -c -o m68kobj1.o m68kobj1.c
+
+<etc for other m68k object files>
+
+m68kfinal.o: m68kobj1.o m68kobj2.o ...
+ vlink -b elf32ppcbe -r -o m68kfinal.o  $(VBCC_LIB)/startup.o m68kobj1.o 
+m68kobj2.o -L$(VBCC_LIB) -lvc -lamiga
+
+DSPobj1.o: DSPobj1.s
+ asm3210 -o DSPobj1.o DSPobj1.s
+
+<etc for other DSP object files>
+
+finalobj.o: m68kfinal.o DSPobj1.o DSPobj2.o
+    vlink -b elf32ppcbe -r -o finalobj.o m68kfinal.o DSPobj1.o DSPobj2.o
+
+myprog.exe: finalobj.o
+    elf2exem68k -o myprog.exe finalobj.o
+
+(Linking to relocatable objects is required so that elf2exem68k can correctly 
+do all the relocations for the DSP code.  See Notes)
+
+
+Notes:
+------
+
+- Relocations need careful handling to work: the AmigaOS scatter loader can 
+load the executable to any address in memory so any absolute addresses need 
+"relocating" ie updating based on where the executable actually ends up in 
+memory.  As the executable could be ANYWHERE in memory, the only supported 
+DSP addresses are full 32-bit absolute addresses (and PC-relative addresses, 
+of course, which don't need relocating).  This means that the only way to 
+correctly jump or call addresses is via a register, eg:
+    r1 = AnAddress
+    call r1 (r18)
+
+    r2 = AnAddress
+    goto r2
+
+Accessing data using a register pointing to an address is relocated fine too,
+eg:
+    r1 = AnAddress
+    r2 = *r1
+
+- This also explains why the special makefile process is needed.  The 
+instruction "r1 = AnAddress" causes a 32-bit address to be loaded in two
+steps as two 16-bit wide loads (Hi and Lo).  The Amiga Hunk format doesn't
+support this kind of relocation, whereas ELF does, so everything has to be
+done as ELF objects and elf2exem68k is needed to resolve the relocations.
+
+- If you intend to move code into the DSP3210's onboard memory space, then the
+relocations won't work, as they are applied before the code gets moved.  You 
+will either need to work out the absolute addresses for yourself or use 
+PC-relative addressing.
+
+- This assembler generally matches the output from d32as but there are some 
+exceptions:
+    - an instruction like r1 = 1 can be encoded in more than one way
+      asm3210 uses "set", so a straight 16 bit load to r1 whereas
+      d32as assembles it as r1 = r0 + 1 ie "add" (remembering r0 is always 0)
+    - d32as assembles r1 = 0xC0FFEE as a 32 bit load over two instructions
+      asm3210 assembles this instruction using 24 unsigned values saving 4 
+      bytes(!)
+
+- The assembler supports .global and .extern directives to define global and 
+external variables.  These are required in order to link with other code, 
+especially M68K C code where the variable names need an additional underscore 
+"_" in front of the variable name used in C.
+
+- Currently, the entire binary output is put into the .text section.  Support
+for other sections (eg .data and .bss) may get added later
+
+- If linking to M68K C code, M68K linker must support the -r option.  Vlink 
+does this correctly, Bebbo's GCC 6 for AmigaOS does not.
+
+- #define directive supported
+
+- #include directive not supported
+- Updates to the files might happen at any time.
+
+
+Bug reports
+-----------
+
+For bug reports, message me on a1k.org
+
+Version log:
+------------
+
+30/7/2023 v2.13
+Implemented syntax variation:
+if(rM-- >= 0) pcgoto X
+
+v1.2 elf2exem68k
+Implemented command line parameter passing through to the main program entry
+point
+
+
+20/7/2023 v2.12 (intermediate versions not released)
+2.4 implemented -b option to output a raw binary file
+2.5 corrected int32 instruction
+2.6 corrected reg subtraction and addition with negative immediate
+2.7 corrected a bad bug that corrupted defines
+2.8 error on the 3 programming Restrictions identified in the DSP Information
+    Manual
+2.9 change rN = rM from rN = r0 + rM to rN = rM + r0 because the former 
+    triggers an illegal instruction error when rM = pc
+2.10 correct negative float constants
+2.11 correct an error that prevented certain instructions following DA memory
+     writes
+2.12 correct an error to the check on CAU reg/IO reg stores following DAU 
+     instructions with 'Y' memory references
+
+v1.1 elf2exem68k: small bug fix
+
+
+27/1/2022 - v2.2
+Bug fix: corrected byte swapping for LE in byte and word statements
+
+19/1/2022 - v2.1
+Bug fix: .extern <label> followed later in the same source file by .global 
+<label> treated as a global
+
+Bug fix: instructions of the form *rP = aN = aM correctly assemble now
+
+
+30/10/2021
+Major Update of asm3210 to v2.0
+Now outputs ELF object files for linking with vlink, and creating an 
+executable with elf2exem68k.
+Supports .global and .extern directives
+Can now supply the output filename and other options
+
+Initial release of elf2exem68k
+
+10/8/2021
+Added pcsh register. Somehow that got missed before
+Added sftrst instruction
+
+19/7/2021
+Defines now supported - asm3210 will assemble the source for mandel_dsp
+Added the instructions rD = rS * 2 and rD = rS / 2, which just map to add and 
+arithmetic shift right instructions
+
+25/6/2021
+First version
+
+

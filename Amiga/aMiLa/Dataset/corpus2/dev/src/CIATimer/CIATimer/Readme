@@ -1,0 +1,48 @@
+[ Ed note:  for convenience the following was excerpted from the 
+            ciatimer.c file.  -Fred ><> ]
+
+/* TIMER - Amiga CIA Timer Control Software
+
+  originally by Paul Higginbottom, Public Domain, published in AmigaMail
+
+  hacked on by Karl Lehenbauer to produce a monotonically increasing 
+  microsecond clock, 12/30/88. All changes are Public Domain.
+
+  cc +p ciatimer.c
+  ln ciatimer.o -lcl32
+
+	By providing a solid, high-accuracy realtime clock, this code
+	provides a way for timer-releated code that needs to run at
+	specific realtimes, like a SMUS player, MIDI sequencer, etc,
+	to compensate for delays in their execution caused by interrupts,
+	cycle stealing by the blitter, etc.
+
+	What you do is keep track of when in realtime you next want to 
+	run (by adding time intervals to a time returned by ElapsedTime
+	when you start, then when you're ready to set up your timer.device
+	MICROHZ delay timer, call ElapsedTime and calculate the difference 
+	in seconds and microseconds as your arguments for your timer.device
+	request.
+
+	The routine ElapsedTime gets the time by getting the number of
+	65536 microsecond ticks that the handler has seen and retrieving
+	the 0-46911 number of 1.397 microsecond ticks from the CIA timer
+	registers, scaling them to 1.000 microsecond ticks and returning
+	the shifted-and-ored result.
+
+	A couple routines at the bottom of the file that're commented out 
+	are from my SMUS player and demonstrate how to perform the time 
+	arithmetic as described above.
+
+	Note that what we really want is an improved timer.device where a
+	flag in the timer request could say  "schedule me at this microsecond-
+	resolution time of day seconds and microseconds" instead of only
+	"schedule me in this many seconds and microseconds."
+
+	When the CIA interrupt handler is installed, other tasks need a
+	way to get the count maintained by the timer routine, too.
+	I was thinking maybe a library could be used and, by opening it,
+	tasks could get to the address of the long word that the interrupt
+	handler increments every time it runs.
+*/
+

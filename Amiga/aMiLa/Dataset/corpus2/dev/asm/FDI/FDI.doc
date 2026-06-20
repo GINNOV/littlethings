@@ -1,0 +1,195 @@
+			FDI v2.2
+			© Karl J. Ots
+			29 October 1997
+		
+		EMail:	kjots@gem.menzies.latrobe.edu.au
+		WWW:	http://gem.menzies.latrobe.edu.au/~kjots
+Note:
+	This is not an upgrade, just a repackaging.  I am quite happy
+	with the way FDI work, but I have changed both my email/WWW
+	address and got a new compiler, so I've deciced to re-release
+	FDI to reflect these changes.
+
+Discalimer:
+	This program was written primarily for my own use, but it was 
+	so useful I have decided to release in as FreeWare.  I retain 
+	the rights on the source code, however. You may view it for your
+	education, or even alter it if it needs to run differenty on your
+	system, as long as you don't distribute the altered code.  Send
+	me reports of whatever the problem is, and I'll try to fix it.
+	
+	All components of this archive must accompany the executable in
+	any distribution.  No charge may be made, other than to cover 
+	costs of disks and/or postage.  
+	
+	The author can in no way be held responsibe for any problems 
+	arising from the use of this program, or any files generated
+	by it.  All I can say is that is works on my system.  It should
+	work on yours.
+
+Description:
+	Why another FD to Assembly include file converter? There has to be
+	hundreds of them out there!  Well, if that's the case, why can't 
+	find one to do what I want it to?
+	
+	My desires for an Include file has it in a neat, readable form, 
+	several variations of CALL Macros, and with hexidecimal offsets.
+	Many programs offer one or two of them (neat output but decimal
+	offsets, hexidedimal output but no CALL macros, etc), but not all,
+	and none of them do the RCALL or SCALL macros.  So, I wrote one 
+	that does.
+	
+	FDI offers:
+		* Three CALL macros:
+		   - Standard,
+		   - PC-Reletive base movement,
+		   - Simple - no base movement.
+		* Hexidecimal or Decimal offsets.
+		* Neat, tab-alligned output (with variable tabs).
+		* Non-include flile output represion for easy scripting.
+		* Private entries can be processed or ommited.
+	
+	All options are controlled, and it is up to YOU which one you
+	want to use.
+	
+Use:
+	FDI can be run from the Shell only, and uses ReadArgs, so
+	it can only be run on OS2 (v36) or above. The template looks
+	like this:
+	
+	FROM/A,TO,MAXTABS/N,CALL/S,RCALL/S,SCALL/S,DEC/S,NOBAN/S,QUIET/S:
+
+	At first look, there seem to be a lot of command line arguments,
+	but the program will work without most of them.  In fact, the 
+	only one you have to specify is the FROM field.
+	
+	A brief description:
+	
+	FROM	FD file name.
+	TO	Include file name.
+	CALL	Make CALL Macro.
+	RCALL	Make RCALL Macro.
+	SCALL	Make SCALL Macro.
+	DEC	Make decimal offsets.
+	PRIV	Process private entries.
+	NOBAN	Repress output of program banner.
+	QUIET	Repress all non-include output.
+	
+	The decription below covers all arguments in depth, and the 
+	examples are taken from the exec_lib.fd file (unless indicated).
+	
+	Files
+	-----
+	
+	FROM	The name and path of the FD file you want to convert.  
+		Only one file may be specified (see "Scripting" below).
+		The name of the file will be included at the top of the
+		Include file (eg "...converted form FD:exec_lib.fd...").
+		Must be specified.
+	
+	TO	The name and path of the Include file output.  If not 
+		included, the output will be sent to the STDOUT (ie the
+		Shell).
+	
+	Macros
+	------
+	
+	CALL	This switch will cause a CALL Macro to be generated.
+		The macro will look like this:
+		
+		CALLSYS	macro
+			move.l	_SysBase,a6
+			jsr	\1(a6)
+			emdm
+		
+	RCALL	This switch will make a simlar CALL Macro, except that
+		the base will move moved PC-reletive, thus:
+		
+		RCALLSYS	macro
+			move.l	_SysBase(pc),a6
+			jsr	\1(a6)
+			endm
+		
+		Note that the above will make no sense if _SysBase is 
+		set "EQU 4", (rather than "dc.l $C00AA8" for 2.04, which
+		you should never use).  This won't matter if you don't use
+		the macro.  It is made because I didn't want to make 
+		library-specific macros.  
+	
+	SCALL	This is also like the the above macro, except SCALL (for
+		Simple Call) will ommit the base movement alogether:
+		
+		SCALLSYS	macro
+			jsr	_\1(a6)
+			endm
+	
+		Now,  this macro will be identical for all libraries 
+		(except for the name).  It was made because 
+		(1) It is good programming to indicate where the function
+		    is comming from;
+		(2) Any of the other macros can be called with only 
+		    changing one letter, which is move convenient.
+	
+	Macros require the ##base field of the FD file to be set (even
+	SCALL).  The only V40 FD file that fails in this is "cia_lib.fd"
+	An error message will be output if this happens, and will not 
+	affect the rest of the conversion.
+	
+	Processing
+	----------
+	
+	MAXTABS	The mamximum numer of tabs to include on each line, to 
+		make the EQU's all line up and be easier to read.  The 
+		default is 4, which will ensure all lines converted from
+		the V40 FD files are neat.  Other files with long 
+		function names may need larger values.
+	
+	DEC	I use hexidecmal offsets in my include files:
+		
+		_LVOSupervisor			EQU	-$001E
+		
+		Many people like decimal offsets:
+		
+		_LVOSupervisor			EQU	-30
+		
+		Is use hex because that is how it is represented by most
+		debuggers, monitors and disassemblers (eg MonAm).  It makes
+		it easier to locate the functions name.  This switch will
+		force the program to generate decimal offsets.
+	
+	PRIV	There are many private entries in FD files, and they 
+		shouldn't be used by most people (The don't even describe
+		the arguments in the V40 FD's).  But in some cases, such
+		as system programming, or if you are writting the library
+		yourself, you might need access to the private entries.
+		The PRIV switch will process the private entries, otherwise
+		they will be skipped.
+	
+	STDERR Output
+	-------------
+	
+	NOBAN	The banner is output every time the program is executed,
+		telling everone who wrote it (me!) and what it is.  This 
+		can be a hassle if you're using a script to convert many
+		files at once.  This will cause the banner not to be
+		written, but will not affect the other coversion 
+		information.
+	
+	QUIET	This will repress all non-include file output (causing
+		them to be written to NIL:).  Good if you want to execute
+		the program from the WB, using the "Execute" menu item.
+		with QUIET, and TO specified, an output window will not
+		be opened.
+
+Sripting:
+	Although only one file may be converted at once, you can use 
+	"List" to create a script that will convert many files on once.
+	Simply type:
+	
+	List FD:#?.fd TO name LFORMAT "FDI FROM %s%s TO %m.i <option> "
+	
+	At the command line to get a script called "name", which can be 
+	executed.  The options are the ones you want to affect all the 
+	files.  Note the %m: this will strip the ".fd" off the file (and 
+	we put on ".i").  For more info, see the AmigaDOS information on
+	List, as well as the FDI.scr file included in this archive.

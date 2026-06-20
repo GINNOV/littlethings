@@ -1,0 +1,32 @@
+Short:        Generate Boing Ball 3D objects
+Author:       thellier@free.fr (Alain Thellier)
+Uploader:     thellier free fr
+Type:         dev/src
+Version:      1.0
+Requires:     OS4, PowerPC
+Architecture: ppc-amigaos
+
+DESCRIPTION 
+Simple source that generate boing ball 3D object (Wawefront .OBJ format)
+Generated objects can be imported/used/exported in Blender
+Joined OS4 binary but can be compiled on any computer/OS
+Joined boingball.mtl file containing material description
+Joined boingball.obj file containing an example = 8x6 faces boing ball
+
+PARAMETERS
+usage: DoBoing filename xfaces yfaces xsubfaces ysubfaces										
+
+filename: the file in Wawefront .OBJ format 
+xfaces yfaces : count of red/white faces in this direction (usually 8 6)
+xsubfaces ysubfaces : how much each red/white face is subdivided (usually 6 8)	
+                                                                            
+LICENSE 
+DoBoing.c: Generate Boing Ball 3D objects - Nov 2012 				
+Author: Alain Thellier - Paris - France .
+GNU General Public License (GNU GPL) 
+
+-------------------------------------------------------------------------------------------
+If you enjoyed DoBoing send me a postcard at: Thellier. 43 Rue Ordener. 75018 PARIS. FRANCE
+-------------------------------------------------------------------------------------------
+
+	

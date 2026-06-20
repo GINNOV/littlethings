@@ -1,0 +1,195 @@
+head	1.802;
+access;
+symbols;
+locks
+	lilja:1.802; strict;
+comment	@# @;
+
+
+1.802
+date	96.11.30.13.18.52;	author lilja;	state Exp;
+branches;
+next	1.585;
+
+1.585
+date	96.06.13.00.07.34;	author lilja;	state Exp;
+branches;
+next	1.531;
+
+1.531
+date	96.05.28.00.20.33;	author lilja;	state Exp;
+branches;
+next	1.401;
+
+1.401
+date	96.03.28.13.57.27;	author lilja;	state Exp;
+branches;
+next	1.124;
+
+1.124
+date	96.02.10.15.50.24;	author lilja;	state Exp;
+branches;
+next	0.1332;
+
+0.1332
+date	95.12.17.13.23.20;	author lilja;	state Exp;
+branches;
+next	0.1300;
+
+0.1300
+date	95.12.08.23.57.47;	author lilja;	state Exp;
+branches;
+next	;
+
+
+desc
+@Readme.
+@
+
+
+1.802
+log
+@Fixed something.
+@
+text
+@Welcome to AmiFTP!
+
+Before trying to use AmiFTP you need to run the supplied Install_AmiFTP.
+AmiFTP needs ClassAct. Get the latest version from 
+ftp://ftp.warped.com/pub/amiga/classact/
+
+I suggest you use the new AT Installer (v43) which can be found
+on Aminet.
+
+Note that AmiFTP is Shareware. See AmiFTP.guide for more information.
+
+If someone wants to do the Norwegian and Dutch translations please
+contact me. (well, you don't have to do both yourself ;)
+
+Minor updates of AmiFTP will be made available at 
+http://www.lysator.liu.se/~lilja/amiftp/ and
+ftp://eniac.campus.luth.se/pub/amiga/amiftp/
+
+Major updates will appear on Aminet.
+
+/Magnus Lilja - lilja@@lysator.liu.se
+@
+
+
+1.585
+log
+@stuff.
+.,
+@
+text
+@d3 3
+a5 2
+Before trying to use AmiFTP you need to run the supplied Install_AmiFTP
+script in order to install the ClassAct gadgets on your system.
+d11 3
+@
+
+
+1.531
+log
+@Stuff.
+@
+text
+@d6 3
+@
+
+
+1.401
+log
+@Bug-fixes.
+@
+text
+@d9 1
+a9 1
+http://www.lysator.liu.se/~lilja/AmiFTP.html and
+@
+
+
+1.124
+log
+@Updated documentation, fixes some bugs.
+@
+text
+@a5 3
+If you are using an old version of AmiFTP (the 0.wxyz versions) you have
+to remove the 'Assign add libs: <amiftp-dir>' if you made such an assign.
+
+d10 1
+a10 1
+ftp://eniac.campus.luth.se/pub/amiga/amiftp
+@
+
+
+0.1332
+log
+@Release 1.0
+@
+text
+@a16 5
+I will be on Christmas vacation starting a few days before X-Mas and
+won't be able to answer your mail until the second week in January.
+
+Merry Christmas (for those of you who celebrate it) and a Happy New Year!
+
+@
+
+
+0.1300
+log
+@*** empty log message ***
+@
+text
+@d3 2
+a4 39
+IMPORTANT: This version uses ClassAct (Copyright Phantom Development). 
+If you have the old ClassAct-demo installed make sure that the gadgets/
+classes/images that you have installed are atleast as new as the ones
+supplied in this archive.
+
+If you don't have ClassAct installed before, you can either copy window.class
+to sys:classes/ , Gadgets/ to sys:classes/Gadgets and Images/ sys:classes/Images
+or just do an 'assign add libs: work:amiftp/' if you unpacked AmiFTP on your
+work:-partition.
+
+I have included a sample preferences file for AmiFTP, but it's renamed to 
+AmiFTP2.prefs, so old users won't get the wrong config-file (or overwrite
+their old). So if you are a new user you can either rename it to AmiFTP.prefs
+and start AmiFTP or go to the menu item "Settings/Load settings..." and load
+that file. It contains some useful Amiga ftp-sites.
+
+Also, this version comes with locale-catalogs for the Danish, Dutch, German, 
+Italian, Norwegian and Swedish users.
+
+Many thanks to: Volker Graf (vgraf@@hydra.informatik.uni-ulm.de) for the 
+                Danish and German translations.
+                Giacomo Magnini (G.Magnini@@@@agora.stm.it) for the Italian
+                translation.
+                Troels Walsted Hansen (troels@@stud.cs.uit.no) for the 
+                Norwegian translation.
+                Arno van Wouwe (apwouwe@@cs.vu.nl) for the Dutch translation.
+                Osma Ahvenlampi (Osma.Ahvenlampi@@hut.fi) for the Finnish translation
+
+Mail them (or me) any thoughts about the translations.
+
+The Swedish translation is made by me (with a bit help from Andreas Johansson)
+and I'm interested in all sorts of comments on it.
+
+Note that this is a beta-program. I really want to hear your suggestions/bugreports
+and your thoughts about the program. 
+
+I have included a NewCatalog.ct (located in the Catalogs/ dir) with which you 
+can make your own locale catalog for AmiFTP. If you are satisfied with your 
+translation please don't hesitate to mail it to me!
+d6 2
+a7 1
+*** NOTE *** MLINK USERS SHOULD USE THE AmiFTP_as225 binary
+d9 3
+a11 1
+New versions of AmiFTP will be made available at 
+d14 7
+@

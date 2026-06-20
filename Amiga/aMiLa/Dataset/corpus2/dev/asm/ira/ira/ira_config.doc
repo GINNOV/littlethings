@@ -1,0 +1,341 @@
+IRA 2 configuration file's directives:
+--------------------------------------
+
+   MACHINE       OFFSET         BASEREG        BASEADR        BASEOFF
+   SYMBOL        CODE           PTRS           NOPTRS         NBAS
+   TEXT          JMPB           JMPW           JMPL           ENTRY
+   COMMENT       BANNER         EQU            LABEL          EXTSYM
+   END
+
+
+How those directives work:
+-------------------------
+
+MACHINE  ======================================================================
+ Syntax: MACHINE 68xxx
+   It has the same behaviour as -MACHINE option
+
+
+OFFSET  =======================================================================
+ Syntax: OFFSET offset
+   It has the same behaviour as -OFFSET option [hex or decimal].
+
+
+BASEREG  ======================================================================
+ Syntax: BASEREG An
+   "n" specifies the base register for the smalldata model. You can leave the
+   A out.
+
+
+BASEADR  ======================================================================
+ Syntax: BASEADR adr
+   "adr" specifies the base address of the smalldata region. [hex or decimal]
+
+
+BASEOFF  ======================================================================
+ Syntax: BASEOFF
+   Offset to BASEADR. Usually 32766, when omitted. BASEADR + BASEOFF
+   define the value to be loaded  into the smalldata base register.
+
+
+SYMBOL  =======================================================================
+ Syntax: SYMBOL name adr
+   "name" is the name for the symbol.
+
+   "adr" is the address of the symbol.
+   
+   note : "adr" must be a label created by IRA processing. Any other values
+          will be simply ignored.
+   
+   Example:
+      original code------------------------------------
+      LAB_0017:
+              MOVE.L  D7,D0        ;002a2: 2007
+      -------------------------------------------------
+
+      configuration file-------------------------------
+      SYMBOL mylabel $002a2
+      -------------------------------------------------
+
+      new code-----------------------------------------
+      mylabel:
+              MOVE.L  D7,D0        ;002a2: 2007
+      -------------------------------------------------
+
+
+CODE  =========================================================================
+ Syntax: CODE adr1 adr2
+   "adr1" is the starting address of a code area.
+
+   "adr2" is the end address of this area.
+
+   You can leave adr2 out and use the -PREPROC option. In this case PASS 0
+   automatically finds the end of the code area.
+
+
+PTRS  =========================================================================
+ Syntax: PTRS adr1 [adr2]
+   It defines a single address or a range of addresses which contain 32-bit
+   pointers to addresses from the reassembled binary. This directive is
+   especially useful in data sections of a raw binary, which has no relocation
+   information. IRA will create a label for all the pointers in that range.
+
+
+NOPTRS  =======================================================================
+ Syntax: NOPTRS adr1 [adr2]
+   Syntax is like PTRS.
+   It will prevent IRA from taking any address in this region as a program
+   pointer (which would generate a label). Only works with binary input files!
+
+
+NBAS  =========================================================================
+ Syntax: NBAS adr1 adr2
+   Defines that the area between "adr1" and "adr2" should not use base-relative
+   addressing modes (e.g. because the base register is used in another way
+   here). IRA will start this area with an "ENDB An", to disable basereg-mode,
+   and reenables base-relative mode with a BASEREG directive afterwards.
+
+
+TEXT  =========================================================================
+ Syntax: TEXT start - end
+   "start" is the starting address of a text area.
+
+   "end" is the end address of this area.
+   
+   It defines a region in data as printable text. This overrides the automatic
+   text recognition.
+
+
+JMPB, JMPW, JMPL  =============================================================
+ Syntax: JMPx start - end [@base]
+   Generates a jump table between "start" and "end".
+   "x" may be "B", "W" or "L" and defines the width of the table
+   entries (8, 16 or 32 bits). "base" is optional and defaults to
+   "start", when missing. This is the base address, where all table-
+   offsets are added to.
+
+
+ENTRY  ========================================================================
+ Syntax: ENTRY
+   Defines the entry point into the program. This is important when using
+   the -PREPROC option to find all code.
+
+
+COMMENT  ======================================================================
+ Syntax: COMMENT adr txt
+   "adr" is the address of comments. It has to be aligned to instruction's
+   address or it will be ignored. [hex or decimal]
+   
+   "txt" is the comments to add in source code. It will be inserted just
+   before address "adr" on a new line.
+   
+   For multiple lines comments, just add several comments at the same address,
+   multiple comments will be inserted in declaration order.
+
+   Example:
+      original code-------------------------------------
+              MOVEM.L D1-D6/A0-A6,-(A7) ;00000: 48e77efe
+              MOVEA.L A0,A2             ;00004: 2448
+              MOVE.L  D0,D2             ;00006: 2400
+      --------------------------------------------------
+
+      configuration file--------------------------------
+      COMMENT   $00000   Save original registers content
+      COMMENT   $00004   Copy dosCmdBuf to A2
+      COMMENT   $00006   Copy dosCmdLen to D2
+      --------------------------------------------------
+
+      new code------------------------------------------
+      ; Save original registers content
+              MOVEM.L D1-D6/A0-A6,-(A7) ;00000: 48e77efe
+      ; Copy dosCmdBuf to A2
+              MOVEA.L A0,A2             ;00004: 2448
+      ; Copy dosCmdLen to D2
+              MOVE.L  D0,D2             ;00006: 2400
+      --------------------------------------------------
+
+
+BANNER  =======================================================================
+ Syntax: BANNER adr txt
+   "adr" is the address of banner. It has to be aligned to instruction's
+   address or it will be ignored. [hex or decimal]
+
+   "txt" is the banner message to add in source code.
+   
+   For multiple line banners, just add several banners at the same address,
+   multiple banners will be inserted in declaration order.
+   
+   Banner messages, alone or multiple, will be surrounded by a full line of
+   dash characters.
+   
+   note: Banner messages will be inserted in code BEFORE labels (when a label
+         exists at specified address).
+
+   Example:
+      original code-------------------------------------
+              MOVEA.L A0,A2             ;00000: 2448
+              RTS                       ;00002: 4e75
+      LAB_0001:
+              MOVE.L  D0,D2             ;00004: 2400
+              RTS                       ;00006: 4e75
+      --------------------------------------------------
+
+      configuration file--------------------------------
+      BANNER    $00002   Watch out !
+      BANNER    $00002   End of first function
+      BANNER    $00004   Here begins the second function
+      --------------------------------------------------
+
+      new code------------------------------------------
+              MOVEA.L A0,A2             ;00000: 2448
+      ; ------------------------------------------------------------------------------
+      ; Watch out !
+      ; End of first function
+      ; ------------------------------------------------------------------------------
+              RTS                       ;00002: 4e75
+      ; ------------------------------------------------------------------------------
+      ; Here begins the second function
+      ; ------------------------------------------------------------------------------
+      LAB_0001:
+              MOVE.L  D0,D2             ;00004: 2400
+              RTS                       ;00006: 4e75
+      --------------------------------------------------
+
+
+EQU  ==========================================================================
+ Syntax: EQU name adr.X ...
+   "name" is the symbol used in EQU directive.
+
+   "adr" is an address (code or data) where value associated to name exists.
+   
+   ".X" specifies the size of associated value.
+   
+   "..." means that several "adr.X" can be specified for the same EQU's symbol.
+   IRA checks if target values are all equals and raises error if not.
+   
+
+   The size of associated value can be:
+     * B for byte
+     * W for word
+     * L for long
+     * Q for immediate very short values (bits 11 to 9 in m68k instructions
+       known as "data" (for ADDQ and SUBQ) or "count" (for ASL, ASR, LSL, LSR,
+       ROL, ROR, ROXL, ROXR)
+
+   For .B, .W and .L "adr" has to be the exact address of the value.
+   For .Q "adr" has to be the instruction's address.
+
+   note: Beware of tricky MOVEQ! Do not use .Q for this instruction.
+         Immediate value is stored on lower byte of MOVEQ instruction word.
+         (use instead: EQU <MOVEQ address + 1>.B)
+
+   note: names starting with "MEMF_" are rejected because they are reserved
+         for AllocMem() flags integration.
+
+   note: names known by IRA as absolute Amiga addresses (ExecBase, Copper,
+         CIA, trap, interrupts, etc.) are also rejected.
+   
+   note: immediate values in BKPT and TRAP are not handled by EQU directive.
+
+   Example:
+      original code------------------------------------------------
+              MOVE.B  #12,D0                    ;1200: 103c000c
+              MOVE.W  #1234,D1                  ;1204: 323c04d2
+              MOVE.L  #123456,D2                ;1208: 243c0001e240
+              ADDQ.W  #3,D2                     ;120e: 5642
+              MOVE.L  465(A0),D3                ;1210: 262801d1
+      (...)
+              DC.L    $30310102,$0304fcfd       ;2430
+              DC.L    $feffdead                 ;2438
+      -------------------------------------------------------------
+
+      configuration file-------------------------------------------
+      EQU byte_value    $1203.B
+      EQU word_value    $1206.W
+      EQU long_value    $120a.L
+      EQU quick_value   $120e.Q
+      EQU displacement  $1212.W
+      EQU zero          $2430.B
+      EQU one           $2431.B
+      EQU alpha         $2432.L
+      EQU omega         $2436.L
+      EQU game_over     $243a.W
+      -------------------------------------------------------------
+
+      new code-----------------------------------------------------
+      ; Custom equates (from config file)
+      byte_value        EQU     12
+      word_value        EQU     1234
+      long_value        EQU     123456
+      quick_value       EQU     3
+      displacement      EQU     465
+      zero              EQU     48
+      one               EQU     49
+      alpha             EQU     16909060
+      omega             EQU     4244504319
+      game_over         EQU     57005
+
+      (...)
+
+              MOVE.B  #byte_value,D0            ;1200: 103c000c
+              MOVE.W  #word_value,D1            ;1204: 323c04d2
+              MOVE.L  #long_value,D2            ;1208: 243c0001e240
+              ADDQ.W  #quick_value,D2           ;120e: 5642
+              MOVE.L  displacement(A0),D3       ;1210: 262801d1
+      (...)
+              DC.B    zero                      ;2430: 30
+              DC.B    one                       ;2431: 31
+              DC.L    alpha                     :2432: 01020304
+              DC.L    omega                     :2436: fcfdfeff
+              DC.W    game_over                 ;243a: dead
+      -------------------------------------------------------------
+
+
+LABEL  ========================================================================
+ Syntax: LABEL  name adr
+   "name" is the name for the label.
+
+   "adr" is the address of the label.
+ 
+   One step further than SYMBOL directive. It creates a label that was not
+   automatically generated by IRA.
+   
+   Example:
+      original code------------------------------------
+      LAB_0017:
+              MOVE.L  D7,D0        ;002a2: 2007
+              MOVE.W  #1234,D1     ;002a4: 323c04d2
+              DC.L    $30310102    ;002a8
+      -------------------------------------------------
+
+      configuration file-------------------------------
+      LABEL amovew $002a4
+      LABEL abyte $002ab
+      -------------------------------------------------
+
+      new code-----------------------------------------
+      LAB_0017:
+              MOVE.L  D7,D0        ;002a2: 2007
+      amovew:
+              MOVE.W  #1234,D1     ;002a4: 323c04d2
+              DC.W    $3031        ;002a8
+              DC.B    $01          ;002aa
+      abyte:
+              DC.L    $02          ;002ab
+      -------------------------------------------------
+
+
+EXTSYM  =======================================================================
+ Syntax: EXTSYM  name adr
+   "name" is the name for an equate symbol representing an address.
+
+   "adr" is the address of the symbol.
+ 
+   With EXTSYM you can register symbol names for external addresses, which
+   would otherwise be auto-generated as EXT_nnnn equates.
+
+
+END  ==========================================================================
+ Syntax: END
+   Specifies the end of configuration directives. Anything after that
+   directive will be ignored.

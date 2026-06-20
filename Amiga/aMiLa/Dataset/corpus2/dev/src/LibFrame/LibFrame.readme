@@ -1,0 +1,11 @@
+Short:        Easy extendable Library Framework (asm)
+Author:       Dennis Jacobfeuerborn <dennis@paranoia.cologne.de>
+Uploader:     Dennis Jacobfeuerborn <dennis paranoia cologne de>
+Type:         dev/src
+Replaces:     dev/src/LibFrame.lha
+Architecture: m68k-amigaos
+
+This is an empty library that is easy to extend. Simply change some
+names and add your own functions.
+If you like it E-Mail me : dennis@paranoia.cologne.de
+IRC #amiga : "Acid"

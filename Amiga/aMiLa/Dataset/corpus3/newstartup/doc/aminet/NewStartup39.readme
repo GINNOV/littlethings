@@ -1,0 +1,60 @@
+Short:    Enhanced startupcode for assembler v3.9
+Author:   Kenneth C. Nilsen (kenneth@norconnect.no)
+Uploader: Kenneth C. Nilsen (kenneth@norconnect.no)
+Type:     dev/asm
+Replaces: dev/asm/NewStartup*
+
+
+Startup.asm
+===========
+
+$VER: Startup_asm 3.9 (06.10.96)
+
+Copyright © 1995,1996 by Kenneth C. Nilsen (kenneth@norconnect.no).
+All rights reserved.
+
+Currently the most powerful startup code you'll find for your assembler.
+This source is public domain.
+
+Works with any kickstart, chip and configuration.
+Should work with any assembler.
+
+
+
+WHAT KIND OF USE?
+=================
+
+	* Checks processor and fpu if wanted. Allowing requirement for this.
+	* Run your program from WB and CLI.
+	* Opens and closes wanted libraries automatically!
+	* Dumps error messages on ALL errors (from 3.5+): too low processor,
+	  no FPU, no library, debug info etc. and then exits gracefully.
+	* Parse any kind of arguments. Handles quotes, asterix' etc.
+	  Returns null terminated extracted arguments.
+	* Set taskname easily.
+	* Just one include (itself). Need no external includes.
+	* Adds 11 macro commands to your assembler.
+	* Exit with the right return code.
+	* Educational source. Source fully documented.
+	* Source is public domain.
+	* Demo sources follows this archive.
+
+
+
+NEW FEATURES
+============
+
+3.9:
+	- Added two macros:
+
+		InitDebugHandler "<filename>"
+		DebugDump "Debug text",labelID
+
+	  Powerful debug tool to help you in your programming. The debug
+	  macros can easily be activated or deactivated. If deactivated they
+	  will not be assembled.
+
+	- Changed the CPU and MATH check. You now have to activate them the
+	  same way as the debug procedure or the check will not be assembled.
+	  This will save space in your programs if CPU/MATH check isn't
+	  necessary.

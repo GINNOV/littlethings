@@ -1,0 +1,1419 @@
+11    AMIGADOS
+
+11.1  INTRODUCTION
+
+In this chapter are we going to discuss how to read and write
+files from/to different devices (disk drivers etc). How to
+protect your data from being corrupted by other tasks working
+with the same file, and how to attach comments to files, how
+to rename them etc...
+
+However, before we start it is best to look at how AmigaDOS
+works, and explain some commonly used words. If you are familiar
+with AmigaDOS and CLI you can skip the following chapters and
+immediately start on chapter 11.2 (OPEN AND CLOSE FILES).
+
+
+
+11.1.1  PHYSICAL DEVICES
+
+Physical devices are parts of the Amiga to which files can be
+read from and sent to. The most commonly used physical device
+is undoubtedly the internal disk drive (DF0:). 
+
+Here is the list of the standard AmigaDOS devices:
+-------------------------------------------------------------
+DF0: Diskdrive 0.      File/Directory access
+DF1: Diskdrive 1.      File/Directory access
+DF2: Diskdrive 2.      File/Directory access
+DF3: Diskdrive 3.      File/Directory access
+RAM: RAMdisk,          File/Directory access
+
+SER: Serial port,      Input/Output
+PAR: Parallel port,    Input/Output
+PRT: Printerdevice,    Output to printer (trough Preferences)
+
+CON: Console, (window) Input/Output
+RAW: RAW, (window)     Input/Output
+NIL: Nothing,          Output to nothing
+-------------------------------------------------------------
+
+(Note that all device-names end with a colon.)
+
+If you want to copy a file called "program.c" from the internal
+disk drive (DF0:) to the second disk drive (DF1:) you write:
+
+  copy from DF0:program.c to DF1:
+
+If you want to copy a file called "program.c" from the internal
+disk drive (DF0:) to the parallel port (PAR:) you write:
+
+  copy from DF0:program.c to PAR:
+
+If a printer was connected to the parallel port the file
+"program.c" would be printed out with the printers default
+mode. If the printer was connected to the serial port (SER:)
+you write: 
+
+  copy from DF0:program.c to SER:
+
+However, if you want to copy a file to the printer, and you
+want to use the printer mode you have chosen with Preferences,
+you use the printer device (PRT:). (With Preferences you can
+decide which device you want to use (PAR: or SER:), and if the
+text should be printed with letter quality or in draft mode
+etc.)
+
+  copy from DF0:program.c to PRT:
+
+
+AmigaDOS allows you even to use special windows (CON:) for
+input/output. The only thing you need to remember is to tell
+AmigaDOS what size and position of the window you want. The
+syntax is:
+ 
+  CON:x/y/width/height/(title)
+
+Remember to include all four slashes! (The window title is
+optional.) To copy the file "program.c" to a special window
+you write:
+
+  copy from DF0:program.c to CON:10/20/320/100/Text
+
+This will print the file program.c to a window positioned at
+x position 10, y position 20, width 320, height 100, with the
+title "Text". If you want to use spaces in the title you need
+to put quotes around the whole expression:
+
+  copy from DF0:program.c to "CON:10/20/320/100/Spacy Window"
+
+
+
+11.1.2  VOLUMES
+
+To access a disk you can either use the physical device name of
+the drive in which the disk is, or use the volume name of the
+disk. If you want to copy a file from the RAMdisk called
+"program.c", to a disk called "DOCUMENTS", and the disk is in
+the second disk drive, you can either write:
+
+  copy from RAM:program.c to DF1:
+
+or
+
+  copy from RAM:program.c to DOCUMENTS:
+
+(Note the colon after the volume name!) The advantage with the
+last example is that you do not need to bother in which drive
+the DOCUMENTS disk is in. Furthermore, if the right disk was not
+in any drive, AmigaDOS will ask you to insert it, and you
+do not need to worry about writing to the wrong disk.
+
+
+
+11.1.3  DIRECTORIES/SUBDIRECTORIES/FILES
+
+On a disk there exist directories/subdirectories and files. A
+subdirectory is a directory inside another directory. (There
+may be subdirectories inside other subdirectories and so on.)
+See picture:
+
+                      DEVICE/VOLUME
+                            |
+      /---------------------+---------------------\
+      |                     |                     |
+    FILES               DIRECTORY             DIRECTORY
+                            |                     |
+                          FILES             SUBDIRECTORIES
+                                                  |
+                                                FILES
+
+How to gain access to files:
+
+Left of the colon    Right of the colon    Right of a slash
+------------------------------------------------------------
+Device name          Directory name        Subdirectory name
+    or                     or                     or
+Volume name             Filename               Filename
+------------------------------------------------------------
+
+
+For example. Here is a disk named "CPrograms" on which there is
+a program called "Example" and two directories named "Games"
+and "Utilities". In the Utilities directory there is a program
+called FileWindow, and in the Games directory there are two
+games called Car and MiniBlast. There exist also a subdirectory
+called "SourceCode" which contains two files "Car.c" and
+"MiniBlast.c". See drawing:
+
+                         CPrograms
+                             |
+      /----------------------+--------------------------\
+      |                      |                          |
+   Example                 Games                    Utilities
+                             |                          |
+               /-------------+-------------\        FileWindow
+               |             |             |
+              Car        MiniBlast     SourceCode
+                                           |
+                                    /-------------\
+                                    |              |
+                                  Car.c        MiniBlast.c
+
+
+Here is how to access all the files:
+
+CPrograms:Example
+CPrograms:Utilities/FileWindow
+CPrograms:Games/Car
+CPrograms:Games/MiniBlast
+CPrograms:Games/SourceCode/Car.c
+CPrograms:Games/SourceCode/MiniBlast.c
+
+
+
+11.1.4  LOGICAL DEVICES
+
+Logical devices is a simple way to find files, regardless of
+where the file actually is. For example: If you have all your
+C programs on a disk called "Programs", placed i directory
+named "Examples", and you want to run the program "test1" you
+need to write:
+
+  Programs:Examples/test1
+
+If you often want to access files in that directory you can
+assign a logical device to it. You then only need to write the
+logical device name and the filename, and AmigaDOS will
+automatically look on the right disk and directory.
+
+You assign logical devices by using the CLI command "Assign"
+which is called like this:
+
+  Assign [logical device name]: [device/(directory/subdirectory)]
+
+For example:
+
+  Assign EX: Programs:Examples
+
+To gain access to the file "test1" you then only need to write:
+
+  EX:test1
+
+
+When you boot up the computer it will automatically create some
+commonly used logical devices. A good example is the logical
+device "FONTS:". It is automatically assigned to the system
+disk's "fonts" directory. Here is the list of some of the most
+commonly used logical devices:
+
+  Logical device  Description
+  ---------------------------
+  SYS:            system disk
+  C:              CLI commands
+  FONTS:          fonts
+  L:              handlers
+  LIBS:           libraries              
+  S:              sequence library
+  DEVS:           devices
+
+The logical device "C:" is assigned to the system disk's "c"
+directory, where all CLI commands are. If you have copied some
+CLI commands to the RAMdisk, and you want AmigaDOS to look
+there instead of looking on the system disk's c directory you
+simply reassign the C: device. For example:
+
+  Assign C: RAM:
+
+
+If you call Assign without any parameters, it will list all
+logical devices, and their assignments. If you have booted up
+the system with the Lattice C Compiler disk, the following
+logical devices are assigned: 
+
+  Automatically assigned:
+  --------------------------------------
+  S              Lattice_C_5.0.1:s
+  L              Lattice_C_5.0.1:l
+  C              Lattice_C_5.0.1:c
+  FONTS          Lattice_C_5.0.1:fonts
+  DEVS           Lattice_C_5.0.1:devs
+  LIBS           Lattice_C_5.0.1:libs
+  SYS            Lattice_C_5.0.1:
+
+  Specially assigned: (Lattice C)
+  --------------------------------------
+  LIB            Volume: Lattice_C_5.0.2
+  INCLUDE        Volume: Lattice_C_5.0.2
+  LC             Lattice_C_5.0.1:c
+  QUAD           RAM DISK:
+  ENV            RAM DISK:env
+  CLIPS          RAM DISK:clipboards
+
+
+
+11.2  OPEN AND CLOSE FILES
+
+Before you can do anything with a file you have to ask the
+operating system to "open it". This is because AmigaDOS needs
+to know what you are going to do with the file. Are you going
+to create a new file or are you going to work with an already
+opened file. You open a file by calling the function Open():
+
+Synopsis:    file_handle = Open( file_name, mode );
+
+file_handle: (BPTR) Actually a pointer to a FileHandle
+             structure. If the system could not open the file
+             with our requirements Open() returns NULL.
+
+file_name:   (char *) Pointer to a text string which contains
+             the file name including any necessary device/
+             directory names.
+
+mode:        (long) When you open a file you need to tell the
+             system what you are going to do with it. This
+             field should therefore contain one of the
+             following flags:
+
+             MODE_OLDFILE:   Opens an existing file for reading
+                             and writing.
+
+             MODE_NEWFILE:   Opens a new file for writing.
+
+             MODE_READWRITE: Opens an old file with an
+                             exclusive lock. (Explained later
+                             in this chapter.)
+
+             MODE_READONLY:  Same as MODE_OLDFILE.
+
+For example, if you want to create a new file called
+"Highscore.dat" you write:
+
+/* Try to open the file: */
+file_handle = Open( "Highscore.dat", MODE_NEWFILE );
+
+/* Check if we have opened the file: */
+if( file_handle == NULL )
+  /* Could NOT open file! */
+
+
+Once you have finished reading/writing the file you need to
+close it. You do it by calling the function Close():
+
+Synopsis:    Close( file_handle );
+
+file_handle: (BPTR) Actually a pointer to a FileHandle
+             structure which has been initialized by a previous
+             Open() call.
+
+Remember to close ALL files you have opened!
+
+
+
+11.3  READ AND WRITE FILES
+
+Once you have successfully opened a file you can start to
+read/write. AmigaDOS consider files to be a stream of bytes,
+and when you read/write something you need to specify how many
+bytes you want to read/write.
+
+
+
+11.3.1  READ()
+
+You read data by calling the function Read():
+
+Synopsis:    bytes_read = Read( file_handle, buffer, size );
+
+bytes_read:  (long) Number of bytes actually read. Even if you
+             tell AmigaDOS that you want to read x number of
+             bytes, it is not certain that you actually can
+             do it. The file is maybe corrupted, not as big as
+             you thought etc.
+
+file_handle: (BPTR) Actually a pointer to a FileHandle
+             structure which has been initialized by a previous
+             Open() call.
+
+buffer:      (char *) Pointer to the data buffer you want to
+             read the data into.
+
+size:        (long) Number of bytes you want to read.
+
+For example, if you want to read a file which contains an array
+(highscore) of ten integers, you write: (the file has already
+been opened.)
+
+bytes_read = Read( file_handle, highscore, sizeof( highscore ) );
+
+if( bytes_read != sizeof( highscore ) )
+  /* ERROR while reading! */
+
+
+
+11.3.2  WRITE()
+
+When you what to write to a file you use the function Write():
+
+Synopsis:       bytes_written = Write( file_handle, buffer, size );
+
+bytes_writtten: (long) Number of bytes actually written. Even
+                if you tell AmigaDOS that you want to write x
+                number of bytes, it is not certain that you
+                actually can do it. Maybe the disk was full,
+                writeprotected etc.
+
+file_handle:    (BPTR) Actually a pointer to a FileHandle
+                structure which has been initialized by a
+                previous Open() call.
+
+buffer:         (char *) Pointer to the data buffer which you
+                want to write.
+
+size:           (long) Number of bytes you want to write.
+
+For example, if you want to save an array (highscore) of
+ten integers to a file, you simply write: (the file has
+already been opened.)
+
+bytes_written = Write( file_handle, highscore, sizeof( highscore ) );
+
+if( bytes_written != sizeof( highscore ) )
+  /* ERROR while writing! */
+
+
+
+11.4  MOVE INSIDE FILES
+
+If you write something to a disk the "file cursor" will be
+positioned where you stopped writing. So if you start writing
+again, the new data will be placed after the first data. If
+you on the other hand wanted to write over the old data you
+need to move the file cursor to beginning of the data before
+you start writing. You move the file cursor by calling the
+function Seek():
+
+Synopsis:    old_pos = Seek( file_handle, new_pos, mode );
+
+old_pos:     (long) Previous position in the file, or -1 if
+             an error occurred.
+
+file_handle: (BPTR) Actually a pointer to a FileHandle
+             structure which has been initialized by a 
+             previous Open() call.
+
+new_pos:     (long) New position relative to the "mode".
+
+mode:        (long) The new_pos can be relative to:
+               OFFSET_BEGINNING: Beginning of the file.
+               OFFSET_CURRENT:   Current position.
+               OFFSET_END:       The end of the file.
+
+So if you want to move the cursor to the beginning of the file
+you set mode to OFFSET_BEGINNING, and new_pos to 0. (When you
+open a file by calling the function Open(), the file cursor is
+automatically placed at the beginning of the file.)
+
+If you on the other hand want to move the cursor to the end of
+the file you set mode to OFFSET_END, and new_pos still to 0.
+
+To move 10 bytes forward from the current position you set mode
+to OFFSET_CURRENT, and new_pos to 10. To move 10 bytes
+backwards you set new_pos to -10.
+
+
+
+11.5  FILES AND MULTITASKING
+
+Since the Amiga can have several tasks running at the same time
+it can happen that more than one task work with the same file.
+This can be very dangerous since one process may destroy some
+data another process has created.
+
+Imagine two tasks, one will read a file and multiply a value
+with two, while the other tasks should add 3. Since the two
+tasks can run at the same time it could happen that they would
+update the file at the same time:
+
+                            FILE:
+                       ---------------
+Process A reads the <- | number = 10 | -> Process B reads also
+value. (number=10)     ---------------    the value. (number=10) 
+
+        |                                           |
+        V                                           |
+                                                    |
+Process A changes                                   |
+the value to 20,       ---------------              |
+and writes the new  -> | number = 20 |              |
+value to the file.     ---------------              V
+(10 * 2 = 20)
+                       ---------------    Process B adds 3 to
+                       | number = 13 | <- the number and writes
+                       ---------------    the new value to the
+                                          file. (10 + 3 = 13)
+
+
+As you can see, the number that was updated by process A, has
+been lost. What should have happen was that process A should
+have "locked" the file so no other tasks could work with it.
+Process B would then have been forced to wait for Process A
+to "unlock" the file before it could read the value.
+
+On large mainframe computers there exist different "locks"
+with different priorities, but on the Amiga there exist only
+two different types of lock. You can lock a file so other
+processes may read it but not change it (SHARED_LOCK), or if
+you do not want any other tasks to even read the file you set
+an EXCLUSIVE_LOCK. Call the function Lock() to set a lock:
+
+Synopsis:  lock = Lock( file_name, mode );
+
+lock:      (BPTR) Actually a pointer to a FileLock structure.
+
+file_name: (char *) Pointer to a text string which contains
+           the file name including any necessary devices/
+           directories.
+
+mode:      (long) Accessmode:
+             SHARED_LOCK:     Other processes may read the file.
+             ACCESS_READ:                 - " -
+             EXCLUSIVE_LOCK:  No other processes may use this f.
+             ACCESS_WRITE:                - " -
+
+Here is an example how to lock a file so no other processes
+may use the file:
+
+struct FileLock *lock;
+
+lock = Lock( "HighScore.dat", EXCLUSIVE_LOCK );
+
+if( lock == NULL )
+  /* ERROR Could NOT create lock! */
+
+
+When you do not need the file any more you must "unlock" it.
+You do it by calling the function UnLock():
+
+Synopsis: UnLock( lock );
+
+lock:     (BPTR) Actually a pointer to FileLock structure
+          which has been initialized by a previous Lock()
+          call.
+
+Remember to unlock ALL files you have locked!
+
+
+
+11.6  OTHER USEFUL FUNCTIONS
+
+Here is a list of some other useful functions that you probably
+want to use. AmigaDOS allows you to rename and delete files,
+attach comments to them, set protection bits etc. All these
+things can be done with help of the functions listed below:
+
+
+
+11.6.1  CREATE DIRECTORIES
+
+If you want to create a directory you use the function
+CreateDir(). You only need to give the function a pointer to
+the name of the directory you want to create, and it will
+either return a pointer to a Lock (the new directory is
+automatically given an EXCLUSIVE Lock), or NULL if something
+went wrong.
+
+Remember to unlock the new directory before your program
+determinates.
+
+If there already exist a directory with the same name, it is
+simply locked and your program will not notice any difference.
+
+
+Synopsis: lock = CreateDir( name );
+
+lock:     (BPTR) Actually a pointer to a FileLock structure.
+          If lock is equal to NULL, AmigaDOS have not been
+          able to create the new directory.
+
+name:     (char *) Pointer to a string containing the name
+          of the new directory.
+
+
+Here is a short example:
+
+struct FileLock *lock;
+
+lock = CreateDir( "RAM:MyDirectory" );
+
+if( lock == NULL )
+  exit( ERROR );
+
+...
+
+UnLock( lock );
+
+
+
+11.6.2  DELETE FILES AND DIRECTORIES
+
+If you want to delete a file you call the function
+DeleteFile(). You only need to give it a file/directory name
+and it will either return TRUE (file was deleted) or FALSE
+(file could not be deleted). Remember that you can only delete
+a directory if it is empty.
+
+Synopsis: ok = DeleteFile( name );
+
+ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+          could delete the file/directory, else FALSE which
+          means something went wrong. (Eg. disk write-
+          protected, directory not empty etc.)
+
+name:     (char *) Pointer to a string containing the name of
+          the file/directory you want to delete. 
+
+
+
+11.6.3  RENAME FILES AND DIRECTORIES
+
+When you want to rename a file/directory you use the function
+Rename(). You can even move a file between directories by
+renaming it. For example:
+ 
+  Rename( "df0:Documents/Sale.doc", "df0:Letters/Sale.doc" );
+
+will move the file Sale.doc from the directory "Documents" to
+directory "Letters". Note! You can not rename a file from one
+volume to another.
+
+Synopsis: ok = Rename( old_name, new_name );
+  
+ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+          could rename the file/directory, else FALSE which
+          means something went wrong. (Eg. disk write-
+     protected.)
+
+old_name: (char *) Pointer to a string containing the old
+          file/directory name.
+
+new_name: (char *) Pointer to a string containing the new
+          file/directory name.
+
+
+
+11.6.4  ATTACH COMMENTS TO FILES AND DIRECTORIES
+
+AmigaDOS allows you to set a comment on a file or directory.
+The comment can give a brief description of what the file is,
+and is very handy to use when you want to give some extra
+information about the file etc. The comment can be up to 80
+characters long.
+
+A program can set a comment to a file/directory by using the
+function SetComment(). 
+
+Synopsis: ok = SetComment( name, comment );
+
+ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+          could attach the new comment, else FALSE which
+          means something went wrong. (Eg. disk write-
+          protected.)
+
+name:     (char *) Pointer to a string containing the name
+          of the file/directory you want to attach the
+          comment to.
+
+comment:  (char *) Pointer to a string containing the
+          comment. (A comment may be up to 80 characters
+          long.)
+
+
+Here is a short example:
+
+if( SetComment( "Letter.doc", "Letter to Mr Smith" ) == FALSE )
+  printf("ERROR! Could not attach the comment to the file!\n");
+
+
+
+11.6.5  PROTECT FILES AND DIRECTORIES
+
+You can protect files and directory from being accidentally
+deleted or changed. You do it by calling the function
+SetProtection() which will alter the protection bits as
+desired. Here are a list of the protection bits (flags) you
+can change:
+  
+  FIBF_DELETE  : the file/directory can not be deleted.
+  FIBF_EXECUTE : the file can not be executed.
+  FIBF_WRITE   : you can not write to the file.
+  FIBF_READ    : you can not read the file.
+  FIBF_ARCHIVE : Archive bit.
+  FIBF_PURE    : Pure bit.
+  FIBF_SCRIPT  : Script bit.
+
+Note! All of the flags are for the moment not working!
+  
+Synopsis: ok = SetProtection( name, mask );
+  
+ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+          could alter the protection bits, else FALSE which
+          means something went wrong. (Eg. disk write-
+          protected.)
+
+name:     (char *) Pointer to a string containing the name of
+          the file/directory you want to change the protection
+          bits.
+ 
+mask:     (long) The protection bits. (For example, if you
+          want to make the file/directory not deletable, and
+          that it can not be executed you should set the
+          protection bits: FIBF_DELETE | FIBF_EXECUTE.)
+
+
+
+11.7  EXAMINE FILES AND DIRECTORIES
+
+You can examine a file or directory with the function
+Examine(). You give the function a pointer to a "lock" on
+the file/directory you want to examine, and it will initializes
+a FileInfoBlock structure for you. The FileInfoBlock structure
+contains several interesting fields which you then can look at.
+
+
+
+11.7.1  FILEINFOBLOCK AND DATESTAMP STRUCTURE
+
+The FileInfoBlock look like this:
+
+struct FileInfoBlock
+{
+  LONG fib_DiskKey;
+  LONG fib_DirEntryType;
+  char fib_FileName[108];
+  LONG fib_Protection;
+  LONG fib_EntryType;
+  LONG fib_Size;
+  LONG fib_NumBlocks;
+  struct DateStamp fib_Date;
+  char fib_Comment[80];
+  char fib_Reserved[36];
+};
+
+fib_DiskKey:      Key number for the disk. Usually of no
+                  interest for us.
+
+fib_DirEntryType: If the number is smaller than zero it is a
+                  file. On the other hand, if the number is
+                  larger than zero it is a directory.
+
+fib_FileName:     Null terminated string containing the file-
+                  name. (Do not use longer filenames than 30
+                  characters.)
+
+fib_Protection:   Field containing the protection flags:
+
+                  FIBF_DELETE  : the file/directory can not be
+                                 deleted.
+                  FIBF_EXECUTE : the file can not be executed.
+                  FIBF_WRITE   : you can not write to the file.
+                  FIBF_READ    : you can not read the file.
+                  FIBF_ARCHIVE : Archive bit.
+                  FIBF_PURE    : Pure bit.
+                  FIBF_SCRIPT  : Script bit.
+
+                  (Note! All of the flags are for the moment
+                  not working!)
+
+fib_EntryType:   File/Directory entry type number. Usually of no
+                 interest for us.
+
+fib_Size:        Size of the file (in bytes).
+
+fib_NumBlocks:   Number of blocks in the file.
+
+fib_Date:        Structure containing the date when the file
+                 was latest updated/created.
+
+fib_Comment:     Null terminated string containing the file
+                 comment. (Max 80 characters including the NULL
+                 sign.)
+
+fib_Reserved:    This field is for the moment reserved, and may
+                 therefore not be used.
+
+
+The DateStamp structure look like this:
+
+struct DateStamp
+{
+  LONG ds_Days;
+  LONG ds_Minute;
+  LONG ds_Tick;
+};
+
+ds_Days:   Number of days since 01-Jan-1978.
+
+ds_Minute: Number of minutes past midnight.
+
+ds_Tick:   Number of ticks past the last minute. There are 50
+           ticks / second. (50 * 60 = 3000 ticks / minute.)
+
+
+
+11.7.2  EXAMINE()
+
+The Examine() function is called like this:
+
+Synopsis: ok = Examine( lock, fib_ptr );
+
+ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+          could get information about the file/directory, else
+          FALSE which means something went wrong.
+
+lock:     (BPTR) Actually a pointer to a FileLock structure.
+
+fib_ptr:  (struct FileInfoBlock *) Pointer to a FileInfoBlock
+          structure which will be initialized with some
+          information about the file/directory. IMPORTANT! the
+          structure must be on a 4 byte boundary. (See below
+          for more information.)
+
+
+
+11.7.3  4 BYTE BOUNDARY
+
+There is one problem left. (Who said it should be easy?)
+AmigaDOS was not, as everything else on the Amiga, written in
+C. They used the BCPL programming language which is the
+predecessor of C. The problem is that BCPL only uses one data
+type - longword (LONG). ALL data which is handled by AmigaDOS
+must therefore be on a "4 byte boundary". (Are you with me?) To
+make sure that a structure starts on a 4 byte boundary you
+need to allocate the memory by using the function AllocMem().
+(Remember to deallocate the memory once you do not need it any
+more!)
+
+So instead of writing:
+
+--------------------------------------------------------------
+struct FileInfoBlock fib; /* Declare a FileInfoBlock called */
+                          /* fib. This structure may NOT    */
+                          /* necessary start on a 4 byte    */
+                          /* boundary!                      */
+--------------------------------------------------------------
+
+You write:
+
+--------------------------------------------------------------
+struct FileInfoBlock *fib_ptr; /* Declare a FileInfoBlock */
+                               /* pointer called fib_ptr. */
+
+/* Allocate enough memory for a FileInfoBlock structure: */
+/* This memory WILL be on a 4 byte boundary!             */
+fib_ptr = AllocMem( sizeof( struct FileInfoBlock ),
+                    MEMF_PUBLIC | MEMF_CLEAR )
+
+/* Check if we have allocated the memory successfully: */
+if( fib_ptr == NULL )
+  exit(); /* NOT ENOUGH MEMORY! */
+
+
+... your program ...
+
+
+/* Deallocate the memory we have allocated for the fib. struct: */
+FreeMem( fib_ptr, sizeof( struct FileInfoBlock ) );
+
+--------------------------------------------------------------
+
+
+
+11.7.4  EXAMPLE
+ 
+Here is an example which shows how to use the Examine()
+function: (Remember to deallocate all allocated memory and to
+unlock all locked files when your program terminates!)
+
+#include <libraries/dos.h>
+#include <exec/memory.h>
+
+main()
+{
+  struct FileLock *lock;
+  struct FileInfoBlock *fib_ptr; /* Declare a FileInfoBlock */
+                                 /* pointer called fib_ptr. */
+
+
+  /* 1. Allocate enough memory for a FileInfoBlock structure: */
+  fib_ptr = AllocMem( sizeof( struct FileInfoBlock ),
+                      MEMF_PUBLIC | MEMF_CLEAR )
+
+  /* Check if we have allocated the memory successfully: */
+  if( fib_ptr == NULL )
+    exit(); /* NOT ENOUGH MEMORY! */
+
+  
+  /* 2. Try to lock the file: */
+  lock = Lock( "highscore.dat", SHARED_LOCK )
+  
+  /* Could we lock the file? */
+  if( lock == NULL )
+  {
+    /* Deallocate the memory we have allocated: */
+    FreeMem( fib_ptr, sizeof( struct FileInfoBlock ) );
+
+    exit();
+  }
+
+
+  /* 3. Try to get some information about the file: */
+  if( Examine( lock, fib_ptr ) == NULL )
+  {
+    /* Deallocate the memory we have allocated: */
+    FreeMem( fib_ptr, sizeof( struct FileInfoBlock ) );
+    
+    /* Unlock the file: */
+    UnLock( lock );  
+    
+    exit();
+  }
+
+
+  /* 4. You may now examine the FileInfoBlock structure! */
+
+
+  /* 5. Unlock the file: */
+  UnLock( lock );  
+
+
+  /* 6. Deallocate the memory we have allocated: */
+  FreeMem( fib_ptr, sizeof( struct FileInfoBlock ) );
+}
+
+
+
+11.7.5  EXAMINE FILES/SUBDIRECTORIES IN A DIRECTORY/DEVICE
+
+A directory/device can contain several files plus several
+(sub)directories. If you want to examine not only a file/
+directory, but all files/directories in a directory/device the
+Examine() function is not enough. You need to use the function
+ExNext(), which works together with the Examine function.
+
+To examine a directory/device you first need to call the
+function Examine() as normal. If it was a directory/device you
+start calling the function ExNext(), and continue calling it
+until you receive an error message. The error message is
+normally an "end of directory" message, which means that you
+have examined everything in the directory/device. It can also
+be some other error message which indicates that something
+went wrong while reading.
+
+
+
+11.7.5.1  EXNEXT()
+
+The ExNext() function is very similar to Examine(). It is
+called like this:
+
+Synopsis: ok = ExNext( lock, fib_ptr );
+
+ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+          could get information about a file/directory in the
+          directory/device, else FALSE which means something
+          went wrong.
+
+lock:     (BPTR) Actually a pointer to a FileLock structure.
+
+fib_ptr:  (struct FileInfoBlock *) Pointer to a FileInfoBlock
+          structure which will be initialized with some
+          information about the file/directory. IMPORTANT! the
+          structure must be on a 4 byte boundary. (See above
+          for more information.)
+
+Remember that you first need to call the function Examine(),
+and if it was a directory/device (fib_DirEntryType > 0), you
+may call the function ExNext() until you receive an error
+message.
+
+
+
+11.7.5.2  ERROR MESSAGES
+
+When you have used an AmigaDOS function, and you have received
+an error message, you can call the function IoErr() to find out
+what went wrong. You do not send IoErr() any parameters, it
+only returns a flag (value) which tells your program what went
+wrong.
+
+Here is the complete (V1.3) error list: (The header file
+"libraries/dos.h" contains the definitions.) I do not think I
+need to explain what they mean.
+
+  ERROR_NO_FREE_STORE
+  ERROR_TASK_TABLE_FULL
+  ERROR_LINE_TOO_LONG
+  ERROR_FILE_NOT_OBJECT
+  ERROR_INVALID_RESIDENT_LIBRARY
+  ERROR_NO_DEFAULT_DIR
+  ERROR_OBJECT_IN_USE
+  ERROR_OBJECT_EXISTS
+  ERROR_DIR_NOT_FOUND
+  ERROR_OBJECT_NOT_FOUND
+  ERROR_BAD_STREAM_NAME
+  ERROR_OBJECT_TOO_LARGE
+  ERROR_ACTION_NOT_KNOWN
+  ERROR_INVALID_COMPONENT_NAME
+  ERROR_INVALID_LOCK
+  ERROR_OBJECT_WRONG_TYPE
+  ERROR_DISK_NOT_VALIDATED
+  ERROR_DISK_WRITE_PROTECTED
+  ERROR_RENAME_ACROSS_DEVICES
+  ERROR_DIRECTORY_NOT_EMPTY
+  ERROR_TOO_MANY_LEVELS
+  ERROR_DEVICE_NOT_MOUNTED
+  ERROR_SEEK_ERROR
+  ERROR_COMMENT_TOO_BIG
+  ERROR_DISK_FULL
+  ERROR_DELETE_PROTECTED
+  ERROR_WRITE_PROTECTED
+  ERROR_READ_PROTECTED
+  ERROR_NOT_A_DOS_DISK
+  ERROR_NO_DISK
+  ERROR_NO_MORE_ENTRIES
+
+
+  The IoErr() function is called like this:
+    
+  Synopsis: error = IoErr();
+  
+  error:    (long) This field contains one of the above
+            mentioned flags.
+
+
+  So when you use the function ExNext(), and you receive and
+  error message, you should call the function IoErr to check
+  what went wrong. If it was not ERROR_NO_MORE_ENTRIES (you
+  have checked everything in the directory), something terrible
+  went wrong (error while reading). 
+
+
+
+11.7.5.3  EXAMPLE
+
+Here is parts of a program that examines everything inside a
+directory/device, and prints out the filenames:
+
+if( Examine( lock, fib_ptr ) )
+{
+  if( fib_ptr->fib_DirEntryType > 0 )
+  {
+    printf("Directory name: %s\n", fib_ptr->fib_FileName );
+
+    while( ExNext( lock, fib_ptr ) )
+    {
+      printf("name: %s\n", fib_ptr->fib_FileName );
+    }
+    
+    if( IoErr() == ERROR_NO_MORE_ENTRIES )
+      printf("End of directory!\n");
+    else
+      printf("ERROR WHILE READING!!!\n");
+  }
+  else
+    printf("This is a file!\n");
+}
+else
+  printf("Could not examine the directory/device!\n");
+
+
+
+11.8  FUNCTIONS
+
+Here is a list of commonly used functions:
+
+Open()
+
+  This function opens a file. Remember, before you can read/
+  write files you have to open them. 
+
+  Synopsis:    file_handle = Open( file_name, mode );
+
+  file_handle: (BPTR) Actually a pointer to a FileHandle
+               structure. If the system could not open the file
+               with our requirements Open() returns NULL.
+
+  file_name:   (char *) Pointer to a text string which contains
+               the file name including any necessary devices/
+               directories.
+
+  mode:        (long) When you open a file you need to tell the
+               system what you are going to do with it. This
+               field should therefore contain one of the
+               following flags:
+
+               MODE_OLDFILE:   Opens an existing file for
+                               reading and writing.
+
+               MODE_NEWFILE:   Opens a new file for writing.
+                               (If the file already exist it
+                               is deleted.)
+
+               MODE_READWRITE: Opens an old file with an
+                               exclusive lock. (The file is
+                               automatically locked with an
+                               EXCLUSIVE_LOCK.)
+
+               MODE_READONLY:  Same as MODE_OLDFILE.
+
+
+Close()
+
+  This function closes an already opened file. Remember to
+  close ALL files you have opened!
+
+  Synopsis:    Close( file_handle );
+
+  file_handle: (BPTR) Actually a pointer to a FileHandle
+               structure which has been initialized by a
+               previous Open() call.
+
+
+Read()
+
+  This function reads a specified number of bytes from a file.
+
+  Synopsis:    bytes_read = Read( file_handle, buffer, size );
+
+  bytes_read:  (long) Number of bytes actually read. Even if
+               you tell AmigaDOS that you want to read x
+               number of bytes, it is not certain that you
+               actually can do it. The file is maybe corrupted,
+               not as big as you thought etc.
+
+  file_handle: (BPTR) Actually a pointer to a FileHandle
+               structure which has been initialized by a
+               previous Open() call.
+
+  buffer:      (char *) Pointer to the data buffer you want to
+               read the data into.
+
+  size:        (long) Number of bytes you want to read.
+
+
+Write()
+
+  This function writes a specified number of bytes to a file.
+
+  Synopsis:  bytes_wr = Write( file_handle, buffer, size );
+
+  bytes_wr:    (long) Number of bytes actually written. Even if
+               you tell AmigaDOS that you want to write x number
+               of bytes, it is not certain that you actually
+               can do it. Maybe the disk was full, write-
+               protected etc.
+
+  file_handle: (BPTR) Actually a pointer to a FileHandle
+               structure which has been initialized by a
+               previous Open() call.
+
+  buffer:      (char *) Pointer to the data buffer which you
+               want to write.
+
+  size:        (long) Number of bytes you want to write.
+
+
+Seek()
+
+  This function moves the "file cursor" inside a file:
+
+  Synopsis:    old_pos = Seek( file_handle, new_pos, mode );
+
+  old_pos:     (long) Previous position in the file, or -1 if
+               an error occurred.
+
+  file_handle: (BPTR) Actually a pointer to a FileHandle
+               structure which has been initialized by a
+               previous Open() call.
+
+  new_pos:     (long) New position relative to the "mode".
+
+  mode:        (long) The new_pos can be relative to:
+                 OFFSET_BEGINNING: Beginning of the file.
+                 OFFSET_CURRENT:   Current position.
+                 OFFSET_END:       The end of the file.
+
+
+Lock()
+
+  This function "locks" a file so no other processes may alter
+  the contents (SHARED_LOCK). You can even prevent other
+  processes to read the file (EXCLUSIVE_LOCK).
+
+  Synopsis: lock = Lock( name, mode );
+
+  lock:     (BPTR) Actually a pointer to a FileLock structure.
+
+  name:     (char *) Pointer to a text string which contains
+            the file/directory name.
+
+  mode:     (long) Accessmode:
+              SHARED_LOCK:     Other tasks may read the file.
+              ACCESS_READ:                 - " -
+              EXCLUSIVE_LOCK:  No other tasks may use this f.
+              ACCESS_WRITE:                - " -
+
+
+UnLock()
+
+  This function unlocks a previously locked file: (Remember to
+  unlock ALL files you have locked!)
+
+  Synopsis: Unlock( lock );
+
+  lock:     (BPTR) Actually a pointer to FileLock structure
+            which has been initialized by a previous Lock()
+            call.
+
+
+Rename()
+
+  This function renames a file or directory. You can even
+  move a file between directories by renaming it. (For example,
+  Rename( "df0:Documents/Sale.doc", "df0:Letters/Sale.doc" );
+  will move the file Sale.doc from the directory "Documents"
+  to directory "Letters". Note! You can not rename a file from
+  one volume to another.)
+  
+  Synopsis: ok = Rename( old_name, new_name );
+  
+  ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+            could rename the file/directory, else FALSE which
+            means something went wrong. (Eg. disk write
+            -protected.)
+
+  old_name: (char *) Pointer to a string containing the old
+            file/directory name.
+
+  new_name: (char *) Pointer to a string containing the new
+            file/directory name.
+
+
+SetComment
+
+  This function attach a comment to a file or directory.
+
+  Synopsis: ok = SetComment( name, comment );
+
+  ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+            could attach the new comment, else FALSE which
+            means something went wrong. (Eg. disk write-
+            protected.)
+
+  name:     (char *) Pointer to a string containing the name
+            of the file/directory you want to attach the
+            comment to.
+
+  comment:  (char *) Pointer to a string containing the
+            comment. (A comment may be up to 80 characters
+            long.)
+
+
+SetProtection()
+
+  This function alters the protection bits of a file.
+  You can set following flags:
+  
+  FIBF_DELETE  : the file/directory can not be deleted.
+  FIBF_EXECUTE : the file can not be executed.
+  FIBF_WRITE   : you can not write to the file.
+  FIBF_READ    : you can not read the file.
+  FIBF_ARCHIVE : Archive bit.
+  FIBF_PURE    : Pure bit.
+  FIBF_SCRIPT  : Script bit.
+
+  (Note! All of the flags are for the moment not working!)
+  
+  Synopsis: ok = SetProtection( name, mask );
+  
+  ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+            could alter the protection bits, else FALSE which
+            means something went wrong. (Eg. disk write-
+            protected.)
+
+  name:     (char *) Pointer to a string containing the name
+            of the file/directory you want to change the
+            protection bits.
+ 
+  mask:     (long) The protection bits. (For example, if you
+            want to make the file/directory not deletable,
+            and that it can not be executed you should set the
+            protection bits: FIBF_DELETE | FIBF_EXECUTE.)
+
+
+DeleteFile()
+
+  This function deletes a file or directory. Remember that
+  a directory must be empty before it can be deleted.
+
+  Synopsis: ok = DeleteFile( name );
+
+  ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+            could delete the file/directory, else FALSE which
+            means something went wrong. (Eg. disk write-
+            protected, directory not empty etc.)
+
+  name:     (char *) Pointer to a string containing the name
+            of the file/directory you want to delete. 
+
+
+CreateDir()
+
+  This function creates a new directory, AND "locks" is
+  automatically. (Remember to unlock the directory later on.)
+
+  Synopsis: lock = CreateDir( name );
+
+  lock:     (BPTR) Actually a pointer to a FileLock structure.
+            If lock is equal to NULL, AmigaDOS have not been
+            able to create the new directory.
+
+  name:     (char *) Pointer to a string containing the name
+            of the new directory.
+
+
+CurrentDir()
+
+  This function makes a specified directory "current
+  directory". You need to lock the new directory (new_lock)
+  before you can make it the current directory. The function
+  returns the old current directories lock so you can unlock
+  it if necessary.
+  
+  Synopsis: old_lock = CurrentDir( new_lock );
+  
+  old_lock: (BPTR) Actually a pointer to a FileLock structure.
+            It is the old current directory lock.
+  
+  new_lock: (BPTR) Actually a pointer to a FileLock structure.
+            The new current directory lock.
+
+
+Info()
+
+  This function returns information about a specified disk. You
+  specify which disk by either lock that disk, or a file/
+  directory on that disk.
+
+  Synopsis:  ok = Info( lock, info_data );
+  
+  ok:        (long) Actually a Boolean. It is TRUE if AmigaDOS
+             could get information about the disk, else FALSE
+             which means something went wrong.
+
+  lock:      (BPTR) Actually a pointer to a FileLock structure.
+
+  info_data: (struct InfoData *) Pointer to an InfoData
+             structure which will be initialized by the Info()
+             function. The problem with this structure is that
+             it must be on a four byte boundary, so you need
+             to use the function AllocMem() to get the right
+             type of memory for the structure. (See Example.)
+
+
+IoErr()
+
+  This function can be used to get more information about an
+  error message. Whenever you have used an AmigaDOS function
+  which did not work properly (you have received an error
+  message), you call this function and it will return an
+  explanation.
+  
+  Synopsis: error = IoErr();
+  
+  error:    (long) This field contains a flag returned by
+            IoErr() which can be: (I do not think I need
+            to explain what they mean.)
+
+            ERROR_NO_FREE_STORE
+            ERROR_TASK_TABLE_FULL
+            ERROR_LINE_TOO_LONG
+            ERROR_FILE_NOT_OBJECT
+            ERROR_INVALID_RESIDENT_LIBRARY
+            ERROR_NO_DEFAULT_DIR
+            ERROR_OBJECT_IN_USE
+            ERROR_OBJECT_EXISTS
+            ERROR_DIR_NOT_FOUND
+            ERROR_OBJECT_NOT_FOUND
+            ERROR_BAD_STREAM_NAME
+            ERROR_OBJECT_TOO_LARGE
+            ERROR_ACTION_NOT_KNOWN
+            ERROR_INVALID_COMPONENT_NAME
+            ERROR_INVALID_LOCK
+            ERROR_OBJECT_WRONG_TYPE
+            ERROR_DISK_NOT_VALIDATED
+            ERROR_DISK_WRITE_PROTECTED
+            ERROR_RENAME_ACROSS_DEVICES
+            ERROR_DIRECTORY_NOT_EMPTY
+            ERROR_TOO_MANY_LEVELS
+            ERROR_DEVICE_NOT_MOUNTED
+            ERROR_SEEK_ERROR
+            ERROR_COMMENT_TOO_BIG
+            ERROR_DISK_FULL
+            ERROR_DELETE_PROTECTED
+            ERROR_WRITE_PROTECTED
+            ERROR_READ_PROTECTED
+            ERROR_NOT_A_DOS_DISK
+            ERROR_NO_DISK
+            ERROR_NO_MORE_ENTRIES
+
+
+
+11.9  EXAMPLES
+
+Example1
+  This program collects ten integer values from the user, and
+  saves them in a file ("HighScore.dat") on the RAM disk. The
+  memory is then cleared, and the file cursor is moved to the
+  beginning of the file. The file is then loaded into the
+  memory again, and printed out.
+
+Example2
+  This example demonstrates how to create a directory called
+  "MyDirectory" on the RAM disk.
+
+Example3
+  This example demonstrates how to rename files and directories.
+  It will rename the file Example 1 created (called
+  "HighScore.dat") to "Numbers.dat". It will also rename the
+  directory Example 2 created ("MyDirectory") to "NewDirectory".
+
+Example4
+  This example demonstrates how to delete files and directories.
+  It will delete the file Example 1 and directory Example 2
+  created. (The file and directory are supposed to have been
+  renamed by Example 3.)
+
+Example5
+  This example demonstrates how to attach a short comment to a
+  file. A short file called "Letter.doc" will be created, and a
+  short comment will be attached. To see the comment use the
+  CLI command "List".
+
+Example6
+  This example demonstrates how to protect and unprotect files.
+  The file Example 5 created ("Letter.doc") will be protected,
+  and we will then try to delete it (unsuccessfully). We will
+  then unprotect the file and then try to delete it
+  (successfully).
+
+Example7
+  This program takes a file/directory/device name as
+  parameter, and prints out some interesting information about
+  it.
+
+Example8
+  This program takes a directory/device name as parameter,
+  and prints out all the file/directory-names inside it. This
+  example describes how to use Examine() and ExNext().

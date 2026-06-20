@@ -1,0 +1,21 @@
+ ifnd EXEC_ERRORS_I
+EXEC_ERRORS_I set 1
+*
+*  exec/errors.i
+*  Release 2.0
+*  for PhxAss
+*
+*  © copyright by F.Wille in 1993
+*
+
+IOERR_OPENFAIL	= -1
+IOERR_ABORTED	= -2
+IOERR_NOCMD	= -3
+IOERR_BADLENGTH = -4
+IOERR_BADADDRESS = -5
+IOERR_UNITBUSY	= -6
+IOERR_SELFTEST	= -7
+
+ERR_OPENDEVICE	= IOERR_OPENFAIL
+
+ endc

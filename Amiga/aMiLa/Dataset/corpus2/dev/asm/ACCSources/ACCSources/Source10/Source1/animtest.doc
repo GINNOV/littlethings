@@ -1,0 +1,244 @@
+
+
+
+			AnimTest.s Documentation
+			========================
+
+
+Ok. Having written this program, it's time to document it. First, the data
+structures need to be documented. There are two such structures, one for the
+animation data itself, and one for the graphic data used in the animations.
+The Anim data structure, of my own devising, defines where on the screen the
+actual graphic data is to be plotted, and pointers to the various animation
+frames. It also contains a pointer to other Anim structures, so that all Anim
+structures form a linked list, this list being processed by the various rou-
+tines. The Anim structure looks like this:
+
+
+		rsreset
+anim_next	rs.l	1	;ptr to next anim struct
+anim_scrn	rs.l	1	;ptr to screen area
+anim_bob	rs.l	1	;ptr to bob struct array
+anim_bgnd	rs.l	1	;ptr to background save area
+
+anim_x		rs.w	1	;coordinates
+anim_y		rs.w	1
+
+anim_fnum	rs.w	1	;frame number
+anim_fmax	rs.w	1	;max frame no
+
+anim_dir	rs.w	1	;anim dir + or - 1
+
+anim_sizeof	rs.w	0
+
+
+The first entry is a pointer to the next Anim structure to process, or NULL
+if this is the last structure in the sequence. All animation structures are
+to be arranged in depth-order, of more later. The next is a pointer to the
+screen to be used (the start of the first bitplane-assumes that all screen
+bitplanes are arranged contiguously in memory). Then there is a pointer to
+a Bob structure array (the Bob structure will be defined below), followed by
+a pointer to an area of memory into which background graphic data is to be
+saved prior to placing animation frame data on screen.
+
+	The anim_x and anim_y coordinate values are measured in pixels, the
+conversion to screen words and word offsets depending upon the chosen size of
+the screen (see the BP_xxxx equates in the source file).
+
+	The anim_fnum value is the current animation frame number, starting
+from frame zero. The anim_fmax value is the total number of animation frames
+in this animation instance, and the legal range of values of anim_fnum is in
+the range zero to (anim_fmax - 1).
+
+	And finally, anim_dir is set to +1 if the animation is in a forward
+direction (frame N to frame N+1), and -1 if the animation is in a backward
+direction (frame N to frame N-1). The animation routines cycle the animation
+frames correctly, setting anim_fnum to the appropriate value once the legal
+endpoint values are reached.
+
+	Now for the Bob structure. The Anim structure above contains a poin-
+ter to an array of these, arranged contiguously in memory. The pointer points
+to the first member of the array. Bob structures are data structures contain-
+ing information about a single animation frame, such as the graphic data that
+forms this animation frame, its size, and the number of bitplanes making up
+the animation frame. The Bob structure looks like this:
+
+
+		rsreset
+bob_image	rs.l	1	;ptr to graphic data
+bob_mask	rs.l	1	;ptr to mask if needed
+
+bob_width	rs.w	1	;size of bob
+bob_height	rs.w	1
+bob_planes	rs.w	1	;no of bitplanes
+
+bob_xoff	rs.w	1	;x & y offsets for this frame
+bob_yoff	rs.w	1
+
+bob_soff	rs.l	1	;bob screen offset
+
+bob_bcon0	rs.w	1	;all of these entries
+bob_bcon1	rs.w	1	;pre-initialised for
+bob_fwm		rs.w	1	;the interrupt blitter
+bob_lwm		rs.w	1	;routine
+
+bob_cptr	rs.l	1
+bob_bptr	rs.l	1
+bob_aptr	rs.l	1
+bob_dptr	rs.l	1
+
+bob_cmod	rs.w	1
+bob_bmod	rs.w	1
+bob_amod	rs.w	1
+bob_dmod	rs.w	1
+
+bob_bsize	rs.w	1
+
+bob_sizeof	rs.w	0
+
+
+The entries of the structure requiring pre-initialisation are the entries up
+to bob_yoff. All others are conditioned by the animation routines or by the
+special routine InitAnims().
+
+	First, bob_image is a pointer to the actual graphic data, arranged in
+contiguous bitplanes. The bob_mask entry is a pointer to any mask data, con-
+sisting of one bitplane.
+
+	The bob_width entry is the number of pixels across. Bob_height is the
+number of raster lines deep. bob_planes is the number of bitplanes making up
+this image.
+
+	Bob_xoff and bob_yoff are x and y offsets from the position of the
+animation specified in the Anim structure, to take account of such matters as
+correct graphic alignment for walking/running/jumping figures etc. Anyone who
+does not know what these entries are provided for should obtain a text on the
+theory of animation before proceeding further.
+
+	The bob_soff entry is a pre-computed value updated by the InitAnims()
+routine, forming an offset from the top left hand corner of the screen to the
+first data word of the screen to be accessed by the blitter.
+
+	All of the remaining entries are pre-computed copies of the data val-
+ues to be written directly to the blitter registers. These, for efficiency,
+are pre-computed and then passed directly to the blitter within the various
+routines by MOVEM instructions. This minimises overhead during the code that
+activates the blitter, because this code resides within an interrupt routine
+and consequently should be executed as quickly as possible.
+
+	That's the data structures dealt with. Now for the code itself. This
+consists of the InitAnims() routine, called before the animation system is
+set in motion, the interrupt handler for the level 3 interrupt, and the act-
+ual routines to perform the animation, called from within the interrupt code.
+
+	InitAnims() takes a pointer to the first Anim structure in A0, and a
+pointer to the top left hand corner of the screen memory (organised as conti-
+guous bitplanes) in D0. It pre-computes the blitter register values for all
+of the Bob structures attached to each Anim structure, and the values of the
+screen offsets for each such animation frame. Since all Anim structures are
+linked together in a list, the routine processes all linked Anim structures
+in one go.
+
+	The level 3 interrupt handler provided with this code performs some
+simple counter incrementations depending upon which level 3 interrupt source
+triggered activation of the handler. If the blitter interrupt caused activa-
+tion of the handler, however, then the interrupt routine calls the animation
+routines according to the state of a variable called AnimLock, private to the
+interrupt handler.
+
+	AnimLock can take one of four values. These are:
+
+
+	LOCK_REPLACE	: Causes the interrupt routine to call
+			  the IntBlitRep() routine, which replaces
+			  previously saved background data
+
+	LOCK_SAVE	: Causes the interrupt routine to call
+			  the IntBlitSave() routine, which saves a
+			  new set of background data prior to the
+			  background being overwritten
+
+	LOCK_PLOT	: Causes the interrupt routine to call the
+			  intBlitAnim() routine, which plots the
+			  animation frame data onto the screen. In
+			  this incarnation, IntBlitAnim() masks the
+			  data onto the screen, allowing transparent
+			  areas to exist within the animation frames
+
+	LOCK_DISABLE	: When AnimLock equals this value, the blitter
+			  is no longer activated.
+
+
+So, if there exist previously saved backgrounds in the Anim buffers, setting
+AnimLock to LOCK_REPLACE and triggering a blitter interrupt begins the pro-
+cess of replacing these backgrounds upon the screen. Once the final call to
+IntBlitRep() is made, it checks to see if the end of the linked list is made
+and then resets the interrupt routine's private copy of the pointers required
+ready for the first call of IntBlitSave(), which will cause new background
+data to be saved in those Anim buffers to take account of movement of graphic
+objects about the screen. IntBlitRep() also changes the AnimLock value to the
+value LOCK_SAVE to force the interrupt handler to initiate this procedure.
+
+	Once all of the new backgrounds are saved, IntBlitSave() resets the
+pointers again, and changes the AnimLock value to LOCK_PLOT, so that when the
+interrupt handler is called again, it will now call IntBlitAnim(), and plot
+the graphic objects on screen.
+
+	And, yes, once all of the animation frames are plotted, IntBlitAnim()
+changes the AnimLock again, this time to LOCK_DISABLE, so that no more blit-
+ter interrupts will be processed.
+
+	This is OK for one set of animation frame plots, but how is the seq-
+uence continued? This is the task of the Vertical Blank interrupt. The level
+3 interrupt handler contains a VBL handler, whose task is to change the Anim-
+Lock back to LOCK_REPLACE to initiate the sequence all over again, once a new
+screen frame is to be generated. So the whole system is synchronised with the
+generation of the screen image.
+
+	But to start off, there are NO saved backgrounds. All that has happ-
+ened in the code once the screen, Copper Lists, etc., have been set up, is a
+call to the InitAnims() routine. So, to start the sequence off, the AnimLock
+is set to LOCK_SAVE, to force a save of new backgrounds to start things off,
+and a blitter interrupt is forced using an instruction of the form:
+
+
+		move.w	#SETIT+BLIT,INTREQ(a5)
+
+
+From this point on, provided that the entire replace/save/animate sequence is
+completed within one video frame (i.e., 1/50th of a second) then this anima-
+tion sequence is repeated after every VBL interrupt. The current VBL routine
+does not check for the blitter finished condition, but can be adapted in this
+way to allow long animation sequences taking two or more video frames to be
+performed.
+
+	Now one final point needs to be covered. How are animation objects to
+be arranged in the list? The animation routines display animation objects in
+list traversal order, so if animation objects are to coexist, and overlap to
+provide an illusion of depth, those objects farthest back from the screen in
+the imaginary third dimension should be earliest in the list. Since pointers
+are used in the list, swapping the order around according to the values of an
+artificially introduced z coordinate (best inserted into the Anim structure
+after the anim_x and anim_y entries) can be performed using standard routines
+for managing linked lists (but in this code, NOT those for Exec list manage-
+ment because in this code, Exec has been killed off!) to change the order of
+the Anim data structures in the list.
+
+	As with all of my code appearing on ACC discs to date, the Animtest.s
+program is Public Domain, as is this DOC file. Please distribute it freely to
+Amiga assembler coders old and new, along with this DOC file, to help more &
+more Amiga coders enjoy their machines to the full.
+
+
+			Yours faithfully
+
+
+
+
+			Dave Edwards.
+
+
+
+
+
+

@@ -1,0 +1,65 @@
+Short:  Visual sorting algorithms in C
+Autor:  walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Uploader:  walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Type:  dev/src
+Requires:  C Compiler (e.g. gcc), StormMesa
+
+Visual demonstration of elemental sorting algorithms in C:
+
+ - Bubble Sort
+ - Selection Sort
+ - Insertion Sort
+ - Shell Sort
+
+Graphics output using OpenGL.
+
+OpenGL(R) is a registered trademark of Silicon Graphics, Inc.
+
+The executables included in this archive require 68030 cpu and 68881 fpu or better.
+
+The sources are highly portable.
+They shold work with all major (ANSI)C-compilers and operating systems.
+
+Testet on Amiga 4000/30 with CyberVision64/3D,
+AmigaOS 3.5, CyberGraphX 3, Warp3D 3.
+
+Compiled with gcc - the GNU C Compiler.
+
+
+Literature:
+
+Brian W. Kernighan, Dennis M. Ritchie:
+The C Programming Language
+
+Andrew Koenig: 
+C Traps and Pitfalls
+
+Robert Sedgewick:
+Algorithms in C
+
+Mason Woo, Jackie Neider, Tom David, Dave Shriner, Tom Davis:
+OpenGL 1.2 Programming Guide
+
+Renate Kempf and Chris Frazier:
+OpenGL Reference Manual
+
+Mark Kilgar:
+The OpenGL Utility Toolkit (GLUT) Programming Interface API
+
+
+
+World Wide Web:
+
+http://www.norman-interactive.com (my Homepage)
+
+http://www.informatik.uni-stuttgart.de (University Stuttgart, Dept. of Computer Science)
+
+http://www.ninemoons.com (GeekGadgets)
+
+http://www.haage-partner.com (Haage & Partner Homepage)
+
+http://www.sgi.com (Silicon Graphics - Inventor of OpenGL)
+
+http://www.OpenGL.org (OpenGL Homepage)
+
+

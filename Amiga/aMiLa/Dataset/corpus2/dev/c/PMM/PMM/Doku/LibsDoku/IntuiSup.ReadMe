@@ -1,0 +1,127 @@
+		Intuition Support Library v4.7
+		==============================
+
+Copyright:
+----------
+
+      © Copyright 1992, Freeware, All rights reserved
+
+   Distribution EXCLUSIVELY permitted to Fred Fish for his PD software
+   library. Distribution via FTP allowed too. Other forms of distribution
+   need the permission of the author.
+
+   No guarantee of any kind is made that this program is 100% reliable.
+   You use it on your own risk.
+
+Notes:
+------
+
+   This package contains a shared library with support routines for using
+   texts, borders, gadgets, menus and requesters with Kick 2.0 `look and
+   feel' under Kick 1.3 (and under Kick 2.0 too ;-).
+
+   Complete source code (> 700 kb) included.
+
+What's new in v3.0?
+-------------------
+
+· font support functions which uses internal list of available fonts
+· mouse pointer support functions: change/restore pointer which can be
+  nested, workbench busy pointer, move pointer
+· language support: texts of all ISUP gadgets can be changed at runtime via
+  external ASCII files
+· buffered ASCII file parser: detects C style comments, line continuation
+· hold down select button for one second over a cycle gadget to see a new
+  nifty feature of this gadget type
+· requester functions: auto request, custom requester with all ISUP
+  objects
+· C source code generator of the template editor is now implemented
+
+What's new in v4.0?
+-------------------
+
+· function to move and resize gadgets
+· flags for converting and printing numbers
+· more flags than DISABLED can be changed via ISetGadgetAttributes()
+· after displaying a requester mouse pointer position will be restored
+· changed USE_CURRENT_VALUE from ~0L to (1L << 31) !!!
+· all test programs now work on NTSC medres displays (200 scan lines) too
+· while using busy mouse pointer menus are disabled
+
+What's new in v4.1?
+-------------------
+
+· now requester supports rastered background around text area
+
+What's new in v4.2?
+-------------------
+
+· sub menu items now indicated by `»'
+· alternate color for menu item texts
+· now a small doc file (library/intuisup.doc) included
+
+What's new in v4.3?
+-------------------
+
+· RAWKEY used instead of VANILLAKEY for gadget hotkeys
+· IChangeMousePointer() has an additional parameter to remove ALL visible
+  gadgets if installing busy mouse pointer
+· new function IConvertRawKeyToASCII() to convert RAWKEY IntuiMessage to
+  ASCII character code
+· size of count gadget now changeable via IModifyGadgets()
+· lower and upper bound of count gadget now changeable via
+  ISetGadgetAttributes()
+· additional library test program (library/library_test2) to demonstrate the
+  use of more than one gadget lists in the same window
+· now better documentation for intuisup.library exists in form of a database
+  (library/intuisup.guide) for the hypertext help system AmigaGuide - thanks
+  to Michael Bjerking
+
+What's new in v4.4?
+-------------------
+
+· new flag for IOpenWindow() to center window over current position of mouse
+  pointer
+· additional centering type flags for requesters
+· now events are generated if the same entry of a list view or palette gadget
+  selected again
+
+What's new in v4.5?
+-------------------
+
+· new gadget data flag to allow list view entry texts with a different color
+  e.g. to mark directory entries in a file requester
+· new gadget data flags to justify (center, right) the input string within
+  input gadgets (string, integer)
+· interface code for M2Amiga Modula (library/M2AmigaModula) and Benchmark
+  Modula (library/BenchmarkModula) - thanks to Johann Semsrott and Mauricio
+  Hunt Rosales
+
+What's new in v4.6?
+-------------------
+
+· ISUP IntuiMessages now contain all the missing values from the original
+  IntuiMessages like window ptr and mouse position
+· now ISetGadgetAttributes() with parameters data1-3 set to USE_CURRENT_VALUE
+  really returns current setting of gadget
+· new open window flag to new flag to prevent adding of inner window offsets
+· new interface code for Benchmark Modula (library/BenchmarkModula) - thanks
+  to Mauricio Hunt Rosales
+
+What's new in v4.7?
+-------------------
+
+· now autorepeat of the arrow gadgets works under Kick 2.x too
+· new version of the template editor - thanks to Michael Bjerking
+
+Author:
+-------
+
+   Torsten Jürgeleit
+   Am Sandberg 4
+   W-5270 Gummersbach
+   Germany
+   Phone: ++49 2261 27400
+   eMail: mike@miba.obb.sub.org   (Since this is the account of a neighbour,
+				   it may take some time to answer :-)
+   Bug reports, flames, donations etc. are welcome !

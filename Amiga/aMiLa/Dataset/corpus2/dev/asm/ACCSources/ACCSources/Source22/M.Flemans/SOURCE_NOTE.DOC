@@ -1,0 +1,29 @@
+
+        ___________________________________________________________
+       | o |end:  moveq #0,d0     ; no cli errors              | o |
+       | o |      rts             ; bye                        | o |
+       | o |                                                   | o |
+       | o |                                                   | o |
+       | o | notes ....                                        | o |
+       | o |                                                   | o |
+       | o | BOOT-LOADER.s - how to chain an intro written to  | o |
+       | o |                 disk with a track writing util.   | o |
+       | o |                                                   | o |
+       | o | EQUALISER-NT-2.s - my second attempt at a good    | o |
+       | o |                    looking equaliser.             | o |
+       | o |                                                   | o |
+       | o | MOUSE-PLANE-MOVE.s - little test program to tell  | o |
+       | o |                      me via colours which way i   | o |
+       | o |                      was moving my mouse.         | o |
+       | o |                                                   | o |
+       | o |  Handshakes fly out out to all ACC contributers   | o |
+       | o |                                                   | o |
+       \ o |           `Lets make machine code fun`            | o |
+        \__|_____                                              | o |
+                 \________________________                     | o |
+                                          \    Mark Flemans    | o |
+       Thought for the day :               \___                | o |
+        Why does listing paper always          \   28.JAN.92   | o |
+         rip in the wrong place !!!!!!!         \______________| o |
+                                                               \_o_|
+

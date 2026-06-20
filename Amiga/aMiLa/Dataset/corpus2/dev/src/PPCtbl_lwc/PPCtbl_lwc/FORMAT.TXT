@@ -1,0 +1,737 @@
+ Output format of the Lightwave converter. (v3.4)
+ (C) 1996-97 TBL
+
+
+ The output data is splitted into 9 diffrent data blocks:
+
+  * A header block. Info where to find all other blocks.
+  * Scene data block. This describes how the scene is
+    built up. Number of objects etc.
+  * Animation data block. Here are all OBJECT-animation
+    data structures (currently not supporting anims)
+  * Motion data block. In this block all the precalced
+    motion splines are saved (in a bit compressed form)
+  * Image list data block. Here is a list of all "images"
+    in the scene. An image could be a reflectionmap a
+    bumpmap or a simple texture. (Also texture animation
+    could be fitted here (not supported yet!)).
+  * Image data block. In this data block all images and
+    bumpmaps are stored in an optimized way (explained
+    later).
+  * Palette data block. In this section all colours and
+    palette enterys are stored. Also precalcualted
+    gradiants etc is stored here.
+  * Object data block. Here is all objects stored.
+  * Surface description data block. Here you find all
+    information of a surface.
+
+ Before i go into each data block i want to make some few
+ things clear:
+
+
+  * All offsets in a file is in bytes
+  * 'Offset:' is the offset from the start of the data block
+  * 'Size:' is the size (ie 'l','w','b')
+  * 'l' indicates a longword ie 4 bytes
+  * 'w' indicates a word ie 2 bytes
+  * 'b' indicates a byte ie 1 bytes ;)
+  * a 's' before one of the above indicates a signed value
+  * Hexadecimal number is prefixed by a '$'-sign. All others
+    is assumed to be decimal.
+  * Vertexes range is from -2^23 to +2^23 ie 24 bit values.
+  * Angle range is from 0 to 1023 where 0 equals to 0 degrees
+    and 1024 equals to 360 degrees.
+  * All polygons has 3 vertexes.
+  * Lightwave stores the angles as Head,Pitch,Bank in a system
+    defined as this:    X-axis is the horizontal (Pitch)
+                        Y-axis is the vertical  (Head)
+                        Z-axis is the depth   (Bank)
+
+
+ The output file begins with the header block:
+
+## Header block ############################################################
+
+Offset: Size: Description:
+  0  l  Object data block offset    (from start of file)
+  4  l  Object data block size
+  8  l  Image list block offset    (from start of file)
+ 12  l  Image list block size
+ 16  l  Surface description block offset  (from start of file)
+ 20  l  Surface description block size
+ 24  l  Image data block offset    (from start of file)
+ 28  l  Image data block size
+ 32  l  Palette data block offset    (from start of file)
+ 36  l  Palette data block size
+ 40  l  Object animation data block offset  (from start of file)
+ 44  l  Object animation data block size
+ 48  l  Motion data block offset    (from start of file)
+ 52  l  Motion data block size
+ 56  l  Scene data block offset    (from start of file)
+ 60  l  Scene data block size
+ 64  l  Number of vertexes in world (That needs to be rotated)
+        Good for memoryallocation.
+ 68  l  Number of polygons in world
+ 72  b  Dummy
+ 73  b  Background red value    (Backdrop colour in lightwave)
+ 74  b  Background green value 
+ 75  b  Background blue value
+
+
+## Scene data block ########################################################
+
+Offset: Size: Description:
+  0  l  Number of frames in animation.
+  4  l  Number of frames for camera motion.
+  8  l  Camera motion loop flag. 0=No loop
+ 12  l  Camera motion offset (in motion data block)
+ 16  l  Number of object entrys in the scene.
+
+ And now follows a description for each object (Object entry). (28 bytes)
+
+Offset: Size: Description:
+  0  l  Number of frames for object motion
+  4  l  Object motion loop flag. 0=No loop
+  8  l  Object motion offset (in motion data block)
+ 12  l  Parent object offset (Offset to parent objectentry)
+        from start of Scene data block. 0=No parent.
+ 16  l  Object type currently just 2 for normal objects
+        and 3 for flares (Front face squares)
+ 20  l  Vertex addition constant (described after
+        scene data block).
+ 24  l  Object animation data offset (in object anim-
+        ation data block)  (For flares this is an offset
+        directly into the object data block where the flare data
+        is stored).
+
+ This repeats until all objects are described.
+
+- Vertex addition constant:
+
+  In order to use several objects and the ability to use the same
+  object on multiple places in the world you need to know the offset
+  where the rotated coords will appear (in the rotated coords list)
+  All polygons has a point offset (from where to get the x,y,z-point).
+  The vertex addition constant is this offset in the rotated list.
+  So after you've been rotating all objects (in order of apperance in
+  the scene data block),when processing the polygons this constant
+  should be added to the point offset for every point in the polygon.
+  (This system mustn't be used but is included anyway)        
+
+## Animation data block ####################################################
+
+ For each animationentry:
+
+Offset: Size: Description:
+  0   l Number of frames in object animation.
+  4   l Loop flag. 0=No loop
+  8   l Morph mode 0=Precalculated,other=realtime
+      If the number of frames is less then 2 the morphmode will
+     be set to 0 at all times.
+
+ And now for each morph mode:
+
+mode 0:
+
+ The following block is repeated "number of frames"-times:
+
+  0   l Object data offset 0
+      This is the offset (in the object data block) that should
+     be used for:  * Polygon descriptions
+          * UV-texturemapping (if any)
+  4   l Object data offset 1
+      This is the offset (in the object data block) that should
+     be used for:  * Rotation of normal coords
+          * Rotation of phong coords (if any)
+mode 1:
+
+ 12   l Object data offset 0
+      This is the offset (in the object data block) that should
+     be used for:  * Polygon descriptions
+          * UV-texturemapping (if any)
+
+ The following is repeated "#of frames" times:
+
+  0   l Object data offset 1 (Morph from coords)
+      This is the offset (in the object data block) that should
+     be used for:  * Rotation of normal coords
+          * Rotation of phong coords (if any)
+  4   l Object data offset 2 (Morph dest coords)
+  8   fl Morph factor. 0=Object 1,256=Object 2
+
+ How to use the realtime morphfunction:
+
+  This scaling is done before rotation and could look like this:
+
+    t =*(object1++);
+    x0=*(object2++)-t;
+    x0*=morph_factor;
+    x0>>=8;
+    x0+=t;
+
+  And the same goes for y,z and all phongvertexes (if any).
+
+ *NOTE* The object at object data offset 1 contains only information
+   about vertexes and phongvertexes (if any).
+
+
+ Routine to get current animation frame: (and morph factor)
+
+   t                    Global time position (The current time)
+   anim_blockstart      Byte pointer to object animation block start
+   frames               Unsigned long register (4 bytes)
+   offset0              Destination unsigned long offset to object
+                        data (in object data block)
+   offset1              Destination unsigned long offset to object
+                        data (in object data block)
+   offset2              Destination unsigned long offset to object
+                        data (in object data block)
+   morph_factor         Destination unsigned word morph factor.
+   morph_type           Destination flag. Used to tell object-
+                        rotation routines if realtime morphing
+                        is to be used.
+
+  frames=(LONG *)*(anim_blockstart+anim_offset);/* # of frames */
+  if(frames<2)goto ok;     /* Only one frame ? */
+  if(t<frames)goto ok;     /* Time less then frames */
+  if((LONG *)*(anim_blockstart+anim_offset+4)==0){/* Looping off? */
+   t=frames-1;       /* Looping off use last */
+   goto ok;
+  }
+  t%=frames;        /* Modulo to get time */
+ ok:
+  if((LONG *)*(anim_blockstart+anim_offset+8)==0){ /* Precalculated */
+   t<<=3;         /* Frame no*8 in t */
+   t+=anim_offset;       /* Add animation offset*/
+   t+=12;         /* Skip animheader */
+   offset0=(LONG *)*(anim_blockstart+t); /* Read offset 0 */
+   offset1=(LONG *)*(anim_blockstart+t+4); /* Read offset 1 */
+   morph_type=0;       /* Set morph type flag */
+  }else{          /* Realtime morph */
+   offset0=(LONG *)*(anim_blockstart+anim_offset+12);/* Get ofs 0 */
+   t*=12;
+   t+=anim_offset;
+   t+=16;
+   offset1=(LONG *)*(anim_blockstart+t); /* Read ofs 1*/
+   offset2=(LONG *)*(anim_blockstart+t+4); /* Read ofs 1*/
+   morph_factor=(WORD* )*(anim_blockstart+t+8);/* Get morph_factor */
+   morph_type=1;       /* Set morph type flag */
+  }
+
+## Motion data block #######################################################
+
+   The motion data block is quite odd. It's made so that the vertexes
+   should take as little space as possible. That's why it uses bytes/bits
+   instead of longwords.
+
+ For every motion entry:           (13 bytes)
+
+  Bitoffset: Bits: Description:
+    0    s24    Here is a signed X-position value. The MSB is stored
+                in the first bit and the LSB in the last. (Watch out PC-owners ;)
+    24   s24    Here is a signed Y-position value. The MSB is stored
+                in the first bit and the LSB in the last. (Watch out PC-owners ;)
+    48   s24    Here is a signed Z-position value. The MSB is stored
+                in the first bit and the LSB in the last. (Watch out PC-owners ;)
+    72    10    Here is the X-angle value. The MSB is stored in the
+                first bit and the LSB in the last. (Watch out PC ;)
+    82    10    Here is the Y-angle value. The MSB is stored in the
+                first bit and the LSB in the last. (Watch out PC ;)
+    92    10    Here is the Z-angle value. The MSB is stored in the
+                first bit and the LSB in the last. (Watch out PC ;)
+   102     2    2 Dummy bits
+
+ *NOTE* To get the correct position and angle of an object you need
+   to check the parentobject offset in the scene data block and
+   add the parent objects position and angle aswell. This procedure
+   is repeated until parent object offset is zero. (Or use the mother
+   objects matrix instead of the camera, as we do... :)
+
+ How to get the values: (in C source code)
+
+   t       Global time position (The current time)
+   motion_blockstart Byte pointer to motion block start (unsigned)
+   BYTE    Defined as unsigned char (1 byte unsigned)
+   WORD    Defined as unsigned int (2 bytes unsigned)
+   LONG    Defined as unsigned long (4 bytes unsigned)
+   xpos    long xpos dest (long=4 bytes signed)
+   ypos    long xpos dest (long=4 bytes signed)
+   zpos    long xpos dest (long=4 bytes signed)
+   xang    WORD xangle dest
+   yang    WORD yangle dest
+   zang    WORD zangle dest
+   temp    LONG temp variable
+
+   if(motion_frames<2){  /* Got only one frame!! */
+    t=0;     /* t is now frame number */
+    goto ok;    /* Framenumber ok */
+   }
+   if(t<motion_frames)goto ok; /* if true t=frame number */
+   if(motion_loop!=0){   /* if looping is on */
+    t%=motion_frames;  /* t=frame number */
+    goto ok;
+   }
+   t=motion_frames-1;   /* no loop=t=last frame */
+  ok: motion_offset+=(t*13);  /* correct offset due to time */
+   xpos=(long)*(motion_blockstart+motion_offset++);
+   xpos<<=8;     /* Put first in place
+   xpos|=(BYTE)*(motion_blockstart+motion_offset++);
+   xpos<<=8;     /* Put second in place
+   xpos|=(BYTE)*(motion_blockstart+motion_offset++); /* Where done! */
+   ypos=(long)*(motion_blockstart+motion_offset++);
+   ypos<<=8;     /* Put first in place
+   ypos|=(BYTE)*(motion_blockstart+motion_offset++);
+   ypos<<=8;     /* Put second in place
+   ypos|=(BYTE)*(motion_blockstart+motion_offset++); /* Where done! */
+   zpos=(long)*(motion_blockstart+motion_offset++);
+   zpos<<=8;     /* Put first in place
+   zpos|=(BYTE)*(motion_blockstart+motion_offset++);
+   zpos<<=8;     /* Put second in place
+   zpos|=(BYTE)*(motion_blockstart+motion_offset++); /* Where done! */
+   temp=(BYTE)*(motion_blockstart+motion_offset++);  /* Read */
+   temp<<=8;
+   temp=(BYTE)*(motion_blockstart+motion_offset++);   /* a */
+   temp<<=8;
+   temp=(BYTE)*(motion_blockstart+motion_offset++);   /* Longword */
+   temp<<=8;
+   temp=(BYTE)*(motion_blockstart+motion_offset++); /* a'la mot. */
+   xang=(WORD) ((temp>>22)&0x3ff);
+   yang=(WORD) ((temp>>12)&0x3ff);
+   zang=(WORD) ((temp>>2)&0x3ff);
+
+   And we're done !!!
+
+## Imagelist data block ####################################################
+
+ For each imageentry:          (16 bytes)
+
+Offset: Size: Description:
+
+  0  l  Image buffer offset. Image start offset (in image data-
+        block). If it's a texture- or a bump- image offset it will
+        point to the upper left coorner of the image. If it's a
+        reflection image offset it will point to the left center
+        edge.
+  4  l  Palette buffer offset. Palette start offset (in palette-
+        data block).
+  8  w  Number of frames
+ 10  w  Frame speed
+ 12  b  Frame loop flag (0=No loop)
+ 13  b  Image width/2
+ 14  b  Image type  0 = Texture
+        1 = Reflection
+        2 = Bump
+ 15  b  Image height/2
+
+
+How to use the image entry (Need to do like this for animation support)
+
+  Exaple C function how to get Image and Palette offsets.
+
+  void GetImageOffset(BYTE * Entry,LONG Time,LONG * Image,LONG *Pal){
+  LONG t;
+  WORD speed;
+  WORD frames;
+   frames=*((WORD *)(Entry+8));
+   speed=*((WORD *)(Entry+10));
+   t=Time/(LONG)speed;
+   if(*(Entry+12)==0){    /* No looping */
+    if(t>=(LONG)frames)t=frames-1;
+   }else{       /* Looping */
+    t%=frames;
+   }
+   Entry+=(t<<4);
+   *(Image)=*((LONG *)(Entry));
+   *(Pal)=*((LONG *)(Entry+4));
+  }
+
+
+Texture pointer:  --> ____________________________________________________
+                      |                               |                   |
+(can be odd or even   |                               |                   |
+ offset)              | Image                         |                   |
+                      |                               |                   |
+                      |                               |                   |
+                      +-------------------------------+                   |
+                      |                                                   |
+                      |___________________________________________________|
+
+Reflection pointer:-->_____________________________________________________
+                      |                               |                   |
+(Always even offset)  |                               |                   |
+                      | Image                         |                   |
+                      |                               |                   |
+                      |                               |                   |
+                      +-------------------------------+                   |
+                      |                                                   |
+                      |___________________________________________________|
+
+Bump pointer:     --> ____________________________________________________
+                      |                               |                   |
+(Always even offset)  |                               |                   |
+                      | Image                         |                   |
+                      |                               |                   |
+                      |                               |                   |
+                      +-------------------------------+                   |
+                      |                                                   |
+                      |___________________________________________________|
+
+
+## Image data block ########################################################
+
+ The image data block could be seen as a big chunky block (8 bits) with
+ the size 512x(YSize). In the image block you find the following data:
+
+  * Texture images. Textures can be located on both odd and even start
+    offsets, and uses 1 byte/pixel. (Flareimages are treated as
+    textures)
+  * Relfection images. Reflection images are always located at a even
+    start offset, and uses 1 byte/pixel.
+  * Bump images. Bumpimages are always located at a even start offsets,
+    and uses 2 bytes/pixel.
+
+ Maximum image size are 256 pixels in width. Why? The buffer was 512 pixels
+ wide??? Well every pixel of the image is stored on EVERY SECOND pixel in
+ the image buffer!!! Like this:  T.T.T.T.T.T  T=Texture
+         T.T.T.T.T.T  .=What ever
+ Why the heck are we doing this???? Well simply because when doing
+ reflection+texture-mapping we need to have the reflection colour in the
+ higher 8 bits (of a word) and the texture colour in the lower 8 bits. Then
+ the only thing we need to do is to move a word (from reflection) to a
+ register,and then move a byte (from texture) and there we have our R<<8+T.
+ This (R<<8+T) value is used as an index in a palette scale.
+ Isn't this taking up much more memory???? No not much because the normal
+ textures can be at byte boundries (even or odd) so the program try's to
+ place textures "between" the reflection images like this:
+         RTRTRTRTRTRT T=Texutre
+         RTRTRTRTRTRT R=Reflection
+ The reson why having a fixed width of textures (256(*2)) is to speed up
+ texturemapping. However this doen't meen that our textures have to be 256
+ pixels wide.
+
+ Bump textures are stored diffrently. Every "bump" pixel uses 2 bytes in the
+ image buffer. First byte is the Y-distortion value and the second is the X.
+ A bump map look like this:      yxyxyxyxyxyx    X=X distortion
+                                 yxyxyxyxyxyx    Y=Y distortion
+
+
+## Palette data block ######################################################
+
+ This block could seem a bit odd but in the end you'll se that it's the
+ best way of storing colours etc. The block could be seemed as a 32 bit
+ truecolour image ( <Dummy>,R,G,B byte order). The "image" is always
+ 256 pixels (1024 bytes) wide. Then why are we doing something like that??
+ Well when doing reflection+texture mapping we take the reflection colour
+ value (for evry point this is) and stores it in the upper 8 bits (of a
+ word) data register. ie:  $RR00. After that we read the texture colour
+ value (as a byte) to the lower 8 bits of the same register. Then we
+ have something like this: $RRTT. This data register is now an offset in
+ this palette "image". But then the table will always take 256*256*4
+ bytes of memory!!!! That's not true !! Concider this the reflection
+ image have 64 colours and the texture image got 32 colours. Then the
+ space in the buffer will be 32*64 colours. But the offset will still be
+ R<<8+T. Since the width of the buffer is 256 (and this table is 32) we
+ can easily fit another table (if any) "besides" it!! Watch:
+
+     Table 1      Table 2
+   0     32    128         168  1024 bytes
+     ___________________________________________________________
+  0 | rgb rgb rgb rgb|           | rgb rgb rgb|                 |    
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |    
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |    
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |    
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+    | rgb rgb rgb rgb|           | rgb rgb rgb|                 |
+  64 ------------------------------------------------------------
+
+ We can fit 256/32=8 tables besides eachother!!! Confused??? Don't be
+ because the converter makes all tables and put them in the palette buffer
+ all you need to do is to take the start offset and add the (R<<8+T) to
+ get the colour you want.
+   Normal palette data is stored as N-number of colours continusly.
+
+## Object data block #######################################################
+
+ For every "real" objectentry: (Flares described last) (Various size)
+
+Offset: Size: Description:
+  0   l Number of vertexes in object.
+  4   l Vertex start offset (from beginning of objectentry).
+  8   l Number of phongvertexes. 0=No phongrotation needed.
+ 12   l Phongvertex start offset (from entrystart).
+ 16   l Number of polygons in object.
+ 20   l Polygon start offset (form beginning of objectentry).
+ 24   l UV texture coords start offset (from entry start).
+ 28   fl Maximum radius.
+    This is an interesting value, this value is the biggest
+    radius that any vertex in this object (at any angle), seen
+    from the object center. Why is this interesting??? Well
+    for an instance you can use this value to easy check if an
+    objects is visable!!! If it's not you don't need to rotate
+    and process this object!! To do this just follow theese
+    steps:
+      * Rotate the object center. (With camera)
+          rx=CR(PX-CX)
+          ry=CR(PY-CY)
+          rz=CR(PZ-CZ)
+      * Before projection let:
+          x2=rx-MaxRad
+          y2=ry-MaxRad
+          z2=rz-MaxRad
+          rx=rx+MaxRad
+          ry=ry+MaxRad
+          rz=rz+MaxRad
+          z3=rz
+      * Now project theese values as normal. (Using rz,
+        don't project z2,z3)
+      * Now test the following:
+          if x2> (VievSize/2) then skip object
+          if y2> (VievSize/2) then skip object
+          if rx> (-VievSize/2) then skip object
+          if ry> (-VievSize/2) then skip object
+          if z2< NearClipZ then skip object
+          if z3> FarClipZ then skip object
+    Easy!?!?!? If you make a big world with many objects, this
+    little check will speed it up alot!!! Just one rotation to
+    check if the whole object is out of sight or not!!!
+
+ Vertex data description:
+
+  For every vertex:
+
+  0   l Vertexuse flag. If this flag is 0 the vertex isn't used in
+      the object. This is not so useful info, but on phong-
+      vertexes it's VERY useful.
+  4   fsl X coordinate
+  8   fsl Y coordinate
+ 12   fsl Z coordinate
+
+ Phongvertex data description:
+
+  For every phongvertex:
+
+  0   l Phongvertexuse flag. If this flag is 0 the phongvertex
+        isn't used in the object. This is useful on some objects
+        imagine a texturemapped car with reflectionmapped wind-
+        screens, in such an object maybe just 8 phongvertexes
+        needs to be rotated!! You can save alot of rotations by
+        testing this flag! (In later version there will be a
+        flag in the objectheader that tells you if to test this
+        flag or not. I mean the test takes some time aswell but
+        if let's say only 66% of the phongvertexes are used then
+        this test is useful.)
+  4   fsl X coordinate
+  8   fsl Y coordinate
+ 12   fsl Z coordinate
+
+ Polygon data description:
+
+  For every polygonentry:
+
+  0   l Vertex 0 number * 16 (The reason for multipling this one
+      with 16 is quite obvious. It speeds up the address-
+     calculation)
+     *NOTE* Remember to add the vertex addition constant found
+     in the scene data block, BEFORE any shifting is done.
+  4   l Vertex 1 number * 16
+  8   l Vertex 2 number * 16
+ 12   w Surface offset (in surface data block, i.e surface-
+        number*16)
+ 14   w Polygon use flag
+ 16   fsl Plane ekv A value
+ 20   fsl Plane ekv B value
+ 24   fsl Plane ekv C value
+ 28   fsl Plane ekv D value
+
+ UV-data description:
+
+  For every UV-polygonentry:
+
+  0   fsl u0
+  4   fsl v0 This is the first texture coordinate
+  8   fsl u1
+ 12   fsl v1 This is the second texture coordinate
+ 16   fsl u2
+ 20   fsl v2 This is the Third texture coordinate
+ 24   fsl Dummy
+ 28   fsl Dummy
+
+ For every "flare" objectentry:         (96 bytes)
+
+Offset: Size: Description:
+  0   fl Maximum radius (see "real" object entry)
+  4   w Texture image number * 2. To get the correct offset in
+      the imagelist block multiply this value with 8.
+  6   w Surface offset * 2
+  8   fl Flare size (radius) (Needed to calc screen coords)
+ 12   w Texture width  (Needed for UV coords)
+ 14   w Texture height  (Needed for UV coords)
+ 16   fsl Texture X0
+ 20   fsl Texture Y0
+ 24   fsl Texture X1
+ 28   fsl Texture Y1
+ 32   fsl Texture X2
+ 36   fsl Texture Y2
+ 40   l Dummy
+ 44   l Dummy
+ 48   fsl Texture X0
+ 52   fsl Texture Y0
+ 56   fsl Texture X1
+ 60   fsl Texture Y1
+ 64   fsl Texture X2
+ 68   fsl Texture Y2
+ 72   l Dummy
+ 76   l Dummy
+ 80   b 25 (mode) (This is a surface for the flare (i.e Tmapped+transp)
+ 81   b Dummy
+ 82   b 1 (Double sided on)
+ 83   b Dummy
+ 84   w Texture image number * 2
+ 86   w Dummy
+ 88   l Dummy
+ 92   l Dummy
+
+
+## Surface description data block ##########################################
+
+ For every surfaceentry:          (16 bytes)
+
+Offset: Size: Description:
+  0   b Surface type descriptor this could be one of the
+      following:
+       0 Flatshaded
+       1 Texturemapped
+       2 Reflectionmapped
+       3 Reflcetion+texturemapped
+       4 Bump+reflectionmapped
+       5 Bump+reflection+texturemapped
+     6-7  Reserved
+     The same but with subtractive transparency
+       8 Flatshaded
+       9 Texturemapped
+      10 Reflectionmapped
+      11 Reflcetion+texturemapped
+      12 Bump+reflectionmapped
+      13 Bump+reflection+texturemapped
+     14-15 Reserved
+     The same but with additive transparency
+      16 Flatshaded
+      17 Texturemapped
+      18 Reflectionmapped
+      19 Reflcetion+texturemapped
+      20 Bump+reflectionmapped
+      21 Bump+reflection+texturemapped
+     22-23 Reserved
+     The same but with higher transparency
+      24 Flatshaded
+      25 Texturemapped
+      26 Reflectionmapped
+      27 Reflcetion+texturemapped
+      28 Bump+reflectionmapped
+      29 Bump+reflection+texturemapped
+     30-31 Reserved
+     The special halfbright mode
+      32 Halfbright transparency
+     The same with zero transparency (i.e colour 0 is transparent)
+      33 Texturemapped (0 in texture map for transparent)
+      34 Reflectionmapped (0 in reflection map for transparent)
+      35 Reflcetion+texturemapped (0 in texture map for transp)
+      36 Bump+reflectionmapped (0 in reflection map for transp)
+      37 Bump+reflection+texturemapped (0 in texture map)
+     38-39 Reserved
+
+ Now for every type: (Offset from surfaceentry start)
+
+ Flatshaded:
+  1   b Dummy
+  2   b Doublesided switch. 0=Not doublesided
+  3   b Dummy
+  4   l Colour offset. This is the offset to the colour located
+      in the palette data block.
+  8   l Dummy
+ 12   l Dummy
+
+ Texturemapped:
+  1   b Dummy
+  2   b Doublesided switch. 0=Not doublesided
+  3   b Dummy
+  4   w Texture image number * 2. To get the correct offset in
+      the imagelist block multiply this value with 8.
+  6   w Dummy
+  8   l Dummy
+ 12   l Dummy
+
+ Reflectionmapped:
+  1   b Reflectionshift value (Explained later)
+  2   b Doublesided switch. 0=Not doublesided
+  3   b Dummy
+  4   w Reflection image number * 2. To get the correct offset in
+      the imagelist block multiply this value with 8.
+  6   w Dummy
+  8   l Dummy
+ 12   l Dummy
+
+ Reflection+texturemapped:
+  1   b Reflectionshift value (Explained later)
+  2   b Doublesided switch. 0=Not doublesided
+  3   b Dummy
+  4   w Texture image number * 2. To get the correct offset in
+      the imagelist block multiply this value with 8.
+  6   w Reflection image number * 2. To get the correct offset in
+      the imagelist block multiply this value with 8.
+  8   l Palette scale offset. This is an offset in the palette data
+      block to a palette scale table.
+ 12   l Dummy
+
+ Bump+reflectionmapped:
+  1   b Reflectionshift value (Explained later)
+  2   b Doublesided switch. 0=Not doublesided
+  3   b Dummy
+  4   w Reflection image number * 2. To get the correct offset in
+      the imagelist block multiply this value with 8.
+  6   w Bump image number * 2. To get the correct offset in
+      the imagelist block multiply this value with 8.
+  8   l Dummy
+ 12   l Dummy
+
+ Bump+texture+reflectionmapped:
+  1   b Reflectionshift value (Explained later)
+  2   b Doublesided switch. 0=Not doublesided
+  3   b Dummy
+  4   w Texture image number * 2. To get the correct offset in
+      the imagelist block multiply this value with 8.
+  6   w Reflection image number * 2. To get the correct offset in
+      the imagelist block multiply this value with 8.
+  8   w Bump image number * 2. To get the correct offset in
+      the imagelist block multiply this value with 8.
+ 10   w Dummy
+ 12   l Dummy
+
+ Now to the reflectionshift value!!!
+ All values in the phongvertexes has a normalized range between -4095 and
+ 4095. The reflection shift value tells you how much you should shift
+ theese values down to get "inside" the reflection texture. I.e if the
+ reflection texture size is 256x256 the shiftvalue would be 5 meaning
+ that 4095 would be 4095/2^32 = 127.
+
+
+
+
+If you can't understand anything of this text.... don't read it again!
+
+
+
+
+Equalizer/TBL

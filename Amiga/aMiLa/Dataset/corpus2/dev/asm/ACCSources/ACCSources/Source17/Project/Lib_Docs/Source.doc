@@ -1,0 +1,56 @@
+
+		Generating acc.library
+		~~~~~~~~~~~~~~~~~~~~~~
+
+ If you have read the Project Document on this disc you will already know
+that I am using LibTool to assist in the creation of acc.library. Below are
+the steps involved :
+
+	1/ Write the source for all routines in library.
+	2/ Write an suitable .fd file to go with library source.
+	3/ Assemble library source to produce an object file of the
+	   functions.
+	4/ Run LibTool to generate the library startup source and include
+	   file.
+	5/ Assemble the startup source to produce a second object file.
+	6/ Link the two object files together along with small.lib ( this
+	   linker library is a smaller version of amiga.lib produced, I
+	   think, by Matt Dillon ). This produces the actual library.
+	7/ Edit the include file so it contains any required constants and
+	   macros.
+	8/ Test the library.
+	9/ If a bug is found, edit library source and go back to step 3.
+       10/ If there is a new routine to add, add it and go back to step 2.
+       11/ Be happy! 
+
+ Well I soon got fed up repeating the above, so I threw a script file
+together that preforms all the above tasks. It calls Genim2, LibTool, Blink
+and a custom program I've written called MakeInclude. The end result is a
+library called acc.library and a complete include file, all from one
+command at the CLI.
+
+ The whole project and the tools to produce it decrunch to a disc of their
+own. This was done to allow you to experiment, so please do. The script
+file has been set up to run from this disc.
+
+ If you add a routine to the lib.s source file, you should follow these
+steps:
+
+	1/ Make sure to add the name of your routine to the end of the XDEF
+	   list in lib.s
+ 	2/ Put an entry for your routine in the .fd file.
+	3/ Execute the script file from the CLI.
+	4/ Write, assemble and test a program that uses your function.
+
+ To create acc.library from the disc you are left with after decrunching,
+enter the following at the CLI:
+
+execute df1:make.exe
+
+				All the rest is done for you!
+
+ The documentation for LibTool is included on this disc. Read it for more
+insight on the workings of this great util.
+
+						Mark.
+

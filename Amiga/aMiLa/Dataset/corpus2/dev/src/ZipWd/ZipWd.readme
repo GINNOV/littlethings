@@ -1,0 +1,10 @@
+Short:        Example code of OS 2.xx zipping windows. V0.5
+Author:       Hans-Peter Guenther
+Version:      0.5
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+ZipWd is a little example code of the new OS 2.xx feature of zipping
+windows.  It does the same thing as clicking on the window's ZipGadget.
+It's also useful if you define a keyboard macro with ZipWd.  Requires
+AmigaOS 2.xx.  

@@ -1,0 +1,16 @@
+Short:        Auto-detach link library for DICE
+Author:       Jan van den Baard
+Uploader:     kas mink ping dk (Klaus Alexander Seistrup)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+
+DCBack 1.5 (22.4.93) -- Auto detach,  OS2.0 style commandline-parsing
+                        startup code for DICE
+
+
+-- 
+
+ "And the children of Israel repented them for Benjamin their brother, and
+  said, There is one tribe cut off from Israel this day."
+                                                              (Judges 21:6)

@@ -1,0 +1,225 @@
+
+				ACM Displayer
+				~~~~~~~~~~~~~
+					© M.Meany, April 1992.
+
+ Disclaimer
+ ~~~~~~~~~~
+ If this program crashes your machine and causes the loss of valuable
+documents then I'm sorry! I accept no responsability for the performance of
+this program on any Amiga. Use at your own disgression.
+
+ The program has been tested on the following configorations without ill
+effects to date:
+
+	A500+, 2 Meg CHIP, 2 Meg FAST, A590 20 Meg.
+	A500+, 2 Meg CHIP.
+	A500+, 1 Meg CHIP ( standard machine ).
+	A500, v1.2, 1/2 Meg CHIP, 1/2 Meg FAST.
+	A500, v1.2, 1/2 Meg CHIP ( standard machine ).
+
+ As you can see, I never owned a 1.3 machine!
+
+ General
+ ~~~~~~~
+ This program was written specifically for the ACC Hardware Programming
+Manual. The object was to enable a tutorial that explained particulars on an
+aspect of assembly language programming technique to be viewed, while
+allowing example source files to be viewed at the same time.
+
+ The user could be reading a tutorial when a reference to an example
+program crops up. So all that is required is to load the example and view
+that as well. This not being enough, the user is also given the option of
+running the example to see exactly what happens.
+
+ At all times, both the tutorial and current example are displayed.
+Switching between the two is as simple as pressing a key or mouse button.
+
+ As I stated above, the program was intended for use with the ACM disks. If
+you think you have could use it to present a subject other than programming
+then please write to me at the above address. There is no reason why IFF
+ILBM files and sample/tracker files cannot be implemented as well. This
+opens up the world of learning to Amiga enthusiasts. My address csn be
+found at the end of this file.
+
+ Users Point Of View
+ ~~~~~~~~~~~~~~~~~~~
+ This displayer is capable of displaying two text files at the same time.
+No great achievment in this day and age I admit. However, one of the files
+is a tutorial that is explaining some aspect of a topic to you. This file
+is displayed at the top of the screen under the heading 'Tutorial'.
+
+ The second file is an example that covers a specific subject in more
+detail. At the appropriate point in a tutorial, reference will be made to
+an example. You just load the example and read through it!
+
+ This displayer is intended for use as a learning tool for programmers. For
+this reason, the option of executing an example is also available. So you
+can read a tutorial, load examples when required and also see them running.
+
+ Unlike conventional menus/displayers this displayer is controlled by a
+config file. This means it has a list of what examples are available and
+what order they occur in. Hence, you only need to load the next tutorial,
+without worying what it is called, to see it! The program locates the file
+for you!
+
+ Only one of the two files loaded can be active at any one time. The active
+file is determined by looking at the titles. The tutorial text is headed
+with a title that says 'Tutorial', the example file by 'Example'. The active
+region has it's title displayed in 'Bold' text, the inactive in 'Italics'.
+
+ Also in the title line you can see your position in the file. In the case
+of the example you can also see your position in the example list.
+
+ When run, Displayer gives you the option of returning to where you last left
+off. This can save a lot of time and is idealy suited to a learning
+environment. When you quit you are given the option of saving your current
+position so you may quickly return to it at the start of your next session.
+
+ User Usage
+ ~~~~~~~~~~
+ Keyboard Options
+ ================
+ When the displayer is running, certain keys can be used to achieve a
+desired effect. These are detailed below. In all cases you can abort a
+selection by clicking on either the 'Cancel' gadget or the windows close
+gadget.
+
+ Key			Effect
+
+  Q			Will allow you to quit the displayer. A window will
+			open asking you to verify this option first.
+  L			Load an example: You are presented with the 
+			opportunity of loading either the next or previous
+			example. The string gadget starts off activated, so
+			you may simply enter the number of an example to
+			load. Entering no number into the string gadget will
+			cause the next example to load automatically.
+  R			Run current example: If you have an example loaded,
+			it will be executed so that you can see the result.
+  S			Search for text: You specify what string to search
+			for or if you wish to search for the Next/Previous
+			occurence of a string already defined. There is a 
+			quicker way of searching for Next/Previous occurence
+			of a text string, see below!
+  P			Print Text: You are given the option of printing the
+			current page/file of text.
+  B			Jump To Marker: If the author has inserted markers in
+			the tutorial or example, this function will move you
+			to either the Next or Previous one depending on your
+			selection.
+ TAB			Switch: Switches between the tutorial and the example
+			You can only operate on one text region at a time, 
+			this lets you switch between regions. You can tell
+			which region is active by looking at the titles, the
+			inactive regions title is displayed in italics.
+ Cursor Up		Scrolls you towards the start of the active region.
+ Shift + Cursor Up	Scrolls you towards the start of the active region
+			one page at a time.
+ Cursor Down		Scrolls you towards the end of the active region.
+ Shift + Cursor Down	Scroll you towards the end of the active region one
+			page at a time.
+ Cursor Left		Shortcut for Search-Previous.
+ Cursor Right		Shortcut for Search-Next. 
+ 
+ Mouse Control
+ =============
+ Some options can be simulated by using the mouse. This is an Amiga after
+all!
+
+Scroll Up:	By positioning the cursor in the top half of the active
+		display and pressing the left mouse button, you will cause
+		the text to scroll up. Hold the button down to repeat the
+		operation.
+Scroll Up:	By positioning the cursor in the first line of the active
+  Page		display and pressing the left mouse button, you will cause
+		the text to scroll up a page. Hold the button down to repeat
+		the operation.
+Scroll Down:	By positioning the cursor in the bottom half of the active
+		display and pressing the left mouse button, you will cause
+		the text to scroll up. Hold the button down to repeat the
+		operation.
+Scroll Down:	By positioning the cursor in the last line of the active
+   Page		display and pressing the left mouse button, you will cause
+		the text to scroll down a page. Hold the button down to
+		repeat the operation.
+Switch Region:	By positioning the cursor anywhere in the inactive region
+		and pressing the left mouse button, you will make that
+		region the active one.
+
+ Compilers Usage
+ ~~~~~~~~~~~~~~~
+ If you have taken it upon yourself to compile a teaching manual, you have
+my whole hearted sympathy!
+
+ To use this utility you need the following:
+
+ 1/ A tutorial for each subject covered.
+ 2/ Examples for each subject covered.
+ 3/ A control file for each tutorial.
+
+ The program only comes into it's own when used with a menu program such as
+Nico Francois ProgramSelector or my own Menu. 
+
+ Still, the CLI usage of this program is 'Displayer <control file>'.
+
+ The control file is built up as follows:
+
+Line  1:	Pathname of tutorial file.
+Line  2:	Pathname of 1st example file.
+Line  3:	Pathname of 2nd example file.
+Line  4:	Pathname of 3rd example file.
+   "		"	"	"	"
+   "		"	"	"	"
+Line  n:	Pathname of nth example file.
+Line  n+1:	A blank line! (( JUST PRESS RETURN ))
+
+ Executable Examples
+ ===================
+ If you intend to use executable examples from the displayer, then each
+example must have an extension that consists of two character. This
+includes the period, if used. The 'Displayer' program forms the name of the
+executable from the name of the example by chopping the last two character
+off the example name. For example:
+
+ACM:Exec/Eg_1.s			<The example filename>
+ACM:Exec/Eg_1			<The example filename formed by 'Displayer'>
+
+ Non Programming Examples
+ ~~~~~~~~~~~~~~~~~~~~~~~~
+ If you are devising a manual that requires either IFF ILBM pics/anims or
+IFF 8SXVS sample files, or RAW data files ( samples/bitmaps/modules ) then
+write to me with more details. I could be persuaded to customise the
+displayer ( non financial! An offer of services/help/etc would be most
+welcome ).
+
+ As more people stretch 'Displayer', the better it will get. I have already
+written versions that can load IFF ILBM files and NoiseTracker modules, my
+usual sidetrack when writing utilities these days!
+
+ Using 'Displayer'
+ ~~~~~~~~~~~~~~~~~
+ Anyone can use 'Displayer', the only rule is that you send me a copy of
+the production using it. I will not pass this on without your written
+permission.
+
+ Acknoledgements
+ ~~~~~~~~~~~~~~~
+ My thanks must go to the following people:
+
+	Steve Marshall		An excellent tutor.
+	Dave Edwards		For many a doc file.
+	Ray, Amiganuts PD	For getting me started.
+	My Wife, Daughter & Son	For being here!
+
+
+	Mark Meany,
+	12 Hinkler Road,
+	Thornhill,
+	Southampton,
+	Hant's,
+	England.
+
+ Live fast, code hard and die in a beautiful way.
+
+

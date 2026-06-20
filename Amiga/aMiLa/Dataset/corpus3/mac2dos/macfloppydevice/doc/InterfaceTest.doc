@@ -1,0 +1,46 @@
+
+		Interface Testing notes
+
+		June 26, 1989
+
+These notes represent guidelines defining non-disk testing of the interface
+board using a special test jig and a special test program.  The goal of this
+test environment is to provide a rapid GO-NOGO indication without full-scale
+testing of the interface using the standard M2D software.
+
+These tests are designed to detect shorting of adjacent pins, test all
+pull-ups, and test all active components.
+
+The design plan is as follows:
+
+1.  Rewire the test board to provide connectors for both ends of the interface.
+
+2.  Connect the board directly to the Amiga so that it functions as Df1.  That
+permits use of Sel2 and Sel3 as additional inputs.
+
+3.  Use 2 74153 1-of-4 selectors to sample 8 different signals, controlled by
+Sel2 and Sel3.  Signals tested are: CA0, CA1, CA2, LSTRB, MOTOR SPEED, SEL,
+DrvEnable, and +12.  (+5 is tested indirectly via other tests).
+
+4.  Tie Sel3 to Mac RdData to test the 1k pullup on the Mac RdData line.
+
+5.  Loop Amiga RdData to Amiga WrtData.  Tie Mac WrtData to Amiga WrtProt. 
+Then by toggling Sel3 and reading WrtProt, test the entire data chain (not
+tested by the data selectors).
+
+6.  Feed Sel2 through Amiga WrtEnable and take result from Mac WrtEnable to
+drive selectors.  This tests pull-up.
+
+7.  Mac RdData path is tested by reading Rdy line while toggling Sel3.
+
+8.  Activate Df0 to make sure that Rdy and RdData aren't shorted.
+
+9.  In general, when conducting each test, watch the state of all other pins to
+detect shorts.
+
+10. Test of +12 uses a resistor network to drop the voltage to +5.
+
+The software must conduct these tests quickly, and be specific about the error
+detected.  This will help identify the cause of the problem.  Specific
+components can usually be identified from a failing test.
+

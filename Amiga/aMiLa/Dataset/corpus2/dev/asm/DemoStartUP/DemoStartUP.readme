@@ -1,0 +1,102 @@
+Short:        AGA/P96/CGX Demo StartUP code.
+Author:       cyborg / industry (cyborg@indus3.org)
+Uploader:     spot / up rough (spot triad nu)
+Type:         dev/asm
+Version:      1.0
+Requires:     An Amiga
+Architecture: m68k-amigaos
+
+Use this to add support for modern amigas in your demos!
+
+INTRO
+
+There was a lot of discussion on  theme  "System  friendly  demos
+-Pro  et  Contra"  in magazines around, but the situation has not
+changed much for years. Still, most demos today  first  kill  the
+system,  and  then  they  start  to  do magic. There shouldn't be
+anything wrong or bad in this method if such demos could work  on
+most machines. But, reality is different. Most of demos will work
+only on AGA screens on TV, Video monitors or VGA monitors if  you
+have scandoubler. Also, most of them will not work at all if they
+are started from Workbench, so you are forced to reboot and start
+them without startup sequence.
+
+Today, many people have graphic cards. Writting support for every
+graphic  card  in demos is of course possible but it's pointless.
+So, the best way to get your demos working on most, if  not  all,
+Amiga  systems  and view them on different types of screens using
+different graphic chips is making your demo system friendly.
+
+Performace loss comparing to "system-unfriendly" demo is  totally
+exiguous. [ If you don't beleave try this startup. ]
+
+I'm not sure why there are not so  many  demos  what  are  system
+friendly  and support graphic cards, perhaps it is because coders
+are poor nation, so they can't afford a graphic card ;>
+
+So, I decided to release my start-up code and I  hope  this  will
+change the situation atleast a little bit better.
+
+You can use  this  start-up  in  your  demos,  intros,  games  or
+whatever  you are making. You can change it, modify it, use parts
+of it, spread it like you want, eat it, do whatever you want with
+it, but PLEASE make demos that DO work on graphic cards!
+
+
+
+
+FEATURES
+
+ Some of features are:
+
+ - AmigaOS friendly
+
+ - AGA fullscreen support
+
+ - CGX/P96 fullscreen support
+
+ - CGX/P96 window support
+
+ - Doublebuffering
+
+ - Shell arguments and tooltypes support
+
+ - FPS limitation
+
+ - Temporarly  stopping  execution  if  demo  is  not  running on
+   frontmost screen
+
+ - ASL screen mode requester for CGX/P96 systems
+
+ - P61 replay routine by Jarno Paananen [ + some more people ]
+
+ - Chunky 2 planar routines for 030 and 040+ by Mikael Kalms
+
+ - It's not slow! ;>
+
+
+
+
+
+CREDITS
+
+Start-up code:
+			Nemanja Bondzulic
+                        [ alias Cyborg / iNDUSTRY ]
+Chunky2planar routines:
+			Mikael Kalms
+			[ alias Kalms / TBL ]
+P61A replay routine:
+                        Jarno Paananen
+			[ alias Guru / Sahara Surfers ]
+P61A fixes:
+			NoName / Haujobb
+			Platon42
+
+
+Some portions of code, ideas,  thoughts  might  be  taken,  used,
+stolen,  abused,  and  might be products of other people's minds.
+Big apology to those people, it was not done with  bad  intention
+in mind.
+
+If I have broke some copyright rules, sorry or sue me ;>

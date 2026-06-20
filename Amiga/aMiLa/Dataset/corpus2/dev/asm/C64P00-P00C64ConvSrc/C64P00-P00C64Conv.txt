@@ -1,0 +1,24 @@
+    File: C64-P00 Converter.asm ^ P00-C64 Converter.asm
+    Type: Source
+    Year: 1997
+Released: Never released. Freeware
+  Author: Legionary / OldSk00l Crackers (ex. Depth)
+Uploader: Legionary / OldSk00l Crackers
+ Version: 1.0
+   Email: legionary3@gmail.com
+
+About
+-----
+These converters converts between RAW c64 file to P00 format and vice
+versa, used by C64 emulators. These small tools works, but was never
+released to the public (don't as me why), however they are assembled with
+asm-one, so you can improve the source, compile and release it if you want
+as the sources are freeware. Back then i was a member of Depth "Sweden",
+but today i'm in OldSk00l Crackers. Releasing freeware stuff.
+
+Remember, A 19 years old tool never relesed, not even compiled to friends,
+just compiled to test it.
+
+Enjoy!
+
+Signed Legionary / OldSk00l Crackers 2016

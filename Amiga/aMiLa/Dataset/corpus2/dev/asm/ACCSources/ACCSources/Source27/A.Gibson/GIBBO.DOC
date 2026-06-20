@@ -1,0 +1,356 @@
+                COPPER/TABLE MANIPULATION ROUTINES
+              *------------------------------------*
+
+        First off,let me tell you  about  myself.  I  first got a Commodore 64
+about 8 years ago (when I was 10). I learned  basic (very simple programs) and
+then due to the fact that saving to tape meant that you would probably not get
+your code back and the fact that  virtually  none  of my games would load, the
+Commodore got dropped. I then moved onto an Amstrad 6128 (whoopie doo!).
+
+
+        I continued my BASIC coding and then moved  into machine code. I wrote
+little sprite routines and so on (you would  not believe how slow the Z80 chip
+is). I had no real intentions  of  getting  another  computer.  The disk drive
+meant my data was safe and most games would load (even on tape!!).
+
+        Then (I know you shouldn't  start  sentences  with  then)  there was a
+strange twist of fate in my life. This small grey 400 pound box jumped into my
+life. Talk about heaven!!. I gaped at  the  ease  it displayed and manipulated
+sprites and other graphics data. The  4096  colour  palette compared to the 26
+colour palette of the Amstrad (only 16 colours  max could be used and then you
+had to be in extremely chunky graphics mode!!) simply blew me away.
+
+        I took a look at Amiga basic (then  wished  I hadn't!!) and went on to
+create music, art and other  things  I  had  never  dreamt  of doing on a home
+computer. (If you call the Amiga a home computer,I call it MASTER!)
+
+        I finished my 'A' Level exams and thought 'Now is the time to begin to
+code' and here I am, half  past  three  in  the  morning  just typing out this
+document after 5 hours  of  solid  coding,  not  to  mention the 8 hours I did
+earlier (or should that be yesterday?).
+
+        What is the use of this extract of my life story?
+
+        None really but I couldn't think  of  anything  better  to type out at
+this time in the morning. Actually, there is a point.
+
+        You should  all  consider  yourself  very  lucky  that  you  have this
+wonderful piece of hardware with its juicy  library routines and custom chips.
+Ever tried writing your own sprite  routines!!.  If  you haven't, don't, it is
+not advised (especially on a MEGA slow Z80 machine!!!)
+
+        Now then,back to the purpose of this document.
+
+        The routines given are not really  copper  list examples, they use the
+copper list but the aim point of the  routines  is  to demonstrate data tables
+and manipulation (as well as showing you some nice colourful effects).
+
+        The code was written using Devpac II so  you may need modifications to
+make it run on other versions as I don't own any other assembler.
+
+        I would like to make clear at this point  that I have only been coding
+on the AMIGA for about two months and so the programs are far from perfect and
+there may be a much more simpler way of  achieving the same result. My code is
+hardly brilliant e.g. no use of subroutines  but they don't call me Mr. 'let's
+not use a sub-routine' for nothing (Actually,  no-one calls me that), but this
+is an example of my bad coding and I promise to sort it out.
+
+        Anyway, for those not familiar with copper lists, mine is a basic one,
+all it does is alter the value of the background  colour (colour 0(I WON'T use
+the word COLOR(I am not American (Thank god(no offence to Americans)))).
+  
+        Here is a section of the copper list.
+
+        dc.w $180,0000          Make colour0= RGB=0000 (black)
+        dc.w $000f,$fffe        Wait until line = $00   (0f)
+
+        dc.w $180,0001          Make colour0= RGB 0001 (dark blue)
+        dc.w $020f,$fffe        Wait until line = $02   (0f)
+
+        dc.w $180,0002          Make colour0= RGB=0002 (a lighter blue)
+        dc.w $040f,$fffe        Wait until line = $04   (0f)
+
+        etc.....
+
+        The $180 means that the colour  value  following  it  is  to be put in
+colour 0 i.e. the background colour.
+
+        The $000f,$020f,$040f means  that  basically  the  co-processor should
+wait until the line 00,02,04  respectively  and a space of $0f across the line
+(a bit like x,y co-ordinates).  When  the  video  beam hits this position, the
+next instruction is carried out. In  this  case, it is a command to change the
+background colour.
+
+        The end of the copper list is signified by the data
+
+        dc.w $180,Any RGB value
+        dc.w $ffff,$fffe
+
+ Where the copper is told to wait for  an  impossible value. Then, the list is
+repeated.
+
+        The $FFFE data is the wait mask and  need  not be described here. Some
+of my programs use 2 copper lists (NOT at the same time!!!!). What  happens is
+one list is displayed whilst the  other  is  updated. The updated list is then
+displayed while the other one is being updated. The way this is implemented is
+by the code at the beginning of the  loop  which  checks which list is in use.
+The address of the list in use is stored at CURRADD
+
+
+        Now you should understand the way  the  copper  list  works (basically
+anyway!!) so we should look at the way we can manipulate the data used in it.
+
+ NOTE:
+        In my programs,the label LOOPVAL crops  up.  Stored at this address is
+the number of entries of the  copper  list  i.e.  how  many groups of 4 words.
+This value is used as a  loop  counter  i.e  how  many  times the loop must be
+carried out until the copy is complete.
+
+
+                        Data Manipulation.
+                        ------------------
+
+        When people start to learn machine  code,they  start  off with the aim
+of programming graphics. Lets face it, programming graphics is one of the most
+rewarding and pleasing aspect of  programming.  It  is challenging at times to
+achieve the right effect you want (it was  writing these programs!!), but lets
+face it, once you have got the graphics on screen, how do you alter them?
+
+        The following examples show  how  the  data  used  in  the copper list
+programs can be varied and selected.
+
+  Take a look  at  the  scrolling  copper  list.  It  may  look  as though the
+screen is being  scrolled,  but  it  isn't.  What  is  happening  is  the data
+being put  on  the  copper  list  colour  values  (remember  colour0=RBG?  see
+above!). It works like this,
+
+        Using for example a 4 colour line copper list,
+
+        line 1     Red          Green           Yellow          Pink
+        line 2     Green        Yellow          Pink            Blue
+        line 3     Yellow       Pink            Blue            Red
+        line 4     Pink         Blue            Red             Green
+
+                   step 1       step 2          step 3          step 4
+
+        I am sure you can see the way it  looks  like  scrolling but is not!!!
+The colour repeat, at step 3, red has  been  put  on the bottom and in step 4,
+red and then green are on the bottom lines.
+
+
+        So let's recap:
+
+        The 'scroll' effect is created by shifting  colours up the copper list
+and introducing new ones at the  bottom  of  the list. So where do these value
+come from? The answer is a table  at  the  end  of the code. The program has a
+pointer value (kept in register D3)  which  points to the start of the colours
+to be put in the copper list. Using  the  above example, the table would be as
+follows.
+
+ table
+        dc.w red,green,yellow,pink,blue tablend
+        dc.w red,green,yellow,pink
+
+        Here,I have used labels to simplify things but in the programs, I have
+used numerical RGB values(I'd need 100's of labels otherwise!!)
+
+        The label table end is used to calculate  the length of the table. The
+length of the table is used to test  when  to  go back to the beginning of the
+table. The data after the label tablend (table end) is used to make the scroll
+continues.
+
+        Our example puts the 4 colours, including  and after the table pointer
+position into the copper list  if  we  look  at  what  happens  when the table
+pointer is pointing to the colour pink.
+
+
+        line 1          pink            blue            red
+        line 2          blue            red             green
+        line 3          red             green           yellow
+        line 4          green           yellow          pink
+
+                        step 4          step 5          step 6
+
+        Doesn't step 6 look like step 1 ?!?! What  we do is set the pointer to
+the beginning of the table when the  pointer   has reached a certain position.
+This position is when the  pointer  points  to  the  data at TABLEND. For this
+reason, the data following TABLEND should be the same as the data at TABLE.
+
+        Try a few experiments:
+
+  1/    Take out the data following TABLEND,you will see why the data needs
+        to be there.
+
+  2/    Put some weird colour values after TABLEND,make sure it is the same 
+        amount of data. This will show you why the data needs to be the same
+        as the data at the beginning of the table.
+
+        REMEMBER, changing the value of d0 used in the pause routine will slow
+things down allowing you to see the results better.
+
+        These `experiments` can be used in most of the programs given.
+
+
+        Another way of accessing tables is to  use  the  technique used in the
+moving copper bar routine. The code to do this is simple and does not need any
+data at the end of the table. It  does  however  need  a TERMINATING VALUE. In
+this program, it is the value $FFFF. This value signifies the end of the list.
+In my program,when the terminating  value  is reached the pointer to the table
+is  reset to the beginning.
+
+        First, lets look at how  the  moving  copper  bar  routine  works. The
+copper list is set up in memory as  normal  and the program is the same except
+instead of copying colour data to the  whole  copper  list,colour data is only
+put in a portion of the copper  list.  The  rest  of the copper list is black.
+Actually, what happens is the  copper  list  has  the  colour black put in the
+whole of it and THEN the colour  data  is  copied  to  some of it. The routine
+BLANKCOP puts black in the copper list via  CLR.W (A4)  (A4=location in memory
+of the copper list colour value). You could  use MOVE.W #$0RGB,(A4) to set the
+colour not to black but to colour RGB.
+
+        The way the place in the copper list  (where  the colour data is to be
+put) is calculated is by multiplying the  line number (line 1, line 2, line 3,
+etc) by eight and then add 2. This  is  the  offset  from the beginning of the
+copper list, pointing to  the  copper  list  colour  value  word. (Think about
+it!!!)
+
+        NOTE:
+        As we only copy to a portion of the copper list, a value is subtracted
+from loopval. The width of the copper bar is calculated by:
+                                        
+                         (loopval-1)-N
+
+        N is the value put in the line
+
+                        SUB.W #N,d0
+        
+        A point to watch is if you  start  the  copper  bar  5  lines from the
+bottom of the screen and you have  a  copper  width  of  more than 5. (strange
+things happen,and don't expect to get back out of it safely!!!!)
+
+        If you intend to mess about with the  values,  I suggest you make sure
+that the biggest value in the move data table, added with the value N (as used
+in the line 'SUB.W #N,D0') does not exceed LOOPVAL (in my programs case, 128).
+
+
+        The code to read the line number  data  is  basic  and easy to follow.
+What follows is a similar type of code:
+
+ TABLE=label at the start of the table of data #$FFFF is the terminating value
+The address of the next data value in the table is kept at PNTR
+
+                        LEA TABLE,A0            ;INITIALIZE VALUES AT START
+                        MOVE.L A0,PNTR          ;OF PROGRAM.
+LOOP                            .
+                                .
+                                .       REST OF CODE
+                                .
+                                .
+                        MOVE.L PNTR,A0          ;GET POINTER TO DATA
+                        MOVE.W (A0)+,D0         ;GET DATA INTO D0
+                        CMP.W #$FFFF,F0         ;IS IT TERMINATING VALUE
+                        BNE SKIP                ;IF IT AIN'T,GOTO SKIP
+
+                        LEA TABLE,A0            ;RESET MOVE POINTER
+                        MOVE.W (A0)+,D0         ;TO START OF THE LIST
+SKIP
+                        MOVE.L A0,PNTR          ;STORE POINTER VALUE
+
+
+                        CONTINUE PROGRAM.
+ENDOFLOOP
+
+***** DATA SECTION ***** TABLE
+
+        DC.W DATA,DATA,MORE DATA,EVEN MORE DATA,ANY VALUE DATA
+        DC.W $FFFF              ;TERMINATING VALUE PNTR
+        DC.L 0
+
+                .       .       .       .       .       .       .
+
+        This section of code will take care  of  everything  such as resetting
+the pointer to the start of the data table.
+
+        (NOTE this code is NOT taken from the programs i.e registers used are 
+        different!!).
+
+
+                        NOTES FOR THE STATIC COPPER BAR MOVE
+                        ------------------------------------
+
+        In this program, the colour scroll  routine  was  not included and so,
+the offset from the beginning of the colour table was the same value which was
+used to determine where in the copper list  the colour copy was to start. This
+means that if lines 1-20  were  drawn,colours  1-20  in the table were used to
+draw it (if your width is 20) and so on.  This gives an effect of showing only
+a portion of the screen. I am  sure  the  effect  can be achieved some simpler
+way!! Not all the colour data is used (obviously!). In my code, only the first
+n colours are used where `n` is the LOOPVAL value.
+
+
+                NOTES FOR THE ROTATING COPPER LIST WITHOUT DELETION 
+                ---------------------------------------------------                     
+
+        This program was included simply for use in other peoples programs. It
+contains no new ideas except  the  BLANKCOP  routine  is left out and there is
+only ONE copper list in use. Using two would  make things more complex than is
+necessary.
+
+
+                        NOTES FOR ROTATING COPPER PROGRAMS
+                        ----------------------------------
+
+        There are two of these programs  on  disk.  The  chunky program uses a
+sort of `lo-res` copper list. This  is  because  the  colour lines are 8 lines
+apart on the screen giving a  chunky  effect.  However,this  routine is pretty
+fast and effective.
+
+        The full copper routine uses a  `hi-res`  sort of copper list. This is
+because colour lines are put on  the  screen  with  a  gap of one line between
+them i.e every other line.I can`t put a colour next to each other all down the
+screen without  getting  into  Interlaced  copper  lists  (a bit TOO nasty for
+me!!!). The full copper routine is  pretty  effective  but at some speeds (see
+pause routine and the D0 value), the scroll  flicks occasionally. I think this
+is due to the fact that the program does  not wait for the video beam to reach
+the bottom before switching the copper list to be displayed. If anyone has any
+ideas, please send them to me.
+
+        This program is an ideal piece  of  code  for  some  background action
+while displaying a piece of text.
+
+ NOTE:THE TERMS HI-RES AND LO-RES DO NOT HAVE ANYTHING TO DO WITH SCREEN SIZES
+I USED THEM TO DIFFERENTIATE BETWEEN  THE  TWO  TYPES OF COPPER PROGRAMS. THEY
+REALLY ARE USED TO DISTINGUISH BETWEEN  THE  CHUNKY (LO-RES)COPPER PROGRAM AND
+THE FINER,SMOOTHER (HI-RES) COPPER PROGRAM.
+
+        *       *       *       *       *       *       *       *       *       
+
+        I hope you can understand  the  programs  and  the  techniques used in
+them, more so, I hope you can understand the comments in the code and this doc
+which took me half the night to write  (or  type!).  These techniques use some
+simple sections of code to produce  some  simple  yet often effective results.
+Take for example, an R-Type II clone. Enemy  ships scroll across the screen at
+varying heights. They move up  and  down  in  a  repeated fashion. The sort of
+routine shown above could be used to find their height.
+
+    After all, getting the graphics on  the  screen  is one thing, moving them
+effectively is another.
+
+        More experienced coders may find this contribution a waste of time but
+beginners may find it informative(if only for learning to make a simple copper
+list!!!!!!) The code is not perfect  (far  from!!) as I am only a beginner but
+may produce ideas and answers to some  poor  soul suffering for weeks over how
+to get his sprites bobbing up  and  down  for  his  latest demo  (if he/she is
+writing demos they can come and give me some advice!!!).
+
+        Please send any  comments,ideas,criticisms  (nothing  too vicious!!!),
+bug reports,questions or anything else about this article and/or the code to:
+
+                A.GIBSON
+                28 WARREN DRIVE
+                SWINTON
+                MANCHESTER
+                M27 3EA
+ 
+If you include an S.A.E,I promise I will reply.                
+

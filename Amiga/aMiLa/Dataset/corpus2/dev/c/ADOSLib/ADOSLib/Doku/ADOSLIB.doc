@@ -1,0 +1,43 @@
+ADOSLIB.lib is a little linker library with functions that
+are not support by vbcc yet. The lib ist freeware. You have
+permission to copy the lib only in original version. The
+use is full free.
+
+The function putenv uses strdup (not included in vbcc, you
+can find it in STRINGLIB.lib). All other functions uses only
+functions that supported in vbcc.
+
+getcwd: return the path name of the current directory
+char *getcwd (char *path, int size);
+
+SystemErrNil: System with stderr -> NIL:
+int SystemErrNil(char *com);
+
+cmp: stringcompre, for use with sort()
+int cmp (char **a, char **b);
+
+setenv: set up environmentvariable with value
+int setenv (char *name, char *value);
+
+unlink - deletes a file
+int unlink (char *name);
+
+GetCurrentPath: get full path of the current directory
+void GetCurrentPath (register char *path);
+
+GetProgramPath: get full path of the directory from where the program was startet.
+void GetProgramPath (register char *path);
+
+makedir: create the given directory
+void makedir (UBYTE *file);
+
+putenv: write environment, usage is putenv("var=value");
+void putenv (char *s);
+
+CheckSetPatchVersion: Check SetPatch is running, can also test the version and
+revision of SetPatch.
+BOOL CheckSetPatchVersion(struct ExecBase *SysBase, UWORD version, UWORD revision);
+
+CheckProzessor: Check CPU and FPU from program and system.
+CPU/FPU come from the compiler by -DCPU and -DFPU.
+BOOL CheckProzessor();

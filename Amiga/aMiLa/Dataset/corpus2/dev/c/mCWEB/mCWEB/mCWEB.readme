@@ -1,0 +1,28 @@
+Short:    Literate Programming System for teams
+Uploader: oelli@eunet.at (Thomas Öllinger)
+Author:   Markus Öllinger
+Type:     dev/c
+Kurz:     Literarisches Programmiersys. für Teams
+Version:  1.1
+
+This archive contains binary, source and documentation of
+mCWEB -- a descendant of the CWEB system of structured
+documentation by Donald E. Knuth and Silvio Levy -- that
+adds some features that are indispensable when working in a
+team. mCWEB regards a project as a book consisting of several
+chapter files. By means of import and export commands, it
+automatically manages all relationships between the chapters of a
+book and to other books.
+
+Interface Documentation is now part of the mCWEB file and can be
+extracted into a second TeX file. This allows to define well
+known interfaces between the individual parts of a project that will be
+implemented by different persons.
+
+mCWEB is a real extension to CWEB which means that all of the
+original code is part of mCWEB. mCWEB's command set is a superset
+of CWEB's commands. mCWEB is backwards compatible so that you can
+also translate old-style CWEB programs.
+
+
+Copyright (C) 1996-1998 Markus Öllinger

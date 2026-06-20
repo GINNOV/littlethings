@@ -1,0 +1,16 @@
+Short:        Further Laffik's works on Bezier's Mesh
+Author:       laffik@laffik.com (Pawel Niejadlik)
+Uploader:     laffik laffik com (Pawel Niejadlik)
+Type:         dev/src
+Version:      1.2
+Architecture: m68k-amigaos >= 2.0.4
+Distribution: Aminet
+Kurz:         Weitere Arbeiten zum Bezier-Netz
+
+Additional sources for Amos Pro and Motorolla 68000 assembler.
+Second part for bezier_3d.lha source in dev/src folder of Aminet.
+Generator for 2D wireframe animations of Bezier's mesh.
+Player source code for Motorolla 68000 asembler.
+.pdf file with elaboration of Beizer formulas.
+Amos program generating rainbow copper gradients for including
+in asembler source code.

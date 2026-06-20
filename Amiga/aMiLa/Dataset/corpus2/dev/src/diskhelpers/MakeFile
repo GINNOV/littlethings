@@ -1,0 +1,154 @@
+# ###############################################################
+#  AmigaOS4 & gcc MakeFile for SCSI programs
+# ###############################################################
+#
+CC    = GCC:bin/gcc
+#
+LIBS  = -lm -lamiga -lauto
+#
+COpts = -c -ISDK:Local/Include
+#
+DOpts = -g -ggdb -c -ISDK:Local/Include
+#
+ACMD  = LhArc
+#
+AOPTS = -x -a 
+#
+# ---------------------------------------------------------------
+#
+RDBInformerPPC : RDBInformerPPC.o
+	$(CC) -o $@ $< $(LIBS)
+#
+RDBInformerPPC.o : RDBInformer.c	
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(COpts) -o $@ $<
+#
+SetDriveNamePPC : SetDriveNamePPC.o
+	$(CC) -o $@ $< $(LIBS)
+#
+SetDriveNamePPC.o : SetDriveName.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DOpts) -o $@ $<
+#
+SetBlockTypePPC : SetBlockTypePPC.o
+	$(CC) -o $@ $< $(LIBS)
+#
+SetBlockTypePPC.o : SetBlockType.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(COpts) -o $@ $<
+#
+SetReturnCodePPC : SetReturnCodePPC.o
+	$(CC) -o $@ $< $(LIBS)
+#
+SetReturnCodePPC.o : SetReturnCode.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(COpts) -o $@ $<
+#
+SetSCSIEnvPPC : SetSCSIEnvPPC.o
+	$(CC) -o $@ $< $(LIBS)
+#
+SetSCSIEnvPPC.o : SetSCSIEnv.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(COpts) -o $@ $<
+#
+CheckSCSIVolPPC : CheckSCSIVolPPC.o
+	$(CC) -o $@ $< $(LIBS)
+#
+CheckSCSIVolPPC.o : CheckSCSIVol.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(COpts) -o $@ $<
+#
+InquiryPPC : InquiryPPC.o
+	$(CC) -o $@ $< $(LIBS)
+#
+InquiryPPC.o : Inquiry.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(COpts) -o $@ $<
+#
+ASCII_ToBinaryPPC : ASCII_ToBinaryPPC.o
+	$(CC) -o $@ $< $(LIBS)
+#
+ASCII_ToBinaryPPC.o : ASCII_ToBinary.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(COpts) -o $@ $<
+#
+ReadCapacityPPC : ReadCapacityPPC.o
+	$(CC) -o $@ $< $(LIBS)
+#
+ReadCapacityPPC.o : ReadCapacity.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(COpts) -o $@ $<
+#
+ReadSectorPPC : ReadSectorPPC.o
+	$(CC) -o $@ $< $(LIBS)
+#
+ReadSectorPPC.o : ReadSector.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(COpts) -o $@ $<
+#
+ReadHardBlocksPPC : ReadHardBlocksPPC.o
+	$(CC) -o $@ $< $(LIBS)
+#
+ReadHardBlocksPPC.o : ReadHardBlocks.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(COpts) -o $@ $<
+#
+RewindTapePPC : RewindTapePPC.o
+	$(CC) -o $@ $< $(LIBS)
+#
+RewindTapePPC.o : RewindTape.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(COpts) -o $@ $<
+#
+#
+# ------------- Archive Target(s): -------------------------------------------------
+#
+DiskHelpers.lha :
+	$(ACMD) $(AOPTS) add $@ DiskHelpers.readme
+	$(ACMD) $(AOPTS) add $@ DiskHelpers.guide
+	$(ACMD) $(AOPTS) add $@ DiskHelpers.guide.info
+	$(ACMD) $(AOPTS) add $@ CheckForSCSI
+	$(ACMD) $(AOPTS) add $@ CheckSCSIVol.c
+	$(ACMD) $(AOPTS) add $@ CheckSCSIVolPPC
+	$(ACMD) $(AOPTS) add $@ RDBInformer.c
+	$(ACMD) $(AOPTS) add $@ RDBInformerPPC
+	$(ACMD) $(AOPTS) add $@ ReadCapacity.c
+	$(ACMD) $(AOPTS) add $@ ReadCapacityPPC
+	$(ACMD) $(AOPTS) add $@ ReadHardBlocks.c
+	$(ACMD) $(AOPTS) add $@ ReadHardBlocksPPC
+	$(ACMD) $(AOPTS) add $@ ReadSector.c
+	$(ACMD) $(AOPTS) add $@ ReadSectorPPC
+	$(ACMD) $(AOPTS) add $@ SetSCSIEnv.c
+	$(ACMD) $(AOPTS) add $@ SetSCSIEnvPPC
+	$(ACMD) $(AOPTS) add $@ MakeFile
+	$(ACMD) $(AOPTS) add $@ SMakeFile
+	$(ACMD) $(AOPTS) add $@ AmigaDOSErrs.h
+	$(ACMD) $(AOPTS) add $@ Author.h
+	$(ACMD) $(AOPTS) add $@ RDBInformer.output
+	$(ACMD) $(AOPTS) add $@ ReadHardBlocks.output
+#
+

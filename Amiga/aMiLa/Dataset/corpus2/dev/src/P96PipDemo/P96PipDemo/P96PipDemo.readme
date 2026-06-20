@@ -1,0 +1,53 @@
+Short:        P96 Picture-in-Picture demo src
+Author:       thomas.richter@alumni.tu-berlin.de (Thomas Richter)
+Uploader:     thomas.ricther@alumni.tu-berlin.de (Thomas Richter)
+Type:         dev/src
+Version:      1.0
+Requires:     P96 >= 2.1.0
+Architecture: generic
+
+This archive contains example source code how to use the P96
+picture-in-picture/overlay feature some graphics cards offer,
+in particular the PicassoIV and the CVision3D support them.
+
+Overlays are screen regions within which a separate memory
+region in its own color space is shown. For example, an overlay
+could display a YUV video on a 256 color screen. Scaling and
+color space conversion is performed in hardware, and hence very
+fast.
+
+This archive provies source code for creating a high-color (16bit)
+overlay on a P96 screen - all provided sufficient bandwidth is
+available, and the screen mode supports overlays. 
+
+You will need a compiler (SAS/C preferably) and the P96 development
+archive available from iComp. Sources are prepared to be compiled
+with registered parameters, small code/data model, no startup code,
+but can be easily modified to other settings.
+
+----------------------------------------------------------------------
+
+New in release 1.0:
+
+- This is the first Aminet release.
+
+----------------------------------------------------------------------
+
+This source code is available under the 0-clause BSD license:
+
+    Copyright (C) 2021 Thomas Richter <thomas.richter@alumni.tu-berlin.de>
+
+    Permission to use, copy, modify, and/or distribute this software for 
+    any purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF 
+    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
+    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+----------------------------------------------------------------------
+
+Thomas Richter, September 2021.

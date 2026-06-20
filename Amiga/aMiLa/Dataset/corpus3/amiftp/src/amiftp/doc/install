@@ -1,0 +1,194 @@
+; -*- mode: lisp -*-
+; $VER: Install_AmiFTP 1.0 (8.12.95)
+; Description: Installer script for AmiFTP
+
+(set cpu (database "cpu"))
+(set cpu020 (and (<> cpu "68000") (<> cpu "68010")))
+(set v39 (>= (/ (getversion "exec.library" (resident)) 65536) 39))
+
+
+; ************* PLEASE COPY THIS PROCEDURE ALONG WITH THE STRINGS IT USES 
+; ************* TO THE INSTALLER SCRIPT OF YOUR CLASSACT APPLICATION.
+; ************* IT WILL TAKE CARE OF INSTALLING THE CLASSACT CLASSES YOU
+; ************* PROVIDED WITH YOUR APPLICATION TO THE USER'S SYSTEM.
+
+; ClassAct installation procedure V 1.2 (8.12.95) by Osma Ahvenlampi
+
+; percentage of the size of included ClassAct classes versus the whole
+; distribution (ie. total "complete" percentage after ClassAct is installed)
+(set classact-complete 100)
+
+; ClassAct installer scripts
+(set #classdest-prompt "Please select the directory where you want the ClassAct classes installed.\n(See help for details)")
+(set #classdest-help (cat "ClassAct is a GUI toolkit consisting of shared BOOPSI classes.\n\nThis player requires some of the ClassAct classes installed on your system. "
+    (if v39 (cat "OS 3.0 has a standard directory for BOOPSI classes, the SYS:Classes directory. It is recommended that you install ClassAct there.")
+            (cat "OS 2.0 does not have a standard place for disk resident BOOPSI classes. On OS 3.0 these classes are stored in the SYS:Classes directory. It is recommended that you create this directory and install ClassAct there.\nThis directory must be added in the LIBS: assign. This can be done by placing the command\nAssign >NIL: LIBS: SYS:Classes ADD\nto User-Startup. This installer will do this for you.")
+        )
+    )
+)
+(set #classes-020 "Do you want to use the OS 3.0, 020 optimised version of ClassAct?")
+(set #help-020 "Some ClassAct libraries have versions optimised for use on 020 or better equipped OS 3.0 or later machines. If your Amiga is such equipped, you should install these. The 68000/2.0 versions will also work, but are slightly slower.")
+(set #noclasses-message "It seems that you do not have a Classes directory.\n\nOne will now be created and added to the LIBS: assign in user-startup. This assign is necessary so that the BOOPSI classes will be found.")
+(set #creating-dir "Creating directory ")
+(set #usbackup-prompt "User-Startup will now be backed up.")
+(set #usbackup-help "This installer will next make a modification in User-Startup. Before doing this the old User-Startup will be backed up to S:User-Startup.old")
+(set #adding-1 "Adding ")
+(set #adding-2 " to LIBS: assign\n")
+(set #adding-help "This is necessary so that the custom classes can be found.")
+(set #junod-button "It seems you have a late Commodore 'V42' button.gadget installed on your system.\n\nClassAct's button.gadget is far more capable than this gadget, and we recommend that you replace it. The ClassAct button.gadget is backwards compatible to the Commodore gadget. Do you wish to back up the Commodore gadget and replace it with the ClassAct version?")
+(set #junod-backed "The Commodore 'V42' button.gadget has been backed up with the name button.gadget.v42.\n\nThe ClassAct button.gadget will be installed in its place.")
+(set #junod-kept "The Commodore 'V42' button.gadget was not replaced with the more capable ClassAct version.\n\nPrograms depending on the availability of ClassAct-only features will be likely to work wrong.")
+
+(procedure install-classact
+; call this procedure to copy the classes included in the Classes directory
+; in your distribution dir.
+	(if (exists "Classes") ; The archive contains a ClassAct library update.
+	(
+		(set comp-dest  (/ (* classact-complete 2) 10))
+		(set comp-libs  (/ (* classact-complete 3) 10))
+		(set comp-dirs  (/ (* classact-complete 4) 10))
+		(set comp-junod (/ (* classact-complete 5) 10))
+		(set comp-020   (/ (* classact-complete 6) 10))
+		(set comp-gad   (/ (* classact-complete 8) 10))
+		(set comp-im    (/ (* classact-complete 9) 10))
+	
+		; has the user installed ClassAct in CLASSACT: ?
+		(set @classact-dest (getassign "CLASSACT" "A"))
+		(if (= @classact-dest "") (set @classact-dest "SYS:Classes"))
+		
+		; is ClassAct already in SYS:Classes ?
+		(if (or (not (exists (tackon @classact-dest "Gadgets/layout.gadget") (noreq)))
+		        (= @user-level 2))
+		    ; no, ask where it should be placed
+		    (set @classact-dest
+		        (askdir
+		            (prompt #classdest-prompt)
+		            (help #classdest-help)
+		            (default @classact-dest)
+		            (newpath)
+		        )
+		    )
+		)
+		
+		(complete comp-dest)
+		
+		(if (not (exists @classact-dest))
+		    (
+		        (message #noclasses-message)
+		        (makedir @classact-dest (prompt (cat #creating-dir @classact-dest)))
+		        (copyfiles
+		            (prompt #usbackup-prompt)
+		            (help #usbackup-help)
+		            (source "S:User-Startup")
+		            (dest "S:")
+		            (newname "S:User-Startup.old")
+		        )
+		        (set @addassign (cat "Assign >NIL: LIBS: " @classact-dest " ADD\n"))
+		        (startup "CLASSACT" 
+		        	(command @addassign)
+		            (prompt (cat #adding-1 @classact-dest #adding-2))
+		            (help #adding-help)
+		        )
+		        (run (@addassign))
+		    )
+		)
+		
+		(complete comp-libs)
+		
+		(set @classact-gadgets (tackon @classact-dest "Gadgets"))
+		(set @classact-images (tackon @classact-dest "Images"))
+		
+		(if (not (exists @classact-gadgets (noreq)))
+		    (makedir @classact-images
+		        (prompt (cat #creating-dir @classact-gadgets))
+		    )
+		)
+		
+		(if (not (exists @classact-images (noreq)))
+		    (makedir @classact-images
+		        (prompt (cat #creating-dir @classact-images))
+		    )
+		)
+		
+		(complete comp-dirs)
+		
+		(if (exists "SYS:Classes/Gadgets/button.gadget")
+		    (if (< 40 (/ (getversion "SYS:Classes/Gadgets/button.gadget") 65536))
+		        (if (askbool (prompt #junod-button) (help @askbool-help) (default 1))
+		            (
+		                (rename "SYS:Classes/Gadgets/button.gadget" "SYS:Classes/Gadgets/button.gadget.v42")
+		                (message #junod-backed)
+		            )
+		            (message #junod-kept)
+		        )
+		    )
+		)
+		
+		(complete comp-junod)
+		
+		(if (exists "Classes/Gadgets/layout.gadget.020")
+			(set classes-020 (askbool (prompt #classes-020) (help #help-020) (default (and cpu020 v39))))
+			(set classes-020 0)
+		)
+
+		(complete comp-020)
+		
+		(foreach "Classes/Gadgets" "#?.gadget"
+			(
+				(set thislib (tackon "Classes/Gadgets" @each-name))
+				(if (and classes-020 (exists (cat thislib ".020")))
+					(set thislib (cat thislib ".020"))
+				)
+			    (copylib (source thislib)
+			        (dest @classact-gadgets)
+			        (newname @each-name)
+			        (prompt (cat #installing @each-name))
+			        (help #classdest-help)
+			        (optional "force" "askuser")
+			    )
+		    )
+		)
+		
+		(complete comp-gad)
+		
+		(foreach "Classes/Images" "#?.image"
+			(
+				(set thislib (tackon "Classes/Images" @each-name))
+				(if (and classes-020 (exists (cat thislib ".020")))
+					(set thislib (cat thislib ".020"))
+				)
+			    (copylib (source thislib)
+			        (dest @classact-images)
+			        (newname @each-name)
+			        (prompt (cat #installing @each-name))
+			        (help #classdest-help)
+			        (optional "force" "askuser")
+			    )
+		    )
+		)
+		
+		(complete comp-im)
+
+		(foreach "Classes" "#?.class"
+			(
+				(set thislib (tackon "Classes" @each-name))
+				(if (and classes-020 (exists (cat thislib ".020")))
+					(set thislib (cat thislib ".020"))
+				)
+			    (copylib (source thislib)
+			        (dest @classact-dest)
+			        (newname @each-name)
+			        (prompt (cat #installing @each-name))
+			        (help #classdest-help)
+			        (optional "force" "askuser")
+			    )
+		    )
+		)
+
+		(complete classact-complete)
+	)
+	)
+)
+
+; ************** END OF CLASSACT INSTALL PROCEDURE. COPY THE BLOCK ABOVE
+; ************** TO YOUR CLASSACT APPLICATION INSTALLER.

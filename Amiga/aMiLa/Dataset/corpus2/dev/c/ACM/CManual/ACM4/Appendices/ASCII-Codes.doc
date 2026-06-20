@@ -1,0 +1,133 @@
+D   ASCII CODES
+
+
+Decimal       Hexadecimal    ASCII          DESCRIPTION
+-------------------------------------------------------
+  0           00             NUL            CTRL/1
+  1           01             SOH            CTRL/A
+  2           02             STX            CTRL/B
+  3           03             ETX            CTRL/C
+  4           04             EOT            CTRL/D
+  5           05             ENQ            CTRL/E
+  6           06             ACK            CTRL/F
+  7           07             BEL            CTRL/G
+  8           08             BS             CTRL/H, BACKSPACE
+  9           09             HT             CTRL/I, TAB
+ 10           0A             LF             CTRL/J, ENTER
+ 11           0B             VT             CTRL/K
+ 12           0C             FF             CTRL/L
+ 13           0D             CR             CTRL/M, RETURN
+ 14           0E             SO             CTRL/N
+ 15           0F             SI             CTRL/O
+ 16           10             DLE            CTRL/P
+ 17           11             DC1            CTRL/Q
+ 18           12             DC2            CTRL/R
+ 19           13             DC3            CTRL/S
+ 20           14             DC4            CTRL/T
+ 21           15             NAK            CTRL/U
+ 22           16             SYN            CTRL/V
+ 23           17             ETB            CTRL/W
+ 24           18             CAN            CTRL/X
+ 25           19             EM             CTRL/Y
+ 26           1A             SUB            CTRL/Z
+ 27           1B             ESC            ESC,   ESCAPE
+ 28           1C             FS             CTRL<
+ 29           1D             GS             CTRL/
+ 30           1E             RS             CTRL/=
+ 31           1F             US             CTRL/-
+ 32           20             SP             SPACE
+ 33           21             !              !
+ 34           22             "              "
+ 35           23             #              #
+ 36           24             $              $
+ 37           25             %              %
+ 38           26             &              &
+ 39           27             '              '
+ 40           28             (              (
+ 41           29             )              )
+ 42           2A             *              *
+ 43           2B             +              +
+ 44           2C             ,              ,
+ 45           2D             -              -
+ 46           2E             .              .
+ 47           2F             /              /
+ 48           30             0              0
+ 49           31             1              1
+ 50           32             2              2
+ 51           33             3              3
+ 52           34             4              4
+ 53           35             5              5
+ 54           36             6              6
+ 55           37             7              7
+ 56           38             8              8
+ 57           39             9              9
+ 58           3A             :              :
+ 59           3B             ;              ;
+ 60           3C             <              <
+ 61           3D             =              =
+ 62           3E             >              >
+ 63           3F             ?              ?
+ 64           40             @              @
+ 65           41             A              A
+ 66           42             B              B
+ 67           43             C              C
+ 68           44             D              D
+ 69           45             E              E
+ 70           46             F              F
+ 71           47             G              G
+ 72           48             H              H
+ 73           49             I              I
+ 74           4A             J              J
+ 75           4B             K              K
+ 76           4C             L              L
+ 77           4D             M              M
+ 78           4E             N              N
+ 79           4F             O              O
+ 80           50             P              P
+ 81           51             Q              Q
+ 82           52             R              R
+ 83           53             S              S
+ 84           54             T              T
+ 85           55             U              U
+ 86           56             V              V
+ 87           57             W              W
+ 88           58             X              X
+ 89           59             Y              Y
+ 90           5A             Z              Z
+ 91           5B             [              [
+ 92           5C             \              \
+ 93           5D             ]              ]
+ 94           5E             ^              ^
+ 95           5F             _              _
+ 96           60             `              `
+ 97           61             a              a
+ 98           62             b              b
+ 99           63             c              c
+100           64             d              d
+101           65             e              e
+102           66             f              f
+103           67             g              g
+104           68             h              h
+105           69             i              i
+106           6A             j              j
+107           6B             k              k
+108           6C             l              l
+109           6D             m              m
+110           6E             n              n
+111           6F             o              o
+112           70             p              p
+113           71             q              q
+114           72             r              r
+115           73             s              s
+116           74             t              t
+117           75             u              u
+118           76             v              v
+119           77             w              w
+120           78             x              x
+121           79             y              y
+122           7A             z              z
+123           7B             {              {
+124           7C             |              |
+125           7D             }              }
+126           7E             ~              ~
+127           7F             DEL            DELETE

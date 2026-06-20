@@ -1,0 +1,215 @@
+******************
+**   Kronos-C   **
+******************
+ 
+
+Release 1.0
+
+
+(C) 2004 by Attila Tarpai (atarpai@nexus.hu)
+
+
+
+Kronos-C 1.0 is a non-optimizing C language translator for Motorola 68020+ family and CPU32 processors. It is part of a process for developing compiler techniques and Release 1.0 is the time when it has successfully compiled itself, ready for general purposes.
+
+Release 1.0 is freeware. This is valid until the files distributed stay together and intact. 
+
+This software has emerged from the need for a small, fast, simple but functionally complete C compiler that is able to produce executables that fit into the Amiga OS. All the software technologies used in this implementation were newly designed and coded by the author.
+
+Kronos-C is a C compiler without too much fuss! It is under constant development.
+
+This release is not suitable for productivity purposes. The Aminet Release is a way to offer its services to the Amiga Community encouraging people to try simple C programs on the Amiga.
+
+ 
+
+
+Kronos-C 1.0 for AmigaOS Features:
+----------------------------------
+
+*  The compiler has been compiled by itself, assembled with PhxAss v4.43 and linked with PhxLnk v4.32 on a plain A1200;
+
+*  The executable file (kc) is a single-hunked 60K binary file to be run from CLI;
+
+*  Kronos-C features low CPU and memory overhead. Note that the whole module is abstracted before code generation. 
+
+*  It produces an ASCII assembly output to stdout (use redirection to file when needed).
+
+*  The produced object-file is single-hunked, uses 32-bit PC-relative addressing mode for external references (here we need the latest PhxAss). The purpose is to reduce load-time relocation as possible, producing relocation-free programs to achive the fastest loading.
+
+*  All int and values pushed onto stack are long (4 bytes);
+
+
+
+Requirements:
+-------------
+ 
+*  A piece of Amiga hardware (or emulated), with a minimum of 020+ CPU;
+
+*  An assembler and a linker. I warmly recommend the great PhxAss/PhxLnk from Frank Wille, freely downloadable from Aminet. Note that the minimal version for PhxAss is v4.43, previous versions will not assemble/link Kronos-C outputs!
+
+
+
+Usage:
+------
+
+*  write your C source,
+*  compile it with kc,
+*  assemble it with PhxAss v4.43,
+*  link it with kc.lib using PhxLnk v4.32,
+*  run it.
+
+ 
+The two scripts enclosed (build and exe) may simplify your work: just type exe <filename> to run your source, or build <filename> to produce the a.out executable. Make sure you are path-ed to PhxAss, or put the assembler/linker into the same dir with the source and kc.
+
+Feel free to modify these scripts.
+
+
+
+
+The examples: hello.c, c.c, float.c:
+------------------------------------
+
+
+'hello.c'
+
+The first 'hello.c' is the conventional “Hello World” program. To try just type
+
+-> execute exe hello.c
+
+and watch it run. (The possible error message is raised by the CLI – to get rid of it write return 0; in hello.c.)
+
+
+'c.c'
+
+The second 'c.c' example is the most horrible C-source that can be found on the net. To run the executable make sure you give CLI more than the default stack, and give exactly one dummy parameter for the program.
+
+-> execute build c.c
+
+-> stack 9000
+
+-> a.out gimme
+
+and watch it run.
+
+
+'float.c'
+
+This is a simple example to perform calculations and writing out float numbers. Here the object *should* be linked with kc2.lib.
+
+
+
+Using float under Kronos-C 1.0:
+-------------------------------
+
+
+The float data type is implemented with 32 bit signed fix-point integers, so neither an FPU nor any libraries are needed to use non-integer numbers. With this technique real numbers have:
+
+*  a 3-decimal precision (10 bits fraction);
+
+*  a range of about +/- 2 million (signed 22 bits).
+
+Note that this format is not compatible with FFP or IEEE. To printf them your executable should be linked with kc2.lib and the format specification %f should be used for the signed fix-point number.
+
+The goal here was to have the ability to define, store and make calculations with real numbers even in a pure integer-arithmetic environment.
+
+
+
+Limitations:
+------------
+
+
+*  No register caching and optimizations is implemented;
+
+*  no preprocessor macros (only #define and #include is available);
+
+*  no double data type;
+
+*  const, register is ignored;
+
+*  loose parameter type checkings.
+
+ 
+
+What is coming:
+---------------
+
+
+*  64-bit integers (int64),
+
+*  64-bit fix-point real numbers (double),
+
+*  MC68000 version,
+
+*  more talkative error handling,
+
+*  more of ANSI,
+
+*  more of preprocessor directives, 
+
+*  FFP, IEEE (hardware or software) floating-point support,
+
+*  better integration with Amiga OS,
+
+*  run-time protections (zero-division, stack-overflow, etc.),
+
+*  many more...
+
+
+
+Contents of kc.lha:
+-------------------
+
+
+*  kc executable file
+
+*  kc.lib static library
+	startup.o
+	ANSI.o
+	putchar.o
+	printf.o (Amiga printf-version)
+
+*  kc2.lib static library
+	startup.o
+	ANSI.o
+	putchar.o
+	printf2.o (Kronos printf-version)
+
+*  build and exe shell scripts
+
+*  hello.c, c.c, float.c sources
+
+*  README - this file
+
+
+
+For more information visit..
+
+	http://net.cciinter.net/users/atarpai
+
+
+
+FAQ
+---
+
+
+Q: Where are the headers?
+A: There are no header files. If you want to use printf, write it down, the linker will find it in kc.lib. If you want to use malloc, declare it as a function returning any pointer (there is still type-checking). 
+ 
+
+Q: What is in kc.lib?
+A: First of all some startup-code (sets stdin/out, parses arguments), and a bunch of ANSI standard functions. The present list is the following: 
+
+	* memory functions (malloc, calloc, free, memcpy, memset);
+
+	* I/O console functions (putchar, getchar, puts, printf, stdin & stdout);
+
+	* I/O file functions (fopen, fclose, fgetc);
+
+	* String manipulation (strlen, strcpy, strcmp);
+
+	* Miscellanous (exit).
+
+
+Q: Why Kronos? 
+A: Kronos is Father of All Times in the greek mythology. Kronos-C is a fundamental and basic component of a complex, multilingual and multiplatform developing system and philosophy. Kronos-C for Amiga is the first testing environment.
+ 

@@ -1,0 +1,29 @@
+Copyright (c) 1993 SAS Institute, Inc, Cary, NC USA
+All Rights Reserved
+
+This following files make up the source to two versions
+of a very simple example library:
+
+test.c             Contains two library routines.
+
+try_one.c          Opens the test library and calls its two functions.
+
+try_multi.c        Opens the test library and calls its two functions.
+
+test.fd            .fd file describing test.library
+
+
+To build the libraries and test routines double click on the 
+build icon.
+
+When the build is finished, two icons will appear: try_one and try_multi.
+
+The try_one icon will use the version of the library that has a single
+global data area for all users of the library. If you invoke this
+icon multiple times, the values returned from the functions will
+vary.
+
+The try_multi icon will use the version of the library that has a separate
+global data section for all the users of the library. Each time you 
+click on try_multi, the values returned will be the same.
+

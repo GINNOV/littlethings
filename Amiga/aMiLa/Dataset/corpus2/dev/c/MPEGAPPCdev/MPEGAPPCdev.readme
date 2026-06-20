@@ -1,0 +1,22 @@
+Short:        Use mpega.library under PPC (PUP/GCC)
+Author:       cisc@c2i.net (Sigbjørn Skjæret)
+Uploader:     cisc c2i net (Sigbjørn Skjæret)
+Type:         dev/c
+Replaces:     dev/c/MPEGAPPCdev.lha
+Requires:     util/libs/mpega_library.lha
+Architecture: ppc-powerup
+
+Ooops, a small mistake made sure GCC would crash violently earlier .. fixed.
+
+Fixed structure alignment issues so that everything works smoothly with GCC. ;)
+
+Here's my current effort to get mpega.library working under PPC (PowerUP
+(Sorry, I don't have a devkit for WarpOS, and don't know how to do this there))
+
+I've now also added ppcinlines (untested, please report back) so it should work
+with GCC and other compilers that need this special way of inlining functions.
+
+Enjoy! ;)
+
+
+- CISC

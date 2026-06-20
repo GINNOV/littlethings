@@ -1,0 +1,155 @@
+Short:        PAR: access using the SIMPLEST of C.
+Author:       wisecracker@tesco.net (Barry Walker)
+Uploader:     wisecracker@tesco.net (Barry Walker)
+Type:         dev/c
+Version:      1.00.04
+Architecture: m68k-amigaos
+
+Distribution: Public Domain, Emailware.
+
+============================================================================
+
+  Requirements Are:-
+  ------------------
+
+         Standard A1200.
+         Standard Kickstart 3.0x and Workbench 3.0x or better.
+         ~PAR_READ.lha~ IS REQUIRED from the hard/hack drawer of AMINET.
+         (Dice-C is optional and in the dev/c drawer of AMINET.)
+         (vbcc is also optional and in the dev/c drawer of AMINET.)
+
+============================================================================
+
+These are the executables and the EXTREMELY SIMPLE C(++) source code to
+access PAR: as a ~VOLUME~ in read mode only. It is purely for my
+experimental use only to use the PAR: DEVICE as a VOLUME. For more detailed
+information about PAR: as a volume download the required ~PAR_READ.lha~ from
+the hard/hack drawer of AMINET. This archive also includes an ARexx program
+that does the same sort of thing.
+
+These executables WILL ONLY run from the CLI/Shell and WILL hang if the
+special hardware is NOT connected. The VERY SIMPLE hardware construction
+instructions are inside the ~PAR_READ.lha~ archive in the hard/hack drawer
+of AMINET. THIS ARCHIVE IS REQUIRED FOR CORRECT OPERATION AS WITHOUT IT
+THE ~-ACK~ WILL NOT GET CONTINUOUSLY TOGGLED!!!
+
+The purists out there will say that this is not quite the conventional way
+of coding in C but anyone who knows me also knows that I don't stick
+rigidly to ANY conventions. It is purely a starting point for those of you
+out there wanting to experiment with home built external hardware through
+the parallel port. NO KNOWLEDGE OF THE PARALLEL PORT IS REQUIRED AT ALL TO
+OBTAIN ANY 8 BIT BINARY DATA SITTING ON IT, BUT THE VERY SIMPLE HARDWARE
+FROM THE ~PAR_READ.lha~ ARCHIVE IS REQUIRED.
+
+Now released with a default ~a.out~ executeable from the latest version
+of ~vbccm68k.lha~, (circa 17-07-2006), for classic AMIGA machines.
+
+----------------------------------------------------------------------------
+
+History:-
+---------
+
+26-07-2006.
+-----------
+Version 1.00.04. Modified the simple code to print a decimal value for
+the character grabbed, from 0 to 255, instead of printable extended ASCII
+characters. (Recompiled using ~vbcc~ and ~Dice-C~.)
+
+24-07-2006.
+-----------
+Version 1.00.03. Minor text correction.
+
+23-07-2006.
+-----------
+Version 1.00.02. Added ~vbccm68k~ variant and minor alteration of code to
+suit both ~vbccm68k~ and ~Dice-C~ C compilers. Another executeable generated
+called ~a.out~ from ~vbccm68k~.
+
+18-05-2006.
+-----------
+Version 1.00.01. Added ~Dice-C~ executeable as a running file, ~PAR_READ~.
+
+06-12-2005.
+-----------
+Version 1.00.00. First upload to AMINET.
+
+----------------------------------------------------------------------------
+
+The archive is now Public Domain/Emailware and you may modify them as you
+please for your OWN experiments. See below.
+
+(Original idea and (C)2005 goes to B.Walker, G0LCU.)
+
+----------------------------------------------------------------------------
+
+                                IMPORTANT:-
+                                -----------
+
+
+    The Legal Stuff:-
+    -----------------
+
+    These programs are Public Domain and no profit will be made from them,
+    also all of the files must remain unaltered and intact including this
+    one. The author is not responsible for any damage to, or loss of, or
+    failure of equipment or data caused in any way by the use of these
+    programs. There is NO warranty with the use of these software releases
+    and YOU USE THEM AT YOUR OWN RISK.
+
+----------------------------------------------------------------------------
+
+    Testing Evaluation:-
+    --------------------
+
+    An A1200 in 2MB, 6MB and 10MB modes using trapdoor memory AND/OR
+    PCMCIA memory expansions.
+    (It should work on an A500+ and A600 using KS2.0x but I haven't
+    tried it.)
+
+    All test conditions were/are running STANDARD KS3.0x and using
+    standard ~topaz 8~ fonts throughout.
+
+    I have no idea what a strange configuration setup will create so refer
+    to the ~The Legal Stuff~ above.
+
+----------------------------------------------------------------------------
+
+                                 WARNING.
+                                 --------
+
+  1) DISCONNECT any faulty equipment under test from the MAINS supply.
+  2) If a DC supply is used do NOT reverse polarity the connections.
+  3) Do NOT power up any electronic item until it is safe to do so.
+  4) CHECK and RECHECK all of your construction and repair work thoroughly.
+  5) Handle ALL tools used with care.
+  6) Beware of ALL types of solvents, glues and etching fluids.
+  7) NEVER leave a soldering iron switched on unattended.
+  8) KEEP everything OUT of the reach of small children.
+  9) Switch OFF the AMIGA before disconnecting or connecting any hardware.
+ 10) And finally read 1) to 9) again.
+
+----------------------------------------------------------------------------
+
+   Contact:-
+   ---------
+
+   Mr Barry Walker, G0LCU,
+   70 King George Road,
+   Loughborough,
+   Leicestershire,
+   LE11 2PA,
+   England.
+
+   Email:-     wisecracker@tesco.net
+   URL:-       http://homepages.tesco.net/wisecracker/G0LCU.HTM
+
+   Author of the ~TestGear?~ projects in the ~hard/hack~ drawer of AMINET.
+
+----------------------------------------------------------------------------
+
+   A very useful HardWare related site, (C) Anthony Hoffman, for
+   modifications, schematics, repairs and the like is:-
+
+                          http://amiga.serveftp.net/
+
+============================================================================

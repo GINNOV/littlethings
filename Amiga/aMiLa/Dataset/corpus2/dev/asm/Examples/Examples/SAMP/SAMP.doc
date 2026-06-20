@@ -1,0 +1,1122 @@
+                       IFF FORM "SAMP" Sampled Sound
+
+ Date:   June 17,1988
+ From:   Jim Fiore and Jeff Glatt, dissidents
+ Status: Adopted by our company in lieu of any "official" alternative
+
+   The form "SAMP" is a file format used to store sampled sound data in some
+ways like the current standard, "8SVX". Unlike "8SVX", this new format is not
+restricted to 8 bit sample data. There can be more than one waveform per
+octave, and the lengths of different waveforms do not have to be factors of
+2. In fact, the lengths (waveform size) and playback mapping (which musical
+notes each waveform will "play") are independently determined for each wave-
+form. Furthermore, this format takes into account the MIDI sample dump stan-
+dard (the defacto standard for musical sample storage), while also incorpo-
+rating the ability to store Amiga specific info (for example, the sample data
+that might be sent to an audio channel which is modulating another channel).
+Although this form can be used to store "sound effects" (typically oneShot
+sounds played at a set pitch), it is primarily intended to correct the many
+deficiencies of the "8SVX" form in regards to musical sampling. Because the
+emphasis is on musical sampling, this format relies on the MIDI (Musical
+Instrument Digital Interface) method of describing "sound events" as does
+virtually all currently manufactured, musical samplers. In addition, it at-
+tempts to incorporate features found on many professional music samplers, in
+anticipation that future Amiga models will implement 16 bit sampling, and
+thus be able to achieve this level of performance. Because this format is 
+more complex than "8SVX", programming examples to demonstrate the use of this
+format have been included in both C and assembly. Also, a library of func-
+tions to read and write SAMP files is available, as well as an assembly
+language library which has functions to "play" SAMP files.
+
+  SEMANTICS: When MIDI literature talks about a sample, usually it means a
+collection of many sample points that make up what we call a "wave".
+
+        =====SIMILARITIES AND DIFFERENCES FROM THE "8SVX" FORM=======
+
+   Like "8SVX", this new format uses headers to separate the various sections
+of the sound file into chunks. Some of the chunks are exactly the same since
+there wasn't a need to improve them. The chunks that remain unchanged are as
+follows:
+
+   "(c) "
+   "AUTH"
+   "ANNO"
+
+  Since these properties are all described in the original "8SVX" document,
+please refer to that for a description of these chunks and their uses. Like
+the "8SVX" form, none of these chunks are required to be in a sound file.
+When they do appear, they must be padded out to an even number of bytes.
+
+  Furthermore, two "8SVX" chunks no longer exist as they have been incorpo-
+rated into the "BODY" chunk. They are:
+
+   "ATAK"
+   "RLSE"
+
+  Since each wave can be completely different than the other waves in the 
+sound file (one wave might be middle C on a piano, and another might be a
+snare drum hit), it is necessary for each wave to have its own envelope de-
+scription, and name.
+
+  The major changes from the "8SVX" format are in the "MHDR", "NAME", and
+"BODY" chunks.
+
+          =================THE "SAMP" HEADER================
+
+ At the very beginning of a sound file is the "SAMP" header. This is used to
+determine if the disk file is indeed a SAMP sound file. It's attributes are
+as follows:
+
+   #define ID_SAMP MakeID('S','A','M','P')
+
+  In assembly, this looks like:
+
+      CNOP 0,2  ;word-align
+
+SAMP         dc.b  'SAMP'
+sizeOfChunks dc.l  [sizes of subsequent chunks summed]
+
+             =================THE "MHDR" CHUNK=================
+
+  The required "MHDR" chunk immediately follows the "SAMP" header and consists
+of the following components:
+
+  #define ID_MHDR MakeID('M','H','D','R')
+
+  /* MHDR size is always 516 BYTES (Does not include this 8 byte header). */
+
+  typedef struct{
+     UBYTE playMap[128][4],  /* a map of which 4 wave numbers to use for
+                                 each Midi Note, 0 to 127 respectively */
+     numOfWaves,              /* The number of waves in this file */
+     sampleFormat,            /* # of ORIGINAL significant bits from 8-28 */
+     Flags,                   /* Various bits indicate various functions */
+     playMode;                /* determines play MODE of the playMap */
+   } MIDIVoiceHeader;
+
+The playMap is an array of 512 bytes. The Midi Spec 1.0 designates that there
+are 128 possible note numbers (pitches), 0 to 127. There are 4 bytes in
+playMap for EACH of the 128 Midi Note numbers. For example, the first 4 bytes
+in playMap pertain to Midi Note #0. Of the 4 bytes, the first byte is the
+wave number to play back on Amiga audio channel 0. The second byte is the
+wave number to play back on Amiga audio channel 1, etc. In this way, a single
+Midi Note Number could simultaneously trigger a sound event on each of the 4
+Amiga audio channels. There can be a total of 255 waves in a "SAMP" file.
+They are numbered from 1 to 255. A wave number of 0 is reserved to indicate
+that NO WAVE number should be played back. All four of the playMap bytes
+could even be the same wave number. This would cause the wave to be output of
+all 4 Amiga channels simultaneously. Consider the following example:
+
+  The first 4 bytes of playMap are  1,3,0,200.
+
+  If a sample playing program receives (from the serial port or another task
+perhaps) Midi Note Number 0, the following should occur:
+
+  1) The sampler plays back wave 1 on Amiga audio channel
+     number 0 (because the first playMap byte is 1).
+  2) The sampler plays back wave 3 on Amiga audio channel
+     number 1 (because the second playMap byte is 3).
+  3) The sampler does not effect Amiga audio channel 2 in
+     any way (because the third playMap byte is a 0).
+  4) The sampler plays back wave 200 on Amiga audio channel
+     number 4 (because the fourth playMap byte is 200).
+
+ (This assumes INDEPENDANT CHANNEL play MODE to be discussed later in this
+  article.)
+
+  In effect, the purpose of the playMap array is to determine which (if any)
+waves are to be played back on the 4 Amiga audio channels for each of the 128
+possible Midi Note Numbers.
+
+  numOfWaves is simply the number of waves in the sound file.
+
+  sampleFormat is the number of significant bits in every sample of a wave.
+For example, if sampleFormat = 8, then this means that the sample data is an
+8 bit format, and that every sample of the wave can be expressed by a single
+BYTE. (A 16 bit sample would need a WORD for every sample point).
+
+  Each bit of the Flags byte, when set, means the following:
+
+Bit #0 - File continued on another disc. This might occur if the SAMP file
+         was too large to fit on 1 floppy. The accepted practice (as incor-
+         porated by Yamaha's TX sampler and Casio's FZ-1 for example) is to
+         dump as much as possible onto one disc and set a flag to indicate
+         that more is on another disc's file. The name of the files must
+         be the same. The continuation file should have its own SAMP header
+         MHDR, and BODY chunks. This file could even have its continuation
+         bit set, etc. Never chop a sample wave in half. Always close the
+         file on 1 disc after the last wave which can be completely saved.
+         Resume with the next wave within the BODY of the continuation file.
+         Also, the numOfWaves in each file's BODY should be the number saved
+         on that disc (not the total number in all combined disk files).
+    See the end of this document for filename conventions.
+
+ In C, a received Midi Note should be interpreted as follows:
+
+  MapOffset = (UBYTE) MidiNoteNumber * 4;  /* MidiNoteNumber is the received note */
+  chan0waveNum = (UBYTE) playMap[MapOffset];
+  chan1waveNum = (UBYTE) playMap[MapOffset+1];
+  chan2waveNum = (UBYTE) playMap[MapOffset+2];
+  chan3waveNum = (UBYTE) playMap[MapOffset+3];
+
+  if (chan0waveNum != 0)
+  { /* get the pointer to wave #1's data, determine the values
+       that need to be passed to the audio device, and play this
+       wave on Amiga audio channel #0 (if INDEPENDANT playMode) */
+  }
+
+   /* do the same with the other 3 channel's wave numbers */
+
+  In assembly, the "MHDR" structure looks like this:
+
+             CNOP 0,2
+MHDR         dc.b 'MHDR'
+sizeOfMHDR   dc.l 516    ;always 516 bytes to follow
+playMap      dc.b [128 x 4 bytes of initialized values]
+numOfWaves   dc.b [a byte count of the # of waves in the file]
+sampleFormat dc.b [a byte count of the # of ORIGINAL significant bits]
+Flags        dc.b [bit mask]
+playMode     dc.b [play MODE discussed later]
+
+
+   and a received MidiNoteNumber is interpreted as follows:
+
+   moveq   #0,d0
+   move.b  MidiNoteNumber,d0  ;this is the received midi note #
+   bmi.s   Illegal_Number     ;exit, as this is an illegal midi note #
+   add.b   d0,d0
+   add.w   d0,d0              ;MidiNoteNumber x 4
+   lea     playMap,a0
+   adda.l  d0,a0
+   move.b  (a0)+,chan0waveNum
+   move.b  (a0)+,chan1waveNum
+   move.b  (a0)+,chan2waveNum
+   move.b  (a0),chan3waveNum
+
+      tst.b   chan0waveNum
+      beq.s   Chan1
+ ;Now get the address of this wave number's sample data, determine the
+ ;values that need to be passed to the audio device, and output the wave's
+ ;data on Amiga chan 0 (assuming INDEPENDANT playMode).
+
+Chan1 tst.b chan1waveNum
+      beq.s Chan2
+ ;do the same for the other wave numbers, etc.
+
+    =====================THE "NAME" CHUNK=========================
+
+  #define ID_NAME MakeID('N','A','M','E')
+
+  If a NAME chunk is included in the file, then EVERY wave must have a name.
+Each name is NULL-terminated. The first name is for the first wave, and it
+is immediately followed by the second wave's name, etc. It is legal for a
+wave's name to be simply a NULL byte. For example, if a file contained 4
+waves and a name chunk, the chunk might look like this:
+
+           CNOP 0,2
+
+Name       dc.b 'NAME'
+sizeOfName dc.l 30
+      dc.b 'Snare Drum',0  ;wave 1
+      dc.b 'Piano 1',0     ;wave 2
+      dc.b 'Piano A4',0    ;wave 3
+           dc.b 0          ;wave 4
+           dc.b 0
+
+  NAME chunks should ALWAYS be padded out to an even number of bytes. (Hence
+the extra NULL byte in this example). The chunk's size should ALWAYS be even
+consequently. DO NOT USE the typical IFF method of padding a chunk out to an
+even number of bytes, but allowing an odd number size in the header.
+
+            ==============THE "BODY" CHUNK===============
+
+ The "BODY" chunk is CONSIDERABLY different than the "8SVX" form. The
+structure is as follows:
+
+   #define ID_BODY MakeID('B','O','D','Y')
+
+
+   /* Now for the first waveHeader. Each wave has an 80 byte waveHeader
+      followed by data. */
+ typedef struct {
+   ULONG  waveSize;        /* total # of BYTES in the wave (MUST be even) */
+   UWORD  midiSampNum;     /* ONLY USED for Midi Dumps */
+   UBYTE  loopType,        /* ONLY USED for Midi Dumps */
+   InstrumentType;         /* Used for searching for a certain instrument */
+   ULONG  samplePeriod,    /* in nanoseconds at original pitch */
+   sampleRate,             /* # of samples per second at original pitch */
+   loopStartPoint,         /* an offset in BYTES (from the beginning of the
+                              of the wave) where the looping portion of the
+                              wave begins. Set to waveSize if no loop. */
+   loopEndPoint;           /* an offset in BYTES (from the beginning of the
+                              of the wave) where the looping portion of the
+                              wave ends. Set to waveSize if no loop. */
+   UBYTE  rootNote,        /* the Midi Note # that plays back original pitch */
+   velocityStart;            /* 0 = NO velocity effect, 128 =
+                                negative direction, 64 = positive
+                                direction (it must be one of these 3) */
+   UWORD velStartTable[16];  /* contains 16 successive offset values
+                                in BYTES from the beginning of the wave */
+
+  /* The ATAK and RLSE segments contain an EGPoint[] piece-wise
+     linear envelope just like 8SVX. The structure of an EGPoint[]
+     is the same as 8SVX. See that document for details. */
+
+   ULONG  sizeOfATAK,     /* # of BYTES in subsequent ATAK envelope.
+                             If 0, then no ATAK data for this wave. */
+   sizeOfRLSE,            /* # of BYTES in subsequent RLSE envelope
+                             If 0, then no RLSE envelope follows */
+
+  /* The FATK and FRLS segments contain an EGPoint[] piece-wise
+     linear envelope for filtering purposes. This is included in
+     the hope that future Amiga audio will incorporate a VCF
+     (Voltage Controlled Filter). Until then, if you are doing any
+     non-realtime digital filtering, you could store info here. */
+
+  sizeOfFATK,            /* # of BYTES in FATK segment */
+  sizeOfFRLS,            /* # of BYTES in FRLS segment */
+
+  sizeOfUserData;        /*   # of BYTES in the following data
+                              segment (not including typeOfData).
+                              If zero, then no user data */
+  UWORD  typeOfData;     /* See explanation below. If sizeOfUserData
+                             = 0, then ignore this. */
+
+ /* End of the waveInfo. Now the data. */
+
+ /* The data for any ATAK, RLSE, FATK, FRLS, USER, and the actual wave
+    data for wave #1 follows */
+
+ /* Now list each EGPoint[] for the VCA's (Voltage Controlled Amp)
+    attack portion */
+ /* Now list each EGPoint[] for the VCA's (Voltage Controlled Amp)
+    release portion */
+ /* include EGPoints[] if any for FATK */
+ /* include EGPoints[] if any for FRLS */
+ /* Now include the user data here if there is any. Just pad it out
+    to an even number of bytes and have sizeOfUserData reflect that. */
+ /* After the userdata (if any) is the actual sample data for
+   the wave (array). The size (in BYTES) of this segment is waveSize.
+   It MUST be padded out to an even number of bytes. */
+
+ } WaveFormInfo;
+
+
+ /* END OF WAVE #1 */
+
+ /* The structures for the other waves would now follow. They are
+    the same form as the first wave */
+
+;==================STRUCTURE OF AN INDIVIDUAL SAMPLE POINT==================
+
+   Even though the next generation of computers will probably have 16 bit
+audio, and 8 bit sampling will quickly disappear, this spec has sizes expressed
+in BYTES. (ie loopStartPoint, waveSize, etc.) This is because each successive
+address in RAM is a byte to the 68000, and so calculating address offsets
+will be much easier with all sizes in BYTES. The Midi sample dump, on the 
+other hand, has sizes expressed in WORDS. What this means is that if you
+have a 16 bit sample, for example, the waveSize is the total number of BYTES,
+not WORDS, in the wave.
+  Also, there is no facility for storing a compression type. This is because
+sample data should be stored in linear format (as per the MIDI spec). Currently,
+all music samplers, regardless of their internal method of playing sample data
+must transmit and expect to receive sample dumps in a linear format. It is
+up to each device to translate the linear format into its own compression
+scheme. For example, if you are using an 8 bit compression scheme that yields
+a 14 bit linear range, you should convert each sample data BYTE to a decom-
+pressed linear WORD when you save a sound file. Set the MHDR's sampleFormat
+to 14. It is up to the application to do its own compression upon loading
+a file. The midi spec was set up this way because musical samplers need to
+pass sample data between each other, and computers (via a midi interface).
+Since there are almost as many data compression schemes on the market as
+there are musical products, it was decided that all samplers should expect
+data received over midi to be in LINEAR format. It seems logical to store it
+this way on disc as well. Therefore, any software program "need not know" how
+to decompress another software program's SAMP file. When 16 bit sampling is
+eventually implemented there won't be much need for compression on playback
+anyway. The continuation Flag solves the problem of disc storage as well.
+  Since the 68000 can only perform math on BYTES, WORDS, or LONGS, it has
+been decided that a sample point should be converted to one of these sizes
+when saved in SAMP as follows:
+
+ ORIGINAL significant bits          SAMP sample point size
+ ннннннннннннннннннннннннн          нннннннннннннннннннннн
+            8                               BYTE
+          9 to 16                           WORD
+          17 to 28                          LONG
+
+  Furthermore, the significant bits should be left-justified since it is
+easier to perform math on the samples
+
+  So, for example, an 8 bit sample point (like 8SVX) would be saved as a
+BYTE with all 8 bits being significant. The MHDR's sampleFormat = 8. No
+conversion is necessary.
+
+  A 12 bit sample point should be stored as a WORD with the significant bits
+being numbers 2 to 15. (i.e shift the 12-bit WORD 2 places to the left). Bits
+0 and 1 may be zero (unless some 16-bit math was performed and you wish to
+save these results). The MHDR's sampleFormat = 12. In this way, the sample
+may be loaded and manipulated as a 16-bit wave, but when transmitted via
+midi, it can be converted back to 12 bits (rounded and shifted right by 2).
+
+  A 16 bit sample point would be saved as a WORD with all 16 bits being
+significant. The MHDR's sampleFormat = 16. No conversion is necessary.
+
+--------------------------------------------------------------------
+
+   The waveSize is, as stated, the number of BYTES in the wave's sample table.
+If your sample data consisted of the following 8 bit samples:
+
+    BYTE  100,-90,80,-60,30,35,40,-30,-35,-40,00,12,12,10
+
+ then waveSize = 14. (PAD THE DATA OUT TO AN EVEN NUMBER OF BYTES!)
+
+  The midiSampNum is ONLY used to hold the sample number received from a MIDI
+Sample Dump. It has no bearing on where the wave should be placed in a SAMP
+file. Also, the wave numbers in the playMap are between 1 to 255, with 1 being
+the number of the first wave in the file. Remember that a wave number of 0 is
+reserved to mean "no wave to play back". Likewise, the loopType is only used
+to hold info from a MIDI sample dump.
+
+   The InstrumentType is explained at the end of this document. Usually it
+should be set to 0.
+
+   The rootNote is the Midi Note number that will play the wave back at it's
+original, recorded pitch. For example, consider the following excerpt of a
+playMap:
+
+  playMap  {2,0,0,4       /* Midi Note #0 channel assignment */
+            4,100,1,0     /* Midi Note #1    "        "  */
+            1,4,0,0       /* Midi Note #2    "        "  */
+            60,2,1,1...}  /* Midi Note #3    "        "  */
+
+  Notice that Midi Notes 0, 1, and 2 are all set to play wave number 4 (on
+Amiga channels 3, 0, and 1 respectively). If we set wave 4's rootNote = 1,
+then receiving Midi Note number 1 would play back wave 4 (on Amiga channel 0)
+at it's original pitch. If we receive a Midi Note number 0, then wave 4 would
+be played back on channel 3) a half step lower than it's original pitch. If we
+receive Midi Note number 2, then wave 4 would be played (on channel 1) a half
+step higher than it's original pitch. If we receive Midi Note number 3, then
+wave 4 would not be played at all because it isn't specified in the playMap
+bytes for Midi Note number 3.
+
+  The sampleRate is the number of samples per second of the original pitch.
+For example, if sampleRate = 20000, then to play the wave at it's original
+pitch, the sampling period would be:
+
+     (1/20000)/.279365 = .000178977
+
+#define AUDIO_HARDWARE_FUDGE .279365
+
+where .279365 is the Amiga Fudge Factor (a hardware limitation). Since the
+amiga needs to see the period in terms of microseconds, move the decimal place
+to the right 6 places and our sampling period = 179 (rounded to an integer).
+In order to play the wave at higher or lower pitches, one would need to
+"transpose" this period value. By specifying a higher period value, the Amiga
+will play back the samples slower, and a lower pitch will be achieved. By
+specifying a lower period value, the amiga will play back the sample faster,
+and a higher pitch will be achieved. By specifying this exact period, the wave
+will be played back exactly "as it was recorded (sampled)". ("This period is
+JUST RIGHT!", exclaimed GoldiLocks.) Later, a method of transposing pitch will
+be shown using a "look up" table of periods. This should prove to be the
+fastest way to transpose pitch, though there is nothing in the SAMP format
+that compels you to do it this way.
+
+  The loopStartPoint is a BYTE offset from the beginning of the wave to where
+the looping portion of the wave begins. For example, if SampleData points to
+the start of the wave, then SampleData + loopStartPoint is the start address
+of the looping portion. In 8SVX, the looping portion was referred to as
+repeatHiSamples. The data from the start of the wave up to the start of the
+looping portion is the oneShot portion of the wave. loopEndPoint is a BYTE
+offset from the beginning of the wave to where the looping portion ends. This
+might be the very end of the wave in memory, or perhaps there might be still
+more data after this point. You can choose to ignore this "trailing" data and
+play back the two other portions of the wave just like an 8SVX file (except
+that there are no other interpolated octaves of this wave).
+
+  velStartTable contains 16 BYTE offsets from the beginning of the wave. Each
+successive value should be greater (or equal to) the preceding value. If
+velocityStart = POSITIVE (64), then for each 8 increments in Midi Velocity
+above 0, you move UP in the table, add this offset to the wave's beginning
+address (start of oneShot), and start playback at that address. Here is a 
+table relating received midi note-on velocity vs. start playback address for
+POSITIVE velocityStart. SamplePtr points to the beginning of the sample.
+
+ If midi velocity = 0, then don't play a sample, this is a note off
+ If midi velocity = 1 to 7, then start play at SamplePtr + velStartTable[0]
+ If midi velocity = 8 to 15, then start at SamplePtr + velStartTable[1]
+ If midi velocity = 16 to 23, then start at SamplePtr + velStartTable[2]
+ If midi velocity = 24 to 31, then start at SamplePtr + velStartTable[3]
+ If midi velocity = 32 to 39, then start at SamplePtr + velStartTable[4]
+ If midi velocity = 40 to 47, then start at SamplePtr + velStartTable[5]
+ If midi velocity = 48 to 55, then start at SamplePtr + velStartTable[6]
+ If midi velocity = 56 to 63, then start at SamplePtr + velStartTable[7]
+ If midi velocity = 64 to 71, then start at SamplePtr + velStartTable[8]
+ If midi velocity = 72 to 79, then start at SamplePtr + velStartTable[9]
+ If midi velocity = 80 to 87, then start at SamplePtr + velStartTable[10]
+ If midi velocity = 88 to 95, then start at SamplePtr + velStartTable[11]
+ If midi velocity = 96 to 103, then start at SamplePtr + velStartTable[12]
+ If midi velocity = 104 to 111, then start at SamplePtr + velStartTable[13]
+ If midi velocity = 112 to 119, then start at SamplePtr + velStartTable[14]
+ If midi velocity = 120 to 127, then start at SamplePtr + velStartTable[15]
+
+We don't want to specify a scale factor and use integer division to find the
+sample start. This would not only be slow, but also, it could never be certain
+that the resulting sample would be a zero crossing if the start point is calcu-
+lated "on the fly". The reason for having a table is so that the offsets can be
+be initially set on zero crossings via an editor. This way, no audio "clicks"
+guaranteed. This table should provide enough resolution.
+
+   If velocityStart = NEGATIVE (128), then for each 8 increments in midi
+velocity, you start from the END of velStartTable, and work backwards. Here
+is a table for NEGATIVE velocity start.
+
+ If midi velocity = 0, then don't play a sample, this is a note off
+ If midi velocity = 1 to 7, then start play at SamplePtr + velStartTable[15]
+ If midi velocity = 8 to 15, then start at SamplePtr + velStartTable[14]
+ If midi velocity = 16 to 23, then start at SamplePtr + velStartTable[13]
+ If midi velocity = 24 to 31, then start at SamplePtr + velStartTable[12]
+ If midi velocity = 32 to 39, then start at SamplePtr + velStartTable[11]
+ If midi velocity = 40 to 47, then start at SamplePtr + velStartTable[10]
+ If midi velocity = 48 to 55, then start at SamplePtr + velStartTable[9]
+ If midi velocity = 56 to 63, then start at SamplePtr + velStartTable[8]
+ If midi velocity = 64 to 71, then start at SamplePtr + velStartTable[7]
+ If midi velocity = 72 to 81, then start at SamplePtr + velStartTable[6]
+ If midi velocity = 80 to 87, then start at SamplePtr + velStartTable[5]
+ If midi velocity = 88 to 95, then start at SamplePtr + velStartTable[4]
+ If midi velocity = 96 to 103, then start at SamplePtr + velStartTable[3]
+ If midi velocity = 104 to 111, then start at SamplePtr + velStartTable[2]
+ If midi velocity = 112 to 119, then start at SamplePtr + velStartTable[1]
+ If midi velocity = 120 to 127, then start at SamplePtr + velStartTable[0]
+
+ In essence, increasing midi velocity starts playback "farther into" the wave
+for POSITIVE velocityStart. Increasing midi velocity "brings the start point
+back" toward the beginning of the wave for NEGATIVE velocityStart.
+
+ If velocityStart is set to NONE (0), then the wave's playback start should
+not be affected by the table of offsets.
+
+ What is the use of this feature? As an example, when a snare drum is hit with
+a soft volume, its initial attack is less pronounced than when it is struck
+hard. You might record a snare being hit hard. By setting velocityStart to a
+NEGATIVE value and setting up the offsets in the Table, a lower midi velocity
+will "skip" the beginning samples and thereby tend to soften the initial
+attack. In this way, one wave yields a true representation of its instrument
+throughout its volume range. Furthermore, stringed and plucked instruments
+(violins, guitars, pianos, etc) exhibit different attacks at different
+volumes. velocityStart makes these kinds of waves more realistic via a software
+implementation. Also, an application program can allow the user to enable/
+disable this feature. See the section "Making the Velocity Table" for info on
+how to best choose the 16 table values.
+
+        =========MIDI VELOCITY vs. AMIGA CHANNEL VOLUME============
+
+ The legal range for Midi Velocity bytes is 0 to 127. (A midi velocity of 0
+ should ALWAYS be interpreted as a note off).
+
+ The legal range for Amiga channel volume is 0 to 64. Since this is half of
+ the midi range, a received midi velocity should be divided by 2 and add 1
+ (but only AFTER checking for a received midi velocity of 0).
+
+  An example of how to implement a received midi velocity in C:
+
+  If ( ReceivedVelocity != 0 && ReceivedVelocity < 128 )
+  {   /* the velocity byte of a midi message */
+      If (velocityStart != 0)
+      {
+          tableEntry = ReceivedVelocity / 8;
+          If (velocityStart == 64)
+          {    /* Is it POSITIVE */
+               startOfWave = SamplePtr + velStartTable[tableEntry];
+                           /* ^where to find the sample start point */
+          }
+          If (velocityStart == 128)
+          {    /* Is it NEGATIVE */
+               startOfWave = SamplePtr + velStartTable[15 - tableEntry];
+          }
+          volume = (receivedVelocity/2 + 1;  /* playback volume */
+          /* Now playback the wave */
+      }
+  }
+
+  In assembly,  the BODY chunk and previous example are:
+
+           CNOP 0,2
+BodyHEADER dc.b 'BODY'
+sizeOfBody dc.l  [total bytes in the BODY chunk not counting 8 byte header]
+
+   ; Now for the first wave
+waveSize       dc.l  ;[total # of BYTES in this wave (MUST be even)]
+midiSampNum    dc.w  ;[from Midi Sample Dump]  ; ONLY USED for Midi Dumps
+loopType       dc.b  ;[0 or 1]                 ; ONLY USED for Midi Dumps
+InstrumentType dc.b  0
+samplePeriod   dc.l    ;[period in nanoseconds at original pitch]
+sampleRate     dc.l    ;[# of samples per second at original pitch]
+loopStartPoint dc.l    ;[an offset in BYTES (from the beginning of the
+                       ; of the wave) to where the looping
+                       ; portion of the wave begins.]
+loopEndPoint   dc.l    ;[an offset in BYTES (from the beginning of the
+                       ; of the wave) to where the looping
+                       ; portion of the wave ends]
+rootNote       dc.b    ;[the Midi Note # that plays back original pitch]
+velocityStart  dc.b    ;[0, 64, or 128]
+velStartTable  dc.w    ;[first velocity offset]
+               dc.w    ;[second velocity offset]...etc
+               ds.w 14 ;...for a TOTAL of 16 velocity offsets
+
+sizeOfATAK  dc.l  ;# of BYTES in subsequent ATAK envelope.
+                  ;If 0, then no ATAK data for this wave.
+sizeOfRLSE  dc.l  ;# of BYTES in subsequent RLSE envelope
+                  ;If 0, then no RLSE data
+sizeOfFATK  dc.l  ;# of BYTES in FATK segment
+sizeOfFRLS  dc.l  ;# of BYTES in FRLS segment
+sizeOfUserData dc.l  ;# of BYTES in the following data
+                     ;segment (not including typeOfData).
+                     ;If zero, then no user data
+typeOfData  dc.w  ; See explanation below. If sizeOfUserData
+                  ; = 0, then ignore this.
+
+  ;Now include the EGpoints[] (data) for the ATAK if any
+  ;Now the EGpoints for the RLSE
+  ;Now the EGpoints for the FATK
+  ;Now the EGpoints for the FLSR
+  ;Now include the user data here if there is any. Just pad
+  ;it out to an even number of bytes.
+  ;After the userdata (if any) is the actual sample data for
+  ;the wave. The size (in BYTES) of this segment is waveSize.
+  ;It MUST be padded out to an even number of bytes.
+
+  ; END OF WAVE #1
+
+  lea      SampleData,a0        ;the start addr of the sample data
+  moveq    #0,d0
+  move.b   ReceivedVelocity,d0  ;the velocity byte of a midi message
+  beq      A_NoteOff            ;If zero, branch to a routine to
+                                ;process a note-off message.
+
+  bmi      Illegal_Vol          ;exit if received velocity > 127
+  ;---Check for velocity start feature ON, and direction
+  move.b   velocityStart,d1
+  beq.s    Volume               ;skip the velocity offset routine if 0
+  bmi.s    NegativeVel          ;is it NEGATIVE? (128)
+
+  ;---Positive velocity offset
+  move.l   d0,d1                ;duplicate velocity
+  lsr.b    #3,d1                ;divide by 8
+  add.b    d1,d1                ;x 2 because we need to fetch a word
+  lea      velStartTable,a1     ;start at table's HEAD
+  adda.l   d1,a1                ;go forward
+  move.w   (a1),d1              ;get the velocity offet
+  adda.l   d1,a0          ;where to start actual playback
+  bra.s    Volume
+
+  ;---Negative velocity offset
+  move.l   d0,d1                ;duplicate velocity
+  lsr.b    #3,d1                ;divide by 8
+  add.b    d1,d1                ;x 2 because we need to fetch a word
+  lea      velStartTable+30,a1  ;start at table's END
+  suba.l   d1,a1                ;go backwards
+  move.w   (a1),d1              ;get the velocity offset
+  adda.l   d1,a0          ;where to start actual playback
+
+  ;---Convert Midi velocity to an Amiga volume
+Volume  lsr.b    #1,d0          ;divide by 2
+        addq.b   #1,d0          ;an equivalent Amiga volume
+
+ ;---Now a0 and d0 are the address of sample start, and volume
+
+=================== AN EGpoint (envelope generator) ================
+
+ A single EGpoint is a 6 byte structure as follows:
+
+EGpoint1: dc.w ;[the duration in milliseconds]
+          dc.l ;[the volume factor - fixed point, 16 bits to the left of the
+               ;decimal point and 16 to the right.]
+
+  The volume factor is a fixed point where 1.0 ($00010000) represents the
+  MAXIMUM volume possible. (i.e. No volume factor should exceed this value.)
+  The last EGpoint in the ATAK is always the sustain point. Each EG's volume
+  is determined from 0.0, not as a difference from the previous EG's volume.
+  I hope that this clears up the ambiguity in the original 8SVX document.
+  So, to recreate an amplifier envelope like this:
+
+    /\
+   /  \____
+  /        \
+ /          \
+
+ |  | |   |  |
+  1  2  3   4
+
+  Stages 1, 2, and 3 would be in the ATAK data, like so:
+
+  ;Stage 1
+  dc.w  100       ;take 100ms
+  dc.l  $00004000 ;go to this volume
+  dc.w  100
+  dc.l  $00008000
+  dc.w  100
+  dc.l  $0000C000
+  dc.w  100
+  dc.l  $00010000 ;the "peak" of our attack is full volume
+  ;Stage 2
+  dc.w  100
+  dc.l  $0000C000 ;back off to this level
+  dc.l  100
+  dc.l  $00008000 ;this is where we hold (SUSTAIN) until the note is turned
+                  ;off. (We are now holding at stage 3)
+
+  Now the RLSE data would specify stage 4 as follows:
+  dc.w  100
+  dc.l  $00004000
+  dc.w  100
+  dc.l  $00000000 ;the volume is 0
+
+        ===============ADDITIONAL USER DATA SECTION=================
+
+  There is a provision for storing user data. This is where an application
+can store Amiga hardware info, or other, application specific info. The value
+of typeOfData tells what kind of data is stored here. The current types are:
+
+#define SPECIFIC 0
+#define VOLMOD   1
+#define PERMOD   2
+#define LOOPING  3
+
+ SPECIFIC (0) - application specific data. It should be stored
+                in a format that some application can immediately
+                recognize. (i.e. a "format within" the SAMP format)
+                If the typeOfData is SPECIFIC, and an application
+                doesn't find some sort of header that it can re-
+                cognize, it should conclude that this data was
+                put there by "someone else", and ignore the data.
+
+ VOLMOD (1) -   This data is for volume modulation of an Amiga
+                channel as described by the ADKCON register. This
+                data will be sent to the modulator channel of the
+                channel set to play the wave.
+
+ PERMOD (2) -   This data is for period modulation of an Amiga
+                channel as described by the ADKCON register. This
+                data will be sent to the modulator channel of the
+                channel set to play the wave.
+
+ LOOPING (3) -  This contains more looping points for the sample.
+                There are some samplers that allow more than just
+                one loop (Casio products primarily). Additional
+                looping info can be stored in this format:
+
+               UWORD numOfLoops;  /* number of loop points to follow */
+
+               ULONG StartLoop1,  /* BYTE offset from the beginning of
+                                    the sample to the start of loop1 */
+               EndLoop1,          /* BYTE offset from the beginning of
+                                    the sample to the end of loop1 */
+
+               StartLoop2,        /* ...etc */
+
+          =========Converting Midi Sample Dump to SAMP=========
+
+  SEMANTICS: When MIDI literature talks about a sample, usually it means a
+collection of many sample points that make up what we call "a wave".
+Therefore, a Midi Sample Dump sends all the sample data that makes up ONE
+wave. A SAMP file is designed to hold up to 255 of these waves (midi dumps).
+
+  The Midi Sample Dump specifies playback rate only in terms of a sample
+PERIOD in nanoseconds. SAMP also expresses playback in terms of samples per
+second (frequency). The Amiga needs to see its period rounded to the nearest
+microsecond. If you take the sample period field of a Midi sample Dump (the
+8th, 9th, and 10th bytes of the Dump Header LSB first) which we will call
+MidiSamplePer, and the sampleRate of a SAMP file, here is the relationship:
+
+    sampleRate = (1/MidiSamplePer) x 10E9
+
+  Also the number of samples (wave's length) in a Midi Sample Dump (the 11th,
+12th, and 13th bytes of the Dump header) is expressed in WORDS. SAMP's
+waveSize is expressed in the number of BYTES. (For the incredibly stupid),
+the relationship is:
+
+   waveSize = MidiSampleLength x 2
+
+  A Midi sample dump's loopStartPoint and loopEndPoint are also in WORDS as
+versus the SAMP equivalents expressed in BYTES.
+
+   A Midi sample dump's sample number can be 0 to 65535. A SAMP file can hold
+up to 255 waves, and their numbers in the playmap must be 1 to 255. (A single,
+Midi Sample Dump only sends info on one wave.) When recieving a Midi Sample
+Dump, just store the sample number (5th and 6th bytes of the Dump Header LSB
+first) in SAMP's midiSampNum field. Then forget about this number until you
+need to send the wave back to the Midi instrument from whence it came.
+
+  A Midi Dump's loop type can be forward, or forward/backward. Amiga hardware
+supports forward only. You should store the Midi Dump's loopType byte here,
+but ignore it otherwise until/unless Amiga hardware supports "reading audio
+data" in various ways. If so, then the looptype is as follows:
+
+    forward = 0, backward/forward = 1
+
+  A Midi Dump's sample format byte is the same as SAMP's.
+
+  ===================== INTERPRETING THE PLAYMODE ==========================
+  playMode specifies how the bytes in the playMap are to be interpreted.
+  Remember that a playMap byte of 0 means "No Wave to Play".
+
+#define INDEPENDANT 0
+#define MULTI       1
+#define STEREO      2
+#define PAN         3
+
+  playMode types:
+
+ INDEPENDANT (0) - The four wave #s for a midi note are to be output on
+                   Amiga channels 0, 1, 2, and 3 respectively.
+
+ MULTI       (1) - The first wave # (first of the four playMap bytes) for a
+                   midi note is to be output on any free channel. The other
+                   3 wave numbers are ignored. If all four channels are in
+                   play, the application can decide whether to "steal" a
+                   channel.
+
+ STEREO     (2) -  The first wave # (first of the 4 playMap bytes) is to be
+                   output of the Left stereo jack (channel 1 or 3) and the
+                   second wave number (the second of the 4 playMap bytes) is
+                   to be output the Right jack (channel 2 or 4). The other 2
+                   wave numbers are ignored.
+
+ PAN        (3) -  This is just like STEREO except that the volume of wave 1
+                   should start at its initial volume (midi velocity) and
+                   fade to 0. At the same rate, wave 2 should start at 0
+                   volume and rise to wave #1's initial level. The net
+                   effect is that the waves "cross" from Left to Right in
+                   the stereo field. This is most effective when the wave
+                   numbers are the same. (ie the same wave) The application
+                   program should set the rate. Also, the application can
+                   reverse the stereo direction (ie Right to Left fade).
+
+  The most important wave # to be played back by a midi note should be the
+first of the four playMap bytes. The second playMap byte should be a defined
+wave number as well (even if it is deliberately set to the same value as the
+first byte). This insures that all 4 playModes will have some effect on a
+given SAMP file. Also, an application should allow the user to change the
+playMode at will. The value stored in the SAMP file is only a default or
+initial set-up condition.
+
+  =================== MAKING A TRANSPOSE TABLE =====================
+
+ In order to allow a wave to playback over a range of musical notes, (+/-
+semitones), its playback rate must be raised or lowered by a set amount.
+From one semitone to the next, this set amount is by a factor of the 12th
+root of 2 (assuming a western, equal-tempered scale). Here is a table that
+shows what factor would need to be multiplied by the sampling rate in order
+to transpose the wave's pitch.
+
+  Pitch in relation to the Root     Multiply Rate by this amount
+ -------------------------------   ------------------------------
+   DOWN 6     semitones              0.5
+   DOWN 5 1/2 semitones              0.529731547
+   DOWN 5     semitones              0.561231024
+   DOWN 4 1/2 semitones              0.594603557
+   DOWN 4     semitones              0.629960525
+   DOWN 3 1/2 semitones              0.667419927
+   DOWN 3     semitones              0.707106781
+   DOWN 2 1/2 semitones              0.749153538
+   DOWN 2     semitones              0.793700526
+   DOWN 1 1/2 semitones              0.840896415
+   DOWN 1     semitones              0.890898718
+   DOWN 1/2   semitone               0.943874312
+ORIGINAL_PITCH                       1.0           /* rootnote's pitch */
+   UP   1/2   semitone               1.059463094
+   UP   1     semitones              1.122562048
+   UP   1 1/2 semitones              1.189207115
+   UP   2     semitones              1.259921050
+   UP   2 1/2 semitones              1.334839854
+   UP   3     semitones              1.414213562
+   UP   3 1/2 semitones              1.498307077
+   UP   4     semitones              1.587401052
+   UP   4 1/2 semitones              1.681792830
+   UP   5     semitones              1.781797436
+   UP   5 1/2 semitones              1.887748625
+   UP   6     semitones              2
+
+  For example, if the wave's sampleRate is 18000 hz, and you wish to play
+the wave UP 1 semitone, then the playback rate is:
+
+   18000 x 1.122562048 = 20206.11686 hz
+
+  The sampling period for the Amiga is therefore:
+
+     (1/20206.11686)/.279365 = .000177151
+
+ and to send it to the Audio Device, it is rounded and expressed in micro-
+seconds: 177
+
+  Obviously, this involves floating point math which can be time consuming
+and impractical for outputing sound in real-time. A better method is to con-
+struct a transpose table that contains the actual periods already calculated
+for every semitone. The drawback of this method is that you need a table for
+EVERY DIFFERENT sampleRate in the SAMP file. If all the sampleRates in the
+file happened to be the same, then only one table would be needed. Let's
+assume that this is the case, and that the sampleRate = 18000 hz. Here is a
+table containing enough entries to transpose the waves +/- 6 semitones.
+
+  Pitch in relation to the Root     The Amiga Period (assuming rate = 18000 hz)
+ -------------------------------   ------------------------------
+Transposition_table[TRANS_TABLE_SIZE]={
+/* DOWN 6     semitones  */            398,
+/* DOWN 5 1/2 semitones  */            375,
+/* DOWN 5     semitones  */            354,
+/* DOWN 4 1/2 semitones  */            334,
+/* DOWN 4     semitones  */            316,
+/* DOWN 3 1/2 semitones  */            298,
+/* DOWN 3     semitones  */            281,
+/* DOWN 2 1/2 semitones  */            265,
+/* DOWN 2     semitones  */            251,
+/* DOWN 1 1/2 semitones  */            236,
+/* DOWN 1     semitones  */            223,
+/* DOWN 1/2   semitone   */            211,
+/* ORIGINAL_PITCH        */            199,      /* rootnote's pitch */
+/* UP   1/2   semitone   */            187,
+/* UP   1     semitones  */            177,
+/* UP   1 1/2 semitones  */            167,
+/* UP   2     semitones  */            157,
+/* UP   2 1/2 semitones  */            148,
+/* UP   3     semitones  */            141,
+/* UP   3 1/2 semitones  */            133,
+ /* Since the minimum Amiga period = 127 the following
+    are actually out of range. */
+/* UP   4     semitones  */            125,
+/* UP   4 1/2 semitones  */            118,
+/* UP   5     semitones  */            112,
+/* UP   5 1/2 semitones  */            105,
+/* UP   6     semitones  */            99   };
+
+
+  Let's assume that (according to the playMap) midi note #40 is set to play
+wave number 3. Upon examining wave 3's structure, we discover that the
+sampleRate = 18000, and the rootNote = 38. Here is how the Amiga sampling
+period is calulated using the above 18000hz "transpose chart" in C:
+  /* MidiNoteNumber is the received midi note's number (here 40) */
+
+  #define ORIGINAL_PITCH     TRANS_TABLE_SIZE/2 + 1
+/* TRANS_TABLE_SIZE is the number of entries in the transposition table
+   (dynamic, ie this can change with the application) */
+
+  transposeAmount = (LONG) (MidiNoteNumber - rootNote); /* make it a SIGNED LONG */
+  amigaPeriod     = Transposition_table[ORIGINAL_PITCH + transposeAmount];
+
+
+  In assembly, the 18000hz transpose chart and above example would be:
+
+Table       dc.w  398
+            dc.w  375
+            dc.w  354
+            dc.w  334
+            dc.w  316
+            dc.w  298
+            dc.w  281
+            dc.w  265
+            dc.w  251
+            dc.w  236
+            dc.w  223
+            dc.w  211
+ORIGINAL_PITCH  dc.w  199   ; rootnote's pitch
+            dc.w  187
+            dc.w  177
+            dc.w  167
+            dc.w  157
+            dc.w  148
+            dc.w  141
+            dc.w  133
+ ; Since the minimum Amiga period = 127, the following
+ ; are actually out of range.
+            dc.w  125
+            dc.w  118
+            dc.w  112
+            dc.w  105
+            dc.w  99
+
+  lea     ORIGINAL_PITCH,a0
+  move.b  MidiNoteNumber,d0  ;the received note number
+  sub.b   rootNote,d0        ;subtract the wave's root note
+  ext.w   d0
+  ext.l   d0                 ;make it a signed LONG
+  add.l   d0,d0              ;x 2 in order to fetch a WORD
+  adda.l  d0,a0
+  move.w  (a0),d0            ;the Amiga Period (WORD)
+
+  Note that these examples don't check to see if the transpose amount is
+beyond the number of entries in the transpose table. Nor do they check if
+the periods in the table are out of range of the Amiga hardware.
+
+    ===================== MAKING THE VELOCITY TABLE ======================
+
+  The 16 entries in the velocity table should be within the oneShot portion of
+the sample (ie not in the looping portion). THe first offset, velStartTable[0]
+should be set to zero (in order to play back from the beginning of the data).
+The subsequent values should be increasing numbers. If you are using a graphic
+editor, try choosing offsets that will keep you within the initial attack
+portion of the wave. In practice, these values will be relatively close
+together within the wave. Always set the offsets so that when they are added
+to the sample start point, the resulting address points to a sample value of
+zero (a zero crossing point). This will eliminate pops and clicks at the 
+beginning of the playback.
+
+  In addition, the start of the wave should be on a sample with a value of
+zero. The last sample of the oneShot portion and the first sample of the
+looping portion should be approximately equal, (or zero points). The same is
+true of the first and last samples of the looping portion. Finally, try to
+keep the slopes of the end of the oneShot, the beginning of the looping, and
+the end of the looping section, approximately equal. All this will eliminate
+noise on the audio output and provide "seamless" looping.
+
+  ======================== THE INSTRUMENT TYPE ==========================
+
+  Many SMUS players search for certain instruments by name. Not only is this
+slow (comparing strings), but if the exact name can't be found, then it is
+very difficult and time-consuming to search for a suitable replacement. For
+this reason, many SMUS players resort to "default" instruments even if these
+are nothing like the desired instruments. The instrumentType byte in each
+waveHeader is meant to be a numeric code which will tell an SMUS player
+exactly what the instrument is. In this way, the SMUS player can search for
+the correct "type" of instrument if it can't find the desired name. The type
+byte is divided into 2 nibbles (4 bits for you C programmers) with the low
+4 bits representing the instrument "family" as follows:
+
+ 1 = STRING, 2 = WOODWIND, 3 = KEYBOARD, 4 = GUITAR, 5 = VOICE, 6 = DRUM1,
+ 7 = DRUM2,  8 = PERCUSSION1, 9 = BRASS1, A = BRASS2, B = CYMBAL, C = EFFECT1,
+ D = EFFECT2, E = SYNTH, F are undefined at this time
+
+ Now, the high nibble describes the particular type within that family.
+
+ For the STRING family, the high nibble is as follows:
+
+ 1 = VIOLIN BOW, 2 = VIOLIN PLUCK, 3 = VIOLIN GLISSANDO, 4 = VIOLIN TREMULO,
+ 5 = VIOLA BOW, 6 = VIOLA PLUCK, 7 = VIOLA GLIS, 8 = VIOLA TREM, 9 = CELLO
+ BOW, A = CELLO PLUCK, B = CELLO GLIS, C = CELLO TREM, D = BASS BOW, E =
+ BASS PLUCK (jazz bass), F = BASS TREM
+
+ For the BRASS1 family, the high nibble is as follows:
+
+ 1 = BARITONE SAX, 2 = BARI GROWL, 3 = TENOR SAX, 4 = TENOR GROWL, 5 = ALTO
+ SAX, 6 = ALTO GROWL, 7 = SOPRANO SAX, 8 = SOPRANO GROWL, 9 = TRUMPET, A =
+ MUTED TRUMPET, B = TRUMPET DROP, C = TROMBONE, D = TROMBONE SLIDE, E =
+ TROMBONE MUTE
+
+ For the BRASS2 family, the high nibble is as follows:
+
+ 1 = FRENCH HORN, 2 = TUBA, 3 = FLUGAL HORN, 4 = ENGLISH HORN
+
+ For the WOODWIND family, the high nibble is as follows:
+
+ 1 = CLARINET, 2 = FLUTE, 3 = PAN FLUTE, 4 = OBOE, 5 = PICCOLO, 6 = RECORDER,
+ 7 = BASSOON, 8 = BASS CLARINET, 9 = HARMONICA
+
+ For the KEYBOARD family, the high nibble is as follows:
+
+ 1 = GRAND PIANO, 2 = ELEC. PIANO, 3 = HONKYTONK PIANO, 4 = TOY PIANO, 5 =
+ HARPSICHORD, 6 = CLAVINET, 7 = PIPE ORGAN, 8 = HAMMOND B-3, 9 = FARFISA
+ ORGAN, A = HARP
+
+ For the DRUM1 family, the high nibble is as follows:
+
+ 1 = KICK, 2 = SNARE, 3 = TOM, 4 = TIMBALES, 5 = CONGA HIT, 6 = CONGA SLAP,
+ 7 = BRUSH SNARE, 8 = ELEC SNARE, 9 = ELEC KICK, A = ELEC TOM, B = RIMSHOT,
+ C = CROSS STICK, D = BONGO, E = STEEL DRUM, F = DOUBLE TOM
+
+ For the DRUM2 family, the high nibble is as follows:
+
+ 1 = TIMPANI, 2 = TIMPANI ROLL, 3 = LOG DRUM
+
+ For the PERCUSSION1 family, the high nibble is as follows:
+
+ 1 = BLOCK, 2 = COWBELL, 3 = TRIANGLE, 4 = TAMBOURINE, 5 = WHISTLE, 6 =
+ MARACAS, 7 = BELL, 8 = VIBES, 9 = MARIMBA, A = XYLOPHONE, B = TUBULAR BELLS,
+ C = GLOCKENSPEIL
+
+ For the CYMBAL family, the high nibble is as follows:
+
+ 1 = CLOSED HIHAT, 2 = OPEN HIHAT, 3 = STEP HIHAT, 4 = RIDE, 5 = BELL CYMBAL,
+ 6 = CRASH, 7 = CHOKE CRASH, 8 = GONG, 9 = BELL TREE, A = CYMBAL ROLL
+
+ For the GUITAR family, the high nibble is as follows:
+
+ 1 = ELECTRIC, 2 = MUTED ELECTRIC, 3 = DISTORTED, 4 = ACOUSTIC, 5 = 12-STRING,
+ 6 = NYLON STRING, 7 = POWER CHORD, 8 = HARMONICS, 9 = CHORD STRUM, A = BANJO,
+ B = ELEC. BASS, C = SLAPPED BASS, D = POPPED BASS, E = SITAR, F = MANDOLIN
+ (Note that an acoustic picked bass is found in the STRINGS - Bass Pluck)
+
+ For the VOICE family, the high nibble is as follows:
+
+ 1 = MALE AHH, 2 = FEMALE AHH, 3 = MALE OOO, 4 = FEMALE OOO, 5 = FEMALE
+ BREATHY, 6 = LAUGH, 7 = WHISTLE
+
+ For the EFFECTS1 family, the high nibble is as follows:
+
+ 1 = EXPLOSION, 2 = GUNSHOT, 3 = CREAKING DOOR OPEN, 4 = DOOR SLAM, 5 = DOOR
+ CLOSE, 6 = SPACEGUN, 7 = JET ENGINE, 8 = PROPELLER, 9 = HELOCOPTER, A =
+ BROKEN GLASS, B = THUNDER, C = RAIN, D = BIRDS, E = JUNGLE NOISES, F =
+ FOOTSTEP
+
+ For the EFFECTS2 family, the high nibble is as follows:
+
+ 1 = MACHINE GUN, 2 = TELEPHONE, 3 = DOG BARK, 4 = DOG GROWL, 5 = BOAT
+ WHISTLE, 6 = OCEAN, 7 = WIND, 8 = CROWD BOOS, 9 = APPLAUSE, A = ROARING
+ CROWDS, B = SCREAM, C = SWORD CLASH, D = AVALANCE, E = BOUNCING BALL,
+ F = BALL AGAINST BAT OR CLUB
+
+ For the SYNTH family, the high nibble is as follows:
+
+ 1 = STRINGS, 2 = SQUARE, 3 = SAWTOOTH, 4 = TRIANGLE, 5 = SINE, 6 = NOISE
+
+  So, for example if a wave's type byte was 0x26, this would be a SNARE DRUM.
+If a wave's type byte is 0, then this means "UNKNOWN" instrument.
+
+  ===================== THE ORDER OF THE CHUNKS =========================
+
+ The SAMP header obviously must be first in the file, followed by the MHDR
+chunk. After this, the ANNO, (c), AUTH and NAME chunks may follow in any
+order, though none of these need appear in the file at all. THe BODY chunk
+must be last.
+
+  ============ WHY DOES ANYONE NEED SUCH A COMPLICATED FILE ==============
+                 (or "What's wrong with 8SVX anyway?")
+
+  In a nutshell, 8SVX is not adequate for professional music sampling. First
+of all, it is nearly impossible to use multi-sampling (utilizing several,
+different samples of any instrument throughout its musical range). This very
+reason alone makes it impossible to realistically reproduce a musical in-
+strument, as none in existance (aside from an electronic organ) uses inter-
+polations of a single wave to create its musical note range.
+  Also, stretching a sample out over an entire octave range does grotesque
+(and VERY unmusical) things to such elements as the overtone structure,
+wind/percussive noises, the instrument's amplitude envelope, etc. The 8SVX
+format is designed to stretch the playback in exactly this manner.
+  8SVX ignores MIDI which is the de facto standard of musical data transmission.
+  8SVX does not allow storing data for features that are commonplace to pro-
+fessional music samplers. Such features are: velocity sample start, separate
+filter and envelopes for each sample, separate sampling rates, and various
+playback modes like stereo sampling and panning.
+  SAMP attempts to remedy all of these problems with a format that can be
+used by a program that simulates these professional features in software. The
+format was inspired by the capabilities of the following musical products:
+
+  EMU's                 EMAX, EMULATOR
+  SEQUENTIAL CIRCUIT's  PROPHET 2000, STUDIO 440
+  ENSONIQ's             MIRAGE
+  CASIO's               FZ-1
+  OBERHEIM's            DPX
+  YAMAHA                TX series
+
+   So why does the Amiga need the SAMP format? Because professional musician's
+are buying computers. With the firm establishment of MIDI, musician's are
+buying and using a variety of sequencers, patch editors, and scoring programs.
+It is now common knowledge amoung professional musicians that the Amiga
+lags far behind IBM clones, Macintosh, and Atari ST computers in both music
+software and hardware support. Both Commodore and the current crop of short-
+sighted 3rd party Amiga developers are pigeon-holing the Amiga as "a video
+computer". It is important for music software to exploit whatever capabili-
+ties the Amiga offers before the paint and animation programs, genlocks,
+frame-grabbers, and video breadboxes are the only applications available
+for the Amiga. Hopefully, this format, with the SAMP and music libraries will
+make it possible for Amiga software to attain the level of professionalism
+that the other machines now boast, and the Amiga lacks.

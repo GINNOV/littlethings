@@ -1,0 +1,190 @@
+     _________
+    /         \                 Omni Communications Products
+   |   |       |      Presents the Latest Addition to the RoboWare Line
+   |.---------.|
+   [|#########|]                        RCONFIG v1.1
+    |---------|
+     \   ~   /                Copyright 1992 by Anthon S T Pang
+      \  -  /
+_:_1__|`==='|__1_:_                Freely Redistributable
+     \\_____//
+
+
+Introduction
+~~~~~~~~~~~~
+    RConfig is a 2.0 utility for >>> Manx Aztec C 5.2a <<< users for
+    configuring a replacement linker library (rlib.lib).  This library
+    is simply linked with your code, before c.lib, cl.lib, c16.lib, or
+    cl16.lib.
+
+    The replacement functions available are:
+
+        stkchk()    -     An improved low stack condition test, which
+                          takes into account the size of a procedure's
+                          local stack frame; optional dynamic stack code
+
+        main()      -     Choose from 3 variations of the startup code:
+                          normal, detaching, residentable
+
+        setjmp()    -     Adds support for free()'ing DynaStack extension
+                          stack blocks and alloca()'d blocks
+
+    In addition, an alloca() function is provided.  This doesn't replace
+    any similarly named function in clib, but I much prefer it over the
+    GNU alloca.c code.
+
+    Lastly, you can choose additional compiler options in generating the
+    library, size of the data model (large or small), integer size (32 vs
+    16 bits), and various parameters for stkchk().
+
+
+Using RConfig
+~~~~~~~~~~~~~
+    RConfig should be run from the CLI.  It takes no parameters.
+
+    RConfig looks for the source files in RLIB: first and then in
+    Aztec:RLib/.  If neither of these paths exist, you will not
+    get the desired effect.
+
+    The check boxes determine whether a function is replaced or not.
+
+    Click on the "Generate Library" button to generate source.  The
+    file "rlib.o" will be created in the current directory by
+    default.  You can change the output directory by selecting the
+    menu item "Change Directory...".  If you haven't redirected
+    RConfig's output, you'll be able to see the command string used
+    to compile the replacement library.
+
+    Click on the "Optimizations..." button to go to the CC options
+    selection window.  RConfig will use these options in compiling
+    the replacement, temporarily overriding the CCOPTS environment
+    variable.  Click on the "Done" button or the close gadget to
+    return to the main RConfig window.
+
+    To quit, you can do one of the following: click on the "Cancel"
+    button, click the close gadget, select the menu option for
+    "Quit", or press right-Amiga Q.
+
+
+Using the Replacement Library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Copy the files "include/alloca.h" and "include/rsetjmp.h" to
+    your Aztec:Includes/ directory or to a directory listed in
+    your INCLUDE environment variable setting.
+
+    After generating the replacement library, #include "rlib.h"
+    in your code.  "rlib.h" in turn makes the appropriate #defines
+    and #includes.
+
+    If you're using the improved stkchk() code, process the
+    intermediate assembly source (Compile with -at or -a options.)
+    with "stkchker".
+
+    If you're using the detach startup code, declare the following
+    variables:
+
+        long _stack        = 0L;    /* Stack size, 0 means use default */
+        long _priority     = 0L;    /* Priority (normally 0)           */
+        long _BackGroundIO = 1L;    /* If !=0, keep CLI for output     */
+        char *_procname    = "tst"; /* Just a name for reference       */
+
+    If you're using the resident startup code, remember to compile
+    in small (near) data mode.
+
+    Link rlib.lib before c.lib, c16.lib, cl.lib, or cl16.lib.  Example:
+
+        ln test1.o rlib.lib -lc 
+
+    Please refer to the docs/ directory for more technical information
+    regarding alloca(), stkchk(), and resstart.  Documentation for
+    the detach code can be found in "detach.man" and "detach.readme"
+    contained on your 5.2a disks.
+
+
+Common Errors
+~~~~~~~~~~~~~
+    1)  Skipped file processing with stkchk().
+
+        You must run "stkchker" on the intermediate assembly
+        files when using the 'better' or 'dynastack' versions
+        of stkchk().
+
+    2)  Linking with the wrong version of the replacement library.
+
+        Check the comment header of "rlib.h" to determine the
+        version of rlib.lib created.
+
+    3)  Missing #defines with setjmp()/longjmp().
+
+        Forgot to #include "rlib.h".  "rlib.h" contains #defines
+        which will ensure the jmp_buf structure used in <rsetjmp.h>
+        is the appropriate size.
+
+    4)  Missing #define with alloca().
+
+        Forgot to #include "rlib.h".  "rlib.h" contains a #define
+        which determines whether the safe or risky version of
+        alloca() is used.  Be careful not to mix usage of alloca()
+        within the same project.  Please see alloca.doc for more
+        information.  A Makefile with explicit dependencies on
+        "rlib.h" can also help to avoid mixing versions.
+
+
+Manifest
+~~~~~~~~
+    The following files should be in this archive:
+
+        rconfig.doc             - this file
+        rconfig                 - executable
+        stkchker                - conversion utility for new stkchk()
+        ToDo                    - my "to do" list
+        docs/alloca.doc         - documentation for alloca() function
+        docs/stkchk.doc         - documentation for stkchk() function
+        docs/resstart.doc       - documentation for residentable startup code
+        include/alloca.h        - header files for your code
+        include/rsetjmp.h
+        rlib/rlib.c             - replacment library source
+        rlib/crt0.a68
+        rlib/_main.c
+        rlib/_exit.c
+        rlib/rlib_alloca.c
+        rlib/rlib_setjmp.c
+        rlib/rlib_stkchk.c
+        src/Makefile
+        src/rc2.g               - GadToolsBox project
+        src/rconfig.c           - rconfig source
+        src/busyptrimg.c
+        src/genlib.c
+        src/gtbsup.c
+        src/rccopts.c
+        src/rconfig_rev.h
+        src/rc2.h               - generated GTB source
+        src/rc2.c               - generated GTB source w/mods
+        src/stkchker.c          - source for conversion utility
+        tests/TESTS.README      - description for tests/examples
+        tests/1/TEST            - AmigaDOS test script (Execute me)
+        tests/1/test.c          - test program
+        tests/2/TEST      tests/4b/TEST      \
+        tests/2/test.c    tests/4b/test.c     \
+        tests/3a/TEST     tests/5/TEST         \
+        tests/3a/test.c   tests/5/test.c        \ more scripts & programs
+        tests/3b/TEST     tests/6/TEST          /
+        tests/3b/test.c   tests/6/test.c       /
+        tests/4a/TEST     tests/7/TEST        /
+        tests/4a/test.c   tests/7/test.c     /
+
+    Please do not distribute incomplete or augmented (ie adding BBS ads)
+    versions of this archive.
+
+
+Contacting the Author
+~~~~~~~~~~~~~~~~~~~~~
+    Send questions, bug reports, suggestions, donations, etc to:
+
+    Omni Communications Products        UUCP: apang@mindlink.bc.ca
+    Attn: Anthon Pang                   BIX: apang
+    P.O. BOX 35266
+    Vancouver, BC  V6M 4G4
+    Canada
+
+                                - - - EOF - - -

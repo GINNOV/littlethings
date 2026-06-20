@@ -1,0 +1,32 @@
+This directory contains the following test programs used to verify
+the generated code.  These can also serve as examples on interfacing
+with the replacement library, particularly with respect to #defines,
+#includes, and function usage.
+
+  (1) detach
+  (2) resstart
+  (3) stkchk
+      (a) better
+      (b) dynastack
+  (4) alloca
+      (a) safe
+      (b) risky
+  (5) stkchk & setjmp (interdependence test)
+  (6) alloca & setjmp (interdependence test)
+  (7) alloca, stkchk & setjmp (interdependence test)
+
+Each test directory contains a source test file and an AmigaDOS script
+(called "TEST) for generating the appropriate replacement library,
+"making" the test program, setting up the run environment, and
+conducting the test.
+
+The "make" section for generating the replacement library in each
+test case was obtained by capturing the rconfig output to a file,
+and then trimming it.  Eg:
+
+    cc RLIB:rlib.c -oT:rlib.o -m0d -pl -sa -s0b -sf -sm -ss -sp -sn
+        -r04 -r06 -sr
+    as RLIB:crt0.a68 -o T:crt0.o
+    cc RLIB:_main.c -oT:_main.o -d__DETACH_MAIN -m0b -m0d -pl -sa
+        -s0b -sf -sm -ss -sp -sn -r04 -r06 -sr
+    lb rlib.lib T:crt0.o T:_main.o T:rlib.o

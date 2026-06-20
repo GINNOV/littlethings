@@ -1,0 +1,21 @@
+
+                   Copyright © 1993 by Rick Younie
+                         All rights reserved.
+
+
+These are some utilities for Cygnus Ed for the C programmer.
+
+	ADLookup	- a function lookup for autodocs
+	ADInd		- makes the index for the autodoc lookup
+
+	GetStruct	- a C structure (or E object) lookup
+	ParseInc	- makes the index for GetStruct
+
+	LibAdd.rexx - adds some ARexx support libraries.  Some of the
+					scripts require rexxarplib.library for the
+					filelist() function.  Run this script after you
+					start the Rexx server.
+
+You are welcome to modify these.  But include the original scripts and
+documentation in any distribution.
+

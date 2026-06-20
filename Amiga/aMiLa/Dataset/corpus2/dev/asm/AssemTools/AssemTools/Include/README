@@ -1,0 +1,42 @@
+*************************************************************************
+*									*
+*			    COPYRIGHT NOTICE				*
+*			  ~~~~~~~~~~~~~~~~~~~~				*
+*			  Supervisor  Software				*
+*									*
+*									*
+* THESE  Include  files  are  copyrighted  by  Jukka  and Tomi Marin of	*
+* Supervisor Software.   You are allowed to use these files in your own	*
+* programs but you MAY NOT sell them or use them in commercial products	*
+* without a prior  permission of  the Authors.   You ARE NOT ALLOWED to	*
+* publish these files without permission.				*
+*									*
+*									*
+* THESE Include files are freely  distributable as long as this file is	*
+* kept together with the Include files.  All rights are reserved by the	*
+* Authors.								*
+* 									*
+*									*
+* The Authors  take  NO  RESPONSIBILITY  of the contents of the Include	*
+* files.  Some routines and macros have never been tested.  The Authors	*
+* are constantly  updating  the files and  fixing  the  bugs.   You can	*
+* request for the latest update to the files by mail.   With your disk,	*
+* send  an  appropriate  contribution  ($20 U.S.D, for example) the the	*
+* Authors.								*
+*									*
+*************************************************************************
+
+These files can be compiled using A68k v2.42, a PD assembler for the
+Amiga.
+
+
+
+
+FUTURE CHANGES
+~~~~~~~~~~~~~~
+* The longest  macros will be  compiled and  placed in the sslib.lib to
+  shorten the include files and speed up the assembly of user programs.
+  Calling procedure ("strlib strcmp" etc) will remain the same.
+
+* Bugs will be fixed and more routines written.
+

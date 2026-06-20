@@ -1,0 +1,16 @@
+# MorphOS
+
+TARGET = _mos
+TARGETEXTENSION =
+
+CC = vc +morphos
+CCOUT = -o=
+CFLAGS = -c -merge-strings -DAMIGA -O1 $(OUTFMTS)
+
+LD = $(CC)
+LDOUT = $(CCOUT)
+LDFLAGS = -lm
+
+RM = delete force quiet
+
+include make.rules

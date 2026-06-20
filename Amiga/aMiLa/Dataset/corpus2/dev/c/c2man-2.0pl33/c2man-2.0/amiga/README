@@ -1,0 +1,50 @@
+This is my port of the c2man patchlevel 33 for the Amiga.
+
+I added a Commodore AutoDoc output format backend. So you can use this outputs
+with your favorite autodoc formatting utility. Read the c2man manual for
+getting started with c2man. If you have groff, a LaTeX package or makeinfo
+installed you can also use c2man for generating these output formats. I have
+tested the nroff format with the groff port 1.07.
+
+I have compiled c2man with SAS-C V6.51 with the STACKCHECK option ON , because
+c2man requires more than the standard 4096 bytes. If you don't like this
+recompile it , but you must have bison/yacc and flex/lex ! A stack of 10000
+bytes seems enough .
+
+For this port I used the popen implementation from the AmiTCP 4.0 demo package.
+The original version was written by Rick Schaeffer <ricks@isc-br.isc-br.com> and
+by Jarno Rajahalme from the AmiTCP/IP Group <Jarno.Rajahalme@hut.fi>.
+
+You need also a preprocessor, which supports non-stripping of comments ! I used
+the cpp from the AmiTCP 4.0 demo package, but you can also use the cpp from gcc
+or gcc with "gcc -E -C".
+
+The following option is added in the Amiga port :
+
+-T a : select autodoc output format. This output format is default !
+
+The following command shows, how you can use the c2man program (Note: this
+implies, that you have installed the Pipe package) :
+
+c2man -o- your_c_source.c
+
+c2man supports grouping of source files. This means if two source files are
+passed on the command line, each function in this files links to each other.
+But if you have two or more groups of such files you can use the following
+command :
+
+c2man -o- csource1.c csource2.c || c2man -o- anothercsource.c | sortad to test.doc
+
+This functions with the Pipe1_5.lha package, which uses the '||' to concate outputs.
+
+sortad is used to put all docs together and to generate the sorted list of contents.
+
+sortad is copyrighted by Stefan Ruppert, but is freely distributable with c2man !
+
+Stefan Ruppert
+Windthorststraße 5
+65439 Flörsheim am Main
+GERMANY
+
+EMail: ruppert@vs3.informatik.fh-wiesbaden.de
+

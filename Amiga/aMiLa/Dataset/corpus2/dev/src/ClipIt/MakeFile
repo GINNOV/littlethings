@@ -1,0 +1,49 @@
+####################################################################
+#
+#                  MAKEFILE FOR ClipIt program.
+#
+# ##################################################################
+#
+DOPTS = nover strmer nostkchk data=far idir=INCLUDE: ignore=100,225,147
+#
+COPTS = opt optsize strmer ignore=100,225,304 nostkchk idir=Include:
+#
+GLOB  = CPGM:GlobalObjects/CommonFuncs.o
+#
+LIBS  = LIB:scm.lib,LIB:sc.lib,LIB:Amiga.lib
+#
+# -------------------- Final target: -------------------------------------
+#
+ClipIt : ClipFuncs.o ClipIt.o ClipItReq.o $(GLOB)
+   SLink LIB:c.o,ClipIt.o,ClipFuncs.o,ClipItReq.o,$(GLOB) TO ClipIt LIB $(LIBS)
+#
+ClipFuncs.o : ClipFuncs.c
+   SC $(COPTS) ignore=154 ClipFuncs.c 
+#
+ClipIt.o : ClipIt.c
+   SC $(COPTS) ClipIt.c 
+#
+ClipItReq.o : ClipItReq.c
+   SC $(COPTS) ClipItReq.c 
+#
+#
+# -------------------- DEBUG-stuff: --------------------------------------
+#
+ClipItDBG : ClipFuncsD.o ClipItD.o ClipItReqD.o $(GLOB)
+   SLink LIB:c.o,ClipItD.o,ClipFuncsD.o,ClipItReqD.o,$(GLOB) TO ClipItDBG LIB $(LIBS)
+#
+ClipFuncsD.o : ClipFuncs.c
+   SC ignore=154 debug=SYMBOL objname=ClipFuncsD.o $(DOPTS) ClipFuncs.c 
+#
+ClipItD.o : ClipIt.c
+   SC define DEBUG=1 debug=SYMBOL objname=ClipItD.o $(DOPTS) ClipIt.c 
+#
+ClipItReqD.o : ClipItReq.c
+   SC debug=SYMBOL $(DOPTS) objname=ClipItReqD.o ClipItReq.c 
+#
+TestFileIO: TestFileIO.o ClipFuncsD.o
+   SLink LIB:c.o,TestFileIO.o,ClipFuncsD.o,$(GLOB) TO TestFileIO LIB $(LIBS)
+#
+TestFileIO.o: TestFileIO.c 
+   SC debug=SYMBOL $(DOPTS) TestFileIO.c
+#

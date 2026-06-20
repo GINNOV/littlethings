@@ -1,0 +1,18 @@
+These E modules where converted from the C includes. Source is included. If
+you experience problems with these files, please mail me.
+
+Notes for E programmers:
+
+- If you need macro's, include `easyrexx_macros', and turn on macro
+  preprocessing using 'OPT PREPROCESS' in your sources. The Designer
+  utility always generates macro dependant sources.
+
+- The static ChipMem recordpointer is emulated by a procedure call. Reason
+  is E doesn't allow hunk definitions as of yet. I hope this will change.
+
+- The contexttable pointer is initialized by a procedure, as E cannot declare
+  static data easily. I hope this will change too.
+
+Happy programming,
+
+Leon Woestenberg (leon@stack.urc.tue.nl, or leon@sascha.esrac.ele.tue.nl)

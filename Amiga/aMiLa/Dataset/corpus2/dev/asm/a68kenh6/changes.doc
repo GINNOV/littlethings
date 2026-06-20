@@ -1,0 +1,83 @@
+
+New or enhanced instructions:
+
+    BFCHG
+    BFCLR
+    BFEXTS
+    BFEXTU
+    BFFFO
+    BFINS
+    BFSET
+    BFTST
+    DIVS.L
+    DIVSL.L
+    DIVU.L
+    DIVUL.L
+    EXTB.L
+    MOVE    CCR,<ea>
+    MOVEC
+    MULS.L
+    MULU.L
+
+New modes:
+
+    Scale factor ('*1', '*2', '*4' or '*8')
+    Odd offsets now legal
+
+
+
+
+Instructions still not implemented:
+
+    Bcc.L
+    BKPT
+    BRA
+    BSR
+    CALLM
+    CAS
+    CAS2
+    CHK
+    CHK2
+    CMP2
+
+Modes still not implemented:
+
+    Too numerous to mention
+
+
+
+
+Changes from version 3.00 to version 3.01
+
+    Support for 'MOVEC' added
+
+    The following are the control register mnemonics accepted:
+
+	CAAR
+	CACR
+	DFC
+	DTT0
+	DTT1
+	ISP
+	ITT0
+	ITT1
+	MMUSR
+	MSP
+	SFC
+	SRP
+	TC
+	URP
+	USP
+	VBR
+
+
+
+
+Thanks to the following individuals who sent EMail providing ideas, information
+and inspiration:
+
+    Elmar Plischke <elmar@Informatik.Uni-Bremen.DE>
+
+    Anthony Barrett <s1anthob@pogo.WV.TEK.COM>
+
+    Simon N Goodwin <simon@studio.woden.com>

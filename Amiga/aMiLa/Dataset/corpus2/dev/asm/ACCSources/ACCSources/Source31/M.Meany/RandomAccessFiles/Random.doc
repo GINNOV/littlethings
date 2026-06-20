@@ -1,0 +1,339 @@
+
+
+			Random Access Files
+			~~~~~~~~~~~~~~~~~~~
+
+ Considerations
+ ~~~~~~~~~~~~~~
+ When designing a database program of any kind, it is usual to determine the
+size of the data being handled. The data manipulated by a database is known
+as a record and each record may consist of fields that contain specific
+information relevant to that record. The size of each field in a record is
+normally fixed to a specific number of bytes.
+
+ For example, a name and address program may use a record that contains the
+following fields:
+
+	Field Name	Size of Field
+	
+	Name		25 bytes
+	Street		25 bytes
+	Town		25 bytes
+	County		25 bytes
+	Post Code	10 bytes
+	Phone		20 bytes
+
+ From the above table you can see that each record will ocupy 130 bytes in a
+data file.
+
+ Locating A Record
+ ~~~~~~~~~~~~~~~~~
+ AmigaDOS has a function that allows the programmer to move the cursor in an
+open file to any point in the file. The function is called Seek() and has the
+following template:
+
+ distance = Seek( handle, position, offset )
+    d0              d1       d2       d3
+
+ INPUTS		handle   = The handle of an open file.
+ 		position = The number of bytes to move the file cursor.
+ 		offset   = Mode of operation:
+ 				OFFSET_BEGINNING  =  From start of file
+ 				OFFSET_CURRENT    =  From current position
+ 				OFFSET_END        =  From end of file
+
+ RETURN		distance = The number of bytes the file cursor was actually
+ 			   moved.
+
+ Seek() will move the file cursor to the desired point in a file, you can then
+use either Read() or Write() to fetch/write a record to the file.
+
+ The advantage of using this method is that a record in a file can be easily
+modified at any time and a quick index can be built for any of the fields in
+a record that would speed up search times.
+
+ A General Approach
+ ~~~~~~~~~~~~~~~~~~
+ As so many programs benefit from random file access, it makes sense to write
+some generic routines that will deal with reading and writing records and can
+be included into future productions. This is what I have attempted to write,
+though feel free to make improvements or addittions.
+
+ For generic routines I decide to define a custom file handle structure that
+could be used to pass information between the routines and the program proper.
+The format of this structure is shown below:
+
+rnd_Handle	LONG		AmigaDOS handle of file being operated on
+rnd_Buffer	LONG		Pointer to IO Buffer, big enough for 1 record
+rnd_RecSize	LONG		Size of a record in bytes
+rnd_Password	LONG		Pointer to 8 bytes encryption code
+rnd_SIZE			Size of custom structure
+
+ You do not have to worry about creating this structure as that is done for
+you by the routines.
+
+ Opening A Random Access File
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ Two routines have been supplied that open Random Access Files for IO. The
+first always creates a new file while the second opens an exsisting file. It
+would have been possible to get the second routine to call the first if the
+specified file was not located, but I decided against this and leave it to
+you to provide the user the opportunity of creating a new file if the file
+specified fails to open.
+
+ RNDHandle = CreateRandom( filename, record size )
+    d0                        a0          d0
+
+ INPUTS		filename	A pointer to a NULL terminated text string
+		record size	size of a single record
+
+ RETURN		RNDHandle	Pointer to a custom handle structure or NULL
+				if an error occurs. All fields in the
+				structure except rnd_Password will have been
+				initialised.
+
+ NOTES		This function allocates memory for the custom handle structure
+		and the IO buffer. The specified file is opened as a NEWFILE
+		and its handle stored in the custom structure.
+
+ EXAMPLE	lea		filename,a0
+		move.l		#reqsize,d0
+		jsr		CreateRandom
+		move.l		d0,filehandle 
+		beq		ErrorN
+
+		""""""""""""""""""""""""""""
+
+filename	dc.b		'Sys:DB/mydatabase',0
+		even
+reqsize		equ		65
+filehandle	dc.l		0
+
+		*********************************
+
+ RNDHandle = OpenRandom( filename, record size )
+    d0			    a0         d0
+
+ INPUTS		filename	Pointer to NULL terminated text string.
+		record size	Size of a single record
+
+ RETURNS	RNDHandle	Pointer to initialised custom handle.
+
+ NOTES		Opens the specified file as an OLDFILE and fills in all fields
+		of the RNDHandle structure except the rnd_Password field.
+
+ EXAMPLE	lea		filename,a0
+		move.l		#reqsize,d0
+		jsr		OpenRandom
+		move.l		d0,filehandle 
+		beq		ErrorN
+
+		""""""""""""""""""""""""""""
+
+filename	dc.b		'Sys:DB/mydatabase',0
+		even
+reqsize		equ		65
+filehandle	dc.l		0
+
+		*********************************
+
+ Closing A Random Access File
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ When either CreateRandom() or OpenRandom() are called, memory is allocated
+for the custom handle structure and the IO buffer. A close routine has been
+supplied that releases all resourses used by these routines and closes the
+file.
+
+ CloseRandom( RNDHandle )
+ 		 a0
+
+ INPUTS		RNDHandle	A pointer to a valid custom handle structure
+ 				as returned by CreateRandom() or OpenRandom()
+
+ RETURNS	none
+
+ NOTES		Frees all resources. Make sure pointer is valid!
+
+ EXAMPLE	move.l		filehandle,a0
+ 		jsr		CloseRandom
+
+
+ Reading And Writing Records
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ A program using these routines should have memory buffers of it's own for
+manipulating records, ie. an input buffer for new records and an edit buffer
+for changing current records. These routines provide a single buffer that is
+large enough to hold one record. A program must transfer data from it's own
+internal buffer into the IO buffer prior to writing a record and will have to
+transfer data from the IO buffer into its own internal buffer after reading
+a record. A record is specified by its position in the file, with record 1
+being the first record.
+
+ error = LoadRecord( RNDHandle, record number )  (1 < record number < 65536)
+  d0                   a0           d0
+ 
+ INPUTS		RNDHandle	A pointer to a valid custom handle structure
+ 				as returned by CreateRandom() or OpenRandom()
+		record number	Number of the record to read. 
+
+ RETURNS	error		Returns NULL if an error occurred.
+
+ NOTES		Errors can result from the following:
+ 			Seek() error.
+ 			Read() error.
+		Call the AmigaDOS function IOErr() to determine the specific
+		error.
+
+ EXAMPLE	move.l		filehandle,a0		files handle
+ 		moveq.l		#15,d0			record number 15
+ 		jsr		LoadRecord		load it
+ 		
+		move.l		rnd_Buffer(a0),a0	a0->IO Buffer
+ 		lea		InternalBuffer,a1	a1->Programs Buffer
+ 		move.l		#reqsize,d0		record size
+ 		CALLEXEC	CopyMem			copy data
+
+		*********************************
+
+
+ error = SaveRecord( RNDHandle, record number )
+  d0                   a0           d0
+
+ INPUTS		RNDHandle	A pointer to a valid custom handle structure
+ 				as returned by CreateRandom() or OpenRandom()
+		record number	Number of the record to load.
+
+ RETURNS	error		Returns NULL if an error occurred
+
+ NOTES		Errors can result from the following:
+ 			Seek() error.
+ 			Read() error.
+		Call the AmigaDOS function IOErr() to determine the specific
+		error.
+
+ EXAMPLE	move.l		filehandle,a1
+ 		move.l		rnd_Buffer(a1),a1	IO Buffer
+ 		lea		InternalBuffer,a0	Internal Buffer
+ 		move.l		#reqsize,d0
+ 		CALLEXEC	CopyMem			Init write buffer
+ 		
+ 		move.l		filehandle,a0
+ 		move.l		#12,d0
+ 		jsr		SaveRecord
+ 		
+ 		**********************************
+
+ Protecting Data
+ ~~~~~~~~~~~~~~~
+ Many people like to encrypt their data, so I have included a very primitive
+means of encrypting data in a file that is invisible to the operator and
+progrmmer alike. If the rnd_Password is non NULL, the LoadRecord() and
+SaveRecord() routines assume it points to an 8 byte password that will be used
+to encrypt data when writing and decrypt when reading. The routines do not
+care if the password is correct, an incorrect password will result in the
+decrypted data being rubbish. Only the same password used to encrypt the data
+will cause it to decrypt properly. Feel free to add a better encryption
+routine, this ones just for demonstration!
+
+ To signal password encryption/decryption call RandPassword():
+
+ RandPassword( RNDHandle, password )	[Password MUST be 8 bytes ]
+                  a0        a1
+
+ INPUTS		RNDHandle		pointer to valid file handle
+ 		password		pointer to 8 byte password
+ 		
+ RETURNS	none
+ 
+ NOTES		Simply shifts the password and EORs it with all data in the
+ 		IO Buffer.
+ 
+ EXAMPLE	move.l		filehandle,a0
+ 		lea		Password,a1
+ 		jsr		RandPassword
+ 		
+ 
+Password	ds.b		8		space for 8 byte password 
+ 
+ 		*****************************
+
+ Other Functions
+ ~~~~~~~~~~~~~~~
+ Other functions have been provided that allow you to manipulate a random
+access file. A synopsis is shown below:
+
+1. error = CountRecords( RNDHandle )	( error = -1 on failure )
+    d0			   a0
+
+	Counts all the records in a random access file
+
+
+2. error = WipeRecord( RNDHandle, record number )
+    d0                     a0         d0
+
+	Wipes a record. Does this by setting entire record to NULL bytes.
+
+3. BOOL = ValidateRecord( RNDHandle, record number )
+    d0                       a0          d0
+
+	Checks a record exsists and is NOT a wiped record. ( d0=0 if invalid )
+
+4. BOOL = PurgeRecords( RNDHandle, filename )
+    d0                     a0         a1
+
+	Creates a new data file and copies all valid records into it from the
+	specified file.
+
+5. NextNum = SearchFRec( RNDHandle, Search Structure, record number )
+     d0                      a0           a1               d0
+
+	Searches through a file from record specified in d0 until a match is
+	made with the data stored in the search structure or the end of the
+	file is reached. On return d0=number of next matching record or NULL
+	if end of file reached.
+	
+	The Search Structure has the following format:
+	
+	Mode  ( AND = 1, OR = 0 )
+	Field Offset, FieldLength, MatchPointer
+	Field Offset, FieldLength, MatchPointer
+	Field Offset, FieldLength, MatchPointer
+		
+	0,0		<<< Marks end of search criterior!
+	
+	MODE:		If set to 0, any matching field will cause a match
+			If set to 1, all following fields must match
+	
+	FIELD OFFSET	bytes into record at which field is located
+	FIELD LENGTH	length of field
+	MATCH POINTER	Pointer to data to match with
+	
+	By declaring more than one field and OR mode, you can search for a
+	record that matches one of more criteria. By setting AND mode the
+	record must satisfy all criteria. An example program has been
+	supplied.
+	
+	Routine can be repeatedly called by passing the return from one call
+	as the record number of the next call.
+
+6. NextNum = SearchBRec( RNDHandle, Search Structure, record number )
+     d0                      a0           a1               d0
+
+	As SearchFRec() except searches backwards through the file.
+
+
+ Footnote
+ ~~~~~~~~
+ These routines are intended as a quick means of getting a database styled
+program up and running. I am not suggesting they are the best way of going
+about things, but they do work ( I think ).
+
+ Two example programs that use these routines are included.
+
+ I accept no responsability for the performance of the routines. Test your
+ programs before releasing them :-)
+ 
+ 						Mark.
+
+
+

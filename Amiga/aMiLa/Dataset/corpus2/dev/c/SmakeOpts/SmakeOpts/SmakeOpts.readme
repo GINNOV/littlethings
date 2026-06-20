@@ -1,0 +1,95 @@
+SHORT: Configuration program incl. BGUI GUI for SAS/C Smake
+TYPE: dev/c
+AUTHOR: Reinhard Katzmann (suamor@student.uni-tuebingen.de)
+UPLOADER: Reinhard Katzmann (suamor@student.uni-tuebingen.de)
+
+              =========================
+              | SmakeOpts V0.5 BETA 1 |
+              =========================
+
+Attention: This is a still a BETA version. I tested it and found no errors or
+Enforcer Hits but I my have not testet all possibilities. If you find any
+bugs please let me know about it.
+
+Disclaimer
+----------
+
+This program is provided "as is" without warranty of any kind, either
+expressed or implied, including, but not limited to, the implied
+warranties of merchantability and fitness for a particular purpose.
+The entire risk as to the quality and the performance of this program
+is with you. In no event can I be liable to you for damages of any kind
+arising out of the use of this program or any part of it's archive, or the
+inability to use it.
+
+Introduction
+------------
+
+The main motivation is that scopts does not support smake options so you
+would either have to change the preferences every time you want to change
+some options in the Editor or you have to make thousands of menus.
+
+The main use of the program will be to call it from a Editor in my opinion,
+to set the options and after that the Editor calls smake with the saved
+options (it is saved to a file called "smopts").
+
+Of course you won't need this program if you don't use SAS/C 6.x.
+
+Features
+--------
+
+SmakeOpts has the following features:
+
+- Runs as well from WB as from CLI (supported by tool types)
+
+- Is able to run on a Public Screen
+
+- uses a GUI created with @{"BGUI" link "BGUI"}
+
+- includes example definition & rexx scripts for BED
+
+- @{"BGUI" link "BGUI"} library included
+
+- Source code included
+
+
+Author
+------
+
+E-MAIL (prefered):
+
+  suamor@student.uni-tuebingen.de
+
+SnailMail:
+
+  Reinhard Katzmann
+  Schellingstraße 41
+
+  D - 72072 Tübingen
+
+
+Listing of archive 'sd0:SmakeOpts.lha':
+Original  Packed Ratio    Date     Time    Name
+-------- ------- ----- --------- --------  -------------
+     993     543 45.3% 14-Apr-96 00:11:50  SmakeOpts.info
+     993     541 45.5% 14-Apr-96 00:11:50  SmakeOpts/help.info
+   25446   10297 59.5% 14-Apr-96 00:14:22  SmakeOpts/help/SmakeOpts.guide
+    1397     619 55.6% 13-Apr-96 23:39:48  SmakeOpts/help/SmakeOpts.guide.info
+     993     539 45.7% 14-Apr-96 00:11:50  SmakeOpts/libs.info
+  113612   62298 45.1% 11-Mar-96 21:47:12  SmakeOpts/libs/bgui.library
+     373     210 43.6% 13-Apr-96 23:05:12  SmakeOpts/rexx/BED/SASC/Build.bed
+     223     184 17.4% 13-Apr-96 23:32:28  SmakeOpts/rexx/BED/SASC/SetSmakeOpts.bed
+   15572    8645 44.4% 13-Apr-96 23:28:36  SmakeOpts/SmakeOpts
+     835     393 52.9% 14-Apr-96 00:11:50  SmakeOpts/SmakeOpts.info
+    3593    1580 56.0% 14-Apr-96 00:16:24  SmakeOpts/SmakeOpts.readme
+    1446     554 61.6% 14-Apr-96 00:11:50  SmakeOpts/SmakeOpts.readme.info
+     428     281 34.3% 03-Oct-95 11:28:00  SmakeOpts/src/bgui.lib
+     456     237 48.0% 13-Apr-96 11:56:58  SmakeOpts/src/Smakefile
+   23132    5224 77.4% 13-Apr-96 23:26:30  SmakeOpts/src/SmakeOpts.c
+      19      19  0.0% 13-Apr-96 23:34:54  SmakeOpts/src/smopts
+     848     443 47.7% 07-Mar-96 16:03:02  SmakeOpts/src/stringpatch.c
+    3026     492 83.7% 21-Feb-96 14:01:46  SmakeOpts/src/stringpatch.h
+     272     198 27.2% 13-Apr-96 23:27:56  SmakeOpts/src/stringpatch.o
+    2403     763 68.2% 13-Apr-96 23:49:48  SmakeOpts/support/BED/SAS_C.dfn.menu
+-------- ------- ----- --------- --------
+  196060   94060 52.0% 14-Apr-96 00:17:04   20 files

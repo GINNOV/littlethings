@@ -1,0 +1,36 @@
+MiniGL Open Source License
+
+
+Copyright (c) 2000-2005 by Thomas and Hans-Jörg Frieden
+                        <ThomasF@hyperion-entertainment.biz>
+                        <Hans-JoergF@hyperion-entertainment.biz>
+All rights reserved.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, subject to the following usage restrictions:
+
+1. MiniGL may only be compiled for/incorporated in/linked with code running on
+   AmigaOS running on Amiga branded or Amiga licensed hardware. This only applies to MiniGL, you are free to port an
+   application using MiniGL to another OpenGL implementation on other
+   platforms.
+
+2. The functional source-code of all and any modifications and improvements
+   must be made freely downloadable upon distribution of an object-code version of MiniGL containing said modifications and/or improvements.
+
+Other use will require a special license. Contact the authors for details.
+
+You may distribute the binary ("minigl.library" and "mglut.library) with your
+own program provided the above copyright notice is included within the
+documentation of your program.

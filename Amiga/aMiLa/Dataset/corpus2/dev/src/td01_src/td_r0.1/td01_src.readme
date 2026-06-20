@@ -1,0 +1,126 @@
+Short:    td (3d) library, a GL like library with load/save functions
+Uploader: stephan.bielmann@rega-sense.ch
+Author:   stephan.bielmann@rega-sense.ch
+Type:     dev/src
+
+The td.library provides a GL like functionset but with the possibility
+to save the results to a 3d file or to load them from existing files.
+
+The library is made modular such that new input/output formats can be
+added very easy (as sub-libraries).
+
+Even 2d support is implemented, PostScript or bitmap picture output.
+
+I will not longer develop for this package. So I decided to release
+the sources for all those people who are interested in.
+
+I just hope that you wont use the results on other platforms than the
+Amiga!
+
+  Listing of archive 'td01_src.lha':
+Original  Packed Ratio    Date     Time    Name
+-------- ------- ----- --------- --------  -------------
+    1228     710 42.1% 16-May-99 21:10:26  td_r0.1/developing/PolygonTest/dummy1.library
+    1228     707 42.4% 16-May-99 21:10:26  td_r0.1/developing/PolygonTest/dummy2.library
+    1216     708 41.7% 16-May-99 21:10:28  td_r0.1/developing/PolygonTest/dummy3.library
+    1216     708 41.7% 16-May-99 21:10:28  td_r0.1/developing/PolygonTest/dummy4.library
+    3969    1199 69.7% 06-Jun-99 21:03:32  td_r0.1/developing/PolygonTest/polygon.c
+    1335     461 65.4% 06-Jun-99 19:16:18  td_r0.1/developing/PolygonTest/polygon.project
+    1538     490 68.1% 20-Jun-99 19:10:18  td_r0.1/developing/SupportedTest/supported.c
+    1477     467 68.3% 19-Jun-99 17:35:32  td_r0.1/developing/SupportedTest/supported.project
+    1141     554 51.4% 22-May-99 19:13:22  td_r0.1/developing/Test/TestMat.c
+    1024     430 58.0% 21-May-99 22:27:50  td_r0.1/developing/Test/TestMat.project
+    1130     558 50.6% 23-May-99 18:01:24  td_r0.1/developing/Test/TestMesh.c
+    1154     439 61.9% 23-May-99 15:15:52  td_r0.1/developing/Test/TestMesh.project
+     916     446 51.3% 30-Apr-99 19:57:00  td_r0.1/developing/Test/TestPart.c
+    1123     436 61.1% 25-Apr-99 17:52:06  td_r0.1/developing/Test/TestPart.project
+    1652     575 65.1% 02-May-99 15:07:38  td_r0.1/developing/Test/TestPoly.c
+    1123     437 61.0% 02-May-99 15:00:12  td_r0.1/developing/Test/TestPoly.project
+    7885    1813 77.0% 05-Jun-99 21:38:42  td_r0.1/developing/Test/TesttdLib.c
+    1026     430 58.0% 23-May-99 18:01:00  td_r0.1/developing/Test/testtdlib.project
+    1696     664 60.8% 05-Jun-99 22:18:20  td_r0.1/developing/Test/TestTex.c
+    1023     430 57.9% 05-Jun-99 22:19:10  td_r0.1/developing/Test/TestTex.project
+     945     464 50.8% 02-May-99 21:54:02  td_r0.1/developing/Test/TestVertex.c
+    1128     436 61.3% 30-Apr-99 19:54:54  td_r0.1/developing/Test/TestVertex.project
+   20060    3558 82.2% 05-Apr-99 18:14:16  td_r0.1/s2/source/eps/postscript.c
+    2219     613 72.3% 04-Apr-99 17:51:02  td_r0.1/s2/source/eps/postscript.h
+     233     157 32.6% 16-May-99 20:53:32  td_r0.1/sl3/fd/x3.fd
+     547     292 46.6% 16-May-99 20:59:44  td_r0.1/sl3/include/clib/x3_protos.h
+     405     201 50.3% 16-May-99 20:58:46  td_r0.1/sl3/include/pragma/x3_lib.h
+     253     170 32.8% 16-May-99 20:59:30  td_r0.1/sl3/include/x3/x3.h
+     531     287 45.9% 16-May-99 21:03:30  td_r0.1/sl3/include/x3/x3base.h
+    5361    1664 68.9% 13-Feb-99 17:06:52  td_r0.1/sl3/source/compiler.h
+    7509    1846 75.4% 16-May-99 21:09:54  td_r0.1/sl3/source/dummy.c
+     823     278 66.2% 16-May-99 20:42:38  td_r0.1/sl3/source/dummy.h
+    1026     388 62.1% 16-May-99 20:48:40  td_r0.1/sl3/source/dummy.project
+   16163    3811 76.4% 11-Apr-99 18:52:30  td_r0.1/sl3/source/dxf/dxf.c
+    2470     629 74.5% 11-Apr-99 17:29:36  td_r0.1/sl3/source/dxf/dxf.h
+    1097     400 63.5% 11-Apr-99 18:52:10  td_r0.1/sl3/source/dxf/dxflibrary.project
+    1591     824 48.2% 13-Feb-99 17:06:52  td_r0.1/sl3/source/dxf/SampleFuncs.c
+     370     248 32.9% 13-Feb-99 17:06:52  td_r0.1/sl3/source/dxf/SampleFuncs.h
+   20755    5090 75.4% 19-Jun-99 17:29:40  td_r0.1/sl3/source/geoa/geoa.c
+    1325     481 63.6% 19-Jun-99 17:22:40  td_r0.1/sl3/source/geoa/geoa.h
+   12446    2569 79.3% 27-Mar-99 22:14:22  td_r0.1/sl3/source/geob/geob.c
+    2877     527 81.6% 19-Feb-99 19:53:04  td_r0.1/sl3/source/geob/geob.h
+   29888    6479 78.3% 11-Apr-99 16:14:04  td_r0.1/sl3/source/imagine/imagine.c
+    2894     563 80.5% 11-Apr-99 16:14:04  td_r0.1/sl3/source/imagine/imagine.h
+   29888    6479 78.3% 28-Mar-99 11:02:44  td_r0.1/sl3/source/imaginehuge/imaginehuge.c
+    2894     563 80.5% 13-Feb-99 19:18:42  td_r0.1/sl3/source/imaginehuge/imaginehuge.h
+    5016    1873 62.6% 16-May-99 21:09:26  td_r0.1/sl3/source/LibInit.c
+    9206    2546 72.3% 27-Mar-99 20:43:16  td_r0.1/sl3/source/lightwave/lightwave.c
+    1916     541 71.7% 14-Feb-99 16:37:44  td_r0.1/sl3/source/lightwave/lightwave.h
+    5216    1483 71.5% 11-Apr-99 11:04:18  td_r0.1/sl3/source/openglcs/opengl.c
+    1767     511 71.0% 10-Apr-99 22:35:56  td_r0.1/sl3/source/openglcs/opengl.h
+    5234    1574 69.9% 27-Mar-99 20:51:12  td_r0.1/sl3/source/pov3/pov3.c
+    1627     465 71.4% 13-Feb-99 21:35:42  td_r0.1/sl3/source/pov3/pov3.h
+   10720    2962 72.3% 19-Jun-99 17:34:20  td_r0.1/sl3/source/rawa/rawa.c
+    1093     425 61.1% 15-May-99 18:49:20  td_r0.1/sl3/source/rawa/rawa.h
+   11636    3126 73.1% 16-May-99 19:27:58  td_r0.1/sl3/source/rawb/rawb.c
+    1094     425 61.1% 15-May-99 20:04:52  td_r0.1/sl3/source/rawb/rawb.h
+   16500    3762 77.2% 13-Mar-99 17:55:30  td_r0.1/sl3/source/real3d/real.c
+    1764     499 71.7% 13-Mar-99 17:24:40  td_r0.1/sl3/source/real3d/real.h
+   14557    3796 73.9% 27-Mar-99 21:45:02  td_r0.1/sl3/source/reflections4/reflections4.c
+    1852     538 70.9% 14-Feb-99 17:16:40  td_r0.1/sl3/source/reflections4/reflections4.h
+   10139    2614 74.2% 16-May-99 21:02:56  td_r0.1/sl3/source/StartUp.c
+     736     411 44.1% 16-May-99 21:41:32  td_r0.1/sl3/source/TestDummy.c
+    7558    1660 78.0% 27-Mar-99 20:41:38  td_r0.1/sl3/source/vrml1/vrml1.c
+    1767     516 70.7% 13-Feb-99 21:37:20  td_r0.1/sl3/source/vrml1/vrml1.h
+    5361    1664 68.9% 13-Feb-99 18:00:30  td_r0.1/source/compiler.h
+    4968    1831 63.1% 18-Apr-99 21:40:16  td_r0.1/source/LibInit.c
+   10689    2728 74.4% 18-Apr-99 22:46:16  td_r0.1/source/StartUp.c
+  243031   27567 88.6% 20-Jun-99 19:13:54  td_r0.1/source/td.c
+   12043    1378 88.5% 20-Jun-99 19:13:10  td_r0.1/source/td.h
+   11314    2374 79.0% 20-Jun-99 18:51:36  td_r0.1/source/td_private.h
+    5712    1756 69.2% 19-Jun-99 20:43:36  td_r0.1/source/td_public.h
+     962     421 56.2% 11-Apr-99 18:48:48  td_r0.1/source/tdlibrary.project
+   27005    6135 77.2% 16-May-99 16:39:42  td_r0.1/source/tdoold.c
+    6084    2037 66.5% 05-Dec-99 15:59:32  td_r0.1/td01_src.readme
+     464     223 51.9% 05-Dec-99 15:56:30  td_r0.1/td01_src.readme.info
+    1534     636 58.5% 17-Apr-99 20:21:44  td_r0.1/tdo/html/author.html
+    2292    1050 54.1% 01-May-99 20:39:14  td_r0.1/tdo/html/description.html
+    2897    1268 56.2% 17-Apr-99 19:34:26  td_r0.1/tdo/html/disclaimer.html
+    2732    1191 56.4% 17-Apr-99 18:47:04  td_r0.1/tdo/html/formats.html
+    1290     490 62.0% 17-Apr-99 20:08:44  td_r0.1/tdo/html/history.html
+    3103    1139 63.2% 01-May-99 20:44:56  td_r0.1/tdo/html/images.html
+    2225    2225  0.0% 17-Apr-99 18:46:58  td_r0.1/tdo/html/images/landscape.jpg
+   18276   18276  0.0% 17-Apr-99 18:46:58  td_r0.1/tdo/html/images/logo.jpg
+    1750    1750  0.0% 17-Apr-99 18:46:58  td_r0.1/tdo/html/images/pawn.jpg
+    2237    2237  0.0% 17-Apr-99 18:46:58  td_r0.1/tdo/html/images/ripples.jpg
+    1930    1930  0.0% 17-Apr-99 18:46:58  td_r0.1/tdo/html/images/shell.jpg
+     908     908  0.0% 01-May-99 20:54:08  td_r0.1/tdo/html/images/smile.gif
+    1986    1986  0.0% 17-Apr-99 18:46:58  td_r0.1/tdo/html/images/tank.jpg
+    2100    2100  0.0% 17-Apr-99 18:46:58  td_r0.1/tdo/html/images/tdo.gif
+    1677    1677  0.0% 17-Apr-99 18:46:58  td_r0.1/tdo/html/images/wave.jpg
+     851     397 53.3% 17-Apr-99 20:33:28  td_r0.1/tdo/html/index.html
+    1350     561 58.4% 01-May-99 20:42:18  td_r0.1/tdo/html/installation.html
+    1872     851 54.5% 01-May-99 20:47:06  td_r0.1/tdo/html/past.html
+    1753     792 54.8% 02-May-99 15:18:44  td_r0.1/tdo/html/requirements.html
+    2005     891 55.5% 01-May-99 20:54:38  td_r0.1/tdo/html/thanks.html
+     612     330 46.0% 11-Apr-99 18:53:02  td_r0.1/test.project
+     672     338 49.7% 17-Apr-99 17:34:08  td_r0.1/test2.project
+    1838     590 67.8% 18-Apr-99 22:59:06  td_r0.1/TesttdoLib.c
+    1679     618 63.1% 17-Apr-99 17:33:46  td_r0.1/TesttdoLib2.c
+    2773     697 74.8% 13-Feb-99 17:38:44  td_r0.1/utilities/utilities.c
+    2623     632 75.9% 13-Feb-99 17:38:30  td_r0.1/utilities/utilities.h
+-------- ------- ----- --------- --------
+  701794  175080 75.0% 05-Dec-99 15:59:50   102 files

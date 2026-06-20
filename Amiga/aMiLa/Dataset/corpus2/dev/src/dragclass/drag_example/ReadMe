@@ -1,0 +1,70 @@
+
+		Drag Example
+
+This archive contains the source of a simple BOOPSI drag Gadget.
+It is not functional since there are no drop-objects defined.
+I planned to create a generic class for drop objects, but
+when I heard mui would get full D&D I lost my interest; up
+to now there is still no reusable Drag class available,
+so perhaps somebody might have an interest for this example.
+
+The source code is presented in the file "drag.class" in a very
+unusal form; to build normal C-code U first have to invoke
+a sort of preparser that genaertes the Code from the class file
+and another Template file, that contains the skeleton of a class ...
+
+The "drag.class" format itself is used since I hate boring
+stdt typing of thing that could eaily be done by the Computer
+especially for testing and Prototypes, where I wanna be able
+to concentrate to the problem.
+
+Its major advantage is: it is short, and IMHO better readable
+than plain C-Source (e.g. Attributes are packed - You can
+immediately see, if a certain Attribute is e.g. settable)
+OIn the other side are two Disadvantages: there is one more
+generation step that increases compile times and the resulting
+code is very slow since some hand optimisations cannot be
+performed ... (especially the second one is a very heavy minus
+since BOOPSI classes are partly run on intuition's context;
+so I think that pre-code solution can not be used for bigger
+projects - I don't wanna see my Amiga being as slow as a "Dose")
+
+the archive contains two other simple examples for the preparser:
+icon.class   uses a workbench icon as a gadget image
+rkmbut.class is the extraction of the RKMButtonClass example
+	     from the RKRM Libraries
+
+All Examples can be compiled w/ DICE v2.07r (there might be
+some warnings left however); I dunno, if there are any problems
+with SAS/C; but they can surely not be compiled with GCC or
+another compiler since we have to use non-std Qualifiers, that
+make code non-portable ...
+
+Please note, that for compilation/linking of drag_test
+U would need the "animtools" package of CBM RKRM Libraries;
+as I do not know if everybody has access to it, I have
+included a stripped version of its includes and an objectfile,
+so at least linking should be no problem. (Hope that is no
+copyright volation ...)
+
+
+If there are any questions flames etc., I can be reached via
+EMail:
+    noll@student.uni-kl.de	or
+    b_noll@informatik.uni-kl.de
+
+(I would be very interested, if s.o was able use it)
+
+
+greetings, Bernd "0" Noll
+
+
+
+Oh - I forgot:
+    This archive is released as is and I can not be made
+    responsible for any damage that is caused by it...
+    (etc. etc.)
+
+PS - please excuse that chaos - this is my 1st release
+     of anything ...
+

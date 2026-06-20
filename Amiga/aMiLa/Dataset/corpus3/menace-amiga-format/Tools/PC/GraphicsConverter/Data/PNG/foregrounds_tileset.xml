@@ -1,0 +1,4 @@
+﻿<!DOCTYPE TMX SYSTEM "http://mapeditor.org/dtd/1.0/map.dtd">
+<tileset name="MenaceForegroundTilesLevel1" version="1.10" tiledversion="1.11.2" tilewidth="16" tileheight="16" tilecount="255" columns="1">
+  <image source="foregrounds.png" width="256" height="256" />
+</tileset>

@@ -1,0 +1,56 @@
+"For people who enjoy swearing at their computer, Bastet (short for Bastard Tetris) is an attractive alternative to Microsoft Word."
+(taken from http://hublog.hubmed.org) 
+
+Have you ever thought Tetris(R) was evil because it wouldn't send you that straight "I" brick you needed in order to clear four rows at the same time?  Well Tetris(R) probably isn't evil, but Bastet certainly is.  >:-)
+Bastet stands for "bastard tetris", and is a simple ncurses-based Tetris(R) clone for Linux. Unlike normal Tetris(R), however, Bastet does not choose your next brick at random.  Instead, Bastet uses a special algorithm designed to choose the worst brick possible.  As you can imagine, playing Bastet can be a very frustrating experience!
+
+Features:
+-Increasing block speed
+-Selectable difficulty level
+-High score list
+-Good looking and colorful. :)
+-One key brick "drop-till-the-end"
+-Pausing
+-The brick preview is now a "teaser" box.  Instead of displaying the next brick, it displays the "most useful" brick (according to Bastet's engine). Needless to say, you will *never* get that brick!
+
+Keys Controls (can be remapped by editing config.h):
+-left/right: moves current brick left/right
+-up/keypad 0 (if you have Numlock on): rotates current brick
+-space: drops current brick
+-p: pause (press any key to continue)
+-q: ends current match (and eventually sends you to the highscore list)
+-ctrl-c: abruptly terminates the program (hopefully without messing up your terminal)
+
+Installation Requirements: 
+ncurses.
+
+Installation Instructions:
+1) Edit config.h and the top of the Makefile to setup your preferences.
+
+Note that Bastet must be installed in order to handle the high scores file properly.  If you choose not to install it, set HISCORE appropriately.
+
+2) make
+3) make install (as root)
+
+Petris:
+Bastet is built on top of Petris, a public-domain Tetris (R) clone by Peter Seidler. You can find its original README (with license details) in this directory.
+
+Hint: 
+Increasing the difficulty level will get you more points.
+
+Translation: 
+"Che scarso" means (more or less) "poooor", "shoddy!"
+
+Contacting me: 
+Have a look at the AUTHORS file. 
+
+Thanks to:
+David Moreno Garza for writing the manpage and building/mantaining bastet's debina package.
+Jonathan Felder for helping me with this README file. Writing in fluent and correct English is still a problem for me :-/
+
+Have fun!
+--federico
+
+
+
+

@@ -1,0 +1,10 @@
+Short:        FreeDB - sources archive
+Author:       alforan@tin.it (Alfonso Ranieri)
+Uploader:     alforan tin it (Alfonso Ranieri)
+Type:         dev/src
+Version:      3.1
+Architecture: m68k-amigaos
+
+FreeDB handle all the needs to store CD-ROM
+disc information using freedb (www.freedb.org)
+protocol and format.

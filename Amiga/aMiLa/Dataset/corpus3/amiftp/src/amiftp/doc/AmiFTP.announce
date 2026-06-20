@@ -1,0 +1,89 @@
+submit
+Please add Reply-To: lilja@lysator.liu.se
+and Followup-To: comp.sys.amiga.networking
+TITLE
+
+   AmiFTP
+
+VERSION
+
+   1.264
+
+AUTHOR
+
+   Magnus Lilja
+   e-mail: lilja@lysator.liu.se
+   Postal Address: Magnus Lilja
+                   Alsättersgatan 9C:17
+                   S-582 51 LINKÖPING
+                   SWEDEN
+DESCRIPTION
+
+   AmiFTP is an easy to use ftp-client with a GUI built on the
+   ClassAct BOOPSI system. Some of the features are:
+
+   * Localized (Danish, Dutch, Finnish, German, Icelandic, Italian, 
+     Norwegian, Spanish and Swedish catalogs are available at the
+     moment)
+
+   * ARexx interface
+
+   * Resume transfer
+
+   * Multiselect when up/downloading files
+
+   * Caches the 5 latest directories
+
+   * Has hotlist with submenus
+
+   * Online AmigaGuide-help
+
+   Make sure to use the installerscript and follow the instructions
+   there before you start AmiFTP. This is really necessary in order to
+   install the ClassAct classes on your system.
+
+NEW FEATURES
+
+   The major new features are the possibility to have submenus in the
+   hotlist and that AmiFTP now supports both bsdsocket.library 
+   (AmiTCP) and socket.library (as225-alike) TCP/IP-stacks in one
+   binary.
+   The ARexx command-set has also been extended. An aminet search
+   script written in ARexx (by Sami Itkonen) is also included.
+
+SPECIAL REQUIREMENTS
+
+   AmigaDOS 2.0 or higher.
+   One of the following TCP/IP stacks:
+   AmiTCP 3.x or higher
+   AS225r2,
+   I-Net 225,
+   CPR TCP/IP Base Kit
+
+   or mlink.
+
+   AmiFTP also needs ClassAct gadgets, which are included in this 
+   archive.
+
+AVAILABILITY
+
+   AmiFTP 1.264 is on Aminet, in comm/tcp/AmiFTP-1.264.lha.
+
+   ftp://ftp.wustl.edu/pub/aminet/comm/tcp/AmiFTP-1.264.lha (216503)
+
+   It's also available from the AmiFTP www-page:
+   http://www.lysator.liu.se/~lilja/AmiFTP.html
+
+PRICE
+
+   AmiFTP is Shareware. This version is not crippled in any way which
+   means that there's no extra features available for those who
+   register, but this shouldn't stop you from supporting this
+   program.
+   The Shareware fee is $15. See the documentation in the archive
+   for more information.
+
+DISTRIBUTABILITY
+
+   AmiFTP is Copyright 1995-1996 by Magnus Lilja. Read AmiFTP.guide
+   for information about distributing AmiFTP.

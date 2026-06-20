@@ -1,0 +1,172 @@
+;
+; DOCUMENTATION FOR SSLIB.LIB LIBRARY FILE
+;
+
+
+
+FileReq:	Create a file requester and ask the user
+		to select a file.
+
+ Inputs:	- a0.l filename_buffer*
+		- a1.l pointer to window title ( <= 15 chars)
+ Outputs:	- a0.l filename* (not changed)
+		- d0.l success code:
+		    0 = error, cannot create requester
+		    1 = success, name gotten
+		   -1 = user selected the Cancel gg
+		- name buffer: contains null-terminated filename
+
+ Regs used:	- d0
+
+ Author:	- tm 890711, see fir.asm
+
+
+
+
+fopen:		Open a buffered file for reading and writing.
+
+ Inputs:	- a0.l filename*
+		- d0.l access mode (MODE_NEWFILE or MODE_OLDFILE)
+		- a6.l dosbase
+ Outputs:	- d0.l filehandle*
+		    0 = error, cannot open file
+		   -1 = no memory
+		   gt = file opened succesfully
+
+ Author:	- jm 890804, see ffile.asm
+
+
+
+fclose:		Close a buffered file opened with fopen.
+
+ Inputs:	- a0.l filehandle*
+		- a6.l dosbase
+ Outputs:	- .c   error flag (fflush failed)
+		    1 = error, cannot flush buffer
+		    0 = ok
+
+ Regs used:	- none
+
+ Author:	- jm 890804, see ffile.asm
+
+
+
+fflush:		Flush the file buffer if any characters were written.
+
+ Inputs:	- a0.l filehandle*
+		- a6.l dosbase
+ Outputs:	- .c   error
+		    1 = error, cannot flush buffer
+		    0 = ok
+
+ Author:	- jm 890804, see ffile.asm
+
+
+
+feof:		Check if any bytes left to read in file.
+
+ Inputs:	- a0.l filehandle*
+		- a6.l dosbase
+ Outputs:	- .z   flag
+		   eq = no bytes left (end of file)
+		   ne = more bytes found
+
+ Author:	- jm 890804, see ffile.asm
+
+
+
+fgetc:		Read one byte from file from the current position.
+
+ Inputs:	- a0.l filehandle*
+		- a6.l dosbase
+ Outputs:	- d0.b byte or d0.l = -1
+		   -1 = no more characters or error
+
+ Author:	- jm 890804, see ffile.asm
+
+
+
+fgets:		Read one line from file.  Calls fgetc until a NULL
+		or LF character is read.
+
+ Inputs:	- a0.l filehandle*
+		- a1.l buffer*
+		- a6.l dosbase
+ Outputs:	- d0.l number of bytes read
+		    0 = no more characters or error
+
+ Author:	- jm 890804, see ffile.asm
+
+
+
+fputc:		Write one byte to file at the current position.
+
+ Inputs:	- d0.b byte to be written
+		- a0.l filehandle*
+		- a6.l dosbase
+ Outputs:	- .c   error
+		    1 = error writing file
+		    0 = ok
+
+ Author:	- jm 890804, see ffile.asm
+
+
+
+fputs:		Write a string to file.  Calls fputc until a NULL byte
+		is encountered.
+
+ Inputs:	- a0.l filehandle*
+		- a1.l buffer*
+		- a6.l dosbase
+ Outputs:	- .c   error
+		    1 = error writing file
+		    0 = ok
+
+ Author:	- jm 890804, see ffile.asm
+
+
+
+fread:		Read requested number of bytes from file.  Uses no
+		buffering and flushes the buffers if needed.
+
+ Inputs:	- d0.l number of bytes to read
+		- a0.l filehandle*
+		- a1.l buffer*
+		- a6.l dosbase
+ Outputs:	- d0.l number of bytes read
+
+ Author:	- jm 890804, see ffile.asm
+
+
+
+fwrite:		Write requested number of bytes to file.  Uses no
+		buffering and flushes the buffers if needed.
+
+ Inputs:	- d0.l number of bytes to write
+		- a0.l filehandle*
+		- a1.l buffer*
+		- a6.l dosbase
+ Outputs:	- .c   error
+		    1 = error writing file
+		    0 = ok
+
+ Author:	- jm 890804, see ffile.asm
+
+
+
+fseek:		Seek the file using AmigaDOS Seek() and handle the
+		file buffering as needed.
+
+ Inputs:	- d0.l new file position
+		- d1.l seek mode (-1, 0, 1 as defined in dos.i)
+		- a0.l filehandle*
+		- a6.l dosbase
+ Outputs:	- .c   error
+		    1 = error
+		    0 = ok
+
+ Author:	- jm 890804, see ffile.asm
+
+
+
+

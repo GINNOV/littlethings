@@ -1,0 +1,38 @@
+Short:        C str to us / ms utilities
+Author:       TJ Holowaychuk
+Uploader:     Carsten Larsen (carsten.larsen@mail.com)
+Type:         dev/c
+Version:      0.0.4
+Architecture: generic; m68k-amigaos
+URL:          https://github.com/clibs/ms.git
+
+About
+
+    Convert strings like "15s" to seconds, milliseconds, or microseconds,
+    and convert milliseconds to strings ("300ms", "5ms") or long strings
+    ("5 seconds", "1 month").
+
+Installation
+
+    Copy ms.h and ms.c to your source code tree.
+
+Usage
+
+    View the tests in test.c.
+
+API
+
+    long long
+    string_to_microseconds(const char *str);
+
+    long long
+    string_to_milliseconds(const char *str);
+
+    long long
+    string_to_seconds(const char *str);
+
+    char *
+    milliseconds_to_string(long long ms);
+
+    char *
+    milliseconds_to_long_string(long long ms);

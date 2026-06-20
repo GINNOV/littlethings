@@ -1,0 +1,423 @@
+
+//
+// Belegaufgabe
+// ¯¯¯¯¯¯¯¯¯¯¯¯
+// Auswertung eines arithmetischen Ausdruckes
+// unter Verwendung mehrerer Stacks
+//
+// Programmiert von : Gerrit M. Albrecht
+//                    Erich-Weinert-Straße 37
+//                    06526 Sangerhausen
+//                    Deutschland / Germany
+// E-Mail an        : galbrech@mus.urz.uni-magdeburg.de
+// Version          : 1.0
+// letzte Änderung  : 28. Mai 1995
+// Compiler         : Maxon-C/C++ 1.11.6
+//
+
+
+// Includes
+
+#include <stdio.h>
+#include <iostream.h>
+#include <string.h>
+
+
+// Konstanten
+
+#define BOOL  int                      // Datentyp Boolean beschreiben
+#define TRUE  1
+#define FALSE 0
+
+
+// Datentypen
+
+enum stack_dt
+{
+  TYP_ZAHL,
+  TYP_OP_PLUS, TYP_OP_MINUS, TYP_OP_MAL, TYP_OP_DIV,
+  TYP_OP_SIN,  TYP_OP_COS,   TYP_OP_TAN, TYP_OP_COT,
+  TYP_OP_FAK,
+  TYP_ERROR
+};
+
+class stack
+{
+  typedef struct element               // Stackelement
+  {
+    float data;                        // Stack-Inhalt
+    int typ;                           // Beschreibung von "data"
+    struct element *next;
+  } knoten;
+
+  private:
+    knoten *root;                      // Zeiger auf Stackbeginn
+
+  protected:
+
+  public:
+    stack();                           // Konstruktor
+   ~stack();                           // Destruktor
+    void push(float, int);
+    void pop(float *, int *);
+    BOOL empty();
+};
+
+
+// Memberfunktionen von "stack"
+
+stack::stack()
+{
+  root = NULL;
+}
+
+stack::~stack()
+{
+  float f; int t;
+
+  while (! empty())
+    pop(&f, &t);
+}
+
+BOOL stack::empty()
+{
+  if (root)
+    return(FALSE);
+  else
+    return(TRUE);
+}
+
+void stack::push(float d, int t)
+{
+  knoten *p = new knoten;
+
+  if (p)
+  {
+    p->data = d;
+    p->typ  = t;
+    p->next = root;
+    root    = p;
+  }
+  else
+    cout << "Speicher reicht nicht.\n";
+}
+
+void stack::pop(float *d, int *t)
+{
+  if (empty())
+  {
+    *t = TYP_ERROR;
+  }
+  else
+  {
+    knoten *p = root;
+
+    *d = p->data;
+    *t = p->typ;
+
+    root = root->next;
+    delete p;
+  }
+}
+
+
+// UP für Fakultät
+
+float fak(float f)
+{
+  int i;
+  float x = 1.0;
+
+  for(i=1; i <= (int) f; i++)
+    x = x * i;
+
+  return(x);
+}
+
+
+// Ist Zeichenkette ein Ausdruck ?
+
+BOOL check_ausdruck(char *a)
+{
+  // 1. Zeichen ein Klammer-auf-Zeichen ?
+
+  if (*a != '(')
+  {
+    cout << "Erstes Zeichen muss ein '(' sein !\n";
+    return(FALSE);
+  }
+
+  // Anzahl der Klammern testen
+
+  {
+    int count = 0;
+    char *cp  = a;
+
+    while (*cp != '\0')
+    {
+      if (*cp == '(') count++;
+      if (*cp == ')') count--;
+      cp++;
+    }
+
+    if (count != 0)
+    {
+      cout << "Anzahl von '(' ungleich Anzahl von ')' !\n";
+      return(FALSE);
+    }
+  }
+
+  // Anzahl Parameter und Anzahl Operatoren überprüfen
+
+  {
+    int cnt_zahlen = 0;
+    int cnt_operat = 0;
+    char *cp  = a;
+
+    while (*cp != '\0')
+    {
+      // Zahlen
+
+      if (*cp >= '0' && *cp <= '9')
+      {
+        while (*cp >= '0' && *cp <= '9')
+          cp++;
+        if (*cp == '.')
+        {
+          cp++;
+          while (*cp >= '0' && *cp <= '9')
+            cp++;
+        }
+        cnt_zahlen++;
+      }
+
+      // 1 stellige Operatoren ignorieren
+
+      // 2 stellige Operatoren
+
+      if ( (*cp == '+') || (*cp == '-') ||
+           (*cp == '*') || (*cp == '/')  ) cnt_operat++;
+
+      cp++;
+    }
+
+    if (cnt_zahlen != cnt_operat+1)
+    {
+      cout << "Anzahl gegebener Ziffern und Operatoren stimmt nicht !\n";
+      return(FALSE);
+    }
+  }
+
+  // Alles ok
+
+  return(TRUE);
+}
+
+
+// Konvertiere Infix-Ausdruck i in Postfix-Ausdruck p
+// und einen Postfix-Ausdrucks-Stack s
+
+BOOL cnv_ausdruck(char *i, char *p, stack *s)
+{
+  stack op;                            // für Operatoren
+  stack ausdr;                         // Postfix-Ausdruck
+  float f = 0.0;
+  int   x;
+
+  char *c = i;
+
+  strncpy(p, "", 99);                  // !!!
+
+  while (*c != '\0')
+  {
+    if (*c >= '0' && *c <= '9')
+    {
+      strcat(p, "[");
+
+      f = 0.0;
+      while (*c >= '0' && *c <= '9')
+      {
+        f = 10 * f + (*c - '0');
+
+        strncat(p, c, 1);
+
+        c++; // Nach Zahl kommt immer MIND. 1x ')' - NIE '\0' !
+      }
+
+      if (*c == '.')                   // Nachkommastellen auswerten
+      {
+        c++;
+
+        float nks = 0.0;
+        float pos = 1;
+
+        strcat(p, ".");
+
+        while (*c >= '0' && *c <= '9')
+        {
+          pos = pos / 10;
+          nks = nks + (*c - '0') * pos;
+
+          strncat(p, c, 1);
+
+          c++; // Nach Zahl kommt immer MIND. 1x ')' - NIE '\0' !
+        }
+
+        f = f + nks;
+      }
+
+      ausdr.push(f, TYP_ZAHL);
+
+      strcat(p, "]");
+    }
+
+    switch (*c)
+    {
+      case ')' : {
+                   if (op.empty())
+                     cout << "Operatoren-Stack leer !\n";
+                   else
+                   {
+                     op.pop(&f, &x);
+                     ausdr.push(0.0, x);
+                     switch (x)
+                     {
+                       case TYP_OP_PLUS  : strcat(p, "+"); break;
+                       case TYP_OP_MINUS : strcat(p, "-"); break;
+                       case TYP_OP_MAL   : strcat(p, "*"); break;
+                       case TYP_OP_DIV   : strcat(p, "/"); break;
+                       case TYP_OP_FAK   : strcat(p, "!"); break;
+                     }
+                   }
+                 }
+                 break;
+      case '+' : op.push(0.0, TYP_OP_PLUS ); break;
+      case '-' : op.push(0.0, TYP_OP_MINUS); break;
+      case '*' : op.push(0.0, TYP_OP_MAL  ); break;
+      case '/' : op.push(0.0, TYP_OP_DIV  ); break;
+      case '!' : op.push(0.0, TYP_OP_FAK  ); break;
+    }
+    c++;
+  }
+
+// Test
+
+//  ausdr.push(5, TYP_ZAHL);
+//  ausdr.push(9, TYP_ZAHL);
+//  ausdr.push(8, TYP_ZAHL);
+//  ausdr.push(0, TYP_OP_PLUS);
+//  ausdr.push(4, TYP_ZAHL);
+//  ausdr.push(6, TYP_ZAHL);
+//  ausdr.push(0, TYP_OP_MAL);
+//  ausdr.push(0, TYP_OP_MAL);
+//  ausdr.push(7, TYP_ZAHL);
+//  ausdr.push(0, TYP_OP_PLUS);
+//  ausdr.push(0, TYP_OP_MAL);
+
+  // Stack "umdrehen"
+
+  while (! ausdr.empty())
+  {
+    ausdr.pop(&f, &x);
+    s->push(f, x);
+  }
+
+  // Fertig
+
+  return(TRUE);
+}
+
+
+// Berechne Postfix-Ausdruck
+
+BOOL calc_ausdruck(stack *a, float *e)
+{
+  stack st;
+  float d, x, y;
+  int   t;
+
+  while (! a->empty())
+  {
+    a->pop(&d, &t);
+
+    switch (t)
+    {
+      case TYP_ZAHL     : st.push(d, t);
+                          break;
+      case TYP_OP_PLUS  : st.pop(&x, &t); st.pop(&y, &t);
+                          st.push(x + y, TYP_ZAHL);
+                          break;
+      case TYP_OP_MINUS : st.pop(&x, &t); st.pop(&y, &t);
+                          st.push(y - x, TYP_ZAHL);
+                          break;
+      case TYP_OP_MAL   : st.pop(&x, &t); st.pop(&y, &t);
+                          st.push(x * y, TYP_ZAHL);
+                          break;
+      case TYP_OP_DIV   : {
+                            st.pop(&y, &t);
+                            st.pop(&x, &t);
+
+                            if (y != 0.0)
+                              st.push(x / y, TYP_ZAHL);
+                            else
+                            {
+                              cout << "Division durch Null !\n";
+                              cout << "Ergebnis fehlerhaft !\n";
+                              return(FALSE);
+                            }
+                          }
+                          break;
+      case TYP_OP_FAK   : st.pop(&x, &t);
+                          st.push(fak(x), TYP_ZAHL);
+                          break;
+      default : cout << "PF-A-Stack fehlerhaft !\n";
+    }
+  }
+
+  st.pop(e, &t);
+
+  return(TRUE);
+}
+
+
+// Hauptprogramm
+
+int main()
+{
+  char  ausdruck_i[100];               // für Infix   - Darstellung
+  char  ausdruck_p[100];               // für Postfix - Darstellung
+  stack ausdr_p;                       // und nochmal Postfix ...
+  float ergebnis;
+
+  cout << "\n"
+       << "Auswertung eines algorithmischen Ausdruckes.\n"
+       << "¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\n";
+
+  cout << "Ausdruck in Infix-Notation eingeben : ";
+  cin.getline(ausdruck_i, 100);
+
+  if (check_ausdruck(ausdruck_i))
+  {
+    if (cnv_ausdruck(ausdruck_i, ausdruck_p, &ausdr_p))
+    {
+      cout << "Ausdruck in Postfix-Notation        : "
+           << ausdruck_p << "\n";
+
+      if (calc_ausdruck(&ausdr_p, &ergebnis))
+      {
+        cout << "Ergebnis der Berechnung             :"
+             << ergebnis << "\n";
+      }
+      else
+        cout << "Abbruch.\n";
+    }
+    else
+      cout << "Fehler beim Konvertieren aufgetreten !\n";
+  }
+  else
+    cout << "Kein gültiger Ausdruck !\n";
+
+  return(0);
+}
+
+

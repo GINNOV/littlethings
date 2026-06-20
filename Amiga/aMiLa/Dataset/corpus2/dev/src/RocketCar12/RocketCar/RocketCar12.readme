@@ -1,0 +1,134 @@
+Short:    Drive a raytraced car in a window (OpenGL)
+Uploader: walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Author:   walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Type:     dev/src
+Version:  1.2
+Replaces: rocketcar11.lha
+Requires: C Compiler (e.g. gcc), StormMesa
+
+OpenGL game programming:
+Drive a raytraced rocketcar in a scaleable window.
+
+Requirements:
+-------------
+Some people complained about missing librarys.
+Expilicit: You NEED to install StormMesa to run the executable.
+For compiling you need the linker librarys.
+
+Download StormMesa from:
+
+http://www.haage-partner.com/3dworld/index-e.htm
+
+To run the executable, you need the user archive.
+If you want to compile your own sources, you will need the developer
+archive.
+
+Install the packages according to their manuals.
+
+Make sure to link the linker librarys to your executable while compiling.
+
+GCC example: gcc demosource.c -o demo -lGL
+
+Where "demosource.c" is the source code of your OpenGL program and "demo"
+is the executable.
+
+You can find StormMesa and many demos on the AmigaOS 3.5 CD-Rom.
+
+To obtain hardware-acceleration, you will need a GFX-card with 3D-Chip
+(for example CyberVision 64/3D, CyberVisionPPC, Voodoo, etc.) AND
+a Warp3D driver for your 3D-hardware.
+OpenGL programs will run without 3D-hardware anyway, but slower.
+
+
+Usage:
+------
+Use cursor keys or Joystick to drive.
+If you drive outside the window you can reset to starting position
+via pulldown-menu or by pressing 'r'.
+Press '+' and '-' for zoom.
+
+Features:
+---------
+- Hardware acceleration where available
+- Joystick support via GLUT
+- Uses a raytraced texture as "fake sprite"
+- Linear filter option for smooth texture
+- Scaleable window
+- System friendly as possible
+- It`s fast, even on my good old A4000/030 with CV64/3D
+
+History:
+--------
+
+Version 1.0 (26.3.2002)
+
+ - initial release
+
+
+Version 1.1 (29.3.2002)
+
+ - added AmigaOS requesters
+ - added zooming
+
+
+Version 1.2 (7.4.2002)
+
+ - added Joystick support
+ - no more unlimited acceleration
+
+
+Known problems:
+---------------
+Makes traces and flickers in fullscreen-mode (maybe a bug in CGX?)
+
+Remember:
+---------
+The S3 Virge can only perform hardware acceleration within 15 Bit screenmodes.
+
+
+The executable included in this archive require 68030 cpu and 68881 fpu or better.
+A 68060 or PowerPC CPU and a fast 3D-accelerator is highly recommended.
+
+Testet on Amiga 4000/30 with CyberVision64/3D,
+AmigaOS 3.5, CyberGraphX 3, Warp3D 3.
+
+
+Literature:
+
+Brian W. Kernighan, Dennis M. Ritchie:
+The C Programming Language
+
+Andrew Koenig: 
+C Traps and Pitfalls
+
+Robert Sedgewick:
+Algorithms in C
+
+Mason Woo, Jackie Neider, Tom David, Dave Shriner, Tom Davis:
+OpenGL 1.2 Programming Guide
+
+Renate Kempf and Chris Frazier:
+OpenGL Reference Manual
+
+Mark Kilgar:
+The OpenGL Utility Toolkit (GLUT) Programming Interface API
+
+Kevin Hawkins, Dave Astle:
+OpenGL Game Programming
+
+
+
+World Wide Web:
+
+http://www.norman-interactive.com (my Homepage)
+
+http://www.informatik.uni-stuttgart.de (University Stuttgart, Dept. of Computer Science)
+
+http://www.ninemoons.com (GeekGadgets)
+
+http://www.haage-partner.com (Haage & Partner Homepage)
+
+http://www.sgi.com (Silicon Graphics - Inventor of OpenGL)
+
+http://www.OpenGL.org (OpenGL Homepage)
+

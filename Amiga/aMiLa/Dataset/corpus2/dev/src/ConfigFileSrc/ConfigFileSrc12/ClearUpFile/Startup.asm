@@ -1,0 +1,20 @@
+	SECTION	CODE
+
+	INCLUDE	'ClearUpFile_rev.i'
+
+	XREF	@start
+	XREF	_SysBase
+
+BBSLEN	EQU	12
+
+	SUB.W		#BBSLEN,SP
+	MOVE.L	SP,A4
+	MOVE.L	4.W,_SysBase(A4)
+	BSR.W		@start
+	ADD.W		#BBSLEN,SP
+	RTS
+	VERSTAG
+	CNOP		0,4
+
+	END
+	

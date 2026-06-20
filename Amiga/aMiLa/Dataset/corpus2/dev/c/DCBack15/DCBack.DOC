@@ -1,0 +1,92 @@
+
+                             DCBack.lib 1.5
+
+---> Auto detach,  OS2.0 style commandline-parsing startup code for DICE <---
+
+                       KICKSTART 2.0 OR BETTER ONLY
+
+                                   by
+                            Jan van den Baard
+
+                             This program is
+                                FREEWARE
+            and remains (c) Copyright 1991-1993 Jaba Development
+                except for the somewhat adjusted "wbmain.a"
+                      which is (c) Copyright 1990 by
+                             Matthew Dillon
+
+  The author cannot be held liable for the  suitability or  accuracy of  this
+program.  Any  damage directly  or indirectly  caused by the use or misuse of
+this program is the sole responsibility of the user her/him self.
+
+  DCBack.lib is a tiny link-library which alows you to write  auto-detachable
+programs with DICE.  I  wrote this  program  mainly for my  text reader  View
+but it can be used for all sorts of applications.  To  make your DICE program
+detachable you must define the following globals somewhere in your source:
+
+_procname:      This should be a pointer to a 0-terminated string  which will
+                be the name of the detached process.
+
+_template:      This should be a pointer to a  0-terminated shell commandline
+                template string.    Please  read  the  documentation  on  the
+                ReadArgs() routine for more information about the syntax of a
+                template string.     NOTE:  If  you  don't  need  commandline
+                parsing just make this 0.
+
+_exthelp:       This  should  be a  pointer  to  a  0-terminated string which
+                should  contain  some  extended information about the command
+                line. If you don't want this you should make this 0.
+
+_stack:         This should be a 32-Bit integer which specifies the stacksize
+                in bytes CreateProc must  allocate  for the  process.  If you
+                specify 0 here a stack of 4096 bytes is used.
+
+_priority:      This should be a 32-Bit integer which specifies the  priority
+                of the created process.
+
+_BackGroundIO:  Any value other than 0 will open a file  which allows  you to
+                write to the shell window it was  called from.  Note  however
+                that no input can be received  from this  shell window.  This
+                will also disable  the  closing  of  the  shell  window  that
+                the program was run from until the program terminates.
+
+  The  startup  code  will  automatically  parse  the  commandline using  the
+ReadArgs() routine. The  startup  code  calls  the  same  entry  points  that
+the original DICE startup code does:
+
+    Shell:         main( long argc, long *argv );
+    Workbench:     wbmain( wbmsg );
+
+  As you can see the shell entry point is called with other arguments than it
+is with the standard DICE startup code. The arguments passed to main have the
+following contents:
+
+    argc    :   The startup code counts the number of arguments it can expect
+                by counting the commas in the template string and then adding
+                one to the that amount. 'argc'  contains the  result of  that
+                count.
+
+    argv    :   When the  startup  code has  counted the  number of  expected
+                arguments it allocates a long-word  array with 'argc'  slots.
+                Then it calls ReadArgs() which will fill this array with  the
+                result  of  the  parse. 'argv'  contains  a  pointer  to  the
+                initialized argument array.
+
+  For  the  workbench  the  startup  code  automatically  set's  the  current
+directory to the directory from which the program is started.
+
+  The link-library comes in two versions. One called "dcback.lib" which  uses
+the standard DICE routine calling  conventions  and one called  "dcbackr.lib"
+which uses the registered routine calling conventions.  Please read  the DICE
+docs for more info about this.
+
+  Bug reports,  suggestions,  postcards,  flames,  criticism,  contributions,
+ideas, gifts, multiscan monitors, etc., etc., etc......... to:
+
+                                        Jan van den Baard
+                                        Bakkerstraat 176
+                                        3082 HE, Rotterdam
+                                        The Netherlands
+
+                                        FIDO: 2:285/502.7 (Jan van.den.Baard)
+                                        EMail: jaba@desert.wlink.nl

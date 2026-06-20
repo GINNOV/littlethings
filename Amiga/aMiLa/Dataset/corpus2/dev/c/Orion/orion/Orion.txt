@@ -1,0 +1,74 @@
+Orion - Resource Control Debugger
+~~~~~
+
+This package is for monitoring resource allocations by a program.
+Currently the following resources are tracked:
+   -AllocMem
+   -AllocVec
+   -AllocBitMap
+   -CreatePool
+   -AllocPooled
+   -malloc
+but more will be added.
+
+This isn't true Resource Tracking, and it isn't designed for end users.
+It's designed for developers, to help them track their allocations and
+watch for memory leaks.
+
+No functions are patched.  A public semaphore is created, and all
+allocations are linked off of it.  Only a program using this system
+will be tracked.  To add Orion support to your program do the following:
+
+1)Include Orion.h in all modules you want tracked. Note:If you free
+   the allocations in a different module, you should include it in that
+   one as well.
+2)Just before the include (or in SCOPTIONS, in makefile, etc)
+   #define ORION_TRACK
+   This will 'turn on' the tracking.  Without this define all the
+   extras will be ignored and the link library won't be used.
+3)Link with Orion.lib.
+
+Setting the STRINGMERGE option (in SAS) will save some code size if
+that's a concern.
+
+You can run OrionTool to set up the system, but if you don't the first
+program to call one of the tracked resources will set it up.  After that
+you can run OrionTool with the 'List' option to view all allocations.
+When your program ends, check the list again, if any are shown, you have a
+memory leak.
+
+Feature List:
+1)Tracks allocations so you can watch for memory leaks
+2)If you try to free a different size than you allocated, you are
+   warned and the correct size is freed.
+3)You are warned if you try to free a NULL pointer, and the operation is
+   aborted.
+4)You are warned if you try to allocate a 0 byte size, or a bitmap with
+   a bad size (any dimension == 0)
+5)You are warned when you free something that wasn't allocated through
+   this system.  But it's done anyway.
+6)All reporting includes the source file name and the line number at
+   which the call was made
+7)You can exclude some tracking code by defining the following defines:
+   ORION_NOVEC - AllocVec()/FreeVec()
+   ORION_NOMEM - AllocMem()/FreeMem()
+   ORION_NOBITMAP - AllocBitMap()/FreeBitMap()
+   ORION_NOPOOL - CreatePool()/DeletePool()/AllocPooled()/FreePooled()
+   ORION_NOMALLOC - malloc()/free()
+8)When memory(AllocVec,AllocMem,malloc,AllocPooled)is freed can be
+   filled with garbage.
+9)When allocated, memory(AllocVec,AllocMem,malloc)can be filled with garbage.
+
+This has only been tested on SAS/C.  It should work with any
+C compiler, or any compiler that uses standard includes and link
+libraries.
+
+I plan on expanding this program a fair bit.  Not only more resources
+will be tracked, but they will be tracked better.
+
+See the ToDo.txt for future plans.
+
+
+If you have any questions or comments email me at:
+umpaul18@cc.umanitoba.ca
+http://home.cc.umanitoba.ca/~umpaul18

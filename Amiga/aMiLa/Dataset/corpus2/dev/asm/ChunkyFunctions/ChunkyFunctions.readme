@@ -1,0 +1,121 @@
+Short:        Clipped Chunky Line & Circlefunctions
+Author:       Holger.Hippenstiel AT gmx.de
+Uploader:     Holger.Hippenstiel@gmx.de
+Type:         dev/asm
+Version:      1.2
+Replaces:     dev/asm/ChunkyFunctions.lha
+Architecture: m68k-amigaos >= 2.0.0; generic
+Distribution: Aminet
+Kurz:         Geklippte Linien & Kreisfunktionen
+
+******************************************************************************
+D0h, forgot to remove a debug-call in the beginning of ClippedChunkyCircle
+(and the ChunkyExample Executable), could trash your chipram. Sorry for that.
+For most of the CircleFunctions you need a 68020 or higher,
+i've included 68000-versions for those cases.
+ChunkyExample now also only need 68000.
+******************************************************************************
+Update: 8 new variants for really big circles which need full clipping
+Had bug in variant-checking when clipping MinX&MinY (only if both X and Y
+would go negative), most variants in that case wouldn't be used.
+There was one missing clipping for MaxY in a loop.
+Included FullChunkyCircle.s if you just want a fast & small-circleroutine
+without all the bells & whistles. :)
+I put some more comments in ClippedChunkyCircle to make it easier to see
+what part does what.
+The ClipLine-function could also be used for blitter-lines.
+I've included a ChunkyExample executable, which draws lines on top and
+circles on the bottom half, you need the rtgmaster.library and a display
+with chunky pixels (CybergraphX, Picasso96, and so on).
+http://aminet.net/driver/video/rtgmaster_user.lha
+******************************************************************************
+
+After checking the rtgmaster.lib and doing a fix for it:
+http://aminet.net/driver/video/rtgmaster_asmfix.lha
+
+I noticed the functions it got where quiet slow, here are some functions
+i wrote somewhere around 1994-95 and where used for example for EGSTurbo.
+I've tuned them a bit for speed & high-resolution compability.
+
+The Functions are:
+******************************************************************************
+in ChunkyMultab.s
+MakeChunkyMultab *** creates the Multiplication Table for the Circle-Functions
+Parameter: d0=pixelwidth
+******************************************************************************
+in ClippedChunkyCircle.s
+ClippedChunkyCircle *** Draws a clipped circle
+
+Parameter: a0=ChunkyScreen, d0=X, d1=Y, d3=Size (max 3840), d4=Color,
+           d5=pixelwidth, d6=pixelheight
+Included special loops which for example only clip MinY & MinX, and if
+both are negative will only try to draw lower right quadrant.
+Total of draw-loops is 43 variants.
+******************************************************************************
+in ChunkyCircleQuadrant.s
+
+ChunkyCircleQuadrant *** Draw a quadrant of a circle
+Paramter: a0=ChunkyScreen, d0=X, d1=Y, d2=Quadrants, d3=Size, d4=Color,
+          d5=pixelwidth
+Quadrant: 1=top right, 2=bottom right, 4=bottom left, 8=top left
+          ofcourse you can combine them 1+2 = right half of a circle
+Both ClippedChunkyCircle.s & ChunkyCircleQuadrant.s include ChunkyMultab.s,
+so if you want both remove one include.
+You have to call MakeChunkyMultab width screenwidth in d0 once before using a
+Circle-Function and when the screenwidth changes.
+******************************************************************************
+in ChunkyLine.s
+ChunkyRectangle
+Paramters: a0=ChunkyScreen, d0=x0, d1=y0, d2=x1, d3=y1, d4=Color,
+           d5=pixelwidth, d6=pixelheight
+(without clipping pixelheight is not needed)
+
+ChunkyLine
+Paramters: a0=ChunkyScreen, d0=x0, d1=y0, d2=x1, d3=y1, d4=Color,
+           d5=pixelwidth, d6=pixelheight
+(without clipping pixelheight is not needed)
+
+if ChunkyLine.s defines:
+CLIPLINES SET 1
+
+then ClipLine.s will be included and called.
+******************************************************************************
+in ClipLine.s
+ClipLine
+Paramters: d0=x0, d1=y0, d2=x1, d3=y1, d5=pixelwidth, d6=pixelheight
+Clips x0,y0,x1&y1 to the screenborders.
+returns zero when the line should be drawn. i.e:
+	bsr ClipLine
+	bne.b SkipThisLine
+...
+******************************************************************************
+
+Would be nice if you mention me when using these functions.
+
+******************************************************************************
+
+Check out my other tools:
+http://aminet.net/search?readme=%22Holger+Hippenstiel%22&sort=date&ord=DESC
+
+    DISCLAIMER
+
+        This software is subject to the "Standard Amiga FD-Software Copyright
+        Note". It is Giftware as defined in paragraph 4g. If you like it and
+		use it regulary, please send me a small gift.
+		For more information please read "AFD-COPYRIGHT".
+
+        Diese Software unterliegt der "Standard Amiga FD-Software Copyright
+        Note". Sie ist Giftware wie definiert in Absatz 4g. Falls du sie magst
+		und regelmaessig benutzt, sende bitte ein kleines Geschenk.
+		Fuer mehr Informationen lies bitte "AFD-COPYRIGHT".
+
+        (/pub/aminet/docs/misc/AFD-FilesV-XX.lha V=Version,XX=Languages)
+
+    AUTHOR
+
+        Please send comments, bug-reports or small gifts or Paypal me to:
+
+        Holger.Hippenstiel AT gmx.de
+        Furtwanger Str. 14
+        71034 Böblingen
+        Germany

@@ -1,0 +1,60 @@
+Short:    SAS/C CPR debugger fix v1.1 (13.05.00)
+Author:   Mikolaj 'MM' Calusinski (bloelle@priv.gold.pl), Przemyslaw 'SENSEI' Gruchala (sensei@box43.gnet.pl)
+Uploader: Przemyslaw 'SENSEI' Gruchala (sensei@box43.gnet.pl)
+Version:  1.1 (13.05.00)
+Type:     dev/c
+Replaces: dev/c/CPRFiX.lha
+Requires: SAS/C v6.58
+Keywords: sasc cpr mm calusinski sensei gruchala polska poland
+
+WHAT'S THIS?
+   This is a small patch for the original SAS/C v6.58 CPR debugger.
+
+DISCLAIMER
+   This  software  is  provided as-is, without warranty of any kind, either
+   expressed or implied.  Under no circumstances will the authors be liable
+   for  direct,  indirect,  incidental  or  consequential damages either to
+   hardware or software or data loss resulting from the use of CPRFiX.  The
+   entire risk as to the results of CPRFiX is assumed by the user.
+
+DESCRIPTION
+   Sensei:   I  found  that  CPR causes a lot of PatchWork hits (FindPort()
+   wasn't  used  properly!   And  it's called a couple of times after every
+   line,  so  there  was no chance to use them together!  A big mess in one
+   word, and it's depressing that you must turn off PatchWork when you want
+   to  run  CPR and start it again after quitting...) so I asked Mikolaj to
+   fix  this  bug  and he agreed to do it.  There was a second (but not too
+   visible) bug when CPR starts/quits (each:  4 times SetFunction() without
+   Forbid()/Permit()  pair!).   BTW:   PLEASE  USE  Install_CPRFiX  to  fix
+   original CPR!
+
+HOW IT WORKS?
+   This   patch   installs   several  Forbid()/Permit()  pairs  for  either
+   FindPort() and SetFunction() in the SC:c/cpr file.  The installer script
+   will  automatically  search  for  SC:   and  checks if CPR exists in the
+   correct directory, if it doesn't exist you will be asked for a directory
+   and file (in Expert mode file-requesters will always be shown and you'll
+   have to confirm everything).  The installer can backup your old CPR file
+   if you want it to.
+
+AUTHORS
+   Patch (cpr.pch) and research:
+
+      Mikolaj 'MM' Calusinski (bloelle@priv.gold.pl)
+
+   Idea, testing and this archive (Install_CPRFiX & CPRFiX.readme):
+
+      Przemyslaw 'SENSEI' Gruchala (sensei@box43.gnet.pl)
+
+   Support:
+
+      Tommy Lindgren (tommy@linuxfan.com)
+
+      Rainer Müller (Rainer.m.Mueller@uni-konstanz.de)
+
+NOTE
+   Take a look at our other projects:
+
+      - gfx/ifx/REDFiX.lha       v1.5  (Sensei)
+      - gfx/show/Frogger.lha     v1.57 (Milek, Elf & Sensei)
+      - util/boot/RemApollo.lha  v1.3  (MM)

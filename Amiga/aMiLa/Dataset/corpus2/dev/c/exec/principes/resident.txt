@@ -1,0 +1,30 @@
+Il existe à priori 2 types de résidents:
+ 1) les résidents qui ont pour origines la mémoire.
+ 2) les résidents qui sont stockés sur disque puis chargé en mémoire.
+
+Rappel sur la réinitialisation: les modules résidents sont ajoutés
+avant toute autre opération, certains modules sont utiles à d'autres,
+c'est le cas de bibliothèques, c'est pour cela qu'il est important
+de fixer à bon escient la priorité du module à rajouter.
+
+Pour le type 2, la structure résidente est utilisé pour décrire un
+segment de code qui sera stocké dans libs: devs: l: expansion:. Ces modules
+peuvent être des bibliothèques, des périphériques, des ressources.
+o Si le drapeau INITAUTOMATIQUE (AUTOINIT) est utilisé, la fonction
+  InitResident() appelé lors du première ouverture de la bibliothèque ?????
+  ou du périphérique donne la main à la procédure d' "Initialisation"
+  (RT_INIT) qui appelle la procédure virtuelle initialise(), à redéfinir.
+o Sinon InitResident() appel MakeLibrary() et ajoute la structure associée
+  au résident dans une des listes systèmes: bibliothèques, périphériques,
+  ressources.
+
+Pour le type 1, la structure résidente est en mémoire et ne doit pas être
+effacée lors du rebooot. Pour cela, il faut ajouter une entrée dans une
+table supplémentaire de modules résidents et le protégé contre l'effacement.
+Voir la fonction SumKickData() des autodocs. Et les pointeurs d'ExecBase:
+KickMemPtr, KickTagPtr, KickCheckSum.
+
+_Attention_ SumKickData() récupère la mémoire à l'aide de AllocAbs() qui
+examine la liste mémoire du système. Autrement dit si la mémoire n'a pas
+été allouée par Allocate(), AllocMem(), AllocEntry(), SumKickData() échouera.
+

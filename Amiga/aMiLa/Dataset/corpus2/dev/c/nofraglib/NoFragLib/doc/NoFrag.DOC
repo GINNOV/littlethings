@@ -1,0 +1,233 @@
+
+TABLE OF CONTENTS
+
+nofrag.library/GetMemoryChain
+nofrag.library/AllocItem
+nofrag.library/FreeItem
+nofrag.library/FreeMemoryChain
+nofrag.library/AllocVecItem
+nofrag.library/FreeVecItem
+
+
+nofrag.library/GetMemoryChain                  nofrag.library/GetMemoryChain
+
+  NAME
+    GetMemoryChain -- allocate and initialize a MemoryChain.
+
+  SYNOPSYS
+    chain = GetMemoryChain( blocksize )
+                            D0
+
+    struct MemoryChain  *chain;
+    ULONG               blocksize;
+
+  FUNCTION
+    This  routine will allocate the memory for the MemoryChain structure and
+    perform a  "NewList()" on  the "Blocks"  and  "Items" list fields of the
+    MemoryChain structure and it puts your blocksize value in the structure.
+    You should ALWAYS use  this routine to  obtain a MemoryChain  structure.
+    NOTE: ALL FIELDS IN THE MEMORYCHAIN STRUCTURE ARE PRIVATE AND SHOULD NOT
+          BE  CHANGED BY  ANYTHING ELSE THAN THE ROUTINES  SUPPLIED IN  THIS
+          LIBRARY.
+
+  INPUTS
+    blocksize - A 32 bit  unsigned  integer  representing  the size  of  the
+                memory it should allocate  for each MemoryBlock.
+
+  RESULT
+    A pointer to the allocated and initialized MemoryChain structure or null
+    if the allocation failed.
+
+  BUGS
+    None known.
+
+  SEE ALSO
+    C.LIB/NewList()
+
+
+nofrag.library/AllocItem                            nofrag.library/AllocItem
+
+  NAME
+    AllocItem -- allocate a chunk of memory from a MemoryChain.
+
+  SYNOPSYS
+    memptr = AllocItem( chain, size, requirements )
+    D0                  A0     D0    D1
+
+    void               *memptr;
+    struct MemoryChain *chain;
+    ULONG               size;
+    ULONG               requirements;
+
+  FUNCTION
+    To scan the MemoryChain  to find a free  item which  is compatible  with
+    your requirements and size. If  it does  not find such an  item it  will
+    try to allocate a MemoryBlock. The allocation will  always be on a  long
+    word boundary and the allocated size is always rounded up to the nearest
+    possible multiple of eight. This is to  ensure  compatibility  with exec
+    it's "AllocMem()". Also the  memory allocated is  always cleared  wether
+    the MEMF_CLEAR bit was set or not.
+
+  INPUTS
+    chain        - A pointer to the MemoryChain in which the allocation will
+                   take place.
+    size         - A 32 bit unsigned integer  which represents  the size  of
+                   the memory you require. This size may not be bigger  than
+                   the blocksize  you have  passed onto  "GetMemoryChain()".
+                   The size will always be padded to atleast "MINALLOC".
+    requirements - A 32  bit unsigned integer  which  represents the  memory
+                   type. (e.g. MEMF_CHIP, MEMF_PUBLIC....)
+
+  RESULT
+    memptr = A  pointer to  the  allocated  memory or  NULL  if the  routine
+             failed. Although most call's will succeed you must always check
+             the return value.
+
+  BUGS
+    None known.
+
+  SEE ALSO
+    exec.library/AllocMem(), FreeItem(), GetMemoryChain()
+
+
+nofrag.library/FreeItem                              nofrag.library/FreeItem
+
+  NAME
+    FreeItem -- free a chunk of memory in a MemoryChain.
+
+  SYNOPSYS
+    FreeItem( chain, memptr, size )
+              A0     A1      D0
+
+    struct MemoryChain *chain;
+    void               *memptr;
+    ULONG               size;
+
+  FUNCTION
+    To  convert the passed memory pointer into a MemoryItem and  hang it  in
+    the MemoryChain it's free-items-list.  If the passed memory pointer  was
+    not allocated in the passed MemoryChain nothing is done to the memory.
+
+  INPUTS
+    chain  - A pointer to the MemoryChain in which the memory was allocated.
+    memptr - A pointer to the previously allocated memory.
+    size   - A 32 bit  unsigned  integer which  represents  the size  of the
+             memory previously allocated.
+
+  RESULT
+
+  BUGS
+    The routine does not known if the  passed size is  actually the  same as
+    what was passed onto "AllocItem()". This MUST be the  same or the  chain
+    will be screwed up.
+
+  SEE ALSO
+    AllocItem()
+
+
+nofrag.library/FreeMemoryChain                nofrag.library/FreeMemoryChain
+
+  NAME
+    FreeMemoryChain -- free an entire MemoryChain.
+
+  SYNOPSYS
+    FreeMemoryChain( chain, all )
+                     A0     D0
+
+    struct MemoryChain *chain;
+    ULONG               all;
+
+  FUNCTION
+    To call "FreeMem()" on all the MemoryBlocks still in the MemoryChain and
+    then call "FreeMem()" on the MemoryChain structure itself  if the  "all"
+    parameter specified TRUE.
+
+  INPUTS
+    chain - A pointer to the MemoryChain you want to de-allocate.
+    all   - A boolean which should  read TRUE  if the MemoryChain  structure
+            itself has to be deallocated too and FALSE if not.
+
+  RESULT
+    All memory the chain used is released and, if requested, the MemoryChain
+    has been deallocated too.
+
+  BUGS
+    None known.
+
+  SEE ALSO
+    exec.library/FreeMem(), GetMemoryChain()
+
+
+nofrag.library/AllocVecItem                       nofrag.library/FreeVecItem
+
+  NAME
+    AllocVecItem -- allocate a chunk of memory from a MemoryChain.
+
+  SYNOPSIS
+    memptr = AllocVecItem( chain, size, requirements )
+    D0                     A0     D0    D1
+
+    void               *memptr;
+    struct MemoryChain *chain;
+    ULONG               size;
+    ULONG               requirements;
+
+  FUNCTION
+    This does the same thing as  "AllocItem()"  with the exeption  that  the
+    size allocated will be remembered so "FreeVecItem()" knows the amount of
+    memory to mark as free. NOTE: You MUST deallocate  the memory  allocated
+    with this routine using "FreeVecItem()"!
+
+  INPUTS
+    chain        - A pointer to the MemoryChain in which the allocation will
+                   take place.
+    size         - A 32 bit unsigned integer  which represents  the size  of
+                   the memory you require. This size may not be bigger  than
+                   the blocksize  you have  passed  onto  "GetMemoryChain()"
+                   minus four.
+                   The size will always be padded to atleast "MINALLOC".
+    requirements - A 32  bit unsigned integer  which  represents the  memory
+                   type. (e.g. MEMF_CHIP, MEMF_PUBLIC....)
+
+  RESULT
+    memptr = A  pointer to  the  allocated  memory or  NULL  if the  routine
+             failed. Although most call's will succeed you must always check
+             the return value.
+
+  BUGS
+    None known.
+
+  SEE ALSO
+    exec.library/AllocMem(), FreeVecItem(), GetMemoryChain(), AllocItem()
+
+
+nofrag.library/FreeVecItem                        nofrag.library/FreeVecItem
+
+  NAME
+    FreeVecItem -- free a chunk of memory in a MemoryChain.
+
+  SYNOPSYS
+    FreeVecItem( chain, memptr )
+                 A0     A1
+
+    struct MemoryChain *chain;
+    void               *memptr;
+
+  FUNCTION
+    This frees a chunk of memory allocated with "AllocVecItem()".  You  must
+    NOT try to free a chunk of  memory  allocated  with "AllocItem()"  using
+    this routine or viceversa.
+
+  INPUTS
+    chain  - A pointer to the MemoryChain in which the memory was allocated.
+    memptr - A pointer to the previously allocated memory.
+
+  RESULT
+
+  BUGS
+    None known.
+
+  SEE ALSO
+    AllocItem(), AllocVecItem(), FreeItem(), exec.library/FreeMem()
+
+

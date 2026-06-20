@@ -1,0 +1,109 @@
+	include	/includes/hardware/offsets.i
+	include	/includes/exec/exec_lib.i
+atn	equ	4
+clkin	equ	5
+datain	equ	3
+clkout	equ	6
+dataout	equ	7
+	move.l	4.w,a6
+	lea	ciabpra,a0
+	lea	$DFF000,a5
+	lea	dat,a1
+	lea	text,a3
+	clr.b	flag
+	move.l	#100000,d7
+	bsr	Init
+	jsr	Forbid(a6)
+	move.w	#$20,intena(a5)
+	bsr	GetDeviceNum
+	bsr	ReadyForNext
+	bsr	ReadChar
+ReadingName	bsr	ReadyForNext
+	bsr	ReadChar
+	move.b	d5,(a3)+
+	btst	#7,flag
+	beq	ReadingName
+	bra	Write
+	move.b	(a0),d0
+Waitl	cmp.b	(a0),d0
+	beq	Waitl
+Write	move.b	(a0),d0
+	and.b	#%111000,d0
+	move.b	d0,(a1)+
+	sub.l	#1,d7
+	bne	Write
+	bsr	ReInit
+	jsr	Permit(a6)
+	move.w	#$8020,intena(a5)
+	lea	dat,a1
+	move.l	a1,a2
+	move.b	(a1)+,d0
+	moveq	#0,d1
+Interpreter	addq.b	#1,d1
+	cmp.b	(a1)+,d0
+	beq	Interpreter
+	move.b	d0,(a2)+
+	move.b	-1(a1),d0
+	move.b	d1,(a2)+
+	moveq	#0,d1
+	move.l	#dat+100000,d3
+	cmp.l	d3,a1
+	blt	Interpreter
+	rts
+Init	move.w	#$8800,adkcon(a5)
+	move.b	#0,(a0)
+	rts
+ReInit	move.w	#$800,adkcon(a5)
+	rts
+ReadyForNext	bsr	WClkHigh
+	bset	#dataout,(a0)
+	bsr	WClkLow
+	clr.b	(a0)
+	rts
+WasWaitingFor	bset	#dataout,(a0)
+	move.w	#1000,d1
+jf	dbf	d1,jf
+	clr.b	(a0)
+	bset	#7,flag
+	bra	ReadCharLoop
+	rts
+ReadChar	moveq	#0,d0
+	moveq	#0,d5
+ReadCharLoop	move.w	#4000,d1
+ReadNextLoop	sub.w	#1,d1
+	beq	WasWaitingFor
+	btst	#clkin,(a0)
+	beq	ReadNextLoop
+	bsr	WClkLow
+	btst	#datain,(a0)
+	bne	NoOnReadChar
+	bset	d0,d5
+NoOnReadChar	addq.b	#1,d0
+	cmpi.b	#8,d0
+	bne	ReadCharLoop
+	rts
+GetDeviceNum	bsr	WAtnHigh
+	bsr	WClkHigh
+	bset	#dataout,(a0)
+	bsr	WClkLow
+	clr.b	(a0)
+	bsr	ReadChar
+	and.b	#15,d5
+	move.b	d5,gerat
+	rts
+WAtnHigh	btst	#atn,(a0)
+	beq	WAtnHigh
+	rts
+WAtnLow	btst	#atn,(a0)
+	bne	WAtnLow
+	rts
+WClkLow	btst	#clkin,(a0)
+	bne	WClkLow
+	rts
+WClkHigh	btst	#clkin,(a0)
+	beq	WClkHigh
+	rts
+flag	dc.b	0
+gerat	dc.b	0
+text	ds.b	30
+dat	ds.b	100001

@@ -1,0 +1,763 @@
+;******************************************************************************
+;      ____           __  ______ ______ ______
+;     / __ \         /_/ / ____//_  __// __  /
+;    / /_/ /_   _   __  / /_     / /  / /_/ /
+;   / __  // \_/ \ / / / __/    / /  / ____/
+;  / / / // /__/ // / / /      / /  / /
+; /_/ /_//_/  /_//_/ /_/      /_/  /_/
+;
+; $VER: AmiFTP_Install 1.797 (November-06-1996)
+; AmiFTP ©1995,1996 by Magnus Lilja
+; AmiFTP Installer ©1995,1996 by Robert C. Reiswig
+;
+; If you wish to use any part of this installer you must ask. May not be 
+; integrated/placed into any other package! Changes, suggestions or problems:
+; amiftp@vgr.com or rcr@netcom.com
+;******************************************************************************
+
+(set install-CA 0) ; 0 = No, 1 = Yes
+;*** System Stuff ***
+(set cpu (database "cpu"))  (set vblank (database "vblank"))
+(set graphmem (database "graphics-mem")) (set totmem (database "total-mem"))
+(set osver (/ (getversion "LIBS:version.library") 65536))
+(if (= vblank "60") ((set blank "NTSC")) ((set blank "PAL")))
+(set fastmem (- totmem graphmem))
+
+( if (= osver 37) ( (set workbench "2.0")) ( if (= osver 38) ( (set workbench "2.1"))
+( if (= osver 39) ( (set workbench "3.0")) ( if (= osver 40) ( (set workbench "3.1"))
+( if (= osver 41) ( (set workbench "3.2")) )))))
+
+(set vernum1 (getversion "AmiFTP"))
+(set ver1 (/ vernum1 65536)) (set rev1 (- vernum1 (* ver1 65536) ) )
+(set amiftpver (cat ver1 "." rev1))
+(set keeper 1) (set prefsfound 0)
+
+;********************************************************************
+; English Strings
+;********************************************************************
+(set #about (cat "\n\nWelcome to\n\nAmiFTP " amiftpver "\n\n©1995, 1996 by\n\nMagnus Lilja\n\nlilja@lysator.liu.se") )
+(set #whattcp "\nPlease select the Networking package you run.\n")
+(set #whereamiftp "Where do you wish to install AmiFTP. No directory will be created! If there is a copy of AmiFTP there the installer will back it up.")
+(set #backuptoXXX "Back-UP to file named 'AmiFTP")
+(set #copyover "Copy Over Old Version")
+(set #amiftpfound "\nThe Installer has found a copy of AmiFTP already installed. What do you want to do?\n")
+(set #newicon "\nDo you wish to copy over The AmiFTP Icon from the archive? If you have any ToolTypes already set you should select no.\n")
+(set #nonewicon  "No  - ToolTypes already set.")
+(set #yesnewicon "Yes - Copy over Icon.")
+(set #whatcat "\nSelect the AmiFTP Language catalog you wish to install.\n")
+(set #wherecat "\nWhere do you wish to install the AmiFTP Language Catalog? Default is Locale:Catalogs/")
+(set #catmore "\nWould you like to install another AmiFTP Language Catalog?\n")
+(set #yes " Yes")
+(set #no " No")
+(set #catnofind "Can not find this catalog in this AmiFTP archive. You may need to get a updated or newer archive from the support site.")
+(set #otherdir "Other Directory")
+(set #instdefprefs "Yes - Install Example Prefs File")
+(set #instdefprefsn "No  - Don't Install Example Prefs File")
+(set #instprefsfile "The installer did not find the AmiFTP.Prefs file in:\n")
+(set #wouldprefs "\nWould you like to install an Example Prefs file?")
+(set #putprefs "\nWhere would you like to install the AmiFTP.prefs example file?\n")
+(set #whatdocs "\nWhat AmiFTP documentation would you like to install?\n")
+(set #wheredocs "Where would you like the AmiFTP documentation you selected to be installed?")
+
+(set #byebye (cat "\nAmiFTP Install Complete!\n\n(If you wish to make your own Language Catalog "
+              "a sample 'NewCatalog.ct' can be found in the 'Catalog' directory in the archive.)\n\n"
+))
+(set #classact "\n\n\nThe following is the default Install/Update Installer\n\nProcedure for placing ClassAct on your System.")
+(set #updateinstaller "\nJust to let you know ESCOM AG has released a new version of the installer program.\n\n\nVersion 43.3 can be found on Aminet in:\n\n/util/misc/Installer-43_3.lha\n\n\nYou might want to upgrade soon, if you can.")
+
+;***********************************************************************
+; Spanish string by Jose Roberto Gonzalez Rocha <alu756@csi.ull.es>
+;***********************************************************************
+(if (= @language "español")
+ (
+  (set #about (cat "\n\nBienvenido a\n\nAmiFTP " amiftpver "\n\n©1995, 1996 por\n\nMagnus Lilja\n\nlilja@lysator.liu.se") )
+  (set #whattcp "\nPor favor, seleccione el paquete de red que utilize.\n")
+  (set #whereamiftp "¿Dónde desea instalar AmiFTP?. ¡No será creado ningún directorio! Si huy una copia de AmiFTP ahí, el instalador hará una copia de seguridad.")
+  (set #backuptoXXX "Copia de seguridad al fichero llamado 'AmiFTP")
+  (set #copyover "Copiar sobre la versión antigua")
+  (set #amiftpfound "\nEl Instalador ha encontrado una copia de AmiFTP actualmente instalada. ¿Qué quiere hacer?\n")
+  (set #newicon "\n¿Desea copiar sobre el icono de AmiFTP desde el archivo? Si tiene algún Tipo de Herramienta actualmente puesto debería seleccionar no.\n")
+  (set #nonewicon  "No - Tipos de Herramientas actualmente puestos.")
+  (set #yesnewicon "Sí - Copiar sobre el icono.")
+  (set #whatcat "\nSeleccione el catálogo de lenguaje de AmiFTP que desea instalar.\n")
+  (set #wherecat "\n¿Dónde desea instalar el catálogo de lenguaje de AmiFTP? Por defecto es Locale:Catalogs/")
+  (set #catmore "\n¿Desea instalar otro catálogo de lenguaje de AmiFTP?\n")
+  (set #yes " Sí")
+  (set #no " No")
+  (set #catnofind "No puedo encontrar este catálogo en este archive de AmiFTP. Podría necesitar un archivo actualizado o más reciente de AmiFTP del sitio de soporte.")
+  (set #otherdir "Otro Directorio")
+  (set #instdefprefs "Sí - Instalar el fichero ejemplo de ajustes")
+  (set #instdefprefsn "No  - No instalar el fichero ejemplo de ajustes")
+  (set #instprefsfile "El instalador no encontró el fichero AmiFTP.Prefs en:\n")
+  (set #wouldprefs "\n¿Le gustaría instalar el fichero ejemplo de ajustes?")
+  (set #putprefs "\n¿Dónde desea instalar el fichero ejemplo de ajustes AmiFTP.Prefs?\n")
+  (set #whatdocs "\n¿Qué documentación de AmiFTP desea instalar?\n")
+  (set #wheredocs "¿Dónde desea instalar la documentación que ha seleccionado?")
+
+  (set #byebye (cat "\n¡Instalación de AmiFTP Completa!\n\n(Si desea hacer su propio Catálogo de Lenguaje "
+                    "puede encontrar un fichero ejemplo 'NewCatalog.ct' en el directorio 'Catalog' en el archivo.)\n\n"
+  ))
+  (set #classact "\n\n\nA continuación viene el procedimiento de\ninstalación estándar de Instalación/Actualización\npara colocar ClassAct en su sistema.")
+  (set #updateinstaller "\nLe informamos de que ESCOM AG ha lanzado una nueva veri¢n del programa instalador.\n\nLa versi¢n 43.3 puede ser encontrada en Aminet en:\n\n/util/misc/Installer-43_3.lha\n\nDeber¡a actualizarse lo antes posible.")
+ )
+)
+
+;********************************************************************
+; Hello
+;********************************************************************
+(message #about)
+(welcome) 
+
+;********************************************************************
+; What Networking Package
+;********************************************************************
+(set guesspackage 4) 
+
+(if (<> (getassign "Inet") "")
+ (
+   (set guesspackage 1)
+   (if (exists "Inet:libs/inet.library")
+     (if (> (/ (getversion "Inet:libs/inet.library") 65536) 6)  (set guesspackage 2) )
+   )
+
+   ;(if (exists "ENV:TCPIP/TCPIPPath")
+   ;   (
+   ;    (set cprpath (getenv "ENV:TCPIP/TCPIPPath"))
+   ;    (if (= cprpath (getassign "Inet")) (set guesspackage 3)) 
+   ;   )
+   ;)
+
+ )
+)
+
+(if (<> (getassign "AmiTCP") "") (set guesspackage 0))
+(if (= guesspackage 0)  (set TCP 0)   (set TCP 1)  )
+
+(if (= guesspackage 0) ( (set Package "AmiTCP:") ) (set #tcpack "AmiTCP (3.0b2, 4.x)") ) 
+(if (= guesspackage 1) ( (set Package "Inet:") )   (set #tcpack "AS225 R2") ) 
+(if (= guesspackage 2) ( (set Package "Inet:") )   (set #tcpack "I-Net 225") )  
+(if (= guesspackage 3) ( (set Package "Inet:") )   (set #tcpack "CPR TCP/IP") )
+(if (= guesspackage 4) ( (set Package "Inet:") )   (set #tcpack "MultiLink (Mlink)") )
+
+;********************************************************************
+; Ask where to put AmiFTP 
+;********************************************************************
+(set amiftpdir (askdir (prompt (cat #whereamiftp " "  "" ))
+		       (help   (cat #whereamiftp " "  "" ))
+     		       (default Package)
+                )  
+)
+
+
+(set where amiftpdir)
+(set @default-dest where)
+
+;********************************************************************
+; Check for old & backup
+;********************************************************************
+(if (exists (tackon where "AmiFTP")) 
+  (
+      (set vernum1 (getversion (tackon where "AmiFTP") ))
+      (set ver1 (/ vernum1 65536)) (set rev1 (- vernum1 (* ver1 65536) ) )
+      (set amiftpver_old (cat ver1 "." rev1))
+
+      (set keeper  (askchoice (choices  (cat #backuptoXXX amiftpver_old "'")  #copyover)
+                     (prompt #amiftpfound)
+	             (help   #amiftpfound)
+                     (default 0)
+	           )
+      )    
+
+
+      (if (= keeper 0)
+         (copyfiles (source (tackon where "AmiFTP"))
+                     (dest where) 
+                     (infos)
+                     (newname (cat "AmiFTP" amiftpver_old))
+         )
+      )          
+
+    
+  )
+)
+
+;********************************************************************
+; Copy over correct AmiFTP and Icon if wanted
+;********************************************************************
+   (copyfiles (source "AmiFTP")
+              (dest amiftpdir) 
+              (if (= keeper 1) (infos) )
+              (optional "askuser" "force" "nofail")
+   )
+
+
+
+(if (= keeper 0) 
+  (
+   (set newicon (askchoice (choices #nonewicon #yesnewicon)
+                           (prompt #newicon)
+	                   (help   #newicon)
+                           (default 0)
+	        )
+   )
+   
+   (if (= newicon 1) (copyfiles (source "AmiFTP.info") (dest amiftpdir) (optional "nofail") ))
+
+
+  )
+
+)
+
+;********************************************************************
+; Select and copy over Catalog
+;********************************************************************
+(set XX 0) (set lan 0)
+
+(foreach "Catalogs" "#?"
+ (
+  (set XX (+ XX 1)) 
+  (textfile (dest (cat "ENV:i.høld." XX)) (append @each-name) ) 
+  (if (= lanfound @each-name) (set lan XX))
+
+  (if (= (patmatch "#?.c#?" @each-name) 1) 
+     ( (delete (cat "ENV:i.høld." XX)) (set XX (- XX 1))  )
+  )
+
+ )
+)
+
+(set l1 "N/A") (set l2 "N/A") (set l3 "N/A") (set l4 "N/A") (set l5 "N/A")
+(set l6 "N/A") (set l7 "N/A") (set l8 "N/A") (set l9 "N/A") (set l10 "N/A")
+(set l11 "N/A") (set l12 "N/A") (set l13 "N/A") (set l14 "N/A") (set l15 "N/A") 
+
+(set l0 "English")
+(if (> (exists ("ENV:i.høld.1")) 0)   (set l1 (getenv "ENV:i.høld.1")) )
+(if (> (exists ("ENV:i.høld.2")) 0)   (set l2 (getenv "ENV:i.høld.2")) )
+(if (> (exists ("ENV:i.høld.3")) 0)   (set l3 (getenv "ENV:i.høld.3")) )
+(if (> (exists ("ENV:i.høld.4")) 0)   (set l4 (getenv "ENV:i.høld.4")) )
+(if (> (exists ("ENV:i.høld.5")) 0)   (set l5 (getenv "ENV:i.høld.5")) )
+(if (> (exists ("ENV:i.høld.6")) 0)   (set l6 (getenv "ENV:i.høld.6")) )
+(if (> (exists ("ENV:i.høld.7")) 0)   (set l7 (getenv "ENV:i.høld.7")) )
+(if (> (exists ("ENV:i.høld.8")) 0)   (set l8 (getenv "ENV:i.høld.8")) )
+(if (> (exists ("ENV:i.høld.9")) 0)   (set l9 (getenv "ENV:i.høld.9")) )
+(if (> (exists ("ENV:i.høld.10")) 0) (set l10 (getenv "ENV:i.høld.10")) )
+(if (> (exists ("ENV:i.høld.11")) 0) (set l11 (getenv "ENV:i.høld.11")) )
+(if (> (exists ("ENV:i.høld.12")) 0) (set l12 (getenv "ENV:i.høld.12")) )
+(if (> (exists ("ENV:i.høld.12")) 0) (set l13 (getenv "ENV:i.høld.13")) )
+(if (> (exists ("ENV:i.høld.14")) 0) (set l14 (getenv "ENV:i.høld.14")) )
+(if (> (exists ("ENV:i.høld.15")) 0) (set l15 (getenv "ENV:i.høld.15")) )
+(if (> (exists ("ENV:i.høld.16")) 0) (set l15 (getenv "ENV:i.høld.16")) )
+(run "delete env:i.høld.#?")
+
+(procedure anothercat
+
+(set catalog (askchoice (choices l0 l1 l2 l3 l4 l5 l6 l7 l8 l9 l10)            
+                        (prompt #whatcat)
+	                (help   #whatcat)
+                        (default lan)
+             )
+)
+
+(if (= catalog 0)  (set #lcat l0))  (if (= catalog 2)  (set #lcat l2))  (if (= catalog 3)  (set #lcat l3))  
+(if (= catalog 4)  (set #lcat l4))  (if (= catalog 5)  (set #lcat l5))  (if (= catalog 5)  (set #lcat l5))
+(if (= catalog 6)  (set #lcat l6))  (if (= catalog 7)  (set #lcat l7))  (if (= catalog 8)  (set #lcat l8))  
+(if (= catalog 9)  (set #lcat l9))  (if (= catalog 10) (set #lcat l10)) (if (= catalog 11) (set #lcat l11))
+(if (= catalog 12) (set #lcat l12)) (if (= catalog 13) (set #lcat l13)) (if (= catalog 14) (set #lcat l14)) 
+(if (= catalog 15) (set #lcat l15)) (if (= catalog 16) (set #lcat l16))
+
+
+(if (AND (<> catalog 0) (<> #lcat "N/A"))
+ (
+  (if (> (exists (cat "Catalogs/" #lcat "/AmiFTP.catalog")) 0)
+    (
+        (set wherecat  (askchoice (choices (tackon where (cat "Catalogs/" #lcat)) (cat "Locale:Catalogs/" #lcat) )
+                                  (prompt (cat #wherecat (tackon where (cat "Catalogs/" #lcat)) "\n"))
+	  	                  (help   #wherecat)
+     		                  (default 0)
+                       )  
+        )
+
+      (if (= wherecat 1)
+        (
+         (if (< (exists "Locale:") 2) ( (makedir "sys:Locale") (makeassign "Locale" "sys:Locale") ) )
+         (if (< (exists "Locale:Catalogs") 2) (makedir "sys:Locale/Catalogs") )
+         (if (< (exists (cat "Locale:Catalogs/" #lcat)) 2) (makedir (cat "sys:Locale/Catalogs/" #lcat)) )
+         (copylib (source (cat "Catalogs/" #lcat "/AmiFTP.catalog")) (dest (cat "sys:Locale/Catalogs/" #lcat)) )
+        )
+  
+        (
+         (if (< (exists (tackon where "Catalogs")) 2) (makedir (tackon where "Catalogs")) )
+         (if (< (exists (tackon where (cat "Catalogs/" #lcat)) ) 2) (makedir (tackon where (cat "Catalogs/" #lcat)) ) )
+         (copylib (source (cat "Catalogs/" #lcat "/AmiFTP.catalog")) (dest (tackon where (cat "Catalogs/" #lcat)) ) (optional "nofail") )
+        )
+      )
+
+    )
+
+    (message (cat "\nCatalogs/" #lcat "/AmiFTP.catalog\n\n" #catnofind))
+  )
+
+ )
+)
+); procedure anothercat
+
+
+(while (= NoCat 0)
+  (anothercat)
+  (set NoCat   (askchoice (choices #yes #no)
+                          (prompt #catmore)
+                          (help   #catmore)
+                          (default 1)
+               )
+  )
+)
+
+
+
+;********************************************************************
+; See if a Config file is needed
+;********************************************************************
+(if (> (exists (tackon where "AmiFTP.prefs")) 0) (set prefsfound 1) )
+(if (> (exists ("env:HOME")) 0)
+  (set home (getenv "HOME")) 
+  (set home " ")
+)
+
+(set ahome (getassign "HOME")) 
+
+(if (<> home " ") (if (> (exists (tackon home "AmiFTP.prefs")) 0)  (set prefsfound 1) ) )
+(if (<> ahome "") (if (> (exists (tackon ahome "AmiFTP.prefs")) 0)  (set prefsfound 1) ) )
+(if (> (exists "ENV:AmiFTP.prefs") 0) (set prefsfound 1) )
+
+(set #prefscurr where)  (set #prefshome home) 
+(set #prefsuser ahome)  (set #prefsenv "ENV:")
+
+(if (= prefsfound 0)
+ (
+   (set defprefs (askchoice (choices  #instdefprefs #instdefprefsn )
+                            (prompt (cat #instprefsfile  #prefscurr "\n" #prefshome "\n" #prefsuser "\n" #prefsenv "\n" #wouldprefs))
+	                    (help   (cat #instprefsfile  #prefscurr "\n" #prefshome "\n" #prefsuser "\n" #prefsenv "\n" #wouldprefs))
+                            (default 0)
+                 )
+   )
+
+
+   (if (= defprefs 0)
+    (
+     (set putprefs (askchoice (choices  "ENV: & ENVARC:" where home ahome)
+                             (prompt #putprefs)
+	                     (help   #putprefs)
+                             (default 0)
+                 )
+     )
+
+     (if (= 0 putprefs) 
+        (
+         (copyfiles (source "AmiFTP2.prefs") (dest "ENV:") (newname "AmiFTP.prefs") )
+         (copyfiles (source "AmiFTP2.prefs") (dest "ENVARC:") (newname "AmiFTP.prefs") )
+        )  
+     )
+
+     (if (= 1 putprefs) (copyfiles (source "AmiFTP2.prefs") (dest where) (newname "AmiFTP.prefs") ) )
+     (if (= 2 putprefs) (copyfiles (source "AmiFTP2.prefs") (dest home) (newname "AmiFTP.prefs") ) )
+     (if (= 3 putprefs) (copyfiles (source "AmiFTP2.prefs") (dest ahome) (newname "AmiFTP.prefs") ) )
+
+    )
+   )
+
+ )
+)
+
+;********************************************************************
+; Ask and and copy docs if wanted!
+;********************************************************************
+(set docs (askoptions (choices " AmiFTP.guide" " ReadMe" " History")
+		      (prompt #whatdocs)
+                      (help #whatdocs)
+	              (default 7)
+	  )
+)
+
+(if (<> docs 0)
+ (
+   (set docsdir (askdir (prompt #wheredocs)
+		       (help   #wheredocs)
+     		       (default amiftpdir)
+                )  
+   )
+
+   (if (IN docs 0) (copyfiles (source "AmiFTP.guide") (dest docsdir) (infos) (optional "nofail") ) )
+   (if (IN docs 1) (copyfiles (source "ReadMe") (dest docsdir) (infos) (optional "nofail") ) )
+   (if (IN docs 2) (copyfiles (source "HISTORY") (dest docsdir) (infos) (optional "nofail") ) )
+
+   (if (exists "REGISTER")
+     (copyfiles (source "REGISTER") (dest docsdir) (infos) (optional "nofail") )
+   ) 
+
+ )
+)
+
+
+;********************************************************************
+; ClassAct Install/Update Default Procedure by:
+; Osma Ahvenlampi - Osma.Ahvenlampi@hut.fi
+;********************************************************************
+(working #classact)
+;-----------------------------------------------------------------------------/
+;                                                                            /
+;---------------------------------------------------------------------------/
+
+
+; $VER: Install_ClassAct Update 1.1 (5.11.96)
+; Description: Installer script for ClassAct Class Updates
+
+(set cpu (database "cpu"))
+(set cpu020 (and (<> cpu "68000") (<> cpu "68010")))
+(set v39 (>= (/ (getversion "exec.library" (resident)) 65536) 39))
+
+(set #welcome "This program will install the ClassAct shared gadget classes on your system.\n")
+
+(complete 0)
+
+(if (< (/ (getversion "exec.library" (resident)) 65536) 37)
+    (abort "This program requires OS 2.04 or better.")
+)
+
+;(welcome #welcome)
+
+
+; ---------------------------------------------------------------------------
+
+; ************* PLEASE COPY THIS PROCEDURE ALONG WITH THE STRINGS IT USES 
+; ************* TO THE INSTALLER SCRIPT OF YOUR CLASSACT APPLICATION.
+; ************* IT WILL TAKE CARE OF INSTALLING THE CLASSACT CLASSES YOU
+; ************* PROVIDED WITH YOUR APPLICATION TO THE USER'S SYSTEM.
+
+; $VER: ClassAct_Install 1.8 (12.10.96) by Osma Ahvenlampi
+
+(set cpu (database "cpu"))
+(set cpu020 (and (<> cpu "68000") (<> cpu "68010")))
+(set v39 (>= (/ (getversion "exec.library" (resident)) 65536) 39))
+
+; percentage of the size of included ClassAct classes versus the whole
+; distribution (ie. total "complete" percentage after ClassAct is installed)
+
+(set classact-complete 50)
+
+; ClassAct installer scripts
+(if (= @language "español") ; SPANISH CLASSACT INSTALLATION STRINGS 
+(
+(set #classdest-prompt "Por favor, seleccione el directorio donde desea instalar las clases de ClassAct.\n(Vea la ayuda para más detalles)")
+(set #classdest-help (cat "ClassAct es un kit de interface gráfica consistente es clases compartidas BOOPSI.\n\nAlgunos programas requieren que algunas o todas de las clases de ClassAct estén instaladas en su sistema. "
+
+	(if v39 (cat "El OS 3.0 tiene un directorio estándar para las clases BOOPSI: el directorio SYS:Classes. Se recomienda que instale ClassAct ahí.")
+			(cat "El OS 2.0 no tiene un sitio estándar para las clases BOOPSI residentes en disco. En el OS 3.0 esas clases son almacenadas en el directorio SYS:Classes. Se recomienda que cree este directorio e instale ClassAct ahí.\nEste directorio debe ser añadido a la asignación de LIBS:. Esto puede ser hecho colocando el comando\nAssign >NIL: LIBS: SYS:Classes ADD\nal User-Startup. Este instalador lo hará por usted.")
+		)
+	)
+
+)
+
+(set #classes-020 "¿Quiere usar la versión optimizada para OS 3.0 y 020 de ClassAct?")
+(set #help-020 "Algunas librerías de ClassAct tienen versiones optimizadas para el uso en máquinas con OS 3.0 y 020 o superior. Si su Amiga es una de tales máquinas debería instalar estas. Las versiones 68000/2.0 también funcionarán, pero son ligeramente más lentas")
+(set #noclasses-message "El subdirectorio que seleccionó para sus clases ClassAct no forma parte de la asignación de LIBS:.\n\nEs necesario añadir esta asignación para que las clases puedan ser localizadas adecuadamente.")
+(set #creating-dir "Creando directorio ")
+(set #usbackup-prompt "Ahora se hará una copia de seguridad del User-Startup.")
+(set #usbackup-help "Este instalador hará ahora una modificación en el User-Startup. Antes de hacer esto se hará una copia de seguridad del User-Startup en S:User-Startup.old")
+(set #adding-1 "Añadiendo ")
+(set #adding-2 "a la asignación de LIBS:\n")
+(set #adding-help "Esto es necesario para que las clases puedan ser encontradas.")
+(set #junod-button "Parece que tiene el último button.gadget de Comodore ('V42') instalado en su sistema.\n\nEl button.gadget de ClassAct es superior a este gadget y le recomendamos que lo remplace. El button.gadget de ClassAct es compatible con el de Commodore. ¿Desea hacer una copia de seguridad del gadget de Commodore y remplazarlo por la versión de ClassAct?")
+(set #junod-backed "Se ha hecho una copia de seguridad del button.gadget 'V42' de Commodore con el nombre button.gadget.v42.\n\nEl button.gadget de ClassAct será instalado en su lugar.")
+(set #junod-kept "El button.gadget 'V42' de Commodore no fué remplazado con la versión superior de ClassAct.\n\nLos programas que dependan de la disponibilidad de las características de la versión de ClassAct funcionarán mal probablemente")
+
+;(set #caprefs-message "CAPrefs es una pequeña utilidad que inicializa algunas preferencias del usuario para las aplicaciones ClassAct. Estas incluyen el estilo de resaltado (Fino/GadTools/Xen), relleno de ventanas, y detalles de las etiquetas de grupo.\n\nPor favor, use las preferencias de interface de ClassAct en su cajón de sistema 'Prefs' .\n\n")
+
+(set #caprefs-message "ClasAct tiene varios aspectos configurables por el usuario que afectan a la apariencia de las interfaces ClassAct.\n\nEstos ajustes pueden ser modificados usando la herramienta de preferencias de ClassAct que será instalada en su cajón 'Prefs'.\n\nUna pequeña herramienta, CAPrefs, será añadida a su user-startup para cargar los ajustes al arrancar.")
+(set #caprefs-startup-1 "Añadiendo el comando\n\n")
+(set #caprefs-startup-2 "\n\nA su s:User-Startup.")
+(set #decompressing-classact "Distribución de Classact comprimida detectada\n\nDescomprimiendo a RAM:")
+(set #deleteing-cltmp "Borrando ficheros temporales")
+
+)
+
+; ENGLISH CLASSACT INSTALLATION STRINGS
+
+(
+(set #classdest-prompt "Please select the directory where you want the ClassAct classes installed.\n(See help for details)")
+(set #classdest-help (cat "ClassAct is a GUI toolkit consisting of shared BOOPSI classes.\n\nSome programs require some or all of the ClassAct classes installed on your system. "
+
+    (if v39 (cat "OS 3.0 has a standard directory for BOOPSI classes, the SYS:Classes directory. It is recommended that you install ClassAct there.")
+            (cat "OS 2.0 does not have a standard place for disk resident BOOPSI classes. On OS 3.0 these classes are stored in the SYS:Classes directory. It is recommended that you create this directory and install ClassAct there.\nThis directory must be added in the LIBS: assign. This can be done by placing the command\nAssign >NIL: LIBS: SYS:Classes ADD\nto User-Startup. This installer will do this for you.")
+        )
+    )
+
+)
+
+(set #classes-020 "Do you want to use the OS 3.0, 020 optimised version of ClassAct?")
+(set #help-020 "Some ClassAct libraries have versions optimised for use on 020 or better equipped OS 3.0 or later machines. If your Amiga is such equipped, you should install these. The 68000/2.0 versions will also work, but are slightly slower.")
+(set #noclasses-message "The directory you selected for your ClassAct classes is not a part of the LIBS: assign.\n\nIt is necessary to add this assign so that the classes will be found properly.")
+(set #creating-dir "Creating directory ")
+(set #usbackup-prompt "User-Startup will now be backed up.")
+(set #usbackup-help "This installer will next make a modification in User-Startup. Before doing this the old User-Startup will be backed up to S:User-Startup.old")
+(set #adding-1 "Adding ")
+(set #adding-2 " to LIBS: assign\n")
+(set #adding-help "This is necessary so that the custom classes can be found.")
+(set #junod-button "It seems you have a late Commodore 'V42' button.gadget installed on your system.\n\nClassAct's button.gadget is far more capable than this gadget, and we recommend that you replace it. The ClassAct button.gadget is backwards compatible to the Commodore gadget. Do you wish to back up the Commodore gadget and replace it with the ClassAct version?")
+(set #junod-backed "The Commodore 'V42' button.gadget has been backed up with the name button.gadget.v42.\n\nThe ClassAct button.gadget will be installed in its place.")
+(set #junod-kept "The Commodore 'V42' button.gadget was not replaced with the more capable ClassAct version.\n\nPrograms depending on the availability of ClassAct-only features will be likely to work wrong.")
+
+;(set #caprefs-message "CAPrefs is a small utility that sets some user preferences for ClassAct applications. These include the bevel style (Thin/Gadtools/Xen), window backfills, and group label details.\n\nPlease use the ClassAct GUI prefs editor to alter the default settings provided. ClassAct prefs will be installed in your system Prefs drawer.\n\n")
+
+(set #caprefs-message "ClassAct has several user-configurable aspects that affect the look of ClassAct interfaces.\n\nThese settings can be changed using the ClassAct preferences tool that will be installed in yout Prefs drawer.\n\nA small tool, CAPrefs, will be added to your user-startup to load the settings on reboot.")
+(set #caprefs-startup-1 "Adding the command\n\n")
+(set #caprefs-startup-2 "\n\nTo your s:User-Startup.")
+(set #decompressing-classact "Compressed ClassAct distribution detected\n\nDecompressing to RAM:")
+(set #deleting-cltmp "Deleting temporary files")
+
+)
+)
+
+(procedure install-classact ; call this procedure to copy the classes included in the Classes directory
+; in your distribution dir.
+
+	(if (exists "ClassAct.lha")	; ClassAct is compressed - need to decompress first
+		(						; Distribution includes LHEX
+			(working (cat #decompressing-classact))
+
+; ClassAct.lha contains paths/files "Classes/*", "C/CheckAssign", "Prefs/CAPrefs" and "Prefs/ClassAct"
+
+			(run "lhex -aqfw=ram:ClassAct/ x ClassAct.lha")
+			(set @classact-source "RAM:ClassAct")
+		)
+		(set @classact-source (pathonly @icon))
+	)
+	(if (exists "ClassAct.lzx")	; ClassAct is compressed - need to decompress first
+		(						; Distribution includes UNLZX
+			(working (cat #decompressing-classact))
+
+; ClassAct.lzx contains paths/files "Classes/*", "C/CheckAssign",  "Prefs/CAPrefs" and "Prefs/ClassAct"
+
+			(run "unlzx -amq x ClassAct.lzx ram:ClassAct/")
+			(set @classact-source "RAM:ClassAct")
+		)
+		(set @classact-source (pathonly @icon))
+	)
+
+	(if (exists (tackon @classact-source "Classes")) ; The archive contains a ClassAct library update.
+	(
+		(set comp-dest  (/ (* classact-complete 2) 10))
+		(set comp-libs  (/ (* classact-complete 3) 10))
+		(set comp-dirs  (/ (* classact-complete 4) 10))
+		(set comp-junod (/ (* classact-complete 5) 10))
+		(set comp-020   (/ (* classact-complete 6) 10))
+		(set comp-gad   (/ (* classact-complete 7) 10))
+		(set comp-im    (/ (* classact-complete 8) 10))
+		(set comp-prefs (/ (* classact-complete 9) 10))
+	
+		; has the user installed ClassAct in CLASSACT: ?
+		(set @classact-dest (getassign "CLASSACT" "A"))
+		(if (= @classact-dest "") (set @classact-dest "SYS:Classes"))
+		
+		; is ClassAct already in SYS:Classes ?
+		(if (or (not (exists (tackon @classact-dest "Gadgets/layout.gadget") (noreq)))
+		        (= @user-level 2))
+		    ; no, ask where it should be placed
+		    (set @classact-dest
+		        (askdir
+		            (prompt #classdest-prompt)
+		            (help #classdest-help)
+		            (default @classact-dest)
+		            (newpath)
+		        )
+		    )
+		)
+		
+		(complete comp-dest)
+		
+		(if (<> (run (cat (tackon @classact-source "C/CheckAssign") " LIBS: " @classact-dest)) 0)
+		    (
+		        (message #noclasses-message)
+		        (if (not (exists @classact-dest))
+			        (makedir @classact-dest (prompt (cat #creating-dir @classact-dest)))
+			    )
+		        (set @addassign (cat "Assign >NIL: LIBS: " @classact-dest " ADD\n"))
+		        (startup "CLASSACT"
+		        	(command @addassign)
+		            (prompt (cat #adding-1 @classact-dest #adding-2))
+		            (help #adding-help)
+		        )
+		        (run (@addassign))
+		    )
+		)
+		
+		(complete comp-libs)
+		
+		(set @classact-gadgets (tackon @classact-dest "Gadgets"))
+		(set @classact-images (tackon @classact-dest "Images"))
+		
+		(if (not (exists @classact-gadgets (noreq)))
+		    (makedir @classact-images
+		        (prompt (cat #creating-dir @classact-gadgets))
+		    )
+		)
+		
+		(if (not (exists @classact-images (noreq)))
+		    (makedir @classact-images
+		        (prompt (cat #creating-dir @classact-images))
+		    )
+		)
+		
+		(complete comp-dirs)
+		
+		(if (exists "SYS:Classes/Gadgets/button.gadget")
+		    (if (and (= 2752514 (getversion "SYS:Classes/Gadgets/button.gadget"))
+		    		(= 4868 (getsize "SYS:Classes/Gadgets/button.gadget")))
+		        (if (askbool (prompt #junod-button) (help @askbool-help) (default 1))
+		            (
+		                (rename "SYS:Classes/Gadgets/button.gadget" "SYS:Classes/Gadgets/button.gadget.v42")
+		                (message #junod-backed)
+		            )
+		            (message #junod-kept)
+		        )
+		    )
+		)
+		
+		(complete comp-junod)
+		
+		(if (and (and cpu020 v39) (exists (tackon @classact-source "Classes/Gadgets/layout.gadget.020")))
+			(set classes-020 (askbool (prompt #classes-020) (help #help-020) (default 1)))
+			(set classes-020 0)
+		)
+
+		(complete comp-020)
+		
+		(set @source-path (tackon @classact-source "Classes/Gadgets"))
+		(foreach @source-path "#?.gadget"
+			(
+				(set thislib (tackon @source-path @each-name))
+				(if (and classes-020 (exists (cat thislib ".020")))
+					(set thislib (cat thislib ".020"))
+				)
+			    (copylib (source thislib)
+			        (dest @classact-gadgets)
+			        (newname @each-name)
+			        (prompt (cat #installing @each-name))
+			        (help #classdest-help)
+			        (optional "force" "askuser")
+			    )
+		    )
+		)
+		
+		(complete comp-gad)
+		
+		(set @source-path (tackon @classact-source "Classes/Images"))
+		(foreach @source-path "#?.image"
+			(
+				(set thislib (tackon @source-path @each-name))
+				(if (and classes-020 (exists (cat thislib ".020")))
+					(set thislib (cat thislib ".020"))
+				)
+			    (copylib (source thislib)
+			        (dest @classact-images)
+			        (newname @each-name)
+			        (prompt (cat #installing @each-name))
+			        (help #classdest-help)
+			        (optional "force" "askuser")
+			    )
+		    )
+		)
+		
+		(complete comp-im)
+
+		(set @source-path (tackon @classact-source "Classes"))
+		(foreach @source-path "#?.class"
+			(
+				(set thislib (tackon @source-path @each-name))
+				(if (and classes-020 (exists (cat thislib ".020")))
+					(set thislib (cat thislib ".020"))
+				)
+			    (copylib (source thislib)
+			        (dest @classact-dest)
+			        (newname @each-name)
+			        (prompt (cat #installing @each-name))
+			        (help #classdest-help)
+			        (optional "force" "askuser")
+			    )
+		    )
+		)
+	)
+	)
+	(if (exists (tackon @classact-source "Prefs/ClassAct")) ; The archive contains ClassAct prefs tools
+	(
+		(message #caprefs-message)
+		
+		(copylib (source (tackon @classact-source "Prefs/CAPrefs")) 
+			(dest "C:") 
+			(prompt (cat #installing "CAPrefs"))
+		)
+		(copylib (source (tackon @classact-source "Prefs/ClassAct"))
+			(dest "SYS:Prefs")
+			(prompt (cat #installing "ClassAct Prefs"))
+			(infos)
+		)
+		
+		(complete comp-prefs)
+		
+		(if (not (exists "ENVARC:ClassAct" (noreq)))
+			(
+				(makedir "ENVARC:ClassAct"
+					(prompt (cat #creating-dir "ENVARC:ClassAct"))
+				)
+				(textfile (dest "ENVARC:ClassAct/ClassAct")
+					(append "")
+				)
+			)
+		)
+		(set caprefs-cmd "C:CAPrefs >NIL:\n")
+
+		(startup "CAPREFS"
+			(prompt (cat #caprefs-startup-1 caprefs-cmd #caprefs-startup-2))
+			(help #caprefs-message)
+			(command caprefs-cmd)
+		)
+	)
+	)
+	
+	(if (exists "ClassAct.lha")
+		(delete "RAM:ClassAct" (all)
+			(prompt #deleting-cltmp)
+		)
+	)
+
+	(complete classact-complete) )
+
+; ************** END OF CLASSACT INSTALL PROCEDURE. COPY THE BLOCK ABOVE
+; ************** TO YOUR CLASSACT APPLICATION INSTALLER.
+
+; ---------------------------------------------------------------------------
+
+
+
+;-----------------------------------------------------------------------------/
+;                                                                            /
+;---------------------------------------------------------------------------/
+
+;Call ClassAct Procedure _IF_ set todo so!
+(if (= install-CA 1)
+   (install-classact)
+)
+
+;********************************************************************
+; Check on New installer 
+;********************************************************************
+(set InstallerVer 0)
+(set vernum1 @installer-version) (set ver1 (/ vernum1 65536)) 
+(set rev1 (- vernum1 (* ver1 65536) ) ) (set InstallerVer (cat ver1 "." rev1))
+(set current_installer "43.3")
+(if (< InstallerVer current_installer) (message #updateinstaller) )
+
+;********************************************************************
+; End Bye 
+;********************************************************************
+(set @default-dest where)
+(exit #byebye)

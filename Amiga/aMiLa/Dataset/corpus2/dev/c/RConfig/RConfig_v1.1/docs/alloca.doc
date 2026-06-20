@@ -1,0 +1,132 @@
+TYPE
+    alloca(R) - Memory Allocation
+
+NAME
+    alloca - allocate a block of auto-freeing system memory
+
+SYNOPSIS
+    #include <alloca.h>
+    void *alloca(long *var, size_t _size);      /* __SAFE_ALLOCA */
+
+    #include <alloca.h>
+    void *alloca(size_t _size);                 /* __RISKY_ALLOCA */
+
+DESCRIPTION
+    alloca() is an Amiga (machine dependent) implementation of the Unix
+    alloca() function, allocating space from the system heap (placing only
+    control information on the run-time stack) which will be automatically
+    reclaimed upon the procedure's exit.
+
+NOTES
+    alloca() only maintains an explicit list of alloca() allocated blocks
+    if setjmp(),longjmp() are used.  Otherwise, an implicit linked list
+    of stack frames using an actual procedure stack is used.
+
+    alloca() "detours" the calling procedure's exit to a clean-up
+    function.  There are two ways of performing the detour--one
+    risky and one safe.  It's up to you to weigh the advantages/
+    disadvantages, and decide which to use.  Those "features" common
+    to both implementations are marked "(common)".  Please refer to
+    the source for additional information.
+
+
+    The RISKY Version
+    ~~~~~~~~~~~~~~~~~
+        Advantage(s)
+        ~~~~~~~~~~~~
+        o   Syntax (call style) follows Unix convention, and simplifies
+            porting Unix programs which depend on this function.
+        o   Automatically reclaim temporary storage upon a procedure's
+            exit. (common)
+        o   Net effect is no stack usage. (common)
+        o   Compatible with RConfig's setjmp()/longjmp(). (common)
+
+
+        Disadvantage(s)
+        ~~~~~~~~~~~~~~~
+        o   Always assumes that a5 points to the top of the current stack
+            frame.  If a5 gets munged (or is invalid), the results are
+            unpredictable.
+        o   If a5 points to a higher stack frame, instead of the current
+            one, automaticatic reclamation of alloca()-memory is delayed,
+            until control returns to the higher procedure, and it exits.
+
+
+        Technical Notes
+        ~~~~~~~~~~~~~~~
+        As stated previously, there are certain conditions required for
+        alloca.a68 to work (or work efficiently).
+
+        o   register a5 should be valid and point to the top of a stack
+            frame when alloca() is called
+        o   it is desirable to have link..unlk pairs generated even
+            when there are no local variables (disable -sn optimization)
+
+
+    The SAFE Version
+    ~~~~~~~~~~~~~~~~
+        Advantage(s)
+        ~~~~~~~~~~~~
+        o   No dependency on register a5, so you can compile with -sn
+            optimization.
+        o   Automatically reclaim temporary storage upon a procedure's exit.
+            (common)
+        o   Net effect is no stack usage. (common)
+        o   Compatible with RConfig's setjmp()/longjmp(). (common)
+
+
+        Disadvantage(s)
+        ~~~~~~~~~~~~~~~
+        o   Syntax (call style) does not follow convention (ie non-portable).
+
+
+        Technical Notes
+        ~~~~~~~~~~~~~~~
+        The macro (in alloca.h) passes the function's return address to
+        alloca()...hence, the need for a dummy parameter (if one doesn't
+        exist) in order to reference this item on the stack.
+
+
+        Usage
+        ~~~~~
+        Due to the difference in call style, this version requires some
+        code changes.  First, you must define SAFE_ALLOCA before including
+        "alloca.h".
+
+            #define __SAFE_ALLOCA
+            #include "alloca.h"
+
+        Second, alloca() is now passed the name of the calling function's
+        first parameter, and if the function has none, a dummy parameter must
+        be added.  An example:
+
+            /*
+             *  Using this "old" style declaration, Aztec cc won't
+             *  complain, unless (of course) you've prototyped it otherwise.
+             */
+            ReturnType ProcedureName( VariableOrDummyParameter )
+                int VariableOrDummyParameter;
+              {
+                YourPointerType p;
+
+                p = (YourPointerType) alloca( VariableOrDummyParameter, size );
+              }
+
+        Lastly, don't forget to link with the correct version of the object
+        code.
+
+
+SEE ALSO
+    setjmp(), longjmp(), stkchk()
+
+DIAGNOSTICS
+    If alloca() cannot allocate the requested size block, it returns a null
+    pointer.  Otherwise, a pointer to the request size block is returned.
+
+REFERENCES
+    DYNASTACK91  -  Improved stack checking code, with dynamic stack resizing.
+                    Copyright 1991 by Anthon Pang; Copyright 1986,1987 by
+                    Manx Software Systems, Inc.  December 1991.
+
+    GNUALLOC86   -  A (mostly) portable public-domain implementation of
+                    'alloca.c' included in the GNU distribution, circa 1986.

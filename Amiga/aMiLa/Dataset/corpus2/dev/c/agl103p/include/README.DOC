@@ -1,0 +1,12 @@
+
+These are header files that I put together since the real header files are
+copyrighted.  You can use the real files instead if you have access to them.
+
+The real device.h works fine.  The real gl.h would need modifications:
+
+1. The Device, Object, Tag typedef's must be removed.
+
+2. The prototypes should be replaced by: #include"usr:src/agl/prototypes.h"
+
+                                                                  Jason
+

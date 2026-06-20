@@ -1,0 +1,1718 @@
+                             .      :  .
+                           ¦.:.:.:..::.::.¦
+                           |::··    _____:!
+                           |  _____  ____ |
+                          _!  '____ |    ||
+                         / __ |    ||    ||
+                         \ /\ `--°-'`-°--'| xCz
+    _ __ _________________)\ \____C¯  l___l___________________ __ _
+                            ¯¯    `---'
+		CORSO DI ASSEMBLER - LEZIONE 10
+    - -- ----------------------------------------------------- -- -
+
+In questa lezione apprenderemo l'uso delle caratteristche piu` avanzate del
+blitter.
+
+*******************************************************************************
+*				I MINTERMS				      *
+*******************************************************************************
+
+Nella lezione 9 abbiamo detto che il blitter ci permette di effettuare
+diversi tipi di operazioni. Abbiamo anche detto che il tipo di operazione e`
+definito dai MINTERMS, che sono i bit da 0 a 7 del registro BLTCON0, ovvero
+il byte basso (detto byte LF - Logic Function) di tale registro. A seconda
+del valore che viene scritto in tali bit, cambia l'operazione realizzata dal
+blitter.
+Per esempio sappiamo che per cancellare la memoria il byte LF va settato al
+valore $00, mentre per copiare dal canale A al canale D al valore $f0.
+Questi valori non sono stati scelti a casaccio dai progettisti del blitter,
+ma seguono una logica ben precisa, che ora spiegheremo.
+Innnzitutto precisiamo che le operazioni effettuabili dal blitter sono
+operazioni LOGICHE, ovvero NOT, AND e OR, che ormai dovreste conoscere bene
+(in realta` c'e` anche chi riesce a farci operazioni aritmetiche, ma ne
+parleremo, forse, nel prossimo disco!).
+Il blitter inoltre puo` combinare diverse operazioni di questo tipo in una
+unica blittata. Ma andiamo con ordine.
+Come sapete il blitter ha 3 canali di ingresso e uno di uscita. Per il momento
+non preoccupiamoci della abilitazione o disabilitazione dei canali.
+Una blittata e` un'operazione logica che prende 3 valori in ingresso
+attraverso i 3 canali A,B,C e produce un risultato attraverso il canale D.
+Come tutte le operazioni logiche, essa viene effettuata bit-a-bit, anche se il
+blitter legge (e scrive) sempre delle word, esattamente come fa il 68000 con
+un'istruzione logica tipo AND.
+Quindi ogni bit della word in uscita viene calcolato in base ai valori dei
+corrispondenti bit delle word in ingresso.
+I 3 bit in ingresso possono dar luogo a 8 diverse combinazioni.
+Un'operazione blitter viene definita stabilendo, per ogni possibile
+combinazione dei bit in ingresso, se il risultato in uscita sara` 0 oppure 1.
+In pratica, ad ognuno degli 8 minterms (bit da 0 a 7 di BLTCON0) viene
+associata una diversa combinazione dei bit in ingresso; se il minterm vale 0,
+vuol dire che la combinazione in ingresso produce come risultato 0, se invece
+vale 1, il risultato sara` 1.
+
+Questo può essere visualizzato con una tavola di verità, come mostrato sotto.
+Sono listati i tre canali di sorgente, e i valori possibili per un singolo bit
+di ognuno. A fianco e` riportato il bit associato ad ogni combinazione.
+
+
+	A	B	C	 	posizione BLTCON0
+	-	-	-	        -----------------
+						
+	0	0	0			0
+						
+	0	0	1			1
+						
+	0	1	0			2
+						
+	0	1	1		 	3
+						
+	1	0	0			4
+						
+	1	0	1			5
+						
+	1	1	0			6
+
+	1	1	1			7
+
+		Fig. 27	MINTERMS
+
+Per esempio, se vogliamo che una blittata produca un'uscita pari a 1 quando
+l'ingresso A vale 0, il B vale 1 e il C vale 0, e che invece produca un uscita
+pari a 0 in tutti gli altri casi, dobbiamo settare a 1 il minterm 2, e azzerare
+tutti gli altri minterms. Quindi scriveremo il valore $04 nel byte LF.
+Per un altro esempio, il valore $80 (= 1000 0000 binario) in LF pone a 1 solo
+i bit della destinazione per i quali i bit corrispondenti delle sorgenti A,
+B, e C sono tutti settati a 1.
+Tutti gli altri bit della destinazione a cui corrispondono altre combinazioni
+per A, B, e C, sono azzerati.
+Questo perchè i bit dal 6 allo 0 del byte LF assumono il valore 0.
+Naturalmente e` posssibile settare a 1 piu` di un minterm contemporaneamente.
+Per esempio se poniamo LF al valore $42 (= 0100 0010 in binario) "accendiamo"
+2 minterms.
+Quindi con questo valore avremo un uscita pari a 1 in 2 casi: nel caso in cui
+A=0, B=0 e C=1 (corrispondente al bit 1 di LF) e nel caso A=1, B=1 e C=0
+(corrispondente al bit 6 di LF). Negli altri casi avremo un uscita pari a 0.
+Cerchiamo ora di capire il significato dei valori dei minterms che abbiamo
+usato per la cancellazione e la copia.
+Nel caso della cancellazione si ha LF=$00.
+Tutti i minterms valgono 0. Questo significa che per qualunque combinazione
+dei canali sorgente, viene prodotto in uscita sempre uno 0.
+In pratica qualsiasi cosa leggiamo, scriviamo sempre 0, cioe` cancelliamo (In
+realta` durante la cancellazione non leggiamo nulla perche` non abilitiamo
+i canali A, B e C, ma dobbiamo comunque mettere LF=$00, spiegheremo il perche`
+in seguito). Per eseguire una copia da A a D, poniamo, come sapete,
+LF=$F0 (=%11110000). In questo modo l'uscita vale 1 in corrspondenza di 4
+diverse combinazioni, mentre vale 0 nelle restanti 4. Come potete leggere
+nella tabella di fig. 27, le combinazioni corrispondenti ai minterms che 
+abbiamo settato a 1, sono tutte le combinazioni possibili con A=1, e allo
+stesso modo le combinazioni corrispondenti ai minterms settato a 0,
+sono quelle con A=0. Cio` significa che tutte le volte che A=1, l'uscita vale 1
+e quando invece A=0 l'uscita vale 0, indipendentemente dal valore di B e di C.
+In pratica cioe` l'uscita assume lo stesso valore del canale A, e quindi ne e`
+la copia esatta. Se volessimo invece copiare dal canale B al canale D,
+dovremmo usare un diverso valore di LF, ponendo a 1 i minterms che
+corrispondono alle combinazioni con B=1 (che come si legge nella fig.27 sono
+i minterms 2,3,6 e 7) e azzerare gli altri (minterms 0,1,4 e 5), ottenendo
+LF=$CC (=%11001100).
+Programmando opportunamente i minterms si possono fare molte operazioni con il
+blitter.
+Supponiamo per esempio di voler settare ad 1 tutti i pixel di un rettangolo
+(in pratica l'operazione inversa della cancellazione che invece setta tutti
+i bit a 0).
+Come per la cancellazione utiliziamo solo il canale di uscita.
+Quello che vogliamo e` che l'uscita sia sempre 1, per qualunque combinazione
+degli ingressi.
+Per ottenere questo risultato poniamo ad 1 tutti i minterms, ottenendo LF=$FF.
+
+Potete vedere questa operazione nell'esempio lezione10a1.s.
+
+Nell'esempio lezione10a2.s mostriamo invece l'operazione NOT.
+
+Vi rimandiamo al listato per la spiegazione.
+	     ______                                ______
+	    (:::::\`~-.     ___   /|\   ___    .-~ /:::::)
+	     `\:::::\  `\  __\\\\|||||////__ /'  /:::::/'
+	       `\-::::\_ `\.\\\\\|||||////./' _/::::-/'
+	         `--..__`\/    \\\\|////   \/ __..--'
+	                >' .--. `\   /'.--. `<
+	         _...--/ -<    |      |    >- \--..._
+	    /    \         `\()|      |()/'         /    \
+	  /||     `\|  ____. `          ' .____  |/'     ||\
+	 /|||       | ' `\       /::\       /' ` |       |||\
+	|||||\    .---. __|_.  /::::::\  ._|__ .---.    /|||||
+	|||||||-._|_   `-._  /::::::::::\  _.-'   _|_.-|||||||
+	 \|||||||||||      /::/' |::| `\::\      |||||||||||/
+	  \||||||||||     /::/   |::|   \::\     ||||||||||/
+	   `\||||||||\   (:::`---'::`---':::)   /||||||||/'
+	        /     `-._`-.::::::::::::.-'_.-'     \
+	       |              .________.              |
+	       |                                      |
+	       |                                      |
+	       |                                      |
+	        \                                    /
+	        `\                                /'
+	           `~-.________________________.-~'
+
+Passiamo ora ad un esempio di operazione a 2 operandi, per esempio l'OR.
+Vogliamo che l'uscita sia pari all'OR dei canali A e B.
+Ripensando alla tabella della verita` dell'OR, si capisce che l'uscita deve
+valere 1 in tutti i casi in cui A=1 e in tutti i casi in cui B=1.
+Come potete vedere dalla fig. 27 in totale si tratta di 6 casi che danno luogo
+a LF=$FC.
+
+L'esempio lezione10b1.s mostra appunto un operazione di OR, mentre l'esempio
+lezione10b2.s effettua un operazione di AND.
+
+Un altro modo per calcolare il byte LF che realizza una  particolare operazione
+è attraverso l'uso di diagrammi di Venn:
+
+		     ______  0 ______
+		    /	   \  /      \
+		   /	    \/	      \
+		  /	    /\	       \
+		 /   A	   /  \     B	\
+		|    -	  |    |    -	 |
+		|	  |  6 |	 |
+		|	4 |____| 2	 |
+		|	 /|    |\	 |
+		|	/ |  7 | \	 |
+		 \     /   \  /   \	/
+		  \   /  5  \/  3  \   /
+		   \ |	    /\	    | /
+		    \|_____/  \_____|/
+		     |		    |
+		     |	    1	    |
+		     |		    |
+		      \		   /
+		       \     C	  /
+		        \    -   /
+		         \______/
+
+
+		Fig. 28	Diagramma di Venn
+
+Illustriamo l'uso di tale diagramma attraverso alcuni esempi
+
+
+1. Per selezionare una funzione D=A (cioè destinazione = sorgente A solamente),
+   selezionare solo i minterms che sono totalmente inclusi dal cerchio A nella
+   figura sopra. Questa è la serie di minterms 7, 6, 5, e 4. Quando sono
+   scritti come una serie di 1 per i minterm selezionati e di 0 per quelli non
+   selezionati, il valore diventa:
+
+		Numero Minterm		7 6 5 4 3 2 1 0
+		Minterm selezionati	1 1 1 1 0 0 0 0
+					-----------------
+					     F   0       ossia $F0
+
+2. Per selezionare una funzione combinazione di due sorgenti, cercare i
+   minterms da entrambi dei cerchi (la loro intersezione). Per esempio, la
+   combinazione A "AND" B è rappresentato dall'area comune ai cerchi
+   A e B, ossia i minterms 7 e 6.
+
+		Numero Minterm		7 6 5 4 3 2 1 0
+		Minterm selezionati	1 1 0 0 0 0 0 0
+					-----------------
+					     C   0       ossia $C0
+
+3. Per usare una funzione che è l'inverso, il "NOT", di uno dei sorgenti, es:
+	
+	NOT A
+
+   prendere tutti i minterms non inclusi dal cerchio rappresentato da A.
+   In questo caso, abbiamo i minterms 0, 1, 2, e 3.
+
+
+		Numero Minterm		7 6 5 4 3 2 1 0
+		Minterm selezionati	0 0 0 0 1 1 1 1
+					-----------------
+					     0   F       ossia $0F
+
+
+4. Per combinare minterms, cioe' un "OR" tra essi, fare un OR dei valori.
+   Per esempio, l'operazione (A AND B) OR (B AND C) diventa
+
+	Numero Minterm			7 6 5 4 3 2 1 0
+	A AND B				1 1 0 0 0 0 0 0
+	B AND C				1 0 0 0 1 0 0 0
+					-----------------
+ 	(A AND B) OR (B AND C)		1 1 0 0 1 0 0 0
+					-----------------
+					     C   8       ossia $C8
+
+
+Ad ogni modo, se proprio volete risparmiarvi la fatica (male, SFATICATI! :),
+riportiamo una tavola dei valori Minterm piu' usati.
+In questa tabella viene usata una notazione diversa da quella usata finora:
+
+Se due termini sono adiacenti viene fatto un AND tra di loro
+(es. AB vuol dire A AND B);
+
+un trattino sopra ad un termine indica il NOT:
+     _
+(es. A vuol dire NOT A);
+
+se due termini sono separati da un "+" viene fatto un OR tra di loro
+(es. A+B vuol dire A OR B);
+
+AND ha la precedenza piu' alta, così AB + BC è uguale a (A AND B) OR (B AND C).
+Ecco la tabella:
+
+	Operazione	Valore		Operazione	Valore
+	Selezionata	  LF		Selezionata	  LF
+	--------	-------		--------	-------
+	D = A		 $F0		D = AB		 $C0
+	    _				     _
+	D = A		 $0F		D = AB		 $30
+					    _
+	D = B		 $CC		D = AB		 $0C
+	    _				    __
+	D = B		 $33		D = AB		 $03
+
+	D = C		 $AA		D = BC		 $88
+	    _				     _
+	D = C		 $55		D = BC		 $44
+					    _
+	D = AC		 $A0		D = BC		 $22
+	     _				    __
+	D = AC		 $50		D = AC		 $11
+	    _					 _
+	D = AC		 $0A		D =  A + B	 $F3
+	    _				     _	 _
+	D = AC		 $05		D =  A + B	 $3F
+					         _
+	D = A + B	 $FC		D =  A + C	 $F5
+	    _				     _	 _
+	D = A + B	 $CF		D =  A + C	 $5F
+					     _
+	D = A + C	 $FA		D =  B + C	 $DD
+	    _				     _	 _
+	D = A + C	 $AF		D =  B + C	 $77
+						  _
+	D = B + C	 $EE		D =  AB + AC	 $CA
+	    _
+	D = B + C	 $BB
+
+
+		Fig. 29	Mintems piu` usati
+
+
+NOTA: Per individuare il valore desiderato di LF per i vostri scopi potete
+usare anche l'utility "minterm", programmata da Deftronic, lo stesso del
+Trash'M'One.
+La breve utility in questione la trovate in questo disco.
+La sintassi e' questa: per il NOT, si mette la lettera del canale non shiftata
+(lowercase), ad esempio "abc".
+Per il canale normale si usa la lettera shiftata (uppercase).
+Due lettere adiacenti significano un AND tra i canali, mentre se sono separate
+dal "+" significa un OR tra i canali.
+		      __
+Esempio: se si vuole ABC:
+
+	minterm	Abc
+
+	risultato: $10
+
+Esempio2: se si vuole solo la sorgente A:
+
+	minterm	A
+
+	risultato: $F0	(come volevasi dimostrare)
+
+Esempio3: se si vuole solo (A AND B) OR C:
+
+	minterm	AB+C
+
+	risultato: $DA.
+
+	               ___________
+	               \        _/___
+	                \____________)
+	                 |.  _  |
+	                 |___/  |
+	                 `------'
+	                ./   _  \.
+	             __ |___/ )  |
+	            (__|_____/   |
+	                |________|____.                  _ __ ____
+	                   |  _)      |  - --- --- --- -(         )
+	                   |  |----.  |        -- -    (  (  )     )
+	                 __|  |    |__| _    - -- --      vrooom )  )
+	             ___|_____|________/ | --- -- - ---( (    (    )
+	            (____________________|              (____ _ __)
+	             (_)              (_)
+
+*******************************************************************************
+*				I BOBS					      *
+*******************************************************************************
+
+Siamo quasi arrivati al piatto forte della lezione, ovvero i BOB.
+Prima di affrontarli e` necessario presentare un altra idea: il bit-plane
+maschera. Si tratta semplicemente di un bitplane che costituisce "l'ombra" di
+una figura, cioe` un bitplane delle stesse dimensioni di una figura che ha
+settati ad 1 i pixel corrispondenti a pixel della figura, colorati con un
+colore diverso dallo sfondo, e invece settati a 0 i pixel che corrispondono al
+colore di sfondo della figura.
+Per esempio consideriamo la seguente tabella di numeri:
+
+	0020
+	0374
+	5633
+	0130
+
+essa rappresenta un'immagine ad 8 colori (3 bitplanes) larga 4 pixel e alta 4
+righe. Ogni numero indica il colore associato al pixel. La maschera di tale
+immagine e` la seguente:
+
+	0010
+	0111
+	1111
+	0110
+
+Osserviamo che i colori diversi dallo 0 (lo sfondo) hanno almeno un bitplane
+settato ad 1.
+
+Pertanto la maschera puo` essere costruita a partire dalla figura facendo l'OR
+di tutti i bitplanes, come illustrato negli esempi lezione10c1.s e lezione10c2.s
+che vi permettono anche di ripassare l'utilizzo del blitter per fare
+operazioni logiche. In particolare, in lezione10c2.s mostriamo per la prima
+volta una blittata che usa tutti e 4 i canali del blitter.
+
+Il Kefrens Converter, comunque, ha un'opzione per creare automaticamente la
+maschera di una figura.
+I bitplanes maschera sono utili perche` ci permettono di visualizzare delle
+parti di un immagine, in base alla forma di un'altra immagine.
+
+Ne vediamo esempi in lezione10c3.s e lezione10c4.s, dove utiliziamo una maschera
+a forma di cerchio per realizzare un riflettore che illumina un'immagine
+rendendone visibile una parte.
+
+I 2 esempi, benche` realizzino lo stesso effetto utilizzano tecniche molto
+diverse, come spiegato nei commenti.
+Studiate particolarmente bene lezioneq4.s, che e` indispensabile per capire
+poi i BOB.
+In questo esempio, il bitplane maschera viene utilizzato per "selezionare"
+delle parti di un'immagine di 5 bitplanes. La selezione avviene effettuando una
+operazione di AND tra il bitplane maschera e i 5 bitplanes che costituiscono
+l'immagine. Poiche` l'immagine e` in formato normale, vengono effettuate 5 
+blittate distinte, una per ogni plane. La maschera, ovviamente e` sempre la
+stessa per ogni blittata (e` formata da un solo bitplane).
+Volendo applicare la tecnica dell'esempio lezione10c4.s ad uno schermo in
+formato interleaved, ci troviamo di fronte ad un problema. Quando operiamo
+in questo formato, infatti, blittiamo tutti i planes contemporaneamente.
+La maschera pero` ha la dimensione di un plane, e quindi non puo` essere
+usata in una blittata che ha una dimensione pari al numero di planes di cui
+si compone l'immagine. Per risolvere questo problema dobbiamo modificare la
+nostra maschera. Siccome ogni riga della maschera deve selezionare la riga
+corrispondente di TUTTI i bitplanes della figura, dobbiamo ripetere la riga
+tante volte quanti sono i bitplanes. In formato interleaved, quindi, dobbiamo
+usare un bitplane maschera che ha ogni riga ripetuta tante volte quanti sono
+i bitplane della figura. Nel caso della figura che abbiamo visto prima
+(3 planes) la nostra maschera interleaved e` la seguente:
+
+	0010\
+	0010 |	- prima riga della maschera normale ripetuta 3 volte
+	0010/
+	0111
+	0111
+	0111
+	1111
+	1111 
+	1111
+	0110
+	0110
+	0110
+
+Come potete notare, poiche` la figura ha 3 bitplanes, ogni riga della
+maschera in formato normale e` stata ripetuta 3 volte per ottenere
+la maschera interleaved. Il formato interleaved, quindi, ci costringe ad
+utilizzare una maschera che occupa piu` memoria di quella richiesta dal
+formato normale.
+
+L'esempio lezione10c5.s e` la versione interleaved di lezione10c4.s, e ci
+permette di vedere in pratica quanto detto.
+
+		                 ___
+		               _(   )_        
+		            __( . .  .)__     
+		          _(   _ .. ._ . )_   
+		         ( . _/(_____)\_   )  
+		        (_  // __ | __ \\ __) 
+		        (__( \/ o\ /o \/ )__) 
+		         ( .\_\__/ \__/_/. )  
+		          \_/¬(_.   ._)¬\_/   
+		           /___(     )___\    
+		          ( |  |\___/|  | )   
+		           ||__|  |  |__||    
+		           ||::|__|__|::||    
+		           ||:::::::::sc||    
+		          .||:::__|__:;:||    
+		          /|. __     __ .|\.  
+		        ./(__..| .  .|.__) \. 
+		        (______|. .. |______) 
+		           /|  |_____|        
+		                 /|\          
+		                  :
+
+Se avete capito bene il funzionamento delle maschere, siete pronti per
+risolvere una volta per tutte il problema dello sfondo con i BOBS.
+Come sicuramente ricordate, nell'esempio lezione9i3.s siamo andati abbastanza
+vicini alla soluzione del problema. Lo sfondo viene salvato e successivamente
+ridisegnato al suo posto. L'unico problema e` che nel rettangolo che racchiude
+la figura del BOB viene cancellato lo sfondo, e sostituito con il colore 0.
+In realta` quando disegnamo un BOB usiamo il colore 0 non come un colore
+qualsiasi ma semplicemente per denotare i pixel del rettangolo che non
+appartengono alla figura del BOB. E` esattamente la stessa cosa che facciamo
+con gli sprite, usiamo il colore 0 come "trasparente".
+Quando disegnamo il BOB sullo schermo vorremmo che al posto dei pixel colorati 
+con il colore 0 apparisse lo sfondo, in pratica dovremmo poter scrivere sullo
+schermo solo i pixel di colore diverso da 0.
+Cio` non e` possibile perche` come sapete il blitter scrive (e legge) SEMPRE
+delle word INTERE.
+Si adotta dunque una diversa strategia. Invece di fare una semplice copia del
+BOB sulla destinazione, facciamo una blittata piu` complicata.
+Leggiamo dalla memoria, oltre al BOB, anche lo sfondo, li "mischiamo" assieme,
+in modo che al posto dei pixel di colore 0 del BOB appaiano i pixel dello
+sfondo, e scriviamo il risultato sullo schermo.
+La strategia e` illustrata nella figura seguente, nella quale abbiamo un BOB
+e un pezzo di sfondo di 6*8 pixel.
+Il simbolo "." rappresenta un pixel di colore 0, il simbolo "#" rappresenta
+un pixel del BOB di diverso colore, e il simbolo "o" rappresenta un pixel
+dello sfondo di diverso colore:
+
+
+	BOB			SFONDO
+
+	........		...o....
+	..####..		...oo...
+	.#.##.#.		..oooo..
+	..####..		..ooooo.
+	...##...		.ooooooo
+	..#..#..		oooooooo
+
+	   \			   /
+	    \			  /
+	     \			 /  
+
+		BOB sovrapposto a SFONDO
+		...o....
+		..####..
+		.#o##o#.
+		..####o.
+		.oo##ooo
+		oo#oo#oo
+
+
+	Fig. 30	Bob e sfondo
+
+In questo modo otteniamo l'effetto desiderato.
+Resta da capire in che modo "mischiare" il BOB con lo sfondo.
+Per "mischiare" correttamente dobbiamo sapere quali pixel del BOB sono di
+colore 0 e quali no.
+Queste informazioni sono contenute nel bitplane maschera del BOB, che come
+sapete ha un bit a 0 per ogni pixel di colore 0 del BOB e un bit a 1 per ogni
+pixel di altro colore.
+L'operazione di mescolamento avviene dunque nel modo seguente:
+
+- Per ogni pixel, leggiamo la maschera
+- Se la maschera ha valore 1, copiamo il corrispondente pixel del BOB
+- Se la maschera ha valore 0, copiamo il corrispondente pixel dello sfondo.
+
+Possiamo realizzare questa procedura mediante una sola blittata, operando
+nel modo seguente: leggiamo la maschera attraverso il canale A del blitter, il
+BOB attraverso il canale B, lo sfondo attraverso il C, utiliziamo la maschera
+per selezionare i pixel da copiare (o dallo sfondo o dal BOB) e scriviamo il
+risultato nel canale D (l'assegnamento dei canali non e` casuale).
+La selezione viene effttuata mediante la seguente equazione logica:
+  
+D = (A AND B) OR ( (NOT A) AND C)
+
+Questa equazione si comporta esattamente come la procedura di selezione
+descritta in precedenza. Quando infatti la maschera A = 1 (cioe` abbiamo un
+pixel del BOB di colore DIVERSO da 0) l'equazione si semplifica nel modo
+seguente:
+
+D = (1 AND B) OR ( (NOT 1) AND C) = B OR (0 AND C) = B OR 0 = B
+
+Quindi viene copiato il pixel del BOB.
+Quando invece A = 0 (cioe` abbiamo un pixel del BOB di colore 0) l'equazione
+diventa:
+
+D = (0 AND B) OR ( (NOT 0) AND C) = 0 OR (1 AND C) = 0 OR C = C
+
+Quindi viene copiato il pixel dello sfondo.
+Questa equazione logica viene eseguita dal blitter (come potete calcolare voi
+stessi) ponendo LF = $CA, valore noto come "COOKIE CUT" ovvero "taglio del
+biscotto". Come abbiamo accennato prima, l'assegnamento dei canali e` stato
+fatto accuratamente sulla base delle caratteristiche dei canali stessi.
+Infatti per effettuare spostamenti fluidi orizzontali e` necessario usare
+per il BOB e per la maschera lo shift del blitter; per questo il canale C
+(che non puo` fare lo shift) viene usato per lo sfondo. Inoltre, applichiamo
+il trucco di mascherare l'ultima word al bitplane maschera, in modo che
+l'ultima word di esso venga azzerata, facendo cosi` che nell'ultima word venga
+blittato lo sfondo.
+
+Gli esempi lezione10d1.s e lezione10d1r.s  mostrano (rispettivamente in versione
+normale e interleaved) il tanto atteso BOB che si muove su uno sfondo.
+
+                 _|_
+          __|__ |___| |\
+          |o__| |___| | \
+          |___| |___| |o \
+         _|___| |___| |__o\
+        /...\_____|___|____\_/
+        \   o * o * * o o  /
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*******************************************************************************
+*		LA VELOCITA` DEL BLITTER (E NON SOLO)			      *
+*******************************************************************************
+
+E` giunto il momento di occuparci di una questione molto importante: la
+velocita` del blitter. Infatti come sapete, il blitter impiega una certa
+quantita` di tempo per portare a termine i suoi compiti, ed e` necessario
+tenere conto di cio` quando si programmano effetti complessi.
+Per misurare la velocita` del blitter useremo una tecnica molto semplice,
+nota come "copper monitor", che ci mostra il risultato sullo schermo in tempo
+reale.
+La tecnica e` semplicissima: utilizziamo un certo colore (di solito il nero)
+come sfondo.
+Poi, subito prima di iniziare la blittata cambiamo il colore di sfondo col
+processore, tramite un "MOVE.W #$xxx,$dff180".
+Quando la blittata finisce rimettiamo lo sfondo al colore iniziale.
+In questo modo sappiamo che la blittata impiega un tempo proporzionale
+alla porzione di schermo colorata diversamente.
+Da notare che questa tecnica e' usata per misurare qualsiasi tipo di routine,
+e in particolare e' utilissima per capire quando diventa piu' veloce o piu'
+lenta a seguito di una modifica, ad esempio un'ottimizzazione.
+
+Un esempio e` illustrato in lezione10e1.s
+
+In questo esempio usiamo il blitter per copiare un rettangolo sullo schermo.
+Sulla base di questo esempio possiamo iniziare a fare un po' di considerazioni
+sulla velocita` del blitter. Innanzitutto, come avevamo gia` accennato, la
+velocita` dipende dalle dimensioni della blittata.
+Provate nell'esempio a modificare l'altezza e/o la larghezza del rettangolo,
+e ve ne renderete conto da soli.
+Cio` e` ragionevole, in quanto piu` e` grande il rettangolo, maggiore e`
+la quantita` di words da spostare. Allo stesso modo, il numero di bitplanes
+influenza la velocita` (provate in lezione10e1.s a cambiare il numero di
+iterazioni della routine "DisegnaOggetto"), in quanto piu` bitplanes ci sono
+e maggiore e` la quantita` di dati da spostare.
+
+L'esempio lezione10e1r.s e` la versione rawblit dell'esempio precedente.
+
+Eseguendolo noterete che esso risulta piu` veloce ma di pochissimo.
+Ma allora, vi chiederete, tutto il vantaggio del rawblit?
+In realta`, come abbiamo gia` detto, la tecnica rawblit e` conveniente non
+tanto perche` accelera il blitter, ma piuttosto perche` fa risparmiare tempo
+al processore.
+Nei 2 esempi che abbiamo visto finora abbiamo misurato solo il tempo impiegato
+dal blitter.
+
+Negli esempi lezione10e2.s e lezione10e2r.s, invece, usiamo diversi colori
+per evidenziare sia il tempo impiegato dal blitter che quello impiegato dal
+processore.
+
+Il confronto tra questi esempi ci mostra appieno i vantaggi del modo rawblit:
+con questa tecnica il processore e` impegato pochissimo, giusto il tempo di
+caricare i registri del blitter, e poi e` libero di eseguire altri compiti,
+a differenza di quanto accade con il modo normale, dove il processore deve
+attendere la fine di una blittata per lanciare la blittata del plane
+successivo.
+E` chiaro che per sfruttare il vantaggio della tecnica rawblit e` necessario
+che la routine successiva alla blittata NON impieghi il blitter.
+Infatti se (come accade negli esempi) dopo una blittata c'e` subito una
+routine che impiega il blitter, il processore dovra` comunque attendere che
+il blitter termini il suo compito, e non avremo dunque nessun vantaggio.
+Quindi un criterio da seguire per ottimizzare i programmi e` quello di mettere,
+quando possibile, le routine che usano il blitter "distanti", ovvero
+intervallate da altre routine che non ne facciano uso, in modo che il blitter
+e il processore procedano in parallelo.
+C'e` da dire pero` che questo criterio e` valido soprattutto su macchine
+dotate di memoria fast, in quanto se il processore deve accedere alla memoria
+chip si generano dei conflitti nell'accesso alla memoria, di cui parleremo
+meglio tra un attimo.
+Per il momento notiamo un'altra cosa sugli esempi lezione10e2.s e lezione10e2r.s:
+il blitter impiega circa lo stesso tempo per la cancellazione (schermo verde)
+e per il disegno (schermo rosso). Se ci pensate bene, questo fatto dovrebbe
+sembrarvi strano: infatti e` vero che le 2 blittate hanno la stessa dimensione
+ma bisonga considerare che la cancellazione e` una blittata che usa un solo
+canale, mentre la copia ne usa 2. E` chiaro che all'aumentare del numero di
+canali, aumenta il numero di words lette e scritte dal blitter, quindi la
+blittata dovrebbe richidere piu` tempo.
+
+                      o    .  o  .  o .  o  .  o  .  o
+                 o
+              .
+            .        ___
+           _n_n_n____i_i ________ ______________ _++++++++++++++_
+        *>(____________I I______I I____________I I______________I
+          /ooOOOO OOOOoo  oo oooo oo          oo ooo          ooo
+      ------------------------------------------------------------
+
+Guardate pero` l'esempio lezione10e3.s.
+
+Questo esempio e` simile ai precedenti, ma invece di fare una semplice copia
+della figura effettua un operazione di OR tra la figura e un plane azzerato.
+Naturalmente l'effetto e` sempre lo stesso, ma potete notare come ora la
+routine, che effettua una blittata a 3 canali (D=A OR B) sia notevolmente
+piu` lenta.
+La velocita` dipende da quali e quanti canali sono usati in una maniera
+abbastanza complicata, che puo` essere sintetizzata dalla seguente tabella:
+
+    bit 8-11
+       di        Canali 
+    BLTCON0      usati	       Sequenza di accesso alla memoria
+   ---------    --------    --------------------------------------
+       F        A B C D     A0 B0 C0 -  A1 B1 C1 D0 A2 B2 C2 D1 D2
+       E        A B C       A0 B0 C0 A1 B1 C1 A2 B2 C2
+       D        A B   D     A0 B0 -  A1 B1 D0 A2 B2 D1 -  D2
+       C        A B         A0 B0 -  A1 B1 -  A2 B2
+       B        A   C D     A0 C0 -  A1 C1 D0 A2 C2 D1 -  D2
+       A        A   C       A0 C0 A1 C1 A2 C2
+       9        A     D     A0 -  A1 D0 A2 D1 -  D2
+       8        A           A0 -  A1 -  A2
+       7          B C D     B0 C0 -  -  B1 C1 D0 -  B2 C2 D1 -  D2
+       6          B C       B0 C0 -  B1 C1 -  B2 C2
+       5          B   D     B0 -  -  B1 D0 -  B2 D1 -  D2
+       4          B         B0 -  -  B1 -  -  B2
+       3            C D     C0 -  -  C1 D0 -  C2 D1 -  D2
+       2            C       C0 -  C1 -  C2
+       1              D     D0 -  D1 -  D2
+       0        nessuno     -  -  -  -
+
+Questa tabella mostra per ogni combinazione di canali attivi, la sequenza
+di accessi alla memoria operata dal blitter, nel caso di una blittata di
+3 words.
+Per ogni accesso e` indicato il canale che lo effettua, e i trattini
+indicano cicli di bus non sfruttati dal blitter. Per esempio la stringa:
+
+A0 B0 -  A1 B1 -  A2 B2
+
+Indica che prima accede al bus il canale A (A0) poi il B (B0), poi il blitter
+non utilizza un ciclo di bus (permettendo al processore di accedere alla
+memoria), poi tocca di nuovo al canale A (A1) e cosi` via.
+
+La tabella riportata in realta` e` solo indicativa, perche` non tiene conto
+di molti fattori, quali l'utilizzo di modi speciali del blitter e la
+competizione con il processore e con gli altri canali DMA (consultate al
+riguardo la lezione 8). Ciononostante e` molto utile per avere un idea di
+quali sono le combinazioni di canali migliori. Tenete presente che questa
+tabella e` relativa ad una blittata di 3 words. Per blittate di piu` words
+il blitter ripete tante volte la sequenza di accessi che nella tabella sono
+"al centro". Per esempio, una blittata di 5 words che utilizza i canali
+A e D ha la seguente sequenza:
+
+A0 -  A1 D0 A2 D1 A3 D2 A4 D3 A5 D4 -  D5
+
+Lo studio della tabella ci consente alcune osservazioni interessanti.
+Se guardiamo la sequenza relativa all'uso del solo canale D, vediamo che il
+blitter sfrutta il bus un ciclo si e uno no. Al contrario, quando vengono
+usati i canali A e D, il blitter sfrutta (tranne che nei casi della prima e
+dell'ultima word) tutti i cicli di bus. Questo fatto ci spiega come mai
+negli esempi la routine di cancellazione (canale D) ha circa la stessa
+velocita` della routine di disegno (canali A e D). Notate pero` che se
+facciamo una copia da B a D, le cose vanno diversamente.
+
+Lo potete vedere in pratica nella lezione10e4.s.
+
+Analogamente, consultando la tabella, si vede che nel caso di blittate con
+2 sorgenti conviene usare A e B oppure A e C, ma non B e C perche` vengono
+sprecati piu` cicli.
+
+Dovete comunque ricordare che la velocita` del blitter dipende anche dagli
+eventuali conflitti con altri canali DMA (video, audio, copper, processore)
+che possono "rubargli" cicli ritardandolo. Infatti, come abbiamo spiegato nella
+lezione 8, il blitter nell'accesso al bus ha priorita` solo sulla CPU.
+Questo significa che se un'altro dispositivo (es. il copper) vuole accedere
+alla RAM contemporaneamente al blitter, la precedenza spetta all'altro
+dispositivo.
+L'unico fesso che da la precedenza al blitter e` il processore.
+Anche qui pero` la priorita` non e` totale. Infatti il blitter, dando prova
+di grande generosita`, se si accorge che il processore per 3 volte consecutive
+ha provato ad accedere al bus ma non c'e` riuscito perche` qualcun'altro gli
+ha preso la precedenza, gli dice: "Passa tu per stavolta, vah" e gli concede
+il bus per un ciclo.
+Questo meccanismo riduce la possibilita` che in casi di sovraccarico del DMA
+il processore sia bloccato in attesa del bus troppo a lungo.
+E` comunque possibile reprimere i moti di generosita` del blitter.
+Settando a 1 il bit 10 (detto blitter_nasty, cioe` blitter cattivo) del
+registro DMACON il blitter non si comportera` piu` in questo modo, ma si 
+prendera` la precedenza sul processore ogni volta.
+Nel caso in cui le routine del nostro programma utilizzino tutte il blitter,
+quindi il processore non fa altro che caricare i registri e mettersi in
+attesa, conviene senz'altro settare a 1 tale bit.
+Ovviamente questo discorso ha senso in caso il cui il programma sia contenuto
+in memoria chip ed in assenza di caches, perche` in caso contrario non si
+verificano conflitti tra il processore e il blitter per l'accesso alla RAM.
+
+Un esempio sul bit Blitter Nasty si trova in lezione10e5.s.
+
+Per ottimizzare al massimo l'uso del blitter, dovete velocizzare al massimo la
+scrittura dei registri ad esso relativi.
+Negli esempi che abbiamo fatto sinora e anche in quelli che faremo nel resto
+della lezione infatti, per aumentare la chiarezza, non abbiamo ottimizzato
+la scrittura dei registri come avremmo potuto.
+Durante una blittata, gli unici registri che variano sono i registri BLTxPT e
+il BLTSIZE. I registri BLTCONx, BLTxMOD e BLTxWM rimangono costanti.
+Cio` significa che se il contenuto di tali registri non viene modificato da
+altre routine, non serve riscriverli all'inizio di ogni blittata.
+Un accorgimento da adottare per ottimizzare le routine nel caso in cui ci
+sono loop di blittate e` quello di porre i valori da scrivere nei registri
+blitter in registri del processore, e sostituire all'interno del loop
+le MOVE.W #YYY,$DFFxxx con delle MOVE.W Dx,$DFFxxx che sono piu` veloci.
+Queste ottimizzazioni nella scrittura dei registri prese una per una danno
+incrementi di velocita` davvero minimi, che con il copper monitor e` difficile
+notare. Pero` in una demo con tanti effetti complessi, messe insieme hanno il
+loro peso.
+
+A titolo di esempio guardate il listato lezione10e6.s che e` una versione
+ottimizzata con questi trucchi di lezione10c3.s.
+
+                                 \\\|///                            
+                               \\  ~ ~  //
+                                (  @ @  )
+______________________________oOOo_(_)_oOOo____________________________________
+*******************************************************************************
+*			IL DOUBLE BUFFERING				      *
+*******************************************************************************
+
+Tutti gli esempi che abbiamo visto finora relativi ai bobs avevano sempre un
+solo bob che si muoveva sullo schermo. Proviamo ora a metterne di piu`.
+Per esempio, proviamo ad applicare la tecnica dello sfondo "finto": usiamo
+un bitplane per lo sfondo e 3 planes dove muovere i bobs.
+Poiche` tutti i bobs si muovono sugli stessi bitplanes dovremo comunque
+disegnarli usando la tecnica del bitplane maschera.
+Avremo comunque il vantaggio di non dover salvare e ripristinare lo sfondo,
+perche` i bitplanes dei bob inizialmente sono azzerati.
+Sara` quindi sufficente cancellare questi plane ad ogni frame, prima di
+ridisegnare i bobs nelle nuove posizioni.
+
+Questa tecnica e` applicata nell'esempio lezione10f1.s.
+
+Eseguendo questo programma avrete pero` una brutta sopresa: i bobs vengono
+disegnati correttamente solo nella parte bassa dello schermo, mentre in alto
+non vengono disegnati correttamente. Come mai?
+C'e` qualche bug nelle nostre routines? No, le nostre routines vanno bene.
+Il problema e` che sono troppo lente. Come ben sapete, mentre il nostro
+programma viene eseguito, il pennello elettronico disegna l'immagine sullo
+schermo.
+Per far apparire un immagine stabile, si cerca di modificare lo schermo
+(cioe` cancellare, disegnare bobs, linee ecc.) durante il Vertical Blank,
+ossia nel periodo di tempo in cui il pennello elettronico e` inattivo.
+Se pero` dobbiamo fare molte modifiche sullo schermo, puo` accadere che le
+nostre routines non siano abbastanza veloci da svolgere il proprio compito
+durante il Vertical Blank. E` appunto quello che succede in questo caso.
+Aumentando il numero di bobs, aumenta il tempo necessario a disegnarli e di
+conseguenza non si riesce piu` a farlo durante il Vertical Blank.
+Il risultato e` che a volte i bobs vengono disegnati sullo schermo DOPO che
+il pennello elettronico ha disegnato quella parte di schermo, e quindi i bobs
+non vengono visualizzati.
+Poiche` il pennello elettronico va dall'alto verso il basso, piu` i bob sono
+disegnati in alto e piu` spesso cio` accade.
+Se guardate attentamente l'esempio, vedrete che la zona di schermo nella quale
+tutti i bobs vengono disegnati bene, e` quella che viene visualizzata DOPO
+che le routines di disegno hanno finito il loro lavoro, come viene evidenziato
+dal copper monitor.
+La tecnica del "double buffering" ci consente di risolvere questo problema.
+Si tratta di una tecnica di uso generale che potete impiegare con qualsiasi
+effetto, non solo con i bobs. In particolare lo useremo per le routines 3d.
+Questa tecnica consiste nell'utilizzare due schermi (detti appunto buffer)
+invece che uno solo.
+I due buffer vengono visualizzati alternativamente, un fotogramma l'uno e un
+fotogramma l'altro.
+Mentre viene visualizzato uno dei buffer, noi possiamo disegnare liberamente
+sull'altro, senza preoccuparci della stabilita`, visto che l'immagine che viene
+visualizzata e` quella del primo buffer che noi non modifichiamo.
+Quando si verifica il successivo Vertical Blank, i 2 buffer vengono scambiati.
+Quello sul quale noi abbiamo disegnato in precedenza viene visualizzato,
+mostrando le modifiche che abbiamo fatto, mentre il buffer che prima era stato
+visualizzato e` ora a nostra disposizione per disegnarci sopra.
+Ripetendo lo scambio ad ogni Vertical Blank, avremo sempre a disposizione un
+buffer non visualizzato sul quale disegnare, senza preoccuparci di quello che
+fa il pennello elettronico.
+Grazie a questa tecnica, l'unica limitazione di tempo delle nostre routines di
+disegno e` che esse devono concludersi prima che il pennello elettronico
+raggiunga la fine dello schermo. Questo ci da un tempo pari ad 1/50-esimo di
+secondo (in Pal, 1/60 in NTSC).
+
+
+               <>+<>                 //////      __v__        __\/__
+   `\|||/      /---\     """""""    | _ - |     (_____)   .  / ^  _ \  .
+    (q p)     | o o |   <^-@-@-^>  (| o O |)    .(O O),   |\| (o)(o) |/|(
+_ooO_<_>_Ooo_ooO_U_Ooo_ooO__v__Ooo_ooO_u_Ooo_ooO__(_)__Ooa__oOO_()_OOo___
+[_____}_____!____.}_____{_____|_____}_____i____.}_____!_____{_____}_____]
+__.}____.|_____{_____!____.}_____|_____{.____}_____|_____}_____|_____!__
+[_____{_____}_____|_____}_____i_____}_____|_____}_____i_____{_____}_____]
+*******************************************************************************
+*		USO DEI CANALI BLITTER NON ATTIVATI			      *
+*******************************************************************************
+
+Vi sono casi in cui e` utile far "partecipare" alla blittata anche i canali non
+attivi.
+Per capire bene cosa significa dovete sapere ancora una cosa sul blitter.
+Quando un canale di ingresso (A, B o C) e` attivo, legge words dalla memoria.
+Ogni word dopo essere stata letta viene copiata in un apposito registro, detto
+registro dati del blitter.
+Ogni canale ha il suo registro dati, nel cui nome compare la lettera che
+identifica il canale: abbiamo dunque BLTADAT (canale A, $DFF074), BLTBDAT
+(canale B, $DFF072), BLTCDAT (canale C, $DFF070) e BLTDDAT (canale D $DFF000).
+La word dal registro dati viene successivamente sottoposta ad operazioni
+logiche con le words provenienti dagli altri canali, e il risultato viene
+scritto in memoria attraverso il canale D.
+Facciamo un esempio per capire bene. Consideriamo il caso di una blittata che
+esegua un AND tra i canali B e C.
+All'interno del blitter accadono le seguenti cose:
+
+1 - Il canale B legge una word e la copia in BLTBDAT
+2 - Il canale C legge una word e la copia in BLTCDAT
+3 - Viene eseguito un AND tra il contenuto di BLTBDAT e quello di BLTCDAT
+4 - Il risutato viene scritto attraverso il canale D
+5 - Si ripetono i passi da 1 a 4 per le successive words.
+
+In realta` le cose funzionano un po' diversamente, perche` alcune operazioni
+sono eseguite in parallelo per velocizzare il blitter, ma a livello logico le
+cose funzionano cosi`, ed e` quello che ci serve sapere.
+Che succede quando un canale e` disabilitato? Naturalmente esso non leggera`
+nulla dalla memoria, pertanto il registro BLTxDAT corrispondente non verra`
+cambiato.
+Il contenuto di tale registro viene conservato, e puo` comunque essere usato
+in operazioni logiche.
+Inoltre tale registro puo` essere scritto anche dalla CPU, il che ci permette
+di settarlo a valori opportuni (non il registro BLTDDAT !).
+La situazione e` simile a quella che abbiamo visto nella lezione 7 per gli
+sprite.
+Anche gli sprite hanno dei canali DMA (i registri SPRxPT) che copiano i dati
+letti in registri dati (SPRxDAT).
+In alcune applicazioni pero` e` utile scrivere nei registri dati direttamente
+con il processore (o con il copper).
+Vediamo ora l'utilita` di questa caratteristica del blitter.
+Per esempio consideriamo il caso in cui vogliamo riempire una serie di
+locazioni di memoria con un valore costante, per esempio per disegnare sullo
+schermo un rettangolo non pieno, ma "a righine", o come dicono i grafici con
+un "pattern" (cioe` una trama).
+Potremo risolvere il problema memorizzando il nostro rettangolo nella sezione
+dati del nostro programma e copiandolo con il blitter, esattamente come se
+fosse una figura come le altre.
+Una soluzione migliore, pero`, ci viene offerta dalla possibilita` di
+disabilitare i canali del blitter.
+Per risolvere il problema possiamo infatti eseguire una copia dal canale A al
+D, TENENDO IL CANALE A disabilitato, e scrivendo il "pattern" nel registro
+BLTADAT. In questo modo otteniamo 2 vantaggi: non dobbiamo memorizzare il
+rettangolo tra i dati del nostro programma, quindi risparmiamo memoria, e,
+poiche` il canale A e` disabilitato, effettuiamo meno accessi alla memoria di
+quanti ne faremmo in caso di copia normale da A a D, dando pertanto al
+processore piu` possibilita` di accesso alla RAM.
+
+Per vedere in pratica questa applicazione caricate la lezione10g1.s.
+
+E` possibile applicare questa tecnica non solo per semplici copie di un valore
+costante, ma anche in operazioni logiche piu` complesse nelle quali un operando
+sia costante.
+
+Trovate 2 esempi in lezione10g2.s e lezione10g3.s.
+
+			   .-----------.
+			   |         ¬ |
+			   |           |
+			   |  ___      |
+			  _j / __\     l_
+			 /,_  /  \ __  _,\
+			.\¬| /    \__¬ |¬/....
+			  ¯l_\_o__/° )_|¯    :
+			   /   ¯._.¯¯  \     :
+			.--\_ -^---^- _/--.  :
+			|   `---------'   |  :
+			|   T    °    T   |  :
+			|   `-.--.--.-'   | .:
+			l_____|  |  l_____j
+			   T  `--^--'  T
+			   l___________|
+			   /     _    T
+			  /      T    | xCz
+			 _\______|____l_
+			(________X______)
+
+*******************************************************************************
+*			IL FLAG ZERO E LE COLLISIONI			      *
+*******************************************************************************
+
+Questa e` l'ultima caratteristica hardware del blitter da spiegare!
+Il blitter ha un flag, detto flag Zero, che ha un funzionamento analogo al
+flag Zero del processore.
+Questo flag e` il bit 13 del registro DMACONR. Se una blittata produce come
+risultato TUTTI ZERI, il flag Zero viene settato a UNO.
+Al contrario, se almeno un bit in una delle word risultato ha valore 1, il
+flag assume valore ZERO.
+Il flag si comporta in questo modo anche nel caso in cui il risultato della
+blittata NON viene scritto in memoria, cioe` quando il canale D e`
+disabilitato.
+Questo fatto e` molto utile perche` ci aiuta a rilevare collisioni tra un bob
+e un disegno sullo schermo (che puo` essere un altro bob gia` disegnato).
+Supponiamo per il momento di lavorare con immagini ad un solo bitplane.
+Per rilevare le collisioni effettuiamo (con il blitter) un'operazione di AND
+tra il bob e la parte di schermo su cui il bob si dovrebbe posizionare, MA
+non scriviamo il risultato da nessuna parte.
+Questa blittata serve solo per testare la collisione.
+Cosa succede quando eseguiamo un AND? Come sapete il risultato di un AND tra
+2 bit e` 1 solo nel caso in cui entrambi i bit operandi valgono 1.
+Nel nostro caso significa che un bit del risultato puo` valere 1 SOLO nel caso
+in cui coincidono nella stessa posizione un bit del bob di valore 1 e un bit
+dell'immagine di valore 1.
+Ma cio` vuol dire che tali bit producono una collisione.
+Quindi se c'e` una collisione, almeno un bit del risultato avra` valore UNO,
+e in corrispondenza il flag Zero assumera` valore ZERO.
+Al contrario, se non si verifica collisione, nessun bit del bob coincide con
+un bit dello sfondo, quindi l'AND vale SEMPRE ZERO, e quindi il flag Zero
+assume valore UNO. Quindi il flag Zero ci puo` segnalare quando c'e` una
+collisione e quando no.
+Quando abbiamo a che fare con immagini con piu` bitplanes, le cose si
+complicano in quanto potrebbe accadere che si verifica una collisione tra 2
+pixel di colori diversi che considerati plane per plane non coincidono.
+Per esempio, se si verifica una collisione tra un pixel di colore 1 
+(plane 1 = 1 e tutti gli altri a 0) e un pixel di colore 2 (plane 2 = 1 e
+tutti gli altri a 0) facendo un AND plane a plane, il risultato e` sempre 0.
+In questi casi conviene usare i bitplane maschera.
+Essi infatti hanno un bit a 1 ogni volta che il corrispndente pixel del bob
+ha un colore diverso dallo sfondo.
+Quindi facendo l'AND tra 2 bitplane maschera si rilevano collisioni qualsiasi
+sia il colore dei pixel (e` come rilevare la collisioni tra le "ombre" dei
+2 bob, che sono immagini ad 1 plane).
+
+Potete vedere un esempio in lezione10h1.s
+
+			  \\ ,\\  /, ,,//
+			   \\\\\X///////
+			    \¬¯___  __/
+			   _;=(  ©)(®_)
+			  (, _ ¯T¯  \¬\
+			   T /\ '   ,)/
+			   |('/\_____/__
+			   l_¯         ¬\
+			    _T¯¯¯T¯¯¯¯¯¯¯
+			 /¯¯¬l___¦¯¯¬\
+			/___,  °  ,___\
+			¯/¯/¯  °__T\¬\¯
+			(  \___/ '\ \ \
+			 \_________) \ \
+			    l_____ \  \ \
+			    / ___¬T¯   \ \
+			   / _/ \ l_    ) \
+			   \ ¬\  \  \  ())))
+			  __\__\  \  )  ¯¯¯
+			 (______)  \/\ xCz
+			           / /
+			          (_/
+
+*******************************************************************************
+*			   IL SINUSCROLL				      *
+*******************************************************************************
+
+Quasi sicuramente ognuno di voi sa cosa e` un sine-scroller.
+Si tratta di uno scrolltext che quando scorre sullo schermo sale e scende,
+in modo da formare una sinusoide.
+Prima di iniziare a spiegare come funziona il sine-scroller, e` bene
+puntualizzare alcune cose.
+Innanzitutto, il tempo. Un sine-scroller è una routine molto lenta.
+Un buon sine-scroller può prendere anche più di un quarto del tempo
+disponibile in un fotogramma. Per sistemi privi di caches e di memoria fast
+(in pratica l'Amiga 500 e 600) e` estremamente utile settare a 1 il flag
+BLITTER_NASTY, che da al blitter la priorita` assoluta sul 68000 per
+migliorare le prestazioni della routine.
+Inoltre si deve anche considerare "la qualita`" del sine-scroller che si
+vuole ottenere. Con questo si intende dire quanti pixel dovrebbero essere
+mostrati in ogni posizione sinusoidale.
+Un sine-scroller da 1 pixel e` quello che ha l'aspetto piu` fluido, ma anche
+quello che richiede piu` tempo.
+Non aspettatevi di avere tempo per altri effetti se usate uno schermo non
+"double bufferizzato". D'altro canto gia` un sine-scroller da 4 pixel inizia
+a sembrare molto "pixelloso". Per questo spiegheremo inizialmente come
+realizzare un sine-scroller da 2 pixel, e poi le variazioni da apportare per
+le versioni da 1 e da 4 pixel.
+Siete un po' confusi? Vediamo con un esempio che significa esattamente cio`
+che abbiamo detto a proposito della qualita`.
+
+Immaginate che la figura riportata sotto sia la lettera A di un font bitmap:
+
+.**************.
+****************
+****************
+******....******
+*****......*****
+****************
+****************
+****************
+*****......*****
+*****......*****
+*****......*****
+*****......*****
+*****......*****
+*****......*****
+*****......*****
+................
+
+	Fig. 31 lettera A
+
+
+Un "*" indica un bit settato a 1, un "." è un bit azzerato.
+Il carattere "A", quando viene scrollato normalmente in orizzontale appare
+sempre uguale a come e` memorizzato nei dati del font.
+In un sine scroller noi non vogliamo questo. Noi vogliamo cambiare che le
+colonne di pixel che compongono il carattere, in modo che assumano differenti
+posizioni verticali, in base ai valori di una sinusoide.
+In un sine-scroller da 1 pixel, ogni colonna di pixel assume una differente
+posizione verticale. Invece, in un sine-scroller da 2 pixel, le colonne di
+pixel sono accoppiate a 2 a 2, e ogni coppia di colonne assume una posizione
+verticale diversa dalle altre coppie.
+Un sine-scroller da 1 pixel deforma il carattere A nel modo illustrato dalla
+figura seguente.
+
+ .
+ **
+ ***
+ ****
+ *****
+ ******
+ *******
+ ********
+ *********
+ *****..***
+ ******..***
+ *******..***
+ ********..***
+ *****.***.****
+ *****..***.****
+ .****...*******.
+  .***....*******
+   .**.....******
+    .*......*****
+     .......*****
+      ......*****
+       .....*****
+        ....*****
+         ...*****
+          ..*****
+           .*****
+            .****
+             .***
+              .**
+ 	       .*
+ 	        .
+
+
+	Fig. 31 lettera A deformata da un sine-scroller da 1 pixel
+
+Come vedete ogni colonna di pixel si trova in una posizione verticale diversa
+dalle altre. Un sine-scroller da 2 pixel invece produce il seguente risultato:
+
+ .*
+ **
+ ****
+ ****
+ ******
+ ******
+ ********
+ ********
+ *****.****
+ ******..**
+ ******..****
+ ********..**
+ *****.**..****
+ *****.********
+ *****...**.****.
+ ..***...********
+   ***.....******
+   ..*.....******
+     *......*****
+     .......*****
+       .....*****
+       .....*****
+         ...*****
+         ...*****
+           .*****
+           ..****
+             ****
+             ..**
+               **
+ 	       ..
+
+	Fig. 32 lettera A deformata da un sine-scroller da 2 pixel
+
+Come vedete coppie di colonne adiacenti hanno la stessa posizione verticale.
+In un sine-scroller da 4 pixel, come avrete capito, le colonne di pixel
+son raggruppate a 4 a 4 e ogni gruppo assume una posizione diversa da un'altro
+gruppo. 
+Ora dovreste aver capito cosa si intende per sine-scroll da '1 pixel' o da
+'2 pixel'.
+Il metodo per realizzare un sine-scroller e` molto semplice.
+Si parte da una normale routine di text scrolling, come quelle che abbiamo
+visto in precedenza.
+Pero`, invece di disegnare e scrollare il nostro testo sullo schermo visibile,
+lo facciamo in un buffer di dati allocato da qualche parte in memoria.
+Questo buffer di scroll non è mai visibile.
+Da questo buffer noi prendiamo delle "fettine" verticali di scroller e le
+copiamo nello schermo visibile.
+Ogni "fettina" viene copiata ad una differente posizione verticale, in base
+ad i valori della sinusoide.
+Lo spessore delle "fettine" determina la qualita` del sine-scroller.
+Se esse sono spesse 1 pixel, abbiamo un sine scroller da 1 pixel, se sono
+spesse 2 pixel abbiamo una routine da 2 pixel e cosi` via.
+Vediamo piu` in dettaglio come effettuare la copia delle "fettine".
+Poiche` le fettine sono molto sottili, faremo blittate larghe una sola word.
+Per selezionare all'interno della word solo la fettina (cioe` solo le colonne
+di pixel) che ci interessano, useremo uno dei registri maschera del canale A
+(questo significa che siamo obbligati ad usare il canale A per la lettura)
+che ci permette di cancellare tutte le colonne di pixel che non fanno parte
+della fettina che ci interessa.
+Naturalmente, il valore della maschera variera` a seconda della "fettina" da
+leggere.
+La scrittura, come abbiamo gia` detto, avviene ogni volta ad una diversa
+posizione verticale. Quando effettuiamo la scrittura, non basta fare una
+semplice copia da A a D: se facessimo in questo modo, copiando una "fettina"
+cancelleremmo una parte delle "fettine" copiate in precedenza che appartengono
+alla stessa word della "fettina" attuale.
+Infatti, anche se le altre "fettine" non si sovrappongono alla nostra (perche`
+si trovano una accanto all'altra) siccome la nostra blittata e` larga una word,
+con una copia semplice copieremmo sullo schermo anche le colonne di pixel
+azzerate dalla maschera che si trovano a fianco della "fettina" attuale.
+Per risolvere questo problema, facciamo un OR tra la nostra word e lo sfondo
+sulla quale la scriviamo. In questo modo i pixel azzerati della word attuale
+non sovrascrivono quelli dello sfondo.
+Per realizzare il sine-scroller e` sufficente copiare dal buffer allo schermo,
+mediante questo procedimento, tutto lo scrolltext una "fettina" alla volta.
+Ovviamente tutta la procedura deve essere ripetuta ad ogni fotogramma,
+perche` lo scrolltext si e` spostato e ogni volta, prima di effettuarla,
+e` necessario cancellare lo schermo.
+Notate che maggiore e` l'ampiezza della sinusiode e maggiore e` l'area di
+schermo coinvolta nell'operazione, e che dobbiamo ogni volta cancellare.
+Quindi conviene usare una sinusiode poco ampia per migliorare le prestazioni.
+
+In lezione10i1.s e lezione10i2.s troverete rispettivamente un sine-scroller
+da 2 pixel e uno da 1 pixel.
+
+		           /#\    ...
+		          /   \  :   :
+		         / /\  \c o o ø
+		        /%/  \  (  ^  )    /)OO
+		       (  u  / __\ O / \   \)(/
+		       UUU_ ( /)  `-'`  \  /%/
+		        /  \| /   <  :\  )/ /
+		       /  . \::.   >.( \ ' /
+		      /  /\   '::./|. ) \#/
+		     /  /  \    ': ). )
+		 __ û%,/    \   / (.  )
+		(  \% /     /  /  ) .'
+		 \_ò /     /  /   `:'
+		  \_/     /  /
+		         /\./
+		        /.%
+		       / %
+		      (  %
+		       \ ~\
+		        \__)
+
+*******************************************************************************
+*				ANIMAZIONE				      *
+*******************************************************************************
+
+Concludiamo la lezione con una breve spiegazione su come creare animazioni con
+il blitter. Un animazione e` costituita da una serie di immagini (fotogrammi)
+che devono essere mostrati secondo una certa sequenza.
+Di solito tra un fotogramma e l'altro non varia tutta l'immagine, ma solo
+delle parti di essa.
+Per esempio potremmo avere un castello con delle bandiere che si muovono a
+causa del vento.
+Chiaramente solo la parte di schermo sulla quale sono disegnate le bandiere
+cambia tra un fotogramma e l'altro.
+Per risparmiare memoria non conviene memorizzare tutte le immagini
+dell'animazione: basta memorizzare la prima immagine e poi i "pezzi" delle
+altre immagini che contengono le differenze con la prima.
+In questo modo per realizzare l'animazione basta copiare i nuovi "pezzi" di
+immagine sulla vecchia.
+Per questo scopo ci e` molto utile il blitter che come sapete e` molto piu`
+veloce del 68000 (di base) nel copiare dati.
+In sostanza per realizzare un animazione bisogna fare delle copie con il
+blitter, cosa di cui ormai siamo maestri.
+Le animazioni possono essere divise in due tipi a seconda di come e`
+strutturata la sequenza di fotogrammi.
+Nelle animazioni del primo tipo, dette animazioni "cicliche", i fotogrammi
+vengono disegnati uno dopo l'altro in base ad un ordine predeterminato.
+Dopo  che e` stato disegnato l'ultimo, l'animazione continua ripartendo dal
+primo fotogramma.
+Anche nelle animazioni del secondo tipo (animazioni "avanti-indietro") i
+fotogrammi vengono disegnati in base ad un ordine. Pero`, dopo che e` stato
+disegnato l'ultimo fotogramma, l'animazione continua ridisegnando i fotogrammi
+in ordine inverso, dal penultimo fino a tornare al primo.
+A questo punto l'animazione procede di nuovo in ordine diretto fino
+all'ultimo, poi ancora in ordine inverso e cosi` via.
+In base al tipo di animazione si dovra` usare una diversa routine di gestione
+dei fotogrammi.
+
+Vi presentiamo 2 esempi di animazione (uno per ogni tipo) nei listati
+lezione10l1.s e lezione10l2.s.
+
+E` possibile anche realizzare dei bob animati. Si tratta di bob che cambiano
+forma ogni volta che vengono disegnati.
+Naturalmente anche per i bob abbiamo a disposizione una serie di fotogrammi
+che vengono presentati in sequenza, in base ad una delle 2 tecniche di cui
+abbiamo parlato prima. Ogni volta che il bob deve essere disegnato bisogna
+utilizzare un figura diversa.
+E` molto comodo dunque poter disporre di una routine universale, capace di
+disegnare come un bob qualsiasi figura, di dimensioni variabili.
+
+Troverete una routine del genere per schermi in formato normale nell'esempio
+lezione10m1.s e per schermi in formato INTEREAVED nell'esempio lezione10m2.s.
+
+		            .
+		           .¦.¦:.:¦:.:¦
+		          .;/'____  `;l
+		          ;/ /   ¬\  __\
+		          / /    ° \/o¬\\
+		         /  \______/\__//
+		        / ____       \  \
+		        \ \   \    ,  )  \
+		        /\ \   \_________/
+		       /    \   l_l_|/ /
+		      /    \ \      / /
+		   __/    _/\ \/\__/ /
+		  / ¬`----'¯¯\______/
+		 /  __      __ \
+		/   /        T  \
+
+******************************************************************************
+*			I MODI SPECIALI DEL BLITTER			     *
+******************************************************************************
+
+In aggiunta a tutte le funzioni descritte fin qui, il blitter ha anche
+la possiblita` di disegnare linee e quella di "riempire" delle aree, cioe`
+di settare a 1 tutti i bit di una determinata regione di un bitplane.
+Queste capacita` aggiuntive sono ottenute mediante degli speciali modi di
+funzionamento del blitter.
+
+Iniziamo a parlare del tracciamento di linee.  Quando il blitter opera in modo
+di tracciamento di linee (detto "line-mode") esso disegna una linea da un punto
+dello schermo (che chiamiamo P1) a un altro (che chiamiamo P2). Indichiamo
+con X1 e Y1, rispettivamente l'ascissa e l'ordinata di P1, e con X2 e Y2
+l'ascissa e l'ordinata di P2. In "line-mode" molti registri funzionano in
+maniera completamente differente rispetto a quanto visto finora ed e`
+necessario settarli in maniera opportuna. Alcuni settaggi dipendono dalla
+posizione di P1 e P2. Prima di descrivere l'uso dei registri e` necessario
+fare delle considerazioni preliminari.
+Durante il tracciamento il blitter considera lo schermo diviso in "ottanti"
+rispetto al punto P1. Per capire meglio guardate la seguente figura:
+
+			     |
+			     |
+		    \  (2)   |  (1)   /
+		     \ 	     |       /
+		      \   3  |  1   /
+		       \     |     /
+			\    |    /
+		(3)      \   |   /       (0)
+			  \  |  /
+		    7      \ | /     6
+		       	    \|/
+		-------------*-------------
+			    /|\
+		    5      / | \     4
+			  /  |  \
+		(4)      /   |   \       (7)
+			/    |    \
+		       /     |     \
+		      /   2  |  0   \
+		     / 	     |       \
+		    /  (5)   |  (6)   \
+			     |
+			     |
+
+
+	Fig. 1 Ottanti
+
+Nella figura l'asterisco (*) rappresenta il punto P1. Il blitter considera
+lo schermo diviso nelle 8 regioni (dette ottanti) rappresentate in figura.
+La linea da tracciare appartene ad uno degli ottanti, quello nel quale si
+trova P2. I numeri tra parentesi servono per numerare gli ottanti secondo la
+notazione di solito usata da noi "umani" (cioe` in senso antiorario).
+Il blitter invece li numera in una maniera un po' strana che e` indicata dai
+numeri senza parentesi. Di questa divisione dello schermo terremo conto in
+seguito. 
+Dobbiamo inoltre definire alcune quantita` che dovremo usare per preparare la
+blittata. Chiamiamo DiffX la differenza tra le ascisse di P2 e P1, cambiata di
+segno nel caso in cui venga negativa, in modo che sia comunque positiva.
+In formule poniamo:
+
+DiffX = abs(X2 - X1)
+
+dove "abs" indica la funzione che calcola il valore assoluto di un numero.
+Facciamo la stessa cosa con le ordinate ponendo:
+
+DiffY = abs(Y2 - Y1).
+
+A questo punto definiamo DX e DY rispettivamente come massimo e minimo tra
+DiffX e DiffY. In formule:
+
+DX = max(diffX,diffY)
+DY = min(diffX,diffY).
+
+Cominciamo ora a vedere come vanno settati i registri del blitter, a cominciare
+da BLTCON1 che permette di attivare il line-mode. Il bit 0 di BLTCON1 serve
+appunto a questo scopo. Quando e` settato a 1 si attiva il line-mode. Il bit 1
+permette di disegnare delle linee "speciali" che permettono il successivo
+riempimento di aree del blitter. Ne parleremo piu` avanti, per ora lo lasciamo
+a 0 (linee normali). Nei bit 2,3 e 4 va scritto il numero dell'ottante nel
+quale si trova il punto P2. Naturalmente dovremo usare la numerazione del
+blitter. Per convertire facilmente la  normale numerazione in senso antiorario
+in quella usata dal blitter potete consultare la seguente tabella:
+
+
+	Valore Bit di BLTCON1	 Numero Ottante
+	---------------------	 --------------
+		4 3 2
+		- - -
+		1 1 0			0
+		0 0 1			1
+		0 1 1			2
+		1 1 1			3
+		1 0 1			4
+		0 1 0			5
+		0 0 0			6
+		1 0 0			7
+
+Il bit 6 di BLTCON1 (detto bit SIGN) va settato a 1 nel caso in cui risulti
+che 4*DY-2*DX<0. Altrimenti (cioe` se 4*DY-2*DX>0) va settato a 0.
+I bit da 12 a 15 di BLTCON1 contengono la posizione di partenza del "pattern"
+della linea. Infatti e` possibile disegnare non solo linee "solide", ma anche
+linee tratteggiate, mediante un "pattern" che viene ripetuto lungo tutta la
+linea (abbiamo gia` visto esempi di pattern nella lezione 9). I bit da 12 a
+15 di BLTCON1 indicano il pixel a partire dal quale deve essere usato il
+pattern. Naturalmente (abbiamo solo 4 bit) deve essere uno dei primi 16 pixel
+della linea.
+Tutti gli altri bit di BLTCON1 vanno lasciati a 0.
+Veniamo ora a BLTCON0. Il byte basso di tale registro (LF, quello dei minterms)
+permette di selezionare 2 diverse modalita` di disegno. Ponendo LF=$4A viene
+eseguita un operazione di OR-esclusivo tra la linea e lo sfondo su cui viene
+tracciata. In pratica i pixel attraversati dalla linea vengono invertiti.
+Ponendo invece LF=$CA viene eseguita un operazione di OR semplice tra la linea
+e lo sfondo. In pratica i pixel attraversati dalla linea vengono accesi.
+I canali da attivare per la blittata sono A,C e D. Quindi i bit 8,9 e 11
+devono essere settati a 1, mentre il 10 a 0.
+I bit da 12 a 15 di BLTCON0 devono invece contenere i 4 bit meno significativi
+(cioe` piu` bassi) di X1, l'ascissa del punto P1.
+I settaggi degli altri registri sono fortunatamente piu` semplici.
+I registri BLTAFWM e BLTALWM devono essere settati al valore $FFFF (non
+mascherano nulla).
+Il registro BLTADAT deve contenere invece il valore $8000, che rappresenta il
+pixel da disegnare. Il registro BLTBDAT invece contiene il "pattern" della
+linea, a cui abbiamo accennato prima. Un valore $FFFF fa disegnare una linea
+continua.
+Nel tracciamento di linee viene usato solo la parte bassa di BLTAPT, ovvero
+solo il registro 16 bit BLTAPTL, che deve essere settato al valore 4*DY-2*DX.
+Il registro BLTAMOD, invece va settato al valore 4*DY-4*DX.
+Il registro BLTBMOD va settato al valore 4*DY.
+I registri BLTCPT e BLTDPT devono contenere l'indirizzo della word dello
+schermo che contiene il pixel P1.
+I registri BLTCMOD e BLTDMOD devono contenere la larghezza dello schermo
+espressa in bytes.
+Infine il registro BLTSIZE deve essere settato in maniera da eseguire una
+blittata larga 2 words e alta un numero di linee pari a DX+1.
+Il che vuol dire che i bit da 0 a 5 devono contenere il numero 2 mentre i
+bit da 6 a 15 il valore DX+1. Come accade di solito, scrivendo nel registro
+BLTSIZE si attiva il blitter. Per questo motivo, tale registro deve essere
+scritto per ultimo.
+
+In sintesi, i valori da caricare nei registri sono:
+BLTADAT = $8000
+BLTBDAT = pattern linea ($FFFF per una linea solida)
+
+BLTAFWM = $FFFF
+BLTALWM = $FFFF
+
+BLTAMOD = 4 * (dy - dx)
+BLTBMOD = 4 * dy
+BLTCMOD = larghezza del bitplane in byte
+BLTDMOD = larghezza del bitplane in byte
+
+BLTAPT = (4 * dy) - (2 * dx)
+BLTBPT = non usato
+BLTCPT = puntatore alla word che contiene il primo pixel della linea
+BLTDPT = puntatore alla word che contiene il primo pixel della linea
+
+BLTCON0 bit 15-12 = i 4 bit piu` bassi di X1
+BLTCON0 bit 11 (SRCA), 9 (SRCC), e 8 (SRCD) = 1
+BLTCON0 bit 10 (SRCB) = 0
+BLTCON0 LF byte di controllo = $4A (per linea in EOR)
+			     = $CA (per linea in OR)
+
+BLTCON1 bit 0 = 1
+BLTCON1 bit 4-2 = numero ottante (dalla tavola)
+BLTCON1 bit 15-12 = bit iniziale per pattern linea 
+BLTCON1 bit 6 = 1 se (4 * dy) - (2 * dx)) < 0
+	      = 0 altrimenti
+BLTCON1 bit 1 = 0 (per linee normali)
+	      = 1 (per linee speciali per il fill)
+
+BLTSIZE bit 15-6 = dx + 1
+BLTSIZE bit 5-0 = 2
+
+Un esempio di tracciamento di linea e` contenuto in lezione10n.s.
+Si tratta di una routine semplificata al massimo, senza ottimizzazioni
+particolari, per facilitare la comprensione a scapito della velocita` di
+esecuzione.
+
+
+Modo di Riempimento aree
+
+Oltre a copiare dati, il blitter può simultaneamente eseguire un'operazione
+di fill (riempimento) durante la copia. Questo modo puo` essere attivato
+con una qualsiasi blittata standard (copa, AND, OR, ecc.) e viene effettuato
+DOPO tutte le altre operazioni che gia` conoscete (shift, mascheramenti, ecc.).
+Per capire come funziona il riempimento immaginate che il blitter scriva in
+uscita un bit alla volta (il che e` falso, come sapete, perche` scrive sempre
+UNA WORD alla volta) e che stia effettuando una semplice operazione di copia.
+Finche` legge bit di valore 0, li copia normalmente. Ad un certo punto gli
+arriva un bit di valore 1. Lo copia ugualmente nell'uscita, ma a partire da
+questo momento, invece di continuare a copiare i bit seguenti, manda in uscita
+tutti bit di valore 1. Quando pero` legge un secondo bit di valore 1, riprende
+il comportamento normale. Quando poi legge un terzo bit di valore 1, ricomincia
+a mandare degli 1 in uscita, fino al successivo 1 in ingresso, e cosi` via.
+Vediamo cosa succede ai dati copiati, mostrando una sequenza di bit in ingresso
+di esempio e la corrispondente uscita:
+
+ingresso 	000100010010010001000001000110010010
+uscita		000111110011110001111111000110011110
+
+In pratica i bit di valore 1 sono considerati i bordi dell'area e quindi
+il blitter riempie (cioe` setta ad 1) i bit compresi dentro i bordi.
+Vediamo ora i dettagli tecnici del fill-mode.
+Come abbiamo gia` detto esso puo` essere usato in combinazione con una
+qualsiasi blittata, in quanto il riempimento viene effettuato dopo che i dati
+letti dalle 3 sorgenti sono stati combinati tra loro in base alla funzione
+logica selezionata dai minterms.
+Il fill-mode, pero` puo` essere usato solo con blittate effettuate in modo
+discendente.
+Vi sono 2 diversi tipi di fill, detti inclusivo ed esclusivo. Ogni tipo
+di fill ha un suo bit di abilitazione. Per attivare il fill-mode bisogna
+settare ad 1 uno dei 2 bit di abilitazione. Non e` possibile attivare
+contemporaneamente i 2 diversi fill. Vediamo le differeze tra i 2 tipi di fill.
+Il modo di riempimento inclusivo riempe tra le linee, lasciandole intatte.
+Il modo esclusivo riempe tra le linee, ma pur lasciando la linea di
+delimitazione di destra, cancella quella di sinistra.
+Dunque il fill esclusivo produce forme riempite un pixel più strette dello
+stesso pattern (contorno) riempito con fill inclusivo.
+
+Per esempio, il pattern:
+
+	00100100-00011000
+
+riempito con fill inclusivo, produce:
+
+	00111100-00011000
+
+con fill esclusivo, il risultato sarebbe:
+
+	00011100-00001000
+
+(Naturalmente, i riempimenti sono sempre fatti su piene word di 16-bit.)
+
+Facciamo un altro esempio con l'aiuto di disegni:
+
+fill inclusivo:
+
+		  prima			  dopo il fill inclusivo
+	 _______________________         _______________________
+	|			|	|			|
+	|			|	|			|
+	|   1   1      1   1	|	|   11111      11111	|
+	|    1  1	1  1	|	|    1111	1111	|
+	|     1 1	 1 1	|	|     111	 111	|
+	|      11	  11	|	|      11	  11	|
+	|     1 1	 1 1	|	|     111	 111	|
+	|    1  1	1  1	|	|    1111	1111	|
+	|   1   1      1   1	|	|   11111      11111	|
+	|			|	|			|
+	|_______________________|	|_______________________|
+
+
+fill esclusivo:
+
+		  prima			  dopo il fill esclusivo
+	 _______________________	 _______________________
+	|			|	|			|
+	|			|	|			|
+	|   1   1      1   1	|	|    1111       1111	|
+	|    1  1       1  1	|	|     111	 111	|
+	|     1 1	 1 1	|	|      11	  11	|
+	|      11	  11	|	|       1	   1	|
+	|     1 1	 1 1	|	|      11	  11	|
+	|    1  1       1  1	|	|     111	 111	|
+	|   1   1      1   1	|	|    1111       1111	|
+	|			|	|			|
+	|_______________________|	|_______________________|
+
+
+come potete vedere, con il fill esclusivo sono state cancellate le linee
+sinistre della figura. In questo modo si ottengono figure con bordi piu`
+affilati.
+Il bit di abilitazione del fill inclusivo e` il bit 3 di BLTCON1, mentre
+quello del fill esclusivo e` il bit 4, sempre di BLTCON1.
+
+C'è un altro bit che serve a controllare il riempimento.
+Si tratta del bit 2 di BLTCON1 (detto FILL_CARRYIN) che, quando viene settato
+ad 1, forza il riempimento delle zone esterne alle linee, anziche' di quelle
+interne. Torniamo al primo esempio che abbiamo fatto e vediamo cosa succede
+alla nostra riga di bit quando il bit FILL_CARRYIN e` settato a 1.
+La riga di partenza era:
+
+	00100100-00011000
+
+
+Con fill inclusivo e FILL_CARRYIN=1, l'output sarebbe:
+
+	11100111-11111111
+
+Con fill esclusivo e FILL_CARRYIN=1, l'output sarebbe:
+
+	11100011-11110111
+
+Vediamo cosa succede nel caso del secondo esempio con fill inclusivo e
+FILL_CARRYIN=1.
+
+
+		  prima				  dopo
+	 _______________________ 	 _______________________
+	|			|	|			|
+	|			|	|			|
+	|   1   1      1   1	|	| 111   1111111   11	|
+	|    1  1	1  1	|	| 1111  11111111  11	|
+	|     1 1	 1 1	|	| 11111 111111111 11	|
+	|      11	  11	|	| 111111111111111111	|
+	|     1 1	 1 1	|	| 11111 111111111 11	|
+	|    1  1	1  1	|	| 1111  11111111  11	|
+	|   1   1      1   1	|	| 111   1111111   11	|
+	|			|	|			|
+	|_______________________|	|_______________________|
+
+			fill inclusivo e bit FCI = 1
+
+Il fill-mode viene usato sopratutto per il riempimento di poligoni. I bordi
+dei poligoni vengono tracciati usando il line-mode del blitter.
+Un primo esempio molto semplice e` presentato nel listato lezione10o.s, nel
+quale sono illustrati i vari tipi di fill.
+Quando l'area da riempire e` delimitata da linee aventi pendenza minore di
+45 gradi, sorge un problema. In questo caso, infatti, accade che una linea
+e` formata da pixel che possono trovarsi adiacenti sulla stessa riga
+orizzontale dello schermo. La situazione e` mostrata dalla seguente figura
+nella quale gli asterischi (*) rappresentano dei pixel di valore 1.
+
+
+
+ 		  *
+ 		  *
+		 *		linea con pendenza > di 45 gradi
+		*
+		*
+
+
+ 		    *
+ 		  **
+		**		linea con pendenza < di 45 gradi
+	       *
+	     **
+
+Come vedete quando una linea ha pendenza maggiore di 45 gradi non capita mai
+che 2 dei suoi pixel siano affiancati sulla stessa riga dello schermo.
+Al contrario cio` accade quando la pendenza della linea e` minore di 45 gradi.
+Questo fatto crea il problema nel riempimento. Infatti quando il blitter
+incontra 2 pixel affiancati sulla stessa riga durante il riempimento, li
+considera come 2 bordi distinti, e quindi non riempie i pixel che si trovano
+a destra della linea. trovate un esempio di questo problema nel listato
+lezione10p.s. Per ovviare a questo problema, i progettisti del blitter
+ci hanno messo a disposizione una speciale modalita` di tracciamento linee 
+(a cui avevamo accennato in precedenza) che produce linee aventi un solo pixel
+per ogni riga orizzontale. Chiaramente se tracciate una linea in questa
+modalita` senza poi fare il fill, essa vi appartira` "spezzettata".
+Nel listato lezione10q.s trovate la soluzione al problema mostrato in
+lezione10p.s.
+Nell'esempio lezione10r.s proviamo a tracciare e riempire un poligono chiuso
+formato da molte linee. Notiamo che si riscontra anche qui in piccolo problema.
+Il problema nasce dal fatto che i vertici del poligono sono in comune ad una
+coppia di linee. Quando disegnamo delle linee in modalita EOR invertiamo i
+pixel dello sfondo. I vertici vengono invertiti 2 volte e quindi alla fine
+risultano azzerati. Quindi c'e` un "buco" nel bordo del poligono, a causa del
+quale il riempimento viene effettuato male. Se invece disegnamo le linee
+in modalita` OR, i vertici rimangono al valore 1. Cio` crea problemi con
+i vertici in alto e in basso, in quanto essi si trovano isolati sulla riga
+a cui appartengono e pertanto il riempimento inizia a partire da essi ma
+non termina mai. Per capire meglio osservate la seguente figura (riferita al
+vertice basso):
+
+	*        *		
+	 *     *		Prima del FILL
+	  *  *
+	   *
+
+	   ^
+	   +---- vertice in basso
+
+
+	**********		
+	 *******		Dopo del FILL
+	  ****
+************
+
+	   ^
+	   +---- vertice in basso
+
+Come vedete sulla riga su cui giace l'ultimo vertice il riempimento non
+termina perche` non c'e` un altro pixel settato a 1 che faccia da bordo
+sinistro. Nel caso delle linee in modalita` EOR questo problema non si presenta
+perche` il vertice viene azzerato (cioe` per il fenomeno che ci crea problemi
+per i vertici intermedi).
+Insomma in qualsiasi modo facciamo c'e` sempre un vertice che ci fa sballare
+il fill!
+Vediamo come trarci d'impaccio. Conviene disegnare le linee in modalita` EOR,
+in modo da eliminare il problema dei vertici alto e basso. Inoltre facciamo in
+modo di disegnare le linee sempre dall'alto verso il basso e, prima di
+disegnarle invertiamo (con una BCHG) il primo pixel. In questo modo tale pixel
+sara` invertito 2 volte (dalla BCHG e poi dalla blittata) e risultara` dunque
+immutato. In questo modo il problema e` risolto. Infatti (siccome abbiamo
+ordinato i punti) ogni vertice intermedio e` disegnato una volta come ultimo
+pixel di una linea (e pertanto viene settato a 1) e una volta come primo
+pixel dell'altra linea (e pertanto rimane immutato, quindi a 1).
+Questa tecnica e` presentata nell'esempio lezione10s.s
+Torniamo ora ad occuparci del trattamento di linee, per illustrare una
+particolarita`. E` possibile tracciare linee larghe 2 pixel semplicemente
+cambiando il valore di inizializzazione di BLTBDAT. La tecnica e` illustrata
+nell'esempio lezione10t1.s. Nell'esempio lezione10t2.s, invece viene presentata
+una routine di tracciamento linee migliore di quella usata finora. Questa
+routine infatti sfrutta molti particolarita` dell'assembler 68000 per
+ottimizzare il calcolo e il caricamento dei registri del blitter.
+
+                    /\\    ____  ,^-o,
+        _a' /(   <.    `-,'    `-';~~
+     ~~ _}\ \(  _  )     ',-'~`../     ,         \         .'"v"'.
+           \(._(.)'      `^^    `^^  .:/          \ /\     = 'm' =
+          ._> _>.   |\__/|        ,,///;,   ,;/   ( )      " \|/ "--_o
+      @..@          /     \      o:::::::;;///  .( o ).   /m"..."m\
+     (\--/)        /_.~ ~,_\    >::::::::;;\\\       _,/
+    (.>__<.)          \@/        ''\\\\\'" ';\      <__ \_.---.
+    ^^^  ^^^    A___A               ';\     _          \_  /   \
+          ____ / o o \      O\   /O      .-/ )-""".      \)\ /\.\
+       _/~____   =^= /       O>!<O     oP __/_)_(  )*      //   \\
+      <______>__m_m_>        o   o      "(__/ (___/      ,/'     `\_,
+       _____                                              _____
+    oo/><><>\    ()-()                       ((((     ~..~     \9
+   ( -)><><><>   (o o)      AMIGA RULEZ     ( )(:[    (oo)_____/
+     L|_|L|_|'   /\o/\                      ((((        WW  WW
+          _                   ,--,      ___
+        ('v')           _ ___/ /\|    {~._.~}      __    __  
+        (,_,)       ,;'( )__,  ) ~     ( Y )    o-''))_____\\
+      .,;;;;;,.    //  //   '--;      ()~*~()   "--__/ * * * )
+     .;;'|/';;;;'  '   \     | ^      (_)-(_)   c_c__/-c____/
+	                     ^    ^
+
+Per concludere la lezione presentiamo alcuni effetti realizzati mediante
+tracciamento di linee e fill, nei listati lezione10u1.s, lezione10u2.s,
+lezione10v.s, lezione10x.s. In particolare nell'ultimo vedrete una delle
+tecniche principali della leggendaria demo "State of the Art"!!
+

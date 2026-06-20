@@ -1,0 +1,86 @@
+
+                                   ************
+                                   * C Filter *
+                                   ************
+
+
+
+Introduction
+------------
+
+La semaine derniere je travaillais sur mon projet
+de C et j'avais besoin de savoir comment les
+commandes du pré-processeur étaient interprétées.
+Mais la sortie générée par l'option -E de mon
+compilateur comportait énormément de lignes vides,
+rendant le source assez pénible à lire (et encore
+plus à imprimer). J'ai alors décidé de créer C Filter.
+
+
+Installation
+------------
+
+Copiez simplement C Filter dans un répertoire quelconque.
+N'oubliez pas qu'il a besoin de la librairie Ixemul pour
+fonctionner (compilé avec GCC). Elle est disponible sur
+Aminet ou dans l'archive GCC.
+
+
+Utilisation
+-----------
+
+CFilter <nomfichier>
+
+où nomfichier représente le fichier contenant votre source
+traité par le pré-processeur.
+
+
+Responsabilités
+---------------
+
+Vous utilisez CFilter à vos risques et périls. Il a été minutieusement
+testé sur ma machine (A1200). Je ne peux en aucun cas être tenu pour responsable
+s'il fait de la casse (de toutes façons il n'a pas a en faire au vu des algorithmes
+utilisés).
+
+
+Historique
+----------
+
+Mars 1995       Version 1.0     Diffusion initiale
+
+
+
+Auteur/Distribution
+-------------------
+
+C Filter a été crée par le cerveau malade de
+
+Mr Franck ANIERE
+30, Rue Jean Bouin
+93220 GAGNY
+
+E-Mail : aniere@massena.univ-mlv.fr
+         aniere@fillmore.univ-mlv.fr
+         aniere@univ-mlv.fr (si les 2 autres ne marchent pas)
+
+
+Vous pouvez me contacter pour toutes remarques ou suggestions, ainsi
+que pour me signaler des bugs.
+
+
+Ce produit est FREEWARE mais je garde un copyright dessus.
+Vous pouvez le diffuser librement tant que l'archive reste intacte et
+que vous ne mettez pas un virus dedans.
+
+J'autorise Aminet, Fred Fish, Funet et toute organisation de DP ainsi que
+les magazine Amiga à diffuser ce produit, sur disquette ou CD ROM, tant
+que le prix du support reste raisonnable. France Festival Distribution
+NE SERA JAMAIS AUTORISE a diffuser ce produit.
+
+
+Projets
+-------
+
+A vrai dire je ne vois pas quoi rajouter. Et vous ?
+

@@ -1,0 +1,296 @@
+DisKo7.txt
+
+
+Dérivation des classes MUI
+
+Notre programme DisKo, bien qu'extrêmement dépouillé, présente l'apparence et les fonctionnalités d'un vrai player de CD.
+D'un côté, il faudrait améliorer le support du module cdmanager mais ce n'est pas l'objet de la série. Ainsi, cette partie
+restera notre facteur limitant ... D'un autre côté, pour arriver jusque là nous avons acquis une connaissance de MUI
+suffisante pour découvrir le concept le plus attendu : l'héritage de classe !
+
+
+En programmation objet, l'héritage permet de créer une classe qui découle d'une autre. Ainsi, elle en récupère les propriétés
+mais l'intérêt est de lui en ajouter pour un besoin particulier. Par exemple, en regardant ce qui existe, la classe String découle de la classe Area,
+c'est pourquoi elle possède aussi les attributs Frame ou Font. Mais pour les besoins qui font toute sa spécificité, la classe String
+s'est enrichie des attributs MaxLen, Format, Contents et autres qui lui sont propres. Si on souhaitait développer un composant
+qui permette la saisie facilitée de dates, on pourrait dériver cette classe String en lui ajoutant des traitements propres aux dates.
+
+
+Application à DisKo
+
+Entre la gestion des clics sur les boutons d'action, l'affichage de la liste, la mise à jour du numéro de piste courante, etc. on peut
+commencer à s'y perdre. C'est pour cela qu'il faut confier des tâches à un objet d'un nouveau type. Pour DisKo, nous allons donc
+créer une nouvelle classe qui gèrera tous les traitements qui constituent le coeur d'un player de CD. Normalement, cette classe
+pourrait être réutilisable dans une autre application bien que dans ce cas, ce ne soit pas évident.
+
+En gros, nous voulons créer une boîte noire à qui l'on s'adresse pour qu'elle réalise les tâches de base d'un player. Nous allons donc
+dériver la classe Group qui peut contenir plusieurs objets et dans notre cas : une liste, un indicateur de la piste courante
+et un composant Busy pour signaler l'activité du lecteur. L'avantage c'est que tout ce qui concerne l'interface n'utilise que des appels MUI : désormais il sera
+inutile d'utiliser des hooks (cf. chapitres précédents) pour réaliser une action sur un composant donné. Au lieu de ça, on adressera des messages (appels de méthodes
+ou de set() pour changer un attribut) à notre nouvel objet, qui lui, en interne, va appeler des fonctions non MUI. On réalise une
+encapsulation des traitements, ce qui représente aussi une caractéristique de la programmation objet. Ici on s'affranchit totalement de savoir
+comment sont traités les accès aux lecteurs CD.
+
+
+Un peu de technique
+
+Dans la pratique, dériver une classe consiste à :
+- définir le contenu de la nouvelle classe pour déclarer une structure de données interne à la classe
+- créer une "custom class" à partir d'une classe MUI existante et utiliser celle-ci dans la description de l'interface
+- implémenter, comme dans la technologie objet classique, un constructeur et un destructeur
+- ajouter ce que l'on appelle une fonction "dispatcher", terme expliqué ci-dessous
+- ajouter des fonctions spécifiques à la nouvelle classe
+
+En tant que classe fille, la nouvelle classe doit implémenter les attributs et méthodes de la mère. Donc chaque appel adressé à l'objet
+fils doit remonter au père, après avoir éventuellement appliqué ses spécificités. Le dispatcher est une fonction spéciale par qui
+passent tous les appels aux méthodes de la classe. Si une méthode n'a pas été redéfinie, on appelle la méthode de l'objet père avec
+la syntaxe établie : "DoSuperMethodA(cl, obj, msg)".
+En revanche, si la méthode est implémentée dans la nouvelle classe, c'est elle qui est appelée et qui est éventuellement chargée d'appeler
+la méthode mère.
+
+Voici à quoi ressemble notre dispatcher :
+
+<code du dispatcher>
+DISPATCHERPROTO(DisKoDispatcher)
+{
+	DISPATCHERARG
+
+	struct DisKoData *data = (struct DisKoData *)INST_DATA(cl, obj);
+
+	/* Un appel de méthode a été fait sur l'objet DisKo, on identifie laquelle c'est */
+
+	switch(msg->MethodID){
+		case OM_NEW :						return DisKoNew(cl, obj, (APTR)msg);
+		case OM_DISPOSE :					return DisKoDispose(cl, obj, (APTR)msg);
+		case OM_SET:						return DisKoSet(cl, obj, (APTR)msg);
+
+		case MUIM_DisKo_Play :			return DisKoPlay(data);
+		case MUIM_DisKo_Stop :			return DisKoStop(data);
+		case MUIM_DisKo_Previous :		return DisKoPrevious(data);
+		case MUIM_DisKo_Next :			return DisKoNext(data);
+
+	}
+
+	/* Si la méthode n'appartient à aucune que l'on a défini, on remonte l'appel à l'objet père */
+	return DoSuperMethodA(cl, obj, msg);
+}
+
+Les termes DISPATCHERPROTO et DISPATCHERARG peuvent sembler curieux : il s'agit de macros qui permettent un fonctionnement à la fois
+en 68k et en PPC. Comme pour les hooks, c'est lié à l'utilisation de registres particuliers pour le passage des paramètres. Ces macros
+sont données dans le source (elles utilisent également d'autres éléments du fichier "declgate.h" fourni).
+Le dipatcher montre clairement, grace au swicth, que pour chaque message reçu en paramètre, on appelle la méthode associée, interne à notre
+nouvelle classe. Si le message ne concerne pas cette dernière, on remonte le message à l'objet père.
+
+Les méthodes de notre classes, tout comme les attributs, doivent être identifiées de manière unique. C'est pourquoi on affecte à chacun(e)
+un ID différent, construit sur une base définie par les règles de la programmation système AmigaOS. La valeur TAG_USER contient une
+base commune à laquelle on ajoute une valeur de notre choix sur 16 bits :
+
+#define DISKOTAGBASE			(TAG_USER + 0x61843716)
+
+#define MUIA_DisKo_Device				(DISKOTAGBASE + 0)
+#define MUIA_DisKo_Unit					(DISKOTAGBASE + 1)
+#define MUIA_DisKo_Track				(DISKOTAGBASE + 2)
+
+#define MUIM_DisKo_Play					(DISKOTAGBASE + 20)
+#define MUIM_DisKo_Stop					(DISKOTAGBASE + 21)
+#define MUIM_DisKo_Previous			(DISKOTAGBASE + 22)
+#define MUIM_DisKo_Next					(DISKOTAGBASE + 23)
+
+
+Continuons de reprendre chaque élément cité plus haut, en commençant par le contenu de la classe. Nous avons décidé que notre groupe
+dérivé contiendrait une liste, un composant busy et un champ texte. Il faut que notre nouvel objet conserve un pointeur sur chacun
+de ces composants et contienne également les variables de ses propriétés internes, le tout réuni dans une unique structure :
+
+<code de la structure>
+struct DisKoData {
+	Object *lv_titles;
+	Object *lst_titles;
+	Object *busy;
+	Object *txt_info;
+
+	char device[64];
+	int unit;
+
+	int track;
+};
+
+Dès qu'un objet du type de notre nouvelle classe sera créé (ce qu'on appelle une instanciation), il y aura donc une allocation automatique 
+de cette structure. Ceci est rendu possible car pour que notre classe soit utilisable, il faut la créer dynamiquement avec la fonction
+MUI_CreateCustomClass. Attention : il est important de distinguer une classe et un objet de cette classe !
+
+<code de MUI_CreateCustomClass>
+cl_disko = MUI_CreateCustomClass(NULL, MUIC_Group, NULL, sizeof(struct DisKoData), &DisKoDispatcher);
+
+C'est ça qui permet aussi au programme d'envoyer les messages à notre objet, vu qu'on lui associe ici le dispatcher.
+Cette fonction MUI_CtreateCustomClass() doit être appelée avant que l'on ne construise l'interface. On peut donc effectuer cette opération dans la fonction
+d'initialisation du programme. Ce qui permet d'ajouter un composant de notre classe dans la fenêtre principale de l'interface, qui devient :
+
+<code de l'arborescence de la fenêtre principale>
+	app = (Object *)ApplicationObject,
+		MUIA_Application_Author, "corto@guru-meditation.net",
+		MUIA_Application_Base, "DISKO",
+		MUIA_Application_Title, "DisKo - Exemple 7",
+		MUIA_Application_Version, "$VER: DisKo 1.07 (14/10/04)",
+		MUIA_Application_Copyright, "Mathias PARNAUDEAU",
+		MUIA_Application_Description, "Player de CD audio minimaliste",
+		MUIA_Application_HelpFile, NULL,
+		MUIA_Application_UsedClasses, ClassList,
+
+		SubWindow, window = WindowObject,
+			MUIA_Window_Title, "DisKo - release 7",
+			MUIA_Window_ID, MAKE_ID('W', 'I', 'N', '1'),
+			WindowContents, VGroup,
+
+				Child, RegisterGroup(Pages),
+					MUIA_Register_Frame, TRUE,
+
+					// Onglet utilisation
+					Child, VGroup,
+						Child, HGroup,
+							Child, obj_disko = NewObject(cl_disko->mcc_Class, NULL, MUIA_DisKo_Unit, config.unit, MUIA_DisKo_Device, config.device, TAG_DONE),
+
+							Child, VGroup,
+								Child, Label("Volume"),
+								Child, sl_volume = SliderObject,
+									MUIA_Group_Horiz, FALSE,
+									MUIA_Numeric_Min, 0,
+									MUIA_Numeric_Max, 100,
+									MUIA_Numeric_Value, 38,
+									MUIA_Numeric_Reverse, TRUE,
+								End,
+							End,
+						End,
+
+						Child, HGroup,
+							Child, bt_previous = KeyButton("Précédent", 'p'),
+							Child, bt_next = KeyButton("Suivant", 'v'),
+							Child, bt_play = KeyButton("Jouer", 'j'),
+							Child, bt_pause = KeyButton("Pause", 'a'),
+							Child, bt_stop = KeyButton("Stopper", 's'),
+							Child, bt_eject = KeyButton("Ejecter", 'e'),
+						End,
+
+					End,
+
+					// Onglet configuration
+					Child, VGroup, GroupFrameT("Lecteur CD"),
+						Child, ColGroup(2),
+							Child, Label2("Device"),
+							Child, str_device = String(config.device, 32),
+							Child, Label1("Unit" ),
+							Child, sl_unit = SliderObject,
+								MUIA_Group_Horiz, TRUE,
+								MUIA_Numeric_Min, 0,
+								MUIA_Numeric_Max, 7,
+								MUIA_Numeric_Value, config.unit,
+							End,
+						End,
+						Child, KeyButton("Valider", 'd'),
+					End,
+				End,
+			End,
+		End,
+	End;
+
+Nous avons vu précédemment que pour la structure contenant les données internes (membres privés, en terme de programmation objet), il n'y a
+pas à gérer l'allocation. En revanche, c'est au programmeur de la remplir en affectant les pointeurs de ses composants du groupe.
+Ceci a lieu dans le constructeur de la classe, appelé par l'application en envoyant un message OM_NEW au dispatcher, qui appelle ici la
+fonction DisKoNew() :
+
+<code du constructeur>
+static ULONG DisKoNew(struct IClass *cl, Object *obj, struct opSet *msg)
+{
+	Object *lv_titles, *lst_titles, *busy, *txt_info;
+	int i, tracks;
+
+	obj = DoSuperNew(cl, obj,
+					MUIA_Frame, MUIV_Frame_Group,
+					Child, lv_titles = ListviewObject,
+						MUIA_Listview_List, lst_titles = ListObject,
+							MUIA_Frame, MUIV_Frame_InputList,
+						End,
+					End,
+					Child, HGroup,
+						Child, txt_info = TextObject,
+							MUIA_Frame, MUIV_Frame_Text,
+							MUIA_Text_Contents, "Information piste",
+						End,
+						Child, busy = BusyObject,
+							MUIA_Busy_Speed, MUIV_Busy_Speed_Off,
+						End,
+					End,
+					TAG_MORE, msg->ops_AttrList);
+
+	/* Si l'objet a bien été créé, on poursuit son initialisation */
+
+	if (obj){
+		struct DisKoData *data = (struct DisKoData *)INST_DATA(cl, obj);
+		struct TagItem *tags,*tag;
+
+		/* On sauvegarde dans la structure les références sur les objets du groupe,
+         sinon elles seront perdues à la fermeture de la fonction constructeur */
+
+		data->lv_titles = lv_titles;
+		data->lst_titles = lst_titles;
+		data->busy = busy;
+		data->txt_info = txt_info;
+
+		strcpy(data->device, "ide.device");
+		data->unit = 2;
+
+		data->track = 1;
+
+		/* parse initial taglist */
+
+		for (tags=((struct opSet *)msg)->ops_AttrList;tag=NextTagItem(&tags);){
+			switch (tag->ti_Tag){
+				case MUIA_DisKo_Unit:
+					set(obj, MUIA_DisKo_Unit, tag->ti_Data);
+					break;
+				case MUIA_DisKo_Device:
+					set(obj, MUIA_DisKo_Device, tag->ti_Data);
+					break;
+			}
+		}
+
+		tracks = CDM_GetNumTracks();
+		for (i=1 ; i<=tracks ; i++){
+			sprintf(titles[i], "Piste %d", i);
+			DoMethod(data->lst_titles, MUIM_List_InsertSingle, titles[i], MUIV_List_Insert_Bottom);
+		}
+
+		set(data->lst_titles, MUIA_List_Active, MUIV_List_Active_Top);
+
+		DoMethod(data->lst_titles, MUIM_Notify, MUIA_List_Active, MUIV_EveryTime,
+			obj, 1, MUIM_DisKo_Play);
+
+	}
+
+	return (ULONG)obj;
+}
+
+Lors de la création d'un objet DisKo, c'est lui qui est appelé en premier. Il effectue toutes les initialisations nécessaires. Déjà,
+l'objet est créé en appelant le constructeur du père (de classe Group) avec la méthode DoSuperNew() puis on décrit l'organisation des composants
+qui font l'identité de notre groupe dérivé.
+Si l'objet est bien constitué, on récupère le pointeur sur ces données internes (la fameuse structure DisKoData) grâce à la macro INST_DATA. On
+initialise alors chaque champ, y compris les références sur les objets MUI utilisés car dès que la fonction constructeur va se refermer, les
+variables locales sont détruites, il faut bien qu'on garde une trace de ces objets.
+Quand on décrit une interface, on associe des attributs (MUIA_) à affecter aux objets à leur création. C'est pourquoi dans le constructeur
+il est nécessaire de parcourir les attributs transmis, d'où la boucle sur les tags.
+Enfin, on peut poursuivre par quelques initialisations ...
+
+
+A vous de découvrir le fonctionnement des autres méthodes, le source regroupe dans une même partie tout ce qui concerne la classe. Elle apparaît
+alors relativement indépendante. Il sera même possible de la faire migrer dans un fichier séparé pour encore plus de clarté. Depuis l'application,
+tout est devenu plus simple : on crée un seul objet DisKo et on s'adresse simplement à lui à l'aide de méthodes compréhensible (et c'est
+important !). Il n'y a plus de gymnastique à effectuer pour manipuler la liste depuis l'application principale qui n'en a plus connaissance !
+Et ça permet en plus de la supprimer des variables globales. De la même façon, on constate que le nombre de DoMethod() qui suit le code
+de l'interface a fortement diminué. En on évite les hooks qui ne sont pas recommandés dans MUI (quand on a le choix), on a juste laissé celui
+sur le volume à titre d'exemple.
+
+
+Notions acquises dans ce chapitre
+
+- la dérivation d'une classe MUI : constructeur, destructeur, dispatcher, données internes, ...
+- nouveaux parallèles entre la programmation MUI et orientée objet
+

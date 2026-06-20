@@ -1,0 +1,68 @@
+
+                        SELCO Source Optimizer 1.0
+                       ----------------------------
+
+Note: Source Optimizer 1.0 is public domain.
+      No changes, no commercial use and no distribution for more than DM 5.-
+      
+      Any distribution must contain the English and German documentation and
+      the executable source optimizer.
+
+The SELCO Source Optimizer is a little utility for optimizing assembly files.
+Well, the most assemblers have an optimizer function included, but in my
+opinion there is one important disadvantage by these assemblers. If you, the
+programmer are debugging a self written assembly program by stepping in a
+disassembler or monitor, the code you see differs from that you have written 
+before because of the (automaticly) optimizer function of your assembler. Thats
+why I decide to write the source optimizer to optimize the source files, not
+the executables. In this way the programmer get a short and fast code witch
+differs not so much from his source.
+
+How to use SELCO Source Optimizer 1.0
+
+You must run the source optimizer from CLI or SHELL. For getting a help message
+simply type 'sourcopt'.
+The syntax is like following:    'sourcopt InputFile OutputFile / Flags'
+Between all parts of the command line there must be one or more spaces.
+The name of the outputfile must differ from that of the inputfile. There must
+be one or more flags separated by space characters.
+valid flags are:
+a - change  move.l #x,Dn      -> moveq #x,Dn if x 0...127 (x dec bin or hex)
+b - change  move.l #Label,An  -> lea Label(pc),An
+c - change  move.l Label,...  -> move.l Label(pc),...
+d - change  move.l #0,An      -> suba.l An,An             (0 dec bin or hex)
+
+In case of a mistake in the command line a help message is shown.
+
+How SELCO Source Optimizer 1.0 works
+
+The source optimizer first looks for all labels in the source text. In this way
+the source optimizer can decide between labels and constants. A label is a text
+starting in the first column not followed by '=', 'equ' or 'macro'. A comment
+will not processed of course. A comment is a line or a part of a line starting
+with a ';' or a '*'.
+In a changed line the old command will be replaced by the new command. Labels,
+comments and constants of this line will not be changed of course.
+While working source optimizer will display the processed line and the number
+of labels found in pass 1 and the processed line, the number of changed lines
+and the number of spared bytes in pass 2.
+
+Note: Source optimizer does not check for syntax errors, that means, for proper
+      working the source text should not contain syntax errors. (Simply make a
+      syntax test by assembling the source file with your assembler.)
+
+Please send suggestions, bug reports etc. to
+
+                              SELCO
+                              Alexander Fritsch
+                              Hafenstr. 20
+                              O-2355 Sassnitz/Rg.
+                              Germany   
+
+P.S.  SELCO Source Optimizer 1.0 was compiled with M. Dillons DICE compiler.
+      (Demo version) I hope to get the registred version of these great program
+      in the next weeks. Thanks to M. Dillon for writing DICE.
+
+                                          Sassnitz, 9.11.92   A. Fritsch
+
+

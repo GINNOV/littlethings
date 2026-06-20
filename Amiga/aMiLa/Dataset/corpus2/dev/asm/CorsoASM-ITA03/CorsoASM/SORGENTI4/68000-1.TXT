@@ -1,0 +1,631 @@
+
+;	TABELLA DI RIFERIMENTO DELLA PROGRAMMAZIONE 68000
+
+Sinteticamente gli indirizzamenti:
+
+ move.l #123,xxxx	   ; Immediato: si mette nella destinazione il numero
+ move.l xxxx,$50000	   ; Assoluto lungo
+ move.l xxxx,$500.w	   ; Assoluto corto (meno di $7FFF)
+ move.l	xxxx,D0		   ; Registro dati diretto
+ move.l	xxxx,A0		   ; Registro indirizzi diretto
+ move.l	xxxx,(a0)	   ; Registro indirizzi indiretto
+ move.l	xxxx,(a0)+	   ; Registro indirizzi indiretto con post-incremento
+ move.l	xxxx,-(a0)	   ; Registro indirizzi indiretto con pre-decremento
+ move.l	xxxx,$123(a0)	   ; Reg. indirizzi ind. con OFFSET (distanza di ind.)
+ move.l	xxxx,$12(a0,d0.w)  ; Reg. indirizzi ind. con OFFSET e INDICE
+ move.l offset(PC),xxxx	   ; Relativo al PC con OFFSET
+ move.l offset(PC,d0.w),xxxx ; Relativo al PC con OFFSET
+
+			-	-	-
+
+* Gli indirizzamenti piu' diversi si possono "MISCHIARE" nelle istruzioni
+  tra sorgente e destinazione, ad esempio "move.l -(a0),12(a0,d3.l)".
+
+			-	-	-
+
+* I numeri decimali non sono preceduti da nessun simbolo (es. 123), i numeri
+  esadecimali sono preceduti dal $ (es. $1a0) e comprendono anche le lettere
+  da A ad F, mentre i numeri binari sono preceduti dal simbolo % (es: %01011)
+  e sono composti da 0 e da 1 solamente (CORRENTE O MENO NEI FILI!!!).
+  La conversione tra i 3 sistemi di numerazione non presenta problemi, in
+  quanto basta usare il comando "?" dell'ASMONE seguito dal numero, e si
+  ottiene il risultato in decimale, esadecimale e ASCII, ossia in CARATTERI:
+  infatti anche le lettere come "ABCDabcd..." sono rappresentate da un byte
+  ciascuna. Per esempio la "Z" e' $5a (Provate con un ?"Z"). I caratteri si
+  indicano mettendoli tra virgolette (si usano "" oppure '') e si possono
+  usare sia nei comandi (MOVE.B #"a",LABEL1), sia mettendoli in memoria
+  con il DC.B, (es: DC.B "Un testo in memoria...").
+
+			-	-	-
+
+* In assembler la moltiplicazione si indica con *, la divisione con /, e
+  si possono usare parentesi tonde a volonta', ad esempio:
+  move.l #(100/2*(12+$41-32)+%01101010),RISULTATO
+
+			-	-	-
+
+* 1 byte = 8 bit ($00 = %00000000; $FF = %11111111)
+  1 word = 16 bit ($0000 = %0000000000000000; $FFFF = %1111111111111111)
+  1 long = 32 bit, ossia 2 words ($00000000 = %000000000000000000000000000000)
+
+			-	-	-
+
+* I bit si contano partendo da 0 da destra verso sinistra: ad esempio
+  un byte che abbia il bit 5 ad 1 (ossia ALTO): %00100000. Un byte dunque
+  ha i bit che vanno dallo 0 (bit meno significativo) al settimo (bit piu'
+  significativo), una word va da 0 a 15, una longword da 0 a 31.
+  Per numerare facilmente i bit potete usare questo espediente:
+		; 5432109876543210	- una word
+	move.l	#%1000010000110000,d0	; bit 15,10,5 e 4 ALTI (ad 1)
+
+			-	-	-
+
+* Gli indirizzi si indicano per convenzione con numeri esadecimali
+
+			-	-	-
+
+* Istruzioni con il simbolo "#" come MOVE.L #123,d0, CMP.L #10,LABEL1 ecc
+  considerano il numero dopo il cancelletto come numero "COSTANTE" ossia
+  proprio come numero, non come indirizzo, a differenza di quando non e'
+  presente il cancelletto: move.b $12,$45 copia il byte nell'indirizzo $12
+  nell'indirizzo $45, mentre move.b #$12,$45 mette in $45 il numero $12.
+
+			-	-	-
+
+* I registri DATI e INDIRIZZI sono lunghi 32 bit, ossia una longword; sui
+  registri INDIRIZZI non si puo' lavorare col .b, ma solo col .w o .l
+
+			-	-	-
+
+* Non si puo' operare su indirizzi dispari con istruzioni .w o .l, ma solo
+  .b, as esempio un move.l #1,$10001 manda in GURU il computer, mentre un
+  move.b #1,$10001 non causa problemi
+
+			-	-	-
+
+* Un byte puo' contenere un numero da $00 a $ff, ossia 255, dopodiche' se si
+  fanno addizioni il numero riparte da zero, lo stesso vale per le word, il
+  cui numero massimo e' $FFFF, ossia 65535, e per le longword (max: $FFFFFFFF)
+
+			-	-	-
+
+* Le LABEL, i COMMENTI dopo i ; e i DC.W non sono istruzioni del 68000, ma
+  comandi dell'assemblatore utili per segnalare date posizioni del programma
+  o dei dati (LABEL), per inserire commenti utili alla comprensione del
+  listato, o per inserire direttamente bytes, word o longword in dati punti
+  della memoria (DC.W), si puo' verificare disassemblando la memoria con
+  il comando "D $xxxxx" o "D LABEL".
+
+**    **    **    **    **    **    **    **    **    **    **
+
+;	INDIRIZZAMENTI DEL 68000 (Esempi)
+
+; Indirizzamenti con indirizzi assoluti, .L (Longword)
+
+ move.l	#$123,$50000	; mettiamo $00000123 in $50000 (infatti gli zeri a
+ 			; sinistra sono opzionali, scrivere move.l #$123,xxxx
+ 			; e' come scrivere move.l #$00000123,xxxx, in memoria
+ 			; l'istruzione viene assemblata sempre con gli zeri).
+ 			; DA NOTARE che con questa istruzione .l abbiamo
+ 			; modificato 4 bytes (essendo una long lunga 4 bytes):
+ 			; ossia gli indirizzi $50000,$50001,$50002,$50003,
+ 			; dandogli i seguenti valori:
+ 			; $50000 = $00
+ 			; $50001 = $00
+ 			; $50002 = $01
+ 			; $50003 = $23
+
+			-	-	-
+
+; Indirizzamenti con indirizzi assoluti, .W (Word)
+
+ move.w	#$123,$50000	; mettiamo $0123 in $50000 - Con questa istruzione .w
+ 			; abbiamo modificato 2 bytes (essendo una word lunga 2
+ 			; bytes): ossia gli indirizzi $50000 e $50001:
+ 			; $50000 = $01
+ 			; $50001 = $23
+
+			-	-	-
+
+; Indirizzamenti con indirizzi assoluti, .B (Byte)
+
+ move.b	#$12,$50000	; mettiamo $12 in $50000 - Con questa istruzione .b
+ 			; abbiamo modificato 1 byte, ossia solo $50000.
+ 			; $50000 = $12
+			; FATE MOLTA ATTENZIONE ALLE DIFFERENZE DI EFFETTI
+			; CAMBIANDO SEMPLICEMENTE IL .L in .W o .B, infatti
+			; spesso gli errori dei principianti sono nello
+			; scambiare .w con .l o nella valutazione sbagliata
+			; degli effetti di queste istruzioni. Usate il
+			; debugger (comando "AD", poi tasto cursore >) per
+			; verificare certe istruzioni e togliervi dubbi.
+
+ move.l $40000,$50000	; in questo caso copiamo il contenuto dei 4 bytes
+ 			; $40000,$40001,$40002,$40003 nei 4 bytes $50000,
+ 			; $50001,$50002,$50003, ad esempio:
+ 			; se $40000= $00102304:
+ 			; $50000 = $00
+ 			; $50001 = $10
+ 			; $50002 = $23
+ 			; $50003 = $04
+			; Allo stesso modo muovendo .w e .b copiamo da un
+			; indirizzo ad un altro 2 bytes oppure 1 byte.
+
+			-	-	-
+
+NOTA: quando usiamo le LABEL per modificare dati in memoria l'assemblatore
+poi le converte negli indirizzi EFFETTIVI che le label rappresentano, dato
+che le LABEL sono usate per definire certe zone del programma, ad etichettare
+queste parti, per cui riferendoci alla LABEL in pratica ci riferiamo al punto
+dove e' messa la label stessa. Sono compresi dunque negli esempi precedenti
+di indirizzamenti assoluti istruzioni come:
+
+	MOVE.L	LABEL1,$50000
+	MOVE.W	#$123,LABELBAU
+	MOVE.B	LABELCANE,LABELGATTO
+
+Che in memoria saranno assemblate in maniera simile a questa:
+
+	MOVE.L	$64230,$50000	; supponiamo che LABEL1 fosse a $64230
+	MOVE.W	#$123,$726e0	; supponiamo che LABELBAU fosse a $726e0
+	MOVE.B	$23450,$3a010	; come sopra...
+
+Dunque per i byte, le word e le longword indicate con le LABEL dovete ragionare
+come se fossero indirizzi, proprio perche' SONO ASSEMBLATE come indirizzi!!!!
+
+E' per questo che un istruzione come questa:
+
+	MOVE.L	#LABEL1,$dff080		; Usata per "puntare" la copperlist
+
+Mette in $dff080 l'indirizzo di LABEL1 anziche' copiare i 4 bytes posti
+dopo LABEL1: perche' LABEL1 viene convertita nel suo indirizzo, ed essendo
+posta dietro il simbolo del cancelletto (#), viene copiato come numero in
+$dff080, ossia nella destinazione... facciamo un esempio:
+
+	MOVE.L	#LABEL1,LABEL2
+	MOVE.L	LABEL1,LABEL2
+	
+Sono assemblate come: (assumendo indirizzi ipotetici per le LABEL)
+
+	MOVE.L	#$42300,$53120	; viene messo in $53120 il numero $42300,
+				; ossia l'indirizzo della label
+	MOVE.L	$42300,$53120	; viene copiata in $53120 la longword che
+				; si trova in $42300
+
+
+			-	-	-
+
+NOTA2: E' possibile riferirci ad indirizzi assoluti sotto la word, ossia
+fino a $7FFF, in maniera piu' raffinata e veloce, aggiungendo un .w dopo
+l'indirizzo: e' il caso del MOVE.L 4.w,A6 che muove l'execbase in A6, ma
+qualsiasi istruzione che agisca su indirizzi di una WORD o di un BYTE puo'
+essere "scorciata" dei 4 zeri superflui di sinistra: vediamo la differenza:
+
+				(assemblata)
+	MOVE.B	#10,$123	-> MOVE.B #10,$00000123
+	MOVE.B	#10,$123.w	-> MOVE.B #10,$0123	- SENZA ZERI INUTILI
+
+L'EFFETTO DELL'ISTRUZIONE NON CAMBIA!!! cambia solo la sua "FORMA", che appare
+piu' snella e veloce. Dimenticandosi di mettere il .w agli indirizzi "corti"
+semplicemente si produce un codice con qualche word in piu'.
+
+**    **    **    **    **    **    **    **    **    **    **
+
+; Registri dati, .L (longword)
+
+ move.l	#$123,d0	; registro dati diretto (mettiamo $123 in d0)
+
+ move.l	d1,d0		; registro dati diretto (copiamo il valore di d1 in d0)
+
+; Registri dati, .w (word) (nota: si dice word "BASSA" quella a destra, word
+			   ( "ALTA" quella a sinistra: $ALTABASS (.l = 4 bytes)
+
+ move.w	#$123,d0	; in questo caso cambiamo solo la word BASSA di d0,
+ 			; se per esempio d0 era: $0012fe3c, agendo solo sulla
+ 			; word bassa, ossia $fe3c, cambieremo d0 in $00120123.
+
+ move.w	d1,d0		; Allo stesso modo, copiamo la word "bassa" di d1 nella
+ 			; word bassa di d0: se d1 contiene $12345678, mentre
+ 			; d0 contiene $9abcdef0, dopo questa istruzione d0
+ 			; conterra':  $9abc5678
+			;                  ^^^^ WORD!
+
+; Registri dati, .b (byte)
+
+ move.b	#$12,d0		; in questo caso cambiamo solo il byte piu' a destra,
+ 			; se per esempio d0 era: $0012fe3c, agendo solo sul
+ 			; primo byte, ossia $3c, cambieremo d0 in $0012fe12.
+
+ move.b	d1,d0		; Allo stesso modo, copiamo il primo byte di d1 nel
+ 			; primo di d0: se d1 contiene $12345678, mentre
+ 			; d0 contiene $9abcdef0, dopo questa istruzione d0
+ 			; conterra':  $9abcde78
+			;                    ^^ BYTE!
+
+I registri indirizzi a0,a1,a2,a3,a4,a5,a6 (NON USATE a7, detto SP: e' lo STACK)
+si comportano come i registri dati, ma non ci si puo' accedere col .b.
+Si possono usare anche per metterci dati, nonostante siano dedicati agli
+indirizzi.
+
+**    **    **    **    **    **    **    **    **    **    **
+
+; INDIRIZZAMENTI INDIRETTI TRAMITE REGISTRI INDIRIZZO
+
+ move.w #123,(a0)	; In questo caso il numero 123 viene copiato nella word
+ 			; contenuta nell'indirizzo che e' in a0. Si dice
+ 			; indiretto perche' anziche' indicare l'indirizzo
+ 			; vero e proprio si usa un registro che contiene
+ 			; quell'indirizzo e tramite quell'indirizzo si indica
+ 			; la destinazione. Questo avviene solo quando il
+ 			; registro indirizzo e' tra parentesi, altrimenti
+ 			; si metterebbe 123 proprio nel registro.
+ 			; NON SI PUO' USARE UN REGISTRO DATI per
+ 			; l'indirizzamento indiretto.
+			; Si puo' dire che il registro a0 e' usato come
+			; PUNTATORE a una locazione di memoria, cioe' PUNTA
+			; come la freccia del mouse o un cane da caccia nella
+			; direzione della preda: si dice "PUNTATORE"
+			; un indirizzo o un registro in cui e' contenuto
+			; l'indirizzo di qualcosa a cui si accede "chiedendo"
+			; al puntatore dove si trovi. Per esempio la copperlist
+			; ha un suo registro PUNTATORE, il $dff080, in cui
+			; viene messo l'indirizzo della copperlist: il copper
+			; ogni fotogramma video vede dov'e' la copperlist
+			; dall'indirizzo contenuto in $dff080.
+
+ move.l	(a0),(a1)	; In questo caso copiamo la long contenuta in (a0),
+ 			; ossia dall'indirizzo contenuto in a0, nella long
+ 			; contenuta a partire dall'indirizzo in a1. Se prima
+ 			; di eseguire questa istruzione in a0 ci fosse stato
+ 			; l'indirizzo $100 e in a1 $200, la copia sarebbe
+ 			; avvenuta come per un MOVE.L $100,$200, o per essere
+ 			; piu' raffinati, MOVE.L $100.w,$200.w....
+
+			-	-	-
+
+; INDIRIZZAMENTI INDIRETTI CON POST-INCREMENTO (indirizzo incrementato DOPO!)
+
+
+ move.w #123,(a0)+	; In questo caso il numero 123 viene copiato nella word
+ 			; contenuta nell'indirizzo che e' in a0, DOPODICHE'
+ 			; A0 Viene INCREMENTATO di una WORD. Se l'istruzione
+ 			; fosse stata .B, DOPO IL MOVE a0 sarebbe stato
+ 			; incrementato di un byte, se fosse stata .L, sarebbe
+ 			; stato incrementato di 4 bytes, cioe' una LONGWORD.
+
+ move.l	(a0)+,(a1)+	; In questo caso copiamo la long contenuta in (a0),
+ 			; ossia dall'indirizzo contenuto in a0, nella long
+ 			; contenuta a partire dall'indirizzo in a1, dopodiche'
+ 			; aumentiamo di 4 , ossia di una long, sia a0 che
+ 			; a1, in pratica spostiamo i due registri alla long
+ 			; successiva. Con una serie di queste struzioni per
+ 			; esempio si potrebbe copiare un pezzo di memoria:
+
+	lea	$50000,a0	; indirizzo sorgente
+	lea	$60000,a1	; indirizzo destinazione
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+
+			; In questo caso abbiamo copiato 5 longwords da
+			; $50000 a $60000.
+
+			-	-	-
+
+; INDIRIZZAMENTI INDIRETTI CON PRE-DECREMENTO (indirizzo decrementato PRIMA!)
+
+ move.w #123,-(a0)	; COME PRIMA COSA, A0 viene DECREMENTATO di 2, ossia
+ 			; di una WORD (PRE-decremento), poi il numero 123 viene
+ 			; copiato nella word contenuta nell'indirizzo che e'
+ 			; in a0 (ossia quello a cui e' stato sottratto 2).
+ 			; Se l'istruzione fosse stata .B, a0 sarebbe stato
+ 			; decrementato di un byte, se fosse stata .L, sarebbe
+ 			; stato decrementato di 4 bytes, cioe' una LONGWORD.
+
+ move.l	-(a0),-(a1)	; Vengono decrementati a0 ed a1 di 4 (una long),
+ 			; poi viene copiata la long contenuta in (a0),
+ 			; ossia dall'indirizzo contenuto in a0, nella long
+ 			; contenuta a partire dall'indirizzo in a1.
+
+ 			; Con una serie di queste struzioni si potrebbe copiare
+ 			; un pezzo di memoria come nel caso precedente, ma
+ 			; procedendo "all'indietro" come i gamberi, infatti
+ 			; bisogna partire dall'indirizzo dove finisce la copia
+ 			; per tornare indietro fino agli indirizzi di inizio
+ 			; della copia, ossia $50000 e $60000. Poniamo come
+ 			; inizio dunque $50014 e $60014, poi copiamo una long
+ 			; alla volta "all'indietro" fino alla locazione $50000
+ 			; e $60000: per "calcolare" l'indirizzo da cui partire
+ 			; ho aggiunto (5*4) ossia $14 agli indirizzi, ossia
+ 			; 5 longwords * 4 bytes ogni longword. Da notare che
+ 			; in memoria $50000+(5*4) viene assemblato come
+ 			; $50014, infatti durante l'assemblaggio vengono anche
+ 			; eseguite le eventuali operazioni matematiche.
+
+	lea	$50000+(5*4),a0	; indirizzo sorgente FINALE
+	lea	$60000+(5*4),a1	; indirizzo destinazione FINALE
+	move.l	-(a0),-(a1)
+	move.l	-(a0),-(a1)
+	move.l	-(a0),-(a1)
+	move.l	-(a0),-(a1)
+	move.l	-(a0),-(a1)
+
+			; In questo caso abbiamo copiato 5 longwords da
+			; $50000 a $60000, ma partendo da $50014 all'indietro
+			; fino a $50000: La differenza con l'esempio precedente
+			; e' come la differenza che c'e' tra iniziare a pulire
+			; un corridoio da destra o da sinistra: in ambedue i
+			; casi "copiamo" lo sporco nel cestino, ma facendo
+			; il percorso in due sensi opposti.
+
+			-	-	-
+
+; INDIRIZZAMENTI INDIRETTI CON DISTANZA DI INDIRIZZAMENTO (detto OFFSET)
+
+ move.w #123,$34(a0)	; In questo caso il numero 123 viene copiato nella word
+ 			; contenuta nell'indirizzo ricavabile dalla somma di
+ 			; quello in a0 + $34, ossia l'OFFSET. Se per esempio
+ 			; in a0 ci fosse stato $50000, la word 123 sarebbe
+ 			; stata copiata in $50034. L'Offset puo' variare tra
+ 			; -32768 e 32767.
+ 
+			-	-	-
+
+ ; INDIRIZZAMENTI INDIRETTI CON DISTANZA DI INDIRIZZAMENTO E INDICE
+
+
+ move.w #12,5(a0,d0.w)	; In questo caso il numero 12 viene copiato nella word
+ 			; contenuta nell'indirizzo ricavabile dalla somma di
+ 			; quello in a0 + 5, + la word in d0. Se per esempio
+ 			; in a0 ci fosse stato $50000, in d0 $1000, la word 12
+ 			; sarebbe stata copiata in $51005. L'Offset in questo
+ 			; caso puo' variare tra -128 e +127 solamente.
+			; In pratica viene aggiunto alla somma per ottenere
+			; l'indirizzo finale anche un registro, che puo' essere
+			; sia DATI che INDIRIZZI, di cui puo' essere usato
+			; sia l'intero contenuto (d0.l) sia una word (d0.w),
+			; ma non puo' essere considerato un byte solamente.
+			; Si dice INDICE il registro aggiuntivo nella parentesi
+
+		ALCUNI ESEMPI:
+
+	lea	$50000,a3
+	move.w	#$6000,d2
+	move.l	#123,$30(a3,d2.w)	; 123 copiato in $56030
+*
+	lea	$33000,a1
+	move.w	#$2000,a2
+	move.l	#123,$10(a1,a2.w)	; 123 copiato in $35010
+*
+	lea	$33000,a1
+	lea	$20010,a2
+	move.l	#123,-$10(a1,a2.l)	; 123 copiato in $53000
+
+**    **    **    **    **    **    **    **    **    **    **
+
+ ; INDIRIZZAMENTI RELATIVI AL PC (con offset automatico)
+
+Questo tipo di indirizzamenti sono "sistemati" automaticamente dall'ASMONE e
+passano "INOSSERVATI": per esempio notate la differenza tra queste istruzioni:
+
+	MOVE.L	LABEL1,d0		; INDIRIZZO ASSOLUTI
+	MOVE.L	LABEL1(PC),d0		; INDIRIZZO RELATIVO AL PC
+
+Queste due istruzioni fanno la stessa cosa, ma quella col (PC) e' piu' corta
+e veloce della prima, ed e' RELATIVA AL PC, infatti si basa su una DISTANZA DI
+INDIRIZZAMENTO (offset) dal registro PC, ossia il PROGRAM COUNTER, che e' il
+registro dove il 68000 tiene l'indirizzo dove sta eseguendo attualmente.
+L'offset tra l'istruzione col (PC) e la label viene calcolata automaticamente
+dall'assemblatore in fase di assemblaggio, ed in memoria viene messo l'offset
+giusto per riferirsi alla label in questione spostandosi avanti o indietro
+dall'istruzione in esecuzione dei byte giusti, per cui l'istruzione non
+contiene l'indirizzo della label, ma il numero di byte in avanti o indietro
+che il processore deve fare per trovare la label in questione. La differenza
+e' evidente: se spostiamo tutto il codice in un'altra parte della memoria
+la distanza tra l'istruzione col (PC) e la label rimane la stessa, per cui
+l'istruzione "funziona" sempre, mentre se non e' relativa al PC, basta spostare
+il programma in un'altra parte della memoria per mandarlo in tilt: infatti
+il move.l LABEL1,d0 viene tradotto in MOVE.L $23000,d0 (per ipotesi), dunque
+la LABEL1 si trova a $23000. Se spostiamo tutto il programma (che per esempio
+partiva da $20000 e finiva a $25000) avanti di $10000, eseguendolo ci saranno
+problemi non indifferenti, in quanto il MOVE.L $23000,d0 non si riferira'
+piu' alla label1, che sara' ora in $33000!!!! Mentre se il codice era tutto
+Relativo al PC, il move si sarebbe sempre riferito alla label1, cioe' a
+$33000, calcolando la distanza tra il move e la label che si sarebbe mantenuta
+uguale. Anche le istruzioni come BRA, BSR, BNE, BEQ sono relative al PC, cioe'
+un BSR.W ROUTINE1 sara' assemblato in memoria come BSR (50 bytes piu' avanti),
+per esempio, e non BSR $30000. L'indirizzo viene assemblato da istruzioni
+equivalenti al BSR, come JSR: un JSR LABEL1 viene assemblato con l'indirizzo
+di LABEL1, allo stesso modo un JMP (SALTA-Equivalente al BRA) sara' assemblato
+con l'indirizzo REALE della label. Ma allora come mai non sono usati sempre
+move relativi al PC e BSR anziche' JSR?? Perche' gli indirizzamenti relativi
+al PC hanno la limitazione di potersi riferire a indirizzi distanti al massimo
+32767 in avanti o -32768 indietro; per le label piu' distanti e' necessario
+usare move con indirizzi assoluti o JSR/JMP. Comunque come gia' detto  tutti
+questi calcoli sono fatti automaticamente dall'assemblatore, per cui non ci
+interessano, in pratica basta sapere che QUANDO SI PUO', e' sempre bene mettere
+un (PC) dopo la prima label e usare bsr/bra anziche' JSR/JMP; quando non e'
+possibile perche' la distanza e' maggiore di 32768 l'assemblatore comunica
+l'errore e basta togliere il (PC) o sostituire il BRA/BSR con un JMP/JSR, che
+possa raggiungere la massima distanza. Si potrebbe anche programmare con tutti
+JSR/JMP e move senza (PC), ma il codice risulterebbe piu' lungo e leggermente
+piu' lento, dunque e' sempre meglio tentare di fare al meglio!!!
+Il discorso della RILOCAZIONE, ossia dello spostamento delle routines in zone
+diverse della memoria, viene svolto dal sistema operativo: quando salviamo
+il nostro programma come eseguibile col comando "WO", salviamo un file che
+possiamo caricare dallo SHELL scrivendo il suo nome: il sistema operativo si
+occupa di mettere in un punto della memoria libera, che puo' essere uno
+qualsiasi, e RILOCA IL PROGRAMMA, ossia cambia anche gli indirizzi ai JSR e ai
+move non relativi al PC per farli tornare, quindi si puo' programmare senza
+farsi alcun problema di mettere tutti move (PC); Tra l'altro non e' possibile
+usare l'indirizzamento (PC) per label che si trovano in SECTION diverse del
+programma: per esempio le COPPERLIST se si trovano in una SECTION a se non
+possono essere modificate che con indirizzamenti senza (PC), perche' il sistema
+operativo "ALLOCA" le section a distanze imprevedibili, magari maggiori di
+32768, del limite cioe' dell'indirizzamentp PC RELATIVE.
+
+
+	ESEMPI DI USO DELL'INDIRIZZAMENTO RELATIVO AL PC:
+
+	MOVE.L	LABEL1(PC),LABEL2	; Nota: non si puo' mettere il (PC)
+					; alle label usate come destinazione!
+					; move.l a0,LABEL(PC) e' un ERRORE!
+	ADD.L	LABELBAU(PC),d0		; Si puo' perche' la label e' SORGENTE
+	SUB.L	#500,LABEL		; NON SI PUO' METTERE IL PC, perche'
+					; la label qua e' DESTINAZIONE
+	CLR.L	LABEL			; non si puo' mettere il PC in questo
+					; caso; in pratica il (PC) si puo'
+					; solo mettere quando la label e'
+					; prima della virgola!
+
+ ; INDIRIZZAMENTI RELATIVI AL PC CON OFFSET E INDICE
+
+Questo indirizzamento e' lo stesso di prima, con l'INDICE, ossia con un
+registro che va sommato al (PC) e all'OFFSET, proprio come avviene per
+l'offset+indice dei registri INDIRIZZI:
+
+
+	MOVE.L	LABEL1(PC,d0.w),LABEL2	; come l'indirizzamento (PC),ma in piu'
+					; si deve aggiungere al conto la word
+					; contenuta in d0, dunque non ci si
+					; riferisce a LABEL1, ma a qualche
+					; label a distanza D0 da LABEL1
+	ADD.L	LABELBAU(PC,a0.l),d0	; Come prima, usando A0.L come indice.
+
+Questo e' tutto per quanto riguarda gli indirizzamenti.
+
+**    **    **    **    **    **    **    **    **    **    **
+
+ISTRUZIONI PIU' COMUNI:
+
+	MOVE.x	SORGENTE,DESTINAZIONE	; Copia un byte, una word o una
+					; longword
+
+	LEA	indirizzo,Ax		; Carica un indirizzo: Questa
+					; istruzione puo' essere usata solo
+					; con i registri indirizzi e serve
+					; a mettere l'indirizzo in questione
+					; nel registro (sia esso sotto forma
+					; di label o di numero es. $50000).
+					; E' equivalente ad un:
+					; MOVE.L #indirizzo,a0
+					; ma e' piu' veloce.
+
+
+	CLR.x	destinazione		; Questo comando AZZERA la destinazione
+					; CLR=CLEAR=PULISCI
+
+
+SALTI CONDIZIONATI DA UN TST,BTST,CMP
+
+	CMP.x	sorgente,destinazione	; COMPARA 2 operandi, che possono
+					; essere una label e un registro, o
+					; un numero assoluto # e un registro
+					; o altro ancora. L'esito POSITIVO e'
+					; dato se i 2 operandi sono UGUALI
+					; per il BEQ/BNE seguenti
+
+	TST.x	registro.label/indir.	; Controlla se l'operando in questione
+					; e' uguale a ZERO, se si da' ESITO
+					; POSITIVO
+
+	BTST	#x,indirizzo/Dx		; Controlla se il bit x dell'indirizzo
+					; e' a ZERO; se si ESITO POSITIVO;
+					; si puo' eseguire un BTST anche su
+					; un indirizzo dati, in questo caso
+					; si puo' fare il test su uno dei
+					; 32 bit possibili (0-31), altrimenti
+					; se il btst e' su una locazione di
+					; memoria si puo' fare il test su
+					; un byte solamente (bits 0-7).
+
+Subito dopo un CMP, un TST o un BTST c'e' sempre un BNE, un BEQ o un altro
+comando simile. Nel caso del BNE e del BEQ si possono fare diramazioni e
+salti condizionati dal TST/CMP. I BEQ/BNE/BRA/BSR possono essere .w o .b,
+a seconda della distanza delle routine che indicano. Se sono vicinissime
+si puo' usare il .b (si usa anche il .s, ossia SHORT=CORTO).
+
+
+	BSR.x	label		; Esegui la routine LABEL, dopodiche'
+				; ritorna avendo trovato RTS alla fine
+				; della routine "label"
+
+	BEQ.x	label		; Se l'esito e' positivo, salta a label
+				; (NON RITORNA PERO' DOPO AVER ESEGUITO
+				; LA LABEL COME UN BSR, QUA SCEGLIE SE
+				; SALTARE O NO
+
+	BNE.x	label		; Se l'esito non e' positivo, salta a label
+				; (NON RITORNA PERO' DOPO AVER ESEGUITO
+
+	BRA.x	label		; Salta SEMPRE a label (COME JMP)
+
+
+	ADD.x	operando1,destinazione	; Con questa istruzione si aggiunge
+					; un valore alla destinazione
+
+	SUB.x	operando1,destinazione	; con questa istruzione si sottrae
+					; un valore alla destinazione
+
+
+	SWAP	Dx		; Scambia le 2 words della longword
+				; contenuta in un registro DATI, non
+				; necessita di .b,.w o .l
+
+lo SWAP, in inglese significa SCAMBIA, infatti SCAMBIA le 2 words di una
+longwords facendo diventare BASSA quella ALTA e viceversa:
+
+	MOVE.L	#CANETOPO,d0	; in d0 mettiamo la longword CANETOPO
+
+	SWAP	d0		; SCAMBIAMO LE WORDS: il risultato e' che
+				; in d0 abbiamo TOPOCANE!!!!
+
+				*
+
+NOTA: Esistono delle istruzioni dedicate per i registri address: per
+esempio dovremmo scrivere CMPA.W d0,a0 e non CMP.W d0,a0, allo stesso
+modo dovremmo scrivere ADDA.W a2,a0 e non ADD.W a2,a0;
+invece per le COSTANTI (#xxxx) dovremmo usare CMPI.x #10,d0 e non CMP.x #1,d0,
+dovremmo scrivere SUBI.x #123,d2 e non SUB.x #123,d2, ma l'asmone ASSEMBLA
+AUTOMATICAMENTE L'ISTRUZIONE GIUSTA anche se scriviamo sempre cmp/add/sub
+eccetera con i registri indirizzo e nei casi di #xxx,operando. Dunque non
+occorre farsi problemi se in un listato compare a volte un cmpi e altre il
+cmp normale, o un adda e altre volte un add, perche' l'asmone assembla sempre
+bene. Per verificare provate ad assemblare queste linee e a disassemblarle
+con "D PROVA", l'ASMONE assemblera' secondo la regola.
+
+PROVA:
+	CMP.W	d0,a0
+	ADD.W	a1,a2
+	SUB.L	#123,$10000
+	CMP.b	#20,d4
+
+Sara' assemblato come:
+
+	CMPA.W	D0,A0
+	ADDA.W	A1,A2
+	SUBI.L	#$0000007B,$00010000
+	CMPI.B	#$14,D4
+
+
+			-	-	-
+
+NOTA2: Certe istruzioni che fanno la stessa cosa possono essere scritte in
+modo diverso: ad esempio il 68000 ha dei comandi dedicati a situazioni
+particolari che sono piu' veloci in quelle situazioni:
+
+1) ADDQ.x #Numero,destinazione	; Il comando ADDQ.x puo' essere usato per
+				; le addizioni con numeri che siano da 1 a 8
+				; (Q sta per QUICK=VELOCE!)
+
+1) SUBQ.x #Numero,destinazione	; Il comando SUBQ.x puo' essere usato per
+				; le sottrazioni con numeri che siano da 1 a 8
+
+3) MOVEQ #Numero,dx		; Il comando MOVEQ si puo' usare per sostituire
+				; i MOVE.L #num,d0, in cui il num e' tra
+				; -128 e +127. Il MOVEQ e' sempre .L, dunque
+				; non necessita di .b,.w o .l
+
+			-	-	-

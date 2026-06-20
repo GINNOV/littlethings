@@ -1,0 +1,23 @@
+cd dh1:devpac
+
+c:echo ""
+c:echo "Assembling BC.s to object file..."
+c:echo ""
+genam projects/baseconvertor/bc -idh1:devpac/include -l
+
+c:echo ""
+c:echo "Assembling BCLibs.s to object file..."
+c:echo ""
+genam projects/baseconvertor/bclibs -idh1:devpac/include -l
+
+c:echo ""
+c:echo "Assembling bcwindow.s to object file..."
+c:echo ""
+genam projects/baseconvertor/bcwindow -idh1:devpac/include -l
+
+cd projects/baseconvertor
+
+c:echo ""
+c:echo "Blinking to create executable BaseConvertor."
+c:echo ""
+//blink bc.o+bclibs.o+bcwindow.o to BaseConvertor

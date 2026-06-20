@@ -1,0 +1,59 @@
+E    DATA TYPES
+
+E.1  LATTICE C DATA TYPES
+
+-----------------------------------------------------------------
+|  TYPE            | BITS |   Minimum value  |   Maximum value  |
+|---------------------------------------------------------------|
+|  char            |   8  |            -128  |             127  |
+|  unsigned char   |   8  |               0  |             255  |
+|  short           |  16  |         -32 768  |          32 767  |
+|  unsigned short  |  16  |               0  |          65 535  |
+|  int             |  32  |  -2 147 483 648  |   2 147 483 647  |
+|  unsigned int    |  32  |               0  |   4 294 987 295  |
+|  long            |  32  |  -2 147 483 648  |   2 147 483 647  |
+|  unsigned long   |  32  |               0  |   4 294 987 295  |
+|  float           |  32  |         ±10E-37  |         ±10E+38  |
+|  double          |  64  |        ±10E-307  |        ±10E+308  |
+-----------------------------------------------------------------
+
+
+
+E.2  AMIGA DATA TYPES
+
+Amiga Data Types   Lattice C Data Types   Description
+-----------------------------------------------------------------
+
+LONG               long                   Signed 32-bit
+ULONG              unsigned long          Unsigned 32-bit
+LONGBITS           unsigned long          32 bits manipulation
+
+WORD               short                  Signed 16-bit
+UWORD              unsigned short         Unsigned 16-bit
+WORDBITS           unsigned short         16 bits manipulation
+
+BYTE               char                   Signed 8-bit
+UBYTE              unsigned char          Unsigned 8-bit
+BYTEBITS           unsigned char          8 bits manipulation
+
+VOID               void                   Nothing
+STRPTR             *unsigned char         String pointer
+CPTR               ULONG                  Absolute memory pointer
+
+TEXT               unsigned char          Text
+BOOL               short                  Boolean (The file has
+                                          also defined the two
+                                          words TRUE = 1 and
+                                          FALSE = 0)
+                                          
+-----------------------------------------------------------------
+Here is a list of some data types which should not be used any
+more:
+-----------------------------------------------------------------
+
+APTR               *STRPTR                Absolute memory pointer
+                                          (Misdefined, use CPTR!)
+SHORT              short                  Signed 16-bit   (WORD)
+USHORT             unsigned short         Unsigned 16-bit (UWORD)
+
+-----------------------------------------------------------------

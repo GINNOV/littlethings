@@ -1,0 +1,635 @@
+@database NewStartup
+@master NewStartup.guide
+@$VER: NewStartupGuide 1.0 (7.10.96)
+@font thin711.font 11
+@width 72
+@remark  Guide file copyrighted Kenneth C. Nilsen '96
+
+@node "Main" "New Startup version 39"
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ @{fg shine}|@{fg text}                       @{b}N E W   S T A R T U P@{ub}                       |
+ @{fg shine}|@{fg text}                                                                   |
+ @{fg shine}|@{fg text}                  @{b}@{fg fill}By Kenneth C. Nilsen 1995, 1996@{ub}@{fg text}                  |
+ @{b}`-------------------------------------------------------------------@{ub}'
+
+
+     @{" Introduction   " link "Intro" 0}            Short introduction
+
+     @{" Requirements   " link "Requirements" 0}            What you need to use NewStartup
+
+     @{" History        " link "History" 0}            Changes from earlier versions
+
+     @{" Settings       " link "Settings" 0}            How to configurate NewStartup.asm
+
+     @{" Macro Commands " link "Macros" 0}            Docs on the macro commands
+
+     @{" Author         " link "Author" 0}            About author, addresses etc.
+
+     @{" Other programs " link "List" 0}            A little product list
+
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ `@{b}-------------------------------------------------------------------@{ub}'
+@endnode
+
+@node "Intro" "Introduction"
+@next "Requirements"
+@prev "Main"
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ @{fg shine}|@{fg text}                      @{b}I N T R O D U C T I O N@{ub}                      |
+ `@{b}-------------------------------------------------------------------@{ub}'
+
+
+   The NewStartup is an assembler include file. It's a powerful
+   startup code for all programs written in assembler or linked as
+   object to a C program.
+
+   It provides safe startup both from CLI and WB. It also adds
+   powerful macro comands to the programming environment such as CPU
+   check, Math processor check, argument parsing, library handling,
+   debugging, priority setting, task handling and more.
+
+   It's also provides a full documented source for tutorial reasons.
+
+   The startup code is written in a way which don't require any other
+   includes but itself.
+
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ `@{b}-------------------------------------------------------------------@{ub}'
+@endnode
+
+@node "Requirements" "Requirements"
+@prev "Intro"
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ @{fg shine}|@{fg text}                     @{b}R E Q U I R E M E N T S@{ub}                       |
+ `-------------------------------------------------------------------'
+
+
+   The NewStartup.asm source only require an MC68000 or higher
+   and kickstart 1.2 or higher.
+
+   Further requirements such as processor type, co-math processor
+   and kickstart version is up to the programmer. These requirements
+   can easily be configurated in your assembler source.
+
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ `@{b}-------------------------------------------------------------------@{ub}'
+@endnode
+
+@node "History" "History"
+@next "Settings"
+@prev "Requirements"
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ @{fg shine}|@{fg text}                           @{b}H I S T O R Y@{ub}                           |
+ `@{b}-------------------------------------------------------------------@{ub}'
+
+
+           Last update is from the 6th of October 1996 (3.9)
+
+
+
+3.9:
+        - Added two macros:
+
+                InitDebugHandler "<filename>"
+                DebugDump "Debug text",labelID
+
+          Powerful debug tool to help you in your programming. The
+          debug macros can easily be activated or deactivated. If
+          deactivated they will not be assembled.
+
+        - Added guide file (this one)
+
+        - Changed the CPU and MATH check. You now have to activate
+          them the same way as the debug procedure or the check will
+          not be assembled. This will save space in your programs if
+          CPU/MATH check isn't necessary.
+
+3.8:
+        - programs left a lock on the directory when they were
+          started from WB. Forgot to add ReplyMsg() to the exit code.
+          Bug is now removed!
+
+3.7:
+        - Private release
+
+3.6:
+        - Found a solution for Barfly and Devpac users. Changes for
+          AsmOne users: don't use '"'s, Barfly and Devpac users can
+          use "<  >" to use the spaces in a text argument for macros.
+
+3.5:
+        - Enhanced features.
+          Optimized the code and made if more compatible with a
+          larger range of assemblers.
+
+          Added feature to allow "Libbase exec".
+          Added macros to the macro file to support BarFly.
+
+3.4:
+        - Added <Return> macro. Use it like "Return 0" and it puts
+          the return code in D0 and makes a RTS automatically. Added
+          info to doc and startup example. Optimized some code.
+
+          Added comments in the Startup.asm source! :)
+
+          Added *n (newline) feature in argument parsing. Use this
+          like:
+
+          > Test "This is a test*nto see newline in *"quotes*".".
+
+          This will be:
+
+          > This is a test
+          > to see newline in "quotes".
+
+          Included a sample header source in the archive.
+
+          This is the first public release on the AmiNet.
+
+3.3beta:
+        - It's now bug free! :) Only thing to change now is to read
+          icon args/ tooltypes from Workbench due to a main release :)
+
+          An enforcer hit fixed (BYTE READ FROM 0). Occured when
+          starting from icon with no argument. Never was dangerous,
+          but still nice to have it all clean :)
+
+3.2beta:
+        - Added 68040 FPU options. Use:
+          MathProc = 68881/68882 or 68040 to set FPU. 0=no FPU.
+
+        - There was a bug testing for 68060. If you had a 040 with
+          040FPU this allowed you to run programs assembled for 060.
+        - A bug where reported about the Version and TaskName macros.
+          These work fine with AsmOne, but both DevPac and Barfly can
+          not handle spaces between words even if they are in quotes.
+          Sorry, can not do something about this (I think) so write
+          version strings manually and use TaskName with underscores
+          instead of spaces...
+        - An enforcer hit (BYTE READ FROM 0) where reported when
+          started from workbench. Working on the problem, but no
+          danger... :)
+
+
+3.1beta:
+        - Implemented an unfinished Startup.asm file in the 3.0
+          archive.
+        - Expanded the NextArg macro to solve *" situations in
+          arguments.
+        - Added buffercount for output strings. This caused
+          misunderstandings and people reported bugs. Not a bug, but
+          not a good presentation :)
+
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ `@{b}-------------------------------------------------------------------@{ub}'
+@endnode
+
+@node "Settings" "Source Settings"
+@next "Macros"
+@prev "History"
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ @{fg shine}|@{fg text}                          @{b}S E T T I N G S@{ub}                          |
+ `@{b}-------------------------------------------------------------------@{ub}'
+
+
+   The NewStartup.asm has different settings you should be aware of.
+   With the settings you can let your programs require a certain
+   processor or kickstart. You can set number of libraries etc.
+
+   Lets take a look at the few settings available in version 3.9:
+
+
+                                  @{b}MISC@{ub}
+
+
+   One setting always required in the source is the 'StartSkip'
+   definition. This label will tell the assembler that it will skip
+   the WaitPort() routine. This feature is here because AsmOne will
+   act like it started the program from Workbench and if you start a
+   program from AsmOne with 'StartSkip = 0' the program will hang.
+   If you use AsmOne set this one '= 1' and remember to set it to null
+   before a public release so the user can start your program(s) from
+   Workbench as well.
+
+   The way AsmOne acts here is a bug in my opinion.
+
+
+                         @{b}PROCESSOR AND CO-MATH@{ub}
+
+
+   To require a certain processor you do the following:
+
+   1) Set processor type with defining the label 'Processor'
+   2) To activate your requirement you define the label 'CpuCheck'
+
+   Example source:
+
+   Processor = 68020
+   CpuCheck  SET 1
+
+   You use the same procedure for the math co-processor, but the
+   labels are different:
+
+   MathProc  = 68882
+   MathCheck SET 1
+
+   If you always require a certain processor/co-math you should edit
+   your NewStartup.asm file by defining 'Processor' and 'MathProc' in
+   the header. When you then will require these you activate
+   'CpuCheck' and 'MathCheck' in your main source.
+
+   To deactivate the Cpu/Math check just comment the lines out like
+   this:
+
+   ;CpuCheck  SET 1
+   ;MathCheck SET 1
+
+   Now the assembler will ignore the Cpu/Math check routines and your
+   binary will be 2-300 bytes less in size. You should only deactivate
+   the Cpu/Math check if you know for certain that your code will be
+   able to run on any processor. If not activate 'CpuCheck'. If your
+   code also need to use the Math co-processor you should activate the
+   'MathCheck' as well.
+
+
+                         @{b}PRE-ALLOCATED BUFFERS@{ub}
+
+
+   I could make the NewStartup.asm code with dynamic allocation of
+   memory for library information, but that would eat stack space and
+   cause your startup header to be much larger in size. So I decided
+   to set the limit 'hard'. You can however change the setting of this
+   if you know you will use more than number of libraries set as
+   default (17). Normally you would not need more than 2-5 libraries
+   so you can also decrease this value to save a few bytes memory. The
+   buffer sizes will not affect the size of the binary file since the
+   buffers are allocated with the AllocMem() function in exec.library.
+   The label 'zyxMax' contains the number of max libraries that can be
+   opened (buffer for 17 libraries will take 204 bytes of memory).
+
+   For output strings to the console when an error occure, eg. "can't
+   open library" the NewStartup.asm uses a buffer for the RawDoFmt()
+   comand. This size doesn't normally need to be modified. However, if
+   unlikely your program should crash without a reason and you know
+   for sure it isn't your fault, try to increase the value in
+   'zyxBufZ'.
+
+
+                               @{b}DEBUGGING@{ub}
+
+
+   The last setting is for debug reasons. The label 'DODUMP' need to
+   be activated to use the InitDebugHandler and the DumpDebug comands
+   (macros). If this label is not active the assembler will ignore the
+   code from InitDebugHandler and DumpDebug comands meaning your
+   binary will be smaller.
+
+   Use the DODUMP label like this:
+
+   DODUMP SET 1
+
+   to activate debug information output to the console or your file.
+   Read more about debugging in the @{"Macro Comands" link "Macros" 0} section.
+
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ `@{b}-------------------------------------------------------------------@{ub}'
+@endnode
+
+@node "Macros" "Macro Comands"
+@next "Author"
+@prev "Settings"
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ @{fg shine}|@{fg text}                     @{b}M A C R O   C O M A N D S@{ub}                     |
+ `@{b}-------------------------------------------------------------------@{ub}'
+
+
+   In this section we will go thrue every macro comands available in
+   the NewStartup version 3.9.
+
+
+   First we must state which requirements there are to use the
+   NewStartup.asm code. You will always need two labels:
+   'Init:' and 'Start:' in the top of your program.
+
+
+   Here are the comands for the 'Init:' section:
+
+Init:
+
+
+@{b}DefEnd@{ub}
+
+   You must ALWAYS have the 'DefEnd' macro comand as the last
+   line in the 'Init:' section or your program will crash!
+
+   Example:
+
+
+   Init: DefEnd
+
+   Start: [...]
+
+
+@{b}DefLib@{ub}
+
+   In this case you will not need libraries, which is most unlikely.
+   To define which libraries you will use you just use the 'DefLib'
+   comand like this:
+
+   Init:  DefLib dos,37
+          DefLib graphics,39
+          DefEnd
+
+   Start: [...]
+
+
+   NOTE: the library names must be in lowercase.
+
+   You will not ever need to open the libraries manually. By using the
+   'DefLib' comand the NewStartup code will open the library with the
+   required version and it will close it when your program exits. If
+   libraries will not open the NewStartup code will dump error
+   messages to the default IO handler on ALL libraries that couldn't
+   be opened. Then it will exit gracefully.
+
+
+@{b}TaskName@{ub}
+
+   Optionally you can use the macro comand 'TaskName' in the 'Init:'
+   section to give your task another name than default (you can also
+   use it after 'Start:', but the sooner your program gets a name the
+   better). You can use this comand at any time. Example:
+
+   Init:  TaskName "MyTask"
+
+
+@{b}TaskPri@{ub}
+
+   You can also easily set task priority with the macro comand
+   'TaskPri'. This macro comand uses the SetTaskPri() function in
+   exec.library to set the task priority. Example:
+
+   Init:  TaskPri 2
+
+   This will set your task to have a priority of 2. You can use
+   the 'TaskPri' macro comand at any time.
+
+
+   Here are the comands for the 'Start:' section:
+
+Start:
+
+
+@{b}LibBase@{ub}
+
+   To get the library base from the library opened with the 'DefLib'
+   macro comand you use 'LibBase'. Example:
+
+        LibBase dos
+
+   This will init A6 with the dos base.
+
+
+@{b}StartFrom@{ub}
+
+   To know if you started from Workbench or from CLI you can use the
+   macro comand 'StartFrom'. If you started from CLI the D0 will
+   contain NULL. If from WB it will contain ~0 (not null). Example:
+
+        StartFrom
+        beq.b  FromCLI
+
+
+@{b}TaskPointer@{ub}
+
+   You can also get a pointer to your task with using the macro comand
+   'TaskPointer'. It uses the function FindTask() from the
+   exec.library. Example:
+
+        TaskPointer
+        move.l d0,a0
+
+
+@{b}NextArg@{ub}
+
+   The 'NextArg' is powerful macro comand. It can parse any arguments
+   given to your program from CLI. The 'NextArg' will return a pointer
+   to the extracted argument line in D0, null terminated. If no
+   arguments on line or if end, the D0 will be null with test flag (Z)
+   set which means you can set a branch directly after a 'NextArg'.
+   To get the next argument you just call 'NextArg' again anywhere in
+   your program.
+
+   Example:
+
+   You start your program with:
+
+   1> MyProgram "This is a test" Argument 1 2    3   "hello*nthere"
+
+   The 'NextArg' macro comand will extract these arguments in order:
+
+   "This is a test"
+   "Argument"
+   "1"
+   "2"
+   "3"
+   "Hello
+    there"
+
+   All strings are null terminated. In your source you could have:
+
+   Loop:        NextArg
+                beq.b   EndOfArgs
+
+                move.l  d0,a0
+                [HandleArg]
+
+                bra.b   Loop
+
+   EndOfArgs:
+
+
+@{b}InitDebugHandler@{ub}
+
+   The NewStartup.asm has a build-in debug feature. You can optionally
+   use the 'InitDebugHandler' to obtain a console or file output for
+   your debug dump info. If you choose not to use the
+   'InitDebugHandler' you will not get any output if there is no
+   default IO handler for your program (eg. when started from WB).
+
+   Example:
+
+        InitDebugHandler "CON:0/20/640/160/Debug output/WAIT/CLOSE"
+
+   This comand will first try to get a default output handler. If that
+   fails it will try to open the file after the comand.
+
+   NOTE: You need to set 'DODUMP' to activate the debug features. If
+   not, the debug comands will not be assembled and no output will
+   occure. Read more about 'DODUMP' in the @{"Settings" link "Settings" 0} section.
+
+
+@{b}DebugDump@{ub}
+
+   To use the DebugDump with your programs you just use it like this:
+
+        DebugDump "Program starts here",0
+
+   When you activate 'DODUMP' the program will dump the string to the
+   output handler when you execute your program. When started from WB
+   you will not have a default output handler. Therefor use the
+   'InitDebugHandler' to get a console or file when default is not
+   available.
+
+   The ",0" is the LabelID for the macro comand. This number or letter
+   must be unic else your assembler will report an error.
+
+
+@{b}Return@{ub}
+
+   The last macro comand is the 'Return' macro. This comand should end
+   your program. What it does is to put a return code in D0 and then
+   'rts' your program. Example:
+
+        Return 0
+
+   This will do this:
+
+        moveq.l #0,d0
+        rts
+
+   This macro is just made to ease your programming.
+
+
+   Please see the @{"'Startup_example.s'" link "/Startup_example.s/main" 0} source to see how to use the
+   comands.
+
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ `@{b}-------------------------------------------------------------------@{ub}'
+@endnode
+
+@node "Author" "About Author, addresses etc."
+@prev "Macros"
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ @{fg shine}|@{fg text}                      @{b}A B O U T   A U T H O R@{ub}                      |
+ `@{b}-------------------------------------------------------------------@{ub}'
+
+
+   Author of NewStartup:
+
+        Kenneth C. Nilsen
+
+   If you want to get in touch for bug reports, suggestions, features
+   wanted etc. please e-mail me:
+
+        kennecni@idgonline.no  (new, please use this address)
+        kenneth@norconnect.no  (soon to be obsolete)
+
+   If you don't have e-mail account you can also write to me:
+
+        Digital Surface
+        Kenneth C. Nilsen
+        Briskåsen 1
+        N-3535 Krøderen
+        (Norway)
+
+   To visit my homepage:
+
+   http://www.norconnect.no/~kenneth/
+
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ `@{b}-------------------------------------------------------------------@{ub}'
+
+
+        Author history:
+
+
+        Been programming in more than 14 years. First at a CBM Vic 20,
+        then on a CBM 64, Spectravideo 328, Amstrad, Atari and finally
+        the Amiga since 1989.
+
+        Programmed most in Basic languages (has it's reasons), but
+        started with assembler on the Amiga.
+
+        Has two companies which uses the Amiga. Digital Surface is a
+        creative studio using the Amiga for rendering, programming,
+        graphics, music, business and more.
+
+        The other company ElcoClean uses the Amiga only for business.
+
+        Here's a @{"list" link "List" 0} on some of projects.
+
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ `@{b}-------------------------------------------------------------------@{ub}'
+@endnode
+
+@node "List" "Project list"
+@next "Intro"
+@prev "Author"
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ @{fg shine}|@{fg text}                      @{b}P R O J E C T   L I S T@{ub}                      |
+ `@{b}-------------------------------------------------------------------@{ub}'
+
+
+   Here is a list of some of my other projects and future projects:
+
+
+   Past (alphabetically sorted):
+
+        7toISO
+        AXE Phonebase
+        CloseEm
+        DemoX
+        Dfunc.library
+        DoJob
+        DumpMem
+        Football analyser 1.6gm
+        GridMaker
+        LoadLib
+        LottoXP 1.x/2.x
+        MakeASCII
+        MakeDummy
+        MirrorText
+        NewMasterMind
+        PatchLVO
+        PatchRawDoFmt
+        ProPlay
+        Reverse
+        StripCom
+        TG96 Intro
+        TV 2 Frame Shuffler (commercial)
+
+        and a bunch of small private utillities. Most of these
+        utilities can be found in an AmiNet site except from the
+        commerical programs.
+
+
+   Future:
+
+
+        IXO (commercial)
+
+        LottoXP 3.0 (global version) (commercial)
+
+        XPatch (perhaps integrated with IXO)
+
+
+ @{b}@{fg shine}.-------------------------------------------------------------------@{ub}@{fg text}.
+ `@{b}-------------------------------------------------------------------@{ub}'
+@endnode

@@ -1,0 +1,13 @@
+
+Modified by David Stes on 20/apr/97 to deal with
+
+	const char * msg = "hello"
+	#line 320
+			   "world";
+
+(This needs to be translated into a single "xstr" reference)
+
+Also added a -s option which allows one to specify a "strings"
+database using an absolute path, for use in multiple directories.
+
+Changed file extension from .c to .m (because it's a demo of Objective C now).

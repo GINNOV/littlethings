@@ -1,0 +1,19 @@
+Short:        Run SAS C's sc from the UEdit editor
+Uploader:     jbciii world std com
+Type:         dev/c
+Architecture: m68k-amigaos
+
+ue2sas version 1.0
+
+Compile C source code directly from the UEdit text editor. Step through any
+reported errors and have the error lines in the source appear inverted. The
+related error message will appear in a split window. Run this utility from the
+defined keys or with the mouse from customized screen gadgets. Also contains
+key definitions for loading macro sequences onto the keys of the numeric
+keypad.
+
+Joel B. Couch
+Meager Creations
+
+
+                

@@ -1,0 +1,392 @@
+
+ CORSO DI ASSEMBLER - LEZIONE 5
+
+In questa lezione tratteremo lo scorrimento orizzontale e verticale delle
+figure, nonche' alcuni effetti speciali.
+
+Cominciamo dallo scorrimento orizzontale: l'Amiga ha un registro speciale
+dedicato allo scorrimento, il BPLCON1 ($dff102), che puo' far scorrere di
+un pixel alla volta verso destra i bitplane per un massimo di 15 pixel.
+Cio' e' ottenuto dal copper ritardando il trasferimento dei dati dei bitplane,
+che arrivano "dopo" di uno o piu' pixel. Si possono inoltre scorrere
+separatamente i bitplanes pari e quelli dispari: i bitplanes dispari sono
+chiamati PLAYFIELD 1 (1,3,5), mentre quelli pari PLAYFIELD 2 (2,4,6).
+Il $dff102, lungo una word, e' diviso in 2 byte: quello alto, ossia quello
+a sinistra, ($xx00), composto dai bit dal 15 all'8, non e' utilizzato e bisogna
+lasciarlo a zero, mentre il byte basso ($00xx) controlla lo scroll:
+
+	$dff102, BPLCON1 - Bit Plane Control Register 1
+
+	BITS		NOME-FUNZIONE
+
+	15	-	X
+	14	-	X
+	13	-	X
+	12	-	X
+	11	-	X
+	10	-	X
+	09	-	X
+	08	-	X
+	07	-	PF2H3	\
+	06	-	PF2H2	 \ 4 bit per scroll PLANES PARI (playfield 2)
+	05	-	PF2H1	 /
+	04	-	PF2H0	/
+	03	-	PF1H3	\
+	02	-	PF1H2	 \4 bit per scroll PLANES DISPARI (playfield 1)
+	01	-	PF1H1	 /
+	00	-	PF1H0	/
+
+In pratica si deve agire sulla word in maniera simile ai registri colore:
+mentre nei registri colore si agisce su 3 componenti RGB, che vanno da 0 a 15,
+ossia da 0 a $F, qua agiamo su 2 sole componenti che vanno da $0 a $f, come
+il GREEN e BLU del $dff180 (COLOR0):
+
+	dc.w	$102,$00XY	; BPLCON1 - dove: X= scroll bitplanes PARI
+				;		  Y= scroll bitplanes DISPARI
+
+Alcuni esempi: (per la Copperlist)
+
+	dc.w	$102,$0000	; BPLCON1 - scroll zero, posizione normale
+	dc.w	$102,$0011	; BPLCON1 - scroll = 1 in entrambi i playfield,
+				; ossia in tutta la figura
+	dc.w	$102,$0055	; BPLCON1 - scroll = 5 per tutta la figura
+	dc.w	$102,$00FF	; "" scroll al massimo (15) per tutta la figura
+	dc.w	$102,$0030	; "" scroll = 3 solo per i bitplanes PARI
+	dc.w	$102,$00b0	; "" scroll = $B solo per i bitplanes DISPARI
+	dc.w	$102,$003e	; "" scroll = 3 per i bitplanes PARI e di $e
+				; per i bitplanes dispari
+
+niente di piu' facile! Basta cambiare il valore di scroll ogni FRAME per
+screare uno scorrimento dell'intero schermo con un solo MOVE!!!
+
+Caricate l'esempio Lezione5a.s per vedere in pratica il funzionamento.
+
+In questo esempio il $dff102 (BPLCON1) viene cambiato all'inizio della
+COPPERLIST, dunque si muove tutta la figura. E' possibile mettere molti
+$dff102 (BPLCON1) a varie linee dello schermo con la tecnica dei WAIT:
+nell'Esempio Lezione5b.s ce ne sono due, che fanno scorrere separatamente la
+scritta "COMMODORE" e "AMIGA".
+Mettendo un $dff102 (BPLCON1) per linea con i WAIT, si possono fare i noti
+effetti di ondeggiamento delle figure.
+
+Vediamo ora lo scorrimento verticale.
+Il modo piu' semplice per fare questo scorrimento e' di puntare piu' in alto o
+piu' in basso nella figura i puntatori ai bitplanes in copperlist, in modo
+che la figura sembri piu' "alta" o piu' "bassa". Immaginiamo di vedere una
+immagine attraverso un foro rettangolare, una specie di finestra (il video):
+
+	 ---------------
+	|		| 1
+	|		| 2
+	|     AMIGA	| 3
+	|		| 4
+	|		| 5
+	 ---------------
+
+ Vediamo in questo caso la scritta AMIGA al centro della finestra, e abbiamo
+ puntato i bitplane alla linea 1 (cioe' lo schermo inizia con la linea 1,
+ per cui AMIGA si trova alla linea 3).
+ Se puntiamo lo schermo alla linea 2, cosa succede???
+
+	 ---------------
+	|		| 2
+	|     AMIGA	| 3
+	|		| 4
+	|		| 5
+	|		| 6
+	 ---------------
+
+Succede che AMIGA "sale" perche' la finestra (il video) scende, ossia punta
+piu' in basso nella figura. Essendo il moto relativo, se vediamo dal finestrino
+di un treno in corsa un albero che si sposta, in realta' l'albero e' "fermo" e
+noi ci spostiamo. Qua succede una cosa analoga. Ma per far andare in alto o
+in basso una figura, quanto dobbiamo aggiungere o diminuire ai puntatori dei
+bitplanes??? I byte di una linea. Ossia 40 per una figura in LOW RES 320x256
+e 80 per una figura in HIGH RES 640x256, infatti esaminiamo questo caso:
+
+	1234567890
+	..........
+	....++....
+	...+..+...
+	...++++...
+	...+..+...
+	...+..+...
+	..........
+
+Abbiamo un ipotetico bitplane con 10 byte per linea, che puo' essere a zero (.)
+o ad 1 (+), in questo caso raffigura una "A". Per spostare la "A" in alto,
+dobbiamo "puntare" una linea piu' in basso, ossia 10 bytes piu' in basso, e
+per puntare piu' in basso, occorre AGGIUNGERE 10 (add.l #10,puntatori)
+
+	1234567890
+	....++....
+	...+..+...
+	...++++...
+	...+..+...
+	...+..+...
+	..........
+	..........
+
+Allo stesso modo, per farla "scendere", dobbiamo puntare una linea piu' in
+alto, ossia 10 bytes piu' in alto (SUB.L #10,puntatori):
+
+	1234567890
+	..........
+	..........
+	....++....
+	...+..+...
+	...++++...
+	...+..+...
+	...+..+...
+
+In pratica per fare questo dobbiamo ricordarci che i puntatori in copperlist
+hanno l'indirizzo dei plane (che noi cambieremo) divisi in 2 word. Il problema
+e' facilmente risolvibile con una lieve modifica della routine di puntamento
+dei bitplane, infatti dobbiamo "PRENDERE" l'indirizzo dei bitplanes dalla
+copperlist (operazione contraria), aggiungere o sottrarre 40 per lo scroll,
+e rimettere il nuovo indirizzo nella copperlist con la vecchia routine di
+puntamento. Vedetevi l'esempio Lezione5c.s che usa questo sistema.
+
+Ora caricatevi l'esempio Lezione5d.s, in cui sono presenti le due routines
+di scroll orizzontale e verticale contemporaneamente.
+
+In Lezione5d2.s troverete un'altra applicazione dello scroll orizzontale
+insieme al $dff102 (bplcon1), ossia la distorsione in movimento.
+
+Vedremo ora i registri piu' importanti per gli effetti speciali video Amiga,
+ossia i MODULI: $dff108 e $dff10a (BPL1MOD e BPL2MOD). Ci sono due registri
+modulo perche' si puo' cambiare il modulo separatamente per i bitplanes pari
+e per quelli dispari, come il BPLCON1 ($dff102). Per operare sulla nostra
+figura a 3 bitplanes dovremo agire su entrambi i registri.
+Avrete notato che quando una immagine in LOW RES 320x256 viene visualizzata,
+il PENNELLO va a capo ogni 40 bytes, mentre i dati sono tutti di seguito.
+Allo stesso modo, nel caso di una figura in HI-RES 640x256 il pennello va a
+capo ogni 80 bytes. Infatti il modulo viene automaticamente assegnato quando
+si setta il $dff100 (BPLCON0): se viene selezionato il LOWRES il copper sa
+che una figura in lowres ha 40 bytes per linea, dunque partendo a visualizzare
+dall'inizio dello schermo (in alto a sinistra), si legge 40 bytes e scrive col
+pennello elettronico la prima linea, poi "va a capo" e i dati che seguono li
+scrive alla linea dopo, e cosi' via. La figura in memoria pero' ha i dati tutti
+consecutivi, non c'e' una figura "quadrata" ! La memoria e' una fila
+di byte consecutivi, per cui ogni bitplane e' una linea consecutiva di dati:
+immaginate di dividere le 256 linee dello schermo, lunghe 40 bytes ciascuna,
+e di metterle l'una dopo l'altra per fare una sola linea di 40*256 bytes,
+ottenendone una lunga una settantina di metri: questa sarebbe la linea come
+e' veramente in memoria. Mettendo il modulo a zero, come abbiamo fatto fino ad
+ora, lasciamo andare "a capo" come il LOWRES o HIGHRES comanda, ossia ogni 40
+o 80 linee, e la visualizzazione e' normale. Il valore che mettiamo al modulo
+viene ADDIZIONATO ai puntatori ai bitplanes alla FINE della linea, ossia una
+volta raggiunto il byte 40. In questo modo possiamo "SALTARE" dei bytes, che
+non vengono visualizzati. Per esempio se aggiungiamo 40 ad ogni termine di
+linea ne saltiamo una intera, per cui ne viene visualizzata una ogni due,
+infatti:
+
+
+	- IMMAGINE NORMALE -
+
+	....................	; al termine di questa linea "salto" 40 bytes
+	.........+..........
+	........+++.........	; e visualizzo questa linea, poi "salto"...
+	.......+++++........
+	......+++++++.......	; e visualizzo questa linea, poi "salto"...
+	.......+++++........
+	........+++.........	; e visualizzo questa linea, poi "salto"...
+	.........+..........
+	....................	; e visualizzo questa linea, poi "salto"...
+
+Il risultato sara' che visualiziamo solo una linea ogni due:
+
+	- IMMAGINE MODULO 40 -
+
+	....................	; al termine di questa linea "salto" 40 bytes
+	........+++.........	; e visualizzo questa linea, poi "salto"...
+	......+++++++.......	; e visualizzo questa linea, poi "salto"...
+	........+++.........	; e visualizzo questa linea, poi "salto"...
+	....................	; e visualizzo questa linea, poi "salto"...
+	....................
+	....................
+	....................
+	....................
+
+La figura apparira' schiacciata, lunga la meta', inoltre andremo a visualizzare
+anche byte "sotto" la nostra figura, dato che lo schermo finisce sempre alla
+linea 256: in pratica visualiziamo sempre 256 linee, ma in un raggio di 512
+linee di cui visualiziamo solo una linea ogni due.
+Provate a ricaricare Lezione5b.s e modificate i moduli nella copperlist:
+
+	dc.w	$108,40		; Bpl1Mod
+	dc.w	$10a,40		; Bpl2Mod
+
+Noterete che l'immagine e' alta la meta' come previsto e la parte inferiore
+dello schermo e' riempita dai bitplane che "avanzano", ossia dal secondo
+bitplane visualizzato sotto il primo, e dal terzo visualizzato sotto il secondo
+mentre dopo il terzo si vede la memoria dopo la figura, insomma vengono
+visualizzate 256 linee in un raggio di 512.
+Provate a saltare 2 linee, saltando 80 bytes ogni 40 visualizzati:
+
+	dc.w	$108,40*2	; Bpl1Mod
+	dc.w	$10a,40*2	; Bpl2Mod
+
+La figura si dimezzera' ancora, e spunteranno in basso altri bytes.
+Verificherete un dimezzamento dell'altezza continuando con moduli di 40*3,
+40*4,40*5 eccetera, fino a rendere illeggibile il disegno.
+Se scegliete un modulo che non sia multiplo di 40 causerete lo "sfaldamento"
+dell'immagine, infatti il copper visualizzara' le linee partendo non dal loro
+inizio ma da una parte sempre diversa.
+
+Vedetevi Lezione5e.s per una veloce routine che aggiunge 40 al modulo per
+dimezzare la figura.
+
+I moduli oltre che positivi possono essere anche negativi. In questo caso viene
+sottratto il numero negativo in questione alla fine di ogni linea visualizzata.
+In questo caso si possono creare effetti strani: immaginatevi di mettere il
+modulo come -40: in questo caso, il copper legge 40 bytes, li visualizza in
+una linea, poi torna indietro di 40 bytes, visualizza gli stessi dati nella
+linea successiva, poi torna indietro di 40 bytes, e cosi' via. In pratica non
+avanza oltre i primi 40 bytes e ogni linea ricopia la prima linea: se per
+esempio abbiamo la prima linea tutta nera, le altre riprodurranno questa e lo
+schermo sarà tutto nero. Se ci fosse un solo punto nel mezzo della linea,
+questo sarebbe ridisegnato ogni linea e si produrrebbe una riga verticale:
+
+	..........+........	; linea 1 (sempre ridisegnata: modulo -40!)
+	..........+........	; linea 2
+	..........+........	; linea 3
+	..........+........	; linea 4
+	..........+........	; linea 5
+	..........+........	; linea 6
+	..........+........	; linea 7
+	..........+........	; linea 8
+	..........+........	; linea 9
+	..........+........	; linea 10
+
+Allo stesso modo ogni colore provoca una specie di "colatura" fino alla fine
+dello schermo. Questo effetto e' stato usato in giochi come Full Contact, nel
+red-sector demomaker e in moltissimi altri programmi.
+
+Vediamo il suo funzionamento in pratica in Lezione5f.s
+
+Suggestivo e semplice da fare, o sbaglio? E' detto anche effetto FLOOD.
+Il modulo viene addizionato, ogni fine linea, ai puntatori dei bitplanes che
+"camminano" nella memoria per visualizzare tutta la figura.
+Quindi addizionando un numero negativo, sottraiamo.
+In questo caso specifico, i puntatori dopo aver trasferito ogni linea assumono
+il valore X+40, vengono quindi incrementati del valore del modulo (=-40: la 
+lunghezza in byte di una singola riga di bitplane, al negativo): decrementati
+dunque di '40' byte, assumono infine di nuovo il valore X di partenza.
+
++---->->->--------+
+|                 |
+|BPL POINTER=  X+ 0......................................39          
+|                 |                                      |
+|INIZIO RIGA -+---xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx---+- ULTIMO BYTE ->
+|     (X)     |   |                                      |   |	   (X+39)
+|             +---+                                      +---+
+|                 |
+| RIGA DOPO -+----xxxx[...]
+^            |    |
+|            +-X+ 40  (il puntatore, dopo il trasferimento, ha camminato per
+^                 |   l'intera lunghezza della riga (40 byte), fermandosi
+|                 |   al 40esimo che altri non e' se non il primo byte della
+^                 |   riga successiva)
+|                 +-> (Qui viene ADDIZIONATO al puntatore di ogni plane il 
+|                 |   valore del modulo a lui assegnato: in questo caso '-40')
+|                 +-> X=X+(-40) => X=X-40 => X=0 >-+
+|                 |                                |
++----------<-<-<--+------------<-<-<---------------+
+
+Visto ? Il puntatore, sul piu' bello, arrivato a X+40, viene sottratto
+di 40 e torna all' inizio della riga appena trasferita, visualizzando ancora
+la stessa riga in quella sotto, in quanto il pennello elettronico cammina
+sempre verso il basso e disegna quanto gli viene "detto" al punto in cui si
+trova, in questo caso sempre la stessa riga, ripetuta.
+
+Abbiamo visto in Lezione5f.s anche l'effetto specchio, ossia il modulo -80.
+Vediamolo da solo nell'esempio Lezione5g.s.
+
+Vediamo ora come utilizzare molti $dff102 (BPLCON1) consecutivi in copperlist
+per creare un effetto di ondulazione: caricate Lezione5h.s
+
+Vediamo un utilizzo particolare dello scroll con i bitplanes: Lezione5i.s e'
+un cosiddetto GRAPHIC-SCANNER, un antenato dei GFX-RIPPERS, ossia i programmi
+che "RUBANO" figure dalla memoria. Questo breve programmino serve semplicemente
+a mostrare la memoria CHIP, con tutte le figure visibili in essa contenute.
+
+Ancora un esempio inerente ai moduli in Lezione5l.s, questa volta per fare un
+"allungamento" della figura anziche' un dimezzamento.
+
+In Lezione5m.s vedremo un'altro metodo per spostare in basso e in alto la
+figura, questa volta modificando il DIWSTART ($dff08e)
+I registri DIWSTART e DIWSTOP determinano l'inizio e la fine della "finestra
+video", ossia la parte rettangolare di schermo dove vengono visualizzati i
+bitplanes. DIWSTART contiene le coordinate YYXX dell'angolo in alto a sinistra,
+dove inizia il "rettangolo video", mentre DIWSTOP contiene le coordinate
+dell'angolo in basso a destra:
+
+    DIWSTART
+	o----------------
+	|		|
+	|		|
+	|		|
+	|		|
+	|		|
+	----------------o
+		      DIWSTOP
+
+In questi registri pero' non si possono indicare tutte le possibili coordinate
+XX e YY, infatti sia la posizione XX che YY sono byte, e come sappiamo i byte
+possono raggiungere 256 diversi valori ($00-$ff).
+Vediamo in quali posizioni possiamo cominciare la finestra video col DiwStart
+e in quali possiamo terminarlo col DiwStop.
+
+	dc.w	$8e,$2c81	; DiwStrt YY=$2c,	XX=$81
+	dc.w	$90,$2cc1	; DiwStop YY=$2c(+$ff), XX=$c1(+$ff)
+
+La finestra video normale ha questi valori di DIWSTRT e DIWSTOP; la posizione
+verticale, la YY, funziona esattamente come la posizione YY dei wait del
+copper: infatti se col copper aspettate una linea sopra $2c e ci fate delle
+sfumature, non saranno visibili perche' troppo in alto, o comunque risultera'
+sopra qualsiasi figura visibile; analogamente al wait dopo la linea $FF la
+posizione riparte da $00, che sarebbe $FF+1. infatti lo schermo inizia dalla
+posizione verticale $2c, e finisce al $2c dopo la linea 256, ossia $FF+$2c,
+ossia $12b, visualizzando un totale di 256 linee, come previsto.
+Per esempio per uno schermo alto 200 linee dovremo mettere questo DiwStop:
+
+	dc.w	$90,$f4c1	; DiwStop YY=$2c(+$ff), XX=$f4
+
+Infatti $f4-$2c = 200. Se indichiamo $00,$01... aspetteremo dopo la linea $ff.
+Le limitazioni sono queste: il DiwStart puo' posizionarsi verticalmente in
+una delle posizioni YY da $00 a $FF, ossia fino alla linea 200. La finestra
+video dunque non puo' comunciare dalla linea 201 o seguenti, sempre prima.
+Per il DIWSTOP i progettisti si sono serviti di uno stratagemma: se il valore
+YY e' sotto $80, ossia 128, allora aspetta le linee sotto $FF, per cui il $2c
+si riferisce a $2c+$FF, ossia la linea 256. Se il numero e' superiore a $80
+allora lo prende cosi' com'e', (dato che non esistono linee $80+$ff=383!!),
+e aspetta veramente le linee 129,130 eccetera. Dunque, se il DIWSTART puo'
+arrivare al massimo alla linea $FF partendo dallo ZERO, il DIWSTOP puo'
+superare la linea $FF e arrivare ai limiti del video in basso, ma non puo'
+partire da linee inferiori alla $80. Questo trucco e' stato fatto considerando
+i numeri con il bit 7 a zero (quelli, appunto, prima $80), come se avessero un
+ipotetico bit 8 impostato, il che aumenta tutto di $FF. Quando invece il bit
+7 viene impostato (i numeri dopo $80 lo hanno impostato) allora il bit
+fantasma sparisce e i numeri sono presi per quello che sono.
+Per quanto riguarda la linea orizzontale il diwstart puo' partire da una
+qualsiasi XX da $00 a $FF, quindi fino alla posizione 256, (ricordatevi pero'
+che lo schermo parte dalla posizione $81 e non da $00, dunque e' la posizione
+126 dall'inizio dello schermo!). Il DiwStop invece con $00 indica la linea
+127, e proseguendo puo' raggiungere la fine del borso destro dello schermo,
+infatti ha il bit 8 "fantasma" sempre ad 1, per cui viene sempre aggiunto $FF
+al suo valore di XX.
+In definitiva il DiwStart puo' posizionarsi in una qualsiasi delle posizioni
+XX e YY da $00 a $FF, mentre il DiwStop puo' posizionarsi orizzontalmente
+dopo la linea $FF, e verticalmente dalla linea $80 alla linea $FF, dopodiche'
+i numeri da $00 a $7f sono, come nel wait dopo la linea $FF, le linee 201,202
+eccetera, per cui $2c e' $2c+$ff.
+
+In Lezione5m2.s, Lezione5m3.s e Lezione5m4.s viene trattato questo argomento.
+
+
+Come termine della LEZIONE5, caricatevi Lezione5n.s, che e' un riassunto delle
+lezioni precedenti e in piu' e' il primo listato che suona anche la musica.
+
+Una volta capito questo esempio, non vi resta che caricare la LEZIONE6.TXT
+

@@ -1,0 +1,70 @@
+
+
+   NCode: The conditional macro assembler for MC68000/10/20/30
+   -----------------------------------------------------------
+
+NCode is a conditional macro assembler for the Motorola MC68000,
+MC68010, MC68020 and MC68030 that produces object code for the
+Commodore AMIGA. The assembler offers the possibility to put
+your standard assembler options (for example the target CPU and
+the page length) in an argument file.
+
+NCode is a two pass assembler that never rereads the source file
+in the second pass. Instead, it keeps the file in memory (also
+needed to produce the listing) and only rescans the forward
+references. This can speed up the assembly time significantly,
+especially when you're using slow floppy drives or lots of
+include files. In fact the gain of speed is most noticeable at
+large source files with many include files. Unfortunately,
+sending the listing file to the screen is slow, because of the
+use of standard I/O routines. If you want your listings to go to
+the screen, you might want to turn off the listing (the assembler
+will still produce error messages). This can be done by the
+"NOLIST"-directive. To further speed up the process of writing
+assembly language programs, NCode will produce executable code
+whenever possible. So, if your source contains no external
+references or definitions, you won't need the linker.
+
+NCode is compatible with most assemblers for the AMIGA and uses
+the standard Motorola syntax for both instructions and operands.
+
+See the manual for further details on the supported assembler
+directives, conditional assembly and macro's. There is an English
+and Dutch manual included (files Manual.English and
+Manual.Dutch).
+
+
+     -------------------------------------------------------
+
+     THE AUTHOR MAKES NO WARRANTY OF ANY KIND WITH RESPECT
+     TO THE DOCUMENTATION OR THE SOFTWARE DESCRIBED THEREIN,
+     ITS QUALITY, PERFORMANCE, MERCHANTABILITY, OR FITNESS
+     FOR A PARTICULAR APPLICATION. THE AUTHOR SHALL NOT BE
+     LIABLE FOR ERRORS CONTAINED HEREIN OR FOR INCIDENTAL OR
+     CONSEQUENTIAL DAMAGES IN CONNECTION WITH THE USE OF
+     THIS PRODUCT.
+
+     -------------------------------------------------------
+
+
+This software is not public domain, but it is freely
+distributable in public domain series, BBSs etc., on condition
+that this file and the manuals are included and remain unchanged.
+This version is NOT FOR COMMERCIAL USE.
+Copyright (c) Edgar Visser.
+
+I am not requesting any money for the use of this product but
+should you feel the urge to reward the author, his address is
+listed below. If you find any bugs or have questions or
+suggestions on improving NCode, please write to:
+
+          Edgar Visser
+          Kalverstraat 54
+          5642 CJ  Eindhoven
+          The Netherlands
+          Europe
+          ph: 31-40-816782
+
+I hope you enjoy using my assembler!
+
+Edgar Visser.

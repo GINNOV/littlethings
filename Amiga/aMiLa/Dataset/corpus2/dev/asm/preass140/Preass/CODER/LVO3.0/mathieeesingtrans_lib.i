@@ -1,0 +1,22 @@
+; ASM-One - mathieeesingtrans_lib.i
+; (Release 3.0)
+;
+; by SCHWARZENEGGER/R.A.F
+
+IEEESPAtan=	-30
+IEEESPSin=	-36
+IEEESPCos=	-42
+IEEESPTan=	-48
+IEEESPSincos=	-54
+IEEESPSinh=	-60
+IEEESPCosh=	-66
+IEEESPTanh=	-72
+IEEESPExp=	-78
+IEEESPLog=	-84
+IEEESPPow=	-90
+IEEESPSqrt=	-96
+IEEESPTieee=	-102
+IEEESPFieee=	-108
+IEEESPAsin=	-114
+IEEESPAcos=	-120
+IEEESPLog10=	-126

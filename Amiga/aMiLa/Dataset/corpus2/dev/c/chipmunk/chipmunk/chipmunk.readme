@@ -1,0 +1,19 @@
+Short:        2D physics library
+Author:       Scott Lembcke, shared library by Ilkka Lehtoranta
+Uploader:     Ilkka Lehtoranta (ilkleht@isoveli.org)
+Type:         dev/c
+Version:      1.0
+Architecture: ppc-morphos
+
+Chipmunk is a 2D rigid body physics library distributed under the MIT license.
+Though not yet complete, it is intended to be fast, numerically stable, and
+easy to use.
+
+MorphOS port comes with full source code including shared runtime library.
+Feel free to port library to other compatible systems.
+
+Chipmunk demo is in Demo folder. Before running demo copy chipmunk.library
+to LIBS:. TinyGL is needed to run demo. Get it from http://3d.morphos-team.net
+if you dont have it already.
+
+http://wiki.slembcke.net/main/published/Chipmunk

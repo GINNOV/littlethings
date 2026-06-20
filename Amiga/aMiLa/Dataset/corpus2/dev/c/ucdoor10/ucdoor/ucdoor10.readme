@@ -1,0 +1,14 @@
+Short:    Library for MAXs BBS doors.
+Author:   cdemaeyer@mmm.com (Chris De Maeyer)
+Uploader: cdemaeyer@mmm.com
+Version:  1.0
+Type:     dev/c
+
+This archive contains a linkable library containing functions to create
+doors for MAX's BBS.
+
+Features:       - general door creation
+                - general door operations
+                - user data structures functions
+                - ANSI support funtions.
+

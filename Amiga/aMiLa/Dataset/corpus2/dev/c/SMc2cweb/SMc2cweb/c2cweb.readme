@@ -1,0 +1,88 @@
+SHORT: Port of C2CWEB V1.4, converts C/C++ code to cweb (.w)
+TYPE: dev/c
+AUTHOR: Port by Reinhard Katzmann (suamor@student.uni-tuebingen.de)
+        Original by Werner Lember (a7621gac@univie.ac.at)
+UPLOADER: Reinhard Katzmann (suamor@student.uni-tuebingen.de)
+
+                       Amiga Port of c2cweb V1.4
+                       =========================
+
+This program was written 1994 originally by Werner Lemberg. I have
+not made any changes to it in this port.
+
+Purpose
+-------
+c2cweb will transform plain C or C++ code into a CWEB file to get a pretty
+formatted output. You will need the cweb package which can be found on
+Amnet as well (Aminet Set 2c or Aminet 9 CD) which contains the CTANGLE
+and the CWEAVE binaries. To include your C/C++ code into a LaTeX document
+simply use CWEAVE after having processed it with C2CWEB (which you can
+also use to make a .tex-file from c2cweb.w, i.e. a documentation for it).
+CTANGLE is only needed if you want to recreate c2cweb.c from c2cweb.w
+
+Copying
+-------
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License version 2 as published by the
+Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+
+Installation
+------------
+
+Simply copy C2CWEB to your favourite TeX binary directory. Then you have
+to copy compiler.w to your CWEBINPUTS path. If you want to process the
+example and/or you want to use german language you have to copy
+macros/c2cweb.ger into a directory of your TEXINPUTS path.
+
+Author
+------
+
+Werner Lemberg (a7621gac@awiuni11.bitnet)
+
+Please report any errors, comments or suggestions to this email-address.
+
+N.B.: If you like this program, send me a postcard !
+
+    Werner Lemberg
+    Goldschlagstr. 52/14
+
+    A-1150 Vienna/Austria
+
+Amiga-Port:
+-----------
+
+E-MAIL (prefered):
+------------------
+
+  suamor@student.uni-tuebingen.de
+
+SnailMail:
+----------
+
+  Reinhard Katzmann
+  Schellingstraße 41
+
+  D - 72072 Tübingen
+
+BBS'es
+------
+
+You can try to reach me through BBS'es near Tübingen. Some of the Sysops
+might know me or have contact to the Internet. I'm only User of one BBS:
+
+Onkel Helmut's Hütte
+
+Line 1: (0049) +7157/64546 (28800 Baud)
+Line 2: (0049) +7157/65428 (14400 Baud)
+
+My usual Nickname on the internet or at this BBS is Suamor.

@@ -1,0 +1,582 @@
+
+                          Defender - The Source
+                          =====================
+
+                                Update 01
+                                =========
+
+                             By Dave Edwards
+                             ===============
+
+ Assuming that you're reading this in order to find out about the ACC Defender
+program that I'm working on, and that  you  already  have the old source file,
+then this update is devoted to the latest additions as of 12/8/92.
+
+
+                             VERY IMPORTANT!
+
+ READ ALL OF THIS FILE BEFORE PROCEEDING. MUCH HAS CHANGED! SHOULD YOU FAIL TO
+NOTE ALL OF THE CHANGES, THEN MAKING USE OF THE DEFENDER SOURCE CODE WILL BE A
+GOOD DEAL HARDER THAN IT SHOULD BE!
+
+ IMPORTANT-Getting To The Game 
+ -----------------------------
+
+        I've changed the procedure for  getting  to  the game from the initial
+title screen. Now, you have to press  one  of the function keys, F1 or F2. I'm
+putting this in so that eventually, F1 will activate a one-player game, and F2
+will activate a  two-player  game.  Pressing  any  other  key will have little
+effect!
+
+
+        However, ESC still freezes the game  and  exits  once the main game is
+entered, and pressing the left mouse button  afterwards returns you to the CLI
+(or, when I get around to it, to WorkBench too).
+
+ Assembly Changes
+ ----------------
+
+        In its previous incarnation, Defender  required  the Exec and Graphics
+library include files. Well, now it  doesn't.  The reason? Simple. Speeding up
+the assembly process. Basically,  since  I  only use a very few functions from
+either library (six from Exec, two from  the graphics library) it was a teensy
+bit pointless to use the entire include files. I don't envisage this situation
+changing in the future so to save  memory,  assembly time and disc space, I've
+abandoned the include files. However, regulars to ACC should keep those copies
+of the include files that I have  sent  with  the  earlier Defender code since
+they'll no doubt find use elsewhere!
+
+ Keyboard Assignment Changes
+ ---------------------------
+
+        The keys used have changed a bit.  After  some experimentation, I have
+assigned the following keys to the following functions:
+
+
+        Left SHIFT      :       Reverse
+
+        Left ALT        :       Thrust
+
+        Left Amiga      :       Fire Laser
+
+        CTRL            :       Smart Bomb
+
+ The joystick is still used to move the ship up and down. I tried the keyboard
+but things became too much of a handful.  I welcome suggestions about keyboard
+and joystick assignments from users who  are persevering with this project. Do
+feel free to try your  own  alternative  arrangements  (don't  forget that I'm
+using hardware key assignments as in the  Hardware Reference Manual) including
+even use of the mouse. Mouse users will  have to write their own mouse handler
+and (preferably) insert it into the VBL interrupt handler.
+
+
+        For those who REALLY HATE my keyboard assignments,  and wish to change
+them, the following info is required:
+
+
+        1) Keyboard:key presses are contained in two variables conditioned
+           by my custom level 2 interrupt handler. OrdKey(a6) contains the
+           hardware key code for an ordinary key press. ShiftKey(a6) con-
+           tains the state of the shift keys. Bits are set/cleared accord-
+           ing to which keys are pressed/released. Shift key bits are lis-
+           ted in the equates:they all begin with the prefix:
+
+                                _SK_
+
+           so to change assignments, look for those two variables & im-
+           plement your own changes accordingly. Other keys are listed
+           in the equates using labels such as _THRUSTKEY etc.
+
+        2) Joystick:my level 3 interrupt handler reads the joystick state
+           during the VBL interrupt and stores the result in the variables
+           JoyPos(a6) (for the up/down position) and JoyButton(a6) (for
+           the fire button). Access these to use the joystick (see the code
+           for the ShipUpDown() routine for more info).
+
+        3) Mouse. I don't yet have a mouse handler built in, but if I do
+           add a mouse handler, chances are I'll use the VBL handler to
+           read the mouse. Alternatively try using CIA-B to generate an
+           interrupt (CIA-B generates a level 6 interrupt) and use IPL6
+           to read the mouse. If using the timers to do the job, set the
+           timers to something sensible, e.g., interrupt 200 times per
+           second, and make the handler as quick as possible. Setting a
+           CIA-B timer to interrupt too quickly (400 times per second is
+           the absolute limit!) while mouse reading will have adverse
+           effects upon the performance of the rest of the program!
+
+ For those who wish to change the  assignments,  the following suggestion from
+Mark (based upon a Spectrum  version-remember  the Spectrum?) might be more to
+your liking:
+
+
+                Z       :       Left (?) (my code uses a thrust/
+
+                X       :       Right (?) reverse combination!)
+
+                K       :       Up
+
+                O       :       Down
+
+                P       :       Fire
+
+                Space   :       Smart Bomb
+
+ Given that I've tried to make the game  replicate  the original's controls as
+faithfully as I could, then might I suggest:
+
+
+                Z       :       Thrust
+
+                X       :       Fire
+
+                K       :       Up
+
+                O       :       Down
+
+                P       :       Reverse
+
+                Space   :       Smart Bomb
+
+ Once I  have  succeeded  in  implementing  a  keyboard  configuration  screen
+allowing the user to select one's own  personal  preference, this shouldn't be
+much of a problem in the future. Once  more,  the following variables are used
+(all of them byte sized, and all referenced off the variable table via A6):
+
+
+                OrdKey          : Key press value (hardware key code)
+                                  for non-shift keys;
+
+
+                ShiftKey        : Current state of shift keys (incl.,
+                                  ALT & Amiga keys etc);
+
+                JoyPos          : Joystick up/down state;
+
+                JoyButton       : Joystick fire button on/off
+
+ The VBL handler that reads the joystick can be found within the Int3Handler()
+routine, and the keyboard read routine  can  be found within the Int3Handler()
+routine. The routines using these  variables  (some of which will need editing
+in order to implement certain changes) are:
+
+
+                ScrMove()       : Scroll screen when THRUST key hit
+
+                ShipUpDown()    : Move ship up/down using joystick
+
+                Reverse()       : Reverse ship direction using
+                                  REVERSE key
+
+                SetFire()       : Fire lasers using FIRE key (or
+                                  joystick fire button?)
+
+                DetonateSB()    : Set off smart bomb using SMARTBOMB
+                                  key.
+
+ Some functions already have some code commented out for alternative settings,
+and this can be resurrected if desired!
+
+
+ Bomber Flight
+ -------------
+
+        This took some time to implement and debug.  What I wanted was a curve
+along which the Bombers could fly, which satisfied the following criteria:
+
+
+        a) The function defining the curve, namely y=f(x), for x
+           ranging between x=0 and x=N-1 (N being some suitable
+           value) must be such that f(0)=0 and f(N)=0;
+
+        b) The function must contain some random element to make
+           the flight path unpredictable (as it is on the arcade
+           original);
+
+        c) The curve must be smooth.
+
+ Now for a bit of theory. If those of you blessed (if that's the right word to
+use in the circumstances) with  AmigaBASIC  dig  it out and write a quick-and-
+dirty program to plot sine curves, you  may  notice something. In the range of
+values from x  equals  zero  degrees  to  x=360  degrees,  sin(x)  behaves  in
+accordance with criteria a) and c)  above.  If  you then plot sin(2x), sin(3x)
+and so on, they behave in the same way.
+
+
+        Now it turns out that adding together sine  functions of the sort I've
+mentioned above is an ideal way of producing  a curved flight path of the sort
+I've been searching for. Music  specialists  will  know (or should know!) that
+this is how sounds can be produced using  digital additive synthesis-pick some
+sine waves, multiply by appropriate constants  and add the component waveforms
+together  (these  being  referred  to  as  the  tonic  and  the  harmonics) to
+synthesise a  new  sound.  The  principle  by  which  sine  waves can be added
+together to form a smooth curve of arbitrary complexity is known in science as
+the Principle Of Superposition.
+
+
+        So, what I do for the bombers is to  create  a table of values for the
+function:
+
+
+                y = A sin(x) + B sin(2x) + C sin(3x)
+
+ over the range x=0 to x=360 degrees,  and  write code for the bombers to pick
+out values from this table. Neat, huh? And  to inject a random element into my
+curve, I use a random number generator  to  select the constants A, B and C so
+that the curve occupies the entire  play  area. So I have my curve:the bombers
+will simply fly along this curve, and  when  the  end of the curve is reached,
+the bombers will return to the  start  of  the  curve  and continue the flight
+along the same path, repeating the curve ad infinitum.
+
+
+        Two  problems  remain:one,  generating  sin(x)  using  68000  assembly
+language, and two:checking for the end of the curve.
+
+
+        Generating sin(x) requires a trick. First,  use AmigaBASIC (or another
+high-level language, such as Lattice  C)  to  create a table of values for the
+function:
+
+
+                        y = 32768*sin(x)
+
+ This is so that the signed values will fit  into a word. OK, sin(90 deg) will
+exceed the word limit, but I have a  way  out of that. Instead of looping from
+x=0 to x=360 deg in 1 deg steps, loop using a step size of:
+
+
+                             360/512
+
+ This will produce a table of 512 values from x=0 deg to x=359.296 deg, stored
+in a table of words. Now, for the  routine  that will extract the value of the
+function sin(x), pass it an angle in the following format:
+
+
+                $000    = 0 degrees
+
+                $080    = 90 degrees
+
+                $100    = 180 degrees
+
+                $180    = 270 degrees
+
+ Basically, a value of $001 is equal to 360/512 degrees. The beauty of this is
+that:
+
+
+        a) If adding or subtracting angles (e.g., during a rotation),
+           ANDing the resultant angle with $1FF constrains the value
+           to the limits defined in the table. So since sin(x+360)
+           equals sin(x) (x in degrees, of course!), this will pro-
+           duce sin(x) for ANY angle you like! And of course, sin(2x)
+           and sin(3x) etc., pose no problems using this system;
+
+        b) The function is plotted to a suitably good degree of accu-
+           racy;
+
+        c) The angle value can be used simply to extract sin(x) from
+           a table (table accesses are always fast), and hence lends
+           itself to real-time computation of sin(x) if needed;
+
+        d) Since multiples of 90 degrees are multiples of $080 using
+           this system, one can use an integer sine table for those
+           values, determining which is required by the simple expe-
+           dient of ANDing the angle with $7F (if the result is zero
+           then it's a multiple of 90 deg!) and selecting the integer
+           or the fractional table;
+
+ Now for my curve, I actually needed 65536*sin(x),  but this was obtained by a
+simple ADD.L D0,D0 or similar once the sine value was extracted.
+
+
+        Right, so we have a sine table, a  sine  function  (see the routine in
+the source  file  called  'TrigValues()'  and  how  it works) and a routine to
+create the summed  sines  curve  described  above.  Next,  how  do we make the
+bombers fly along it?
+
+
+        Well, the data structure for the aliens  includes a counter for use by
+the code to perform this function.  Once  the curve has been created (a simple
+table of y-values), the counter extracts  a value from the table, sets this as
+the bomber's y-position, and then is  incremented  for the next round. To make
+sure that the system loops back to the  beginning  is a simple matter:just use
+AND.W #$1FF,D0 or similar on the  counter  to  prevent overflow (now see why I
+chose 512 steps!).
+
+ Alien Death Sequences
+ ---------------------
+
+        A nice one, this (and also hard to debug  when I wrote it). First, dig
+out DPaint & create some suitable  'explosion'  graphics. Actually, the aliens
+don't explode in the normal sense:the  death  sequences differ for each, & all
+involve  the  alien's  appearance  changing  in  some  suitable  (and, I hope,
+humorous, when you see it) fashion.
+
+
+        During  normal  life,  the  aliens  aren't  true  animations:the  flag
+stopping frame changing is set during life (except for the pod, which only has
+a single graphic, and whose explosion is  handled differently), to ensure that
+the image remains constant.
+
+
+        When the alien explodes, a flag  called  _AOF_HIT  (see the source) is
+set, which causes the animation  system  to  clear the _ANF_SAMEFRAME flag and
+allow the animated explosion sequence  to  take place. Once that has happened,
+because  the  pointer  to  the  next   animation  frame  in  the  sequence  is
+deliberately pointed back to itself in the  data structure for the last frame,
+testing the pointers is a quick test  for  completed death. Once this happens,
+set the _AOF_DYING flag in the alien's  data  structure, which then causes the
+animation system to set _ANF_DISABLED and lock out the object from the game.
+
+
+        Now that the lasers work,  shoot  a  few  aliens  and  watch the death
+sequence attached to each alien.
+
+ Alien Behaviour Generally
+ -------------------------
+
+        The animation system is designed to  call  a  routine for each object,
+known as the SpecialCode routine (see AO_SpecialCode in the source file).
+
+
+        All objects have either a valid  AO_SpecialCode  entry or a zero. If a
+valid SpecialCode entry exists, that  code  is called. The code may change the
+state of the alien's  flags  (to  signal  death,  for  example) and change the
+values of the  alien's  various  position  variables  (to  make it move). This
+allows different aliens to have  different  behaviours  (the bombers above all
+have as their SpecialCode a  routine  called  DoBomber()  which  forces flight
+along the flight path described above)  by  having a different SpecialCode for
+each different type of alien.
+
+
+        Bombers move along their path, but  don't  do anything else. Later on,
+they'll leave trails of mines in their path for the unwary to blunder into.
+
+
+        Pods and swarmers I'll  cover  below:they  deserve  their own separate
+section.
+
+
+        Landers are now 'intelligent'. First,  they'll  kidnap Bodies from the
+bottom of the screen. Second, they'll turn  into Mutants if they reach the top
+of the screen before you shoot them. The procedure is this:
+
+
+        1) Set a random countdown counter for each Lander.
+
+        2) When the counter hits zero, set the 'hunting' flag
+           (_AOF_HUNTING). This means that the Lander in ques-
+           tion is now hunting for a body to kidnap. The body
+           being hunted is searched for directly using a poin-
+           ter to the AlienObject structure for the body.
+
+        3) If the Lander is positioned over the Body, then it
+           is set to move down.
+
+        4) Once it 'catches' the Body (use coordinates to deter-
+           mine this) then set the 'snatching' flag (this flag is
+           the _AOF_SNATCHING flag). Also, set the SpecialCode in
+           the Body's AlienObject structure so that the Body moves
+           upwards with the Lander.
+
+        5) If the Lander hits the top of the screen, kill the Body,
+           change the SpecialCode for the Lander to that for Mutants
+           and change the graphics pointers to point to Mutant data.
+
+ Complications arise when the Lander is killed, or picks a Body that is either
+already snatched or being rescued by  the  ship, but the code handles these. I
+urge readers to look closely at the  comments  in the code entitled 'DoLander'
+(prefixed  using  the  legend   'DoLander(a0,a6)   to   indicate  its  calling
+parameters) in order to see how these complications are handled!
+
+ Pods & Swarmers
+ ---------------
+
+        Getting a pod to split into a group of swarmers was NOT easy! I used a
+counter in the data structure for the  Pods,  which  counted down once the Pod
+was hit (the _AOF_HIT flag set). Each  time  it  counted down, it started up a
+swarmer until it hit zero,  at  which  point  _AOF_DYING  was  set and the pod
+disappeared from view (see 'death sequences' above).
+
+
+        Swarmers begin life with  _ANF_DISABLED  set  (i.e., initially they're
+effectively 'dead'). The pod code  clears  _ANF_DISABLED,  sets _ANF_SAMEFRAME
+(because they have a  5-frame  explosion  sequence  when they die), and sets a
+flag called _AOF_ERUPT which causes  it  to  radiate out from the pod once the
+pod dies, until another counter (each  swarmer  has its own such counter) hits
+zero and _ANF_ERUPT is cleared. Then, the  swarmer is sent off across the play
+area in some suitable direction.
+
+ Timing Problems 
+ ---------------
+
+        Since I'm now sticking  a  lot  or  objects  on  screen  at  once, I'm
+beginning to experience  some  timing  problems.  First,  pods  erupting  into
+swarmers are a BIG problem. For  some  reason,  they  cause the system to take
+more than a single VBL  interval  to  generate  one  instance  of the graphics
+display (and in consequence, the display judders).
+
+
+        A preliminary hunt for the cause led  me  to  re-examine BlitPreComp()
+(which gets executed up to  120  times  per  frame!)  to  try and see if there
+existed places  where  optimisation  could  be  performed.  Well, assuming 120
+aliens and 20 visible ones (thus  leaving  100 invisible ones), I found that a
+small change to BlitPreComp() saved 90 cycles per loop execution for invisible
+aliens, which resulted in 9000 (yes, NINE  THOUSAND) cycles saved per frame! I
+urge those who still have the original  Defender.s  source file to examine the
+new one, compare with the old & see  where  the  changes in BlitPreComp() were
+made, and what a difference it makes!
+
+
+        This still hasn't stopped pods  causing  frame  judder. In fact, quite
+why the frame should judder is a bit of  a mystery! Basically I need help here
+to sort this out!
+
+
+        First, some clues. One, the swarmer  code  is reasonably quick. This I
+know, because if a pod erupts into  ten  swarmers,  all ten swarmers move in a
+smooth fashion one the pod has  disappeared  and  the display doesn't start to
+judder until there's about 30-odd of  them  on screen. Two, the pod code can't
+be THAT slow, because if  it  is  modified  slightly  (so  as  not to make the
+swarmer 'alive' by clearing the _ANF_DISABLED flag, but to do all of the other
+initialisations) then the display  doesn't  judder. The display judder happens
+ONLY when the swarmers come on screen first time, and quite why this should be
+is a bit of a mystery (surely the code can't be taking THAT long to execute!).
+The fact that the pods cause  execution  time  increase when they first split,
+yet the execution time contracts again when the pods disappear (& the swarmers
+are moving) doesn't make sense-surely if  it was a simple timing problem, then
+the display would slow up until the swarmers moved off-screen?
+
+ Collisions
+ ----------
+
+        Collision detection is quick and simple  for now:if the alien is close
+enough to the ship, the ship dies. A quick matter of computing:
+
+
+                abs(shipx-alienx) and abs(shipy-alieny)
+
+ for each visible alien. Only aliens with  _ANF_NOSHOW cleared will be visible
+(this is cleared by the animation  system  for all plotted aliens, set for all
+off-screen aliens) and hence be  checked  for collision. If the alien is close
+enough to  the  ship,  the  above  values  will  be  less  than  a given value
+(collision proximities are stored  in  the  data  structure for each alien and
+used to  determine  if  they  are  'close  enough')  and  the  ship  will  die
+(_ANF_DISABLED will be set for the ship and the flame).
+
+
+        At the moment, it is still possible  to  scroll  the screen to look at
+other aliens even when the ship is  dead!  Also, the flame reappears but minus
+the ship! Eventually this will not happen-after  all, this program is still in
+the development phase!
+
+
+        Laser fire now kills the aliens off.  Again,  a collision detection of
+the above type is used (but this time a  different proximity offset is used to
+ensure that the laser beam is at the  same  height  as the alien's image). For
+now, there is no x-coordinate checking, so it is possible to shoot an alien if
+it is just materialising at  the  screen  edge,  AND even shoot several aliens
+with the one laser shot! This will be changed in future.
+
+ Smart Bombs
+ -----------
+
+        Hooray! Smart bombs are here! Hit the  CTRL  key to wipe out masses of
+aliens!
+
+
+        Well, actually, the procedure  is  a  bit  different.  The  number  of
+visible aliens on screen is used as a countdown  clock. Aliens are then killed
+off (by setting the _AOF_HIT flag  in  each  visible  alien) and the countdown
+clock is decremented. This happens for at least one frame, possibly as many as
+20 frames if there were 20  objects  on  screen.  Once  the counter hits zero,
+alien killing ceases.
+
+
+        This has several effects. First, if there  are only three pods visible
+and no other objects, then the  counter  equals  3. The pods split, spit out a
+horde of swarmers, but only those spat  out  during the first 3 frames after a
+smart bomb detonation are killed off.  Subsequent  swarmers live to do massive
+amounts of damage to your ship by colliding with it!
+
+
+        Second, if there are many objects on screen  (say, 3 bombers, a pod, 4
+landers and some swarmers  from  a  previous  pod,  assume,  say a total of 20
+objects), then alien  killing  lasts  20  frames.  Any  aliens coming onto the
+screen during that period get  wiped  out.  So  it's  to your advantage at the
+moment to set off a smart bomb when the  screen is crowded with aliens, as new
+arrivals on the screen get wiped out too.  Very handy for dealing with a swarm
+of mutants arriving for the kill or a swarmer horde!
+
+ Scoring Etc.
+ ------------
+
+        Now, scores are kept. Scores are also displayed.  Basically, each time
+an alien is killed, the  score  is  updated.  However,  the  new  score is NOT
+immediately displayed. Scores are  displayed  ONLY  at the end of a particular
+frame of display. This is because text writing using the blitter routines that
+I've devised is not as efficient yet  as  it should be, and as a result I have
+to do it as infrequently as possible to avoid slowing the game up.
+
+
+        Even so, the score display gets updated  once every frame, so there is
+little chance of  the  final  score  differing  significantly  from  the  last
+displayed score is small. At the  moment  it NEVER happens because there is no
+end of attack wave screen to go  to  once  all  aliens are killed. Once such a
+screen exists and  is  coded,  the  worst  case  will  be  a 250-point deficit
+corresponding to a lone Bomber at the  end  of an attack wave being killed and
+then the end of attack wave screen appearing. If the end of attack wave screen
+updates the displayed score, then  this  problem  ceases to exist (Note:if the
+last object is a Pod, there won't be a 1000-point  deficit because you'll have
+all of the swarmers to kill off, and all  of the other objects score less than
+250 points so the lone Bomber case is the worst case!).
+
+
+        Also, as of 11/8/92 the number of  lives  is displayed as a collection
+of ship images. I haven't created the  graphic  representation for smart bombs
+yet, so they'll have to wait a bit. The basic method is the same, however.
+
+
+        Each PlayerData structure contains a  pointer  to a list of tab values
+used to separate the ship or smart bomb  graphic images. These differ for each
+of the two  different  PlayerData  structures,  but  have  the same structure,
+ending in a zero byte to mark  the  end  of  the  list. If the player has more
+lives or smart bombs than will fit onto the display, the extra ones are simply
+ignored. So once a player has  more  than  four  lives, the extra lives beyond
+this point are not displayed. See the ShowLives() routine and its comments for
+the appropriate information.
+
+
+        At the moment, once all of the aliens  are  killed  off, a total alien
+count entry in the PlayerData structure records this (pd_DoneAW in the defs at
+the start of the program). Eventually  this  will be used to determine the end
+of the attack wave, and exit of the program  from the normal play routine to a
+yet-to-be-written end of attack wave screen.
+
+ For the Future
+ --------------
+
+        Future additions will include allowing the  bombers to lay mine trails
+to fly into, allow landers/swarmers to  throw  bombs at the ship, & then allow
+baiters to appear whenever the player takes  too long to finish a given attack
+wave. Also, in response to Mark and one or two others, I'm going to build in a
+key assignment definer,  allowing  users  to  customise which keys are used to
+perform which functions. I'll also  consider  adding a mouse handler (probably
+via the VBL as for the joystick, but who knows?) and allowing mouse control of
+the ship. Mind you, the mouse handler will  have to be good to allow me to use
+mouse control-my mouse is four years old  and needs cosseting as it approaches
+its twilight years!
+
+
+        Yet to appear in the program are  hyperspace,  and bonus scores at the
+end based upon bodies saved.
+
+
+        Until then, as you all know and love:
+
+
+                Live fast, code hard & die in a beautiful way
+
+
+
+                                Dave Edwards.
+

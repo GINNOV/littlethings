@@ -1,0 +1,72 @@
+LuxCC is a small compiler for a subset of the C programming language. This
+subset is basically C89 (without floating-point numbers and some obsolete or
+uncommon features) plus a few C99 features.
+
+The compiler comes along with other tools that complete the development
+toolchain (assembler, linker, and VMs).
+
+LuxCC is able to compile itself and also other non-trivial programs.
+
+The C89 features that are missing are:
+
+ - Old-style function definitions: void foo(x, y) char *x; int y; { ... }.
+   Write instead void foo(char *x, int y) { ... }
+
+ - Function declarators with empty parameter type lists are interpreted as
+   taking no parameters: void bar() is seen as void bar(void)
+
+ - Implicit declaration of functions (the use of a function without a
+   visible prototype is considered an error)
+
+ - The 'implicit int' rule
+
+ - Bit-fields
+
+ - Floating point numbers
+
+ - Wide character constants/string literals
+
+ - Only fully bracketed initializers are handled. For example, to initialize
+   int a[1][1] you must write {{1}, {2}} ({1, 2} doesn't work)
+
+ - Currently register and volatile don't have any effect on the generated
+   code (though they affect the semantic analysis part of the compiler).
+
+Most of the new features introduced with C99 are missing. The only C99
+features that do are supported are:
+
+ - Macros with a variable number of arguments
+
+ - The long long type
+
+ - The permission of a trailing comma after an enumerator list
+
+ - C++ style comments (//)
+
+ - stdint.h
+
+ - The __func__ predefined identifier
+
+ - The va_copy macro
+
+ - initializers for aggregate and union (automatic) objects need not be
+   constant expressions
+   
+LuxVM is a stack-based virtual machine. It is inspired in Fabrice Bellard's
+VM for the fbcc compiler (http://bellard.org/fbcc/). The VM and the
+assembler and linker for it can be found in src/luxvm/. It has two simple
+file formats: relocatable object file format and executable file format. The
+relocatable file format (created by the assembler src/luxvm/luxvmas) has
+information to help the link-editor (src/luxvm/luxvmld) relocate and output
+an executable file. The executable file format has information that let the
+VM do load-time relocation. See the assembler and linker source code for
+detailed information on the file formats and assembly syntax. The VM
+provides access to system library functions through the OpLibCall
+instruction. The C standard library is implemented based on the functions
+that are accessible through this mechanism. For example all the functions
+of the fprintf's family are implemented with the use of the fwrite()
+function (provided with libcall #8) to write to a specific stream. This is
+analogous to the way in which a normal C stantard library is implemented
+using the system calls provided by the OS. To add a new system function
+one can add a new entry into src/lib/crt(32|64).s and modify the VM's
+function do_libcall() accordingly.

@@ -1,0 +1,18 @@
+; ASM-One - mathieeedoubbas_lib.i
+; (Release 3.0)
+;
+; by SCHWARZENEGGER/R.A.F
+
+IEEEDPFix=	-30
+IEEEDPFlt=	-36
+IEEEDPCmp=	-42
+IEEEDPTst=	-48
+IEEEDPAbs=	-54
+IEEEDPNeg=	-60
+IEEEDPAdd=	-66
+IEEEDPSub=	-72
+IEEEDPMul=	-78
+IEEEDPDiv=	-84
+IEEEDPFloor=	-90
+IEEEDPCeil=	-96
+

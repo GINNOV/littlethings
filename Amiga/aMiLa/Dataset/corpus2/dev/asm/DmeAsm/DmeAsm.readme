@@ -1,0 +1,11 @@
+Short:        Util for use with Dme editor & DevPac. V1.1
+Author:       Nic Wilson
+Version:      1.1
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+A utility for those who use Matt Dillon's Dme editor and HighSoft's DevPac
+Assembler.  DmeAsm is a CLI command file that takes your source code as a
+parameter and opens a window similar to the Assemble window inside Devpac
+(Genam2) and gives similar options.  If no parameter is supplied then the
+window will still open and you can supply your own.  

@@ -1,0 +1,181 @@
+ 
+    
+    
+    
+    
+    
+    
+       Game Waffle 
+       ~~~~~~~~~~~ 
+    
+    Last month I presented  the  bare  guts  code  for  a game. Well, the 
+   program has  grown  considerably  since  then.  So  have  the problems 
+   associated with it. What  follows  is  an  account  of what I've done, 
+   thought about  and  experimented  with.As  you  will  see, there are a 
+   number of areas that caused me  grief.  I  still have not overcome all 
+   the problems yet and am open to any suggestions. 
+    
+    The first step was to open up  the  play  area  and allow the ship to 
+   wander round this  'Gauntlet'  style.  I  will admit that the bitplane 
+   modulo for a playfield 640x512x4  of  which  320x194x4 is visible took 
+   some thinking about.I kept  forgetting  to  account for the extra data 
+   fetch required when scrolling and consequently  ended up with a messed 
+   up display. Well to save you  from  running  into  the same problems I 
+   have developed a  couple  of  general  purpose  formulae  to calculate 
+   bitplane modulo for interleaved displays: 
+    
+    If no scrolling is required: 
+    
+    modulo = ScrnWidth-BytesDisplayed+ScrnWidth*(ScrnDepth-1) 
+    
+    If scrolling is required: 
+    
+    modulo = ScrnWidth-(BytesDisplayed+2)+ScrnWidth*(ScrnDepth-1) 
+    
+    Where ScrnWidth is the byte width of your playfield 
+    ScrnDepth       is the number of bitplanes used 
+    BytesDisplayed  is the byte width of the displayed area 
+                    ( 320 pixels = 40 bytes etc ) 
+    modulo          the value to use for BPLxMOD 
+    
+    An example. You have set up a playfield as follows: 
+    
+    1024x200x4 ( backdrop for horizontal shoot-em-up ) 
+    
+    At any one time you will  be  displaying  a  320x200  portion of this 
+   playfield and you intend to scroll the playfield as well. The value to 
+   use for BPLxMOD is calculated as follows: 
+    
+    ScrnWidth = 1024 pixels = 128 bytes 
+    ScrnDepth = 4 planes 
+    BytesDisplayed = 320 pixels = 40 bytes 
+    
+    modulo = 128 - ( 40 + 2 ) + 128 x ( 4 - 1 ) = 470 ( or $1D6 in hex ) 
+    
+    Once I'd got past this little hurdle, it was time to add enemies that 
+   could wander around the  maze.  This  required  a background collision 
+   system which I had given some thought to before attempting the code. 
+    
+    The playfield is built up from  tiles  as  described by a map matrix. 
+   Each tile has a single bitplane  collision  mask  and as the tiles are 
+   added to the playfield the masks  are  added  to a single playfield of 
+   the same dimension. The result, a single  bitplane containing set bits 
+   where a block lies. 
+    
+    Before blitting a bob into the display  playfields, a single plane of 
+   the bobs draw mask  (used  for  Cookie  cutting  bob  into display) is 
+   blitted into the  mask  playfield  and  the  BLTZERO  bit in DMACON is 
+   tested. If this bit is set then  the  result  of the blit was zero, ie 
+   the mask we blitted never hit  any  bits  in  the tile-mask playfield. 
+   This being the case the bob is safe to blit into the playfield. 
+    
+    This collision check is achieved as follows: 
+    
+    BLTAPTH -> single plane of bobs draw mask 
+    BLTCPTH -> tile-mask playfield 
+    MINTERM    D = AC  ( D = A and C ) 
+    
+    The D channel is not enabled,  so  the  tile-mask  playfield  is left 
+   unaffected by this operation. Also  I  opted for the C channel as this 
+   can be used with no time overhead, if  I'd used the B channel it would 
+   have cost me two more Blitter cycles! 
+    
+    This technique is fine, the  problem  is the memory requirements. The 
+   game is now supporting a 640x512x4 playfield, double buffered and with 
+   an extra bitplane to hold the tile-masks. CHIP memory required: 
+    
+    Display Screen 1   = 80x512x4 = 163840 
+    Display Screen 2   = 80x512x4 = 163840 
+    Tile-Mask bitplane = 80x512x1 =  40960 
+    Total Bytes                   = 368640 
+    
+    Hmmm, not good! Without a single  line  of code, I've already used up 
+   360K of CHIP memory.  
+    
+    Next came bob to bob collisions. This could be restricted to checking 
+   the player with active enemies and the  all active bullets with active 
+   enemies. The method  adopted,  well  yet  another  single bitplane was 
+   allocated. A single bitplane of the draw mask of the bob being checked 
+   is blitted into the plane and  then  a  similar approach is adopted as 
+   for background collisions.  When  all  possible  collisions  have been 
+   tried, the draw mask is removed  from  the playfield, leaving it empty 
+   for the next check. 
+    
+    Well, this added another 40K  to  CHIP  requirements.  Now up to some 
+   400K just for display and collision  checks. Time for a rethink! There 
+   were a number of routes I  could  take  to  save  memory, here are the 
+   ideas I came up with along with the for and against arguments: 
+    
+    - Use a smaller area of memory for collision detection. Only consider 
+   what is in the immediate vicinity of the bob being checked. This would 
+   require an area equivalent to nine tiles arranged in a 3x3 matrix, the 
+   bob being checked would be  positioned  in  the center of this matrix. 
+   The same area of memory could be  used  for bob-bob and bob-background 
+   collision checks, in the case of  bob-background  checks  the required 
+   masks would be blitted in first. 
+    
+     FOR - huge memory saving: 2x40960 - 6x48 = 81632 bytes of CHIP mem. 
+    
+     AGAINST - Time taken to clear and prepare the matrix for each check. 
+   This becomes very significant  when  the  player, 7 bullets and say 15 
+   enemies need checking. 
+    
+     THOUGHTS - Almost certainly run  out  of  time using this technique, 
+   though it may be speeded up if game is restricted to 1 Meg machines. 
+    
+    - Rather than holding two  copies  of  the  hole playfield in memory, 
+   build the required portion prior to display. 
+    
+      FOR - mega huge memory saving in the order of 200K. 
+    
+      AGAINST - Time taken to  build  the  display.  I  tried it! Using a 
+   really optimised loop to blit the  tiles  into  the display I ended up 
+   with less than twenty  raster  lines  left  for the whole game! I have 
+   included the source in  case  you  can  optimise  further  and do me a 
+   big favour, or just to  see  what  I'm  talking  about.  I  even tried 
+   splitting the game loop over  two  VBL's,  during  one the display was 
+   built, during the  other  all  the  game  operations  preformed.  This 
+   resulted in a gerky game that worked, but was horrible to look at! 
+    
+      THOUGHTS  -  I'm  missing   something.   There  may  be  a  way  of 
+   implementing this that I've overlooked. 
+    
+    - Reduce the size of the playfield! 
+    
+      FOR - it may run on a standard A5OO. 
+    
+      AGAINST - defeatist attitude. 
+    
+      THOUGHTS - doesn't warrant any. 
+    
+    - Compromise. Dispose of  bob-bob  collision  playfield  and go for a 
+   smaller matrix, this wont add much time  overhead. Load blocks and map 
+   from disk into one of the main  playfields,  build the other playfield 
+   and then copy this into the one used to hold blocks and map .... saves 
+   around 40K. Implementing these two memory  optimisations may just make 
+   the game small enough to boot into a standard A5OO, no external drives 
+   connected and using a loader  installed  in the boot block ( what am I 
+   doing wrong ???? ). 
+    
+    When you assemble the game, try  doing  it with raster timing enabled 
+   to get some idea of how much more could be added. 
+    
+    Assembling And Running 
+    ---------------------- 
+    
+    The source file for the game is around 100K in size, when you add the 
+   binaries a well you can see a lot  of  memory  is required to assemble 
+   this program. You may be  forced  to  call  Genim  from the CLI to get 
+   around this. 
+    
+    Assemble the program onto the source  disk as executable called Game. 
+   Now boot the system using  this  disk,  a  startup-sequence  will have 
+   already been written onto the disk when  the source was decrunched. If 
+   you have sufficient memory, the  game  will load and run. If you don't 
+   have enough memory you will get  a  103  dos  error. Sorry, maybe next 
+   time! 
+    
+    Comments, gfx and suggestions wanted. Will I get any? I doubt it! 
+    
+         Mark. 
+    

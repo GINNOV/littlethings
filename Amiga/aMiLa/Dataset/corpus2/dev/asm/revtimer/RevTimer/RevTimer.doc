@@ -1,0 +1,145 @@
+---------------------------------------------------------------------------
+                              RevTimer 1.03                       20-Mar-95
+---------------------------------------------------------------------------
+
+Introduction
+~~~~~~~~~~~~
+This is a little program, that reads the system clock, and saves it in
+four environment variables, called Date, VerDate, Day and Time - once a
+second (or as often as specified).
+
+The reason why I did this, was that I wanted an easy way to get the date
+into my programs.
+
+As the assembler I use can't run arexx/dos scripts, and I keep forgetting
+to put the current date into the program, I did this program.
+
+Requires OS2.04 (V37).
+
+Disclaimer
+~~~~~~~~~~
+THIS SOFTWARE AND INFORMATION IS PROVIDED "AS IS".  NO REPRESENTATIONS OR
+WARRANTIES ARE MADE WITH RESPECT TO THE ACCURACY, RELIABILITY, PERFORMANCE,
+CURRENTNESS, OR OPERATION OF THIS SOFTWARE AND INFORMATION, AND ALL USE IS
+AT YOUR OWN RISK.  THE AUTHOR DOES NOT ASSUME ANY RESPONSIBILITY OR
+LIABILITY WHATSOEVER WITH RESPECT TO YOUR USE OF THIS SOFTWARE AND
+INFORMATION.
+
+Copyright
+~~~~~~~~~
+This program is FREEWARE.  It may be freely distributed as long as all
+files in it remain unchanged and are included in the distribution.  Also no
+more than a nominal copy fee may be charged for the distribution.  This
+program cannot be used for commercial purposes without written permission
+from the author.
+
+Function
+~~~~~~~~
+RevTimer can be run from both CLI and Workbench.  It should be placed in
+the WBStartup drawer.
+
+To start the program, just double-click on its icon or enter the name of
+the program from the CLI.
+
+The program can be quitted by double-clicking on its icon when it is
+already running or by using the 'Commodities Exchange'.
+
+Use the tooltype 'DONOTWAIT' if you are using the program from the
+WBStartup drawer (the tooltype is set by default).
+
+There are also some other tooltypes that can be used to change some defaults
+for the program (this can not be done from CLI).
+
+UPDATETIME - If you eg. only want the date to be written once a minute, then
+             you can use this.
+
+TIME       - If you don't want the Time to be written, use this.
+
+DATE       - If you don't want the Date to be written, use this.
+
+DAY        - If you don't want the Day to be written, use this.
+
+VERDATE    - If you don't want the VerDate to be written, use this.
+
+Here comes some examples:
+
+1/
+
+UPDATETIME=60   ; Update variables once a minute
+TIME=YES        ; Write time
+DATE=NO         ; Don't write date
+DAY=NO          ; Don't write day
+VERDATE=YES     ; Write date in canadian format (used for version strings)
+
+2/
+
+UPDATETIME=10   ; Update every ten seconds.
+TIME=NO         ; No time
+DATE=YES        ; Use date
+DAY=YES         ; Use day
+VERDATE=NO      ; No VerDate
+
+Default is:
+
+UPDATETIME=1    ; Write the date once a second
+TIME=YES        ; Write the time (eg. 13:49:11)
+DATE=YES        ; Write the date (eg. 10-Dec-94)
+DAY=YES         ; Write the day (eg. Saturday)
+VERDATE=YES     ; Write the date (eg. 10.12.94)
+
+
+To use the dates in assembler:
+
+DATE:   IncBin  ENV:Date        ; The format is: DD-MMM-YY
+VERDATE:IncBin  ENV:VerDate     ; The format is: DD.MM.YY
+TIME:   IncBin  ENV:Time        ; The format is: HH:MM:SS
+DAY:    IncBin  ENV:Day         ; The full dayname.
+
+---------------------------------------------------------------------------
+
+Here comes the format for the version string. I copied this from the
+document file for the program 'RIVer' by Chris P. Vandierendonck. I hope
+he doesn't mind that I copied it...
+
+       EVID (Embedded Version ID) structure
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         The standard format (AmigaDOS) of an EVID structure is as
+         follows :
+
+           $VER: <name> <version>.<revision> (<dd>.<mm>.<yy>)
+
+         Field explanation -> <name>     : name of the program or file
+                              <version>  : major version number
+                              <revision> : minor version number
+                              <dd>       : creation day 
+                              <mm>       : creation month (numeric)
+                              <yy>       : creation year
+
+         After this text sequence, most programs include a comment.
+
+         All my programs support this EVID code,  but  the  structure  has
+         been extended. (This has no effect on the correct functioning  of
+         the AmigaDOS command 'Version'!).
+
+
+         The extended format (AmiSYS format) is as follows :
+                              
+           $VER: <name> <version>.<revision> (<dd>.<mm>.<yy>/
+           <hh>:<mm>:<ss>/<devcode>) <comment>
+
+         Field explanation -> <hh>      : hour created
+                              <mm>      : minutes of hour created
+                              <ss>      : seconds of hour created
+                              <devcode> : code  used  in  development   of
+                                          program 
+                              <comment> : copyright notice 
+
+---------------------------------------------------------------------------
+
+
+             Send bug reports, ideas, PD Programs etc. to:
+
+                           Staffan Hämälä
+                           Pellov. 268
+                           S-957 93 Pello
+                           SWEDEN

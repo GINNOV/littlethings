@@ -1,0 +1,9 @@
+Short:        Example of how to use chunky AGA copper displays with 2D rotation demo
+Author:       Ranulf Doswell (1 Ayr Street, Lancaster, Lancashire, England, LA1 3DT)
+Uploader:     cstaebi csv warwick ac uk (Ranulf Doswell) account vanishes soon
+Type:         dev/src
+Architecture: m68k-amigaos
+
+This demo includes assembler source for the rotation demo. It can easily
+manage 50fps with nearly full screen on a base 1200, and 25fps on full screen.
+It may well do 50fps on a 4000, but I'm not sure.

@@ -1,0 +1,47 @@
+Short: Generation4 Sources Disk
+Uploader: ostyl@gmx.fr
+Author: Generation4
+Type: dev/asm
+Requires: kseka and devpac assemblers
+
+English:
+--------
+Old sources code from a french paper called GENERATION4.
+
+French:
+-------
+Comme vous l'aurez sans doute remarqué, cette disquette contient  les  codes
+sources en assembleur (héhé, c'est pour les bons...) et les codes objets des
+programmes donnés dans les  numéros  9,10,11  et  12  de  GENERATION4.  Vous
+pourrez  ainsi  éviter de recopier les programmes et donc éviter des erreurs
+de frappe. Les codes sources sont prévus pour être assemblés avec  le  Kseka
+sauf  'SPRITES.S'  qui  a  été  réalisé  avec le DEVPAC v2.00 néanmoins vous
+pourrez sans aucun problèmes les adapter à un autre assembleur. Les  sources
+contiennent  à  présent  une routine startup qui permet de rendre la mémoire
+lors d'un appel du WorkBench. Seul les  programmes  'ROTATE.S','PLANS.S'  et
+'SPRITES.S'  sont légèrement différents de ceux donnés dans les articles car
+ils  contiennent  à  présent  les  routines  SAVE_ALL  et  RESTORE_ALL   qui
+permettent  de  les  quitter  sans  provoquer la colère du grand GURU... Les
+directives nécessaires à l'assemblage (le plus souvent les RI du Seka)  sont
+indiquées en commentaire au début des sources.
+
+Seuls les codes objets (executables) possèdent une icone.
+
+Vous trouverez donc dans le dossier SOURCES/
+
+ -ROTATE.S   (n°8)
+ -PLANS.S    (n°9)
+ -PROPRE.S  (n°10) (sans le code objet évidemment)
+ -BOX.S     (n°10)
+ -DUAL.S    (n°10)
+ -ONDULE.S  (n°10)
+ -SPRITES.S (n°10)
+ -MENUS.S   (n°11)
+ -BARRES.S  (n°11)
+ -BIG.S     (n°11)
+ -ETOILES.S (n°12)
+ -STARTUP.S        cette routine est nécessaire pour faire des programmes
+                   qui fonctionnent à partir du WorkBench
+
+Ainsi que les programmes en BASIC  des  articles  ROTATE,  DUAL,  ONDULE  et
+ETOILES et les images IFF non-compactées nécessaires. Bon amusement...

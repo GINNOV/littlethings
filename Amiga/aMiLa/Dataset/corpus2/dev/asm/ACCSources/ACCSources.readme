@@ -1,0 +1,14 @@
+Short:        68k tutorial source file collection
+Author:       All contibutors to the ACC project
+Uploader:     cameronscottarmstrong gmail com (Nightfox)
+Type:         dev/asm
+Version:      1.0
+Architecture: generic
+Distribution: Aminet
+
+This is an archive of the complete collection of the decrunched m68k Amiga
+programming tutorial source files available on 32 issues of the floppy disk 
+magazine from the Amiga Coders Club (1991-1993). Each disk was decrunched
+one by one and all relevent files were placed in its own directory. The
+original ADF collection of the magazines can be found at
+http://aminet.net/dev/asm/acc.lha

@@ -1,0 +1,260 @@
+
+                                  Basmify
+                                  =======
+                                    1.1
+
+ARexx  scripts for using the assembler BAsm of Barfly from within the editor
+CygnusED.
+
+
+ 0. CONTENTS
+-------------
+
+ 1. Disclaimer
+ 2. Requirements
+ 3. Installation
+ 3.1 Options
+ 3.2 Localization
+ 4. Usage
+ 5. Limitations
+ 6. Author
+ 7. Credits
+ 8. History
+
+
+ 1. DISCLAIMER
+---------------
+
+Copyright (c) 1995-1996 by Ulrich Flegel.
+
+Permission  is granted to make and distribute verbatim copies of this manual
+provided  the  copyright  notice and this permission notice are preserved on
+all copies.
+
+No  guarantee  of  any  kind  is  given  that the programs described in this
+document  are  100% reliable.  You are using this material at your own risk.
+The  author  can  not  be made responsible for any damage which is caused by
+using these programs.
+
+Permission is granted to include this package in Aminet CD-ROMs.
+
+None  of  the programs may be included or used in commercial programs unless
+by written permission from the author.
+
+None  of  the programs may be modified in any way.  For improvements contact
+the author.
+
+None  of  the  programs  may  be  used  on any machine which is used for the
+research,  development,  construction,  testing  or production of weapons or
+other  military  applications.  This also includes any machine which is used
+for training persons for any of the above mentioned purposes.
+
+
+ 2. REQUIREMENTS
+-----------------
+
+
+· Barfly
+
+· CygnusEd 3.0 or higher
+
+· ARexx
+
+
+ 3. INSTALLATION
+-----------------
+
+Copy  the files 'Assemble.ced' and 'NextError.ced' to any directory.  Assign
+'Basmify:'  to  this directory.  If you don't the scripts will not find each
+other.   Then you have to change the 'NextError' and 'Assemble' variables in
+the scripts to fit the pathnames.
+
+Adapt  the BAsmPath variable in the 'Assemble.ced' script to the pathname of
+the directory where your BAsm is, so BAsm needs not to be in your path.
+
+In  CygnusED  assign  the  scripts  to  two  function  keys (menu:  Special;
+DOS/ARexx interface »; Install DOS/ARexx command...), say 'NextError.ced' to
+F9 and 'Assemble.ced' to F8.
+
+For  initial  reading  and quick usage skip the subsections of chapter 3 and
+read on at chapter 4.
+
+
+ 3.1 OPTIONS
+-------------
+
+You  may  supply  the  ARexx scripts with some options.  You have to put the
+options in the invocation string defined in chapter 3.
+
+Because  I  have  no  idea  how  to  request from CygnusEd which language is
+currently in use I had to supply a workaround.  The workaround is completely
+transparent   because  it  works  like  an  override  of  CygnusEd's  locale
+information. The option is named:
+
+ LOCALE «Language» ,
+
+where  «Language» is the descriptor of the language to be used by the script
+(f.i.  deutsch).  Omission of the LOCALE option will enable english language
+as long as no CygnusEd-localization-info is available.
+
+It  may  be of no great use but you can supply a set of BAsm options via the
+scripts.   Normally  you  want  to put these in the source or in environment
+variables  used  by  BAsm.  Nevertheless, for testing purposes this might be
+handy. Use the following option:
+
+ OPT «BAsmOptions»
+
+Example «BAsmOptions» would be: -O+ -OW+
+
+Due  to  limited parsing abilities of ARexx and to keep the scripts simple I
+had to make one assumption:
+
+!! The OPT option must be the last of all options supplied to the scripts !!
+
+This  should  be  no  great  limitation considered most people won't use OPT
+anyway.
+
+If you want consistent behaviour regarding localization and options you HAVE
+TO supply the same options to both scripts.  This results from the fact that
+both scripts may call each other.  I didn't want to use separate environment
+variables for configuration and options.  This would easily be possible.  If
+there is a big need for this I might implement it.
+
+Example:
+
+ F8: Assemble.ced  LOCALE deutsch OPT -O+ -OW+
+ F9: NextError.ced LOCALE deutsch OPT -O+ -OW+
+
+This  configuration  will  set  German language and enable optimization plus
+resulting warnings.
+
+
+ 3.1 LOCALIZATION
+------------------
+
+The  release  version  of  Basmify only supports english and German language
+messages.
+
+To  enhance  Basmify  for  further  languages it is necessary to modify both
+scripts.
+
+You  have  to  search  for:  «WHEN Language='XXX' THEN».  Mark a block until
+«END».   Copy this Block straight on top of the «OTHERWISE» statement of the
+nesting «SELECT» statement.
+
+Now  replace  in  each  line  of  the  new  block  every «XXX» by a matching
+translation.   Look  up the english meanings of the message variables in the
+«OTHERWISE» branch.
+
+It  is  important  you  replace the correct language descriptor in the «WHEN
+Language='XXX'  THEN»  line.   Otherwise  it  is  possible  the localization
+informations from CygnusEd wouldn't match (given there is such a support).
+
+Don't  forget to translate the messages in both scripts.  In an error case a
+fall back to english will occur.
+
+
+ 4. USAGE
+----------
+
+Start  CygnusEd and load the source code you want to assemble.  For assembly
+press  F8 (or the key you have assigned 'Assemble.ced' to) in the view where
+the  source code is located.  'Assemble.ced' saves automatically any changes
+to the source before assembly.
+
+'Assemble.ced'  invokes  BAsm  and  if  no  errors  occurred you will get an
+appropriate  message.   If  there  were  errors or warnings you are told and
+'NextError.ced' is invoked automatically to display the first error/warning.
+
+Subsequent  key-presses  on  the  'NextError.ced'  assigned  key  result  in
+displaying  the  next error/warning.  First all errors are shown, afterwards
+all warnings.
+
+When all errors/warnings have been shown and you press 'NextError' again you
+will be asked if you want to assemble the source again.
+
+
+ 5. LIMITATIONS
+----------------
+
+· The scripts don't yet handle multiple BAsm
+
+· The scripts could handle smart language localization if I knew how to find
+  out  the  language  CygnusEd  is  currently  using  (any status number for
+  this?).
+
+
+ 6. AUTHOR
+-----------
+
+If you have any suggestions or bug-reports, feel free to contact me
+(e-mail preferred).
+
+Ulrich Flegel
+e-mail: flegel@ibr.cs.tu-bs.de
+irc:    Froody (#amigager)
+phone:  ++49-5307-5660
+
+
+ 7. CREDITS
+------------
+
+I  will  constantly  insert  any  contribution  to  Basmify  here  for  your
+information.  You might find it amusing or interesting.
+
+____________________________________________________________________________
+
+95Oct2.114549+0100mesz.395394-2+180@hphalle0.informatik.tu-muenchen.de   was
+originally sent by rattei@informatik.tu-muenchen.de.
+
+Christian  Rattei  wrote  (Mon,  2  Oct 1995 11:45:37 +0100 (MEZ)) in a Mail
+about "Basmify":
+
+Following the forwarded message:
+
+Hi,
+
+Ich bin der Autor der BarflyInCED ARexx Scripte. Wie ich feststellen
+mußte, hast Du große Teile der Dokumentation, sowie des Readme-Files
+Deines Basmify Paketes (so, wie ich sie in aminet/dev/asm fand) von
+den Files meines Archivs übernommen. Da nicht nur meine Scripte,
+sondern _sämtliche_ Files des Archivs (also insbesondere _auch_ die
+Dokumentation) meinem Copyright unterliegen, betrachte ich dies als
+Verletzung meiner Urheberrechte.
+
+Ich erwarte hiermit eine umgehende Entschuldigung Deinerseits _und_
+verlange für zukünftige Versionen Deines Basmify Archivs (falls es
+welche geben sollte und diese weiterhin, zumindest teilweise, auf
+meinen Dateien beruhen sollten) die Nennung meines Namens als Mitautor
+der betroffenen Teile des Archivs bzw. einen Verweis auf mein Original-
+Archiv mit Nennung meines Namens als Autor.
+
+Sollte dies nicht geschehen, behalte ich mir weitere Schritte vor.
+
+Bye,
+  Chris
+
+-- 
+Christian Rattei (rattei@informatik.tu-muenchen.de)
+--------------------------------------------------------------------------------
+____________________________________________________________________________
+
+For  all  of  you  interested  in the above statement:  I suggest you have a
+«diff -y»-run on BarflyInCED and Basmify scripts and documentation.
+
+
+ 8. HISTORY
+------------
+
+V1.0	initial public release
+
+V1.1	second public release
+	- enhanced locale handling
+	  (introduced workaround for missing CED locale support)
+
+	- fixed port handling
+	  (scripts can now distinguish multiple CED instances)
+
+	- fixed options handling
+          (calling script will feed called script with selected options)
+

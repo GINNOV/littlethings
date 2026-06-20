@@ -1,0 +1,53 @@
+Short:	  90% complete ANSI-C interpreter
+Author:   Aaron "Optimizer" Digulla <digulla@fh-konstanz.de>
+Uploader: Aaron "Optimizer" Digulla <digulla@fh-konstanz.de>
+Type:	  dev/c
+
+This is version 0.81 of a ANSI-C interpreter written by me for
+my master thesis. It has the following features:
+
+    - Source is compiled into a BOOPSI-object which reacts on
+	CIM_Execute
+    - Supports ALL C operators
+    - Supports all major C datatypes (int, double, char) plus some
+	that are missing in C (bool and string) plus pointers,
+	arrays, structs and unions.
+    - All major control structures: if...else, while, do...while,
+	for and return
+    - User-defined functions (both compiled and interpreted)
+    - Local Variables and infinite nesting
+
+This is missing for the last 10%:
+
+    - typedef
+    - switch...case...default
+    - break, continue and goto
+
+Extensions to C:
+
+    - bool and string datatype (with support for all C operators)
+    - C++-Comments (//)
+    - Memoryprotection
+    - Checks Array-bounds, if possible (ie. int a=5; int b[a];
+	b[5] = 0; yields an error, while int b[]; b[5] = 0;
+	does not).
+    - Supports "begin" and "end" for all those PASCAL-users :)
+    - The constants TRUE and FALSE since there is no C-preprocessor
+	yet.
+
+Just check it out, some 20 demos are included and a sample-program
+to run them.
+
+System requirements:
+
+    Should run on any 2.+ system (I compiled it under 3.1, so I don't
+know :-)). No special CPU or FPU required (but fast is better, as usual).
+Memory: well, some but 1Meg should be enough.
+
+Installation:
+
+    copy libs/cint.library libs:
+
+If you want to compile the example, there is no need to copy the includes
+over your include-files; the SCOPTIONS-file searches the files in this
+directory.

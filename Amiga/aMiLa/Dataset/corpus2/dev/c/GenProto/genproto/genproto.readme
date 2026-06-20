@@ -1,0 +1,14 @@
+Short:    v1.2, extract and sort prototypes from C/C++ sources
+Author:   Nicolas Pomarede (pomarede@isty-info.uvsq.fr)
+Uploader: Nicolas Pomarede (pomarede@isty-info.uvsq.fr)
+Type:     dev/c
+
+This is version 1.2 of GenProto, a little tool to create indexes
+of all the functions contained in C/C++ sources files.
+Functions can then be sorted to create a sort of table of content
+of your source files. You can then browse your sources more quickly
+when looking for a function.
+
+As a little example, type: genproto main.c
+
+See README for more detailled informations.

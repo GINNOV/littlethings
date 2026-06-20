@@ -1,0 +1,729 @@
+
+			Subroutines Doc File
+			~~~~~~~~~~~~~~~~~~~~
+
+ General Info
+ ~~~~~~~~~~~~
+ The subroutines on this disc are intended to simplify system programming
+on the Amiga and to speed up development of programs. The routines are free
+for use by anyone who wishes to use them.
+
+ If you do intend to use these routines you should copy the include files
+from the directory 'source:include/marks/' into the directory 
+'include/marks/' along with your aother include files.
+
+ If you add to the routines then please send me an update so that the most
+flexible version is always readily available.
+
+ Using conditional assembly and a suite of routines stand alone programs can be developed. Also the addittion
+of powerful macros will simplify much of the programming required to do the
+mundane tasks.
+
+ Conditional assembly has been used throught the two include files to
+ensure only the code you require is added to your program. All switches are
+controlled by the macros so you need not worry about whats left in and
+whats not!
+
+ In all cases the parameters required by the subroutines are passed on the
+stack. This allows maximum flexibility to the programmer with pnly a slight
+overhead.
+
+ All registers are preserved unless the subroutine is returning data to
+your program. In this case only the registers used to return the data are
+corrupted. In general, register d0 is used to return values.
+
+ Usage
+ ~~~~~
+ Detailed usage of individual macros is covered below, however there are
+some general rules to follow:
+
+ 1/ At the start of your program include the file 'marks/marks.i'.
+    This contains all the macro defenitions.
+
+ 2/ Do not end your program with 'rts', but with the macro 'CLEANUP'.
+    This closes any libraries opened using macros, sets a return code and
+    then preforms an 'rts'.
+
+ 3/ At the end of your subroutine section, but before your data section,
+    include the file 'marks/MarksSubs.i'.
+    This file contains all the subroutines! I know it's huge, but remember
+    only the code required will be tagged onto your program.
+
+ Feedback
+ ~~~~~~~~
+ Please report any bugs!
+
+ I intend to expand on the available subroutines. If you use these routines,
+have modified any of them, or have a request for a new routine then please
+write to me at the address below.
+
+ As soon as I have a enough material to warrant another release I will do
+so.
+
+ I am also interested in any constructive critisism. If you think my
+approach to system programming stinks and have a better alternative, then
+please write.
+
+			The Macro's
+			~~~~~~~~~~~
+
+ I strongly urge you to look at the examples supplied and see how little
+effort is required using the macros explained below.
+
+ Since some of the subroutines require some initialisation, a suite of macros
+has been supplied to take all the hard word out of using the subroutines.
+
+ You should include the file 'SysMacros.i' at the start of your program. If
+you are unfarmiliar with the use of macros, don't panic over this extra
+include file. A macro only generates source if it is used, so including this
+file will not add 20k to the size of your final program.
+
+ A template showing how to use each macro is presented before each
+explanation. Parameters surrounded in curly braces { } are optional and can
+be omitted if not required, all other parameters MUST be defined!
+
+ If a macro has a number of optional parameters and you wish to define only
+a couple of these, null entries should be made for the unwanted parameters.
+For example, suppose a macro called PHONE had the following template:
+
+PHONE		Name,WorkNum,{Extension},{HomeNum}
+
+ The parameters 'Name' and 'WorkNum' must be declared, while {Extension} and
+{HomeNum} are optional. To use the macro for 'John', who's work phone
+number is '785678' and who's home number is '454545' we would proceed as
+follows:
+
+		PHONE		John,785678,,454545
+
+ Note how the third parameter is not know, so nothing is entered!
+ 
+ If we did not wish to specify either of the optional parameters, we could
+use either of the following:
+
+		PHONE		John,785678,,
+or		PHONE		John,785678
+
+ Well, that's the introduction to macro usage over with. On with the macro
+defenitions:
+
+		General Macros
+		==============
+
+CALLSYS		libroutine
+
+		Use this for calling library routines. Register a6 MUST
+		already hold the library base pointer. If you use one of the
+		standard library calling macros, it will set a6, so
+		consecutive calls to the same library need consist only of
+		one standard calling macro followed by uses of CALLSYS.
+	
+	eg.	CALLINT		OpenWindow
+		move.l		d0,a0
+		lea		MainMenu,a1
+		CALLSYS		SetMenuStrip
+
+		This will produce more efficient code than the following
+		fragment:
+
+		CALLINT		OpenWindow
+		move.l		d0,a0
+		lea		MainMenu,a1
+		CALLINT		SetMenuStrip
+
+
+OPENDOS		{version}
+
+		This macro will attempt to open the dos.library. If the
+		attempt is successful the base pointer is stored at the
+		correct label, _DOSBase. If the attempt fails, control
+		passes to a label in the CLEANUP macro that ensures all
+		other libraries openeed using these macros are closed.
+
+		 You can supply an optional version number when using this
+		macro. If none is supplied, any version is assumed.
+
+	eg1	OPENDOS
+
+	eg2	OPENDOS	37
+
+OPENINT		{version}
+
+		This macro will attempt to open intuition.library. If the
+		attempt is successful the base pointer is stored at the
+		correct label, _IntuitionBase. If the attempt fails, control
+		passes to a label in the CLEANUP macro that ensures all
+		other libraries openeed using these macros are closed.
+
+		 You can supply an optional version number when using this
+		macro. If none is supplied, any version is assumed.
+
+	eg1	OPENINT
+
+	eg2	OPENINT	36
+
+OPENGFX		{version}
+
+		This macro will attempt to open graphics.library. If the
+		attempt is successful the base pointer is stored at the
+		correct label, _GfxBase. If the attempt fails, control
+		passes to a label in the CLEANUP macro that ensures all
+		other libraries openeed using these macros are closed.
+
+		 You can supply an optional version number when using this
+		macro. If none is supplied, any version is assumed.
+
+	eg1	OPENGFX
+
+	eg2	OPENGFX	36
+
+
+CLEANUP		{error code}
+
+		This macro should be used only once at the end of your
+		program. It closes all libraries opened using above named
+		macros, sets the return code specified and exits your
+		program. There is no need to end a program with 'rts' when
+		using this macro. The macro also contains all the string
+		defenitions required by the OPENlib macros and storage
+		points for the library base pointers. 
+
+
+	eg1	CLEANUP
+
+		Will always exit with d0 holding 0.
+
+	eg2	CLEANUP #10
+
+		Will always exit with d0 holding 10.
+
+	eg3	CLEANUP (sp)+
+
+		Will retrieve error value from stack.
+
+	eg4	CLEANUP err_num
+
+		Will retrieve error value from label err_num.
+
+	eg5	CLEANUP	d4
+
+		Will use the error value stored in register d4.
+
+		String Handling Macros
+		======================
+
+STRLEN		string
+
+		Will place length of NULL terminated string in register d0.
+		The length does not include the NULL byte, so an empty
+		string will return length 0.
+
+STRCPY		string,buffer
+
+		Copies a NULL terminated string into the specified buffer.
+
+		STRCPY	#myname,#temp
+
+		STRCPY	#myname,a3
+
+TOUPPER		string
+
+		Will convert all lower case characters in a string to upper
+		case.
+
+		TOUPPER	#myname
+
+		TOUPPER	a1
+
+TOLOWER		string
+
+		Will convert all upper case characters in a string to lower
+		case.
+
+		TOLOWER	#myname
+
+		TOLOWER	a3
+
+STRCMP		string1,string2
+
+		Will compare to strings and return a value in d0 that
+		determines the priority of one relative to the other. The
+		possible returns are:
+
+		0	strings are identical.
+		-ve	first string is lower than second string.
+		+ve	first string is greater than second string.
+
+		STRCMP	a0,a1
+
+		STRCMP	#answer,a3
+
+CASESTR		string,ActionTable
+
+		
+
+FINDSAME	string,size,buffer,size
+
+		Will search a block of memory for a given string. The address
+		of the first occurrence is returned in d0, and the number of
+		bytes still to search in d1. If no match was found returns
+		0 in d0.
+
+		This version is case sensitive.
+
+		FINDSAME	a0,d0,a2,d2
+
+		FINDSAME	#str,#str_len,a3,d3
+
+STRSTR		string1,string2
+
+		Searches for the first occurence of one NULL terminated
+		string inside another. d0 will contain address of first
+		string in the second if it is found, else 0.
+
+		STRSTR	#myname,a3 
+
+		DOS Macros
+		==========
+
+PUTSTR		string,{handle}
+
+		Will write a null terminated ASCII string to an open file.
+		If a file handle is supplied, text is written to that file.
+		As a failsafe, if no handle is supplied the text is written
+		to the standard output stream for your process. The failsafe
+		will only work if you opened dos.library using the OPENDOS
+		macro!
+
+	eg	PUTSTR	#usage_text,FileHandle
+
+	eg	PUTSTR	a0,FileHandle
+
+	eg	PUTSTR	a0,d4
+
+FILELEN		Filename
+
+		Will return the length of the specified file in register d0.
+
+		FILELEN	#SaveFile
+
+		FILELEN	a0
+
+OFILELEN	handle
+
+		Will return the length of a file that is already open.
+
+		OFILELEN FileHandle
+
+		OFILELEN d4
+
+LOADFILE	Filename,{Requirements}
+
+		Will allocate a block of memory and load data from specified
+		file into it. Returns size of memory allocated in register
+		d0 and it's address in register a0. Should an error occurr
+		then d0 will contain NULL.
+
+		An optional parameter allows control over the type of memory
+		the file will be loaded into. This value is passed straight
+		to AllocMem() and should be one of the following:
+
+		MEMF_CHIP or MEMF_FAST.
+
+		It is the responsability of your program to free the memory
+		allocated by this macro. This should be done by calling
+		FreeMem() with the values returned.
+
+	eg	LOADFILE #MyConfigs
+
+	eg	LOADFILE a2
+
+		Intuition Macros
+		================
+
+OPENWIN		NewWindow,{IText},{Image},{Border},{MenuStrip},{Screen}
+
+		This one is a real mind boggler! It can be used to simply
+		open an Intuition window and return the required Window
+		pointer by supplying just one argument, the address of the
+		NewWindow structure:
+	
+	eg.	OPENWIN		#MyWindow		open window
+		move.l		d0,window.ptr		save Window pointer
+		beq		Error			quit if not open
+		
+		As you can see from the above example, the pointer to the 
+		Window structure is returned in register d0.
+		
+		So what about all those optional parameters? Well, you may
+		want text, images or borders to be displayed in the window
+		when it is opened, so you declare the address of the
+		structure you require.
+	
+	eg.	OPENWIN		#MyWindow,,#FirstImage
+		move.l		d0,window.ptr
+		beq		Error
+		
+		This will open a window and draw the Image defined at label
+		FirstImage into it.
+
+	eg.	OPENWIN		a0,#FText,,#FBord
+	
+		This will open a window, write the text defined atlabel FText
+		and draw the border defined at label FBord into it.
+		
+		NOTE: ITexts, Images and Borders are all given a (0,0)
+		     offset when called. You should set the correct offset
+		     in the appropriate structures.
+		
+		If there is a menu to attach to the window, pass the label
+		to it's structure in the {MenuStrip} parameter.
+	
+	eg.	OPENWIN		#MyWindow,,#FImage,,#FMenu
+	
+		A window will be opened, an Image draw into it and the menu
+		defined at label FMenu will be attached to it.
+		
+		Lastly, if the window is to be opened on a custom screen the
+		Screen pointer should be defined in the {Screen} parameter.
+		The subroutine will link the window to the screen prior to
+		opening it and sets the window type to CUSTOMSCREEN.
+	
+   eg.	OPENWIN		#MyWindow,#FText,#FImage,#FBorder,#FMenu,screen.ptr
+	
+		This does the lot! Opens a window on a custom screen and
+		renders text, images and borders into it as well as attaching
+		a menu to it.
+		
+		What more could you ask of an open window macro/subroutine?
+		
+
+OPENSBWIN      NewWindow,BitMap,{IText},{Image},{Border},{MenuStrip},{Screen}
+		
+		This macro is an enhanced version of the above one. It will
+		open a SuperBitMap Window. You must supply a pointer to an
+		initialised BitMap structure and the macro will link this
+		to the NewWindow before OpenWindow() is called.
+
+		 If you are unfamiliar with a BitMap Structure, don't panic.
+		There is a macro that will build one for you!
+
+BITMAP		Width,Height,Depth
+
+		Will allocate and initialise a BitMap structure and BitPlane
+		memory. Returns the address of the structure in d0 or NULL
+		if memory not available.
+
+	eg.	BITMAP		#640,#256,#4
+		move.l		d0,bitmap.ptr		save pointer
+		beq.s		.Error			quit if none
+
+		This will initialise a BitMap for a display 640x256x4. Also,
+		memory will be allocated for the bitplanes and linked to the
+		BitMap structure. Basically, the structure is ready-to-go.
+
+FREEBITMAP	BitMap
+
+		Frees a BitMap allocated using the BITMAP macro. All memory
+		is released, including that of the bitplanes.
+
+	eg.	FREEBITMAP	bitmap.ptr
+
+		NOTE: BITMAP & FREEBITMAP are suitable for use with both
+		     SuperBitMap windows and Graphics primatives.
+
+HANDLEIDCMP	Window,{ServerRoutine}
+
+		This routine monitors the IDCMP port of a given window.
+		When a message arrives one of four processes will take
+		place, depending on what message arrived:
+
+		RAWKEY		If specified, the ServerRoutine will be
+				called prior to ReplyMsg'ing the message.
+				The server routine must obey the rules
+				outlined below.
+
+		GADGETUP,GADGETDOWN or MENUPICK
+
+				The subroutine linked to the object from
+				which the message originated will be called.
+  				This routine must obey the rules outlined
+				below.
+
+		Any other message
+
+				If specified, the ServerRoutine will be
+				called. This routine must obey the rules
+				outlined below.
+
+		CLOSEWINDOW	The routine exits, returning a value to the
+				caller in register d0. This allows the
+				occurence of an event be transmitted back
+				to the calling program.
+
+		Until a CLOSEWINDOW message is received ( or simulated ),
+		this routine will continue getting messages and calling
+		subroutines depending on which message was received.
+
+		See the IDCMP Communication section below for more details
+		on the use of this function.
+
+CLOSEWIN	Window
+
+		This routine will close the specified window.
+
+OPENSCREEN	NewScreen,{Palette}
+
+		This routine will open a custom screen. If a palette is
+		specified, it will be initialised.
+
+		A pointer to the Screen structure will be returned in
+		register d0, if the screen fails to open then 0 is returned.
+
+		A palette consists of word values, one for each colour
+		available to your screen. For instance, if you open a screen
+		with a depth of 3, the screen will have 8 ( 2^3 ) colours
+		available. The palette will consist of 8 word values which
+		will be shoved into the ColorMap for this screen.
+
+		If no palette is specified, the screen will inherit the
+		current colour settings.
+
+CLOSESCREEN	Screen
+
+		This routine will close a custom screen. DO NOT ATTEMPT TO
+		CLOSE THE WORKBENCH SCREEN USING THIS MACRO.
+
+FADEOUT		Screen
+
+		This will fade all the colours in the specified screen to
+		black. Note, the current colour values are lost. If you
+		intend to fade back in you should get the current colour
+		values first, or make sure you have a suitable replacement
+		palette defined in your code.
+
+FADEIN		Screen,Palette
+
+		This will fade a screen from black to the colour specified
+		in the supplied palette.
+
+		For best effects, fade a screen out first using FADEOUT,
+		then fade in the new colours.
+
+		If applying to a newley opened screen, open the screen with
+		an all black palette ( all Palette entries set to 0 ).
+
+		{{ Note that both fade routines are easily adapted to work
+		   with displays created using graphics primitives, I may
+		   provide this option at a later date }}
+
+ IDCMP Communication
+ ~~~~~~~~~~~~~~~~~~~
+ To make best use of these subroutines it worth learning how the HANDLEIDCMP
+macro expects your code to behave.
+
+ HANDLEIDCMP alone will only deal with CLOSEWINDOW messages. Other messages
+will be replied, but this is a waste. You want to be able to act on them.
+
+ For this reason you can supply a ServiceRoutine. This is a subroutine that
+will be called whenever an unsupported message arrives at the port, for
+instance a NEWSIZE or VANILAKEY message.
+
+ A number of parameters are passed to ServiceRoutine and a parameter may be
+passed back to HANDLEIDCMP. This will make it's way back to the calling
+program which may then take further action if necessary.
+
+ Here is a list of the parameters supplied to ServiceRoutine:
+
+	Register		Parameter
+
+	  d2.l			Message Class ( RAWKEY, NEWSIZE, etc )
+	  d3.w			Message Code
+	  d4.w			Message Qualifier
+	  d5.l			Mouse X position in high word, Y in the low.
+	  a5			the address of object from which message
+				originated.
+
+ ServiceRoutine should set register d2= #CLOSEWINDOW if it requires
+HANDLEIDCMP to exit back to the caller. For example, you may set up a key
+scan routine that waits for the user to press Q to quit. On pressing Q, set
+d2= #CLOSEWINDOW.
+
+ If ServiceRoutine wants HANDLEIDCMP to continue processing messages, it
+should pass a zero back in register d2. This is a precaution only.
+
+ Should ServiceRoutine wish to pass a value back to the program that called
+HANDLEIDCMP, it should put this value into register d7. HANDLEIDCMP copies
+the value in d7 into d0 prior to exit.
+
+ To return a value immediately, set d2= #CLOSEWINDOW and d7= value.
+
+ GADGETs AND MENUs
+ ~~~~~~~~~~~~~~~~~
+ Gadgets and menus are handled in a much simpler fashion.
+
+ The ServiceRoutine to be called upon a particular menu or gadget selection
+is placed in the relevant objects structure.
+
+ In the case of gadgets, the gg_UserData field should contain the address
+of the routine to call when the gadget is selected.
+
+ Each gadget can have it's own unique servicing subroutine, if required,
+using this method.
+
+ Example. Suppose you have an 'About' gadget that, when selected, causes a
+call to the subroutine 'DoAboutStuff'. To enable this, set the gg_UserData
+field to 'DoAboutStuff'.
+
+ Here is the gadget structure required to do this:
+
+AboutGadget
+	dc.l	0				;next gadget
+	dc.w	105,24				;origin XY of hit box
+	dc.w	99,11				;hit box width and height
+	dc.w	NULL				;gadget flags
+	dc.w	RELVERIFY			;activation flags
+	dc.w	BOOLGADGET			;gadget type flags
+	dc.l	AboutBorder			;gadget border
+	dc.l	0				;alternate image
+	dc.l	0				;first IntuiText structure
+	dc.l	0				;gadget mutual-exclude long word
+	dc.l	0				;SpecialInfo structure
+	dc.w	0				;user-definable data
+	dc.l	DoAbout		ADDRESS OF ServiceRoutine
+
+ Note that the label of the required ServiceRoutine has been placed in the
+gg_UserData field of the structure ( The last long word ).
+
+ Menu's have to be dealt with slightly differently as there is not a
+UserData field. For this reason, the address ( label ) of the
+ServiceSubroutine is added to the end of each MenuItem structure.
+
+ For example, if you had a 'Project' menu with an 'Abort' item, the
+subroutine to call when 'Abort' is selected is placed AFTER the 'Abort'
+item structure:
+
+AbortItem
+	dc.l	0				;next MenuItem structure
+	dc.w	0,0				;XY of Item hitbox
+	dc.w	80,8				;hit box width and height
+	dc.w	ITEMTEXT+COMMSEQ+ITEMENABLED+HIGHCOMP	;Item flags
+	dc.l	0				;mutual exclude bits
+	dc.l	AbortText				;Item render
+	dc.l	0				;Select render
+	dc.b	'A'				;alternate command-key
+	dc.b	0				;fill byte
+	dc.l	0				;SubItem list
+	dc.w	MENUNULL			;filled in by Intuition
+
+	dc.l	DoAbort		OUR EXTENSION: ServiceRoutine pointer
+
+ That is all that is required. When HANDLEIDCMP receives a gagdet message
+or a menu message it determines the address of the subroutine to call, and
+then calls it.
+
+ In the 'Abort' example, a very simple example of a service routine would
+be:
+
+DoAbort		move.l		#CLOSEWINDOW,d2		signal exit
+		moveq.l		#0,d7			set return code
+		rts
+
+
+ The gadget and menu service routines should follow the same rules as
+outlined above for the general ServiceRoutine supplied to HANDLEIDCMP.
+
+ A full example showing GADGETUP, GADGETDOWN, MENUPICK and RAWKEY handaling
+is supplied with these routines for you to ponder over.
+
+ And finaly a complete example NewWindow structure, complete with a gadget
+and a single menu item. Of course, the menu would have to be linked to the
+window ( possible using OPENWIN !! ).
+
+NewWindowStructure
+	dc.w	75,85				;window XY origin
+	dc.w	377,53				;window width and height
+	dc.b	0,1				;detail and block pens
+	dc.l	GADGETUP+MENUPICK+CLOSEWINDOW	;IDCMP flags
+	dc.l	WINDOWDEPTH+WINDOWCLOSE+ACTIVATE+NOCAREREFRESH	;other flags
+	dc.l	AboutGadget			;first gadget in gadget list
+	dc.l	0				;custom CHECKMARK imagery
+	dc.l	WindowName			;window title
+	dc.l	0				;custom screen pointer
+	dc.l	0				;custom bitmap
+	dc.w	5,5				;minimum width and height
+	dc.w	640,200				;maximum width and height
+	dc.w	WBENCHSCREEN			;destination screen type
+
+WindowName
+	dc.b	'Example Window',0
+	even
+
+AboutGadget
+	dc.l	0				;next gadget
+	dc.w	105,24				;origin XY of hit box
+	dc.w	99,11				;hit box width and height
+	dc.w	NULL				;gadget flags
+	dc.w	RELVERIFY			;activation flags
+	dc.w	BOOLGADGET			;gadget type flags
+	dc.l	AboutBorder			;gadget border
+	dc.l	0				;alternate image
+	dc.l	0				;first IntuiText structure
+	dc.l	0				;gadget mutual-exclude
+	dc.l	0				;SpecialInfo structure
+	dc.w	0				;user-definable data
+	dc.l	DoAbout		ADDRESS OF ServiceRoutine
+AboutBorder
+	dc.w	-2,-1				;XY origin
+	dc.b	3,0,RP_JAM1			;front pen/back pen/drawmode
+	dc.b	5				;number of XY vectors
+	dc.l	AboutVectors			;pointer to XY vectors
+	dc.l	0				;next border in list
+
+AboutVectors
+	dc.w	0,0
+	dc.w	102,0
+	dc.w	102,12
+	dc.w	0,12
+	dc.w	0,0
+
+
+ProjectMenu
+	dc.l	0				;next Menu structure
+	dc.w	0,0				;XY origin of Menu hit box
+	dc.w	75,0				;Menu hit box width and height
+	dc.w	MENUENABLED			;Menu flags
+	dc.l	ProjectName			;text of Menu name
+	dc.l	AbortItem			;MenuItem linked list pointer
+	dc.w	0,0,0,0				;Intuition mystery variables
+
+ProjectName
+	dc.b	'Project',0
+	even
+
+AbortItem
+	dc.l	0				;next MenuItem structure
+	dc.w	0,0				;XY of Item hitbox
+	dc.w	80,8				;hit box width and height
+	dc.w	ITEMTEXT+COMMSEQ+ITEMENABLED+HIGHCOMP	;Item flags
+	dc.l	0				;mutual exclude bits
+	dc.l	AbortText				;Item render
+	dc.l	0				;Select render
+	dc.b	'A'				;alternate command-key
+	dc.b	0				;fill byte
+	dc.l	0				;SubItem list
+	dc.w	MENUNULL			;filled in by Intuition
+
+	dc.l	DoAbort		OUR EXTENSION: ServiceRoutine pointer
+
+AbortText
+	dc.b	3,1,RP_COMPLEMENT,0		;front/back/drawmode/fillbyte
+	dc.w	0,0				;XY origin 
+	dc.l	0				;font pointer or NULL
+	dc.l	.Text				;pointer to text
+	dc.l	0				;next IntuiText structure
+
+.Text
+	dc.b	'About',0
+	even
+
+

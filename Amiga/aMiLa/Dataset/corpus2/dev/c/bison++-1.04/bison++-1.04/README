@@ -1,0 +1,46 @@
+		    Bison parser generator for C++
+
+This directory contains a version of the GNU Bison parser generator
+modified by Larry Augustin to work with C++.  It has been tested
+with GNU g++ 1.37.1.
+
+The major difference between this program and Bison is that this
+program generates a C++ class declaration for the parser.
+Documentation on how to use this class is nonexistent.  The easiest
+thing to do is run a simple YACC file through bison++ and look at the
+.tab.h and .tab.c files generated.  The .tab.h file contains a C++
+class declaration for the parser.  The yylex() routine is a member
+function in this class.  Somewhere you will have to write this
+function.  A useful contribution to the C++ community would be a
+version of flex (flex++) to go with bison++.
+
+The advantage of this approach is that it allows you to have multiple
+instances of a parser, and also to have different parsers in the same
+application without worrying about name conflicts between all the
+global names (yylex, yylval, etc.) that YACC usually defines.  All
+those names still exist in bison++, except that they are now defined
+with the scope of the parser class declaration.
+
+Larry M. Augustin			ERL 414
+lma@sierra.stanford.edu			Computer Systems Lab
+lma@dayton.stanford.edu			Stanford University
+(415) 723-9285				Stanford, CA 94305
+
+------------------------------------------------------------------------
+
+GNU Bison README:
+
+This directory contains the Bison parser generator.
+
+When installing Bison on Sequent (or Pyramid?) systems, you must
+be in the Berkeley universe.
+
+On systems that do not have a working `alloca' function, you will
+have to get a working `alloca' (perhaps from GNU Emacs) and edit the
+Makefile so that it will be used.
+
+On system V, you will need to define the macro USG while compiling.
+
+Send bug reports to bug-gnu-utils@prep.ai.mit.edu.
+Please include the date and author of the last entry in ChangeLog
+in each bug report; this serves as a version number for Bison.

@@ -1,0 +1,14 @@
+Short:        C++ Library, GNU/C binaries
+Author:       armin@uni-paderborn.de (Armin Vogt)
+Uploader:     armin uni-paderborn de (Armin Vogt)
+Type:         dev/c
+Version:      1.10
+Architecture: m68k-amigaos
+
+This is the NEW version 1.10 by Aug, 30, 1994 of A++ Library.
+
+The archive contains the link library for GNU/C++.
+
+This archive expands to a new directory 'APlusPlus' in the current work
+directory. If you have already unpacked APPSource.lha expand this archive
+in the same directory you unpacked APPSource.lha.

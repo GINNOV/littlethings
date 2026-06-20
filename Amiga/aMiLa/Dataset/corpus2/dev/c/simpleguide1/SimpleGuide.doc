@@ -1,0 +1,95 @@
+------------------==================================------------------
+950205
+           SimpleGuide: A simple AmigaGuide interface
+
+                              Release 1
+
+    Copyright (C) 1995 Ultima Thule Software, All Rights Reserved.
+                        Author: Petter Nilsen
+
+------------------==================================------------------
+
+SimpleGuide is created and programmed by Petter Nilsen, with input and
+comments  from  Marius Mortensen.  Thanks to Michael Sinz for creating
+to original SimpleRexx ARexx code which gave me the idea for doing the
+same with AmigaGuide.
+
+This  code  is  not  public  domain  but may be freely distributed for
+non-commercial  purposes.   Use  it at your own risk.  However, if you
+intent  to  use this code in one of your own applications, please give
+me credit. Hope you find it helpful! 
+
+What is SimpleGuide?
+~~~~~~~~~~~~~~~~~~~~
+SimpleGuide  was  created  by  me for own use in our program THOR, the
+most  advanced  offline  reader  currently on the Amiga (todays ad :).
+SimpleGuide  does  much  of the gruntwork associated with the creation
+and  use  of the AmigaGuide online help that Commodore has provided to
+users  and programmers.  To use it, you simply link you program to the
+SimpleGuide  module (simpleguide.c) and call SimpleGuide to create the
+AmigaGuide  help  system,  open  nodes,  close  the  help  system etc.
+Currently,  this  code  only  supports  opening AmigaGuide as an async
+prosess.   There  might  be  some  problems  with  earlier versions of
+amigaguide.library with this, but as far as I know these problems only
+exist  with  V33  and early V34 versions.
+
+Using SimpleGuide
+~~~~~~~~~~~~~~~~~
+
+Setting  up  the AmigaGuide help system for your application should be
+fairly easy if you follow these simple steps:
+
+1.   When  you  need  the  help  system,  call AmigaGuideOpen() with a
+initialized NewAmigaGuide structure, as described in the documentation
+for AmigaGuideOpen().  This function will open amigaguide.library, the
+AmigaGuide   help  system  and  wait  for  the  startup  message  from
+amigaguide.library.   This function will return a pointer to a context
+that must be passed to all the other functions in SimpleGuide whenever
+you  call  them.   Keep  the pointer around but don't modify it or its
+contents.   You  might  call AmigaGuideOpen() more than once to set up
+the  help  system  for  ie.  several different AmigaGuide files.  Each
+call will return a unique context.
+
+2.     Get    a    signal   from   SimpleGuide   with   the   function
+GetAmigaGuideSignal()  and  wait  on  this signal in your usual signal
+loop.   When  a  signal  arrives, use HandleAmigaGuide() to answer all
+messages received from AmigaGuide.
+
+3.  Whenever the user presses the HELP key (rawkey decimal code 95) or
+requests  menyhelp,  call the SetGuideContext() function to align onto
+the  node  you  want  to  show  for  the  user (se the documetation on
+AmigaGuideOpen()   for   more   details)   then   call   the  function
+SendGuideContext() to actually show the node.
+
+4.   When you are through with the help system, call AmigaGuideClose()
+for each context you received from AmigaGuideOpen().
+
+Please  see  the  simpleguide.c  file for further information on these
+functions.
+
+History:
+~~~~~~~~
+950205 - Initial release 1
+
+Limitations:
+~~~~~~~~~~~~
+- Only supports async opening of amigaguide.library.
+- Does not support all functions in amigaguide.library
+- Only replies to messages from amigaguide.library, without any error
+  handling. 
+
+Please  feel  free to modify the code as you like, but if you discover
+any bugs or want to make additions, send a mail to me about them.
+
+I can be contacted in one of the following ways:
+
+           Email: pettern@powertech.no
+
+Ultima Thule BBS: +47 776-81999 / +47 776-13205 / +47 776-39830
+
+      Snail-Mail: Ultima Thule Software
+                  Attn. Petter Nilsen
+                  Strandveien 59B
+                  N-9007 TROMSOE
+                  NORWAY
+

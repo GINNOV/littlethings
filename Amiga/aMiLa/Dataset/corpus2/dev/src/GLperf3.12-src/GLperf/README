@@ -1,0 +1,119 @@
+Welcome to GLperf 3.1.2!
+
++--------------------------+
+| Documentation for GLperf |
++--------------------------+
+
+With the web browser of your choice, view GLperf.htm.  This is a complete
+reference manual for GLperf, and includes a _short_ (probably too short)
+tutorial.
+
++------------------------+
+| Build Notes for GLperf |
++------------------------+
+
+Which Makefile?
+---------------
+For Unix based systems:
+    make -f Makefile.unx
+
+For WinNT, Win95:
+    nmake /F Makefile.win
+
+For OS/2:
+    nmake /F Makefile.os2
+
+Size and function selection
+---------------------------
+GLperf is a strange beast in that you can select how much functionality you
+want to include in it at compile (build) time.  The more functions you
+include, the bigger it gets (and it can get quite big!) so don't get
+overenthusiastic!  You can specify which functions you want by defining
+preprocessor variables in the Makefile.  These are the selectable functions:
+
+    FULL_VERTEX_PATHS 
+	By default, you can only use a "VertexDim" (or vertex dimension)
+	of 3 (that is, you can only use glVertex3fv commands).   By defining
+	this variable, you can enable the use of 2d vertices as well.
+
+    FULL_RASTERPOS_PATHS 
+	By default, you can only use a "RasterPosDim" (or rasterpos dimension)
+	of 3 (that is, you can only use glRasterPos3fv commands).   By defining
+	this variable, you can enable the use of 2d raster positions as well.
+
+    FULL_COLOR_PATHS 
+	By default, you can only use a "ColorDim" (or color dimension)
+	of 3 (that is, you can only use glColor3fv commands).   By defining
+	this variable, you can enable the use of RGBA data as well.
+
+    FULL_TEXTURE_PATHS 
+	By default, you can only use a "TexTarget" (or texture target)
+	of GL_TEXTURE_2D (that is, you can only use 2d texture images and
+	coordinates).   By defining this variable, you can enable the use of 
+	GL_TEXTURE_1D (1d texture images) and even 3 or 4 dimensional textures
+	if your OpenGL implementation supports the GL_EXT_texture3D or
+	GL_SGIS_texture4D extensions respectively.
+
+    FULL_UNROLL_PATHS
+	By default, you cannot unroll calls in the inner traversal loop
+	in GLperf.  Definition of this variable allows you to unroll up
+	to 8 vertices in the inner loop, if possible.  Some primitives
+	are not unrolled at all due to their relatively long execution
+	times (PixelRects, TexImages, Bitmap, Text).
+
+    FULL_FUNCPTR_PATHS
+	Definition of this variable allows the user of GLperf to set
+	"LoopFuncPtrs" (or loop function pointers) to "True".  Under
+	this condition, all function calls in the inner loop will
+	be made through function pointers.  This is faster on some 
+	architectures.
+
+As I hinted above, capricious definition of these variables can result
+in an executable considerably larger than necessary.  You are therefore
+admonished to set only the variables that you will need!  Enough said.
+
+Here's a little data on the different IRIX sizes of GLperf, when compiled 
+with optimization and then stripped of symbols.  As always, your sizes
+may be more or less than these numbers (probably less if you're running
+on a CISC processor like x86; about the same for most RISC processors).
+
+Size             FULL_XXXX_PATHS variables defined
+(MB)	VERTEX   RASTERPOS  TEXTURE   COLOR    FUNCPTR  UNROLL
+16.8       x         x         x        x         x        x
+ 5.2       x         x         x        x         x
+ 4.4       x         x         x        x
+ 3.9       x         x         x
+ 2.7       x         x
+ 2.7       x
+ 2.5
+
+lex and yacc dependency
+-----------------------
+For you non-Unix users, we have included the files generated from running
+lex and yacc on the files Parse.l and Parse.y respectively.  This will
+allow you to get by unless you want to modify those parsing files in some 
+way (i.e. if you have masochistic proclivities).  If that is the case,
+I'd recommend getting a freely available copy of flex and bison from 
+the Free Software Foundation.  I won't list sites with these packages 
+(just use any web search engine for sites), but you can contact the FSF at:
+	Free Software Foundation, Inc.
+	675 Massachusetts Ave.
+	Cambridge, MA 02139
+	(617) 876-3296
+
+General notes for curious readers
+---------------------------------
+GLperf has a number of "generator" files that are all of the form *G.c
+They are compiled by themselves into executables and then run.  They
+will generate one or more files of the form *F.c  These *F.c files
+#include *X.c files into them when they are compiled.  The *X.c files
+can be thought of as templates, as they have tons of preprocessor directives
+to make enumeration of traversal routines as general and easy as possible.
+
+If you have suggestions, criticisms, comments or anything to say about
+GLperf, its structure or Makefile(s), please drop me line at spit@sgi.com
+
+Good luck!
+John Spitzer
+spit@sgi.com
+August 30, 1996

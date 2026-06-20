@@ -1,0 +1,134 @@
+
+			Game Source
+			~~~~~~~~~~~
+
+ This source was inspired by Paul Kent's Tanx submission on disk 23.
+
+ General
+ ~~~~~~~
+ In writing this source I have tried to make provisions for the following:
+
+ -Screen data files consisting of block numbers and mask numbers
+ -Bob data files consisting of numerous interleaved bobs stored in one file
+  along with information specific to each bob.
+ -Interrupt driven double buffered display.
+ -General purpose bob routine to draw bobs into playfield
+ -General purpose bob-playfield collision routine, pixel accurate using the
+  blitter
+ -Convertability:-)
+
+ Before delving into the code a few words on what I am planning to do. I hope
+to end up with various 'enemy' bobs, some that move randomly and others that
+follow pre-programmed paths. The object will be to kill-em-all.
+
+ The play area will be widened to 640x512 leading to eight-way scrolling.
+This will require routines to activate bobs only when displayed, but still
+update positions when not displayed.
+
+ Each level will have an exit which will open after a number of points have
+been collected.
+
+ Some enemy will transform into power-ups for different bullets/ranges while
+others will transform into speed-ups.
+
+ Some enemy will just be bits of scenery that move, providing obsticles to
+overcome.
+
+ All enemy will require more than one hit to destroy.
+
+ A life will be lost for collisions with certain enemy.
+
+ Well, that's what I plan. Be interesting to see how far I get before running
+out of raster time and giving up! 
+
+ At present, bullets bounce off of the scenery. I just wanted to see what it
+looked like and may remove the 'bounce' feature or leave it for a power-up
+option in the final version. I think it will make things too easy as it is.
+
+ At present, all data files are incbin'ed into the main source. This will not
+be the case in the final version. All data files will be read from disk to
+allow loads of variety in backgrounds and bobs when moving from level to
+level.
+
+ Data Files
+ ~~~~~~~~~~
+ As I dont have a custom bob designer I have resorted to using purpose
+written programs to read in required raw data and save it out in one file.
+For instance, the bob.bm file contains data on all bobs. To generate this
+file I used CreateBobs that reads in all the required bitmap files and
+arranges the data in the required format.
+
+ Block Data File ( blockdata.bm )
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ Each screen is built up from a block matrix. An entry in the matrix consists
+of a single byte block number. The block number defines which background
+tile to use at the screen position refered to.
+
+ The data for each block is stored in interleave format in the file blocks.bm
+and each block is followed by a single plane mask used for collission
+detection. Blocks are numbered 0->255, though I've only got a few at present!
+
+ As a screen is built up ready for display, a single bitplane is also built
+up containing the masks. When moving a bob, it's mask is blitted into this
+single bitplane ( blitter channel D disabled so as not to corrupt it! ) to
+determine if a collision has occurred.
+
+ Screen Data File ( Level1.bm )
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ This file contains the screen matrix explained above.
+
+ Bob Data File ( Bobs1.bm )
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+ This file contains the data required to initialise a linked list of bobs.
+
+ At present, only 2 bob types have been defined. The players bob and the bob
+used for bullets.
+
+ Each bob defenition in the file starts with an identifier. This is a long
+word as defined in the program. The data arrangement for each type of bob is
+different, for more details see CreateBobs.s
+
+ At the start of each level ( start of program at present ), this file is
+scanned and a linked list of bob structures is generated and initialised by
+a call to the subroutine InitBobs.
+
+ The Program
+ ===========
+
+ The program revolves around a level 3 interrupt. The interrupt takes care of
+checking joystick, firing bullets, checking collisions and moving bobs.
+
+ Before starting the interrupt, some initialisation is required. This is the
+outline of the main program:
+
+ - Disable OS, gain access to Blitter and start custom Copper list
+ - build screen from data file
+ - build linked list of bob structures ( scan bob data file )
+ - set interrupt into action
+ - wait for LMB
+ - disable interrupt
+ - restore system Copper list, free blitter and enable OS.
+
+ The interrupt does the following:
+
+ - toggles between two CopperLists = double buffer
+ - checks joystick movement and updates bobs coordinates accordingly
+   this includes background collision detection
+ - moves any active bullets ( max of 10 ). This includes background collision
+   detection and 'bouncing' if enabled!
+ - tests the fire button and activates a bullet if pressed
+ - blits all active bobs into screen. This includes cookie-cutting
+ - calls music replayer
+ - updates a time-out counter that determines pause between bullets
+
+ All bobs are in interleaved format. A draw mask is used when blitting into
+the background and one plane of this doubles as a collision mask.
+
+ Take a look. If anyones interested, I'll write a more indepth report next
+month by which time I hope to have the scrolling implemented and a few NME
+around.
+
+
+
+
+

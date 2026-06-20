@@ -1,0 +1,26 @@
+Short   : A Simple Calculator
+Author  : Matthew J Fletcher
+Uploader: amimjf@connectfree.co.uk
+Version : 1.01
+Type    : dev/c
+Replaces: -
+Requires: 68020 / OS3.x / Brain
+
+This is just a quick program i knocked up, stanadard calculator fair
+There are 101 others and about 13 better ones but none of them come
+with full gcc source code !, yes it works just compile it ! I hope
+this will help someone.
+
+USEAGE
+------
+Open a shell and type calc, the program will then pop the window,
+thats about it, btw it will start from workbench, but it needs an
+icon thats all.
+
+
+Please see the source code for more docs.
+
+
+(C) Copyright 1999-2000 Matthew J Fletcher - All Rights Reserved.
+amimjf@connectfree.co.uk - www.amimjf.connectfree.co.uk
+

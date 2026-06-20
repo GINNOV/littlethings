@@ -1,0 +1,26 @@
+name:     CLI-Only
+short:    CLI Only startup code by Zeeball
+author:   Zbigniew Trzcionkowski (zeeball@interia.pl)
+uploader: Zbigniew Trzcionkowski (zeeball@interia.pl)
+version:  0.1 (20.12.2001)
+requires: OS37+
+type:     dev/asm
+
+STATUS:   Public Domain
+
+That piece of code is designed to be placed before code
+of CLI-Only tools written in assembler.
+Note that such tools will no longer crash from an icon,
+but will show message that this is CLI only stuff.
+However any modifications are permitted as this is PD stuff!
+
+This is statup code for all those who:
+
+ - are too lazy to write their own handling of WB
+ - are afraid of stack overflow as it lets to choose minimal size
+   and allocs new stack if the initial is too small
+ - use no includes and other stuff
+
+SIZE OF CODE: 280 bytes
+
+(code is PC relative, can be treated as PURE)

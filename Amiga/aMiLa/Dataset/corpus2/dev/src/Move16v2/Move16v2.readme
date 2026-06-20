@@ -1,0 +1,64 @@
+Short:        Src/executable for 040 amigas, shows use of Move16 instruction
+Architecture: m68k-amigaos
+
+Recent: This is the 2nd release, the 1st release generated extra instcn.
+
+The 1st release added an extra dc.w 0 to the move16 opcode generated
+by the assembler, this is incorrect, it created the following:
+
+move16 (a0)+,(a1)+
+ori.b #0,d0
+
+Basically it was harmless but was generating an extra instruction
+between move16;s this release fixes that by generating the
+correct opcode in a macro
+
+For use with SAS/C 6.3
+2 source files, Move16.c and Move16_a.asm
+
+
+This archive contains source and executable which demonstrates
+the use of the 68040 Move16 instruction on an 040 amiga.
+I am not sure if this instruction is safe for all amigas,
+but it is the fastest way to copy mem blocks on an 040
+machine.
+
+You must align the src and dest on 16 byte boundaries, and
+on some 040's you need a NOP before each block
+of MOVE16's and on some 040's a page fault during a move16
+can cause problems, but on my A4000/040 It seems to work
+just fine.
+
+If anyone knows of any problems with the Move16 instruction
+on the Amiga, or would like to email me the
+times for their systems, send me internet mail at
+
+uzun@crash.cts.com
+or on bix as 
+ruzun
+
+This pgm has 2 copy block loops, one uses Move16's the
+other longword moves, it reports the time to execute
+each block for each mem type.
+
+SAS/C 6.3 ASM BUG,
+the SAS/C Assembler cannot correctly generate the opcode
+for a move16 (a0)+,(a1)+, 
+The asm file uses a macro to generate the correct
+opcode for this instruction.
+
+Results on my A4000/040
+
+**FAST TO FAST**
+MoveMem   = 2.2000 secs
+MoveMem16 = 1.5000 secs
+**Fast to CHIP**
+MoveMem   = 3.3000 secs
+MoveMem16 = 3.2800 secs
+**CHIP to Fast**
+MoveMem   = 4.0600 secs
+MoveMem16 = 3.2800 secs
+**CHIP to CHIP**
+MoveMem   = 5.1200 secs
+MoveMem16 = 5.1200 secs
+

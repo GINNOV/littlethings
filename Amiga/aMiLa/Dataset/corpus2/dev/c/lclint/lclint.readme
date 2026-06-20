@@ -1,0 +1,11 @@
+Short:        A tool for statically checking C programs
+Author:       evs@larch.lcs.mit.edu (David Evans)
+Uploader:     haubi geocities com (Stefan Haubenthal)
+Type:         dev/c
+Version:      2.2a+ prerelease
+Requires:     cpp
+Architecture: m68k-amigaos
+
+With minimal effort, LCLint can be used as a better lint.  If additional
+effort is invested adding annotations to programs, LCLint can perform
+stronger checks than can be done by any standard lint.

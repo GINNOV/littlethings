@@ -1,0 +1,388 @@
+
+
+    -------------------------------------------------------------------
+      ---------------------------------------------------------------  
+        -----------------------------------------------------------    
+          ------------   How to Code with PreAss   -------------       
+            --------------------------------------------------     
+              ------------  Support-Text für  --------------          
+                ------------------------------------------                   
+                  ------------- PreAss 1.33 ------------
+                    ----------------------------------
+                      ------------------------------
+                        --------------------------
+                          ---------  2  --------
+                            ------------------
+                              --------------
+                                 --------
+                                    --
+
+    Hallo , 
+    heute gehts um die Verbesserung von Type2.Da wäre z.b. die Sache mit 
+    ASCII und BINÄR, das müssen wir TYPE2 unbedingt beibringen, dazu sollte
+    auf jeden Fall ein automatischer FileRequester kommen.
+
+    Soviel zu den Zielen, nun noch eine Änderung im Ablauf:
+
+    Im ersten Teil war alles ein wenig querbeet, das möchte ich abschaffen.
+    Dazu hab ich mir gedacht, daß nur noch die Teile hier im Text erklärt
+    werden, die neu sind oder stark modifiziert wurden.Der komplette Source
+    liegt dann dabei oder taucht am Ende auf, je nachdem.
+
+    Neue Funktionen:
+
+    FileReq()           --- Prozedur
+    ID()                --- Prozedur
+    Seek()              --- dos.library
+    AllocAslRequest()   --- asl.library
+    ASLRequest()        --- asl.library
+    FreeASLRequest()    --- asl.library
+    Copymem()           --- exec.library
+
+ 
+; TYPE3 - Beispielsource für Preass How2Code
+
+    {* NewProc=FileReq[][]*}
+    {* NewProc=ID[Zeiger_auf_Puffer,PufferLaenge][a0,d7]*}
+
+Die Routine ID() liest einfach den Puffer byteweise ein und teste die 
+Zeichen ob sie übliche ASCII-Zeichen sind oder ob es sich um Binär-
+Zeichen handelt . Die Anzahl der ASCII-Zeichen muß die Anzahl der Binär-
+Zeichen überwiegen, dazu muß die Anzahl der Binär-Zeichen unter 40 Zeichen
+liegen, sonst könnte es sich ja auch um einen selbstanzeigenden Text
+handlen.
+
+FileReq:
+    {* IncBlock: DirName,256*}
+    Requester=AllocAslRequest(#ASL_FileRequest,0)
+
+Initialiesierung der ASLRequestStruktur mit FileRequestDaten.    
+
+    CheckF Requester,Select2
+
+Abfrage ob eine Struktur erstellt werden konnte, wenn nicht dann beenden.
+
+    Result=ASLRequest(Requester,>ASLFR_Taglist:ASLFR_Pubscreenname,Pubscreenname="Workbench"|
+                                               ASLFR_PrivateIDCMP,Dostrue|ASLFR_TextAttr,Dosfalse|
+                                               ASLFR_InitialLeftEdge,20|ASLFR_InitialTopEdge,24|
+                                               ASLFR_InitialWidth,300|ASLFR_Initialheight,210|
+                                               ASLFR_InitialDrawer,Dirname|Tag_end,0)
+
+ASLFileRequest durchführen. So nun hätten wir den ersten Fall einer Tagliste.
+Die Tags sind in der Datei `Konstanten.inc` definiert (kann man auch aus
+den Includefiles auslesen). `ASLFR_Pubscreenname` braucht als TAG_Data einen
+Zeiger auf einen String, also einen Puffer mit Zeichen , wie der PUBScreen
+heißt auf dem sich der Requester öffnen soll.Der String kann mit einem =".."
+sofort angelegt werden, wobei Pubscreenname der Name des Strings ist.
+Ein `|` beendet einen Tageintrag.Der Tag `PrivateIDCMP` ist intern wichtig,
+damit ist die Anwendung von Geschehnissen auf der WBench unabhängig.`TextAttr`
+ist ein Tag , der dafür sorgt , daß ASL die Systemfonts benutzt. 
+Die `Initial`-Tags positionieren das Window beim Öffnen bzw. setzen die
+String-Gadgets und alles andere was vorher gesetzt werden soll.
+
+        CheckF Result,Select2
+
+Kann ja aus einem komischen Grund mal nicht klappen.
+
+            Filename_Zeiger=.l4(Requester)
+            Dirname_zeiger=.l8(Requester)
+
+In der Requesterstruktur steht im 2. Langwort die Adresse des Strings, der
+den Filenamen enthaelt , im 3. die des Strings der den Directorypfad
+enthaelt.
+
+            Dirlock=Lock(Dirname_Zeiger,#Access_Read)
+            CheckF Dirlock,.lab1
+            Dirlock=Currentdir(Dirlock)
+            Unlock(Dirlock)
+
+Das Directory locken und mit Currentdir (ChangeDir) dahin wechseln.Die
+Funktion Currentdir() gibt den Lock zurück, der das alte Directory , also
+das aus welchem wir in das neue wechseln, repräsentiert.
+Dieser Teil ist drin, damit man nur noch das File öffnen muss, ohne erst
+den Filenamen zusammenzubauen, das hat den Vorteil , das es viel erleichtert,
+besonders einen erneuten FileRequest , da man mit NameFromLock() den Pfad
+zurück bekommt bzw. ja keinen Pfad mehr braucht, da man sich im
+Verzeichniss befindet.
+
+.Lab1:      Copymem(Dirname_zeiger,#Dirname,100)
+            Copymem(Filename_zeiger,#FileName,100)
+
+Die Strings müssen in Zwischenspeicher kopiert werden, weil sie beim
+FreeASLRequest() gelöscht werden.
+
+Select2:CheckF Requester,.lab1
+        FreeASLRequest(Requester)
+.lab1:  RTS
+
+
+; - - - - - - - - - - - - - - ID() - - - - - - - - - - - - - - - - - - - - - 
+
+ID:
+    AscII==0                    ; Nullsetzen der beiden Zähler
+    Binary==0
+    subq.l #1,d7                ; Stringlaenge verringern
+.Schleife:
+    move.b (a0)+,d0             ; Im Register A0 steht eine Adresse, 
+                                ; die auf den zu untersuchenden String
+                                ; zeigt. Der Befehl Move.b (a0)+,d0
+                                ; liest nun ein Byte aus der Adresse in A0
+                                ; aus und schiebt es in das Datenregister
+                                ; D0.Zudem wird das Adressregister A0 um
+                                ; 1 erhoeht. Im allgemeinen gilt:
+                                ; Move.X (Ay)+,Dz  X={Byte,Word,Longword}
+                                ; Ay=Ay+X wobei X = (1,2,4) ist, das hängt
+                                ; mit der angegebenen Operationslänge ab
+                                ; Byte=1 Longword=4 usw. Es gibt 8
+                                ; Datenregister, deshalb kann z (0-7) sein.
+         
+    cmpi.b #$09,d0              ; Vergleich ob $09 in D0 steht.
+    beq .Asc                    ; wenn ja, dann springe nach .ASC
+    cmpi.b #$0A,d0              ; Vergleich ob $0a (LineFeed) in D0 steht
+    beq .Asc                    ; wenn ja, dann springe nach .ASC
+    cmpi.b #$0C,d0              ; Vergleich ob $0C (Carrige Return) in D0 steht
+    beq .Asc
+    cmpi.b #"ü",d0              ; usw usw usw
+    beq .Asc
+    cmpi.b #"Ü",d0
+    beq .Asc
+    cmpi.b #"ö",d0
+    beq .Asc
+    cmpi.b #"Ö",d0
+    beq .Asc
+    cmpi.b #"ä",d0
+    beq .Asc
+    cmpi.b #"Ä",d0
+    beq .Asc
+    cmpi.b #"ß",d0
+    beq .Asc
+    cmpi.b #$20,d0              ; Zeichen unter dem HEXwert $20 sind BINzeichen 
+    blt .bin                    ; Zeichen über $7a auch.
+    cmpi.b #$7A,d0              ; BranchLowerThan, Verzweige wenn kleiner als
+    bgt .bin                    ; BranchGreaterThan,Verweige wenn größer als
+.asc:
+    AscII==ASCII++              ; Der Zähler der ASCIIzeichen erhöhen
+    bra .Scheifenende
+.bin:
+    Binary==Binary++            ; Binzeichenzähler erhöhen
+.Scheifenende:
+    dbra d7,.Schleife           ; Subtrahiert 1 von Dx und springt, solange
+                                ; Dx>=0 ist.
+
+    If ASCII>Binary { If Binary<#40 {                                   
+                                      Code==1
+                                    }
+                      If Binary>#40 {                                   
+                                      Code==0
+                                    }
+                    }
+    If Binary>ASCII calc Code=0
+    Move.l Code,d0
+    RTS
+
+
+Wenn mehr AscIIzeichen als Binärzeichen da sind und die Binärzeichen
+nicht mehr als 40 sind, dann gilt der String bzw. die zutestende
+Zeichenfolge als Text sonst als Binärsalat.
+
+
+Start:
+    Outputhandle=Output()
+    FNlaenge=GetFilename()
+    Checkf FNLaenge,.error1
+.Sprungpunkt1:
+        FileHandle=Open(#Filename,#Mode_old)
+        Checkf Filehandle,.error2
+            Windowhandle=Open("CON:0/0/640/200/Ausgabewindow/AUTO/WAIT",#Mode_old)
+            CheckF WindowHandle,.error3
+                AnzahlRead=Read(Filehandle,#Puffer,1000)
+                Seek(Filehandle,#0,#Offset_begin)        
+                Result=ID(#Puffer,AnzahlRead)
+                If Result=#1 --> .Schleife
+
+                ; Wenn der erste Lesezugriff auf das File als ASCII erkannt
+                ; wird, dann direkt an das Ausgabewindow senden und bis
+                ; zum Fileende weiter ausgeben ( Sprung nach .Schleife)
+
+                Close(WindowHandle)
+                Write(OutputHandle,"Binärfile, bitte Ausgabefile angeben\n",?)
+                FileReq()
+                If Result=#False { Write(OutputHandle,"Sie haben Hexmode gewählt.Dieser ist zur Zeit nicht verfügbar\n",?)
+                                   bra .ende1 }
+                {* Flush *}
+
+                ; Falls es ein Binärfile ist, wird das Ausgabewindow
+                ; geschlossen bzw. muss noch geschlossen werden, vom User
+                ; da ein WAIt mit angegeben wurde.Nun erfolgt der Filerequest
+                ; mit der ASL-Lib und falls der FileRequester abgebrochen
+                ; wird, nimmt das Programm an, man möchte einen Hexausgabe
+                ; haben,dies kommt in Type4 dran.Andernfalls wird das neue
+                ; Ausgabefile geöffnet und dort hin ausgegeben.
+
+                WindowHandle=Open(#Filename,#Mode_new)
+                CheckF WindowHandle,.error3
+.Schleife:
+                AnzahlRead=Read(Filehandle,#Puffer,1000)
+                AnzahlWrite=Write(Windowhandle,#Puffer,AnzahlRead)
+                If AnzahlWrite=#1000 --> .Schleife
+                If AnzahlRead=AnzahlWrite --> .ende
+.Error4:        
+    Write(OutputHandle,"\nREAD/WRITE- Error!\n",?)
+.ende:
+    Close(Windowhandle)
+.ende1:
+    Close(Filehandle)
+    RTS
+.error3:
+    Write(OutputHandle,"\nKonnte Window nicht öffnen\n",?)
+    bra .ende1
+.error2:
+    Write(OutputHandle,"\nKonnte File nicht öffnen\n",?)
+    RTS    
+.error1:
+    {* Flush *}
+    Write(OutputHandle,"\nKeine Argumente übergeben,AutoFileRequest.\n",?)
+    FileReq()
+    If Result=#False { Write(OutputHandle,"Kein File ausgewählt.\n",?)
+                       RTS }
+    bra .Sprungpunkt1
+
+Sollte kein File als Quellfile angegeben worden sein, erfolgt auch ein
+Filerequest um den Eingabenamen zuerhalten.
+
+Viel Spass beim rumexperimentieren :-)
+
+; TYPE3 - Beispielsource für Preass How2Code
+; 
+; (c) 1995 Cyborg 
+
+    {* Include sys:coder/preass/Options.p *}
+    {* Include sys:coder/preass/Prozeduren.p *}
+
+    {* String: Version="$VER: TYPE3 (C) CYBORG 95"*}
+
+    {* IncBlock: Puffer,1000*}
+
+    {* NewProc=FileReq[][]*}
+    {* NewProc=ID[Zeiger_auf_Puffer,PufferLaenge][a0,d7]*}
+
+ID:
+    AscII==0
+    Binary==0
+    subq.l #1,d7
+.Schleife:
+    move.b (a0)+,d0
+    cmpi.b #$09,d0
+    beq .Asc
+    cmpi.b #$0A,d0
+    beq .Asc
+    cmpi.b #$0C,d0
+    beq .Asc
+    cmpi.b #"ü",d0
+    beq .Asc
+    cmpi.b #"Ü",d0
+    beq .Asc
+    cmpi.b #"ö",d0
+    beq .Asc
+    cmpi.b #"Ö",d0
+    beq .Asc
+    cmpi.b #"ä",d0
+    beq .Asc
+    cmpi.b #"Ä",d0
+    beq .Asc
+    cmpi.b #"ß",d0
+    beq .Asc
+    cmpi.b #$20,d0
+    blt .bin
+    cmpi.b #$7A,d0
+    bgt .bin
+.asc:
+    AscII==ASCII++
+    bra .Scheifenende
+.bin:
+    Binary==Binary++
+.Scheifenende:
+    dbra d7,.Schleife
+    If ASCII>Binary { If Binary<#40 {                                   
+                                      Code==1
+                                    }
+                      If Binary>#40 {                                   
+                                      Code==0
+                                    }
+                    }
+    If Binary>ASCII calc Code=0
+
+    Move.l Code,d0
+    RTS
+
+FileReq:
+    {* IncBlock: DirName,256*}
+    Requester=AllocAslRequest(#ASL_FileRequest,0)
+    CheckF Requester,Select2
+    Result=ASLRequest(Requester,>ASLFR_Taglist:ASLFR_Pubscreenname,Pubscreenname="Workbench"|
+                                               ASLFR_PrivateIDCMP,Dostrue|ASLFR_TextAttr,Dosfalse|
+                                               ASLFR_InitialLeftEdge,20|ASLFR_InitialTopEdge,24|
+                                               ASLFR_InitialWidth,300|ASLFR_Initialheight,210|
+                                               ASLFR_InitialDrawer,Dirname|Tag_end,0)
+        CheckF Result,Select2
+            Filename_Zeiger=.l4(Requester)
+            Dirname_zeiger=.l8(Requester)
+            Dirlock=Lock(Dirname_Zeiger,#Access_Read)
+            CheckF Dirlock,.lab1
+            Dirlock=Currentdir(Dirlock)
+            Unlock(Dirlock)
+.Lab1:      Copymem(dirname_zeiger,#Dirname,1)
+            Copymem(Filename_zeiger,#FileName,100)
+Select2:CheckF Requester,.lab1
+        FreeASLRequest(Requester)
+.lab1:  RTS
+
+Start:
+    Outputhandle=Output()
+    FNlaenge=GetFilename()
+    Checkf FNLaenge,.error1
+.Sprungpunkt1:
+        FileHandle=Open(#Filename,#Mode_old)
+        Checkf Filehandle,.error2
+            Windowhandle=Open("CON:0/0/640/200/Ausgabewindow/AUTO/WAIT",#Mode_old)
+            CheckF WindowHandle,.error3
+                AnzahlRead=Read(Filehandle,#Puffer,1000)
+                Seek(Filehandle,#0,#Offset_begin)        
+                Result=ID(#Puffer,AnzahlRead)
+                If Result=#1 --> .Schleife
+                Close(WindowHandle)
+                Write(outputhandle,"Binärfile,bitte Ausgabefile angeben\n",?)
+                FileReq()
+                If Result=#False { Write(outputhandle,"Sie haben Hexmode gewählt.Dieser ist zur Zeit nicht verfügbar\n",?)
+                                   bra .ende1 }
+                {* Flush *}
+                WindowHandle=Open(#Filename,#Mode_new)
+                CheckF WindowHandle,.error3
+.Schleife:
+                AnzahlRead=Read(Filehandle,#Puffer,1000)
+                AnzahlWrite=Write(Windowhandle,#Puffer,AnzahlRead)
+                If AnzahlWrite=#1000 --> .Schleife
+                If AnzahlRead=AnzahlWrite --> .ende
+.Error4:        
+    Write(OutputHandle,"\nREAD/WRITE- Error!\n",?)
+.ende:
+    Close(Windowhandle)
+.ende1:
+    Close(Filehandle)
+    RTS
+
+.error3:
+    Write(OutputHandle,"\nKonnte Window nicht öffnen\n",?)
+    bra .ende1
+
+.error2:
+    Write(OutputHandle,"\nKonnte File nicht öffnen\n",?)
+    RTS    
+
+.error1:
+    {* Flush *}
+    Write(OutputHandle,"\nKeine Argumente übergeben,AutoFileRequest.\n",?)
+    FileReq()
+    If Result=#False { Write(OutputHandle,"Kein File ausgewählt.\n",?)
+                       RTS }
+    bra .Sprungpunkt1

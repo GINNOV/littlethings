@@ -1,0 +1,77 @@
+! Center all windows above the main-window.
+* Clear 'Current ftp-site' after disconnect.
+* Check all pointers.
+! Ask before overwriting existing files when transferring.
+* Different sort-algs.
+! Use asyncio-routines for filetransfer.
+19950312 ! Highlight directories (peman) 19950312
+19950312 ! List directories first (or last) (lilja) 19950330
+19950312 ! Reconnect (peman) 19950421
+19950312 ! Localize (andjo)
+19950312 * Comments for each site (andjo)
+19950313 ! Delete function (RobR)
+19950313 * Move function (RobR)
+19950419 ! Tooltype support (andyb)
+19950427 * ftp.aston.ac.uk fix double-click to at least try to get the file.
+19950506 ! PORTNAME-argument (lilja)
+19950520 ! OK/Cancel gadgets in Preferences. (cheesus)
+19950520 ! Default viewer.  (cheesus)
+19950520 * ".." in the listview. (cheesus)
+19950520 * "Permission denied" has weird character. (cheesus)
+19950521 ! Fix Workbench-path heritance.
+19950528 * Update number of files, while reading dir.
+19950531 * Batch-get (fastlane)
+19950608 ! Tag/Untag all (robr)
+19950608 * Skip instead of abort when transferring multiple files. (robr)
+19950608 ! Cache
+19950622 ! Transfer-window appears twice when "Get"'ing links (marcus)
+19950622 ! HotList-window gadgets is messed up (marcus)
+19950624 ! Abort should result in closing the (connect)window
+19950624 ! Activate subwindows only if mainwindow are active
+19950625 ! Draw an icon
+19950625 ! Use the TRSF_*-enums as return codes from sendrequest()
+19950718 ! Drag-select (cannot be done with gadtools)
+19950718 ! ETA
+19950813 ! Perhaps add fontprefs, prop-font, non-prop-font.
+19950827 ! Parent -> dir tagged -> Get-disabled. Fix! (marcus)
+19950903 ! Fix rexxportname AmiFTP.0.1.2 etc
+19950918 * Add RENAME
+19950921 ! Sort sites
+19950922 ! DELETE via ARexx
+19950922 ! GETATTR DIRLIST (return the entire filelist)
+19950930 ! "" when viewing files (Idea-mw)
+19950930 ! After timeout AmiFTP still thinks it's connected. (Idea-mw)
+19951012 ! On-line help
+19951017 * Makedir
+19951017 ! Select by pattern
+19951020 ! Fix busy-pointer when CD-ing.
+19951022 ! Ask server for size of links (with SIZE command)
+19951022 ! Logwindow
+19951022 * Add 'Raw ftp-command' to the menu
+19951022 ! FTPCOMMAND to ARexx
+19951022 ! Try NONBINDINGSOCKET vid connect(). Använd select() efter det...
+19951023 ! More status messages like 'loggin in...'
+19951023 ! Submenus in Hotlist
+19951023 ! Add current site to sitelist
+19951023 ! Set both host and directory before connecting
+19951026 * server.biologie.uni-erlangen.de gives empty dirs. (worked when I tried it)
+19951028 * Overwrite|skip this file|cancel transfer
+19951029 * Add UpdateGaugeRate in preferences.
+19951030 ! Add Delete viewed files at exit in preferences.
+ftp.univ-lille1.fr /pub/images/supermodels/part2 mget
+cd to a link results in different response from different servers. add to doc
+Use bullets in password gadget.
+'Reload'
+user/password-request when connecting via site-stringgadget
+19951201 ! User should be able to define max numbers of dirs in chache.
+19951207 ! Move hide/show .-files to Settings-menu and use LBNA_Hidden-flag.
+19960109 ! Add busypointer when deleting files.
+19960109 ! Suggestion. Stick ListBrowser another layout deeper, and make it
+           the only child, and add CLASSACT_BackFill, LAYERS_BACKFILL, tag.
+19960208 ! Add ARexx-command VIEW.
+19960316 ! site:path, ftp://[userid@]site[:port]path/
+number of files selected (bytes). Free space on disk.
+19960725 ! "AmiFTP - x MB/KB left" in transferwindow.
+19970111 * STEM.aminetpath, STEM.aminetdescr.
+19970111 * fixa markering av filer via arexx.
+19970111 ! Längre pattern-string i hide aminet-dirs.

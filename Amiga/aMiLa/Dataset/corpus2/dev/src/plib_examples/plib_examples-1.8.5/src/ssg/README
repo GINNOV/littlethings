@@ -1,0 +1,20 @@
+SSG Example programs.
+~~~~~~~~~~~~~~~~~~~~~
+
+Tux  -- Loads a 3D Tux model and a simple scene and
+        animates it until you hit key.
+        Needs to be run from it's source directory
+        so it can find it's data files.
+
+Majik -- An example I wrote for the Majik team
+        http://majik.netti.fi to show them how to
+        make a viewer for large area terrain.
+        It's pretty basic.
+
+Water -- A demo of some ssgAux stuff - waves, particle-systems
+        a teapot and a cube.
+
+Sky   -- A demo of a sky dome, with sun, moon, stars and clouds.
+
+Dynamics -- Spring/Mass/Damper demo.
+

@@ -1,0 +1,11 @@
+
+Attention: la fonction trouve() n'interdit pas le MT (si un noeud non
+parcouru est enlevé pendant l'appel de la fonction; passage du GURU)
+
+Remarque: les classes liste et noeud d'Exec utilisent des fontions
+qui interdisent le multitâche (AddTail, ..., Remove).
+Si une liste est gérée par une seule tâche, l'interdiction du MT
+n'est pas nécessaire. Par contre, pour une liste partagée, ces
+listes peuvent être utilisées ou il est préférable de redéfinir sa
+classe et d'utiliser un sémaphore d'exclusion d'accès à sa liste.
+

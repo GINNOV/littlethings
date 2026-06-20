@@ -1,0 +1,9 @@
+Short:    Arexx Script for use SAS-C with Golded V4.XX
+Author:   Felix@hof.baynet.de (Stefan Steppat)
+Uploader: Felix@hof.baynet.de
+Type:     dev/c
+
+SC - is a short Arexx utility that allows you to compile your
+C/C++ programms with SAS-C and GOLDED.
+German Guide are included.
+ 

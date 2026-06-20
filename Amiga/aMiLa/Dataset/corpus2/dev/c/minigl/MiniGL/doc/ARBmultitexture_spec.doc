@@ -1,0 +1,39 @@
+Next: 6.2.2 Multitexture Texture Environments Up: 6.2 Multitexture Previous: 6.2 Multitexture
+
+ 6.2.1 Multitexture API Overview
+
+ An OpenGL implementation that supports ARB_multitexture supports a new set of API routines for controlling the multitexture state of one or more texture units. The glActiveTextureARB() routine controls which texture unit the existing OpenGL texture commands affect. For example, to enable 2D texturing on texture unit 0 and 1D texturing on texture unit 1, make the following OpenGL calls:
+   glActiveTextureARB(GL_TEXTURE0_ARB);
+   glEnable(GL_TEXTURE_2D);
+   glActiveTextureARB(GL_TEXTURE1_ARB);
+   glEnable(GL_TEXTURE_1D);
+Note that the state of each texture unit is completely independent. When multitexture is supported, other texture command such as glTexGen(), glTexImage2D(), and glTexParameter() affect the current active texture unit as last set by glActiveTextureARB(). Other commands such as glDisable(), glGetIntegerv(), glMatrixMode(), glPushMatrix(), and glPopMatrix(), also abide by the current active texture unit when updating or querying texture state.
+
+ The number of texture units supported can be queried. Indeed, the ARB_multitexture specification unfortunately permits an implementation to claim to support the extension but only support a single texture unit. This means that, to be safe, even if you only need a two texture units, you should be careful to query the implementation-dependent constant GL_MAX_TEXTURE_UNITS_ARB using glGetIntegerv(). At the time of this writing, most existing ARB_multitexture implementations support only two texture units, but the extension has set aside enumerants for as many as 32 texture units.
+
+ Without multitexture, OpenGL supports just a single set of texture coordinates, But with multitexture, each vertex has a number of texture coordinate sets equal to the maximum number of texture units supported by the implementation. The glMultiTexCoordARB() routines make it easy to supply different texture coordinates for each texture unit. For example:
+   glMultiTexCoord2fARB(GL_TEXTURE0_ARB, s0, t0);
+   glMultiTexCoord4fARB(GL_TEXTURE1_ARB, s1, t1, r1, q1);
+   glMultiTexCoord1iARB(GL_TEXTURE2_ARB, s2);
+   glVertex3f(x, y, z);
+The behavior of the glTexCoord() family of routines is specified to update just texture unit zero.
+
+ The multitexture extension supports vertex arrays for multiple texture coordinate sets. Because vertex arrays are considered client state, the glClientActiveTextureARB() command controls which vertex array texture coordinate set that the glTexCoordPointer(), glEnableClientState(), glDisableClientState(), and glGetPointerv() commands affect or query. For example:
+   glClientActiveTextureARB(GL_TEXTURE0_ARB);
+   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+   glClientActiveTextureARB(GL_TEXTURE1_ARB);
+   glTexCoordPointer(2, GL_FLOAT, 0, tex_array_ptr);
+   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+
+ The current raster position has been extended to maintain a distinct texture coordinate set for each supported texture unit.
+
+ To simplify the multitexture extension, OpenGL's evaluator and feedback functionality are not extended to support multiple texture coordinate sets. Evaluators and feedback utilize only texture coordinate set 0.
+
+ The glPushAttrib(), glPopAttrib(), glPushClientAttrib(), and glPopClientAttrib() push and pop respectively all the respective server or client texture state of all texture units when texture-related state is pushed or popped.
+
+
+ Next: 6.2.2 Multitexture Texture Environments Up: 6.2 Multitexture Previous: 6.2 Multitexture
+ David Blythe
+1999-08-06
+

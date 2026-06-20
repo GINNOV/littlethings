@@ -1,0 +1,4 @@
+A priori, il n'y a pas d'intérêt à avoir une classe de base dont
+toutes les classes héritent et qui seraient utiliser pour le débogage si,
+chaque classe est dans un fichier séparé et que le déboguage y est
+bien défini(#if DEBOGUE ... #endif).

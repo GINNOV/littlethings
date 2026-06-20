@@ -1,0 +1,430 @@
+
+
+
+			NewAnimCode.s Documentation
+			===========================
+
+
+Contents:
+--------
+
+Introduction
+
+Requirements
+
+Basic Concepts
+
+Setting Up
+
+How It Works
+
+Using The Demo Code
+
+
+Introduction
+------------
+
+	NewAnimCode.s is an enhancement of the earlier AnimCode.s, which was
+a program that performed display animation of graphic images. This enhance-
+ment now includes double-buffered screen handling, which is handled via in-
+terrupts alongside the animation.
+
+
+Requirements
+------------
+
+	The program's requirements are an Amiga A500 with 512K RAM and one
+disc drive (i.e., the minimum specification Amiga). It has been written on a
+1MB expanded A500 with KickStart 1.3 in place, and works on this configura-
+tion (and the same machine with the half-Meg RAM expansion disabled). I will
+welcome reports from KickStart 2.0 equipped Amiga owners, and owners of the
+higher specification A1500/A2000/A3000 machines, with or without hard discs.
+
+
+Basic Concepts
+--------------
+
+	Firstly, a Bob structure is needed in order to give the various anim-
+ation routines information about the size of the object to be displayed, and
+where that object exists in memory. The Bob structure (my own custom one, NOT
+the graphics library one!) is defined as follows:
+
+
+		rsreset
+Bob_Next	rs.l	1	;ptr to next Bob
+Bob_Prev	rs.l	1	;ptr to previous Bob
+
+Bob_Data	rs.l	1	;ptr to actual graphic data
+Bob_Mask	rs.l	1	;ptr to mask to use
+
+Bob_Rows	rs.w	1	;no of raster lines
+Bob_Cols	rs.w	1	;no of WORDS across
+
+Bob_XChg	rs.w	1	;position changes for this
+Bob_YChg	rs.w	1	;animation frame
+
+Bob_Planes	rs.b	1	;no of bitplanes req'd
+Bob_Filler	rs.b	1
+
+Bob_sizeof	rs.w	0
+
+
+The comments attached to the above definitions suffice for most of the ent-
+ries defined, but some extra explanation is needed for one or two entries.
+
+
+	First, the Bob_Next and Bob_Prev entries are pointers to yet more in-
+stances of Bob structures. If there is to be only one Bob structure for this
+animation, then these pointers MUST point back to the structure itself, as in
+the example:
+
+
+ExampleBob	dc.l	ExampleBob
+		dc.l	ExampleBob
+
+		dc.l	ExampleData
+		dc.l	ExampleMask
+
+		dc.w	40,4	;(40 raster lines, 58 pixels across=4 words)
+
+		dc.w	0,0	;no position change
+
+		dc.b	4,0	;4 bitplane Bob
+
+
+Second, the Bob_XChg and Bob_YChg entries can be positive or negative, and I
+use these to allow the position of a nw animation frame to be offset relative
+to the start position. However, a word of warning! These values are added on
+to the coordinate position of the whole animation in a destructive fashion! I
+know this isn't the ideal, but I wanted it to work before tweaking it, and so
+if you have a sequence of Bob structures offset from each other, make absol-
+utely sure that the sequence returns the animation to its original position
+before beginning the next cycle! For the technically minded, the path that is
+described by the animation cycle must be CLOSED. Failure to observe this rule
+will result in your animation waltzing off the screen...
+
+
+	One other restriction concerns the size of the graphic images used in
+the animation sequence. All of the images MUST be coerced to a uniform size.
+For example, if we have three objects, whose sizes are 20x10, 30x15 and 40x24
+pixels, then ALL of the images MUST be coerced to 40x24 pixel size. Also, all
+of the graphic blocks must be word-aligned, so that for the 40x24 pixel size
+required, all of the blocks must be 3 words across (to accomodate 40 pixels)
+and must contain 3*24 = 72 words (=144 bytes) for each bitplane forming the
+object. A 4-bitplane object will therefore need 3*24*4 = 288 words (which is
+576 bytes). Of course, the smaller objects can be cut in such a way as to be
+offset within that rectangle according to your own whims, to create specific
+motion effects (including distance enlargement/shrinkage).
+
+
+	Ok, we have some Bob structures and some graphics connected to them
+as in the source code example I have provided. Now, we need an Anim structure
+to complete the data. The Anim structure is defined as:
+
+
+		rsreset
+Anim_Next	rs.l	1	;ptr to next Anim struct
+Anim_Prev	rs.l	1	;ptr to prev Anim struct
+
+Anim_Bgnd1	rs.l	1	;ptr to bgnd save area #1
+Anim_Bgnd2	rs.l	1	;ptr to bgnd save area #2
+
+Anim_BgSz	rs.l	1	;size of bgnd save area needed
+
+Anim_Bob	rs.l	1	;ptr to 1st Bob struct (see above)
+
+Anim_Offset	rs.l	1	;blitter precomp
+
+Anim_XShift	rs.w	1	;blitter precomp
+
+Anim_XPos	rs.w	1	;base x & y coordinates of the
+Anim_YPos	rs.w	1	;main Animation object
+
+Anim_XVel	rs.w	1	;base x & y velocities of the
+Anim_YVel	rs.w	1	;main Animation object
+
+Anim_FNum	rs.w	1	;Current animation frame no.
+Anim_FCnt	rs.w	1	;max no. of Animation frames
+
+Anim_ID		rs.w	1	;ID for alteration within interrupt
+
+Anim_MaxPlanes	rs.b	1	;max no of bitplanes used
+Anim_Flags	rs.b	1	;usage flags
+
+Anim_sizeof	rs.w	0
+
+
+Again, the list pointer entries at the head (Anim_Next and Anim_Prev) are to
+be set to point to other Anim structures. If only one structure exists, then
+these pointers MUST point to itself, as for the Bob structure above.
+
+
+	Next are two pointers to background save areas, one for each screen!
+Yes, this is a memory-hungry program...these two background save areas allow
+the background to be replaced once the object is to be removed from the dis-
+play. Prior to plotting the object, the background is grabbed and saved for
+later replacement, so that you can have objects moving against a background
+that is itself a complex graphic backdrop.
+
+
+	The two blitter precomputation entries listed in the above definition
+are used by the animation routines, and need not be initialised by the prog-
+rammer. However, they MUST be provided! All hell breaks loose otherwise...
+
+
+	The Anim_XPos/Anim_YPos entries determine the initial position of the
+animation. The Anim_XVel/Anim_YVel entries allow movement to be conducted un-
+der interrupt control (the interrupt system automatically adjusts the posi-
+tion of each animated object according to the contents of these entries). As
+might be expected, the position and velocity entries are in cartesian coor-
+dinates (bog-standard XY coordinates).
+
+
+	Anim_FNum and Anim_FCnt determine the current animation frame and the
+total number of frames respectively. If Anim_FCnt is set to 10 frames, then
+Anim_FNum will range from 0 to 9 in value.
+
+
+	Anim_ID allows the programmer to specify which animation is affected
+by changes to position and velocity parameters from within user code. If as
+in my example code, you want a collection of objects to be treated as a whole
+then give each Anim component the same ID number - this way a single change
+will affect ALL of the components in the same way. See the code for how it is
+done!
+
+
+	Finally, the flags. Anim_Flags can take the values:
+
+
+AF_DISABLED	equ	$80	;This anim disabled if set
+AF_REVERSED	equ	$40	;This anim direction reversed
+
+
+The AF_DISABLED flag doesn't remove the object altogether-it just stops it
+from being animated if it is a multi-frame object, and forces repeated dis-
+play of a single frame over and over again. This flag only makes sense in the
+case of multi-frame animations.
+
+
+	The AF_REVERSED flag changes the animation direction. Normal anima-
+tion proceeds in the order:
+
+
+		Frame 0, 1, 2, 3, ..., N-1
+
+
+where N is the number of animation frames. Setting AF_REVERSED has the effect
+that you might expect, namely changing the order to:
+
+
+		Frame N-1, N-2, N-3, ... , 2, 1, 0
+
+
+therefore making the animation run backwards.
+
+
+Setting Up
+----------
+
+	Once the data has been set up, and the various flags conditioned ac-
+cording to the programmer's wishes, the next task is to tell the interrupt to
+handle them. The following values are understood by the animation system, and
+should be placed in the variable AnimLock(a6) to acheive the desired effect:
+
+
+LOCK_DISABLE	equ	0	;signal current cycle done
+LOCK_SAVE	equ	1	;instruction to save backgrounds
+LOCK_PLOT	equ	2	;instruction to plot graphics
+LOCK_REPLACE	equ	3	;instruction to replace saved backgrounds
+LOCK_HOLD	equ	4	;wait for next VBL before resuming
+
+LOCK_KILL	equ	-1	;prevents animation until user changes it
+
+
+Much else needs to be done, and the best way to achieve this is to rip out of
+my code the various routines to do this and embed them within your own code.
+The routines that are VITAL are MakeCopper() to create the copper lists (two
+of them, one for each screen!), ScanAnims() to determine how much memory to
+reserve for background saving, and InitAnims() to set the animation struct-
+ures up. Variables in the code that MUST be set up as they are used by the
+interrupt system are CopActive, CopWaiting (for the two copper lists), the
+AnimLock variable, ScrSwitch (set this to -1.B to start with to disable the
+switching of screens until the animation system is on line) and the set of
+variables called AnimComm (animation command block).
+
+
+	To start things off, enable the IPL3 (Level 3) 68000 interrupt using
+the 4703 custom chip (this is direct hardware twiddling time) with the vari-
+able AnimLock(a6) set to LOCK_KILL. The WhichPlane variable should be cleared
+also. Once it's all set up, set the AnimLock to LOCK_SAVE to force the init-
+ial saving of backgrounds, and off it goes.
+
+
+How It Works
+------------
+
+	Basically, the level 3 interrupt detects the interrupt signal from
+the blitter, which occurs once a given blitter operation has finished. Upon
+receiving this interrupt, the routine then checks the value of AnimLock. The
+cases are:
+
+
+	1) Animlock = LOCK_SAVE. This instructs the interrupt code to
+	   begin saving backgrounds.
+
+	2) AnimLock = LOCK_PLOT. This instructs the interrupt code to
+	   being plotting the graphics.
+
+	3) AnimLock = LOCK_REPLACE. This instructs the interrupt code
+	   to begin replacing backgrounds.
+
+	4) AnimLock = LOCK_DISABLE. This tells the interrupt system
+	   that the current replace/save/plot cycle is finished, and
+	   that it is safe to switch screens.
+
+	5) AnimLock = LOCK_HOLD. This instructs the interrupt system
+	   to wait for the next vertical blank interrupt before con-
+	   tinuing. The vertical blank interrupt will switch screens,
+	   switch bitplane pointers around, trigger an artificial
+	   blitter interrupt to restart the system and set AnimLock
+	   to LOCK_REPLACE.
+
+
+To take account of screen switching, I shall refer to the ACTIVE screen (the
+screen being displayed by the Copper) and the INACTIVE screen (whose Copper
+list is not being executed). The sequence of events upon each interrupt is:
+
+
+	1) Replace old backgrounds on the INACTIVE screen by
+	   calling BlitIntRep(). If this has been done for all
+	   anim structures, change AnimLock to LOCK_SAVE and
+	   move on to 2).
+
+	2) Save new background areas on the INACTIVE screen by
+	   callint BlitIntSave(). If this has been done for all
+	   anim structures, change AnimLock to LOCK_PLOT and
+	   move on to 3).
+
+	3) Plot graphics on the INACTIVE screen by calling
+	   BlitIntPlot(). If this has been done for all Anim
+	   structures, change AnimLock to LOCK_DISABLE and
+	   move on to 4).
+
+	4) Perform various blitter precomputations (offsets from
+	   top left corner of screen etc) and store the results
+	   using BlitPreComp(). Do this for ALL anims in the one
+	   interrupt cycle, then change AnimLock to LOCK_HOLD, en-
+	   able screen switching and move on to 5).
+
+	5) Switch screens upon receiving a VBL interrupt, so that
+	   the screen that has been written to is now the ACTIVE
+	   screen (hence the graphics will now be displayed). Now
+	   change AnimLock to LOCK_REPLACE, disable screen switch-
+	   ing, reset the AnimThis/AnimThat/WhichPlane variables
+	   (see below) and send an artificial blitter interrupt
+	   to restart the system.
+
+
+The interrupt system uses several variables to achieve these results. Prin-
+cipal variables used are AnimLock (which has alredy been covered), AnimList,
+AnimThis, AnimThat and WhichPlane. In detail, the routines for saving back-
+grounds and plotting graphics conduct the following operations:
+
+
+	1) Get pointer to the current animation structure from
+	   the AnimThis variable.
+
+	2) Get the value of the WhichPlane variable to determine
+	   which bitplane to use.
+
+	3) Use this information to perform the operation.
+
+	4) Add 1 to WhichPlane. If it does not exceed the total
+	   bitplane count for the given animation, exit at
+	   this point.
+
+	5) Else, reset WhichPlane to zero, and get pointer to
+	   next animation to load into AnimThis.
+
+	6) If AnimThis has not lopoed back to the start of the
+	   list, exit at this point.
+
+	7) Else, change AnimLock for the next operation type.
+
+
+In the case of replacing backgrounds, this has to be done in reverse order,
+in order to have the desired effect (otherwise stray pieces of graphic data
+will appear where previous animation objects overlapped). To achieve this, a
+separate variable, AnimThat, is used to obtain the previous animation in the
+list (list traversal is done backwards using the Anim_Prev entry instead of
+the Anim_Next entry).
+
+
+	Note that the BlitPreComp() routine that performs pre-computation of
+blitter values for speed of access within the interrupt code ALSO handles all
+of the movement by updating coordinate values. Also, it handles the AnimComm
+system for controlling Anims within user code. This works as follows:
+
+
+	1) Assign an ID number in the Anim_ID field of the Anim
+	   data structure.
+
+	2) Load that number into the AnimComm variable.
+
+	3) Load X and Y velocity values into the AnimXV and
+	   AnimYV variables.
+
+
+Once the animation system finds these values, it will locate those Anim data
+structures with the matching ID, and change the velocity values of that Anim.
+Thus it is possible to start Anims moving apparently 'by themselves' (but it
+is STRONGLY advised to build in checks to ensure that the objects stay within
+the limits of the screen, or else all kinds of havoc could ensue!). In fact,
+this is what is done in the demonstration code.
+
+
+Using The Demo Code
+-------------------
+
+	Assemble the NewAnimCode.s source (don't forget the includes!) to a
+file called:
+
+
+			RAM:Q
+
+
+Then, run it. To make the space cargo ship move around the screen, press the
+cursor keys. To make it stop, press the "1" key (above and to the left of the
+"Q" key on the QWERTY section of the keyboard). To exit the program and re-
+turn to the CLI, press the ESC key, then the left mouse button in that order.
+
+
+	Watch it carefully - you'll be able to move the ship behind the other
+two objects. To make it appear in front of one of the other objects (try the
+flying saucer, for example), then make that object's Anim structure the first
+in the list. From this point on, the cargo spaceship will move BEHIND it in-
+stead of in front of it. Basically, the earlier in the list the object's Anim
+structure appears, the earlier it is plotted (and hence later objects will be
+plotted on top of it). So you can depth-arrange your objects to suit!
+
+
+	Hope you all enjoy it. As always,
+
+
+
+		Live fast, code hard & die in a beautiful way,
+
+
+
+
+			Dave Edwards.
+
+
+
+
+
+
+
+
+
+

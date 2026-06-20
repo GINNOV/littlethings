@@ -1,0 +1,40 @@
+========================== SetCCOPTS v1.00 ===========================
+======================================================================
+There is not much to say about this small utilitie.  I think everybody
+who's dealing with Aztec C 5.0 knows why this had to be done.
+
+=========================== Installation =============================
+======================================================================
+SetCCOPTS requires the req.library. Put the library into LIBS:.
+
+============================== Usage =================================
+======================================================================
+SetCCOPTS is only controlled via gadgets:
+
+   You can select an option by clicking on it's corresponding gadget.
+   Then the gadget will become highlighted.
+
+   Previous Page | Next Page     choose between the two (PAL) or three 
+                                 (NTSC) pages of options.
+
+   ABOUT ......	  Gives information about author
+   QUIT .......	  Exit SetCCOPTS
+   LOAD .......	  Load previously saved setting of CCOPTS
+   SAVE(AS)....	  Save setting of CCOPTS to file
+   SET ........	  Sets the CCOPTS environment variable
+   GET ........	  Gets the CCOPTS environment variable from memory
+   DEFAULTS ...	  Sets CCOPTS to default compiler setting
+   REMOVE .....	  Removes the CCOPTS environment variable from memory
+
+============================== Author ================================
+======================================================================
+This program was written by Stephan Flöther. It has been placed in the
+public domain. You may freely distribute this software.
+
+Send comments, bug reports and any suggestions for further releases to
+
+                           Stephan Flöther
+                           Grafenstraße 38
+                           D-4300 Essen 16
+
+                               Germany

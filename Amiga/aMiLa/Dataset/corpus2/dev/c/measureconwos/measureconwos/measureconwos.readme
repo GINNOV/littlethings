@@ -1,0 +1,45 @@
+Short:    Example for measuring WOS context-switch
+Uploader: racs@fs2.bdtf.hu (Almos Rajnai)
+Author:   racs@fs2.bdtf.hu (Almos Rajnai)
+Type:     dev/c 
+Requires: VBCC, WarpOS, PowerPC card 
+
+---------------------------------------------------------------------
+
+ This is an example for measuring the ellapsed time at the context-switch of
+WarpOS. Both sources and executable included in this archive.
+ Please do not take too serious this code, may contains lot of bugs, I can
+create mistakes even in a simple printf...
+
+ Using:
+ ------
+ Simply start measurecontextwos executable, then enter the number of the
+context-switch cycles. The measuring may take a long time (several minutes),
+but I see no reason of trying more than 10000 cycles. (It took about 7.5 sec
+on my BPPC603e-175/040-25.) After starting the process can not be stopped
+until it finished. (Because of more precise calculations.)
+
+ Rebuild:
+ --------
+ You will need VBCC package for PowerPC, if you want to rebuild the project.
+Makefile is included for AmigaE's build, it should work with other make-tools
+too.
+
+ Disclaimer:
+ -----------
+ This example is provided "as-is", no warranties are made.
+All use is at your own risk. No liability or responsibility is assumed.
+
+ The source and executable code of these examples may only be distributed in
+free electronic form, via bulletin board or as part of a fully non-commercial
+and freely redistributable diskette. Both the source and executable code
+(including comments) must be included, without modification, in any copy.
+
+ Author:
+ -------
+Álmos Rajnai
+(Rachy of BiøHazard)
+racs@fs2.bdtf.hu
+
+Comments are welcome!
+

@@ -1,0 +1,32 @@
+Short: GadTools support object file.  Source included.
+Author:    Jim Steichen (jimbot@frontiernet.net)
+Uploader:  Jim Steichen (jimbot@frontiernet.net)
+Type:      dev/src
+Architecture: ppc-amigaos m68k-amigaos
+Version:   4.0
+Requires:  C-Compiler of some sort (SAS-C (or gcc) recommended).
+
+    Functions that get used a lot for GUI programming, especially for
+    GadToolsBox-generated GUIs.  This file is used to generate 
+    CommonFuncs.o - a Link-able Object for the SAS-C (V6.58) compiler,
+    or CommonFuncsPPC.o - a Link-able Object for the gcc V4.0.4+ compiler.
+
+    This a link-able object because there are far too many shared 
+    libraries for the Amiga OS as it is, I couldn't see cluttering 
+    someone's hard drive with another one (especially my own!).
+
+ HISTORY
+    25-Mar-2005 - Rewrote all functions to utilize Locale'ized
+	               Strings in CommonFuncs.cd
+						
+    31-Jan-2005 - Added GetUserString() Requester code (V3.4).
+
+    24-Jan-2005 - Replaced all string.h functions with their
+                  equivalent functions in libstringfuncs.a (V3.3).
+
+ AUTHOR
+    James T. Steichen
+    2217 N. Tamarack Dr.
+    Slayton, Mn. 56172-1155, USA
+    jimbot at frontiernet.net
+

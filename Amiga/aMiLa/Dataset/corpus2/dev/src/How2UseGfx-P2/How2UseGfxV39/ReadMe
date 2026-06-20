@@ -1,0 +1,88 @@
+-------------------------------------------------------------------
+
+                            How2UseGfxv39
+
+    How do I use the OS 3.0 graphics.library in an efficient way
+
+-------------------------------------------------------------------
+
+New Release 3
+Date: 25.11.1996
+
+This archive includes some code that shows how you can
+use systemfriendly BitBlits. It shows how palette sharing is
+handled and how friendbitmaps can be used. 
+
+The main goal is to show that it is possible to support both
+native ECS/AGA and gfxboards with image blitting stuff and
+how you can check out what is the best way to blit images.
+The demo opens a window on the public screen (Workbench)
+allocates pens for a red, a green and a blue shaded ball.
+Also a background pen is allocated and the color is cycled throu
+a color table. The balls are moved around the window.
+It runs on any displaymode, independend if gfx board or not or
+what color depth you use. Colorcycling on 16/24 bit modes is simulated
+(though this is not really useable).
+
+Within a talk to another programmer I found that there is some
+need of information on this topic. So I thought I should release
+such an archive. Feel free to do what ever you want with this archive
+(except selling it and making money:) - Basically write better programs:)
+As this example could also to be used to write board friendly games,
+it is dedicated to these people out there who are still thinking
+palette sharing etc. is useless...why can't I have white backgrounds
+on some text manipulation programs ?
+
+Also, this demo shows another thing. Try to run the demo on both, EGS
+and CyberGraphics. As EGS has an own memory managment, it allocates
+the friend bitmap in that memory the window bitmap (or screen bitmap)
+lays at. This means, it does allocate bitmap memory on the boards memory
+if available. You can imagine that bit blits in onboard RAM is a _bit_ 
+faster then blitting it over the bus all the time. The OS 3 was designed
+to support such basic concepts. Unfortuenatly none does really use this 
+yet...except EGS. If you run the demo you will see that the balls do
+still flicker. Imagine to render the balls into an (invisible) friend
+bitmap including erasing the old image and blit the whole buffer to the 
+display bitmap. Imagine, the whole memory is located in board memory.
+Guess what happens ? Only the onboard blitter is used to make these transfers.
+-> Fast flicker free blitting faster than AGA will ever be...
+
+Currently, this demo does also show that miniterms aren't implemented
+in a correct way on 16/24 bit (cg) modes. Mask blitting doesn't seem to work 
+here...
+
+New:
+
+In my latest archive friend bitmaps did not really work. This has something
+to do with the method friends was handled. Now, friend bitmap are supported in a 
+CyberGraphics compatible way. This means that you must also define a
+BMF_MINPLANES flag if you allocate friend bitmaps - it doesn't matter to 
+check for cybergraphics, as this still works on native Amiga modes.
+
+To the EGS users 
+----------------
+Currently EGS does not support this way to allocate friend bitmaps. 
+Please check out my latest EGSPlus Release 5 or later.
+Since Release 5, the AllocBitMap/FreeBitMap() Functions have been rewritten
+so they support cybergraphics compatible Bitmap allocation.
+EGSPlus, Release 5 can be found on aminet/gfx/board/EGSPlus.lha
+
+
+If you have any questions, feel free to contact me.
+(Flames will be ignored :)
+
+PS.: The 2410 does not support onboard friends at the moment...we'll see
+     what's possible here...but it would be interessting if this 34010 is
+     real that lame and can't move images faster then this 2 MB/sec I 
+     reach over Z2 :)
+     But first I have to rewrite EGS to support 24 bit intuition...
+
+---
+Jürgen Schober
+EDV Dienstleistungen
+Graz · Austria
+call:   (+)43-316-674383
+e-mail: point@sbox.tu-graz.ac.at (private)
+        jschober@campusart.com   (business)
+WWW:    http://www.sbox.tu-graz.ac.at/home/point/Welcome.html
+        http://www.pointdesign.campusart.com/

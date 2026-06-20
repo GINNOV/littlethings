@@ -1,0 +1,18 @@
+Short:    crc32fj - Cycle Redundancy Check 32-bit
+Author:   Finn Jacobs <finnjacobs@gmx.net>
+Uploader: Finn Jacobs <finnjacobs@gmx.net>
+Type:     dev/c
+
+CRC32 - Cycle Redundancy Check 32-bit:
+
+mostly the best way of getting a "fingerprint" of something
+to check for valid data. But this program (routines) are not
+a guideline to this. If you want more information about crc's
+then check "file verification using crc" by Mark R. Nelson in
+Dr.Dobb's Journal, May 1992, pp64-67, or "understanding CRCs"
+by Tim Kientzle in Dr. Dobb's Journal, April 1997, pp103-107.
+Both articles are best for understanding crc's :)
+
+I programmed this routines to have good and fast routines in
+back for my projects. So you will find a generator for crc32
+to a memoryblock and to a filestream.

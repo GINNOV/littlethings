@@ -1,0 +1,365 @@
+	bra	beginn
+	lea	bef,a0
+	bra	MeiCuo
+bef	dc.b	"fourier:Test",0
+
+beginn	cmpi.l	#1,d0
+	bne	MeiCuo
+	rts
+MeiCuo	lea	ZhenMing,a1
+	lea	SinFourMing,a2
+	lea	CosFourMing,a3
+ZhouMingKaiShi	move.b	(a0)+,d1
+	cmpi.b	#" ",d1
+	beq	ZhouMingWanLe
+	cmpi.b	#0,d1
+	beq	ZhouMingWanLe
+	move.b	d1,(a1)+
+	move.b	d1,(a2)+
+	move.b	d1,(a3)+
+	bra	ZhouMingKaiShi
+ZhouMingWanLe	move.b	#0,(a1)+
+	move.b	#".",(a2)+
+	move.b	#"s",(a2)+
+	move.b	#"i",(a2)+
+	move.b	#"n",(a2)+
+	move.b	#0,(a2)+
+	move.b	#".",(a3)+
+	move.b	#"c",(a3)+
+	move.b	#"o",(a3)+
+	move.b	#"s",(a3)+
+	move.b	#0,(a3)+
+	move.b	#0,LeiXing
+	cmpi.b	#"b",1(a0)
+	bne	LeiXingLing
+	move.b	#1,LeiXing
+LeiXingLing
+	include	"/includes/exec/exec_lib.i"
+	include	"/includes/libraries/dos_lib.i"
+	move.l	4.w,a6
+	lea	dosname,a1
+	moveq	#0,d0
+	jsr	OpenLibrary(a6)
+	move.l	d0,_DosBase
+	move.l	a7,FatalStack
+	bsr	NaYuan
+	lea	SinMuLuDiZhi,a0
+	bsr	NaWuZi
+	bsr	ZhunBeiMuLu
+	bsr	FourierGaiZao
+	bsr	GeiJie
+	lea	SinMuLuDiZhi,a0
+	bsr	GeiWuZi
+	lea	ZhenDiZhi,a0
+	bsr	GeiWuZi
+	lea	SinFourDiZhi,a0
+	bsr	GeiWuZi
+	lea	CosFourDiZhi,a0
+	bsr	GeiWuZi
+MeiZhaoDao	move.l	4.w,a6
+	move.l	_DosBase,a1
+	jsr	CloseLibrary(a6)
+	rts
+FatalStack	dc.l	0
+
+FourierGaiZao	tst.b	LeiXing
+	beq	GaiZaoJin
+	bsr	FourierTrafoB
+	bra	GaiZaoChu
+GaiZaoJin	bsr	FourierTrafoF
+GaiZaoChu	rts
+FourierTrafoB	move.l	ZhenShu,d7
+	lsr.l	#1,d7	d7=n
+	move.l	SinMuLuShu,d6
+	move.l	d6,a0	a0=|Table|
+	divu	d7,d6	zwpin=2*pi/n (w)
+	and.l	#$FFFE,d6	Even
+	move.l	d6,zwpin
+	move.l	SinMuLu,a2	a2=Table
+	move.l	Zhen,a3	a3=Sample
+	move.l	SinFour,a4	a4=SinFrequences
+	move.l	CosFour,a5	a5=CosFrequences
+	move.l	#0,Frequenz
+	move.l	#0,a1	a1=2*pi*j/n (w)
+	move.l	d7,d0
+	lsl.l	#1,d0
+	move.l	d0,zwein
+FreqLoopB	moveq	#0,d2	d2=Sin-Anteil
+	moveq	#0,d3	d3=Cos-Anteil
+	moveq	#0,d4	d4=Sample(l)  (w)
+	move.l	a0,d5
+	lsr.l	#1,d5	d5=2*pi*j*l/n (w) (sin)
+	move.l	d5,d6
+	lsr.l	#1,d6	d6=2*pi*j*l/n (w) (cos)
+	moveq.l	#0,d1	d1=uebertraege
+SampleLoopB	moveq	#0,d0
+	swap	d1
+	move.w	(a2,d5.l),d0
+	muls	(a4,d4.l),d0
+	btst	#31,d0
+	beq	NoSinNegB
+	sub.w	#1,d1
+NoSinNegB	add.l	d0,d2
+	bcc	NoSinOverB
+	add.w	#1,d1
+NoSinOverB	moveq	#0,d0
+	swap	d1
+	move.w	(a2,d6.l),d0
+	muls	(a5,d4.l),d0
+	btst	#31,d0
+	beq	NoCosNegB
+	sub.w	#1,d1
+NoCosNegB	add.l	d0,d3
+	bcc	NoCosOverB
+	add.w	#1,d1
+NoCosOverB	sub.l	a1,d5
+	bge	NoSinUnderB
+	add.l	a0,d5
+NoSinUnderB	sub.l	a1,d6
+	bge	NoCosUnderB
+	add.l	a0,d6
+NoCosUnderB	add.l	#2,d4
+	cmp.l	zwein,d4
+	blt	SampleLoopB
+	add.l	d3,d2
+	lsl.l	#1,d2
+	swap	d2
+	move.w	d2,(a3)+
+	add.l	zwpin,a1
+	add.l	#1,Frequenz
+	cmp.l	Frequenz,d7
+	bhi	FreqLoopB
+	rts
+	rts
+FourierTrafoF	move.l	ZhenShu,d7
+	lsr.l	#1,d7	d7=n
+	move.l	SinMuLuShu,d6
+	move.l	d6,a0	a0=|Table|
+	divu	d7,d6	zwpin=2*pi/n (w)
+	and.l	#$FFFE,d6	Even
+	move.l	d6,zwpin
+	move.l	SinMuLu,a2	a2=Table
+	move.l	Zhen,a3	a3=Sample
+	move.l	SinFour,a4	a4=SinFrequences
+	move.l	CosFour,a5	a5=CosFrequences
+	move.l	#0,Frequenz
+	move.l	#0,a1	a1=2*pi*j/n (w)
+	move.l	d7,d0
+	lsl.l	#1,d0
+	move.l	d0,zwein
+FreqLoopF	moveq	#0,d2	d2=Sin-Anteil
+	moveq	#0,d3	d3=Cos-Anteil
+	moveq	#0,d4	d4=Sample(l)  (w)
+	move.l	a0,d5
+	lsr.l	#1,d5	d5=2*pi*j*l/n (w) (sin)
+	move.l	d5,d6
+	lsr.l	#1,d6	d6=2*pi*j*l/n (w) (cos)
+	moveq.l	#0,d1	d1=uebertraege
+SampleLoopF	moveq	#0,d0
+	swap	d1
+	move.w	(a2,d5.l),d0
+	muls	(a3,d4.l),d0
+	btst	#31,d0
+	beq	NoSinNegF
+	sub.w	#1,d1
+NoSinNegF	add.l	d0,d2
+	bcc	NoSinOverF
+	add.w	#1,d1
+NoSinOverF	moveq	#0,d0
+	swap	d1
+	move.w	(a2,d6.l),d0
+	muls	(a3,d4.l),d0
+	btst	#31,d0
+	beq	NoCosNegF
+	sub.w	#1,d1
+NoCosNegF	add.l	d0,d3
+	bcc	NoCosOverF
+	add.w	#1,d1
+NoCosOverF	sub.l	a1,d5
+	bge	NoSinUnderF
+	add.l	a0,d5
+NoSinUnderF	sub.l	a1,d6
+	bge	NoCosUnderF
+	add.l	a0,d6
+NoCosUnderF	add.l	#2,d4
+	cmp.l	zwein,d4
+	blt	SampleLoopF
+	move.w	d1,d3
+	swap	d1
+	move.w	d1,d2
+	swap	d2
+	swap	d3
+	lsl.l	#2,d2
+	lsl.l	#2,d3
+	divs	d7,d2
+	divs	d7,d3
+	move.w	d2,(a4)+
+	move.w	d3,(a5)+
+	add.l	zwpin,a1
+	add.l	#1,Frequenz
+	cmp.l	Frequenz,d7
+	bhi	FreqLoopF
+	rts
+Frequenz	dc.l	0
+zwpin	dc.l	0
+zwein	dc.l	0
+
+NaYuan	tst.b	LeiXing
+	bne	NaSinCosFour
+	lea	ZhenDiZhi,a0
+	bsr	NaWuZi
+	move.l	ZhenShu,d0
+	move.l	d0,SinFourShu
+	moveq.l	#1,d1
+	move.l	4.w,a6
+	jsr	AllocMem(a6)
+	move.l	d0,SinFour
+	move.l	ZhenShu,d0
+	move.l	d0,CosFourShu
+	moveq.l	#1,d1
+	jsr	AllocMem(a6)
+	move.l	d0,CosFour
+	bra	GeiSinCosFour
+NaSinCosFour	lea	SinFourDiZhi,a0
+	bsr	NaWuZi
+	lea	CosFourDiZhi,a0
+	bsr	NaWuZi
+	move.l	SinFourShu,d0
+	move.l	d0,ZhenShu
+	moveq.l	#1,d1
+	move.l	4.w,a6
+	jsr	AllocMem(a6)
+	move.l	d0,Zhen
+GeiSinCosFour	rts
+GeiJie	tst.b	LeiXing
+	beq	GeiSinCos
+	lea	ZhenDiZhi,a0
+	bsr	AnDing
+	bra	SinCosFourWan
+GeiSinCos	lea	SinFourDiZhi,a0
+	bsr	AnDing
+	lea	CosFourDiZhi,a0
+	bsr	AnDing
+SinCosFourWan	rts
+AnDing	movem.l	a5,-(a7)
+	move.l	a0,a5
+	move.l	8(a5),d1
+	move.l	#1006,d2
+	move.l	_DosBase,a6
+	jsr	Open(a6)
+	move.l	d0,d7
+	move.l	d7,d1
+	move.l	(a5),d2
+	move.l	4(a5),d3
+	jsr	Write(a6)
+	move.l	d7,d1
+	jsr	Close(a6)
+	movem.l	(a7)+,a5
+	rts
+NaWuZi	movem.l	a5,-(a7)
+	move.l	a0,a5
+	move.l	8(a5),d1
+	move.l	#-2,d2
+	move.l	_DosBase,a6
+	jsr	Lock(a6)
+	tst.l	d0
+	bne	ZhaoDaoWuZi
+	move.l	FatalStack,a7
+	bra	MeiZhaoDao
+ZhaoDaoWuZi	move.l	d0,d7
+	move.l	#260,d0
+	move.l	#1,d1
+	move.l	4.w,a6
+	jsr	AllocMem(a6)
+	move.l	d0,(a5)
+	move.l	d7,d1
+	move.l	d0,d2
+	move.l	d2,d6
+	move.l	_DosBase,a6
+	jsr	Examine(a6)
+	move.l	d7,d1
+	jsr	UnLock(a6)
+	move.l	d6,a6
+	move.l	124(a6),4(a5)
+	move.l	(a5),a1
+	move.l	#260,d0
+	move.l	4.w,a6
+	jsr	FreeMem(a6)
+	move.l	4(a5),d0
+	move.l	#1,d1
+	jsr	AllocMem(a6)
+	move.l	d0,(a5)
+	move.l	8(a5),d1
+	move.l	#1005,d2
+	move.l	_DosBase,a6
+	jsr	Open(a6)
+	move.l	d0,d7
+	move.l	d7,d1
+	move.l	(a5),d2
+	move.l	4(a5),d3
+	jsr	Read(a6)
+	move.l	d7,d1
+	jsr	Close(a6)
+	movem.l	(a7)+,a5
+	rts
+ZhunBeiMuLu	lea	SinMuLuDiZhi,a5
+	move.l	4(a5),d7
+	move.l	d7,d6
+	lsl.l	#2,d6
+	move.l	d6,d0
+	moveq.l	#1,d1
+	move.l	4.w,a6
+	jsr	AllocMem(a6)
+	move.l	d0,d4
+	move.l	d4,a0
+	move.l	d4,a1
+	add.l	d7,a1
+	add.l	d7,a1
+	move.l	a1,a2
+	move.l	d4,a3
+	add.l	d6,a3
+	move.l	d7,d1
+	lsr.l	#1,d1
+	move.l	(a5),a4
+ZhunMuLuZhou	move.w	(a4)+,d0
+	move.w	d0,(a0)+
+	move.w	d0,-(a1)
+	neg.w	d0
+	move.w	d0,(a2)+
+	move.w	d0,-(a3)
+	sub.l	#1,d1
+	bne	ZhunMuLuZhou
+	move.l	a5,a0
+	bsr	GeiWuZi
+	move.l	d4,(a5)
+	move.l	d6,4(a5)
+	rts
+GeiWuZi	move.l	(a0),a1
+	move.l	4(a0),d0
+	move.l	4.w,a6
+	jsr	FreeMem(a6)
+	rts
+SinMuLuDiZhi
+SinMuLu	dc.l	0
+SinMuLuShu	dc.l	0
+	dc.l	SinMuLuMing
+SinFourDiZhi
+SinFour	dc.l	0
+SinFourShu	dc.l	0
+	dc.l	SinFourMing
+CosFourDiZhi
+CosFour	dc.l	0
+CosFourShu	dc.l	0
+	dc.l	CosFourMing
+ZhenDiZhi
+Zhen	dc.l	0
+ZhenShu	dc.l	0
+	dc.l	ZhenMing
+_DosBase	dc.l	0
+dosname	DOSNAME
+LeiXing	dc.b	0
+SinMuLuMing	dc.b	"Fourier:SinusTable",0
+ZhenMing	ds.b	100
+SinFourMing	ds.b	100
+CosFourMing	ds.b	100
+

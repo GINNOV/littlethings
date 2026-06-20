@@ -1,0 +1,92 @@
+
+                         P L A T F O R M S
+			 -----------------
+
+Here's a (presumably, incomplete) list of platforms on
+which the software was successfully built.
+
+Please send email to objc-users@lists.sourceforge.net to report problems
+or to report successful installation on a specific machine/os.
+
+dec-alpha-OpenVMS (CC)
+
+i586-ibmvac-os2 (icc)
+
+i586-watcom-win32 (wcc)
+i586-msvc-win32 (msvc)
+i586-lcc-win32 (lcc)
+i586-djgpp-windows95 (gcc)
+i586-cygwin32-windows95 (gcc)
+
+m68k-unknown-amigaos (gcc)
+
+powerpc-mpw-system7 (MWCPPC)
+
+Analog Devices ADSP 21065L (Visual DSP)
+
+powerpc-be-beos (mwcc)
+intel-be-beosR4 (gcc)
+
+sparc-sun-sunos4.1.2 (gcc)
+sparc-sun-solaris2.5 (gcc,lcc)
+sparc-sun-solaris2.6 (gcc)
+sparc-sun-solaris2.7 (gcc)
+i386-pc-solaris2.8 (workshop 6 cc 5.2)
+sparc-sun-solaris2.8 (workshop 6 update 2 cc 5.3)
+sparc-sun-solaris2.9 (gcc 3.3.2)
+mips-sgi-irix5.2 (SGI cc)
+mips-sgi-irix5.3 (SGI cc,gcc)
+mips-sgi-irix6.2 (SGI cc)
+mips-sgi-irix6.3 (SGI cc)
+mips-sgi-irix6.4 (SGI cc)
+mips-sgi-irix6.5 (SGI cc)
+alpha-dec-osf4.0 (DEC cc,gcc)
+alphaev68-dec-osf5.1 (Tru64 v5.1B Compaq cc v6.5-207)
+alphaev5-unknown-linux-gnulibc1 (gcc)
+ppc-unknown-linux (gcc)
+powerpc-apple-rhapsody5.1 (gcc)
+powerpc-apple-macosx (gcc)
+powerpc-machten-4.1 (gcc)
+j90-cray-unicos9.2.0.04 (CRAY cc)
+rs6000-ibm-aix3.2 (AIX cc,gcc)
+powerpc-ibm-aix4.3.3.0 (gcc --with-postlink)
+powerpc-ibm-aix5.1.0.0 (gcc 2.9, VisualAge C++ for AIX v6 no)
+hppa1.1-hp-hpux10.10 (HP cc)
+hppa1.1-hp-hpux10.20 (HP cc)
+hppa2.0w-hp-hpux11.00 (HP cc)
+ia64-hp-hpux11.23 (HP aC++/ANSI C B3910B A.06.01 jan 05 2005)
+i686-pc-linux-gnulibc1 (gcc,pgcc,egcs)
+i686-pc-linux-gnu (gcc 3.0)
+i386-unknown-openbsd2.4 (gcc)
+i386-unknown-freebsd2.1.7 (gcc,lcc,tcc)
+i386-unknown-freebsd2.2.6 (gcc)
+i386-unknown-freebsd2.2.8 (gcc)
+i386-unknown-freebsd3.0 (gcc)
+i386-unknown-freebsd3.4 (gcc)
+i386-unknown-freebsd4.0 (gcc)
+i386-unknown-freebsdelf4.1 (gcc)
+i386-unknown-netbsd1.2 (gcc)
+i386-unknown-netbsd1.3 (gcc)
+m68k-cbm-netbsd1.1 (gcc)
+i386-pc-sysvr4 (Unisys SVR4 Unix,cc)
+i386-pc-sysv4.2uw2.1.2 (UnixWare 2 cc,gcc)
+i586-sco-unixware7 (UnixWare 7.0 cc,gcc)
+i586-sco-unixware7 (UnixWare 7.1 cc)
+i586-pc-sco3.2.v5.0.0 (OpenServer 5 with SCO cc)
+ia64-unknown-linux-gnu (Intel IA-64, gcc 2.9-ia64-000216-final)
+i686-pc-linux-gnu (icc Intel C++ Compiler v6.0 for Linux)
+linux-sopc-nios2 (linux sopc)
+i386-pc-solaris2.11 (cc: Sun Ceres C 5.10 SunOS_i386 2008/04/04)
+i386-pc-solaris2.11 (cc: Sun C 5.10 SunOS_i386 2009/06/03)
+i686-pc-linux-gnu (Ubuntu 11.04 gcc 4.5.2)
+i386-pc-solaris2.11 (Oracle Solaris 11.1 cc: Sun C 5.12 SunOS_i386 2011/11/1)
+i686-pc-linux-gnu (Slackware 14.1 gcc 4.8.2 flex 2.5.37)
+i386-unknown-freebsd9.2 (gcc 4.2.1 and clang 3.3 C compiler)
+i686-pc-linux-gnu (CentOS 6.5 gcc 4.4.7 flex 2.5.35)
+i386-unknown-freebsd10.0 (FreeBSD 10.0 with clang 3.3 cc flex 2.5.37)
+i686-pc-linux-gnu (Ubuntu 12.04, with gcc 4.6.3/flex 2.5.35 - NOT clang 3.0)
+i686-pc-linux-gnu (openSUSE 13.2 with gcc 4.8.3/flex 2.5.37/byacc 1.9 20140715)
+i386-pc-solaris2.11 (Solaris 11.3; cc: Sun C 5.13 SunOS_i386 2014/10/20)
+x86_64-unknown-linux-gnu (Red Hat 7.1 Maipo, gcc 4.8.3-9)
+
+

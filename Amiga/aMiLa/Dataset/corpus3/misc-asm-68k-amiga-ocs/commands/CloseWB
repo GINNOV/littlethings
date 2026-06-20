@@ -1,0 +1,16 @@
+	include	"/includes/exec/exec_lib.i"
+	include	"/includes/intuition/intuition_lib.i"
+	move.l	4.w,a6
+	lea	intname,a1
+	moveq	#0,d0
+	jsr	OpenLibrary(a6)
+	move.l	d0,d7
+	move.l	d0,a6
+	jsr	OpenWorkBench(a6)
+	move.l	d0,a0
+	jsr	CloseScreen(a6)
+	move.l	d7,a1
+	move.l	4.w,a6
+	jsr	CloseLibrary(a6)
+	rts
+intname	INTNAME

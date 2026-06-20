@@ -1,0 +1,115 @@
+
+                               Quick Assign
+                               ~~~~~~~~~~~~
+
+                                        M.Meany, 1993.
+
+ Disclaimer
+ ~~~~~~~~~~
+ I accept no responsibility for the performance of this program. By using this
+program you are accepting full responsibility for the consequences.
+
+ Distribution
+ ~~~~~~~~~~~~
+ This program is Freeware. It may be distributed on any disk for which no more 
+than a nominal copying fee is charged.  I  base 'nominal' on the current price
+of a Fred Fish disk.
+
+ The following files make up the complete distribution and may not be split:
+
+ QuickAssign                   The program.
+ QuickAssign.info              The programs icon.
+ QuickAssign.doc               This doc file.
+ QuickAssign.doc.info          This files icon.
+ QuickAssignSource.lha         The assembly source for the program.
+
+ Requirements
+ ~~~~~~~~~~~~
+ Workbench 2 or higher.
+ The assign file must be in your sys:c directory.
+
+ What Is It?
+ ~~~~~~~~~~~
+ QuickAssign is a small  utility  that  allows  you  to  make assigns from the
+Workbench. The process is  simplified  by  allowing  you  to select the target
+directory/device using a file requester.
+
+ Any assigns made can optionally be added to your s:user-startup file
+
+ This utility was written so that  I  could  copy  an application onto my hard
+drive and quickly make all the assigns  required  to launch it from wherever I
+put it. If I intend to  keep  the  utility  then  I  could  have these assigns
+written to my user-startup file.
+
+ Usage
+ ~~~~~
+ The program can be launched from the CLI  or WorkBench. Not parameter parsing
+takes place, so don't bother wasting time experimenting!
+
+ The program is controlled entirley by gadgets,  all of which are visible when
+the program is first launched. Below  is  a  quick run through of each gadgets
+function:
+
+Assign         This is where you type in the assignment you intend to make.
+               You should add the colon to the end of the assign yourself, the
+               program does not check this. You have been warned!
+
+               Once you have typed in the name of the assignment, a requester
+               will appear which you can use to select the drawer/device that
+               the assign will be made to.
+
+Add to user-startup
+
+               This is a toggle gadget. When 'ticked', all the assigns you
+               make will be added to your user-startup file. This means that
+               when ever you switch your machine on the assigns will be made
+               for you.
+
+ Notes
+ ~~~~~
+ If the program encounters an error it  will  attempt to tell you about it. If
+you do not have a user-startup (  why  not?  )  the  program will give you the
+option of creating one.
+
+ As of Workbench 2 all of your  specific  assigns  etc. should be added to the
+user-startup file, not the  startup-sequence.  During  the course of executing
+the  startup-sequence  the   existence   of  user-startup  is  checked.  If  a
+user-startup file exsists, it will be executed by the startup-sequence.
+
+ Suggestions
+ ~~~~~~~~~~~
+ If you have any suggestions to make  about  this program than send them to me
+at the address below. I cannot  guarantee  that I will act on them, it depends
+on my work load at the time.
+
+ Thanks and Credits
+ ~~~~~~~~~~~~~~~~~~
+ Credit must go to Jan van den Baard, Jaba Developments, for GadToolsBox which 
+I used to design the user interface for  this program. Check Fred Fish for the
+latest version of this excellent  programmers  tool, or send me a disk and sae
+for an archived copy.
+
+ I must also mention Peter Simons for  his  BumpRevisionDeluxe  utility that I
+use to keep track of all my source  code.  This is also freeware and available
+from me by sending a disk and sae to address below.
+
+ Thanks to Paul Clasby for beta testing. If things go wrong blame him :-)
+
+ My Address
+ ~~~~~~~~~~
+ Any mail concerning  my  programming  projects  should  be  sent to me at the
+following address. I need to keep my  own  mail  separate from Amiganuts, so I
+have obtained a PO Box. Sorry, I will  no  longer be releasing my home address
+as my family do not share my passion for computers :-(
+
+ Mail can be sent to me via the following PO Box. I check this once a week and
+will reply all mail that comes with an sae.  I will also send details of other
+programs available or under development.
+
+ M.Meany,
+ PO Box 9,
+ Eastleigh,
+ Hant's,
+ SO5 5YH.
+ Great Britain.
+

@@ -1,0 +1,8 @@
+Short:    Official OpenGL benchmark (binary 68030+68881)
+Uploader: Niels.Froehling@Informatik.Uni-Oldenburg.DE (Niels Froehling)
+Author:   rputney@vnet.ibm.com (Rob Putney) [ported to MesaGL: Niels.Froehling@Informatik.Uni-Oldenburg.DE (Niels Froehling)]
+Type:     dev/src
+Requires: ixemul
+
+ This is an AmigaOS-port of the official benchmark-program from SGI.
+ Included are the binary, the required GL-libs (MesaGL 3.0ß8).

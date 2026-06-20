@@ -1,0 +1,15 @@
+Short:    printf for assembler, works also in interrupt! v1.8
+Author:   ehb@draco.prima.ruhr.de (Edwin H. Bielawski)
+Uploader: ehb@draco.prima.ruhr.de (Edwin H. Bielawski)
+Type:     dev/asm
+Kurz:     printf fuer Assembler, arbeitet vom Interrupt! V1.8
+
+Requires: OS 2.0+
+Version:  1.8
+
+                      DPrintf 1.8
+                      ===========
+
+DPrintf is FREEWARE and (c) 1988-96 Edwin H. Bielawski
+
+Only german documentation available yet.

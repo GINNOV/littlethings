@@ -1,0 +1,20 @@
+vistk.c:9:/* FIXME: Where should VTK get font size, string extents etc from? */
+vistk.c:253:/* FIXME: vtk_new_window doesn't really create that... */
+vistk.c:412:/* FIXME: This align_cursor_t thing won't work. */
+vistk.c:418:/* FIXME: align() is only partially implemented */
+vistk.c:853:/* FIXME: vtkoImage rendering not implemented */
+vistk.c:953:/* FIXME: vtkoToggle rendering not implemented */
+vistk.c:956:/* FIXME: vtkoRadio rendering not implemented */
+vistk.c:1051:/* FIXME: the vtk_editor_ stuff belongs elsewhere... */
+vistk.c:1302:/* FIXME: I have bad feelings about the focus and capture stuff. It works...!? */
+vistk.c:1360:FIXME: Soft focus...?
+vistk.c:1361:FIXME:	We should really have a way of telling which status
+vistk.c:1362:FIXME:	changes actually affect the rendering of every object.
+vistk.c:1363:FIXME:
+vistk.c:1364:FIXME:	How about simply sending an event and let the actual
+vistk.c:1365:FIXME:	implementation deal with it, rather than worrying
+vistk.c:1366:FIXME:	about it here? Not terribly efficient, though...
+vistk.c:1669:	/* FIXME: Why not process events for objects w/o a visual!? */
+vistk.c:1740:	/* FIXME: Digging down to the deepest root... Caused by a design flaw. */
+visualize.c:388:FIXME: Resizable is broken; needs to store flags, palette etc... :-(
+visualize.c:1046:FIXME: This should be user configurable.

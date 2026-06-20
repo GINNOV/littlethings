@@ -1,0 +1,60 @@
+
+ To : Aspiring M68000 Programmers
+ 
+From: Peter Wyspianski
+
+Date: 01 Jan 89
+
+
+As I was getting ready to archive my 'FixFD' utility, it occured to me that
+some aspects of programming the Amiga would have been a LOT easier to learn 
+if I just had a few examples to look over.
+
+I came to the Amiga programming enviroment from the MacIntosh.  So I was no
+stranger to the M68000 or the sort of things you have to do with it in such a
+complex enviroment.  Still, it has been a struggle.  While writing this 
+utility I had to learn how to detect the user hitting 'ctrl-c' to abort the
+program.  No big deal, but I wasted a couple hours looking in the wrong
+places for the information (the AmigaDOS manual and some magazines). 
+Turns out it is not really documented anywhere, at least not specifically.
+
+But I wonder where I would be now if I was a complete novice M68000 
+programmer?  It's not like the 6502 days when you could just drop into a
+machine language monitor and hand-code some instructions to see what they
+do (that is how I first learned ML).
+
+I have decided to include the source code for the main program.  You may
+study it, and even use the routines if you like.  I just hope you learn 
+something.
+
+I have NOT included my 'Std_Macs68k' file.  This file just contains a bunch 
+of macros that match my programming style.  For example, if I am testing a
+register for zero, I like to be able to code 'bz.s xxx' rather then the more
+ambiguous 'beq.s xxx'.  So in my macro file I have a macro called 'bz'.
+
+I have also not included the 'dos_lib.i' file.  This file can be created by
+using FixFD like so:
+
+>FixFD dos_lib.fd dos_lib.i
+
+in my case, I then edited the dos_lib.i file to add a 'PREASM' option and 
+ran it through the assembler (CAPE68k from Inovatronics).  This feature of
+CAPE lets it inhale the 'INCLUDE' file without pausing to assemble it. 
+A real timesaver in larger projects.  This step is entirely optional.
+
+Finally, the code must be linked with Std_Startup.obj.  This file is my
+customized version of AStartup.obj.  I have included 'Std_Startup.obj' but 
+not the source code for it.  If you want to play around with FixFD, you 
+could link with AStartup.obj instead.  Here is how you get the link to work:
+
+>BLink with FixFD.link
+
+if you don't happen to have the freely-redistributable 'BLink' then 
+substitute the name of your linker (probably 'ALink').  The file 'FixFD.link'
+is also included.  Take a look at it, because it expects to find everything
+in 'RAM:'.
+
+Good luck!  Remember to read the docs.  And if you have any questions or
+comments then please send me a postcard (my address is in the docs).
+
+-Peter W.

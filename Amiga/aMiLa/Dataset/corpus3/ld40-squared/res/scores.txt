@@ -1,0 +1,10 @@
+30 kain
+10 dziesiec
+9 dziewiec
+8 osiem
+7 siedem
+6 szesc
+5 piec
+4 cztery
+3 trzy
+2 dwa

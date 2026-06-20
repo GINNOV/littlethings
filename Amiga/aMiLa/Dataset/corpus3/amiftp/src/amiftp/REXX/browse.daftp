@@ -1,0 +1,535 @@
+/* Browse.DaFTP
+ * Browse AmiNet using DaFTP and AmigaGuide
+ * $VER: Browse.daftp 0.103 (16.12.95)
+ * By Osma Ahvenlampi and Dan Murrell, Jr.
+ */
+
+/***** VARIABLES *****/
+
+attrs.tempdir	= 'T:BrowseAminet/'	/* temporary directory */
+attrs.command	= 'INET:C/DaFTP'	/* command to execute for DaFTP */
+attrs.portname	= 'BROWSEAMINET'	/* port for DaFTP */
+attrs.gzip		= 'c:gzip'			/* command for gzip */
+attrs.dir		= 'dload:'			/* directory to download to */
+attrs.screen	= 'Workbench'		/* default screen */
+attrs.ratedir	= 'RAM:'			/* directory to put the ratings guide in */
+attrs.ratecmd	= 'SMTPPost -t aminet-server@wuarchive.wustl.edu'	/* command for sending mail */
+
+/***** END OF VARIABLES *****/
+
+/* Initialisation */
+
+options results
+
+BackGroundServer:
+	parse arg action ' ' opt1
+	if action = "" then action = "HELLO"
+	myportname = 'Browse.DaFTP'
+	if show('P',myportname) then do
+		interpret address ''''myportname'''' action opt1
+		exit 0
+	end
+	else
+	call InitBrowse
+	if openport(myportname) then do 
+		address command "run >NIL: rx 'address ''"myportname"''" action opt1"'"
+		address value attrs.portname
+/*DEBUG*/ say address()
+		do until action = "QUIT"
+		    call waitpkt(myportname)
+		    packet = getpkt(myportname)
+		    if packet ~= null() then do
+				com = getarg(packet)
+				parse var com action ' ' opt1
+				action = upper( action )
+/*DEBUG*/ say 'action:' action opt1 
+				call reply(packet, 0)
+				address value attrs.portname
+				select
+					when action = "ADDFILE" then call AddFile
+					when action = "CONNECT" then call ConnectAminet
+					when action = "LIST" then say ParseRecent(attrs.tempdir'ADT_RECENT' 1)
+					when action = "UPLOAD" then call UploadFile
+					when action = "FIND" then call FindFile
+					when action = "GETFILE" then call GetFile
+					when action = "GETMARKED" then call GetMarked
+					when action = "SHOWFILE" then call ShowFile
+					when action = "QUIT" then nop
+					otherwise call ShowFrontPage
+				end
+			end
+		end
+		call closeport(myportname)
+	end
+	call EndRate
+	call WriteSiteList
+	call CleanUp
+	exit 0
+
+/******* main modes ********/
+
+AddFile: /*procedure expose opt1 attrs.*/
+	if InitDaFTP() then do
+		address value attrs.portname
+		'SETATTR BATCH 1'
+		'REVEAL BATCH'
+		'GET BIN /pub/aminet/'opt1
+		call RateAdd
+	end
+	return
+	
+GetFile: /*procedure expose opt1 attrs.*/
+	if ConnectDaFTP() then do
+		address value attrs.portname
+		'SETATTR BATCH 0 PROCESS 1'
+		'GET BIN /pub/aminet/'opt1
+		'SETATTR PROCESS 0'
+		call RateAdd
+	end
+	return
+	
+GetMarked: /*procedure expose attrs.*/
+	if ConnectDaFTP() then do
+		address value attrs.portname
+		'SETATTR BATCH 1 PROCESS 0'
+		'BATCHGET'
+	end
+	return
+
+ShowFile: /*procedure expose opt1 attrs.*/
+	if ConnectDaFTP() then do
+		address value attrs.portname
+		'SETATTR BATCH 0 PROCESS 0'
+		parse var opt1 .'/'.'/'file
+		'GET BIN' opt1 'LOCAL' file
+		address command 'run >NIL: rx "shownode('''attrs.screen''','''file''',''Main'',0,0)"'
+	end
+	return
+	
+RateAdd: /*procedure expose opt1 attrs.*/
+	if open(fnewfile,attrs.ratedir'Aminet-ratings.guide','a') then do
+		call writech( fnewfile, left(opt1,30,' ') )
+		do i = 1 to 10
+			call writech( fnewfile, ' @{" 'i' " system "echo >>'attrs.tempdir'ratings RATE' opt1 i'"}')
+		end
+		call writeln(fnewfile,'')
+		call close(fnewfile)
+	end
+	return 
+
+ShowFrontPage: /*procedure expose attrs.*/
+/*DEBUG*/ say 'ShowFrontPage' address()
+	hotlist = attrs.tempdir'' || pragma('ID') || attrs.count || '.guide'
+	attrs.count = attrs.count+1
+	if open(fhotlist, hotlist, 'W') then do
+		call writeln(fhotlist, '@database AmiNetBrowser')
+		call writeln(fhotlist, '@node "Main" "AmiNet Browser for DaFTP"')
+		call writeln(fhotlist, '@{b}AmiNet Browser for DaFTP@{ub}')
+		call writeln(fhotlist, 'by Osma Ahvenlampi and Dan Murrell Jr.')
+		call writeln(fhotlist, '')
+		call writeln(fhotlist, '@{" About BrowseAminet " alink "BrowseAminet.guide/Main"}')
+		call writeln(fhotlist, '')
+		call writeln(fhotlist, '@{b}AmiNet Sites@{ub}')
+
+		do sites = 0 to attrs.sitelist.count-1
+			call writeln(fhotlist, attrs.sitelist.sites.area ': @{"' attrs.sitelist.sites.address '" rxs "address ''Browse.DaFTP'' CONNECT '''attrs.sitelist.sites.address'''"}')
+		end
+
+		call writeln(fhotlist, '@endnode')
+		call close(fhotlist)
+		address command 'run >NIL: rx "shownode('''attrs.screen''','''hotlist''',''Main'',0,0)"'
+		return
+	end
+	return
+
+ConnectAminet: /*procedure expose opt1 attrs.*/
+/*DEBUG*/ say 'ConnectAminet' address()
+	if opt1 ~= "" & opt1 ~= "OPT1" then attrs.sitename = opt1
+	if ConnectDaFTP() then do
+		address value attrs.portname
+		'SETATTR BATCH 0 PROCESS 0'
+		if exists(attrs.gzip) then do
+			'GET BIN /pub/aminet/info/adt/ADT_RECENT_7.gz LOCAL' attrs.tempdir'ADT_RECENT.gz'
+
+			stack = pragma('S', 20000)
+			address command attrs.gzip '>NIL: -df' attrs.tempdir'ADT_RECENT.gz'
+			call pragma('S',stack)
+			if RC ~= 0 then do
+				'DISCONNECT'
+				call rtezrequest("Failed to uncompress RECENT file",,"BrowseAminet Error")
+				return
+			end
+		end
+		else
+			'GET BIN /pub/aminet/info/adt/ADT_RECENT_7 LOCAL' attrs.tempdir'ADT_RECENT'
+
+		call ParseRecent attrs.tempdir'ADT_RECENT' 0
+		if result ~= "OK" then do
+			call rtezrequest(result,,"BrowseAminet Error")
+			'DISCONNECT'
+			return
+		end
+	end
+	return
+	
+UploadFile: /*procedure expose attrs.*/
+	filename = rtfilerequest("","","Choose file to be uploaded")
+	call rtfreefilebuffer()
+	if filename = "" then
+		return
+	dot = lastpos(".", filename)
+	if (dot > 0) then
+		readme = left(filename, dot) || 'readme'
+	else
+		readme = filename'.readme'
+	if ~exists( filename ) | ~exists( readme ) then do
+		call rtezrequest("Need both file and .readme",,"BrowseAminet Error")
+		return
+	end
+
+	if ConnectDaFTP() then do
+		address value attrs.portname
+		'CD /pub/aminet/new'
+		if RC ~= 0 then do
+			call rtezrequest("This site doesn't accept uploads",,"BrowseAminet Error")
+			return
+		end
+
+		'MPUT' filename readme
+	end
+
+	return
+	
+FindFile: /*procedure expose attrs.*/
+	if ~showlist('H','TCP') then do
+		call rtezrequest("This function needs TCP: mounted!",,"BrowseAminet Error")
+		return
+	end
+	
+	findstr = rtgetstring(,"Please enter search keyword","Find which file?")
+	if findstr="" then
+		return
+	if open( ffindfile, attrs.tempdir'FINDFILE', 'W' ) then do
+		if open( ffind, 'TCP:' || findsite || '/1848', 'W' ) then do
+			call writeln( ffind, 'max' maxfind '; ADTfind' findstr '; quit' || d2c(13) )
+			do until line = ""
+				line = readln( ffind )
+				call writeln( ffindfile, line )
+			end
+			call close( ffind )
+		end
+		else do
+			call rtezrequest("Failed to connect to find server",,"BrowseAminet Error")
+			return
+		end
+
+		call close( ffindfile )
+		
+		if ConnectDaFTP() then do
+			lastdate = 0
+			call ParseRecent attrs.tempdir'FINDFILE' 1
+			if result ~= "OK" then do
+				call rtezrequest(result,,"BrowseAminet Error")
+				return
+			end
+			return
+		end
+	end
+
+	call rtezrequest("Failure during find attempt",,"BrowseAminet Error")
+	return
+
+EndRate: /*procedure expose attrs.*/
+	if open(fnewfile,attrs.ratedir'Aminet-ratings.guide','a') then do
+		call writeln(fnewfile,'@endnode')
+		call close(fnewfile)
+		address command 'run >NIL: rx "shownode('''attrs.screen''','''attrs.ratedir'Aminet-ratings.guide'',''Main'',0,0)"'
+	end
+	return
+
+/******* utility procedures ********/
+
+/*  read ADT_RECENT and parse it to a .guide
+ */
+ParseRecent: /*procedure expose attrs.*/
+	parse arg recentfile ' ' list
+/*DEBUG*/ say 'ParseRecent' recentfile list
+	newfile = attrs.tempdir'' || pragma('ID') || attrs.count || '.guide'
+	attrs.count = attrs.count+1
+
+	if ~open( frecent, recentfile, 'R' ) then
+		return "Can't open" recentfile
+	if ~open( fnewfile, newfile, 'W' ) then do
+		call close( frecent )
+		return "Can't create" newfile
+	end
+
+	line = readln( frecent )
+	if line ~= "#adt-v2" then do
+		call close( frecent )
+		call close( fnewfiles )
+		return "Wrong ADT_RECENT version"
+	end
+
+	call writeln( fnewfile, '@database Browse_RECENT' )
+	call writeln( fnewfile, '@node Main "Aminet - using site' attrs.sitename'"' )
+	call writeln( fnewfile, '@{"  Show last week  " rx "Browse.DaFTP LIST"}   @{" Search for a file " rx "Browse.DaFTP FIND"}   @{" Top downloads chart " rx "Browse.DaFTP CHARTS"}')
+	call writeln( fnewfile, '@{" Get marked files " rx "Browse.DaFTP GETMARKED"}   @{"    Upload file    " rx "Browse.DaFTP UPLOAD"}   @{"  BrowseAminet Help  " alink "BrowseAminet.guide/Usage"}')
+	call writeln( fnewfile, '' )
+
+	do while abbrev( line, "#", 1 )
+		line = readln( frecent )
+		if ~list then do
+			if abbrev(line,"#amotd",6) then do
+				if lastdate < substr(line,8) then do
+					'SETATTR PROCESS 0'
+					'GET BIN /pub/aminet/info/adt/aminet-motd LOCAL' attrs.tempdir'motd'
+					address command 'run >NIL: rx "shownode('''attrs.screen''','''attrs.tempdir'motd'',''Main'',0,0)"'
+				end
+			end
+			else if abbrev(line,"#sites",6) then do
+				if lastdate < substr(line,8) then
+					call ParseSiteList
+			end
+		end
+	end
+
+	if list then lastdate = 0
+
+	newdate = lastdate
+	newfiles = 0
+
+	do while line ~= "" & ~abbrev( line, '#' )
+		parse var line file.date '@' file.dir '@' file.name '@' file.size '@' a '@' b '@' file.longdesc '@' file.desc
+		if file.date > lastdate | list then do
+			if newdate <= file.date then
+				newdate = file.date
+			dot = lastpos(".", file.name)
+			if (dot > 0) then
+				file.readme = left(file.name, dot) || 'readme'
+			else
+				file.readme = file.name'.readme'
+			file.desc = translate(file.desc,'''','"')
+
+/*name*/	lin = '@{"' left(file.name, 16, ' ') '" rxs "address ''Browse.DaFTP'' GETFILE '''file.dir'/'file.name'''"}'
+/*dir*/		lin = lin left(file.dir, 9, ' ')
+/*size*/	lin = lin '@{"'right(trunc(file.size/1024, 0), 4, ' ') || 'K" rxs "address ''Browse.DaFTP'' ADDFILE '''file.dir'/'file.name'''"}'
+			if file.longdesc = 'L' then
+/*desc*/		lin = lin '@{"' file.desc '" rxs "address ''Browse.DaFTP'' ''SHOWFILE 'file.dir'/'file.readme'''"}'
+			else
+				lin = lin ' 'file.desc
+
+			call writeln( fnewfile, lin )
+
+			newfiles = 1
+		end
+
+		line = readln( frecent )
+	end
+
+	if ~newfiles then 
+		if ~list then 
+			call writeln( fnewfile, '  No new files on' attrs.sitename'.' )
+		else
+			call writeln( fnewfile, '  No files ('attrs.sitename').' )
+
+	call writeln( fnewfile, '@endnode' )
+
+	call close( frecent )
+	call close( fnewfile )
+
+	lastdate = newdate
+/*DEBUG*/ say 'list (1/0)' list
+	if list=0 then attrs.lastdate=lastdate
+
+	address command 'run >NIL: rx "shownode('''attrs.screen''','''newfile''',''Main'',0,0)"'
+
+	return "OK"
+
+/* Make sure DaFTP is running and connected to the correct site
+ */
+InitDaFTP: /*procedure expose attrs.*/
+/*DEBUG*/ say 'InitDaFTP' address()
+	portname = attrs.portname
+	if ~show( 'P', portname ) then portname = portname'.1'
+	if ~show( 'P', portname ) then do
+		parse var portname port '.' .
+		address command 'Run >NIL:' attrs.command 'PUBSCREEN' attrs.screen 'PORTNAME' port 'ICONIFIED'
+		address command 'WaitForPort' portname
+		if RC ~= 0 then do
+			call rtezrequest("Could not start DaFTP",,"BrowseAminet Error")
+			return 0
+		end
+		address value portname
+		'DEACTIVATE'
+		'SETATTR SUPPRESS 0 PROCESS 0 LOCALDIR' attrs.dir
+		'HIDE LOG BATCH'
+	end
+	address value portname
+	attrs.portname = portname
+/*DEBUG*/ say 'DaFTP running' address()
+	return 1
+
+ConnectDaFTP: /*procedure expose attrs.*/
+	if InitDaFTP() then do
+		address value attrs.portname
+/*DEBUG*/ say 'ConnectDaFTP' address()
+		'GETATTR STEM stat'
+		if stat.connected & stat.host ~= attrs.sitename then
+			'DISCONNECT'
+		if stat.host ~= attrs.sitename then
+			'SETATTR HOST' attrs.sitename 'PORT 21 ANONYMOUS 1'
+		'SETATTR REMOTEDIR /pub/aminet'
+		if ~stat.connected then do
+			'CONNECT NOSCAN'
+			if RC ~= 0 then do
+				call rtezrequest("Connection to" attrs.sitename "failed",,"BrowseAminet Error")
+				return 0
+			end
+		end
+		'SETATTR REMOTEDIR /pub/aminet'
+		return 1
+	end
+	return 0
+
+/* Cleanup after myself
+ */
+Cleanup: /*procedure expose attrs.*/
+/*DEBUG*/ say 'Cleanup' address()
+	address command 'run >NIL: Delete ' attrs.tempdir 'ALL FORCE QUIET'
+	if pos('BROWSEAMINET',attrs.portname) ~= 0 & show('P', attrs.portname) then do
+		address value attrs.portname 
+		'QUIT FORCE'
+	end
+	return
+
+/* Read ADT sites file and make a prefs file
+ */
+ParseSiteList: /*procedure expose attrs. */
+/*DEBUG*/ say 'ParseSiteList' address()
+	'GET BIN /pub/aminet/info/adt/sites LOCAL' attrs.tempdir'sites'
+	if open( fsites, attrs.tempdir'sites', 'R' ) then do
+		if readln( fsites ) ~= '#adtrc-v2' then
+			return
+		do until abbrev( pline, 'ftpsites', 7 )
+			pline = readln( fsites )
+		end
+		do sites = 0 to 200
+			line = readln( fsites )
+			parse var line area ',' address ',' rest
+			attrs.sitelist.sites.area = area
+			attrs.sitelist.sites.address = address
+			if right( rest, 1 ) ~= '\' then leave
+		end
+		attrs.sitelist.count = sites+1
+	call close( fsites )
+	end
+	return
+
+/* Update prefs file to current lastdate/findsite/gzip/maxfind/sitename
+ */
+WriteSiteList: /*procedure expose attrs.*/
+/*DEBUG*/ say 'WriteSiteList' address()
+	tempname = "ENVARC:BrowseAminet-" || pragma('ID')
+	if open( fprefs, tempname, 'W' ) then do
+		call writeln( fprefs, attrs.lastdate )
+		call writeln( fprefs, attrs.findsite attrs.maxfind attrs.sitename )
+		do sites = 0 to attrs.sitelist.count-1
+			call writeln( fprefs, attrs.sitelist.sites.area':'attrs.sitelist.sites.address )
+		end
+		call close( fprefs )
+		call delete( "ENVARC:BrowseAminet" )
+		call rename( tempname, "ENVARC:BrowseAminet" )
+	end
+	return
+
+/* Create a simple prefs file for the first run
+ */
+CreatePrefsFile: /*procedure */
+/*DEBUG*/ say 'CreatePrefsFile' address()
+	if ~exists( "ENVARC:BrowseAminet" ) then
+		if open( fsitelist, "ENVARC:BrowseAminet", 'W' ) then do
+			call writeln( fsitelist, '0' )
+			call writeln( fsitelist, 'ftp.wustl.edu 30 aminet.com' )
+			call writeln( fsitelist, 'US:aminet.com' )
+			call close( fsitelist )
+		end
+	return
+
+/* Choose the nearest ADT find server
+ */
+ChooseFindSite: /*procedure expose attrs.*/
+/*DEBUG*/ say 'ChooseFindSite' address()
+	location = rtezrequest("Please choose the country located nearest to you.","USA|Switzerland|Germany","BrowseAminet find client configuration")
+	if location = 1 then
+		findsite = "ftp.wustl.edu"
+	else if location = 2 then
+		findsite = "amiga.icu.net.ch"
+	else if location = 0 then
+		findsite = "haegar2.uni-paderborn.de"
+	return findsite
+
+/* Add all required libraries and check browse.daftp is in a place it can be found
+ */
+InitBrowse: /*procedure expose attrs.*/
+/*DEBUG*/ say 'InitBrowse' address()
+	if ~show(l, 'rexxsupport.library') then
+		if ~addlib('rexxsupport.library', 0, -30, 0) then
+			exit 50
+	if ~show(l, 'rexxreqtools.library') then
+		if ~addlib('rexxreqtools.library', 0, -30, 0) then
+		exit 50
+	if ~show(l, 'amigaguide.library') then
+		if ~addlib('amigaguide.library', 0, -30, 0) then
+			exit 50
+	if ~exists("REXX:Browse.DaFTP") then do
+		call rtezrequest("Please copy Browse.DaFTP to REXX: before using!",,"BrowseAminet Error")
+			exit 10
+	end
+	port = address()
+	if port = "REXX" then do
+		port = attrs.portname
+	end
+	else 
+	if show( 'P', port ) then do
+		address value port 
+		'GETATTR STEM STAT'
+		attrs.screen = stat.screen
+	end
+	attrs.portname = port
+	if open( fdate, "ENVARC:BrowseAminet", 'R' ) then do
+		ldate = readln( fdate )
+		temp = readln( fdate )
+		parse var temp finds' 'maxf' 'site
+		do sites = 0 to 200
+			temp = readln( fdate )
+			if eof( fdate ) then leave
+			parse var temp attrs.sitelist.sites.area':'attrs.sitelist.sites.address
+		end
+		attrs.sitelist.count = sites
+		call close( fdate )
+	end
+	else do
+		call CreatePrefsFile
+	end
+	if finds = "" | finds = "FINDSITE" then finds = ChooseFindSite()
+	if maxf = "" | maxf = "MAXFIND" then maxf = 30
+	if site = "" | site = "SITENAME" then site = "aminet.com"
+	if ldate = "" | ldate = "LASTDATE" then ldate = 0
+
+	attrs.lastdate = ldate
+	attrs.findsite = finds
+	attrs.maxfind = maxf
+	attrs.sitename = site
+	
+	attrs.count = 0
+	
+	address value attrs.portname
+
+	e = left(attrs.tempdir,length(attrs.tempdir)-1)
+	if ~exists(e) then call makedir(e)
+	
+/*DEBUG*/ say 'PORT' attrs.portname 'SCREEN' attrs.screen 'LDIR' attrs.dir 'FINDSITE' attrs.findsite 'SITENAME' attrs.sitename
+
+	return
+	

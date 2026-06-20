@@ -1,0 +1,6 @@
+Short:    A Language GUI for speaking languages - with Speech.
+Version:  3.0
+Author:   John White <yoingco@hotmail.com>
+Uploader: John White <yoingco@hotmail.com>
+Type:     dev/misc
+Date:     May 2001

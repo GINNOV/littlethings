@@ -1,0 +1,29 @@
+Short:        Amilock - A console lock program which is system friendly.
+Author:       Michael Nielsen (cemn@manta.jcu.edu.au)
+Uploader:     Michael Nielsen (cemn manta jcu edu au)
+Type:         example of code, and how to lock an amiga Console
+Architecture: m68k-amigaos
+
+
+Long:
+	
+	Amilock is a series of programs which demonstrates inter process
+communications, as well as the use of interrupt handlers.  The interrupt
+handlers are used to disable/limit keyboard and mouse inputs, thereby
+allowing the console to be 'frozen' the mouse can still move, but no
+mouse clicks are possible.
+
+	The program does not black out the screen, but any blanker can
+be run in background and will function properly, any other program can
+also run and swap screens etc, however the program will ensure that the
+keyboard and mouse buttons appear to be inactive from the point of view
+of the other programs.
+	
+	Great to stop your children and others from using you machine
+when you are running that great raytrace which you have spent hours
+working on.
+
+	The program can be overcome by the ctrl+Lamiga+RightAmiga, and
+the power switch of course, but all other bypasses have been removed.
+
+	Mike

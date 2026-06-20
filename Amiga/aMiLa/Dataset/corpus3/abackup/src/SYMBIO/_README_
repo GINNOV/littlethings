@@ -1,0 +1,6 @@
+- ignore les devices de plus de 2^31 octets (car ne sait pas les gérer)
+- ajout de l'argument ICONPATH (icone à utiliser pour les archives)
+  attention: il faut une icone PROJECT (abackup ne change pas le type)
+- l'AppIcon est la même que l'icone du programme
+- n'arrivait pas à relire un catalogue sauvegardé en fichier quand une
+  sauvegarde était cryptée

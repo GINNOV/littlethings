@@ -1,0 +1,108 @@
+PRINT	macro
+	move.l	\1,a0
+	move.l	50(a0),a0
+	move.l	#\2,a1
+	move.l	\3,d0
+	move.l	\4,d1
+	CALLINT	PrintIText
+	endm
+OPENWINDOW	macro
+	move.l	#\1,a0
+	CALLINT	OpenWindow
+	move.l	d0,\2
+	endm
+CLOSEWINDOW	macro
+	move.l	\1,a0
+	CALLINT	CloseWindow
+	endm
+OPENSCREEN	macro
+	move.l	#\1,a0
+	CALLINT	OpenScreen
+	move.l	d0,\2
+	endm
+CLOSESCREEN	macro
+	move.l	\1,a0
+	CALLINT	CloseScreen
+	endm
+OPENINT	macro
+	include	/includes/intuition/intuition_lib.i
+	move.l	#intname,a1
+	clr.l	d0
+	CALLEXEC	OpenLibrary
+	tst.l	d0
+	beq	\1
+	move.l	d0,_IntuitionBase
+	endm
+CLOSEINT	macro
+	move.l	_IntuitionBase,a1
+	CALLEXEC	CloseLibrary
+	endm
+LINE	macro
+	move.l	\1,a0
+	move.l	50(a0),a0
+	move.l	#\2,a1
+	move.l	\3,d0
+	move.l	\4,d1
+	CALLINT	DrawBorder
+	endm
+IMAGE	macro
+	move.l	\1,a0
+	move.l	50(a0),a0
+	move.l	#\2,a1
+	move.l	\3,d0
+	move.l	\4,d1
+	CALLINT	DrawImage
+	endm
+OPENGRAF	macro
+	include	/includes/graphics/graphics_lib.i
+	move.l	#grafname,a1
+	clr.l	d0
+	CALLEXEC	OpenLibrary
+	tst.l	d0
+	bne	\1
+	move.l	d0,_GfxBase
+	endm
+CLOSEGRAF	macro
+	move.l	_GfxBase,a1
+	CALLEXEC	CloseLibrary
+	endm
+OPENEXEC	macro
+	include	/includes/exec/exec_lib.i
+	endm
+OPENDOS	macro
+	include	/includes/libraries/dos_lib.i
+	move.l	#dosname,a1
+	clr.l	d0
+	CALLEXEC	OpenLibrary
+	tst.l	d0
+	beq	\1
+	move.l	d0,_DOSBase
+	endm
+CLOSEDOS	macro
+	move.l	_DOSBase,a1
+	CALLEXEC	CloseLibrary
+	endm
+OPENFFP	macro
+	include	/includes/math/mathffp_lib.i
+	lea	ffpname,a1
+	clr.l	d0
+	CALLEXEC	OpenLibrary
+	tst.l	d0
+	beq	\1
+	move.l	d0,_MathBase
+	endm
+CLOSEFFP	macro
+	move.l	_MathBase,a1
+	CALLEXEC	CloseLibrary
+	endm
+REQUESTER	macro
+	move.l	\1,a0
+	move.l	#\2,a1
+	move.l	#\3,a2
+	move.l	#\4,a3
+	move.l	#\5,d0
+	move.l	#\6,d1
+	move.l	#\7,d2
+	move.l	#\8,d3
+	CALLINT	AutoRequest
+	endm

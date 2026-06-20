@@ -1,0 +1,12 @@
+
+According to Dos manual, a Workbench launched application cannot call the
+function Execute(). There are two programs in this drawer that test this.
+One of them doesn't give a damn what the manual says and tries anyway, the
+other opens a console and writes the handle into the pr_ConsoleTask field
+of the Process structure. I am not sure how valid this is as the idea was
+pinched from a C object module. I would say that it appears to work on my
+machine, but so does the 'I don't give a damn' version:-)
+
+							MM.
+
+

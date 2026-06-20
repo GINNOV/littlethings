@@ -1,0 +1,280 @@
+COPYRIGHT
+ReSource,  demo   version   "RSDemo",   associated   utility   software,  and
+documentation  are  copyrighted ©1993 by The Puzzle Factory, Inc.  All rights
+Reserved.
+
+This demonstration version of ReSource  is  freely  redistributable  provided
+that it is distributed in its entirety along with all supplied libraries, and
+that no changes are made in either the program or documentation.
+
+TRADEMARKS
+ReSource and RSDemo are Trademarks of The Puzzle Factory, Inc.
+
+Macro68 is a trademark of DigiSoft Pty. Ltd.
+
+Amiga, AmigaDOS, Kickstart, Intuition, and Workbench are trademarks of
+Commodore-Amiga, Inc.
+
+DISCLAIMER
+The Puzzle Factory, Inc. provides this program "as-is"  without  warranty  of
+any  kind,  either  expressed  or implied, including, but not limited to, the
+implied warranties of merchantability and fitness for a  particular  purpose.
+The  entire  risk as to the results and performance of the program is assumed
+by you.  Should the program prove defective, you (and not The Puzzle Factory,
+Inc.)   assume  the  entire  cost  of  all  necessary  servicing,  repair  or
+correction.  Further, The Puzzle Factory, Inc. does not warrant, guarantee or
+make  any  representation regarding the use of, or the results of the use of,
+the program in terms of correctness, accuracy, reliability,  currentness,  or
+otherwise; and you rely on the program and results solely at your own risk.
+
+If you like ReSource and wish to order the commercial version,
+please contact:
+
+    The Puzzle Factory, Inc.          Voice: 503:935-3709
+    P.O. Box 986                Support BBS: 503:935-7883
+    Veneta, OR 97487                    BIX: jblavin
+    USA                            Internet: jlavin@cie.uoregon.edu
+
+In Europe contact:
+
+    Helios Software                   Voice: (0623) 554828
+    163 Huthwait Road
+    Sutton-in-Ashfield
+    Notts.  NG17 2HB
+    U.K.
+
+*****************************************************************************
+
+INTRODUCTION TO RESOURCE
+========================
+ReSource is an interactive disassembler for Amiga computers.  There are other
+Amiga disassemblers, both public domain and commercial.  The following points
+characterize ReSource as distinct from other disassemblers:
+
+	1. ReSource is fully interactive.
+	2. ReSource was written for the serious user.
+	3. ReSource understands the Amiga®.
+
+Because ReSource can get its input from a file, track, or memory, and  output
+all or in part to any of these, it is more a general purpose tool than just a
+disassembler.  It can be used to browse through files, without ever bothering
+to save anything, just to find out what is inside.  It also knows quite a bit
+about AmigaDOS(tm) and the Amiga® OS.  This built-in intelligence  will  save
+you  a  great  deal  of  time  when  disassembling  files.   ReSource is also
+blindingly fast.  It is written entirely in assembly language, and  does  all
+text rendering using its own special internal routines.   The  following  are
+some of ReSource's features:
+
+	ReSource is easy to work with.  ReSource will amaze you with its
+	ease of use and straightforward user  interface.   Unlike  other
+	disassemblers,  ReSource is fully interactive, and allows you to
+	"do it your way".  There are plenty of  options,  and  decisions
+	are not forced on you.
+
+	ReSource is fast and thorough.  ReSource was designed to be used
+	by serious software developers.  ReSource is aimed at those that
+	need to disassemble large programs into source files  that  will
+	reassemble  and  run  correctly.   For a disassembler to achieve
+	this, it must  be  able  to  produce  totally  bug-free  output.
+	Furthermore, it must be able to produce high-quality output with
+	the  minimum of effort from the user.  ReSource achieves both of
+	these objectives, albeit at the cost of large memory usage.
+
+	ReSource makes the most of  your  programming  skills.   Because
+	ReSource  understands  AmigaDOS(tm)  and  the Amiga® OS, you can
+	concentrate on the task at hand, and not expend effort on trying
+	to look up or remember details better left to a computer.
+
+
+GETTING STARTED
+===============
+This section is designed to get you started with ReSource.  It will guide you
+through installing ReSource on either a floppy based Amiga®, or a system with
+a hard drive.  It will explain some of the basics of operating ReSource.
+
+System Requirements
+ReSource is designed to work on any  properly  configured  Amiga®  500,  600,
+1000, 1200, 2000, 2500, 3000, or 4000.
+
+Version 1.3 or higher of the Amiga® OS is required.
+
+One megabyte of RAM is required, and you will need 1 1/2 to  2  megabytes  of
+RAM if you want to work with files larger than 30-40K.
+
+Because ReSource uses functions in the "ARP" library, you must have the  file
+"arp.library"  in your "LIBS:" directory when you run ReSource.  This file is
+available from most BBS's.  The version of "arp.library" must be 34 or higher.
+
+If you will be using ReSource under V1.3 of the Amiga® OS,  we  suggest  that
+you  run  FastFonts©  or  Blitzfonts©.  Otherwise, scanning through the menus
+will be very sluggish due to the large number of sub-items.
+
+Archive Contents
+================
+The Official ReSource Demo archive contains the following files:
+
+  ReadMe                       This file
+  ReadMe.info                  Icon to view ReadMe
+  Start_Resource               Script to do temporary installation and run
+  Start_ReSource.info          Icon to run the script
+  RSDemo                       The main disassembler, demo version
+  RSDemo.info                  Icon to run RSDemo
+  libs/ReSourceloader.library  Library required for ReSource
+  libs/ReSourcemenus.library   Required for access to menus
+  libs/ReSourcesyms.library    Required for access to internal symbol bases
+  libs/ReSourcehelp.library    Required for online help facility
+  s/RS.keytable                Default keytable
+  s/RS.macros                  Example macros
+
+Installation
+============
+Unpack the archive using the utility of your choice.  Be careful to  preserve
+path  information  when  doing so.  You should end up with a list of files as
+shown above.   To  do  an  easy  trial  installation,  double  click  on  the
+"Start_ReSource" icon.
+
+For a permanent installation, just copy the above files as shown below:
+
+  copy RSDemo                       <anywhere in your path, e.g. 'C:'>
+  copy RSDemo.info                  <as above>
+  copy libs/ReSourceloader.library  libs:   ;or libs:ReSource/
+  copy libs/ReSourcemenus.library   libs:   ;or libs:ReSource/
+  copy libs/ReSourcesyms.library    libs:   ;or libs:ReSource/
+  copy libs/ReSourcehelp.library    libs:   ;or libs:ReSource/
+  copy s/RS.keytable                s:
+  copy s/RS.macros                  s:
+
+No assignments need to be made.  Installation is now complete.
+
+Starting ReSource
+=================
+If you will be starting ReSource from the CLI, at the prompt type:
+
+   1> run RSDemo       ;the word "run" is optional.
+
+   1> RSDemo <ProgName>
+   The executable program <ProgName> will be loaded as a load file if it is a
+   load file.  Otherwise, it will be loaded as a ".RS" data file  if  it's  a
+   data file.  Otherwise, it will be loaded as a binary file.  Corrupted load
+   files may have to be loaded as a binary image.
+
+   1> RSDemo *b <FileName>
+   The file <FileName> will be loaded as a binary image.
+
+   1> RSDemo *m <Sloc> <Eloc>
+   Load memory, from location <Sloc> to location <Eloc>.
+
+   1> RSDemo *DFn: <Scyl> <Ecyl+1>  [#sec]  [Offsec]  Load  from  drive  DFn:
+   starting at cylinder <Scyl> and continuing to <Ecyl+1>.  The default is to
+   read  complete  track(s).   This  may be modified by the next two optional
+   parameters:  The fourth parameter  specifies  that  ReSource  should  read
+   [#sec]  extra  sectors, and the fifth parameter specifies that rather than
+   begin reading from the  start  of  <Scyl>,  offset  the  start  sector  by
+   [Offsec] sectors.
+
+   Using "?" as the first parameter on the  command  line  will  display  the
+   parameter syntax requirements, then exit immediately.
+
+   ReSource will accept "-I" or "-i" as the first parameter  on  the  command
+   line.  This will force ReSource to use an interlaced screen.  Note that if
+   your  Workbench(tm)  screen is in interlace mode, this flag has no effect.
+
+   Conversely, to force ReSource to use a non-interlaced screen, use "-N"  or
+   "-n" as the first parameter on the command line.  This will force ReSource
+   to use a non-interlaced screen.  Note that if your Workbench(tm) screen is
+   not in interlace mode, this flag has no effect.
+
+If you will be starting ReSource from the Workbench(tm), double click on  the
+"RSDemo"  program  icon  or  "Start_ReSource"  script  icon.  Then use one of
+ReSource's functions to load a file, memory, or disk blocks.
+
+Input and Output
+================
+ReSource is quite flexible in the way that it allows you  to  load  and  save
+files and data.  For example, you may:
+
+   1. Load as an Amiga® executable program
+   2. Load as an Amiga® file
+   3. Specify an area of memory to disassemble
+   4. Load 1 or more sectors/cylinders from a floppy disk
+   5. Load a previously saved ".RS" file
+
+Regardless of how ReSource gets its input, it can save the  contents  of  its
+buffer in any of the following ways:
+
+   1. Save as an Amiga® executable program
+   2. Save as a binary image
+   3. Save directly to memory
+   4. Save to floppy disk sectors/cylinders
+   5. Save as an ".RS" file
+   6. Save as an ".asm" file
+
+NOTE: RSDemo, the demonstration version of ReSource will not  save  anything.
+This information is provided for those considering the commercial version.
+
+
+ONLINE HELP
+===========
+ReSource contains a complete online help facility.  This silent assistant  is
+fast and easy to use.
+
+The online help facility contains documentation on each  and  every  function
+that  can  be selected from the menus.  There is also a glossary of terms and
+phrases.   To  begin online help, press the "Help" key, or select "Help" from
+the PROJECT menu.
+
+Hyper-help
+==========
+While you are viewing the documentation on any particular function,  you  may
+notice  that  various words and phrases are lightly underlined.  By using the
+left and right arrow keys, you can hilite one of these words or phrases,  and
+by  then  pressing  the  return  key,  ReSource  will immediately display the
+documentation that pertains to that word or phrase.  While  in  this  "nested
+help" mode, you have only to press the backspace key, to go back to where you
+were.   For example, while viewing the documentation on the "CURSOR/Relative/
+Next line", you may be wondering what the word "cursor" means.   By  pressing
+the  right  arrow  key  until the word "cursor" is hilited, and then pressing
+return, you will be shown the  part  of  the  glossary  that  describes  what
+"cursor"  means  in ReSource.  Now satisfied, you may press the backspace key
+to continue reading the documentation on "CURSOR/Relative/Next line".
+
+You  can  get  nested  help within nested help.  There is a limit to just how
+many positions within the help files ReSource will remember (256 levels), but
+it is highly unlikely that anyone will ever approach this limit.  In fact, it
+is unlikely that you will nest to a  depth  of  more  than  three  in  normal
+operation.
+
+Help on Help
+============
+While inside the help facility, there are a number of keys that can  be  used
+for  specific  purposes.   The most important one to remember is the help key
+itself, which tells you what the various keys do.  Here are a few of the more
+important ones:
+
+	Help			Display this table
+	Escape			Exit from the online help facility
+	Down/Up arrows		Move forward/backward through text
+	Left/Right arrow	Use to hilite a word/phrase
+	Return			If word/phrase hilited, get help on it
+	Alt-down arrow		Move forward to end of text
+	Alt-up arrow		Move to start of text
+	Backspace		Return to previous level
+
+
+COMMERCIAL RESOURCE
+===================
+ReSource comes with a manual containing much more information about  ReSource
+than  it  is possible to include here, as well as 2 step-by-step tutorials on
+disassembling programs using ReSource.
+
+The OS 2.0 Include files and library offsets, as well as a  number  of  other
+tools and utilities are also included.
+
+You will also get The Puzzle Factory's excellent customer support.
+
+We  sincerely  hope  you  find ReSource to be an important part of your Amiga
+tool collection.  Please contact us if we can be of assistance.
+
+The Puzzle Factory
+
+=eof=

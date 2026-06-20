@@ -1,0 +1,23 @@
+name:     CRC32
+short:    CRC32 in 68k assembler by zeeball
+author:   Zbigniew Trzcionkowski (zeeball@interia.pl)
+uploader: Zbigniew Trzcionkowski (zeeball@interia.pl)
+version:  0.1 (24.03.2002)
+requires: 68k based machine
+type:     dev/asm
+
+STATUS:   Public Domain
+
+CRC32-CRC32-CRC32-CRC32-CRC32-CRC32-CRC32-CRC32-CRC32-CRC32-CRC32-CRC32
+
+Primarily: if you don't know what is CRC32 then you don't need it :)
+As I couldn't find CRC32 in 68k assembler I have decided to release
+that one. It's little bit optimised compiler output, alas CRC32 due
+to heavy memory usage should fly only on faster boards...
+
+CRC32-CRC32-CRC32-CRC32-CRC32-CRC32-CRC32-CRC32-CRC32-CRC32-CRC32-CRC32
+
+Zbigniew Trzcionkowski <zeeball@interia.pl>
+Astrow 7
+43-250 Pawlowice
+Poland

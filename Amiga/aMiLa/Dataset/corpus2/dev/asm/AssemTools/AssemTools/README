@@ -1,0 +1,68 @@
+
+
+
+	MC68000 ASSEMBLY TOOLBOX by Supervisor Software
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+This is a collection of files which should be of great interest to
+Amiga assembly language programmers.  The collection includes about
+140 macro routines which make assembly language programming a lot
+easier.
+For example, there is a routine to build the menu structures using
+simple instructions given in an (almost) ASCII string.  Also, there
+is a routine to create any type of gadgets.
+
+There is also a library of routines called sslib.lib to be used with
+ALink/BLink.  The library contains buffered C-like file handling
+routines (fopen, fclose, fgets, fputs etc) and a file name requester.
+All routines are re-entrant (they can be called by several processes
+simultaneously).
+
+And finally, there are several example programs which use the macros
+defined in the include files.  The best way to learn to use all these
+routines is to examine the source codes and include files.
+
+I'm sorry but I haven't got enough time to write full documentation
+for all routines just now.  I may do that in the future but I make
+no promises.  However, the macro libraries will be updated from time
+to time (mainly because we are using them ourselves).
+
+If you have any suggestions or bug reports or extra dollars I would
+like to hear from you!  A small donation ($20...$50) would be greatly
+appreciated.  It has taken a long time to write all these routines...
+
+Note:  Not all the example programs use the latest macros.  For
+example, the Asm65 65c02 cross assembler was written a long time
+before I wrote the buffered file handling routines (in sslib.lib).
+I just wanted to include it because I know there are people out there
+trying to develop programs for 6502/65c02 on the Amiga.
+
+Please excuse my bad English.  I know assembly language much better
+than I know English, I think...  :-)
+
+
+
+Donations, suggestions, bug reports etc. to:
+
+		Jukka Marin
+		Ruskeisentie 24
+		70900 Toivala
+		FINLAND
+
+		(North Europe)
+
+Bitnet:		jmarin@finkuo
+Internet:	jmarin@uku.fi
+
+
+
+Thank you very much for your interest!
+
+
+P.S.  Thank you Fred for collecting so many interesting programs!
+
+P.S.2  Coming from Supervisor Software: The best Amiga utility
+       of them all!!!

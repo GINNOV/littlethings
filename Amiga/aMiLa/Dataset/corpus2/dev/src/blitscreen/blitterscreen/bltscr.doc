@@ -1,0 +1,145 @@
+
+*** BLITTERSCREEN =:) ***
+
+###short:
+
+Forget copperscreens.
+Blitterscreens provide a CHUNKY 256-color 2x2 or even 2x1 screen,
+and all fullscreen! (AGA only, ECS could do byte-chunky 16colors,
+not supported yet). cpu overhead very small, cpu free for rendering,
+this method is even useful for 030!
+
+###distribution:
+
+Note: This is a hardwarehack, no warranties for anything.
+The example executables might crash sometimes, the blitterscreen
+code used with smart startup-routines should be stable.
+
+You are allowed to use the source in non-commercial software
+(if you charge shareware fee I don't care).
+
+###method:
+
+blitter does 2 passes to get chunky buffer into the format my special
+screenmode needs to display (so it's not really c2p!).
+
+For a 320x200 2x2 mode this needs only about one frame! (scrambled buffer)
+So this is also interesting for 50Hz fx like done on copperscreens!
+
+you need 3 passes if chunky source is linear, i.e. not scrambled.
+Needs 50% more time, still beeing fantastic speed, as most gfx need
+more time to render, and remember, cpu is free while blitter doing
+conversion.
+
+Note: Doing a 3D-mapped game on a chipmem-only A1200, you might think
+blitter-dma brakes cpu more than a copperscreen.
+BUT: rendering needs some frames, the blitter is only active for one frame,
+the rest of time cpu is undisturbed while copperscreens need dma each
+frame. The small window sizes used in copper-clones can be done beyond
+one frame by blitter anyway, even when using the comfortable unscrambled
+mode (which might speed up your floormapper). and: no more windows with
+limited width (looks so ugly).
+
+Note #2: The cpu can copy to chunky buffer in longwords to chipmem,
+each byte beeing extended to a 2x2 pixel block by custom hardware.
+Imagine your A1200 was connected to a localbus-VGA. Copying to vram then
+would be slower (!) as you got to copy 4 bytes to get a 2x2 pixel block
+(VGA beeing fastmem changes nothing).
+So stop whining about not having a chunky screen, there is one! :)
+
+I admit it might be not ideal for a 040, but the 040 can do
+realtime-1x1-c2p while copying to chipmembuffer anyway.
+A 030-50 also might render faster than blitterscreen convertion.
+
+###Programming Blitterscreen:
+
+All subroutines needed are in bltscr.s, and bs.s shows how to use them.
+bs2x1.s shows 2x1 screen while bs2x2.s uses 2x2 :) The differences are
+different copperlist-header and different sizes of buffers
+(lazy me, the 2x2 buffers are as big as 2x1 ones. look into routine-
+headers for exact requirements, please).
+
+
+Look into bs.s at label prg: , there the part of how to do it all begins.
+
+It's still hardwarehack, blitter stuff could be done with QBlit,
+but I doubt my copperlist could somehow be in harmony with OS-screens,
+would be a pity if cpu doing RetinkWhatever() would need longer than
+the whole blitter conversion. If you know how to do it with the OS
+(including fast double buffering!), contact me.
+
+Feel free to make blitterscreen OS-conform on your own, and send
+me a copy :)
+
+*** The steps:
+- set vector $6c to the handler routine. think of vbr!
+  timer and timer2 (.l) are incremented each frame (stuff I used in our
+  intro Excess/Riot :) can be used to sync with vbl.
+
+- now do what mkbltscr: in bs.s does:
+  set up coplist header (in chipmem!) with similar values like in
+  copl: of bs.s . bs.s does this with maksimplecop: of my startupcode.
+  
+  having copied header to chipmem, a0 must point at the end (the next
+  free word) of copperlist. now call mk2xY which will continue storing
+  into copperlist at (a0)+. then move #$fffffffe to (a0)+ to finish
+  copperlist!! (mk2xY tells in a0 where it stopped writing into copl).
+
+- call c2bs or sc2bs (the scrambled one). blitter is started and does
+  conversion parallel to cpu, you can see this testing bltbsy which
+  is not 0 for conversion time.
+  BTW number of pixels should by a multiple of 8 (conversionwise,
+  screenmode with fmode=3 goes 64bit wise, so multiple of 32 2x2/2x1
+  pixel-blocks)
+
+  c2bs generates a blitter-job-queue for the handler. once it's generated
+  calling c2bs you can restart blitter faster by moving the
+  queue-start-adress to bltpc (defined in vltscr.s), then setting bltbsy.w
+  to #1, then starting handler by move.w #$8040,$dff09c (like done in bs.s)
+
+- while blitter is now happily converting the chunky buffer cpu is free
+  to render another buffer. bs.s doesn't double-buffer BTW.
+  You got to set up 2 different blitter-queues for double-buffering if
+  not calling c2bs but using the faster method described above.
+
+  SCRAMBLING: sc2bs: scrambled chunky buffer, pixels sorted that way:
+  pixel-number: 042615378C...
+
+ [the words at scramble in bs.s are the offsets to get from one to
+  the next pixel. do not do it the way bs.s does in inner loop.
+  Only render columnwise (offset constant = linelen = horiz_number_of_
+  pixelblocks (not planepixels!) ). if you need horizontal rendering,
+  use unscrambled c2bs, don't be shocked by blitter needing more time,
+  your engine will be faster rendering unscrambled (still slower
+  than blitter anyway, at least for cpus below 030-50) and so the
+  framerate will be higher. The scrambled version is for 50Hz demos,
+  not for mapping games.]
+
+- bevore returning from your program, make sure blitter is inactive
+  by testing bltbsy. testing blitter-active bit isn't save, there
+  could still be intterrupt-requests that restart blitter.
+
+***phew =:)
+I hope you all kill copperscreen out of your engines now :)
+They will be still useful in demos though.
+
+I hope that little info is enough for coding blitterscreens
+(sorry, no time for .guide docu ;)
+For having a visual impression how gfx look like on that screen,
+watch Excess/Riot. It's the same screenmode (but blitter convertion
+is done different). All fx 50Hz on A1200 with fastmem, read my .sig
+
+IMHO it looks even better than 2x2 :)
+
+I hope it got no bugs (yuck), please tell me (but only real bugs,
+I know the startup code is lame :)
+
+----------------------------------------------------------------------------
+      // fischerj@Informatik.TU-Muenchen.DE (Juergen "Rally" Fischer)
+     // A1201 HD260 =:)
+   \X/      ^--fastmem rules. DO YOU KNOW YOUR FAVOURITE D**M CLONE RUNS
+                              ABOUT DOUBLE SPEED ON YOUR STANDARD A1200
+                              AFTER JUST PLUGGING IN A FASTMEM EXTENSION ?
+  gcc, lha, D**m style games etc run about double speed. Buy just 1 meg.
+----------------------------------------------------------------------------
+

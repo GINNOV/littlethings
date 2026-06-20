@@ -1,0 +1,63 @@
+Short:    Wavetools developper info (UNOFFICIAL) BETA
+Uploader: nyblom@mother.ludd.luth.se (Johan Nyblom)
+Author:   nyblom@mother.ludd.luth.se (Johan Nyblom)
+Type:     dev/src
+
+!!Varning!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!                                                                      !!
+!! This is NOT official and has NOTHING to do with Digital Audio Design,!!
+!! the makers of Wavetools, hardware and software.                      !!
+!!                                                                      !!
+!!It may also contain bugs and other faults, be cautious and intelligent!!
+!!                                                                      !!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Some time ago I bought the wavetools soundcard, it was on sale here in sweden
+and was fairly cheap (by amiga standards). The software was ok, I could sample
+and then I could play the sample, mixing and such. But there was no developper
+support. I tried calling D.A.D (got a fresh phone number off the net) and they
+were very nice, sent me latest software and all but no dev.support.
+Well I thought it couldnt be too hard to figure out how to program the device :)
+A little work and a lot of time later these are the fruits of my labour.
+(Too bad D.A.D seems to have vanished from the face of the earth :P)
+
+Enjoy, and feel free to use and modify these files as you like, but if
+you improve them please upload to aminet.
+
+
+This archive contains:
+
+dad_audio.h   -A subset of the device commands for dad_audio.device (wavetools)
+                - set replay sample frequency
+                - set sample frequency
+                - set output damping
+                - set input gain
+                - buffer handling....etc
+               Also a little logic thought model I have made up :)
+               Enough to be able to play a sample, and for sampling.
+
+1.	dadplay/dadplay.c
+		dadplay
+		-A short (ugly) program using dad_audio.device to play a raw 16 bit
+        	stereosample from chipmem.
+
+2.	dadmon/	dadmon.c
+		interface.h
+		interface.c
+		interface.o
+		-A short program using dad_audio.device to sample to chipmem
+		and then either write sample to file (raw stereo 16 bit)
+		or show some form of uv meters (crappy).
+
+This not intended as sample player software but merely as an example,
+maybe someone else can contribute with more information !!!
+
+To gain this information I have used:
+ninfo    - dissassembler (aminet)
+devmon   - Commodore (?) official developper package (great tool)
+gcc2.7.0 - C compiler
+snma     - assembler.
+Also the window code is leeched from CPUload (C) Thomas Radtke 1994
+
+Wavetools, hardware and software, is the copyright of Digital Audio Design.
+(Are they still around somewhere?)

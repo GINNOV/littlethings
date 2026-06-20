@@ -1,0 +1,2 @@
+Une classe contenant des virtuelles, ne peut pas avoir celles-ci
+utilisées dans _le constructeur_ qui l'initialise.

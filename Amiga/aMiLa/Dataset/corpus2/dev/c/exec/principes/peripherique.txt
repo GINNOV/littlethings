@@ -1,0 +1,13 @@
+
+Le bit ES_IMMEDIATE (QUICK_IO), n'a pas d'intêret pou l'utilisateur
+puisque ce bit peut être fixé par la fonction faisES (DoIO) qui essaira
+toujours de faire l'E/S de façon rapide en positonnant ce bit avant toute
+opérations. De plus, il est bon de savoir que si une E/S rapide est demandée
+mais que le périphérique ne peut pas l'a traité rapidement, elle est mise
+en attente. Autrement dit, on ne peut pas faire une E/S rapide simplement
+en forçant le bit QUICK_IO (ES_IMMEDIATE).
+
+Conseils généraux:
+ o Connaître les possiblités d'E/S immédiates sur le périphérique utilisé.
+ o Si plusieurs E/S lentes sont possibles, essayer au maximum de lancer
+   une tâche par E/S.

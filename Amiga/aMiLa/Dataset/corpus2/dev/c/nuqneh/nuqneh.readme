@@ -1,0 +1,26 @@
+Short:        Commandline parser generator.
+Author:       Peter Bengtsson
+Uploader:     Peter Bengtsson
+Type:         dev/c
+Version:      1.0
+Requires:     C compiler
+Architecture: ppc-amigaos >= 4.0.0
+
+The nuqneH commandline argument parser generator generates
+code to parse the parameters given to a program invoked
+from a shell.
+
+For 64-bit integer support, the compiler must support the
+"long long" type and the c-library must have the atoll()
+function. (for clib2 you can use the quick workaround of
+supplying the argument "-Datoll(x)=strtoll(x,0,10)" to gcc
+until clib2 supports atoll() natively.)
+
+To disable 64-bit integer support when compiling, add the
+argument "-DNQ_NO_64=1" to gcc.
+
+The contained manual explains the usage of nuqneH more
+fully.
+
+   -Peter
+

@@ -1,0 +1,164 @@
+Programming Documentation For
+
+
+DOS-2-DOS
+
+
+OVERVIEW
+
+Dos-2-DOs is a program which permits the Amiga to read and write
+MS-DOS and Atari floppy disks using the Amiga's internal and
+external 3.5-inch and 5.25-inch floppy disk drives.  Dos-2-Dos takes
+over one of the Amiga's floppy drives and retains control as long as
+the program runs.  AmigaDOS cannot access that floppy drive until
+Dos-2-Dos terminates.
+
+This program exists in Swedish and English language versions.
+
+
+DESIGN PHILOSOPHY
+
+The Amiga uses MFM bit encoding on its floppy disks, which is the
+same bit encoding scheme used by both MS-DOS and Atari disk formats.
+However, the sector numbering and sector content schemes are
+completely different.  For that reason, the Amiga cannot directly
+read and write MS-DOS or Atari disks, even though the Amiga hardware
+is physically capable of performing the necessary disk reads and
+writes.
+
+The Amiga system software includes a floppy disk driver called
+Trackdisk.device.  This device driver offers a direct "raw" read and
+write capabilty which, in theory, should work fine for reading and
+writing MS-DOS and Atari diskettes.  However, the early versions of
+Trackdisk.device contained several serious bugs which prevented the
+raw reads and writes from performing properly.  For this reason,
+Dos-2-Dos contains its own driver software which handles direct disk
+reads and writes for the selected floppy drive.  Because of inter-
+ference from Trackdisk.device, Dos-2-Dos uses a non-standard (and
+potentially troublesome) trick to keep Trackdisk.device from
+disturbing the selected disk drive while Dos-2-Dos is running.
+
+Dos-2-Dos contains a rudimentary MS-DOS file system, sufficient to
+read and write any MS-DOS file from the root directory or any
+selected subdirectory.
+
+Dos-2-Dos is written as a command-line style program.  There were
+originally several good reasons for this approach.  By today's
+standards, the program seems archaic and should be rewritten to use
+the Intuition-style interface.
+
+
+MODULE DESCRIPTION
+
+Dos-2-Dos consists of eight source modules and two include files.
+
+D2DMAC.ASM is an include file containing common macros and equates
+used in more than one module of the program.
+
+IO.MAC is an include file used with DISK.ASM.
+
+D2D.ASM contains initialization and exit code, and logic to decode
+operator commands.
+
+DEVICE.ASM contains code to find the specified floppy drive and
+investigate its capacity.
+
+DISK.ASM contains a floppy device driver capable of reading and
+writing raw data from the floppy drive, for encoding and decoding
+MFM data, and for finding and verifying the integrity of individual
+sectors in the data of a track.  It also contains code for checking
+disk protection, finding track 0, and stepping the heads.
+
+MAIN.ASM contains the MS-DOS filing system and logic for formatting
+MS-DOS diskettes.  It also contains code for translating MS-DOS
+ASCII characters to and from Amiga ASCII, icluding the extended
+ASCII characters.
+
+MESSAGES.ASM contains the language-dependent text messages used in
+Dos-2-DOs.
+
+FUN.ASM contains text manipulation subroutines.
+
+XLATE.ASM contains ASCII character translation tables.
+
+VERSION.ASM contains text messages used to identify the version of
+Dos-2-Dos and to display specific greeting messages which exist in
+the demo and evaluation versions.
+
+
+BUILDING INSTRUCTIONS
+
+Each source module is assembles using the CAPE assembler.  The
+object modules are linked using BLINK to produce the final
+executable program.  Demo and evaluation versions are produced by
+linking different versions of VERSION.ASM and D2D.ASM.
+
+A special version of Dos-2-Dos designed to handle 80-track 5.25-inch
+diskettes is called D2D80, and is produced by linking with a special
+version of MAIN.OBJ called MAIN80.OBJ.  Instructions for assembling
+MAIN80.OBJ are found inside the MAIN.ASM module.
+
+
+TRICKS, TRAPS, AND GOTCHAS
+
+Dos-2-Dos uses a non-standard method to "disable" Trackdisk.device,
+for the floppy disk drive selected by the operator be the MS-DOS
+drive.  By accessing a "private" area of the unit table structure
+maintained by Trackdisk.device, Dos-2-Dos can prevent Track-
+disk.device from interfering with Dos-2-Dos.  It does this by
+finding the "select" bits used by Trackdisk.device to address the
+selected drive.  By setting these select bits to zero, Dos-2-Dos
+causes Trackdisk.device to access a non-existent drive.  Dos-2-Dos
+restores these bits upon relinquishing controlof the drive, allowing
+Trackdisk.device to access the drive once again.
+
+The problem with this technique is that the select bits can be (and
+have been) moved inside the private unit table from version to
+version of Trackdisk.device.  The result is that Dos-2-Dos may be
+incompatible with new versions of Trackdisk.device, forcing a
+revision to Dos-2-Dos.
+
+There are several different ways to correct this problem which have
+been proposed from time to time by various Amiga experts.  However,
+the approach used by Dos-2-Dos does work reliably.
+
+
+SUPPORT ISSUES
+
+MS-DOS and Atari diskettes are formatted using an "index" pulse
+which defines an arbitrary "beginning" for each track.  By
+definition, sector one of each track must occur within a measurable
+number of microseconds after the occurance of the index pulse.  The
+AmigaDOS disk format does not enforce such a restriction and, in
+fact, the Trackdisk.device does not even use the index pulse,
+although the signal is available from the drive.  
+
+Since the Amiga system software never utilizes the index pulse, it
+is quite possible for the Amiga to read and write data from a disk
+drive which does NOT produce the index pulse.  However, Dos-2-DOs
+REQUIRES the index pulse, since MS-DOS disks produced by Dos-2-DOs
+must conform to the index pulse standard in order to be read by an
+MS-DOS or Atari computer.  This leads to the possibility that
+Dos-2-Dos may not work at all on a drive which works fine for Amiga
+disks.
+
+If Dos-2-DOs cannot detect the index pulse within the time required
+for two disk revolutions, it reports the problem as "MS-DOS/Atari
+drive not ready".  This error also occurs if there is no diskette in
+the drive.  If the problem is caused by hardware failure, it can
+arise from failure of the drive to generate the pulse or it can be
+caused by the CIA chip which controls the drive.  The solution is to
+replace the CIA chip or replace the drive.  It can be difficult to
+convince a customer that the problem is caused by his hardware when
+the computer is able to read and write Amiga diskettes with no
+problems!
+
+
+COMMENTS
+
+Dos-2-DOs currently faces competition from Cross-Dos, a product
+which permits direct MS-DOS file access from Amiga programs instead
+of forcing files to be converted to AmigaDOS format, as does
+Dos-2-Dos.  Each approach has its advantages, and Dos-2-DOs
+continues to sell despite the competition.
+

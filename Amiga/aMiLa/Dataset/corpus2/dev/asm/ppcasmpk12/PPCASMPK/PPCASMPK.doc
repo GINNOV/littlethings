@@ -1,0 +1,335 @@
+/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/
+          PowerPC Assembler Pack for Amiga V1.2
+
+                (RELEASE DATE 19.5.1999)
+/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/
+
+··································································
+minimal Requirements:.......68000
+··································································
+recommended Requirements:...68030 or 68060,
+                            AGA/gfxboard and Ks3.0 for the demo
+                            Ks2.0 for the register-window
+··································································
+
+Description
+-----------
+This is a Emulator/Disassembler intended for Assembler programmers
+wanting to develop PowerPC-routines on their 680x0 Amigas. To enable
+output, special meaning has been given to the instruction "sc" which
+makes calls to 680x0-AmigaOS possible(this is of course incompatible
+with PPC-system-calls in PowerUp-Amigas).
+
+Rights
+------
+This Package is Freeware!
+It may be redistributed/copied without explicit permission.
+
+Author
+------
+To contact me, send Email to:  powerstack@usa.net
+	
+
+The Demo
+--------
+To get an idea of what kind of things can be done with this tool,
+see the EmulDemo-directory: 
+
+PPCTEST.ASM is the source file for a small demo doing some 
+            graphics in a chunky buffer.
+
+PPCTEST.P is the assembled File. It has a header of 64 Bytes,so
+          use offset=64 to run it
+
+
+If you don't want to mess around with the special 
+System-Call-mechanism, this Demo can serve you as a framework
+for your chunky PPC-routines.
+
+To assemble the demo,use the ppc-amigaos-as Cross-Assembler from
+the ADE GCC package.
+
+
+Usage
+-----
+
+PPCASMPK <ppc-file> <offset> [e][d][r][w]
+       offset: offset of PPC-code in the file
+       "e":    specify this to emulate
+       "d":    specify this to disassemble
+ (use "ed" to disassemble while running)
+       "r":    add this to show registers after each inst
+       "w":    add this to show registers in a separate
+               window
+
+For example,to run the demo,you would type "PPCASMPK ppctest.p 64 e"
+
+
+For the 2 memory-addressing modes of the PowerPC,2 versions of the
+ emulator/disassembler are available:
+
+············································································
+PPCASMPK_LE for LittleEndian byte-ordering
+		;   this means that 
+		;              1.the 4 bytes of each INSTRUCTION are
+		;                organized right-to-left in memory(msbs last)
+		;	       2.multiple-byte memory-accesses by the
+		;                PPC store/load less significant bytes first
+············································································
+PPCASMPK for BigEndian byte-ordering
+		;   this means that 
+		;             1.the 4 bytes of each INSTRUCTION are
+		;               organized left-to-right in memory(msbs first)
+		;	      2.multiple-byte memory-accesses by the
+		;               PPC store/load more significant bytes first
+		;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		;for example used in:........MacOS (PowerMac),PowerUp-Amiga
+		;similar to:.................680x0
+		;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+············································································
+
+
+Technical Details (also see tables at end of file)
+--------------------------------------------------
+
+  _____emulates:______
+ /                    \
+ |     32bit-PPC      |
+ |                    |
+ |    restrictions:   |
+ |*NO* FPU-emulation  |
+ |*NO* interrupts     |
+ |*NO* supervisor-mode|
+ |(registers,mmu,ops) |
+ \____________________/
+
+ -----------------------------
+ Conventions for the emulator:
+ -----------------------------
+ 1. The program can exit with "blr"
+ 2. r31 is the Stack,pointing behind the valid buffer
+    (if you need more stack for the emulation-code,
+     increase the stack of the PPCASMPK-Tool)
+ 3. The code at the specified offset in the file is
+    emulated to reside at address 0. Because of this,
+    you can use absolute addressing without having to
+    relocate the code
+ 4. r0 is the execbase (mapped into the PPC's address
+                        space)
+ 5. you can get the address of a label by branching
+    immediately before it and letting the return-adr
+    be placed into the LR
+ 6. Cache-flush operations all result in a flush of
+    the whole data-cache;Cache-hints are ignored
+ 7. to enable output,the following has been implemented:
+
+ Incompatible emulation of "sc" to enable call of 680X0-system routines
+------------------------------------------------------------------------
+ r2 contains the address to jump to (in real-memory)
+ If r2 is 0, no call to 680X0-code is made.Use this to prepare pointers
+ before passing/evaluating structures etc.
+
+ r16-r23 map to d0-d7
+ r24-r30 map to a0-a6 (a7 will be the emulator's stack)
+
+>r0 contains a mask(PPC-numbered bit0 corresponding to r0,bit1 to r1...)
+ that specifies which registers contain addresses,that must be converted
+ to real addresses BEFORE the call
+>if a bit is 1 it means that the corresponding register must be converted
+>r1 does specify the registers that have to be converted back to
+ Zero-bound addresses AFTER the 680X0-routine returns
+
+ !!!!!!!!!!!! IMPORTANT: if a register contains the value 0,it is not
+ !!!!!!!!!!!!            mapped! This makes error-testing at system-
+ !!!!!!!!!!!!            routines like AllocMem possible.
+------------------------------------------------------------------------
+
+
+ 
+
+
+
+Tables
+------
+
+
+supported registers
+@@@@@@@@@@@@@@@@@@@
+r0-r31	;general purpose registers
+LR	;link-register
+CT	;count-register
+CR	;condition-register
+XER	;integer exception register
+
+
+throughout the following tables,"/x" indicates that an "o" and/or "." may
+be added to a mnemonic
+
+instructions supported by the disassembler only:
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		cntlzd/x	(64-bit)
+		divd/x		(64-bit)
+		divdu/x		(64-bit)
+		extsw/x		(64-bit)
+		fabs/x		(FPU)
+		fadd/x		(FPU)
+		fadds/x		(FPU)
+		fcfid		(64-bit) (FPU)
+		fcmpo		(FPU)
+		fcmpu		(FPU)
+		fctid/x		(64-bit) (FPU)
+		fctidz/x	(64-bit) (FPU)
+		fctiw/x		(FPU)
+		fctiwz/x	(FPU)
+		fdiv/x		(FPU)
+		fdivs/x		(FPU)
+		fmadd/x		(FPU)
+		fmadds/x	(FPU)
+		fmr/x		(FPU)
+		fmsub/x		(FPU)
+		fmsubs/x	(FPU)
+		fmul/x		(FPU)
+		fmuls/x		(FPU)
+		fnabs/x		(FPU)
+		fneg/x		(FPU)
+		fnmadd/x	(FPU)
+		fnmadds/x	(FPU)
+		fnmsub/x	(FPU)
+		fnmsubs/x	(FPU)
+		frsp/x		(FPU)
+		fsub/x		(FPU)
+		fsubs/x		(FPU)
+		ld		(64-bit)
+		ldarx		(64-bit)
+		ldu		(64-bit)
+		ldux		(64-bit)
+		ldx		(64-bit)
+		lfd		(FPU)
+		lfdu		(FPU)
+		lfdux		(FPU)
+		lfdx		(FPU)
+		lfs		(FPU)
+		lfsu		(FPU)
+		lfsux		(FPU)
+		lfsx		(FPU)
+		lwa		(64-bit)
+		lwaux		(64-bit)
+		lwax		(64-bit)
+		mcrfs		(FPU)
+		mffs/x		(FPU)
+		mtfsb0/x	(FPU)
+		mtfsb1/x	(FPU)
+		mtfsf/x		(FPU)
+		mtfsfi/x	(FPU)
+		mulhd/x		(64-bit)
+		mulhdu/x	(64-bit)
+		mulld/x		(64-bit)
+		rldcl/x		(64-bit)
+		rldcr/x		(64-bit)
+		rldic/x		(64-bit)
+		rldicl/x	(64-bit)
+		rldicr/x	(64-bit)
+		rldimi/x	(64-bit)
+		sld/x		(64-bit)
+		srad/x		(64-bit)
+		sradi/x		(64-bit)
+		srd/x		(64-bit)
+		std		(64-bit)
+		stdcx.		(64-bit)
+		stdu		(64-bit)
+		stdux		(64-bit)
+		stdx		(64-bit)
+		stfd		(FPU)
+		stfdu		(FPU)
+		stfdux		(FPU)
+		stfdx		(FPU)
+		stfs		(FPU)
+		stfsu		(FPU)
+		stfsux		(FPU)
+		stfsx		(FPU)
+
+
+
+instructions not supported by the emulator/disassembler:
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		eciwx		(hardware dependent)
+		ecowx		(hardware dependent)
+		fres/x		(FPU) (optional)
+		frsqrte		(FPU) (optional)
+		fsel/x		(FPU) (optional)
+		fsqrt/x		(FPU) (optional)
+		fsqrts/x	(FPU) (optional)
+		mfsr		(supervisor)
+		mfsrin		(supervisor)
+		mtmsr		(supervisor)
+		mtsr		(supervisor)
+		mtsrin		(supervisor)
+		rfi		(supervisor)
+		slbia		(64-bit) (supervisor)
+		slbie		(64-bit) (supervisor)
+		stfiwx		(FPU) (optional)
+		td		(64-bit) (interrupts)
+		tdi		(64-bit) (interrupts)
+		tlbia		(MMU) (optional)
+		tlbie		(MMU) (optional)
+		tlbsync		(MMU) (optional)
+		tw		(interrupts)
+		twi		(interrupts)
+			
+
+
+
+implemented in 603e but optional for PowerPC:
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		fres/x
+		frsqrte/x
+		fsel/x
+		stfiwx
+		tlbie
+		tlbld
+		tlbsync
+
+
+not implemented in 603e:
+@@@@@@@@@@@@@@@@@@@@@@@@
+		cntlzd/x	(64-bit)
+		divd/x		(64-bit)
+		divdu/x		(64-bit)
+		extsw/x		(64-bit)
+		fcfid/x		(64-bit)
+		fctld/x		(64-bit)
+		fctldz/x	(64-bit)
+		fsqrt/x		(optional)
+		fsqrts/x	(optional)
+		ld		(64-bit)
+		ldarx		(64-bit)
+		ldu		(64-bit)
+		ldux		(64-bit)
+		ldx		(64-bit)
+		lwa		(64-bit)
+		lwaux		(64-bit)
+		lwax		(64-bit)
+		mulhd/x		(64-bit)
+		mulhdu/x	(64-bit)
+		mulld/x		(64-bit)
+		rldcl/x		(64-bit)
+		rldcr/x		(64-bit)
+		rldic/x		(64-bit)
+		rldicl/x	(64-bit)
+		rldicr/x	(64-bit)
+		rldimi/x	(64-bit)
+		slbia		(64-bit)
+		slbie		(64-bit)
+		sld/x		(64-bit)
+		srad/x		(64-bit)
+		sradl/x		(64-bit)
+		srd/x		(64-bit)
+		std		(64-bit)
+		stdcx.		(64-bit)
+		stdu		(64-bit)
+		stdux		(64-bit)
+		stdx		(64-bit)
+		td		(64-bit)
+		tdl		(64-bit)
+		
+

@@ -1,0 +1,138 @@
+UE2SAS version 1.0
+
+Compile C source code directly from the UEdit text editor. Step through any
+reported errors and have the error lines in the source appear inverted. The
+related error message will appear in a split window. Run this utility from the
+defined keys or with the mouse from customized screen gadgets. Also contains
+key definitions for loading macro sequences onto the keys of the numeric
+keypad.
+    The included script contains special key definitions that can be added to
+a UEdit configuration. Instructions for adding the definitions are given below.
+                        
+                        What the commands do:
+
+ShiftAltControl-j: Changes the screen gadgets so that they will run my
+compile keys. Just press this same combination to toggle back and forth
+between my screen gadget functions and the default UEdit ones. The other
+key definitions will work whether one has the screen gadgets on or off.
+Having the gadgets just adds the option of mouse control.
+
+ShiftAlt-j or gadget 1: Run this key to compile the source code in the
+current file. A split window will appear. If the results returned by DOS
+include no compile errors, the window will reveal whatever message comes from
+DOS. If the compile has been successful, the split window will just show the
+message "SAS C 6.1.",etc. If the DOS result has at least six lines of text,
+my script assumes that it has compiler error results and it runs the key
+ShiftAlt-k once.
+
+ShiftAlt-k or gadget 2: Hilites the appropriate error line in the source
+window and shows the correct error message in the split window. If all of
+the error messages have been shown, then the last source error line remains
+hilited and the message "last error message" appears in the split window.If
+you are using a compiler other than SAS C version 6, see below for changes
+that can be made that will allow my key definitions to work with the output
+of other programs.
+
+ShiftAlt-l or gadget 3: Removes the split window and the inverted region and
+returns to editing the source file.
+
+ShiftAlt-; : That's shift-alt-semicolon. This prompts the user to input a
+different compile command, the default is 'sc:c/sc'. If this key is used
+and nothing is entered, the default will be used. Even if one is using SAS
+C, one might wish to enter just 'sc' as the command if the compiler has
+been made resident, for example. I wanted to put this key on gadget 4, but
+I couldn't find a way to mask the mouse button from ending primitive mode.
+Oh, well.
+l
+ShiftControl-keypad (: No that's not a smiley face. It refers to the open
+parenthesis on the top row of the numeric keypad. Saves the current learn
+sequence to T: as uLearn.1.
+
+ShiftAlt-keypad (: Loads and runs the learn sequence T:uLearn.1. This key and
+the previous one are specimens of eight keys that all do similar things.
+They allow one to load learn sequences onto the top four keys of the
+numeric keypad { (,),/and * } and replay them as macros. I missed this
+feature from the Lattice Screen Editor (now 'se').  One might expand on the
+UEdit code that I've provided to give one the ability to load macros onto
+more of the keypad keys, or other keys.
+
+                        Adding the new features to UEdit:
+
+Run UEdit and open the included Config!J file. Place the cursor at the top of the
+file. Press function key F6 repeatedly until the cursor reaches the
+bottom of the file. The new features are now available, but your configuration
+on disk is unchanged. If you wish to add the new features to your setup,
+then select the 'Data File/Save Data' menu item from the Buffers menu.
+UEdit will prompt you to enter the name of the Data! file. If you just
+press Escape, the default name of S:Data! will be used.
+
+                        UEdit resources used:
+                        
+A look at the 'defines' section of Config!J should tell most of the story.
+Besides using ShiftAlt jkl and ;, I used ShiftControl jk and l to store
+the contents of the screen gadgets while they are being used for my
+functions. If any of the keys, variables, or buffers I've used are in
+conflict with ones being used by your current UEdit setup, just modify the
+contents of Config!J and recompile. That's the beauty of UEdit.  If you
+compile my keypad learn sequence keys at the end of Config!J, they occupy
+ShiftControl (,),/, and * at the top of the keypad, plus the same keys,
+only modified with ShiftAlt.
+
+                        Using these features with other compilers:
+                        
+It should be possible to modify Config!J to work with the output of other
+compilers, as long as the error line is given with the error message.  If
+you are using Lattice C 5.04. the first line of the ShiftAlt-k definition
+should be changed to 'setSearch("line")' and the number of subsequent
+occurrances of the line 'incLoc(DOS_RESULT,locA)' should be changed. Each
+time that incLoc is issued, it's like moving the cursor to the right by one
+space. In the error message, count how many characters there are from the
+start of the search word in the error message to the first numeral of the
+line number.  This will tell you the number of times incLoc should be
+repeated to place the cursor on the line number. The code following this
+converts the numeric char into an integer used to place the cursor on the
+proper line of your source code.
+    I tried to get my keys going with the shareware version of DICE, but
+it won't send all of the error messages to UEdit that it sends when run
+from a shell a Shell window. Perhaps it has something to do with the
+difference between STDOUT and STDERR on the Amiga. Who knows? If anyone
+gets it going, let me know.
+
+                        Limitations:
+
+There is a problem with this version when split windows exist at the time of
+the compile.  Maybe I'll get that ironed out in a subsequent version...if
+there are any.
+
+                        The story:
+                        
+Aren't you really GLAD that I saved the personal details until the end,
+unlike SOME documentation authors? Pat Ryan of East Braintree, Massachusetts
+is the world's premier UEdit evangelist. He's eager to tell you all about it
+even if you're left wondering afterward, "What is an Omega?" So when I
+decided to make a break away from LSE I made the move to UEdit. When some of
+the details of SAS 6 revealed that it would offer a way to send compile
+errors to ARexx capable text editors via the Scmsg facility, Pat was all
+excited about applying this technique to UEdit. He and I are both interested
+in programming, although we're mainly just duffers. Since I've been starting
+to learn some ARexx, and with the prospect of Pat's help if I got bogged
+down I set about interfacing UEdit with Scmsg. Well, you may have noticed
+that there is no mention of ARexx anywhere in my docs or source. Scmsg
+refuses to be invoked if the compiler is run from UEdit. I tried all kinds
+of dodges: run, runback, even NewShell from fromfile. No soap. I was getting
+set to call SAS technical support when it dawned on me...DUH! I could run
+the compile from UEdit and get the console output in a buffer. I already had
+all of the error lines in my grasp.  To Hell with Scmsg (sorry SAS).
+    Please let me know if you have any suggestions, comments...or Praise!
+
+
+Uploader:                 Joel B. Couch                               
+                          Boston Computer Society Amiga Users' Group  
+                          One Kendall Square                          
+                          Cambridge, MA 02139                         
+                                                                      
+                          jbciii@world.std.com
+                          
+                          Meager Creations
+
+                                               

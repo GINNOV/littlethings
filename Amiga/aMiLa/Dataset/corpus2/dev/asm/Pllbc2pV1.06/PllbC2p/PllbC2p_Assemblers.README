@@ -1,0 +1,41 @@
+
+ *=------------------------------------------------------------------------=*
+
+                                N O T I C E
+
+ *=------------------------------------------------------------------------=*
+
+
+ Unfortunately, It was recently been brought to my attension that PLLBC2P
+ v0.04 & v0.05 sources didn't seem to assemble correctly through some
+ popular assemblers, most notablely, the updated versions of 'asmone'.
+  Believe it or not, up until recently, I'd been faithfully using the
+ classic 'asmone v1.01' (Yes that's not a typo:) within which the original
+ source assembled as expected.  To my surprise, I noticed that most other
+ assemblers default to '.w' in regards to using data registers as offsets,
+ unlike old faithful v1.01, which appears to default to '.l', although
+ thats probably selectable, but who cares now.. ;)
+
+
+ So what does this all mean to you ?, well probably nothing, but at least
+ now it should work as described, finally.   ;)
+
+
+
+ Yours Sincerely,
+
+ Kevin Picone
+ 
+
+
+ P.s. For those couple of guys that had problems with the pllbc2p in the
+      past, I can assure you, that they certainly were working %100 at
+      my end, even with your test sources, although obviously I was using 
+      asmone v1.01.  (re: ville ;)
+
+ 
+ *=------------------------------------------------------------------------=*
+	
+                               T H E  E N D
+                       
+ *=------------------------------------------------------------------------=*

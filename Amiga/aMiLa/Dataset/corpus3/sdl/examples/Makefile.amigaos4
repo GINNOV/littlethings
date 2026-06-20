@@ -1,0 +1,163 @@
+# Makefile to build the examples
+
+CC     = ppc-amigaos-gcc
+CRT   ?= newlib
+CFLAGS = -mcrt=$(CRT) -gstabs -O3 -Wall -I../include -I../include/build_config -I../src
+LIBS   = -mcrt=$(CRT) -L.. -lSDL3_test -lSDL3 -athread=native
+
+SRC_FILES = $(wildcard */*/*.c)
+DEPS = $(SRC_FILES:.c=.d)
+
+TARGETS = \
+    load-bitmaps \
+    simple-playback \
+    simple-playback-callback \
+    load-wav \
+    multiple-streams \
+    planar-data \
+    snake \
+    woodeneye-008 \
+    infinite-monkeys \
+    bytepusher \
+    joystick-polling \
+    joystick-events \
+    gamepad-polling \
+    gamepad-events \
+    clipboard \
+    clear \
+    primitives \
+    lines \
+    points \
+    rectangles \
+    streaming-textures \
+    rotating-textures \
+    scaling-textures \
+    geometry \
+    color-mods \
+    viewport \
+    cliprect \
+    read-pixels \
+    debug-text \
+    affine-textures \
+
+all: $(TARGETS)
+
+# asyncio
+load-bitmaps: asyncio/01-load-bitmaps/load-bitmaps.o
+	$(CC) -o $@ $^ $(LIBS)
+
+# audio
+simple-playback: audio/01-simple-playback/simple-playback.o
+	$(CC) -o $@ $^ $(LIBS)
+
+simple-playback-callback: audio/02-simple-playback-callback/simple-playback-callback.o
+	$(CC) -o $@ $^ $(LIBS)
+
+load-wav: audio/03-load-wav/load-wav.o
+	$(CC) -o $@ $^ $(LIBS)
+
+multiple-streams: audio/04-multiple-streams/multiple-streams.o
+	$(CC) -o $@ $^ $(LIBS)
+
+planar-data: audio/05-planar-data/planar-data.o
+	$(CC) -o $@ $^ $(LIBS)
+
+# camera (not supported)
+
+# demo
+snake: demo/01-snake/snake.o
+	$(CC) -o $@ $^ $(LIBS)
+
+woodeneye-008: demo/02-woodeneye-008/woodeneye-008.o
+	$(CC) -o $@ $^ $(LIBS)
+
+infinite-monkeys: demo/03-infinite-monkeys/infinite-monkeys.o
+	$(CC) -o $@ $^ $(LIBS)
+
+bytepusher: demo/04-bytepusher/bytepusher.o
+	$(CC) -o $@ $^ $(LIBS)
+
+# input
+joystick-polling: input/01-joystick-polling/joystick-polling.o
+	$(CC) -o $@ $^ $(LIBS)
+
+joystick-events: input/02-joystick-events/joystick-events.o
+	$(CC) -o $@ $^ $(LIBS)
+
+gamepad-polling: input/03-gamepad-polling/gamepad-polling.o
+	$(CC) -o $@ $^ $(LIBS)
+
+gamepad-events: input/04-gamepad-events/gamepad-events.o
+	$(CC) -o $@ $^ $(LIBS)
+
+# misc
+
+clipboard: misc/02-clipboard/clipboard.o
+	$(CC) -o $@ $^ $(LIBS)
+
+# pen (not supported)
+
+# renderer
+clear: renderer/01-clear/clear.o
+	$(CC) -o $@ $^ $(LIBS)
+
+primitives: renderer/02-primitives/primitives.o
+	$(CC) -o $@ $^ $(LIBS)
+
+lines: renderer/03-lines/lines.o
+	$(CC) -o $@ $^ $(LIBS)
+
+points: renderer/04-points/points.o
+	$(CC) -o $@ $^ $(LIBS)
+
+rectangles: renderer/05-rectangles/rectangles.o
+	$(CC) -o $@ $^ $(LIBS)
+
+textures: renderer/06-textures/textures.o
+	$(CC) -o $@ $^ $(LIBS)
+
+streaming-textures: renderer/07-streaming-textures/streaming-textures.o
+	$(CC) -o $@ $^ $(LIBS)
+
+rotating-textures: renderer/08-rotating-textures/rotating-textures.o
+	$(CC) -o $@ $^ $(LIBS)
+
+scaling-textures: renderer/09-scaling-textures/scaling-textures.o
+	$(CC) -o $@ $^ $(LIBS)
+
+geometry: renderer/10-geometry/geometry.o
+	$(CC) -o $@ $^ $(LIBS)
+
+color-mods: renderer/11-color-mods/color-mods.o
+	$(CC) -o $@ $^ $(LIBS)
+
+viewport: renderer/14-viewport/viewport.o
+	$(CC) -o $@ $^ $(LIBS)
+
+cliprect: renderer/15-cliprect/cliprect.o
+	$(CC) -o $@ $^ $(LIBS)
+
+read-pixels: renderer/17-read-pixels/read-pixels.o
+	$(CC) -o $@ $^ $(LIBS)
+
+debug-text: renderer/18-debug-text/debug-text.o
+	$(CC) -o $@ $^ $(LIBS)
+
+affine-textures: renderer/19-affine-textures/affine-textures.o
+	$(CC) -o $@ $^ $(LIBS)
+
+clean:
+	rm -f $(TARGETS) */*/*.o $(DEPS)
+
+%.d : %.c
+	@echo Making dependencies for $<
+	@$(CC) -MM -MP -MT $(@:.d=.o) -o $@ $< $(CFLAGS)
+
+%.o : %.c
+	@echo Compiling $<
+	@$(CC) -o $@ -c $< $(CFLAGS)
+
+# Load .d files
+ifneq ($(MAKECMDGOALS),clean)
+-include $(DEPS)
+endif

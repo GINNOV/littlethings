@@ -1,0 +1,88 @@
+This file is part of the c2cweb package 1.4
+written by Werner Lemberg (a7621gac@awiuni11.bitnet) 20-Aug-1994
+
+
+
+History of the c2cweb package
+=============================
+
+
+Version 1.0 :
+1-Mar-1994      only two persons got it :-)
+
+Version 1.1 :
+8-Mar-1994      initial release
+
+                new:
+                    $ in identifiers are now allowed (CWEAVE)
+                    whitespaces before preprocessor commands are now
+                      allowed (CWEAVE)
+                    the concatenation operator ## added (CWEAVE)
+
+                    option -1 added (one-sided output) (c2cweb)
+
+                    minor changes affecting documentation only
+
+                errors:
+                    Ver 1.0 erroneously reported `@' outside of a string
+                      (c2cweb)
+                    /*}*/ started a new code section at function block level
+                      if in /*@*/-mode (c2cweb)
+                    tabs were not handled correctly (c2cweb)
+
+Version 1.2:
+13-Apr-1994     new:
+                    c2cweb and cweave should now compile smoothly under UNIX
+                      (tested with Linux)
+                    paper format definition moved from c2cweb to compiler.w
+
+                    some files renamed; makefile for c2cweb added
+                errors:
+                    A serious bug introduced in Ver. 1.1 caused whitespaces 
+                      be swallowed (c2cweb)
+
+Version 1.3:
+20-June-1994:   new:
+                    Makefiles enhanced
+
+                    new patchlevel of emx.exe
+
+                    c2cweb.dvi added
+
+                    c2cweb.txt updated
+                errors:
+                    '"' couldn't be used; corrected (c2cweb)
+
+                    sometimes the macro `\e' was concatenated with the next
+                      word; '\e ' now written (c2cweb)
+
+                    wrong index entry for dollar sign corrected (CWEAVE)
+
+                    bug in original CWEAVE corrected:
+                      you couldn't write e.g. @<Cases for |'\''|@>
+
+Version 1.4:
+20-Aug-1994:    new:
+                    based now on CWEB 3.2 (July 1994)
+
+                    original CWEB source files for CWEAVE added
+
+                    additional cwebmac.tex style; original cwebmac.tex renamed
+                     in cwebmac.ori
+
+                    c2cweb.txt has now an installation section
+
+                    C-code example modified
+                errors:
+                    \ at the end of the line in multi-line strings will now be
+                      treated correctly (c2cweb)
+
+                    from 1.3 : '\e ' is of course wrong. It must be '\e{}' (and
+                    sometimes '\e{}%') (c2cweb)
+
+                    //-comment handling was buggy (c2cweb)
+
+                    braces in comments could cause an error (c2cweb)
+
+                    email address changed (same host; old address became
+                      unreachable)

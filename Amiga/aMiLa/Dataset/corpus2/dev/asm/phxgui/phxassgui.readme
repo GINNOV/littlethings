@@ -1,0 +1,19 @@
+Short   : PHXGUI V2.0 ALPHA for PHXASS V43.8
+Author  : steven.wetzel@stud.fh-regensburg.de
+Uploader: steven.wetzel@stud.fh-regensburg.de
+Type    : util/misc
+Replaces: PHXGUI V1.2 Alpha for PHXASS V43.7
+Version : V2.0
+Distribution: Aminet
+
+
+This is my 2nd Version of PHXAssGUI. It's still ALPHA because I have no tester
+but it should be stable now.
+
+For any bugs please contact me. PHXAssGUI V2.0 uses kcon for output.
+
+kcon is available in aminet.
+
+Have fun with this small programm
+
+BETH

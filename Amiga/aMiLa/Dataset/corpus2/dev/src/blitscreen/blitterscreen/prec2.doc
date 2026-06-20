@@ -1,0 +1,41 @@
+
+* PREC: Source code converter (freeware, no warranties at all!)
+
+usage: prec2 sourcefile destfile
+
+* - - -
+
+Write sources that way:
+
+loop:
+   add.l d0,d1 : move.l d1,(a0)+ : dbra d7,loop
+
+Some people say it sucks, I don't care, it makes you wiev more
+source in one window, just like in C etc...
+
+* - - -
+
+note: only a " : " is converted,
+   move.l d0,d1:move.l d1,d2
+won't work.
+
+Strings
+
+" jfj : sokf "
+
+and comments
+
+* sof : dokdk : ddfff
+
+won't be touched.
+
+
+   move.l d0,d1 : move.l d1,d2 ;blah : blah ....
+                ^--converted         ^----not converted
+
+
+- - - //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     // A1201 HD260            fischerj@Informatik.TU-Muenchen.DE
+   \X/      ^--fastmem=2xSpeed      (Juergen "Rally" Fischer) =:)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+

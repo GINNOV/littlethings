@@ -1,0 +1,31 @@
+Short:    A commented disassembly of the exec library 1.2
+Uploader: martintauchmann@bigfoot.com (Martin Tauchmann)
+Author:   Markus Wandel
+Type:     dev/asm
+Version:  1.0
+Date:     24.09.98
+
+Ahoy,
+
+Executed from FishDisk#188, because there is no longer an Amiga
+with KickStart 1.2 ROM, available.
+
+
+
+Other products:
+
+Aminet:disk/cache/fda.lha		(It use the free memory for caching you HardDisk, FloppyDisk, CD)
+Aminet:mods/slow/BrainBird.lha          (Shaman drums to meditate and 14 Ambient NewAge Songs)
+Aminet:comm/misc/TelekomBill.lha   	(German Phone-Bill calculater for WG´s)
+Aminet:gfx/show/ActiveWinPic.lha        (Picture on any window, special SHELL!)
+Aminet:util/boot/IsInserted.lha         (StartUp-Check if a Disk inserted then start BootUte)
+Aminet:misc/unix/File2Partition.lha     (spare memory if LinUX install, stores files direct to HD, Disks or any LogicalDevice)
+Aminet:gfx/edit/FCP.lha                 (Convert Pic -> CopperList  (6BitPlane -> 0 BitPlane CopperList)  - CopperListEditor  - CopperListSearcher  - Full Modula-2 SourceCode)
+
+
+---- Chou schau
+
+ Martin Tauchmann  <martintauchmann@bigfoot.com>
+                   HomePage: http://martintauchmann.home.pages.de
+                   Location: Freiburg im Breisgau
+                             Germany - Baden Württemberg

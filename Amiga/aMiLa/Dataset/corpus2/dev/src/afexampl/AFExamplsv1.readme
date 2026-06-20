@@ -1,0 +1,20 @@
+Short:    C++ Examples for AFrame v.02
+Uploader: nur_hutsko@emuvax.emich.edu (Deryk Robosson)
+Author:   nur_hutsko@emuvax.emich.edu (Deryk Robosson)
+Type:     dev/src
+Requires: AFrame v.02, KS 3.0+, SAS/C 6.5+
+Version:  1
+Replaces: none
+Distribution: Any Amiga supporting site
+
+This is a complete archive of the most current AFrame C++
+Class examples.  See AFrame help index for distribution
+information.
+
+In order to keep things tidy, you might want to extract this into
+your AFramev02 (or AFrame) directory.  This archive will extract
+with full paths/files.
+
+NOTE:  All of these examples are compiled for 68030+ processors.
+       DO NOT try to run them if you have less (unless you have
+       recompiled them) as the results will be less than desirable. 8)

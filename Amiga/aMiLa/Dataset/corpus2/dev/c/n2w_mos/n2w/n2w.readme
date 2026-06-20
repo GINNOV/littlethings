@@ -1,0 +1,61 @@
+Short:        Convert numbers to words w/source
+Author:       Chris F.A. Johnson
+Uploader:     djbase@gmx.de (Matthias Muench)
+Type:         dev/c
+Architecture: ppc-morphos
+
+
+Ported by DJBase - http://www.djbase.de
+
+
+--------------------------------------------------------------------------
+
+
+   This program is released under the GNU General Public Licence.
+
+   Usage: n2w [OPTIONS] num [num ...]
+
+   OPTIONS:
+	-$		    display as dollars and cents
+	-U units, --units=units
+		  print "units" after number
+	-u,  --nand, --US   do not use "and" after "hundred", etc.
+	-&,  --ampersand    use "&" instead of "and" after "hundred", etc.
+
+	     --help	    display this help and exit
+	-v,  --verbose	    set verbose mode on
+	-Vn, --verbose=n    set level of verbosity
+	     --version	    output version information and exit
+
+      Options may be placed anywhere on the command line
+      EXCEPT that a negative number must be preceded by "--"
+      (to indicate end of dashed options).
+
+   BUGS: No warning is given if number supplied exceeds the limit
+
+   Copyright 2000, Chris F.A. Johnson
+
+   EXAMPLES:
+	n2w 21		      => twenty-one
+	n2w 4.56	      => four point five six
+	n2w -$ 21	      => twenty-one dollars only
+	n2w --dollars  4.56   => four dollars and 56 cents
+	n2w -U degrees 21     => twenty-one degrees
+	n2w -U degrees 4.56   => four point five six degrees
+
+
+   Files included in this package:
+
+	n2w-main.c     - command line interface for n2w()
+	n2w.c	       - n2w() can be used in your own progs.
+	n2w.h	       - header to #include in order to use nw2()
+	Makefile       - Makefile for command line prog. (gcc)
+	defs.h	       - miscellaneous macros & defines
+	getopt.c       \    GNU source for getopt, getopt_long, etc.
+	getopt.h	|-  allowing long options and options
+	getopt1.c      /    anywhere on the command line
+	n2w.readme     - this file
+	n2w.readme     - the bare bones of this file
+	n2w	       - Amiga binary (should run on any Amiga, I think)
+	COPYING        - GNU General Public Licence
+

@@ -1,0 +1,28 @@
+Short: Prefs Editor for LEDA GUI. MUI Application.
+Type: dev/c
+Uploader: kay@cip.informatik.uni-wuerzburg.de (Kay Drangmeister)
+Author: kay@insider.sub.de (Kay Drangmeister)
+
+This  is a preference editor for the LEDA GUI. You may set the screen mode,
+the  fonts  and  the  color  base  path and store it in the right format to
+ENV:LEDAGUI.  Future  Versions  will be released together with the LEDA_GUI
+software.
+
+If  you don't know what LEDA is: it is a library of efficient C++ datatypes
+and algorithms. You may want to download LEDA_GUI.lha for some more info.
+
+Features:
+ - MUI application
+ - localized GUI
+ - no reading of documentation required ;)
+ - no installation required
+
+Requires at least:
+ - LEDA 3.1.1
+     (available at "ftp://ftp.mpi-sb.mpg.de/pub/LEDA/LEDA-3.1.2.tgz")
+ - Amiga GUI for LEDA
+     (available on Aminet: "dev/c/LEDA_GUI.lha")
+ - MUI version 2.1 (muimaster.library v8)
+     (available on Aminet: "dev/gui/mui23usr.lha")
+ - AmigaOS 2.0, or AmigaOS 2.1 for localized GUI
+

@@ -1,0 +1,628 @@
+TABLE OF CONTENTS
+
+mesadriver/--background--
+mesadriver/AmigaMesaRTLCreateContextA
+mesadriver/AmigaMesaRTLDestroyContext
+mesadriver/AmigaMesaRTLMakeCurrent
+mesadriver/AmigaMesaRTLGetCurrentContext
+mesadriver/AmigaMesaRTLSetIndexRGBTable
+mesadriver/AmigaMesaRTLSetIndexRGB
+mesadriver/AmigaMesaRTLGetIndexRGB
+mesadriver/AmigaMesaRTLSetContextAttrsA
+mesadriver/AmigaMesaRTLGetContextAttr
+mesadriver/AmigaMesaRTLSetOutputHandlerAttrsA
+mesadriver/AmigaMesaRTLGetOutputHandlerAttr
+mesadriver/AmigaMesaRTLSetAttrsA
+mesadriver/AmigaMesaRTLGetAttr
+
+mesadriver/--background--                           mesadriver/--background--
+
+   NAME
+        mesadriver - Driver interface to AmigaMesaRTL
+
+   PURPOSE
+        This document describes the Amiga-specific interface to the Mesa
+        library.
+
+        The driver is what makes Mesa work on a specific platform. It
+        provides the low-level operations, such as drawing a pixel, which
+        the main Mesa library eventually calls to produce output. These
+        functions are for use by the Mesa library alone, and so are not
+        publicly accessible.
+
+        The driver also provides the platform-specific routines needed to set
+        up and manage a context. These functions are publicly accessible of
+        course, and are described here.
+        
+        Mesa has two modes: Index mode and RGBA mode. In Index mode, the
+        buffer contains one byte per pixel. Each byte is an index into a
+        palette table describing the colour of that pixel.
+        
+        In RGBA mode, the buffer contains four bytes per pixel, describing
+        the truecolour colour of the pixel. The order of the bytes in the
+        buffer is of no concern to the user, only to the driver and output
+        handler. The output handler can tell the driver what order to use by
+        implementing the OH_RGBAOrder tag (see the outputhandler doc). The
+        AmigaMesaRTL driver understands both RGBA (A in lowbyte) and ARGB (A
+        in highbyte) order, and defaults to RGBA.
+
+   WRITING YOUR OWN DRIVER
+        Any driver should at least present the interface described here. A
+        driver need not support output handlers.
+
+        The Mesa library makes heavy use of function pointers. This presents
+        a problem, as functions in an Amiga run-time library expect a pointer
+        to the library base in register A6, which is not set up when the
+        function is called through a function pointer. This alone is not
+        disasterous. But the global data pointer A4 is determined based on
+        the value of A6 if the library is linked with libinitr.o. Fortunately
+        very few functions are likely to need access to the global data
+        section. In the case of the AmigaMesaRTL driver, only get_buffer_size
+        and renderer_string need to. In the former case, A4 is manually set
+        to a value stored in the context. In the latter case, the constant
+        string is actually put in the far data section, which is shared by
+        all instances of the library.
+
+mesadriver/AmigaMesaRTLCreateContextA   mesadriver/AmigaMesaRTLCreateContextA
+
+   NAME
+        AmigaMesaRTLCreateContextA - Create a new context
+        AmigaMesaRTLCreateContext - Varargs stub
+
+   SYNOPSIS
+        result = AmigaMesaRTLCreateContextA(tags)
+        D0                                  A0
+
+        AmigaMesaRTLContext AmigaMesaRTLCreateContextA(struct TagItem *);
+
+        result = AmigaMesaRTLCreateContext(tag1, ...)
+
+        AmigaMesaRTLContext AmigaMesaRTLCreateContext(ULONG, ...);
+
+   FUNCTION
+        A new Mesa rendering context is created and initialized. If requested
+        an output handler is also opened and initialized. Don't assume that
+        the context will be current after creation.
+
+   INPUTS
+        tags - Pointer to a tag list
+
+   TAGS
+        AMRTL_RGBAMode (BOOL) - Use RGBA mode. (Default TRUE)
+
+        AMRTL_IndexMode (BOOL) - Use Index mode. (Default FALSE)
+
+        AMRTL_OutputHandler (STRPTR) - Name of output handler to use. If the
+             tag value is NULL, no output handler is opened unless the tag
+             AMRTL_OutputHandlerBase is also used.
+
+        AMRTL_OutputHandlerVersion (ULONG) - Lowest version number to request
+             when opening an output handler. The default is given by the
+             environment variable "AmigaMesaRTL/OutputHandlerVersion", or 2
+             if that does not exist either.
+
+        AMRTL_OutputHandlerBase (struct Library *) - Use the given output
+             handler library base instead of opening a new one. If the tag
+             value is NULL, no output handler will be opened.
+
+             If neither AMRTL_OutputHandler nor AMRTL_OutputHandlerBase are
+             given, environment variables are used to determine which handler
+             to open. If an output type is specified (OH_OutputType) in the
+             tag list, the output handler named in the environment variable
+             "AmigaMesaRTL/<output type>" is used. If variable can not be
+             used, the default handler named in the environment variable
+             "AmigaMesaRTL/OutputHandler" is used. If this doesn't exist
+             either, the dl1 output handler is used.
+
+        AMRTL_Mode (ULONG) - What mode to use. Currently only AMRTL_RGBAMode
+             and AMRTL_IndexMode are valid valued for this tag. (Default
+             AMRTL_RGBAMode).
+
+        AMRTL_OutputWidth (GLint)
+        AMRTL_OutputHeight (GLint) - Initial requested size of the output
+             buffer. This value may be overridden by the output handler, and
+             modified by the driver. (Defaults 8).
+
+        AMRTL_GL (STRPTR) - Name of the main mesa library to use. The driver
+             must know which mesa library to use. Both the program using the
+             driver and the driver itself must use the same Mesa library
+             base, so if you specify this tag, your program must get the
+             value of the AMRTL_GLBase tag and use it as the mesamainBase.
+             At present the mesa base can be and must be set only once for a
+             given mesadriverBase. If you link with Mesa.LIB, this will be
+             done by the autoinitialization function, so this tag will be
+             ignored. Note that it is a Bad Idea to share the same mesa main
+             base with other mesa driver bases.
+
+        AMRTL_GLBase (struct Library *) - Similar to AMRTL_GL, except you
+             pass an already-opened mesamainBase pointer.
+
+        OH_#? - If an output handler is used, it will be initialized with a
+             copy of the tag list used to create the context. You can
+             therefore also specify output handler tags here for output
+             handler initialization. The driver will set OH_DriverBase.
+
+   RESULTS
+        result - An abstract AmigaMesaRTLContext pointer, or NULL if an error
+                 occured during initialization.
+
+   BUGS
+        None
+
+   SEE ALSO
+        AmigaMesaRTLDestroyContext()
+
+
+mesadriver/AmigaMesaRTLDestroyContext   mesadriver/AmigaMesaRTLDestroyContext
+
+   NAME
+        AmigaMesaRTLDestroyContext - Delete a context
+
+   SYNOPSIS
+        AmigaMesaRTLDestroyContext(context)
+                                   A0
+
+        void AmigaMesaRTLDestroyContext(AmigaMesaRTLContext);
+
+   FUNCTION
+        The given context is deleted. If an output handler is associated with
+        the context, it too is deleted. If the driver opened the handler, the
+        handler is closed as well.
+
+   INPUTS
+        context - Context to delete
+
+   RESULTS
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+
+
+mesadriver/AmigaMesaRTLMakeCurrent         mesadriver/AmigaMesaRTLMakeCurrent
+
+   NAME
+        AmigaMesaRTLMakeCurrent - Make a context current
+
+   SYNOPSIS
+        AmigaMesaRTLMakeCurrent(context)
+                                A0
+
+        void AmigaMesaRTLMakeCurrent(AmigaMesaRTLContext);
+
+   FUNCTION
+        The given context is made current. A context must be made current if
+        you want to do anything with it. Failure to do so will cause very
+        strange things to happen.
+
+   INPUTS
+        context - Context to make current
+
+   RESULTS
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+
+
+mesadriver/AmigaMesaRTLGetCurrentContext ...ver/AmigaMesaRTLGetCurrentContext
+
+   NAME
+        AmigaMesaRTLGetCurrentContext - Return the current context
+
+   SYNOPSIS
+        result = AmigaMesaRTLGetCurrentContext()
+        D0
+
+        AmigaMesaRTLContext AmigaMesaRTLGetCurrentContext(void);
+
+   FUNCTION
+        Returns the current context of this instance of the driver.
+
+   INPUTS
+        None
+
+   RESULTS
+        result - The current context
+
+   BUGS
+        None
+
+   SEE ALSO
+
+
+mesadriver/AmigaMesaRTLSetIndexRGBTable ...river/AmigaMesaRTLSetIndexRGBTable
+
+   NAME
+        AmigaMesaRTLSetIndexRGBTable - Set multiple index colours for the
+                                       current context
+
+   SYNOPSIS
+        AmigaMesaRTLSetIndexRGBTable(index, rgbtable, numcolours)
+                                     D0     A0        D1
+
+        void AmigaMesaRTLSetIndexRGBTable(int, ULONG *, int);
+
+   FUNCTION
+        This function associates colours with indices for index-mode
+        contexts. There must be a valid current context.
+
+        The table is an array of 3*numcolours ULONG values in RGBRGB.. order.
+        If the context has an output handler, the table is passed to it as
+        well.
+
+        The index range is clipped to fall between 0 and 255. The index range
+        for which the colours are set is
+                     [ index, ..., min(index+numcolours-1, 255) ]
+
+        The call is ignored if the current index is not in index mode.
+
+   INPUTS
+        index - Index value of first colour in the table (0..255)
+        rgbtable - Colour table of numcolours RGB triples
+        numcolours - Number of colours to set
+
+   RESULTS
+        None.
+
+   BUGS
+        None.
+
+   SEE ALSO
+
+
+mesadriver/AmigaMesaRTLSetIndexRGB         mesadriver/AmigaMesaRTLSetIndexRGB
+
+   NAME
+        AmigaMesaRTLSetIndexRGB - Set an index colour for the current context
+
+   SYNOPSIS
+        AmigaMesaRTLSetIndexRGB(index, red, green, blue)
+                                D0     D1   D2     D3
+
+        void AmigaMesaRTLSetIndexRGB(int, ULONG, ULONG, ULONG)
+
+   FUNCTION
+        Associates a given colour to a given index for the current context.
+        There must be a valid current context, and it must be in index mode
+        for this function to have any effect. If the context has an output
+        handler associated with it, the output handler will also be informed
+        of the colour.
+
+   INPUTS
+        index - Index value with which to associate the colour (0..255)
+        red, green, blue - RGB colour value
+
+   RESULTS
+        None.
+
+   BUGS
+        None.
+
+   SEE ALSO
+        AmigaMesaRTLSetIndexRGBTable()
+
+mesadriver/AmigaMesaRTLGetIndexRGB         mesadriver/AmigaMesaRTLGetIndexRGB
+
+   NAME
+        AmigaMesaRTLGetIndexRGB - Get an index colour
+
+   SYNOPSIS
+        AmigaMesaRTLGetIndexRGB(index, red, green, blue)
+                                D0     A0   A1     A1
+
+        void AmigaMesaRTLGetIndexRGB(int, ULONG *, ULONG *, ULONG *);
+
+   FUNCTION
+        Obtains the colour associated with an index in the current context.
+        There must be a valid current context, and it should be in index mode
+        for the colour to be obtained.
+
+        The colour returned is what the driver thinks the colour is. It may
+        be different from the colour an output handler associated with the
+        context decides to use.
+
+   INPUTS
+        index - Index value for which to obtain the colour (0..255)
+        red, green, blue - Space to store the colour in
+
+   RESULTS
+        None.
+
+   BUGS
+        No way to determine if the call failed (e.g. out of range index).
+
+   SEE ALSO
+        AmigaMesaRTLSetIndexRGB
+
+mesadriver/AmigaMesaRTLSetContextAttrsA ...river/AmigaMesaRTLSetContextAttrsA
+
+   NAME
+        AmigaMesaRTLSetContextAttrsA - Set a given context's attributes
+        AmigaMesaRTLSetContextAttrs - Varargs stub
+
+   SYNOPSIS
+        result = AmigaMesaRTLSetContextAttrsA(context, tags)
+        D0                                    A0       A1
+
+        int AmigaMesaRTLSetContextAttrsA(AmigaMesaRTLContext,
+                                                           struct TagItem *);
+
+        result = AmigaMesaRTLSetContextAttrs(context, tag1, ...)
+
+        int AmigaMesaRTLSetContextAttrs(AmigaMesaRTLContext, ULONG, ...);
+
+   FUNCTION
+        Sets some attributes for a given context. The given context need not
+        be current, but must have at least been initialized.
+
+   INPUTS
+        context - Context to set attributes for
+        tags - Pointer to a tag list
+
+   TAGS
+        AMRTL_OutputWidth (GLint)
+        AMRTL_OutputHeight (GLint) - Set requested size of the output buffer.
+             See AmigaMesaRTLCreatContextA(). Note that this change is not
+             acted upon until the buffer is resized by e.g. glViewport().
+        OH_#? - Any unrecognised tags are passed to the output handler if the
+             given context has one.
+
+   RESULTS
+        result - Currently always 0.
+
+   BUGS
+
+   SEE ALSO
+        AmigaMesaRTLSetOutputHandlerAttrsA(), AmigaMesaRTLSetAttrsA()
+
+mesadriver/AmigaMesaRTLGetContextAttr   mesadriver/AmigaMesaRTLGetContextAttr
+
+   NAME
+        AmigaMesaRTLGetContextAttr -  Get context attributes
+
+   SYNOPSIS
+        result = AmigaMesaRTLGetContextAttr(attr, context, data)
+        D0                                  D0    A0       A1
+
+        ULONG AmigaMesaRTLGetContextAttr(ULONG, AmigaMesaRTLContext,
+                                                                    ULONG *);
+
+   FUNCTION
+        Obtain an attribute value of a given context. The context need not be
+        current, but must have been initialized.
+
+   INPUTS
+        attr - Attribute to get value of
+        context - Context to get attribute value of
+        data - Pointer to memory area which receives the attribute value
+
+   TAGS
+        AMRTL_RGBAMode (BOOL) - TRUE if context is in RGBA mode, FALSE if
+             otherwise.
+
+        AMRTL_IndexMode (BOOL) - TRUE if context is in Index mode, FALSE if
+             otherwise.
+
+        AMRTL_OutputHandler (STRPTR) - Name of output handler associated with
+             context. The value returned is the actual library ID string.
+
+        AMRTL_OutputHandlerVersion (ULONG) - Version of the output handler
+             associated with the context.
+
+        AMRTL_OutputHandlerBase (struct Library *) - Pointer to the library
+             base of the output handler associated with the context.
+
+        AMRTL_BufferWidth (GLint)
+        AMRTL_BufferHeight (GLint) - Actual size of the output buffer for the
+             context.
+
+        AMRTL_Buffer (ULONG *) - Pointer to the output buffer of the context.
+             If the context is in RGBA mode, each ULONG contains an RGBA
+             tuple. In index mode, each ULONG contains four index value bytes
+             with the high-byte refering to the left-most pixel of the four.
+             See the background notes.
+
+        AMRTL_IndexPalette (ULONG *) - Pointer to the index colours for the
+             context. The context must be in index mode. The array containes
+             3*256 ULONG values in RGBRGB.. order. This array is read-only.
+
+        AMRTL_Mode (ULONG) - Mode of the context. Currently either
+             AMRTL_RGBAMode or AMRTL_IndexMode.
+
+        AMRTL_Resized (BOOL) - Checks to see if the context needs to be
+             resized. TRUE if it needs resizing, FALSE otherwise.
+
+        AMRTL_OutputWidth (GLint)
+        AMRTL_OutputHeight (GLint) - Gives the requested output buffer size of
+             the context. This is not the actual buffer size.
+
+        OH_#? - Any unknown tags are passed to the output handler if the
+             context has one.
+
+   RESULTS
+        result - 1 if the tag was handled, 0 if not.
+
+   BUGS
+
+   SEE ALSO
+        AmigaMesaRTLGetOutputHandlerAttr(), AmigaMesaRTLGetAttr()
+
+mesadriver/AmigaMesaRTLSetOutputHandlerAttrsA ...esaRTLSetOutputHandlerAttrsA
+
+   NAME
+        AmigaMesaRTLSetOutputHandlerAttrsA - Set attributes of output handler
+        AmigaMesaRTLSetOutputHandlerAttrs - Varargs stub
+
+   SYNOPSIS
+        result = AmigaMesaRTLSetOutputHandlerAttrsA(context, tags)
+        D0                                          A0       A1
+
+        ULONG AmigaMesaRTLSetOutputHandlerAttrsA(AmigaMesaRTLContext,
+                                                           struct TagItem *);
+
+        result = AmigaMesaRTLSetOutputHandlerAttrs(context, tag1, ...)
+
+        ULONG AmigaMesaRTLSetOutputHandlerAttrs(AmigaMesaRTLContext, ULONG,
+                                                                        ...);
+
+   FUNCTION
+        This function simply calls the SetOutputHandlerAttrsA() function of
+        the output handler associated with the context, if the context has an
+        output handler. The context need not be current, but must have been
+        initialized.
+
+   INPUTS
+        context - Context to set output handler attribute values of
+        tags - Pointer to a tag list. See the outputhandler docs for tag
+               descriptions.
+
+   RESULTS
+        result - 0 if the context has no output handler, otherwise whatever
+                 outputhandler/SetOutputHandlerAttrsA() defines.
+
+   BUGS
+        None.
+
+   SEE ALSO
+        outputhandler/SetOutputHandlerAttrsA()
+
+
+mesadriver/AmigaMesaRTLGetOutputHandlerAttr ...igaMesaRTLGetOutputHandlerAttr
+
+   NAME
+        AmigaMesaRTLGetOutputHandlerAttr - Get attribute of output handler
+
+   SYNOPSIS
+        result = AmigaMesaRTLGetOutputHandlerAttr(attr, context, data)
+        D0                                        D0    A0       A1
+
+        ULONG AmigaMesaRTLGetOutputHandlerAttr(ULONG, AmigaMesaRTLContext,
+                                                                    ULONG *);
+
+   FUNCTION
+        The Get counterpart of AmigaMesaRTLSetOutputHandlerAttrsA(). The
+        context need not be current, but must have been initialized.
+
+   INPUTS
+        attr - Output handler attribute to get value of. See the docs for
+               outputhandler/GetOutputHandlerAttr() for tags
+        context - Context to get output handler attribute value from
+        data - Pointer to memory area which receives the attribute value
+
+   RESULTS
+        result - 1 if the context has no output handler, else whatever
+                 outputhandler/GetOutputHandlerAttr() returns
+
+   BUGS
+        None.
+
+   SEE ALSO
+        outputhandler/GetOutputHandlerAttr()
+
+mesadriver/AmigaMesaRTLSetAttrsA             mesadriver/AmigaMesaRTLSetAttrsA
+
+   NAME
+        AmigaMesaRTLSetAttrsA - Set driver attributes
+        AmigaMesaRTLSetAttrs - Varargs stub
+
+   SYNOPSIS
+        result = AmigaMesaRTLSetAttrsA(tags)
+        D0                             A0
+
+        ULONG AmigaMesaRTLSetAttrsA(struct TagItem *);
+
+        result = AmigaMesaRTLSetAttrs(tag1, ...)
+
+        ULONG AmigaMesaRTLSetAttrs(ULONG, ...);
+
+   FUNCTION
+        Sets driver attributes. For convenience, any unhandled tags are
+        passed to AmigaMesaRTLSetContextAttrsA() with the current context if
+        there is one. Note that that function in turn can drop to
+        outputhandler/SetOutputHandlerAttrsA(). AmigaMesaRTLSetAttrsA() is
+        therefore your one-stop attribute-setting shop.
+
+   INPUTS
+        tags - Pointer to a tag list
+
+   TAGS
+        AMRTL_GL (STRPTR) - Name of Mesa library to use. See the description
+             for AmigaMesaRTLCreateContextA().
+
+        AMRTL_GLBase (struct Library *) - Similar to AMRTL_GL, except you
+             pass an already-opened mesamainBase pointer. See the description
+             for AmigaMesaRTLCreateContextA().
+
+        AMRTL_#?
+        OH_#? - Anything else is passed to AmigaMesaRTLSetContextAttrsA()
+             with the current context, if there is one.
+
+   RESULTS
+        result - Currently always 0
+
+   BUGS
+        No error reporting.
+
+   SEE ALSO
+        AmigaMesaRTLSetContextAttrsA(),outputhandler/SetOutputHandlerAttrsA()
+
+mesadriver/AmigaMesaRTLGetAttr                 mesadriver/AmigaMesaRTLGetAttr
+
+   NAME
+        AmigaMesaRTLGetAttr - Get a driver attribute value
+
+   SYNOPSIS
+        result = AmigaMesaRTLGetAttr(attr, data)
+        D0                           D0    A0
+
+        ULONG AmigaMesaRTLGetAttr(ULONG, ULONG *);
+
+   FUNCTION
+        This function is to getting driver attribute values what
+        AmigaMesaRTLSetAttrsA() is to setting driver attribute values. Like
+        that function, this function uses AmigaMesaRTLGetContextAttr() with
+        the current context (if there is one) for unknown attributes.
+
+   INPUTS
+        attr - Attribute to get value of
+        data - Pointer to memory area which receives the attribute value
+
+   TAGS
+        AMRTL_GL (STRPTR) - Name of main Mesa library that the driver is
+             using. This returns a pointer to the actual library ID string.
+             If the Mesa library hasn't been set yet, mesamain.library will
+             be opened. This allows you to open a driver, and simply open and
+             associate a mesa library with the driver by getting this
+             attribute. You probably want to actually use AMRTL_GLBase.
+
+        AMRTL_GLVersion (ULONG) - Version of the main Mesa library that the
+             driver is using. As with AMRTL_GL, mesamain.library will be
+             opened if the driver does not have a mesamain base yet.
+
+        AMRTL_GLBase (struct Library *) - Get the mesamain base that the
+             driver is using. As with AMRTL_GL, mesamain.library will be
+             opened if the driver does not have a mesamain base yet. Using
+             this attribute is probably preferable to using AMRTL_GL, as this
+             attribute gets you the library base which you can then use to
+             call Mesa functions.
+
+        AMRTL_HaveGL (BOOL) - TRUE if the driver has a mesamain base, FALSE
+             otherwise.
+
+        AMRTL_SupportsOH (BOOL) - TRUE if the driver supports output handlers
+             else FALSE.
+
+   RESULTS
+        result - 1 if the tag was handled, 0 if not.
+
+   BUGS
+        None.
+
+   SEE ALSO
+        AmigaMesaRTLGetContextAttr(), outputhandler/GetOutputHandlerAttr()
+

@@ -1,0 +1,656 @@
+
+PPLink - a public domain linker from EarthSoft
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+$VER: PPLink_documentation 3.2 (19.06.92)
+
+(PPLink is a PURE program)
+
+===============================================================================
+REQUIREMENTS
+===============================================================================
+
+PPLink requires the following libraries to be available:
+	"arp.library"           (V34+)
+	"powerpacker.library"   (V34+)
+
+"powerpacker.library" is copyright (©) Nico François.
+
+===============================================================================
+
+Command line syntax
+~~~~~~~~~~~~~~~~~~~
+
+PPLink will run only from a CLI or Shell. It will not run from Workbench.
+The command line syntax is as follows:
+
+	PPLink <files_and_options>
+
+Note that files and options may be freely mixed on the command line, and
+that some options may be employed several times if desired. Note also
+that the environment variable "PPLink/First" will be scanned for files
+and options BEFORE the command line, and that "PPLink/Last" will be
+scanned afterward.
+
+PPLink accepts any whitespace, the comma (","), and the equals sign
+("=") as valid separators. Also, implicit separators exist between the
+environment variables and the command line.
+
+Wildcard patterns may be used in place of filenames if desired.
+
+The available options are as follows:
+
+Options which modify the source file types:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+FROM
+	All filenames to the right of this option (until ROOT, LIB or
+	LIBRARY are encountered) are regarded as being of UNKNOWN type.
+	This means that PPLink will decide for itself whether each file
+	in an object file or a linker library. This option is active by
+	default, so it is not actually necessary to use this option at
+	all (except after ROOT, LIB or LIBRARY). (See below for a
+	discussion of the pros and cons of automatic classification).
+	Note that this is different from the BLink option of the same
+	name.
+
+ROOT
+	All filenames to the right of this option (until FROM, LIB or
+	LIBRARY are encountered) are regarded as object files, rather
+	than linker-libraries.
+
+OBJ
+	An alias for ROOT
+
+OBJECT
+	An alias for ROOT
+
+LIB
+	All filenames to the right of this option (until FROM or ROOT
+	are encountered) are regarded as linker-libraries, rather than
+	object files.
+
+LIBRARY
+	An alias for LIB. Retained for BLink compatability.
+
+EXE
+	The (single) filename following this option is regarded as an
+	executable, rather than an object file or library
+
+PATH <pathname>
+	Specify a directory to be searched for object files and
+	libraries. Only one pathname may be present after the PATH
+	keyword. (You can set as many search paths as you like, but
+	each one must be preceeded by the keyword PATH).
+
+	PPLink will search the current directory first, followed by
+	each directory specified by a PATH keyword, in the order they
+	appear on the command line.
+
+Options which modify the output file type
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TO <filename>
+	Specify the filename of the completed output file. This option
+	is not compulsary, but it may be used to override PPLink's
+	defaults.
+
+MAKEEXE
+	Create an executable as the output file. This option is active
+	by default, so you do not need to specify it explicity, however
+	it may be useful to override other options.
+
+MAKEOBJ
+	Create an object file as the output file. This option allows
+	you to link object files and (parts of) libraries together to
+	create a bigger object file.
+
+PRELINK
+	An alias for MAKEOBJ
+
+MAKELIB
+	Create a library as the output file. This option allows you to
+	link object files together to create a linker library. It is
+	true that the AmigaDOS command Join can be used to create linker-
+	libraries, but PPLink does error-checking and optimising, and is
+	 therefore a much "nicer" way of doing this.
+
+ANALYSE [VERBOSE]
+	Create an analysis file which details the complete hunk
+	structure of a file. If this option is used, then only one
+	input file is allowed, and this file will be analysed. If the
+	VERBOSE keyword is present then an even more in-depth analysis
+	is generated.
+
+PURE
+	Specify that you are linking a PURE program!!
+
+	If PPLink detects anything even slightly impure about your
+	program (such as global data) then the linker will issue a
+	warning, otherwise it will set the P bit for you in the
+	output's protection flags. Please note that if PPLink does not
+	disqualify your program then this should NOT be considered an
+	absolute guarantee of purity - that's your responsibility.
+
+Options which modify how the files are processed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+STRIP
+	Remove all non-essential hunks from the finished output file.
+	This makes the output file smaller when stored on disc (though
+	it will still occupy the same amount of memory when you run
+	it). Specifically: segment names, symbol tables, and debug
+	hunks are removed. The advantage of doing this is that the file
+	becomes much smaller. The disadvantage is that a symbolic
+	debugger (such as HiSoft's excellent DevPac debugger, MonAm2/3)
+	will no longer be able to reconstruct the original symbol names
+	used in the source code.
+
+	NOTE: Segment names are stripped whether you specify the STRIP
+	option or not. This follows the behaviour of BLink. The reason
+	we do this is to overcome a bug in MonAm, which, for some
+	reason, is unable to read the symbol table if segment names are
+	present.
+
+NODEBUG
+	An alias for STRIP
+
+ND
+	An alias for STRIP
+
+ADDSYM
+	Add a symbol table to the finished output file, even if no
+	symbol information was present in the original files. This is
+	achieved by creating a symbol for each XDEF encountered in the
+	linking process.
+
+	Note that if you use this option on a set of files, some of
+	which already contain symbol information, then, unlike BLink,
+	PPLink will not create duplicate symbols. If you try this with
+	BLink you can end up with two (or more) copies of each symbol
+	in the output file.
+
+SMALLCODE
+	This will coalesce all CODE sections into as few sections as
+	possible. The chances are this will make your finished output
+	file smaller. Specifically, what it does is this:
+
+	Coalesce all CODE   sections into a single CODE   section;
+	coalesce all CODE_C sections into a single CODE_C section;
+	coalesce all CODE_F sections into a single CODE_F section.
+
+	See below for a discussion on segments.
+
+SC
+	An alias for SMALLCODE
+
+SMALLDATA
+	This will coalesce all DATA and BSS sections into as few sections
+	as possible. The chances are this will make your finished output
+	file smaller. Specifically, what it does is this:
+
+	Coalesce all DATA   sections into a single DATA   section;
+	coalesce all DATA_C sections into a single DATA_C section;
+	coalesce all DATA_F sections into a single DATA_F section.
+	coalesce all BSS    sections into a single BSS	  section;
+	coalesce all BSS_C  sections into a single BSS_C  section;
+	coalesce all BSS_F  sections into a single BSS_F  section.
+
+	See below for a discussion on segments.
+
+SD
+	An alias for SMALLDATA
+
+SMALL
+	This is exactly equivalent to SMALLCODE SMALLDATA
+	See below for a discussion on segments.
+
+MERGE
+	Allow data segments to be coalesed with BSS segments. The
+	normal rules of linking apply, so segments will not be coalesed
+	unless they have the same name, or unless another keyword (eg.
+	SMALL) forces us to coalesce.
+
+	Segments created in this way will be part data (initialised
+	data), and part BSS (uninitialised data). Only the initialised
+	part will be saved on disc.
+
+	Under Workbench 2.0, such hybrid segments will have their BSS
+	part cleared to zero. Under Workbench 1.3 or earlier, the BSS
+	part will contain rubbish.
+
+MINHUNK <size>
+	Coalesce any segment which is smaller than <size> to another
+	segment. The result of using this option is that each segment
+	in the finished output will be at least <size> bytes (unless
+	there was nothing to coalesce it with). See below for a
+	discussion on segments.
+
+	Note <size> can be the number of bytes (in decimal) or else the
+	number of kilobytes (followed immediately by 'k' or 'K'), and
+	that it may be expressed in either hexadecimal (preceeded by
+	'$') or decimal.
+
+MAXHUNK <size>
+	Prevent coalescing of hunks whose combined size would have been
+	greater than <size>. The result of using this option is that each
+	segment in the finished output will be at most <size> bytes
+	(unless a source segment was larger than <size>). See below for a
+	discussion on segments.
+
+	Note <size> can be the number of bytes (in decimal) or else the number
+	of kilobytes (followed immediately by 'k' or 'K'), and that it may be
+	expressed in either hexadecimal (preceeded by '$') or decimal.
+
+CHIP
+	Force all segments to load into chip RAM.
+
+NOCHIP
+	Remove chip-RAM requirements from all segments.
+
+FAST
+	Force all segments to load into fast RAM.
+	A warning is generated, as this is an extremely stupid thing to do!
+
+NOFAST
+	Remove fast-RAM requirements from all segments.
+
+Miscellaneous other options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+INCLUDE <filename>
+	Read the specified file for additional PPLink options. This is a
+	convenient way to specify lots and lots of options, since,
+	within a file it is possible to position each option or
+	filename on its own line for added readability.
+
+WITH <filename>
+	An alias for INCLUDE.
+
+VERBOSE
+	List all files as they are scanned.
+
+	Note: the behaviour of this option is different from the BLink
+	option of the same name. The filenames will be displayed on the
+	CLI console whether you specify VERBOSE or not, but specifying
+	VERBOSE will prevent them from being overwritten. (Also, if the
+	output stream has been redirected into a file then the
+	filenames will not be output unless VERBOSE has been specified).
+
+NOWARN
+	Suppress warning messages. Errors will still be reported
+
+NOALVS
+	Generate a warning whenever an Automatic Link Vector is
+	created. This is useful if you are writing relocatable code
+	(since ALVs are non- relocatable). See below for more detail
+	on ALVs.
+
+;[comment]
+	Finally, it's worth mentioning that INCLUDE/WITH files may
+	contain comments. A comment starts with a semicolon and ends at the
+	end of the line.
+
+Switching options off
+~~~~~~~~~~~~~~~~~~~~~
+
+The following keywords may be preceeded by a minus sign ('-'), which
+has the effect of switching the option off. This is usually unnecessary
+since these options are off by default:
+
+-STRIP		Cancel the effect of STRIP
+-NODEBUG	Cancel the effect of STRIP
+-ND		Cancel the effect of STRIP
+-ADDSYM		Cancel the effect of ADDSYM
+-SMALLCODE	Cancel the effect of SMALLCODE
+-SC		Cancel the effect of SMALLCODE
+-SMALLDATA	Cancel the effect of SMALLDATA
+-SD		Cancel the effect of SMALLDATA
+-SMALL		Cancel the effect of SMALL
+-MERGE		Cancel the effect of MERGE
+-CHIP		Cancel the effect of CHIP
+-NOCHIP		Cancel the effect of NOCHIP
+-FAST		Cancel the effect of FAST
+-NOFAST		Cancel the effect of NOFAST
+-ANALYSE	Cancel the effect of ANALYSE
+-VERBOSE	Cancel the effect of VERBOSE
+-NOWARN		Cancel the effect of NOWARN
+-NOALVS		Cancel the effect of NOALVS
+
+===============================================================================
+POWERPACKER SUPPORT
+===============================================================================
+
+PPLink can cope quite happily with object files and library files which
+have been crunched using Powerpacker. This means that those enormous
+linker-libraries "amiga.lib", "lc.lib", etc., can be crunched, saving
+you an enormous amount of space on your disc.
+
+===============================================================================
+ABOUT SEGMENTS
+===============================================================================
+
+AmigaDOS programs may be split into several blocks, called "segments".
+
+If you program in 'C' then this is done for you by the compiler. If you
+use an assembler then you can use the "SECTION" directive to create
+such segments. There are both advantages and disadvantages to this.
+
+The principle advantage is that programs may be "scatter loaded". This
+means that instead of having to allocate one very large block, the
+operating system can allocate lots of smaller blocks. If your memory
+has become very fragmented this could mean the difference between
+success and failure when loading.
+
+The disadvantage is that each segment requires eight bytes of overhead
+for its header information. Furthermore, since AllocMem() always
+allocates in multiples of eight bytes, you have a fifty-fifty chance of
+getting four bytes of wastage at the end of the block (segments are
+always a multiple of four bytes in length). So you get, ON AVERAGE, ten
+bytes of overhead for each segment. Now, this may not seem very much,
+but some C compilers produce ridiculously small segments (4 bytes!) in
+which the segment contents are dwarfed by the overhead.
+
+PPLink allows you to choose how to deal with such files. At one extreme
+you can use the SMALL/SMALLCODE/SMALLDATA options. These will cause
+PPLink to coalesce as much as it possibly can. This means that you get
+a minimal number of segments, with each segment as large as possible.
+At the other extreme you can simply leave well alone - this gives you a
+maximum number of segments, with each segment as small as possible.
+
+PPLink offers you a third option, which compromises between the two
+extremes - this is the MINHUNK/MAXHUNK options. For instance, if you
+use the option "MINHUNK 10K" then PPLink will coalesce all segments
+which are less than 10K (where possible). This will still leave you
+will with multiple segments for scatter-loading, but removing the
+extremely small and silly ones.
+
+===============================================================================
+SPECIAL SEGMENT NAMES
+===============================================================================
+
+PPLink recognises certain segment names as special. If you so desire,
+you can create segments with these special names using the SECTION
+directive.
+
+NOMERGE
+	Segments called "NOMERGE" will never be coalesced with anything -
+	not even with each other.
+
+NTRYHUNK
+	You should only supply ONE segment of this name (at most).
+	This segment will be linked as the first segment in the output
+	file, ahead of all other segments. Note that it is not a good
+	idea to supply an "NTRYHUNK" segment if you are linking with
+	startup code!
+
+__MERGED
+	If you supply one or more data section called "__MERGED", and
+	also one or more BSS section called "__MERGED", then the BSS
+	sections of this name will be converted to data sections
+	(filled with all zeros) and then coalesced with the "__MERGED"
+	data sections.
+
+	Note that the zeroed (former) BSS segment will actually be
+	stored 	on disc in full (since it is now a data section). A
+	better way of achieving merged data/BSS segments is to use the
+	MERGE command line keyword, which does not output the BSS data.
+
+==============================================================================
+AUTOMATIC IDENTIFICATION OF LIBRARIES
+===============================================================================
+
+PPLink can automatically tell linker-libraries apart from object files.
+It does this by default. You can disable this feature with the ROOT,
+OBJ, OBJECT, EXE, LIB or LIBRARY keywords, and re-enable it with the
+FROM keyword.
+
+It tells them apart by counting the number of modules in the file. In
+general, object files have only one module, wheras library files have
+more than one. (When a library is linked, only those modules which are
+NECESSARY will be incorporated).
+
+Now, this method of identification can go wrong sometimes, (though it
+almost always won't actually matter if it does). Some glue-stub
+libraries come in only one module (for example, the ARexx glue file,
+"rexxglue.o"). Under automatic identification PPLink would treat such
+files as object files and link them whether needed or not. On the other
+hand, this probably won't matter. There's are certain argument which
+says that you must have wanted them, otherwise you wouldn't be linking
+with them in the first place. Since the file contains only one module
+there's no question of extracting only those parts which are needed -
+it's all or nothing, you see.
+
+Erroneously treating an object file as a library is a much rarer event,
+since most object files are created by an assembler or a compiler.
+Technically, however, it is possible to "link" one or more object files
+together to make a bigger object file by using JOIN (exactly as you
+would to create a linker-library), but this is extremely bad practice.
+
+===============================================================================
+ENVIRONMENT VARIABLES
+===============================================================================
+
+PPLink makes use of two environment variables. These are PPLink/First
+and PPLink/Last. Each time you run PPLink these environment variable
+are scanned just like the command line, and therefore may each contain
+any combination of filenames and/or PPLink options.
+
+The order of evaluation is as follows:
+	Firstly:	PPLink/First is scanned
+	Then:		The command line is scanned
+	Finally:	PPLink/Last is scanned
+
+By setting up these variables (say, in your startup-sequence) you can
+effectively customise the behaviour of PPLink. For instance, putting
+the keywords "SMALL MERGE STRIP" into PPLink/First will cause PPLink to
+always produce files as small as possible. (If desired, you can switch
+these options OFF in the command line, using the keywords "-SMALL"
+and/or "-STRIP". Since the command line is scanned AFTER PPLink/First,
+these would take precedence).
+
+As a second example, you could set PPLink/Last to "LIB" followed by a
+list of linker-libraries. This would enable you to scan a specified
+list of libraries without having to state them explicitly each time.
+(Don't use the LIB keyword in PPLink/First, or all files on the command
+line will be treated as libraries!).
+
+As a third example you could put a list of "PATH <pathname>" commands
+into PPLink/First, so that specified directories get searched for
+object and library files each time.
+
+For maximum versatility you could even set PPLink/First to "INCLUDE
+PPLinkFirst" and PPLink/Last to "INCLUDE PPLinkLast". You could then
+create and edit these files with a text editor to contain long lists
+of options across several lines.
+
+===============================================================================
+ERROR/SUCCESS REPORTING
+===============================================================================
+
+PPLink reports errors in great detail, supplying you with a wealth of
+information about what went wrong. For instance, suppose you were
+linking two files, called file1 and file2. Suppose that file1 contained
+the following fragment...
+
+	INCLUDE INC:libraries/dos_lib.i
+
+	XREF	_DOSBase
+	CODE
+start	move.l	_DOSBase(pc),a6
+	jsr	_LVOOutput(a6)
+	rts
+
+and file2 contained the following fragment...
+
+	XDEF	_DOSBase
+	BSS
+_DOSBase ds.l	 1
+
+Now, it is illegal to link these files, because the reference to
+_DOSBase is a sixteen-bit displacement, while _DOSBase itself is in a
+different segment. If the program is scatter-loaded then the disance
+between the reference and the variable cannot be guaranteed to be less
+than 32K.
+
+If you link these with PPLink then you'll get an error report something
+like this...
+
+Illegal Word relocation across segments at offset $00000002
+  in module "ANON_MODULE", file "fred1.o"
+  location start+2 in segment "CODE"
+
+If the link was successful then PPLink will tell you how big the
+finished progam is, both on disc and after loading into memory. It will
+also tell you the "Raw code" size, which is the number of bytes
+occupied by the code (+data, etc.) excluding any header information. In
+a sense this is a meaningless number, since the disc file contains lots
+of additional bytes required by the AmigaDOS file format, and when
+loaded into memory will need additional bytes of overhead for a segment
+list. Since BLink reports this number, we report it also, for purposes
+of comparison.
+
+===============================================================================
+TIPS AND TRICKS
+===============================================================================
+
+PPLink's advanced options can come in handy for all sorts of things you
+wouldn't normally dream of using a linker to do. Here are some examples:
+
+How to strip symbol information from an executable:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	PPLink EXE <filename> TO <filename> STRIP
+
+This works by scanning an executable file as the input file, stripping
+it of symbol and debugging information, and then writing it out again.
+
+How to create a 'C' structure in chip RAM:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some structures need to be located in chip RAM for Amiga functions to
+work properly (for instance, the image data for an Image structure). If
+you have a 'C' compiler which doesn't allow you to specify the memory
+type required by a structure, then PPLink can to the job for you. This
+is what you do:
+
+(1) Declare the structure (and ONLY this structure) in file <filename>.c
+(2) Compile the file normally to object file <filename>.o
+(3) Type the following at the command line:
+
+	PPLink MAKEOBJ <filename>.o TO <filename>.o CHIP
+
+This transforms the memory requirements of the object file, forcing its
+contents (your structure) to be loaded into chip RAM.
+
+(4) Link the modified object file in place of the original.
+
+Note that you use PPLink twice. Once to force an individual object file
+into chip RAM, and then again to link that object file in with all your
+other object files.
+
+===============================================================================
+LINKER MAGIC
+===============================================================================
+
+"Magic", in this context, means fiddling with the actual machine code
+of the output, instead of just resolving the relocations. PPLink does
+two kinds of linker-magic. This means that it successfully does things
+which under normal circumstances would be impossible. The first kind of
+magic we call "simple" magic. It works like this:
+
+PPLink can resolve BRAs, BSRs, Bccs and pc-relative JMPs and JSRs
+across segments. It does this by constructing a jumpblock table at the
+end of the originating segment, consisting of a sequence of absolute
+JMP instructions. These jump instructions are called "Automatic Link
+Vectors" (or ALVs). PPLink then modifies the intersegment BSR (etc)
+offsets so that they actually refer to the appropriate jumpblock vector.
+(BLink also does this).
+
+PPLink can resolve pc-relative LEAs and PEAs across segments. It does
+this by a similar mechanism to that used for BSRs (see above), but in
+addition to creating a table and modifying the LEA/PEA offset, it also
+modifies the instruction itself, so that LEAs are transformed into
+MOVEAs, and PEAs are transformed into MOVEs to -(SP). (BLink cannot do
+this, but it won't report an error either!).
+
+The second kind of magic is "pure" magic (or "EarthMagic" as it is
+referred to in our documentation). This is a really powerful kind of
+magic which makes it possible for a PURE program to contain multiple
+initialised and uninitialied modifyable data segments, with pointers
+from any segment into any other, WHILST STILL REMAINING PURE!!!.
+("Pure" programming is part of EarthSoft's philosophy, and we seek to
+encourage this attitude). Using EarthMagic is documented separately.
+EarthMagic may be obtained from our address (below) if not already on
+this disc.
+
+===============================================================================
+PUBLIC DOMAIN NOTICE
+===============================================================================
+
+PPLink is public domain, not shareware. There is no fee. Just send a
+blank disc and a stamped self-addressed envelope (enclose an
+international reply coupon if writing from outside the UK) and we will
+fill your disc full of goodies and post it back to you. If you forget
+the stamped envelope (or international reply coupon) then we shall keep
+your disc - you have been warned.
+
+PPLink was written by Arcane Jill.
+Copyright 1992, EarthSoft.
+
+This program is PUBLIC DOMAIN.
+It is NOT shareware.
+
+     +------------------------------------------------------------------+
+     |									|
+     |	PPLink version 3.2 may be reproduced as many times as you	|
+     |	like, supplied with any application, and distributed with	|
+     |	no restrictions whatsoever, PROVIDED that the following 	|
+     |	condition is adhered to:					|
+     |									|
+     |	THE FOLLOWING FILES MUST BE SUPPLIED TOGETHER ON ONE DISC:	|
+     |		PPLink							|
+     |		PPLink.doc						|
+     |		arp.library						|
+     |		powerpacker.library					|
+     |									|
+     |	Note: PPLink may be distributed separately from EStartA,	|
+     |	although the converse is not true.				|
+     |									|
+     +------------------------------------------------------------------+
+
+You can even use the program in commerical applications, free of charge.
+No further permission is required, but you absoultely MUST include the
+above-listed documents with the application.
+
+WHO ARE EARTHSOFT?
+
+    EarthSoft are a group of Amiga enthusiasts who believe wholeheartedly
+    in the principle of PUBLIC DOMAIN. You should never have to pay
+    money for an EARTHSOFT product. Our aim is to provide high quality
+    software, fully documented, and absolutely free of charge.
+
+    Please support us in our beliefs by distributing our products
+    far and wide across the globe, sticking them on BBs and in PD
+    libraries, etc.
+
+    Our address is:
+
+	EarthSoft
+	5 Dumergue Avenue
+	Queenborough
+	Kent
+	ME11 5BJ
+	England
+
+===============================================================================
+BUGS
+===============================================================================
+
+There are no KNOWN bugs in PPLink (-obviously, otherwise I would have
+fixed them), but of course there MAY be bugs I don't know about, so...
+
+If you find any, please write to me at the above address, telling me
+exactly how to reproduce the symptoms of the bug. I will then produce
+a new version of PPLink which does not contain the bug AND SEND YOU A
+FREE COPY OF THE UPDATED VERSION (supply own disc and postage)
+

@@ -1,0 +1,150 @@
+This was converted from a nasty little unix man page, so here goes.
+
+
+ascii -- report character aliases
+
+SYNOPSIS
+ascii [-dxohv] [-t] [char-alias...]
+
+OPTIONS
+Called with no options, ascii behaves like `ascii -h'.  Options
+are as follows:
+
+-t
+Script-friendly mode, emits only ISO/decimal/hex/octal/binary
+encodings of the character.
+
+-s
+Parse multiple characters.  Convenient way of parsing strings.
+
+-d
+Ascii table in decimal.
+
+-x
+Ascii table in hex.
+
+-o
+Ascii table in octal.
+
+-h, -?
+Show summary of options and a simple ASCII table.
+
+-v
+Show version of program.
+
+DESCRIPTION
+Characters in the ASCII set can have many aliases, depending on context. A
+character's possible names include:
+
+Its bit pattern (binary representation).
+
+Its hex, decimal and octal representations.
+
+Its teletype mnemonic and caret-notation form (for control chars).
+
+Its backlash-escape form in C (for some control chars).
+
+Its printed form (for printables).
+
+Its full ISO official name in English.
+
+Its ISO/ECMA code table reference.
+
+Slang and other names in wide use for it among hackers.
+
+This utility accepts command-line strings and tries to interpret them as
+one of the above. When it finds a value, it prints \fIall\fR of the names
+of the character.The constructs in the following list can be used to 
+specify character values. If an argument could be interpreted in two or
+more ways, names for all the different characters it might be are dumped.
+
+
+Any character not described by one of the following conventions
+represents the character itself.
+
+ ^ character
+A caret followed by a character.
+
+ \e \|character
+A backslash followed by certain special characters (abfnrtv).
+
+mnemonic
+An ASCII teletype mnemonic.
+
+hexadecimal
+A hexadecimal (hex) sequence consists of one or two case-insensitive hex digit
+characters (01234567890abcdef). To ensure hex interpretation use
+ hex h,
+ 0x hex,
+ x hex
+or
+ \e\|x hex.
+
+decimal
+A decimal sequence consists of one, two or three decimal digit
+characters (0123456789). To ensure decimal interpretation use
+ \e0d decimal,
+ d decimal,
+or
+ \e\|d decimal.
+
+octal
+An octal sequence consists of one, two or three octal digit
+characters (01234567). To ensure octal interpretation use
+ \e \|octal,
+ 0o octal,
+ o octal,
+or
+ \e\|o octal.
+
+bit pattern
+A bit pattern (binary) sequence consists of one to eight binary digit
+characters (01). To ensure bit interpretation use
+ 0b bit\ pattern,
+ b bit\ pattern
+or
+ \e\|b bit\ pattern.
+
+SO / ECMA\ code
+A ISO/ECMA code sequence consists of one or two decimal digit characters,
+a slash, and one or two decimal digit characters.
+
+name
+An official ASCII or slang name.
+
+The slang names recognized and printed out are from a rather comprehensive
+list that appeared on USENET in early 1990.
+
+Mnemonics recognized and printed include the official ASCII set, some
+official ISO names (where those differ) and a few common-use alternatives
+(such as NL for LF). All comparisons are case-insensitive, and dashes are
+mapped to spaces.
+
+Any unrecognized arguments or out of range values are silently ignored.
+Note that the -s option will not recognize 'long' names, as it cannot
+differentiate them from other parts of the string.
+
+For correct results, be careful to stringize or quote shell metacharacters
+in arguments (especially backslash).
+
+This utility is particularly handy for interpreting cc(1)'s ugly octal
+`invalid-character' messages, or when coding anything to do with serial
+communications. As a side effect it serves as a handy base-converter
+for random 8-bit values.
+
+AUTHOR
+Eric S. Raymond <esr@snark.thyrsus.com> November 1990 (home page at
+http://www.tuxedo.org/~esr/home.html).
+
+Reproduce, use, and modify as you like as long as you don't remove this
+authorship notice.
+
+Ioannis E. Tambouras <ioannis@debian.org> added command options and minor
+enhancements.
+
+Brian J. Ginsbach <ginsbach@sgi.com> fixed several bugs and expanded the
+man page.
+
+David N. Welton <davidw@efn.org> added the -s option.
+
+Matej Vela corrected the ISO names.

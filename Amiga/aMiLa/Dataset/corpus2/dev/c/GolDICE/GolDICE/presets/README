@@ -1,0 +1,42 @@
+These presets for GoldED 3 (.1.2) are part of my personal DICE-GoldED
+installation. They provide the most important DICE control on the
+function keys and a lot of other useful scripts, all accessible via menu,
+the most important via shortcuts.
+
+Function key mapping:
+
+F1  compile current text (call dcc with dccopts and addfiles)   dcc.ged
+F2  dmake - run dmakefile in directory of current text          * dmake.ged
+F3  jump to next error                                          DICE_ErrorNext.ged
+F4  show current error                                          DICE_ErrorCurr.ged
+F5  run program with the same dir and basename as current text  runexe.ged
+
+F6  update prototype (cursor must be on function definition)
+F7  insert case-statement                                       * case.ged
+F8  - not used yet -
+F9  revision                                                    * rev.ged
+F10 mark next higher { ... } block                              * block
+
+
+S F1  set DCCOPTS enviroment variable (DCC options)             setdccopts.ged
+S F2  set ADDFILES (files to DCC besides current text)          setfiles.ged
+S F3  jump to prev error                                        DICE_ErrorPrev.ged
+S F4  jump to first error                                       DICE_ErrorFirst.ged
+S F5  clear errorlist                                           DICE_ErrorClear.ged
+
+S F6  insert new C function                                     func.ged
+S F7  insert switch statement                                   * switch.ged
+S F8  - not used yet -
+S F9  new C header, generates search points for func, proto...  MakeCHeader.ged
+S F10 fold marked block                                         * fold.ged
+
+* the marked scripts are part of the original GoldED distribution.
+
+The menu presets include all the scripts shown above, and also some useful
+settings (IMHO layout control is very useless to a programmer). If you don't like
+my settings, you can link only "Macros C" and "Macros other"  to your menu
+settings. The macro menu can be found in DICE_MacrosUS.men and DICE_MacrosD.men.
+Please note that "Macros/Macros other/Execute line" uses the same shortcut
+<Amiga>-= as the command "Layout/Paragraphe block". You have to change either.
+
+There exists no decription of the menu shortcuts yet. Sorry.

@@ -1,0 +1,10 @@
+Short:        Version 2 of the dbtools library.
+Author:       henriki@pluggnet.se (Henrik Isaksson)
+Uploader:     henriki pluggnet se (Henrik Isaksson)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+The dbtools.library provides an easy way to create saveable databases.
+With just one command You can save or load all the data your application
+needs.
+The databases can be loaded, saved, searched and in V3 (=soon) sorted.

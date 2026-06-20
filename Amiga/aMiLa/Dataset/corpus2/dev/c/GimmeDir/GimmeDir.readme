@@ -1,0 +1,38 @@
+Short:    Routines for reading directory contents. C source.
+Uploader: dancab@polbox.com (Daniel Mealha Cabrita)
+Author:   dancab@polbox.com (Daniel Mealha Cabrita)
+Type:     dev/c
+
+
+    Well.. the C language itself has no commands for reading
+ directory contents. Sad, isn't it?
+
+    Reading directory contents is useful when your program process
+ several files at once (as a file packer, a file converter,
+ a music player, a backup utility, etc...).
+
+    What about using directly dos.library functions?! AAaRRRgGHh!!!!!!
+
+
+    So i decided to make myself some routines for all this, offering
+ the simplest possible programmer interface while maintaining most (all?)
+ of the possibilities regarding directory reading.
+
+
+    In this package you'll find the following files:
+
+    GimmeDir.c       - the routines themselves, WITH COMMENTS.
+    GimmeDir.h       - header file
+    ExampleProgram.c - an example program so you can learn how to
+                       use these routines (as if it were difficult!)
+
+
+ BUGS: None i'm aware of.
+
+
+ * Minimum required: AmigaOS 2.0 and an ANSI C compiler
+                     with OS2.0 includes.
+
+
+ .dan
+

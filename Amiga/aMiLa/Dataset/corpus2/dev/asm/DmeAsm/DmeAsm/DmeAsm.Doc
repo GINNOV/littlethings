@@ -1,0 +1,47 @@
+
+		DmeAsm   by Nic Wilson
+
+
+This program is for anyone who uses the HighSoft Devpac Assembler
+and would like to use the fantastic editor DME.  The only draw back
+I found was actully assembling was a pain.
+
+(see below for use within DME)
+
+Enter DmeAsm.  DmeAsm is a CLI command file that takes your source 
+code as a parameter and opens a window similar to the Assemble window
+inside Devpac (Genam2) and gives similar options.  These options are
+very straight forward for anyone who uses Devpac.  If no parameter is
+supplied then the window will still open and you can supply your own.
+
+Once launched the source file will be showing in the Source String gadget
+and the default save filename (source less all after the . ) in the
+destination gadget.  These can be changed if you wish.  The StdOut gadget
+is so you can supply a file to save the output from Genim2 to. 
+
+At the bottom is a set of six gadgets as below.
+
+Asm/Debug	-	assemble then launch metascope with the executable
+Metascope	-	launch metascope immediately
+Asm/Run		-	Assemble then execute the file
+Cancel		-	exit out
+Run		-	run the file
+Assemble  	-	just assemble it
+
+This program can be used from within DME as the Author kindly supplied
+DME with a $filename option.  To use it is simple, just make a small change
+to the DME .edrc file to add a menu option.  With this file you will find
+an example .edrc file (the one I use).  Down the bottom you will see
+the Assemble entry.  This launches DmeAsm when the menu option is selected
+using the file in the current window.
+
+Any probs then please write to me, I have enclosed the source code for
+your enjoyment.
+
+Nic Wilson
+138d South Street
+Toowoomba Queensland
+Australia  4350
+
+Phone 076 358539 HOME
+      076 358522 FAX or WORK

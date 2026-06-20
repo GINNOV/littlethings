@@ -1,0 +1,169 @@
+*****************************************************************
+
+                       Base Convertor V1.01
+
+                   Copyright 1993 Stuart Davis
+                       All Rights Reserved
+
+*****************************************************************
+
+Contents
+                           Distribution
+                           Description
+                           Usage
+                           Development
+                           Author Details
+
+-----------------------------------------------------------------
+
+Distribution
+
+     BaseConvertor V1.00 is Shareware and NOT  Public Domain, and
+as  such  a  small  registration  fee  of 5  pounds  sterling  is
+required if you decide  that  BaseConvertor V2.00  should  be  in
+your software collection. This will entitle  you to future  major
+upgrades. 
+
+     Payment should be in the form of a crossed cheque drawn from
+a UK mainland bank payable to the author.
+
+     The distribution of  BaseConvertor  V1.00  MUST  be  intact,
+unaltered, and include the following files :
+
+                    BaseConvertor
+                    BaseConvertor.info
+                    BaseConvertor.doc
+
+-----------------------------------------------------------------
+
+Description
+
+     These modern calculators are all very nice and that but when
+you want to convert  a number  to a  different  base, you have to 
+keep pressing shift and  the right  key and then you only get one
+number displayed anyway.
+
+     This program solves  these  problems by allowing a number to 
+be input in any base  out  of  decimal,  hexadecimal,  binary and
+octal. It will check it  for  size and syntax and if all is fine,
+it will convert it to the other number bases and display them all
+at the same time.
+
+-----------------------------------------------------------------
+
+Usage
+
+*** N.B...
+*** This program requires WB2 or greater due to the use of    ***
+*** some WB2 libraries. Sorry to any 1.2(are there any left?) ***
+*** /1.3 owners. You'll just have to upgrade!                 ***
+
+
+Usage - CLI/startup-sequence
+
+     type "run" like this to run the program in the background:
+     
+     run <nil: >nil: path:BaseConvertor
+     
+
+Usage - WorkBench
+      
+     Double click the icon. That's all there is to it.
+     
+-----------------------------------------------------------------
+
+Instructions
+
+     BaseConvertor V1.00 will appear on the WorkBench screen.It
+has one menu with About and Quit displayed.
+
+     About gives the author and developement details.
+
+     Quit will terminate the program.
+      
+     To use the program follow the following instructions:
+          1. Click on the mx gadget to select the required input
+             base.
+          2. Click inside the string gadget so that a cursor
+             appears.
+          3. Now type the number you want converted into the
+             gadget. The program will only accept positive values
+             which will fit into a 32-bit register and which are
+             syntactically correct for the input base.
+
+E.g. Input Base  | Acceptable digits               | Max Value
+     ----------  | -----------------               | ---------
+     Decimal     | 0,1,2,3,4,5,6,7,8,9             | 4,294,967,295
+     Binary      | 0,1                             | 111111...(x32)
+     Octal       | 0,1,2,3,4,5,6,7                 | 37777777777
+     Hexadecimal | 0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f | ffffffff
+
+          4. Press return and if the number is syntactically O.K.
+             then it will be converted and displayed into the
+             other bases.
+             
+             
+-----------------------------------------------------------------
+
+Development
+
+V1.00 - 14-3-93
+     First internal release. A couple of bugs known of at the
+     time but no time due to college to fix them. They weren't
+     dangerous anyway and merely involved the conversion routines
+     from Decimal-Binary-Decimal and Octal-Binary.
+
+V1.01 - 29-3-93
+     First external release. Fully tested on all functions and
+     ALL previous bugs fixed.
+
+
+     BaseConvertor V1.00 was developed on a  HiQ Tower containing
+an  Amiga 500  Plus,  4Mb  of  16 Bit Fast RAM, 2Mb Chip RAM, SSL
+68020 Accelerator Board with 1Mb of 32 Bit Fast RAM,twin 3.5 inch
+disk  drives, a  105 Mb,  11ms  Quantum  hard  disc  drive, a 550
+Mb tape  streamer,  a  single  5.25" disk  drive, a Citizen Swift
+24C  printer,   two  Zipstick  joysticks,  a  Technosound   Turbo
+sampler  and a  Naksha Mouse.  It  was written in 100%  assembler
+using the most excellent HiSoft Devpac V3.0. Whew..!!
+
+     The program has been tested on the above machine, a vanilla
+A500, an A3000 and is known to work on an A1200. No problems with
+68040 processors known of either.
+
+     Although  not  every  possible configuration of hardware has
+been tested,(send me an A4000 and I will test BaseConvertor V1.00
+on it!), it is extremely unlikely  that  BaseConvertor V1.00 will
+not work on your machine.
+
+     Please report  any errors / problems  to the author when you
+register your copy of BaseConvertor.
+
+     [ If you don't register, you can't moan ]
+
+
+     Thanks go to  Danilo Sandron for  help with the decimal-bin-
+decimal conversion. We  got  these  routines  finished at 3am one
+morning while pissed out of our heads. The  code is only 16 lines
+long for each one.!
+     Thanks also to Jan van den Baard for the brilliant and free
+GadToolsBox V1.4. Using this interface generator saved me typing
+over 1000 lines of code.
+
+-----------------------------------------------------------------
+
+Author Details
+
+     Stuart Davis
+     132 Rempstone Road
+     Merley
+     Wimborne
+     Dorset
+     BH21 1SX
+                                //
+     England                  \X/ PC's are crap,
+                                    Archimedes are amoebas,
+                                      There's only one choice,
+                                        And that's the Amiga...
+
+*****************************************************************

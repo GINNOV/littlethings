@@ -1,0 +1,26 @@
+Short: Rot13 'encoding' source code
+Type: dev/c
+Uploader: Andreas_Kleinert@t-online.de
+Author: unknown
+
+------------------------ snip -------------------------
+
+/* rot13.c   Bei EBCDIC klappt das natuerlich nicht! */
+
+#include <ctype.h>
+#include <stdio.h>
+
+int main()
+{
+    int c;
+
+    while ((c=getc(stdin))!=EOF)
+        putc(islower(c)? 'a'+(c-'a'+13)%26 :
+             isupper(c)? 'A'+(c-'A'+13)%26 : c, stdout);
+    return 0;
+}
+
+------------------------ snip -------------------------
+
+ --
+ ARK, 19/Oct/98

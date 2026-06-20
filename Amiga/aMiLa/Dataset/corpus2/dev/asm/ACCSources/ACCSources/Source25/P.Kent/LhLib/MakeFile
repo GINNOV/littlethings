@@ -1,0 +1,31 @@
+OBJS1		= LhLib.o Lh.o
+OBJS2		= LhEncode.o
+OBJS3		= LhDecode.o
+
+CFLAGS		= -hi Lh.SYM -m0b -wnu -qv
+LFLAGS		= -m +q
+
+LIBS		= -Larp -Lc +l lhglue.lib
+
+all:		Lh.SYM LhEncode LhDecode lh.library
+
+LhLib.o:	LhLib.asm
+		CAPE LhLib.asm
+
+Lh.o:		Lh2.asm
+		CAPE Lh2.asm
+
+lh.library:	$(OBJS1)
+		BLINK $(OBJS1) TO lh.library SC SD ND
+		Protect lh.library -e
+
+LhEncode:	$(OBJS2)
+		LN $(LFLAGS) -o LhEncode rstart.o gads.o $(OBJS2) $(LIBS)
+		Protect LhEncode +p
+
+LhDecode:	$(OBJS3)
+		LN $(LFLAGS) -o LhDecode rstart.o gads.o $(OBJS3) $(LIBS)
+		Protect LhDecode +p
+
+Lh.SYM:		PreInclude.c
+		CC -ho Lh.SYM PreInclude.c

@@ -1,0 +1,49 @@
+; ()   - grouping
+; []   - optional parts
+; *    - repetition zero or more times
+; +    - repetition once or more times
+; none - sequence
+; |    - alternatives
+; -{<} - All characters except '<'
+
+
+ PHONELOG	: "<PHONELOG" ["version" "=" digits ["revision" "=" digits]] ">"
+                  (ENTRY | MARK)*
+                  ["</PHONELOG>"]
+
+ ENTRY		: "<ENTRY>" [PROGRAM] HOST ((START END [PERIOD]) | BUSY | NOANSWER) "</ENTRY>"
+
+ HOST		: "<HOST>" NUMBER [HOSTNAME] [REASON] "</HOST>"
+ NUMBER		: "<NUMBER>" text "</NUMBER>"
+ HOSTNAME	: "<HOSTNAME>" text "</HOSTNAME>"
+ REASON		: "<REASON>" text "</REASON>"
+
+ BUSY		: "<BUSY>" DATE TIME "</BUSY>"
+ NOANSWER	: "<NOANSWER>" DATE TIME "</NOANSWER>"
+
+ START		: "<START>" DATE TIME "</START>"
+ END		: "<END>" [DATE] TIME "</END>"
+ DATE		: "<DATE>" year "-" month "-" day "</DATE>"
+ TIME		: "<TIME>" hour ":" min ":" sec "</TIME>"
+ PERIOD		: "<PERIOD>" [hours "H"] [mins "M"] [secs "S"] "</PERIOD>"
+
+ MARK		: "<MARK>" PROGRAM MARKNAME "</MARK>"
+ MARKNAME	: "<MARKNAME>" text "</MARKNAME>"
+
+ PROGRAM	: "<PROGRAM" ["version" "=" digits ["revision" "=" digits]] ">"
+                  text
+                  "</PROGRAM>"
+
+ year		: [[[digit] digit] digit] digit
+ month		: [0-1] digit
+ day		: [0-3] digit
+ hour		: [0-2] digit
+ min		: [0-5] digit
+ sec		: [0-5] digit
+ hours		: digit+
+ mins		: [0-5] digit
+ secs		: [0-5] digit
+
+ digits         : digit+
+ digit          : 0-9
+ text           : (-{<})*

@@ -1,0 +1,5 @@
+
+Installing
+~~~~~~~~~~
+Assign "GR:" to the root of this archive and "GRI:" to "GR:includes". 
+It should assemble with ASM-One1.25 (TFA's) without problems!

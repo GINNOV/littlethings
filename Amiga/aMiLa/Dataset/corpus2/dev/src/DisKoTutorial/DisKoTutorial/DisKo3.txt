@@ -1,0 +1,85 @@
+Chapitre 3 : Plus loin dans les classes
+Par Corto
+
+Allez, il est temps que notre application ressemble un peu à un player de CD ! Après avoir passé en revue les éléments nécessaires à l'élaboration basique de l'interface, nous passerons à leur mise en place dans le source, en nous basant sur celui du chapitre 2. Ceci fera intervenir les groupes de manière un peu plus poussée.
+
+
+ Cahier des charges
+
+En regardant sur une platine CD de salon classique, on remarque les éléments suivants :
+- les boutons Précédent, Suivant, Jouer, Pause, Arrêter
+- le bouton de volume qui peut être représenté par une réglette
+- l'affichage du numéro de la piste courante (et éventuellement de la position en minutes et secondes)
+- un voyant lumineux indiquant que la lecture est en cours (admettons que ça soit le cas, histoire de réutiliser notre objet de classe Busy :)
+
+Après avoir décidé de ce qui serait présent, il faut agencer tout cela puisque cette décision déterminera l'arborescence des objets : souvenez vous des couples Child / End.
+On fixera la liste des pistes en premier, c'est à dire en haut et occupant presque toute la largeur. En effet, sur la droite, nous mettrons une glissière verticale, surmontée de l'annotation "Volume". En-dessous, on placera les boutons alignés horizontalement avec au bout un champ de texte (en lecture seule) indiquant la piste courante. Puis tout en bas un objet Busy de faible épaisseur.
+
+
+ Concrètement
+
+On remarque donc que nous avons à faire à 3 groupes horizontaux superposés :
+- affichage de la liste des pistes et volume
+- boutons et indicateur de la piste courante
+- voyant lumineux Busy comme témoin de lecture
+
+Voici comme on dit le pseudo-code équivalent :
+
+ Window
+
+        VGroup
+
+                HGroup
+
+                        Liste
+
+                        VGroup
+
+                                Label Volume
+
+                                Glissière (Slider)
+
+                HGroup
+
+                        Bouton Précédent
+
+                        Bouton Suivant
+
+                        BoutonJouer
+
+                        Bouton Pause
+
+                        Bouton Stop
+
+                        Texte avec numéro de piste
+
+                Busy
+
+
+
+J'espère que tout cela est clair et que vous visualisez l'aspect que le player va revêtir. Cette imbrication de groupes horizontaux et verticaux représente une première difficulté. L'autre réside dans les trois nouvelles classes utilisées pour les composants suivants :
+- le label qui contient le mot "Volume", son usage est on ne peut plus simple !
+- le volume
+- la liste des chansons
+
+Le volume utilise la classe builtin Slider dont l'autodoc est très accessible. Ses attributs sont : sa représentation verticale ou horizontale, sa valeur minimum et maximum, sa valeur de départ, ... Pour notre exemple, on a choisi arbitrairement les limites 0 et 100, avec 38 comme valeur initiale. On fixe l'attribut MUIA_Lister_Reverse à TRUE pour obtenir le 0 en bas.
+Lorsqu'on regarde dans la documentation (ce qu'il faut toujours faire :) on s'aperçoit que la plupart des attributs sont indiqués comme obsolètes. En fait, puisque l'on utilise des valeurs numériques, les attributs recommandés sont les équivalents de la classe builtin Numeric : MUIA_Numeric_Max au lieu de MUIA_Slider_Max, etc. Cela ne change rien dans le fonctionnement mais c'est plus correct au niveau de la conception. Et logique, tout simplement !
+
+Pour visualiser toutes ces nouvelles notions, voici le source (disponible en téléchargement ici) :
+
+
+
+Sur la liste
+
+En prévision de l'affichage des titres des chansons, un composant de type liste a été ajouté. La construction d'une liste repose en réalité sur deux classes, List et Listview, qui gèrent respectivement la gestion de la liste (manipulation de ses éléments) et sa représentation. La listview ne propose que peu d'options, les efforts devront être portés sur la richesse de la classe List, qui se trouve alors "embarquée" dans la listview.
+
+Il a été choisi d'employer les classes List et Listview d'origine même si de nombreuses applications utilisent les classes NList et NListView, plus complètes et compatibles. Nos besoins n'étant pas très étendus, nous privilégions la simplicité. Nous ne perdrons rien dans les fonctionnalités liées aux listes que nous aborderons. Par contre, attention à ne pas mélanger ces deux groupes ! Leur compatibilité autoriserait une compilation sans soucis mais des surprises (mauvaises !) sont à prévoir dans le comportement de la liste produite.
+
+Le contenu de la liste est géré par un objet List que l'on doit affecté à la Listview via l'attribut MUIA_Listview_List. La List interne contient ses propres attributs comme MUIA_List_Format pour déterminer comment cela sera affiché par la listview : définition de plusieurs colonnes, justification du texte (ici à droite pour que ça soit marquant, avec \33r), ... L'incontournable DoMethod() est utilisée par deux fois avant l'ouverture de la fenêtre pour ajouter une ligne de texte avec MUIM_List_InsertSingle, soit deux lignes au total. On simule ainsi la lecture des titres des pistes d'un hypothétique CD. A noter qu'il est possible d'ajouter plusieurs lignes en même temps avec MUIM_List_Insert.
+
+
+ Notions acquises dans ce chapitre
+
+- conception d'une interface, agencement des groupes
+- introduction aux importantes classes List et Listview
+

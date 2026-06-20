@@ -1,0 +1,70 @@
+Hi Frank...
+
+
+zum Prefs-Fenster:
+
+ich habe noch etwas Platz gelassen für den Fall, daß uns noch
+irgendwelche Optionen einfallen sollten. "Save & Use" und "Load" sind
+meiner Meinung nach nicht mehr nötig, weil die Prefs-Sektion sowieso
+nur noch allgemeine Einstellungen beinhaltet. "Save", "Use" und
+"Cancel" sollten da genügen.
+
+
+Die Texte der Saver-Prefs gefallen mir noch nicht besonders.
+Hier meine Vorschläge.
+
+IFF-Options
+-----------
+"Save Format" 
+
+
+RAW-Options
+-----------
+"Save Format"     "Source Format"
+
+
+Palette Options
+---------------
+"Save Format"     "Source Format"
+
+statt "Format": "Type"
+
+
+Chunky Options
+--------------
+Fenstertitel: "Chunky options"!
+
+"Save Format"     "Source Format"
+
+statt "Chunky Type": "Type". Einträge: "Byte" und "RGB"
+
+statt "Normal Type": "Byte Type"
+
+
+GIF Options
+-----------
+Statt "Format": "Save Format", weiß statt schwarz
+
+
+BMP Options
+-----------
+"Save Format"
+
+
+PCX Options
+-----------
+"Save Format"
+
+
+GIF Anim Options
+----------------
+Überschrift! "Save Format"
+
+
+Sprite Options
+--------------
+Fenstertitel: "Sprite options"!
+
+"Save Format"     "Source Format"
+
+"Labels" gehört in die Source-Sektion!

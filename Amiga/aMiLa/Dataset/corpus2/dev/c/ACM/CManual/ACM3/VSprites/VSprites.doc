@@ -1,0 +1,1003 @@
+13    VSPRITES
+
+13.1  INTRODUCTION
+
+VSprites, or Virtual Sprites as their whole name is, are very
+similar to Hardware Sprites. VSprites have the same limitations
+such as a maximum width of 16 pixels and can only use three
+colours (actually four colours, but the first colour will act
+as transparent.) However, VSprites are superior to Hardware
+Sprites because you may use much more than eight VSprites at
+the same time, and each VSprite may use its own three colours
+out of a palette of 4096 colours. The disadvantage with
+VSprites compared to Hardware Sprites is that Hardware Sprites
+are totally controlled by the hardware and thus very fast,
+while VSprites are partly controlled by the software and
+because of that a bit slower.
+
+
+
+13.2  HOW VSPRITES WORK
+
+The reason why VSprites are so similar to Hardware Sprites is
+that VSprites are actually displayed with help of Hardware
+Sprites. If you want a VSprite to be at the top of the display
+and one further down, the system will position a Hardware Sprite
+at the top and change its image so it correspond to the
+VSprites image. The colours will also automatically be changed
+by altering the Copper List. (See chapter "Hacks" for more
+information about the Copper list.)
+
+When the video beam has passed the first VSprite, the Hardware
+Sprite is not needed there any more and can therefore be used
+again. The system can therefore use the same Hardware Sprite to
+display another VSprite, and so on. Because of this you can have
+much more than eight sprites at the same time on the display.
+
+If two or more VSprites would be on the same height, more
+Hardware Sprites are needed. The system has eight Hardware
+Sprites as its disposal, and can therefore display up to
+eight VSprites on the same line.
+
+Here is an example. You want to display three VSprites
+positioned as below. In this case two Hardware Sprites are
+needed. Hardware Sprite one is used to display VSprite A
+and B. A and B are not on the same height, and only one
+Hardware Sprite is therefore needed. However, VSprite C
+is on the same lines as B, and a second Hardware Sprite is
+therefore needed.
+ 
+  -----
+  | A |
+  -----
+    -----
+    | B |    -----
+    -----    | C |
+             -----
+
+
+
+13.2.1  LIMITATIONS
+
+There are some important limitations that you need to remember:
+
+1. If you have reserved some Hardware Sprites for your own
+   use, the system can not use these sprites and this will
+   limit the maximum numbers of VSprites on the same height.
+
+2. Hardware Sprites 0 and 1, 2 and 3, 4 and 5, 6 and 7 share
+   the same colours. If sprite 0 is used to display one
+   VSprite, the computer can not use sprite 1 to display
+   another VSprite on the same height if it has different
+   colours. Because of that there is a limitation of a
+   maximum of four VSprites with different colours on the
+   same height.
+
+3. If you display the VSprites on a screen with a depth of 5
+   or more (32 colours or more) you will see strange colour
+   fluctuations on the lines where the VSprites are. The
+   reason is that VSprites are now using the same colour
+   register as the display, and as we said before, the system
+   is all the time changing these colours to match the
+   VSprites' colours.
+
+If the system can not find a Hardware Sprite to display a
+VSprite because of the limitations above, the VSprite will
+simply not be drawn.
+
+
+
+13.2.2  HOW TO AVOID THE LIMITATIONS
+
+There are several guidelines to follow in order to avoid the
+limitations:
+
+1. Use as few VSprites as possible on the same lines.
+2. Try to use VSprites with the same colours.
+3. If you are using a display with more than 16 colours, you
+   should only use colour 16, 20, 24, and 28. (These are the
+   transparent colours, and will therefore not be changed.)
+
+
+
+13.3  CREATE VSPRITES
+
+IF YOU WANT TO USE VSPRITES YOU HAVE TO
+---------------------------------------------------------------
+ 1. Declare and initialize some sprite data for each VSprite.
+ 2. Declare a VSprite structure for each VSprite plus two extra
+    structures for two dummy VSprites.
+ 3. Decide each VSprite's colours.
+ 4. Declare a GelsInfo structure.
+ 5. Open the Graphics Library.
+ 6. Initialize the GelsInfo structure.
+ 7. Initialize the VSprite structure.
+ 8. Add the VSprites to the VSprite list.
+ 9. Sort the Gels list. SortGList()
+10. Draw the Gels list. DrawGList()
+11. Set the Copper and redraw the display.
+    [ MrgCop() and LoadView() or        ]
+    [ MakeScreen() and RethinkDisplay() ]    
+12. Play around with the VSprites.
+13. Remove the VSprites. RemVSprite()
+
+(Easy, isn't it?)
+
+
+
+13.3.1  VSPRITE DATA
+
+Sprite data for VSprites is declared and initialized as normal
+sprite data. Just remember that all sprite data must be placed
+in Chip memory.
+
+Example:
+
+  UWORD chip vsprite_data[]=
+  {
+    0x0FF0, 0x0FF0,
+    0x0FF0, 0x0FF0,
+    0x0FF0, 0x0FF0,
+    0x0FF0, 0x0FF0
+  };
+
+
+
+13.3.2  VSPRITE STRUCTURE
+
+You need to declare a VSprite structure for each VSprite you
+are going to use, and two extra for two "dummy VSprites". The
+two dummy VSprites are used by the gel system (GEL stands for
+Graphic ELements). (One of the two dummy sprites is placed
+first in the gel-list, and the other one is placed last. The
+gel system can then sort the list much faster, and speed is
+essential here.)
+
+Example:
+
+  struct VSprite head, tail, vsprite;
+
+
+The VSprite structure looks like this: [Declared in the header
+file "graphics/gels.h".]
+
+struct VSprite
+{
+  struct VSprite *NextVSprite;
+  struct VSprite *PrevVSprite;
+  struct VSprite *DrawPath;
+  struct VSprite *ClearPath;
+
+  WORD OldY, OldX;
+  WORD Flags;
+  WORD Y, X;
+  WORD Height;
+  WORD Width;
+  WORD Depth;
+  WORD MeMask;
+  WORD HitMask;
+  WORD *ImageData;
+  WORD *BorderLine;
+  WORD *CollMask;
+  WORD *SprColors;
+  struct Bob *VSBob;
+  BYTE PlanePick;
+  BYTE PlaneOnOff;
+  VUserStuff VUserExt;
+};
+
+
+NextVSprite: Pointer to the next VSprite in the list.
+
+PrevVSprite: Pointer to the previous VSprite in the list.
+
+DrawPath:    Used by BOBs.
+
+ClearPath:   Used by BOBs.
+
+OldY:        Previous Y position.
+
+OldX:        Previous X position.
+
+Flags:       Following flags may be set by the user:
+               SUSERFLAGS Mask of the user settable flags.
+               VSPRITE    Set this flag if you are using the
+                          structure for a VSprite.
+               MUSTDRAW   Set this flag if this VSprite must
+                          be drawn.
+                          Following flags are set by the system:
+               GELGONE    This flag is set if the VSprite is
+                          outside the
+               VSOVERFLOW Too many VSprites on the same lines.
+                          If the flag MUSTDRAW is set, the
+                          system will try to draw it, but it
+                          could look strange.
+
+Y:           Y position.
+
+X:           X position.
+
+Height:      The height of the VSprite.
+
+Width:       Number of words used for each line. For the moment
+             a VSprite can only be 16 pixels wide, which means
+             two words. 
+
+Depth:       Number of planes. A VSprite can for the moment
+             only use two planes, 3 colours and one transparent.
+
+MeMask:      What can collide with this VSprite. (Will be
+             explained in a future version of the manual.)
+
+HitMask:     What this VSprite can collide with. (Will be
+             explained in a future version of the manual.)
+
+ImageData:   Pointer to the sprite data.
+
+BorderLine:  (Will be explained in a future version of the manual.)
+
+
+CollMask:    (Will be explained in a future version of the manual.)
+
+SprColors:   Pointer to a colour table for this VSprite.
+
+VSBob:       Used if it is a BOB. (Will be explained in a future
+             version of the manual.)
+
+PlanePick:   Used if it is a BOB. (Will be explained in a future
+             version of the manual.)
+
+PlaneOnOff:  Used if it is a BOB. (Will be explained in a future
+             version of the manual.)
+
+VUserExt:    You may use this as you please. Here you can add
+             extra information etc. (Is actually declared as a
+             SHORT variable.)
+
+
+
+13.3.3  COLOUR TABLE
+
+Each VSprite can have its own three colours out of a palette
+of 4096. The three desired colours are placed in an array of
+WORDS.
+
+Example:
+
+  WORD colour_table[] = { 0x000F, 0x00F0, 0x0F00 };
+
+
+
+13.3.4  GELSINFO STRUCTURE
+
+If you want to use VSprites or BOBs you have to declare and
+initialize a GelsInfo structure.
+
+Example:
+
+  struct GelsInfo ginfo;
+
+
+The GelsInfo structure looks like this: [Declared in the header
+file "graphics/rastport.h".]
+
+struct GelsInfo
+{
+  BYTE sprRsrvd;
+  UBYTE Flags;
+  struct VSprite *gelHead, gelTail;
+  WORD *nextLine;
+  WORD **lastColor;
+  struct collTable *collHandler;
+  short leftmost, rightmost, topmost, bottommost;
+  APTR firstBlissObj, lastBlissObj;
+};
+
+sprRsrvd:      Which hardware sprites should be reserved to
+               be used as VSprites. Bit zero represents the
+               first sprite, bit one the second sprite and so
+               on. If the bit is set, the sprite may be used.
+               Set the mask to 0xFF if all sprites should be
+               used as VSprites.
+
+Flags:         Used by the system.
+
+gelHead:       Pointer to the first dummy VSprite.
+
+gelTail:       Pointer to the second dummy VSprite.
+
+nextLine:      Which sprites are available on the next line.
+
+lastColor:     Pointer to an array of colours which were last
+               used.
+
+collHandler:   Pointer to the collision routines.
+
+leftmost:      Used by the system.
+
+rightmost:     Used by the system.
+
+topmost:       Used by the system.
+
+bottommost:    Used by the system.
+
+firstBlissObj: Used by the system.
+
+lastBlissObj:  Used by the system.
+
+
+
+13.3.5  INITIALIZE THE GELSINFO STRUCTURE
+
+After you have declared the GelsInfo structure you need to
+initialize some important fields. First you need to tell the
+system which sprites it should be allowed to use as VSprites.
+If any hardware sprite should be allowed to be used, set the
+sprRsrvd field to 0xFF. If any sprite except the first two
+should be allowed to be used, set the mask to 0xFC.
+
+You must also give the nextLine field a pointer to an array
+of eight WORDS, and the lastColor field a pointer to an array
+of eight WORD pointers. 
+
+Example:
+
+  WORD nextline[8];
+  WORD *lastcolor[8];
+
+  /* All sprites except the first two may be used as VSprites: */
+  ginfo.sprRsrvd = 0xFC;
+
+  ginfo.nextLine = nextline;
+  ginfo.lastColor = lastcolor;
+
+
+Finally you give the GelsInfo structure to the system by calling
+the InitGels() function, and give the Rastport's GelsInfo field
+a pointer to your GelsInfo structure.
+
+Synopsis: InitGels( head, tail, ginfo );
+
+head:     (struct VSprite *) Pointer to the first "dummy"
+          VSprite structure.
+
+tail:     (struct VSprite *) Pointer to the second "dummy"
+          VSprite structure.
+
+ginfo:    (struct GelsInfo *) Pointer to an initialized GelsInfo
+          structure.
+
+
+Example:
+
+  /* Give the GelsInfo structure to the system: */
+  InitGels( &head, &tail, &ginfo );
+
+  /* Give the Rastport a pointer to the GelsInfo structure: */
+  my_window->RPort->GelsInfo = &ginfo;
+
+
+
+13.3.6  INITIALIZE THE VSPRITE STRUCTURE
+
+The VSprite structure must be initialized. You need to position
+the VSprite, set the height, width and depth. The width can for
+the moment only be 2 words wide (16 pixels), and have a depth of
+2 (4 colours). You must also tell the structure that you want a
+VSprite. You do it by setting the Flags field to "VSPRITE".
+Finally you must give the structure a pointer to this VSprite's
+colour table and sprite data.
+
+Example:
+
+vsprite.X = x;                    /* Set the X and Y position.   */
+vsprite.Y = y;
+vsprite.Height = 16;              /* Set the height to 16 lines. */
+vsprite.Width = 2;                /* Set the width to 2 words.   */
+vsprite.Depth = 2;                /* Set the depth to 2 planes.  */
+vsprite.Flags = VSPRITE;          /* We want a VSprite.          */
+vsprite.SprColors = colour_table; /* Pointer to the colour table */
+vsprite.ImageData = vsprite_data; /* Pointer to the sprite data. */
+
+
+
+13.3.7  ADD THE VSPRITE TO THE VSPRITE LIST
+
+When all structures are initialized we add the new VSprite to
+the list. We do it by calling the AddVSprite() function with
+a pointer to our VSprite structure and a pointer to the
+Rastport as parameters.
+
+Synopsis: AddVSprite( vsprite, rp );
+
+vsprite:  (struct VSprite *) Pointer to an initialized
+          VSprite structure.
+
+rp:       (struct RastPort *) Pointer to the RastPort.
+
+
+Example:
+
+  AddVSprite( &vsprite, my_window->RPort );
+
+
+
+13.3.8  PREPARE THE GEL SYSTEM
+
+The last thing we have to do to see the new VSprite is to sort
+and draw the GEL list, change the copper list and finally
+redraw the screen. All this is done with help of four
+functions; SortGList(), DrawGList(), MrgCop() and LoadView().
+
+If your program is running under Intuition you should use the
+functions MakeScreen() and RethinkDisplay() instead of MrgCop()
+and LoadView().
+
+
+SortGList() will reorganize the VSprite list so that the
+further down on the display the sprites are positioned the
+later they will appear in the list.
+
+Synopsis: SortGList( rp );
+
+rp:       (struct RastPort *) Pointer to the RastPort.
+
+
+DrawGList() will draw the VSprites into the specified Rastport.
+
+Synopsis: DrawGList( rp, vp );
+
+rp:       (struct RastPort *) Pointer to the RastPort.
+
+vp:       (struct ViewPort *) Pointer to the ViewPort.
+
+
+MrgCop() reorganizes the Copper list. This is why each VSprite
+can have its own individual colour values.
+
+Synopsis: MrgCop( view );
+
+view:     (struct View *) Pointer to the View structure which
+          copper list should be changed.
+
+
+LoadView() will create and show the new display.
+
+Synopsis: LoadView( view );
+
+view:     (struct View *) Pointer to the View structure which
+          should be used to show the display.
+
+
+MakeScreen()
+Synopsis: MakeScreen( screen );
+
+screen:   (struct Screen *) Pointer to the screen which
+          should be affected.
+
+
+RethinkDisplay() will reorganize the complete display. Note
+that this function will take quite a long time to execute,
+so use it only when absolutely needed.
+
+Synopsis: RethinkDisplay();
+
+
+Example1: (You have created your own display.)
+
+  SortGList( my_rastport );
+  DrawGList( my_rastport, my_viewport );
+  MrgCop( my_view );
+  LoadView( my_view );
+
+
+Example2: (Your program is running under Intuition.)
+
+  SortGList( my_window->RPort );
+  DrawGList( my_window->RPort, &(my_screen->ViewPort) );
+  MakeScreen( my_screen );
+  RethinkDisplay();
+
+
+
+13.3.9  CHANGE THE VSPRITE
+
+Once you have your VSprite you can start to play around with
+it. You can:
+
+1. Move it around by changing the X and Y fields in the VSprite
+   structure.
+2. Change the image of the VSprite by giving the VSprite
+   structure a new pointer to another sprite data.
+3. Change the VSprite colours by giving the VSprite structure
+   a new pointer to another colour table.
+
+However, whatever you do with the VSprite you must always call
+the following functions to be able to see the changes:
+
+  SortGList();
+  DrawGList();
+  MrgCop();
+  LoadView();
+
+or
+
+  SortGList();
+  DrawGList();
+  MakeScreen();
+  RethinkDisplay();
+
+
+
+13.3.10  REMOVE VSPRITES
+
+When you want to remove a VSprite from the list you should call
+the RemVSprite() function.
+
+Synopsis: RemVSprite( vsprite );
+
+vsprite:  (struct VSprite *) Pointer to the VSprite you want
+          to remove.
+
+
+Example:
+
+  RemVSprite( &vsprite );
+
+
+
+13.4  A COMPLETE EXAMPLE
+
+Here is a complete example on how to use VSprites:
+
+/* Example1                                                            */
+/* This example demonstrates how to get and use a VSprite. The VSprite */
+/* can be moved around by the user by pressing the arrow keys.         */
+
+
+/* Since we use Intuition, include this file: */
+#include <intuition/intuition.h>
+
+/* Include this file since you are using sprites: */
+#include <graphics/gels.h>
+
+
+/* Declare the functions we are going to use: */
+void main();
+void clean_up();
+
+
+struct IntuitionBase *IntuitionBase = NULL;
+/* We need to open the Graphics library since we are using sprites: */
+struct GfxBase *GfxBase = NULL;
+
+
+/* Declare a pointer to a Screen structure: */ 
+struct Screen *my_screen;
+
+/* Declare and initialize your NewScreen structure: */
+struct NewScreen my_new_screen=
+{
+  0,            /* LeftEdge  Should always be 0. */
+  0,            /* TopEdge   Top of the display.*/
+  640,          /* Width     We are using a high-resolution screen. */
+  200,          /* Height    Non-Interlaced NTSC (American) display. */
+  2,            /* Depth     4 colours. */
+  0,            /* DetailPen Text should be drawn with colour reg. 0 */
+  1,            /* BlockPen  Blocks should be drawn with colour reg. 1 */
+  HIRES|SPRITES,/* ViewModes High resolution, sprites will be used. */
+  CUSTOMSCREEN, /* Type      Your own customized screen. */
+  NULL,         /* Font      Default font. */
+  "VSprites!",  /* Title     The screen's title. */
+  NULL,         /* Gadget    Must for the moment be NULL. */
+  NULL          /* BitMap    No special CustomBitMap. */
+};
+
+
+/* Declare a pointer to a Window structure: */ 
+struct Window *my_window = NULL;
+
+/* Declare and initialize your NewWindow structure: */
+struct NewWindow my_new_window=
+{
+  0,             /* LeftEdge    x position of the window. */
+  0,             /* TopEdge     y position of the window. */
+  640,           /* Width       640 pixels wide. */
+  200,           /* Height      200 lines high. */
+  0,             /* DetailPen   Text should be drawn with colour reg. 0 */
+  1,             /* BlockPen    Blocks should be drawn with colour reg. 1 */
+  CLOSEWINDOW|   /* IDCMPFlags  The window will give us a message if the */
+  RAWKEY,        /*             user has selected the Close window gad, */
+                 /*             or if the user has pressed a key. */
+  SMART_REFRESH| /* Flags       Intuition should refresh the window. */
+  WINDOWCLOSE|   /*             Close Gadget. */
+  WINDOWDRAG|    /*             Drag gadget. */
+  WINDOWDEPTH|   /*             Depth arrange Gadgets. */
+  WINDOWSIZING|  /*             Sizing Gadget. */
+  ACTIVATE,      /*             The window should be Active when opened. */
+  NULL,          /* FirstGadget No Custom gadgets. */
+  NULL,          /* CheckMark   Use Intuition's default CheckMark. */
+  "Use the arrow keys to move the VSprite!", /* Title */
+  NULL,          /* Screen      Will later be connected to a custom scr. */
+  NULL,          /* BitMap      No Custom BitMap. */
+  80,            /* MinWidth    We will not allow the window to become */
+  30,            /* MinHeight   smaller than 80 x 30, and not bigger */
+  640,           /* MaxWidth    than 640 x 200. */
+  200,           /* MaxHeight */
+  CUSTOMSCREEN   /* Type        Connected to the Workbench Screen. */
+};
+
+
+/* 1. Declare and initialize some sprite */
+/*    data for each VSprite:             */
+UWORD chip vsprite_data[]=
+{
+  0x0180, 0x0000,
+  0x03C0, 0x0000,
+  0x07E0, 0x0000,
+  0x0FF0, 0x0000,
+  0x1FF8, 0x0000,
+  0x3FFC, 0x0000,
+  0x7FFE, 0x0000,
+  0x0000, 0xFFFF,
+  0x0000, 0xFFFF,
+  0x7FFE, 0x7FFE,
+  0x3FFC, 0x3FFC,
+  0x1FF8, 0x1FF8,
+  0x0FF0, 0x0FF0,
+  0x07E0, 0x07E0,
+  0x03C0, 0x03C0,
+  0x0180, 0x0180,
+};
+
+
+/* 2. Declare three VSprite structures. One will be used, */
+/*    the other two are "dummies":                        */
+struct VSprite head, tail, vsprite;
+
+
+/* 3. Decide the VSprite's colours:            */
+/*                         RGB     RGB     RGB */
+WORD colour_table[] = { 0x000F, 0x00F0, 0x0F00 };
+
+
+/* 4. Declare a GelsInfo structure: */
+struct GelsInfo ginfo;
+
+
+/* This boolean variable will tell us if the VSprite is in */
+/* the list or not:                                        */
+BOOL vsprite_on = FALSE;
+
+
+/* This program will not open any console window if run from */
+/* Workbench, but we must therefore not print anything.      */
+/* Functions like printf() must therefore not be used.       */
+void _main()
+{
+ /* The GelsInfo structure needs the following arrays: */
+  WORD nextline[ 8 ];
+  WORD *lastcolor[ 8 ];
+
+  /* Sprite position: */
+  WORD x = 40;
+  WORD y = 40;
+
+  /* Direction of the sprite: */
+  WORD x_direction = 0;
+  WORD y_direction = 0;
+
+  /* Boolean variable used for the while loop: */
+  BOOL close_me = FALSE;
+
+  ULONG class; /* IDCMP */
+  USHORT code; /* Code */
+
+  /* Declare a pointer to an IntuiMessage structure: */
+  struct IntuiMessage *my_message;
+
+
+  /* Open the Intuition Library: */
+  IntuitionBase = (struct IntuitionBase *)
+    OpenLibrary( "intuition.library", 0 );
+  
+  if( IntuitionBase == NULL )
+    clean_up(); /* Could NOT open the Intuition Library! */
+
+
+  /* 5. Open the Graphics Library:                                    */
+  /* Since we are using sprites we need to open the Graphics Library: */
+  /* Open the Graphics Library: */
+  GfxBase = (struct GfxBase *)
+    OpenLibrary( "graphics.library", 0);
+
+  if( GfxBase == NULL )
+    clean_up(); /* Could NOT open the Graphics Library! */
+
+
+  /* We will now try to open the screen: */
+  my_screen = (struct Screen *) OpenScreen( &my_new_screen );
+
+  /* Have we opened the screen succesfully? */
+  if(my_screen == NULL)
+    clean_up();
+
+
+  my_new_window.Screen = my_screen;
+
+
+  /* We will now try to open the window: */
+  my_window = (struct Window *) OpenWindow( &my_new_window );
+  
+  /* Have we opened the window succesfully? */
+  if(my_window == NULL)
+    clean_up(); /* Could NOT open the Window! */
+
+
+  /* 6. Initialize the GelsInfo structure: */
+
+  /* All sprites except the first two may be used to draw */
+  /* the VSprites: ( 11111100 = 0xFC )                    */
+  ginfo.sprRsrvd = 0xFC;
+  /* If we do not exclude the first two sprites, the mouse */
+  /* pointer's colours may be affected.                    */
+
+
+  /* Give the GelsInfo structure some memory: */
+  ginfo.nextLine = nextline;
+  ginfo.lastColor = lastcolor;
+
+
+  /* Give the Rastport a pointer to the GelsInfo structure: */
+  my_window->RPort->GelsInfo = &ginfo;
+
+  
+  /* Give the GelsInfo structure to the system: */
+  InitGels( &head, &tail, &ginfo );
+
+
+  /* 7. Initialize the VSprite structure: */
+
+  vsprite.Flags = VSPRITE; /* It is a VSprite.            */
+  vsprite.X = x;           /* X position.                 */
+  vsprite.Y = y;           /* Y position.                 */
+  vsprite.Height = 16;     /* 16 lines tall.              */
+  vsprite.Width = 2;       /* Two bytes (16 pixels) wide. */
+  vsprite.Depth = 2;       /* Two bitplanes, 4 colours.   */
+
+
+  /* Pointer to the sprite data: */
+  vsprite.ImageData = vsprite_data;
+
+  /* Pointer to the colour table: */
+  vsprite.SprColors = colour_table;
+
+
+  /* 8. Add the VSprites to the VSprite list: */
+  AddVSprite( &vsprite, my_window->RPort );
+
+  /* The VSprite is in the list. */
+  vsprite_on = TRUE;
+  
+
+  /* Stay in the while loop until the user has selected the Close window */
+  /* gadget: */
+  while( close_me == FALSE )
+  {
+    /* Stay in the while loop as long as we can collect messages */
+    /* successfully: */
+    while(my_message = (struct IntuiMessage *) GetMsg(my_window->UserPort))
+    {
+      /* After we have collected the message we can read it, and save any */
+      /* important values which we maybe want to check later: */
+      class = my_message->Class;
+      code  = my_message->Code;
+
+      /* After we have read it we reply as fast as possible: */
+      /* REMEMBER! Do never try to read a message after you have replied! */
+      /* Some other process has maybe changed it. */
+      ReplyMsg( my_message );
+
+      /* Check which IDCMP flag was sent: */
+      switch( class )
+      {
+        case CLOSEWINDOW:     /* Quit! */
+               close_me=TRUE;
+               break;  
+
+        case RAWKEY:          /* A key was pressed! */
+               /* Check which key was pressed: */
+               switch( code )
+               {
+                 /* Up Arrow: */
+                 case 0x4C:      y_direction = -1; break; /* Pre */
+                 case 0x4C+0x80: y_direction = 0;  break; /* Rel */
+
+                 /* Down Arrow: */
+                 case 0x4D:      y_direction = 1; break; /* Pre */
+                 case 0x4D+0x80: y_direction = 0; break; /* Rel */
+
+                 /* Right Arrow: */
+                 case 0x4E:      x_direction = 2; break; /* Pre */
+                 case 0x4E+0x80: x_direction = 0; break; /* Rel */
+
+                 /* Left Arrow: */
+                 case 0x4F:      x_direction = -2; break; /* Pre */
+                 case 0x4F+0x80: x_direction = 0;  break; /* Rel */
+               }
+               break;  
+      }
+    }
+
+
+    /* 12. Play around with the VSprite: */
+
+    /* Change the x/y position: */
+    x += x_direction;
+    y += y_direction;
+
+    /* Check that the sprite does not move outside the screen: */
+    if(x > 320)
+      x = 320;
+    if(x < 0)
+      x = 0;
+    if(y > 200)
+      y = 200;
+    if(y < 0)
+      y = 0;
+
+    vsprite.X = x;
+    vsprite.Y = y;
+
+
+    /* 9. Sort the Gels list: */
+    SortGList( my_window->RPort );
+
+    /* 10. Draw the Gels list: */
+    DrawGList( my_window->RPort, &(my_screen->ViewPort) );
+
+    /* 11. Set the Copper and redraw the display: */
+    MakeScreen( my_screen );
+    RethinkDisplay();    
+  }
+
+
+  /* Free all allocated memory: (Close the window, libraries etc) */
+  clean_up();
+
+  /* THE END */
+}
+
+
+/* This function frees all allocated memory. */
+void clean_up()
+{
+ /* 13. Remove the VSprites: */
+  if( vsprite_on )
+    RemVSprite( &vsprite );
+
+  if( my_window )
+    CloseWindow( my_window );
+  
+  if(my_screen )
+    CloseScreen( my_screen );
+
+  if( GfxBase )
+    CloseLibrary( GfxBase );
+
+  if( IntuitionBase )
+    CloseLibrary( IntuitionBase );
+
+  exit();
+}
+
+
+
+13.5  FUNCTIONS
+
+InitGels()
+
+  This function "gives" an already prepared GelsInfo structure
+  to the system.
+
+  Synopsis: InitGels( head, tail, ginfo );
+
+  head:     (struct VSprite *) Pointer to the first "dummy"
+            VSprite structure.
+
+  tail:     (struct VSprite *) Pointer to the second "dummy"
+            VSprite structure.
+
+  ginfo:    (struct GelsInfo *) Pointer to an initialized GelsInfo
+            structure.
+
+
+AddVSprite()
+
+  This function will add a VSprite to the VSprite list.
+
+  Synopsis: AddVSprite( vsprite, rp );
+
+  vsprite:  (struct VSprite *) Pointer to an initialized
+            VSprite structure.
+
+  rp:       (struct RastPort *) Pointer to the RastPort.
+
+
+SortGList()
+
+  This function will reorganize the VSprite list so that the
+  further down on the display the sprites are positioned the
+  later they will appear in the list.
+
+  Synopsis: SortGList( rp );
+
+  rp:       (struct RastPort *) Pointer to the RastPort.
+
+
+DrawGList()
+
+  This function will draw the VSprites into the specified
+  Rastport.
+
+  Synopsis: DrawGList( rp, vp );
+
+  rp:       (struct RastPort *) Pointer to the RastPort.
+
+  vp:       (struct ViewPort *) Pointer to the ViewPort.
+
+
+MrgCop()
+
+  This function reorganizes the Copper list. This is why each
+  VSprite can have its own individual colour values.
+
+  Synopsis: MrgCop( view );
+
+  view:     (struct View *) Pointer to the View structure which
+            copper list should be changed.
+
+
+LoadView()
+
+  This function will create and show the new display.
+
+  Synopsis: LoadView( view );
+
+  view:     (struct View *) Pointer to the View structure which
+            should be used to show the display.
+
+
+MakeScreen()
+
+  This function will recalculate the screen display values. 
+
+  Synopsis: MakeScreen( screen );
+
+  screen:   (struct Screen *) Pointer to the screen which
+            should be affected.
+
+
+RethinkDisplay()
+
+  This function will reorganize the complete display. Note
+  that this function will take quite a long time to execute,
+  so use it only when absolutely needed.
+
+  Synopsis: RethinkDisplay();
+
+
+
+13.6  EXAMPLES
+
+Example1
+  This example demonstrates how to get and use a VSprite.
+  The VSprite can be moved around by the user by pressing
+  the arrow keys.
+
+Example2
+  This example demonstrates how to use several VSprites each
+  with its own colour table.
+
+Example3
+  This program demonstrates how to animate several (!) VSprites.

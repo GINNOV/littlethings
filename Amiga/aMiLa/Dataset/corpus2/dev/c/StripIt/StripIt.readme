@@ -1,0 +1,10 @@
+Short:        Strips comments from source codes. V1.3
+Author:       Hans-Peter Guenther
+Version:      1.3
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+A programming utility that strips all kinds of comments from given source
+codes of all programming languages.  It is controlled by a config file
+which includes the rules of the comment chars.  Some configuration files
+included. OS 2.xx only.  

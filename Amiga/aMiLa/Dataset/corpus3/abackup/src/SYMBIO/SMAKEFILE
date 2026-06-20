@@ -1,0 +1,111 @@
+# $VER: Makefile for ABackup 5.0 (13.12.94)
+# Copyright © 1992-1995 by Reza Elghazi & Denis Gounelle
+# All Rights Reserved.
+
+.SILENT:
+
+# macros:
+---------
+INC =   syms.h macros.h protos.h globals.h defines.h objects.h args.h\
+	/prefs/prefs.h main/oldfmt.h main/select.h
+
+GENE=   obj/main.o obj/main2.o obj/setup.o obj/getargs.o obj/cleanup.o obj/locale.o\
+	obj/batch.o obj/icon.o obj/userom.o
+GUI =   obj/bitrequest.o obj/display.o obj/fonts.o obj/menus.o obj/gadgets.o\
+	obj/monitor.o obj/requesters.o obj/screen.o obj/selection.o obj/utility.o\
+	obj/windows.o
+MAIN=   obj/audio.o obj/archive.o obj/avl.o obj/badcyl.o obj/childtask.o\
+	obj/compress.o obj/convert.o obj/crypt.o obj/device.o obj/dirtree.o\
+	obj/floppy.o obj/io.o obj/newfmt.o obj/objects.o obj/oldfmt.o obj/rdb.o\
+	obj/rebuild.o obj/report.o obj/restore.o obj/save.o obj/select.o obj/tape.o\
+	obj/utils.o obj/verify.o
+ASM =   obj/asm.o obj/sprintf.o
+OBJS=   $(GENE) $(GUI) $(MAIN) $(ASM)
+
+# build all:
+------------
+abackup: abackup.with abackup.gst locale.h $(OBJS)
+	echo "  linking $@..."
+	$(LD) QUIET FROM lib:c.o TO $@ WITH $@.with
+	protect $@ +a
+
+# build GST file:
+#----------------
+abackup.gst: syms.h userom.h
+	echo "  generating the global symbol table..."
+	$(CC) $< MGST $@ NOOBJNAME IGNORE=84
+	protect $@ +ah
+
+# build locales:
+#---------------
+locale.h: locale/abackup.cd
+	echo "  generating locale strings..."
+	catcomp $< CFILE $@ NOARRAY NOCODE
+
+# compile:
+#---------
+.c.o:
+	echo "  compiling" $*.c...
+	$(CC) $*.c
+.a.o:
+	echo "  assembling" $*.a...
+	$(AS) -oobj/ $*
+
+# erase objects:
+#---------------
+clean:
+	echo "  deleting all object files..."
+	- delete obj/* QUIET
+
+# objects rules:
+#---------------
+obj/main.o      : main.c		$(INC) locale.h gui/id.h main.h
+obj/main2.o     : main2.c       	$(INC) locale.h gui/id.h main.h
+obj/setup.o     : setup.c       	$(INC) locale.h gui/id.h setup.h
+obj/getargs.o   : getargs.c     	$(INC) getargs.h
+obj/locale.o    : locale.c      	$(INC) locale.h
+obj/cleanup.o   : cleanup.c     	$(INC) locale.h
+obj/batch.o     : batch.c       	$(INC)
+obj/icon.o      : icon.c		$(INC) icon.h
+obj/userom.o    : userom.c      	$(INC)
+
+obj/bitrequest.o: gui/bitrequest.c      $(INC) locale.h gui/bitrequest.h
+obj/display.o   : gui/display.c 	$(INC) locale.h gui/display.h
+obj/fonts.o     : gui/fonts.c   	$(INC) gui/fonts.h
+obj/gadgets.o   : gui/gadgets.c 	$(INC) locale.h
+obj/menus.o     : gui/menus.c   	$(INC) locale.h gui/menus.h
+obj/monitor.o   : gui/monitor.c 	$(INC) gui/id.h
+obj/requesters.o: gui/requesters.c      $(INC) locale.h gui/requesters.h
+obj/screen.o    : gui/screen.c  	$(INC) locale.h gui/screen.h
+obj/selection.o : gui/selection.c       $(INC) locale.h
+obj/utility.o   : gui/utility.c 	$(INC)
+obj/windows.o   : gui/windows.c 	$(INC) locale.h gui/id.h gui/gadgets.h gui/windows.h gui/image.h
+
+obj/archive.o   : main/archive.c	$(INC) locale.h
+obj/audio.o     : main/audio.c  	$(INC)
+obj/avl.o       : main/avl.c    	$(INC)
+obj/badcyl.o    : main/badcyl.c 	$(INC) main/childtask.h
+obj/childtask.o : main/childtask.c      $(INC) main/childtask.h
+obj/compress.o  : main/compress.c       $(INC) main/compress_int.c main/compress_ext.c main/compress_xpk.c
+obj/convert.o   : main/convert.c	$(INC)
+obj/crypt.o     : main/crypt.c  	$(INC) locale.h
+obj/device.o    : main/device.c 	$(INC) main/childtask.h main/device_sub.c
+obj/dirtree.o   : main/dirtree.c	$(INC) locale.h
+obj/floppy.o    : main/floppy.c 	$(INC) locale.h
+obj/io.o	: main/io.c     	$(INC) locale.h  main/childtask.h
+obj/newfmt.o    : main/newfmt.c 	$(INC) locale.h
+obj/objects.o   : main/objects.c	$(INC)
+obj/oldfmt.o    : main/oldfmt.c 	$(INC)
+obj/rdb.o       : main/rdb.c    	$(INC)
+obj/rebuild.o   : main/rebuild.c	$(INC)
+obj/report.o    : main/report.c 	$(INC) locale.h
+obj/restore.o   : main/restore.c	$(INC) locale.h
+obj/save.o      : main/save.c   	$(INC) locale.h
+obj/select.o    : main/select.c 	$(INC) main/select_sub.c
+obj/tape.o      : main/tape.c   	$(INC) locale.h main/childtask.h
+obj/utils.o     : main/utils.c  	$(INC) locale.h
+obj/verify.o    : main/verify.c 	$(INC) locale.h
+
+obj/sprintf.o   : sprintf.a
+obj/asm.o       : main/asm.a
+#

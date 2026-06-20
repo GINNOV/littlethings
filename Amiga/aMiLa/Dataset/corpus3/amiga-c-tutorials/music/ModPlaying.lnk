@@ -1,0 +1,4 @@
+FROM LIB:c.o "main.o"
+TO "ModPlaying"
+LIB LIB:sc.lib LIB:amiga.lib
+

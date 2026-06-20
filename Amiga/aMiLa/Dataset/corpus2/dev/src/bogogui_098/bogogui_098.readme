@@ -1,0 +1,41 @@
+Short:        C example on writing ReAction GUI
+Author:       amigaddicted@gmx.de (Micha B.)
+Uploader:     amigaddicted gmx de (Micha B.)
+Type:         dev/src
+Version:      0.98
+Requires:     dev/gui/Rebuild.lha
+Architecture: m68k-amigaos >= 3.9
+Distribution: Aminet
+Kurz:         C Beispiel für ein ReAction GUI
+
+--- English ----------------------------------
+bogoGUI illustrades how to react on gadgets
+from within GUI source code that was created
+with Rebuild GUI designer (c) by Darren Coles.
+You will need SAS/C v6.58, prepared for using
+the AmigaOS 3.2 R4 NDK (or later). Other
+Compilers untested. It works best with OS 3.2,
+but should also run on AmigaOS > 3.0 with
+ClassMate (dev/gui/classact33.lha) installed.
+
+My code uses a BogoMips calculation routine that
+is based on code by Linus Thorvalds and Dino
+Papararo.
+
+--- Deutsch ----------------------------------
+bogoGUI zeigt, wie man auf Gadgets aus dem
+GUI-Quellcode heraus reagiert, der mit Rebuild
+GUI Designer (c) von Darren Coles erstellt wurde.
+Sie benötigen SAS/C v6.58, vorbereitet für die
+Verwendung des AmigaOS 3.2 R4 NDK (oder höher).
+Andere Compiler ungetestet. Es funktioniert am
+besten mit OS 3.2, sollte aber auch auf AmigaOS
+> 3.0 mit installiertem ClassMate
+(dev/gui/classact33.lha) laufen.
+
+Mein Code verwendet eine BogoMips-Berechnungsroutine,
+die auf Code von Linus Torvalds und Dino Papararo
+basiert.
+
+Micha B.
+

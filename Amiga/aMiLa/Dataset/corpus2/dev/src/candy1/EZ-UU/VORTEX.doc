@@ -1,0 +1,1453 @@
+                ______
+               /  /  /
+              /  /  /
+             /  /  /
+______      /  /  / ________   _______   _________  _______  ____    ____
+\  \  \    /  /  / |        | |       \ |         ||       | \   \  /   /
+ \  \  \  /  /  /  |   __   | |   __   ||___   ___||   ____|  \   \/   /
+  \  \  \/  /  /   |  |  |  | |  |__|  |    | |    |  |____    \      /
+   \  \ /  /  /    |  |__|  | |   __  <     | |    |   ____|   /      \
+    \  /  /  /     |        | |  |  \  \    | |    |  |____   /   /\   \
+     \/_ /__/      |________| |__|   \__\   |_|    |_______| /___/  \___\
+
+                 
+                 "A new dimension in Amiga file handling"
+ 
+ 
+                                Version 1.0
+                        A program by: Joey McDonald
+
+
+NOTE: ONLINE DOCUMENTATION:
+---------------------------
+This document may be accessed while running Vortex (the document
+must reside in the same directory that Vortex was started from). The
+section of the document regarding the current module/area of Vortex
+you are in will be located automatically.
+
+If you are on the MAIN Vortex screen: Press SHIFT/HELP
+If you are on ANY OTHER Vortex screen: Press HELP.
+ 
+Example: If you have the Split options window open and don't fully
+understand the options... Pressing the HELP key will automatically
+load this document and take you to the section regarding the split
+options.
+ 
+=============
+Special Note:
+=============
+
+Vortex is dedicated to my late grandfather.. Alfred McDaniel.
+He raised me as his son... and I will never forget him.
+
+Love,
+
+Joey McDonald
+-------------
+
+ ============================ DISTRIBUTION: ===============================
+ 
+ You may distribute Vortex via ANY means possible. The Only
+ restrictions:
+ 
+ All files in this archive must be kept together when being
+ distributed.. and the files may not be altered in any way.
+ Also, any purely commercial venture (such as magazine coverdisk
+ inclusion) where the program is being "sold".. is not allowed
+ without first obtaining my permission.
+ 
+ That's it! Follow that simple rule and you can give Vortex to
+ anybody.. via any means you'd like :)
+ 
+  =========================== CONTRIBUTION: ==============================
+ 
+  I'm only asking $1-$5 for Vortex. Surely.. if you like Vortex
+  you can afford to send at LEAST $1. I'd rather receive SOMETHING
+  for my work than NOTHING :)
+  
+  The contribution is completely optional. If you hate the
+  program I wouldn't expect you to send me anything :) BUT if
+  you like Vortex ... please think about the contribution.
+
+SEND TO:
+  
+Joey McDonald
+2627 S. Lamb Blvd. #205
+Las Vegas, NV 89121
+USA
+ 
+Send Comments, Suggestion, or bug reports to:
+ 
+tron@mclv.net
+ 
+
+Thanks for using Vortex.... I hope you like it!
+
+Final Note on CONTRIBUTING:
+ 
+I don't know how many times I've downloaded a GUI to a CLI
+program.. and the author is asking $10-$25. Add that amount
+to what the author of the CLI program may be asking and you've
+got a fairly substantial amount.
+
+In the case of Vortex, it's a stand alone program in many
+respects (it has features that work independent of external
+programs) and is also 5 or 6 GUI's rolled into one. Rather
+than ask an outrageous amount (which I feel $25 would be)..
+I decide to ask for only $1-$5. This allows you to register any
+of the programs that Vortex may control/use.. and still AFFORD
+to send a contribution for Vortex.
+ 
+Please consider the contribution!
+ 
+
+ =========================== AS-IS NOTICE ================================
+ 
+ Vortex is released "AS-IS". I am NOT responsible for any damages
+ as the result of Vortex directly or indirectly. This means that
+ if you lose important data.. or your system blows up or something,
+ I am NOT responsible.
+
+ Vortex works on my system. It SHOULD work on yours. You use this
+ program at your OWN risk.
+ 
+ =========================================================================
+
+System Requirements:
+====================
+ 
+- OS/WB 2.0+. Lower revisions may work... but you won't
+  have the ability to drag'n drop into the vortex window (you'll
+  be restricted to the file requester). This is also dependant
+  on the requirements of external utilities you may wish to use.
+ 
+- At least 1 meg of RAM is recommended... it may work in 512k.. but
+  you probably won't be able to do much.
+ 
+- For every feature of Vortex to be active.. you will need the
+  following utilities in your command path.
+ 
+  - UUXT and companion UUSplit utilities (for encode/decode options)
+  - UUin (Encoder. Much faster and smaller than UUXT)
+  - UUout (decoder. Much faster than UUxt.)
+  - Lha, or Zip, or lzx or ALL THREE (for arc/unarc actions)
+  - Sploin (for split and join options)
+  - Vortex also relies on various DOS commands that should
+    already be in your path. (copy, delete, relabel, etc.)
+ 
+Please see the special notes at the end of these docs regarding
+Encoders and decoders and compatibility.
+ 
+INSTALLING VORTEX:
+==================
+ 
+Put Vortex and it's supporting files in the same directory.. which
+can be located anywhere you like. Any supported external utilities
+(lha, uuxt, etc.) should be in your command path (c:, etc.)
+
+Vortex is distributed in TWO different forms:
+
+- The file named "Vortex" is a stand-alone program.
+
+- The file "Vortex.NEEDSLIB" is the SAME program but it will
+  require that you have the Cando.Library in your libs: drawer.
+
+The difference is SIZE. If you already have the cando.library
+on your system... there's no need to use the stand-alone program
+(which is much larger). Simply rename The "NEEDSLIB" version to
+"vortex" and you're all set. The cando.library is copyrighted
+so you may not have it on your system. If you don't... use
+the stand-alone version.
+
+  =======================================================================
+
+                             INTRODUCTION:
+                             ~~~~~~~~~~~~ 
+Open a Vortex on your workbench screen and enter a new dimension
+in file handling. Split, Join, Encode, Decode, and manipulate/activate
+files (view,run,text, etc.) by dropping them into the Vortex. If you
+crave a more even handed or traditional approach to file selection..
+a file requester is only a mouse-click away.
+ 
+There are 6 built-in modules. 5 of these are dedicated to specific
+tasks. Splitting, Joining, Encoding, Decoding and a DOS module. The 6th
+is a multi-purpose, configurable module called the "Action" module. It
+allows the user to create a wide range of actions specific to
+various file types.
+ 
+Vortex offers a lot of different ways to accomplish tasks that would
+normally take you many steps via the CLI or via the use of
+separate programs. Vortex puts it all together in a nice GUI.
+Hopefully Vortex will incorporate an Arexx port in a
+future release.
+ 
+Vortex relies on a few separate CLI based utilities (that must
+reside in your command path) to perform the "grunt" work for it's
+operations. If you don't already own the required programs you must
+obtain them via a shareware or p.d. source (BBS, Aminet, etc.). In
+many cases Vortex does not simply provide a GUI to these programs..
+it enhances their capabilities or adds extra options NOT available
+from the CLI.
+ 
+I did not included the required CLI utilities within this archive
+because conflictions may occur with the distribution notices for
+each utility. You should have no problem obtaining them (you
+may already have them) and I have listed each required CLI program
+in the SYSTEM REQUIREMENTS section.
+ 
+Brief Description:
+------------------
+
+Vortex is a GUI that links, controls and enhances several
+CLI based utilities designed for splitting, joining, encoding and
+decoding files. Vortex also features a customizable "action" mode
+that allows the program to perform a large assortment of actions via
+external utilities. Vortex can be used via "drag and drop file
+selection".... or has an easy to use file requester.
+ 
+- If you send or receive UUencoded files... USE VORTEX!
+- If you need to split or join files... GIVE VORTEX A TRY!
+- If you need a simple "window on the workbench" to perform
+  various tasks quickly and easily.... TRY VORTEX!
+ 
+
+  ====================================================================
+
+
+The Basics:
+-----------
+
+At first glance the small Vortex window may seem a bit short
+on features. Looks can deceive! The options available
+for each mode are selected via the OPS button and DRP button.
+Toggle through each available mode (via the roll-over button)
+and press the OPS button to get an idea of what Vortex can do!
+Click DRP to see what the "DROPtions" are (these determine
+how disks and directories are scanned.. and what happens when you
+drop files, drawers and disks into the Vortex). The Available DROPtion
+settings are the same for each mode.. but you can USE and SAVE a
+different set of droptions for EACH mode. Needless to say.. you can
+use and save OPTIONS for each mode as well. Each mode can also remember
+its last directory (optional).. so when you set a destination for
+SPLIT.. and then toggle to JOIN the old directory you set for JOIN
+will appear. You can of course turn that off if you'd like.
+ 
+
+============================= >>MAIN<< ===================================
+
+                          _  _   ___     _  
+                         | \/ | |___| | | \ |
+                         |    | |   | | |  \|
+ 
+
+The Main Vortex Window:
+-----------------------
+
+- The List:
+-----------  
+This is the large blank area within the window, and this is where a
+list of selected files or dropped files will appear. Clicking twice
+on the name of any file in the list will delete the entry.
+ 
+- OPS button:
+-------------
+Takes you to the options screen that is relevant to the
+mode you are in (split, join, encode, decode, or Action). This is
+where you set the options for the actions that will be
+performed.
+
+- DRP button:
+-------------
+Takes you to the "DROPtions" screen for the
+relevant mode you are in. The screen allows you to configure such
+things as how Vortex scans disks and directories, and if Vortex
+wait for user input before performing an action. The DROPtions
+screen is the same for each mode... but you can have (use or save)
+a different set of DROPtions for EACH mode.
+ 
+- DOS button:
+-------------
+This opens the Instant Action Window. Here you'll find various
+actions that you may find useful. They all occur instantly when
+you press the desired action button. For a more in-depth description,
+see "INSTANT ACTIONS".
+
+- LOG button:
+-------------
+This brings up a window that allows you to load or save a log file.
+A log file is simply what is in the "List" window. It may be useful
+to use logs if you are performing the same actions over and over..
+or when rebuilding/joining files.
+ 
+- ? button:
+-----------
+The required ABOUT window :)
+
+- CLR button:
+-------------
+This clears the contents of the List.
+ 
+- QV button:
+------------
+This is "QuickView" mode. It takes all the files in the List and
+shows only the filename without the path. This mode is useful if
+you are displaying files that have a long path... and you need to
+quickly scan through the files. The button toggles between
+Standard View (whole path) and QuickView (filename only).
+ 
+- ^? button:
+------------
+You don't want to drop an icon on the window to list a file? This
+button brings up the file selection requester. In the requester you
+simply DOUBLE-CLICK on any file you want entered into the Vortex List,
+or use the ALL button on the requester to list all the files.
+
+- ?> button:
+------------
+You'll see this one on many of the Vortex sub-windows. This calls
+up a file requester. In this case its purpose is to set a destination
+directory. This is where the "end-result"... the "destination files"
+will be sent. Each mode can have its own destination directory.
+
+The selected destination directory appears in the destination field.
+ 
+- DESTINATION FIELD:
+--------------------
+
+This is where your DESTINATION PATH appears.
+ 
+[<] button: (DEST FIELD MEMORY option)
+------------------------------------
+You'll notice that to the end of the Destination field there is
+a small button with the text "<". This toggles the field
+memory. Normally (when this button is NOT selected) Vortex
+will remember a specific Destination for each module. This means
+that if you set the SPLIT destination to "ram:" and then went
+to the JOIN module and set it to something else... and then
+CAME BACK to SPLIT... the destination of "ram:" would pop
+up again. 
+
+Selecting this button will allow you to move from module to module
+without using the memory for the field... it will allow you
+to take whatever your current setting is with you as you scan
+through the modules.
+
+NOTE: If you had earlier set the field to something and memory
+was on.. when you deselect the memory button the field will return
+to the last remembered setting.
+ 
+- GO! button:
+-------------
+Tells Vortex to start executing the actions you have set-up for the
+mode you are in.
+ 
+- TEMP WINDOW:
+--------------
+Some actions (such a "pre-archiving" in the encoder modules) will
+use a temporary directory to hold the archive. This is normally
+set to "t:".. if you'd like to change it.. hit the "F1" key on the
+keyboard and you'll get the TEMP window... set it, use it, save it,
+or abort it :)
+ 
+============================ >>DROPtions<< ===========================
+
+           ___   ___   ___   ___  _____    ___         ___ 
+          |   \ |___) |   | |___)   |   | |   | |\  | |___
+          |___/ |   \ |___| |       |   | |___| | \_|  ___|
+
+
+Accessed through the [DRP] button on the main panel:
+ 
+This is where you set the options that tell Vortex how to scan a
+DISK or DIRECTORY for files, if vortex should wait for user input
+before taking action.. and much more. 
+ 
+The DISK functions effect what happens when a DISK is dropped on
+the Vortex window. The DIR options effect what happens when a DRAWER
+is dropped on the Vortex window.
+ 
+DISK-FILESCAN:
+--------------
+This toggles between two modes. ROOT and RECURSIVE.
+
+ROOT:
+-----
+This will only scan the ROOT directory of a disk.
+Vortex will not look into sub-directories.
+
+RECURSIVE: 
+----------
+Vortex will search the ROOT directory of a disk and
+it will also scan everything within all the sub-directories located
+on the disk. NOTE: large hard disk partitions with lots of
+sub-directories may take a quite a while to scan. 
+ 
+DISK-FILELIST:
+--------------
+This toggles between two modes. ALL and SELECTIVE.
+
+ALL:
+----
+ALL files found in the scanned area of the disk will be listed.
+If your filescan was set to ROOT.. all files in the ROOT directory
+will be listed. If your filescan was set to RECURSIVE.. all the files
+found on the disk would be listed.
+ 
+SELECTIVE:
+----------
+This allows you to select which type of file(s) to look for.. or
+NOT look for. When this mode is selected it expects input in at
+least one the two available fields: MATCHING and EXCLUDING.
+ 
+MATCHING: [         ]
+---------------------
+This only works if your DISK-FILELIST is set to SELECTIVE and
+the MATCHING item is turned on (a check mark). You can choose
+to list/find only items matching your input in the field. This
+can be an extension... a filename.. etc.
+
+To find only files ending in ".txt" you would enter ".txt" in the
+field (do not put the quotes). You can choose to match as many types
+of files as you want all at once.... just be sure you separate the
+text to match with a single space.
+
+Example: To list/find all the files ending with ".pic" ".txt" ".jpg"
+and files with the name "SPACE" we would enter this into the field:
+".txt .pic .jpg SPACE" (Again.. do not type the quotations). As
+you can see.. this allows you to match LOTS of files at once.
+
+EXCLUDING: [         ]
+----------------------
+This only works if your DISK-FILELIST is set to SELECTIVE and the
+EXCLUDING item is turned on (a checkmark). It allows you to EXCLUDE
+any type of file that matches your given text. It works the same
+way as MATCHING.. you can set this to as many types as you like
+".info .doc .iff .lha HELLO" would exclude any file matching the
+given text. NOTE: EXCLUDE always has priority over MATCHING.. so if
+you have have ".txt" set in MATCHING and ".txt" set in excluding...
+".txt" files will be EXCLUDED.
+ 
+DIR-FILESCAN:
+DIR-FILELIST
+MATCHING [     ]
+EXCLUDING [      ]
+
+These options work EXACTLY as the above DISK options.. only they
+effect how Vortex scans a DRAWER (or DRAWERS) when dropped on the
+window.
+ 
+MATCH and EXCLUDE "SEARCH options":
+===================================
+
+There are three options available when scanning for a MATCH or
+an EXCLUDE. And these three options are available for both
+DISK and DIR scanning (you can keep a separate set of options
+for each).
+ 
+Bring up the options window by clicking the DISK-FILELIST
+text or DIR-FILELIST text... (next to the "selective/all") Rollover
+button. (I ran out of room for buttons.. so I concealed it :) When
+you click the text the window will appear.
+ 
+[] FILE AND PATH
+[] FILENAME ONLY
+[] CASE SENSITIVE
+ 
+FILE AND PATH:
+--------------
+Vortex will match or exclude using the entire path as as comparison
+to your search input.
+ 
+Example: You entered PIC in the MATCHING field: This would match
+everything in the BigPIC drawer. and any other drawer or file
+with the letters PIC in it. This allows you to match whole directories
+full of files at the same time you are matching specific filetypes.
+ 
+FILENAME ONLY:
+--------------
+Only the contents of the FILENAME is compared to your search
+input.
+
+CASE SENSITIVE:
+---------------
+Any match or exclude must be of the same "case". For instance,
+if you input ".lha" this would not match files that contain
+".LHA". "PIC" would not match "pic".. etc. Every match must be
+of the same CASE.
+ 
+NOTE: For the casual user.. you'll probably never need to use
+these settings. A setting of "FILENAME ONLY" will do the trick.
+But if you're a power hungry match/exclude maniac.. you can
+use these :)
+ 
+ANOTHER NOTE: The search options are not always 100% correct.
+Filenames and paths with spaces or strange characters MAY
+interfere with the matching/excluding process. Vortex will
+see these as word delimiters... and not make a match/exclude.
+I'm working on fixing this problem and making it 100%.
+ 
+HELPER WINDOW:
+==============
+A special "helper window" is available for all of the matching
+and excluding fields. Just click on the word "MATCHING:" or
+"EXCLUDING:" and the window will appear. This window uses a
+document (must be in the same dir as Vortex) called "VEXT.txt".
+
+VEXT.txt is a plain ASCII document that can contain text that
+you match or exclude most often.. so you can save time typing
+the information in the fields. The document can be edited
+and saved directly from the helper window... or using your
+favorite ASCII editor. An example document is included.
+ 
+CLEAR:
+======
+To clear any field... simply click the [<|] button.
+ 
+
+WAIT FOR USER INPUT and AUTO GO!
+================================
+
+WAIT FOR USER INPUT:
+--------------------
+When you select to WAIT for input.. after you drop files on the
+window NOTHING will happen until you press GO!
+
+AUTO-GO!:
+---------
+When it is set to AUTO-GO! Whatever mode you are in will
+AUTOMATICALLY start when something is dropped on the
+Vortex... it's like pressing the go button right after
+dropping a file.
+ 
+ADD/APPEND TO LIST ON DROP and MAKE NEW LIST ON DROP
+====================================================
+ 
+ADD/APPEND:
+-----------
+Anything you drop in the vortex will be ADDED onto the list
+of items you have already dropped.
+ 
+MAKE NEW LIST ON DROP:
+----------------------
+The items that are already in the list are cleared.. and the
+newly dropped items are placed in the list.
+
+LIST .info OF DROPPED ICONS and  DON'T LIST .info of ICONS
+==========================================================
+ 
+LIST .info:
+-----------
+When you drop a DRAWER or a FILE... Vortex will see if there is
+an .info file available and include it in the list.
+
+DON'T LIST:
+-----------
+Vortex will only list the DROPPED file name..  no info file.
+ 
+
+ ============================= >>SPLIT<< ==================================
+
+                       ___  ___          _____
+                      |___ |___) |     |   |
+                       ___||     |___  |   |
+
+
+These are the options for file splitting when using the "split"
+module. They include:
+ 
+Number of Splits:
+-----------------
+This Allows you to select the number of small "split-files"
+generated. Selecting 10 would slice a large file in the
+main window into 10 smaller files.
+ 
+Bytes per split:
+----------------
+This allows you to select the number of bytes per split file.
+For instance.. if you had a large file with a size of 10000
+and selected a bytes per split of 1000.. you would you would
+generate 10 split files at 1000 bytes each.
+
+Number of Bytes:
+----------------
+This option allows you to select a set number of bytes
+to split off from the main file. Using the "Starting offset"
+option you can select where in the file you wish to start
+splitting. The "save-rest" option allows you to save any
+un-used or left-over bytes to a specified file.
+
+Example:
+
+You're splitting a file named "BIGFILE" that is 20000 bytes large
+to the destination you set on the Vortex screen.. let's say it's
+"DH1:".
+
+Number of Bytes: 5000
+Starting offset: 10000
+Save Rest: ram:
+
+(each option must be turned on for it to function... a checkmark shows
+that the option is on).
+ 
+The above would take 5000 bytes starting at the 10000 byte count
+and save it to "DH1:BIGFILE_BYT" and then save the rest (ending
+5000) bytes to "ram:BIGFILE_RST".
+ 
+Floppy:
+-------
+This option allows you to split a large file into several
+pieces directly onto floppy disk. The Flog option will
+create a LOG file (with a .FLOG extension) in RAM: which will
+contain a list of WHERE the split files went to. It may be useful
+to include the log with the split files if you distribute them to
+someone.. especially if they have Vortex. They can simply load
+the FLOG and rejoin the files. The rename option allows
+you to auto rename each disk to the "filename"||"SPLIT-NUMBER".
+ 
+ASCII max lines:
+----------------
+When using any of the other split options on an ASCII file..
+the splits don't care if they occur in the middle of a line
+or word.. etc. They are BINARY splitters. These options allow you
+to make splits by ASCII LINES or by ASCII BYTES.. and the program
+will make sure NEVER to split a LINE or WORD in half. This is useful
+if you want to send split text with no slashed words in it.
+
+There is also a "1st Line" option... that allows you to
+set the first line of the... and it will automatically be followed
+by a blank line. This is very handy for those who use BBS systems
+that require an Inet e-mail address (TO: joe.shmoe@nowhere.net)
+as the first line and a blank line directly after. Now you can split
+large documents and automatically address them.. all at once.
+ 
+NOTES: The ASCII MAX-Bytes function will try to get as close
+to the desired maximum amount as possible. It may slightly
+overstep the bounds. This happens because we are making
+sure not to split any lines.
+ 
+Also, both of the ASCII split options are fairly slow (actually
+VERY slow) on large ASCII files. If you are interested in splitting
+encoded ascii files you should use the options in the encode module..
+you will see much faster execution. If you have a really fast
+machine.. it may not be too noticeable, but they ARE slow. I'll
+look into speeding these options up in a future release.
+ 
+
+ ============================= >>JOIN<< ===================================
+
+                            ___ ___
+                             | |   | | |\  |
+                          |__| |___| | | \_|
+
+
+JOIN ALL TO ONE [         ]:
+---------------------------------
+ 
+This will join ALL files to the DESTINATION you set on the Vortex window
+as the FILENAME you enter into the available field on the JOIN
+window. "DESTINATION_FIELD/JOIN_filename".
+
+
+REBUILD SPLITS TO DEST:
+----------------------
+
+This will rebuild (take all the small sections of a split file and put
+them back together) ANY file that Vortex finds that ends with any of the following extensions: .1 .01 .001 _1 _01 _001 and the file must have more than one slice (there must be a .02 .002, etc.). The other sections must
+be in the same directory as the #1 extension. The files will all be
+rebuilt to the destination given in the Vortex destination field.
+
+REBUILD SPLITS TO OWN:
+----------------------
+
+This does the same as the above.. only each split file is rebuilt to its own (current) directory (where the pieces were found).
+ 
+
+ ============================ >>UUencode<< =============================
+
+                          ___        ___  ___   ___   ___
+             |   | |   | |___ |\  | |    |   | |   \ |___ 
+             |___| |___| |___ | \_| |___ |___| |___/ |___
+
+
+There are 2 "main" modes of operation:
+ 
+- Encode to ONE
+- Encode to EACH
+ 
+Encode to ONE: [        ]
+-------------------------
+This takes EACH file and encodes it into ONE file which will
+be located in your set destination on the Vortex window. The
+ONE encoded file will be named the "basename" you have entered
+in the available field and a ".uue" extension will be added.
+Remember: You don't need to put the ".uue" extension on your
+basename, Vortex will do that for you.
+
+Encode to EACH:
+---------------
+This takes EACH file and encodes it as a single file. This
+means that a file named "hello.pic" will become "hello.pic.uue".
+Each file will generate its own encoded counterpart located
+in your set destination on the Vortex window.
+ 
+There are several options available to be used with the above
+modes:
+ 
+Pre-Arc ALL: [       ]
+----------------------
+This will only work with the Encode to ONE mode (doesn't
+make sense to use it on another mode). ALL files will
+be archived to ONE "temporary" file located in your given
+"TEMP:" directory. The file will be named the basename
+given in the available field and an ".lha", ".lzx" or ".zip"
+extension will be added (depending on which archiver you have
+selected to use). REMEMBER: You don't need to add the extension
+to your basename.. Vortex will do that for you. After the
+temporary file is created.. it is encoded into ONE file
+in your destination path given in the Vortex window. It
+will be named the basename given in the Encode ALL field
+and a ".uue" extension will be added. The temporary
+archive file will be deleted.
+ 
+Pre-Arc EACH:
+-------------
+This works with Both modes. It takes EACH file and creates
+a single archive file in your given "TEMP:" directory. If
+you were using the Lha archiver... A file named "Hello.pic" would
+generate an archive named "Hello.pic.lha". Depending on
+which "MAIN" mode you have selected (Encode to ONE or Encode
+to EACH) the following will happen:
+ 
+Encode to Each will take each archived file and generate an
+encoded file in your set destination on the Vortex window.
+The temporary archive files are deleted. The encoded files
+will take there name from the original files basename and
+a .uue extension will be added. A file named "hello.pic" would
+be archived (using lha) to "hello.pic.lha" and then the encoded
+file "hello.pic.uue" would be generated.
+ 
+Encode to ONE will take each archived file and generate
+ONE encoded file in your set destination on the Vortex
+window. The file will be named using the basename given
+in the Encode to ONE field. A .uue extension will be added.
+
+With .info:
+-----------
+If this option is set and the file we are archiving has an .info
+file.. it will be included in the archive.
+
+MAX-Bytes:
+----------
+Split the encoded file by a maximum number of bytes (entry is
+in "k").... 10 = 10000 bytes, 20 = 20000 byte, etc. Use the
+[<][>] gadgets to set this if you want.. clicking once moves
+forward one byte.. holding the gadgets down increases rapidly.
+
+MAX-Lines:
+----------------
+Same as the above.. but we this will split the file into
+a specified number of lines.
+
+Pad: (UUXT only)
+----------------
+This is a feature of UUXT... it will PAD spaces in the encoded
+file if you are having problems with the files in transit (see
+UUXT docs).
+
+Buff: (UUin only)
+-----------------
+A feature of UUin... allows you to set your encoder buffer. Default
+is 32k... (a zero means to use a buffer the size of the input file).
+See UUin docs for more info.
+
+RNM: (UUin only)
+----------------
+A feature of UUin. UUin normally gives a single digit extension
+to split files (.1, .2, .3, etc.) and then RENAMES them as
+needed to .01, .001, etc. If you have a device that has problems
+with that (see the UUin docs).. then this will turn off the
+renaming.
+
+1st line:
+--------
+This allows you to add a first line to your encoded file (or
+each split file). Use the [<?] gadget to bring up the first
+line window.. which uses the "line.txt" document in your
+origin directory. It's a standard ascii file. The
+first line will have a blank line following it. This is
+useful to those who use a BBS that requires an Inet address
+on the first line.
+
+# of # cut here:
+----------------
+Two ways that this can work:
+
+UUXT uses a program called UUsplit to split encoded files. The
+program automatically adds the "cut here" info. When this item
+is deselected... Vortex will REMOVE that information from each
+split file (it will also remove any occurrence of the word UUXT
+which is placed at the beginning and end of each file for
+no good reason. Having this feature OFF when using UUXT (Also
+when UUin is used with the Encode to One and a split option
+is on) will slow down the splitting... (because vortex must
+remove the text from each file). Having it on just leaves
+that info in the file.
+
+UUin does not add this information.... so Vortex will do
+it for you if the item is selected.
+
+ARC:
+----
+Select your archiver (lha, zip, lzx). Must be in your path.
+
+ENC:
+----
+Select your encoder (UUXT, UUin) Must be in your path.
+
+Your Temporary path should be set to anywhere that you have plenty
+of space. "T:" is always a good option if you have lots of ram.
+F1 from the main screen shows your TEMP path.
+
+============================= >>UUdecode<< ==============================
+
+                         ___   ____  ___  ___   ___   ____
+            |   | |   | |   \ |____ |    |   | |   \ |____
+            |___| |___| |___/ |____ |___ |___| |___/ |____
+
+
+Not many options... but lots of power:
+ 
+UNARC:
+------
+After Your files are DECODED to your set destination the decoded
+files will be scanned to see if there are any archived files
+(.lha, .lzx, .zip). Any files that were ALREADY in your destination
+will be ignored. If archives are found... they will be UNARCHIVED
+to your destination.
+ 
+DELETE ARC:
+-----------
+If this option is selected.. and UNARC is executed (an archive
+is found and extracted).. the archive file itself will be deleted
+after the extract.
+ 
+ACTION ALL DECODED FILES:
+-------------------------
+After the files have been decoded... they will be sent to
+your action module. IF you have some actions set for various
+file types and those types are found in the decoded files..
+they will be ACTIONED.
+
+MATCHING:
+---------
+Only decoded files matching your given text will be sent to the
+action module.
+ 
+Example:
+ 
+You have an encoded file called "Pictures.uue". It contains
+an archive of 6 .jpg pictures. You have a .jpg action set up
+in your action module (a viewer). You have UNARC, DELETE ARC,
+and MATCHING ".jpg" selected in the decode screen:
+ 
+When you drop the encode file on the vortex screen (or a disk
+or DIR containing the file) it will be decoded... unarced (the
+arc will be deleted).. and then each picture will be sent
+to your action module and shown.
+ 
+Pretty handy eh?
+
+CONTENTS:
+---------
+This nifty option will scan through all .uue files (even splits)
+and list there contents. If the SIZE option is also selected each
+internal file's size will also be listed.
+
+NOTE: The SIZE option may not work on ALL uuencoded files.. 
+(especially those that don't HAVE a size listing in them :)
+If you get strange characters or an incorrect listing with
+the SIZE option ON... turn it off and see if that helps.
+ 
+
+Decoder:
+--------
+Select between UUXT or UUout as your decoder.
+
+BUFFER:
+-------
+Only works with UUout.. allows you to set your buffer size.
+ 
+FILES ONLY:
+-----------
+Only works with UUout.. tells UUout to ignore the PATHS in the
+encoded files and not to create the path during the decode.
+
+
+========================= >>INSTANT_ACTIONS<< ===========================
+
+Click on the [DOS] button to bring these up. These are different
+from all the other OPTIONS. These are INSTANT actions... NOT
+options. This window allows you to instantly USE these commands
+on whatever is listed in the Vortex window. I hope to add complete
+option "modules" for many of these commands in the future... until
+then I decide to toss this window in as a bonus. 
+ 
+NOTE: most of these COMMANDS have a "matching" field to the
+right of the command. This allows you to specify to perform the action
+only on a file in the list MATCHING your search criteria. 
+
+The HELPER window is available by using the [?] button. The helper
+window can hold commonly used search/match extensions.. etc. and
+saves you from typing. The window uses a plain ASCII document that
+must reside in the same directory as Vortex.. and it must be named
+"VEXT.txt". It can be edited using any ascii editor or even within
+the helper window itself.
+ 
+COPY:
+-----
+This will COPY all the files in the list to your destination.. or
+only files in the list MATCHING what you enter in the "matching field"
+to the right (which must be turned on.. "CHECK MARK").
+
+DELETE:
+-------
+This will DELETE all the files in the list to your destination.. or
+only files in the list MATCHING what you enter in the "matching field"
+to the right (which must be turned on.. "CHECK MARK").
+
+MOVE:
+-----
+This will copy all the files in the list to your destination.. or
+only files in the list MATCHING what you enter in the "matching field"
+to the right (which must be turned on.. "CHECK MARK").. and then
+delete the original file.
+ 
+LHAeach:
+--------
+This will LHA archive EACH file in the list to your destination.. or
+only files in the list MATCHING what you enter in the "matching field"
+to the right (which must be turned on.. "CHECK MARK"). Each file
+will result in a separate archive with the files' basename and
+a .lha extension.
+
+ZIPeach:
+--------
+Same as the above... but with ZIP compression.
+
+LHAone:
+-------
+
+This will LHA archive all the files in the list or only files in the
+list MATCHING what you enter in the "matching field" to the FAR right (which must be turned on.. "CHECK MARK")... to ONE file in your
+set destination. The destination archive will take it's name
+from the given BASENAME in the field to the right of the button.
+DO NOT PLACE and .lha EXTENSION on the name. Vortex will do that
+for you.
+
+ZIPone:
+-------
+same as the above.. but with ZIP compression.
+ 
+LHA EXRACT , ZIP EXTRACT, LZX EXTRACT:
+--------------------------------------
+Looks for .lha, .zip, or .lzx files and extracts them to your
+set destination.
+ 
+AddLine:
+--------
+Adds the line set in the available field to the TOP of every ASCII
+file found in the list. The line is followed by one blank line.
+Usefull for addressing multiple text files with Internet addresses
+(for those who use a BBS that requires the address on the first line
+followed by a blank space).
+ 
+
+============================== >>ACTION<< ===============================
+  
+                     ___   ___ _____    ___    
+                    |___| |      |   | |   | |\  |
+                    |   | |___   |   | |___| | \_|
+ 
+
+The ACTION MODULE:
+------------------
+ 
+This is an interesting place. You can do all sorts of things.
+You can create actions that you can turn on and off with a mouse
+click. The actions can be DOS commands.. or a VORTEX command
+or combinations of both.
+ 
+Looking at the main \\//ortex //\\action ||=ditor window, you'll
+see a large "list" area and below are several fields (labeled
+"DOS:", and one is labeled "Vortex:". This is where you tell
+Vortex WHAT to do with a file MATCHING your search criteria (the
+EXT: field).
+ 
+Before explaining the details of this screen... I'll tell you exactly
+WHAT happens with the data that you enter:
+ 
+Think of the large section at the top of the screen as an ACTION
+list. You'll be entering data in the below fields that will construct the list. The list tells vortex to "DO THIS" when you "FIND
+THAT". This means that Vortex will look for files matching an extension
+you have given or matching the text within the file name itself... and
+if it is found, Vortex will take an action.
+
+Vortex will proceed from the top of the list to the bottom. Each
+entry in the list can have 3 full actions (1 Vortex action and 2
+DOS actions). The actions can be moved, copied, and turned ON or OFF.
+When off, vortex will NOT perform an action on files matching the text
+you have entered in the "EXT:" field.
+ 
+EXAMPLE of what this allows you to do:
+ 
+You could set up an action for the program "superview" to show all
+files containing the extension .pic. Now, you could simply drop
+a disk or directory into the vortex and show every .pic file like
+a slide show.
+ 
+The power can be much greater than that. You could set up multiple
+actions for the same filetype to occur in a set order. This allows
+you to perform complex tasks all at once.
+
+Now let's take a look at WHERE and HOW you enter the info that tells
+Vortex what to do:
+ 
+Think of the DOS fields as a CLI or SHELL. Anything you can do from
+the CLI or SHELL can be put in these fields. The only difference
+is that these fields can use 4 additional commands:
+
+FILE, BASENAME, BASEX, and DEST.
+ 
+FILE = The full path/file that we are working on.
+BASENAME = The filename only (without the path)
+BASEX = The filename only... without an extension if it had one.
+DEST = The destination we have set in the Vortex destination field.
+ 
+EXAMPLE:
+
+We set the EXT field to .txt and dropped the file Dh1:hello.txt
+on the vortex. Vortex would then interpret the commands like this:
+
+FILE = DH1:Hello.txt
+BASENAME = Hello.txt
+BASEX = Hello
+DEST = (whatever you have set in your Vortex Destination Field)
+ 
+These commands must always be used in UPPERCASE.
+ 
+If you are familiar with using a CLI or Shell.. even for the
+most simple tasks, you will find the Vortex DOS fields very
+simple to use. In fact, the V.A.E. commands will make things
+VERY EASY for you.
+ 
+- The "EXT:" field
+
+  This is where you place the EXTENSIONS you wish to match (the
+  types of files you want an action to happen to). You can put
+  as many as you like.. the only limit is a 256 character maximum
+  in the field. Each extension MUST be separated by a space.
+  You can ALSO match portions of a FILENAME.. so you are not
+  simply limited to an EXTENSION match.
+
+  EXAMPLE: .txt .pic .doc SPACE HELLO
+
+  The "case" (capital or lowercase) does not matter. Any extension
+  matching each WORD above will trigger your action.
+ 
+This would match all files with a .txt .pic or .doc extension...
+and any files with the words SPACE or HELLO in them.
+ 
+- "DOS:" fields
+ 
+  The TOP DOS: field is DOS #1. It goes first.. before DOS #2 :)
+  When a file is found that matches one of the given extensions
+  this field is executed. Just think of this as a CLI or SHELL.
+  With a little more control... as you'll soon see.
+ 
+  Each DOS field can understand the 4 mentioned commands. DEST,
+  FILE, BASENAME, and BASEX. They MUST be in CAPITAL letters.
+  
+  Each DOS field can be executed on a PER FILE basis or ONCE
+  (only when a matching file is found for the first time). When
+  a DOS field is set to ONCE... it will not understand the V.A.C.
+  FILE commands (since we are only executing ONCE when ANY matching
+  file is found.. we are not concerned with WHICH file was found).
+  
+  Preceding each DOS field is the STACK field. If a cli program
+  you are executing needs a specific stack size, you can set it
+  here. The stack size is automatically set to 4096 for each
+  program unless you enter and USE/SAVE another amount. Most
+  programs probably won't care much about the stack... but
+  if they do.. here's where you set it :)
+ 
+Let's say you dropped a disk on the Vortex set to ACTION mode
+with a destination of "ram disk/t:". The disk "Droptions" (DRP)
+were set to "ROOT"/"ALL".. so everything in the root directory
+will be scanned.
+
+Now, Vortex checks the FIRST entry in your ACTION list... (if
+there is one). Let's say you have only ONE entry for the extension
+".pic". Vortex will then scan all the files we found in the root
+directory of the dropped disk for any ".pic" extensions. If we
+found any we will execute the given DOS commands (if any). If
+the DOS command is a PER-FILE command (ONCE is not selected)
+the DOS commands will be executed for EACH matching file. If
+the DOS command is a ONCE command (ONCE is selected).. the DOS
+command will execute only ONCE if ANY matching files are found.
+here are some examples....
+ 
+A command to simply show the picture using an external utility
+such as "superview" could be achieved with the command:
+ 
+superview FILE
+ 
+That's it. Everything matching the given extension (or extensions)
+would be sent to superview.
+ 
+To copy all the matching files to the set destination...
+ 
+copy FILE DEST
+ 
+To Archive each file into it's own archive (an archive with the
+files basename) to your set destination....
+ 
+lha a DESTBASENAME.lha FILE
+ 
+If we wanted to archive each file into ONE archive with the name
+TEST.lha....
+ 
+lha a DESTtest.lha FILE
+
+Getting the idea?
+ 
+Here's an example of how a ONCE action works:
+ 
+EXT: .pic
+
+DOS: lha a "DESTtest.lha" "FILE"
+DOS: UUin "DESTtest.lha" "DESTtest.uue" (ONCE)
+
+The above example would archive EACH .pic file into DEST/test.lha
+(DEST is whatever you set in the vortex destination field). Then
+after performing lha on EACH file.. it will activate UUin ONCE
+and encode the lha file created in DEST.. creating DEST/test.uue.
+ 
+If we did not set the ONCE option for UUIN on the DOS2 field..
+UUIN would have been executed on/for EACH file we found. The
+ONCE option tells Vortex to perform the action ONCE when the
+filetype (or whatever you typed into the EXT field) is found.
+Not on a per file basis. Remember... BASENAME, BASEX and FILE do
+not work with the ONCE option since it is not concerned with a
+single file.
+
+Just remember:
+  
+FILE: interpreted as the file we have found (a file matching the EXT
+and dropped on the Vortex as a file.. within a disk or a drawer). The
+WHOLE PATH and FILENAME.
+
+BASENAME: interpreted always inerpreted the basename of that file.
+
+BASEX: interpreted as the basename with the extension removed (if it
+had one).
+
+DEST: interpreted as your set destination in the Vortex
+destination field for the ACTION module.
+
+Once you get comfortable using the V.A.C. commands within
+your regular DOS commands... you'll see that you can perform
+anything that you could do from a CLI or SHELL -but- you can
+manipulate the data coming in from Vortex WITHIN the dos
+command line.
+
+IMPORTANT:
+ 
+Notice how we type the V.A.C. commands. DESTBASENAME (both commands
+placed TOGETHER... this is because we are saying "ram:t/basename"..
+etc. When you are combining DEST with a filename.. they must
+be connected.. because they are a PATH and a FILENAME.
+ 
+DESTBASENAME
+DESTBASEX
+t:BASENAME
+t:BASEX
+DESTtest.file
+
+Get it?
+
+
+MORE POWER!
+ 
+I made TWO DOS actions available PER "EXT" entry... but you can
+extend actions out over several entries if you wish. For instance
+you can perform 10 actions on files matching ".pic".. by making 5
+entries (2 commands each). You could view the pictures, pack them,
+encode them, split them, and anything else you could do
+from the CLI.. but here it will always be done
+automatically and in the order it appears in your Action Editor
+List). You can turn off entries, delete entries, copy them, etc..
+this allows you to make changes easily and quickly to your
+configuration. You could set up all of the above actions.. and then
+decide you don't need the "splitting".. so you just turn that entry
+off... bingo. When you need it again, just turn it on. You need
+it to happen BEFORE another command... just move it or copy it to
+where you need it.
+
+More examples:
+ 
+Let's say we want to Archive all the .txt files dropped on the
+Vortex window to ONE file in the vortex destination.
+ 
+lha a DESTtestfile.lha FILE
+ 
+This would create a file in the set destination called "testfile.lha"
+and it would contain all the dropped .txt files.
+ 
+Let's say we want to Archive all the .txt files dropped on the
+Vortex window as a single archive each.. to the set destination
+taking each name from the filename (leaving the .txt extension).
+ 
+lha a DESTBASENAME.lha FILE
+
+This would create an archive of each .txt file using the basename
+and adding an .lha extension onto it. If you dropped a file called
+test.txt you would create test.txt.lha.
+
+Let's say you wanted the same as the above but without the .txt
+extension.
+
+lha a DESTBASEX.lha FILE
+ 
+This would create the same as the above without the .txt extension
+included in the resulting file. test.lha.
+ 
+----
+
+The VORTEX option:
+==================
+
+The Vortex option (if selected) is performed before DOS1 and DOS2.
+All matching files will be sent to the Vortex module you have selected.
+The setting in that module will be used on each file.
+ 
+At the moment the the "FLOPPY" option in the split module does not
+work correctly with the Vortex option in the Action Editor.. all
+other vortex module options work properly.
+ 
+Using the Vortex option WITH the DOS options can be very powerful.
+You can Send all ".pic" files to Vortex split.. and then perform
+a few DOS actions on them with your DOS fields.
+ 
+The Controls:
+=============
+ 
+ADD:
+----
+Adds whatever you have typed into the field to the ACTION list
+as a new entry at the end of the list.
+
+INSERT:
+-------
+Adds whatever you have typed into the fields to the ACTION list
+and inserts it before the current listing.
+
+^^:
+---
+UPdates the listing you are working on. If you made changes..
+hit this and they will go into the list.
+
+QIK:
+----
+When this button is ON (pushed in) the changes you make will
+automatically go into the ACTION list when you hit return
+from within a field or turn a button on.. etc. It's like
+having the ^^ button on all the time.
+
+Copy:
+-----
+Click on an item from the list, select the copy button and
+you can copy that item to wherever you next click in the list.
+The item will be added BEFORE the entry you click on.
+
+Move:
+-----
+Same as the above.. but deletes the old entry after copying
+it.
+
+Delete:
+-------
+Click on an entry in the list and then hit this button to
+delete it.
+
+|<<
+----
+Go the the first entry
+
+>>]
+----
+Go to the last entry
+
+> = NEXT entry.
+
+< = Prev entry.
+
+FIELDS:
+-------
+The two fields show you the item number you are working on in the
+list, and the total number of action items in the list.
+
+NOTES:
+
+* You can select any item in the list by clicking on it.
+
+* You can turn an item on or off by double clicking on it.
+
+* If you have entered an item in the dos field that may be
+  using a path with spaces in it or a file name with spaces in
+  it.. use quotes.. just like you would from the CLI. Example:
+
+  Superview "FILE"
+ 
+
+You can create some fairly powerful scripts in the action editor.
+Just get used to the commands and how they work.. and you'll
+be on your way! If all you need is simple "If -THIS- then -THAT-
+actions... all you do is enter an EXT, and create a DOS or VORTEX
+entry of what you want to happen (per file or once).
+
+EXT: .pic
+
+DOS: SuperView FILE
+
+-------
+
+EXT: .lha .lzh .lz
+
+DOS: lha x FILE DEST
+
+-------
+
+Whew! I'm almost done typing! FINALLY!
+ 
+CONFIGUARTION:
+--------------
+
+Throughout Vortex you'll see the buttons USE SAVE and ABORT.
+If you select to SAVE any of your settings.. Vortex will create
+a file called Vortex.cfg in the directory in which Vortex
+resides. From now on it will use those settings when the
+program is started.
+
+Vortex is not distributed with a Vortex.cfg file... because
+it will automatically switch to default settings when such a
+file is not found. The file is only needed if you are saving
+your own settings.
+
+The Line.txt document is an ascii file that contain lines that
+you want to use with the first line gadget.
+
+The VEXT.txt document is an ascii file that can contain extensions
+or other words that you match on a regular basis.
+
+You can save a different set of DROPtions for each mode.
+
+A GENERAL Encoding/Decoding TIP and a word about compatibility:
+===============================================================
+
+Before sending someone an encoded file.. try decoding it yourself.
+make sure it turned out o.k. on your end first. Sometimes an
+encoder (uuin/uuxt) will make an error durring the decode...
+and if you try it again.. it will work correctly. Why? You got me.
+ 
+When an encoded file gets picked up from a newsgroup or has
+been mixed in with other files or text... it can have all kinds of
+extra garbage in it not belonging to the encoded file. Sometimes
+this makes it hard for the decoder to work properly... that's the
+decoders problem.. not VORTEX's.
+
+Sometimes UUout will decode a file that UUxt won't and sometimes
+UUXT will decode a file that UUout won't. If you aren't successful
+with one.. try the other.
+ 
+Also.. wherever possible (archivers or encoders/decoders) you
+should make them resident (if they can be made resident).. this
+will speed up all actions. (when an archiver is adding a file
+at a time to a large archive.. etc). If I can't get the "chunk"
+method working (see "things to do" below) I may just auto-resident
+and then auto-remove each program as needed.. allowing for a
+speed up.
+
+In the Words of Han Solo.... "It's not my fault!"
+ 
+----------------------
+THINGS I'D LIKE TO DO:
+----------------------
+
+Arexx port? I don't know if I can find the time.. but we'll see.
+ 
+Add a module specific to Archivers.
+
+Add modules specific to other programs (MIME encoders/decoders, etc.)
+ 
+Add support for more archivers: The ones I'm working on now are:
+GZIP and GNUtar. (.gz .tar). Let me know if you need one.
+
+Add some "smart" code to check how many file you are working
+on... and see if we are allowed to put them in a row THROUGH the
+archiver/encoder we are using. This will cause a great speed increase
+(see how fast LHA is when adding files to one?.. that's because it's
+using a "list" as input... and a list can have LOTS of files.
+Some programs do not except input from a list.. and there is
+a restriction on how many files we can send to them AT ONCE
+on a command line. So right now.. those files are sent one
+at a time.. so we don't have an overflow problem. That means
+that the program being executed must "reload" itself each time
+.. which slows things down some). I'll get around this in the
+next release by sending files in CHUNKS. and you'll see a speed
+increase in Archivers and Encoders!
+ 
+Add "Case Sensitive", "PATH and FILE", and "FILEONLY" options
+to -ALL- searches in Vortex (the action window does not have this
+at the moment.. it searches for a match on a PER LINE basis (PATH
+and/or FILENAME).
+ 
+More Custom COMMANDS for the DOS fields?
+ 
+Add user-function keys and keyboard shortcuts.
+ 
+Add the ability to ACTION single files in the list by selecting
+them and pressing a key.
+ 
+Have the program "adjust" to a high-res interlace screen. If
+you use such a screen you'll probably notice that the windows
+all seem squished.. that's because Vortex was designed on
+a low-res screen and cannot auto-resize itself. This is going
+to be lots of work... so I won't do it unless I see there
+are people who want it. It doesn't really look TOO bad on
+a high-res interlace screen, just squashed :)
+ 
+Fix the floppy split option to work within the Action Module.
+
+Add some way of STOPPING an action after it has started.. in
+case you didn't mean to do it.
+ 
+More error detection stuff... right now we are getting by on
+the minimum. If the program simply shutsdown.. that means
+you hit an error without error code to take care of it. I'll
+need to know what you were doing when it happened to fix
+it. I -HOPE- I already got all of the areas that could cause
+this.
+ 
+After I clean-up the code.. and add a bunch of notes to it..
+I'll release it. Watch for a nice archive full of SOURCE CODE
+to appear soon.
+ 
+Welp, that's it... now I think I can rest my eye's and stop
+thinking in CODE :)
+ 
+   // 
+\\//AMIGA FOREVER!
+
+Joey McDonald
+
+ 

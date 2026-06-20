@@ -1,0 +1,26 @@
+G  OPERATORS
+
+PRECEDENCE AND ASSOCIATIVITY OF OPERATORS
+--------------------------------------------------------------
+Operators                 Type                   Associativity
+--------------------------------------------------------------
+
+()  []  .  ->             groups membership      left to right
+-  ~  !  *  &             unary                  right to left
+++  --  sizeof  casts     unary                  right to left
+*  /  %                   multiplicative         left to right
++  -                      additive               left to right
+<<  >>                    shift                  left to right
+<  >  <=  >=              relational             left to right
+==  !=                    equality               left to right
+&                         bitwise AND            left to right
+^                         bitwise EXCL OR        left to right
+|                         bitwise INCL OR        left to right
+&&                        logical AND            left to right
+||                        logical OR             left to right
+?:                        conditional            right to left
+=  *=  /=  %=  +=  -=
+<<=  >>=  &=  ^=  |=      assignment             right to left
+,                         comma                  left to right
+
+--------------------------------------------------------------

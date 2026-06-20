@@ -1,0 +1,37 @@
+(c) HAAGE & PARTNER Computer GmbH
+
+  Mainzer Straﬂe 10A
+  61191 Rosbach v.d.H.
+
+  Phone: +49 . 6007 . 93 00 50
+  Fax: +49 . 6007 . 75 43
+
+  Compuserve: 100654,3133
+  Internet: 100654.3133@compuserve.com
+  Homepage: http://ourworld.compuserve.com/homepages/Haage_Partner
+
+
+
+
+This is the first patch for version 1.1 of StormC-Professional.
+
+The following files have been changed:
+
+     StormC professional version
+
+    Storm.lib
+    Storm_Near.lib
+    Storm_Near_a6.lib
+    Storm_Far.lib
+
+    String.h
+
+Please double-click the icon "StormC1.1-Patch.BAT".
+This will activate IconX and start the patching...
+
+The new libraries and the include will not be copied automatically.
+Please update these files manually.
+
+
+(c) HAAGE & PARTNER Computer GmbH - We develop to PowerUp the AMIGA
+

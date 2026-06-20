@@ -1,0 +1,27 @@
+Short: Integrate TurboText & ETags (C programming)
+Type: dev/c
+Uploader: barrett@cs.umass.edu
+Author: Daniel J. Barrett
+
+	This ARexx script interfaces TurboText with GNU ETags, allowing
+you to locate function definitions in your C programs automatically.
+Here is an example.
+
+	Imagine that you are working on a large program with many files.
+In your code, you have the line:
+
+		x = MyFunction(a, b, c);
+
+Suppose you want to see the definition of MyFunction().  What do you do?
+Well, you try to remember which file has MyFunction, load it into the
+editor, search for "MyFunction", and eventually you find it.
+
+	LoadETag makes this 1000 times easier!  With LoadETag, just place
+your cursor on the word "MyFunction" in the function call above, and
+press one key.  BOOM!  The file containing MyFunction is automatically
+loaded, and the cursor is positioned right on the function definition.
+WOW!!  And it does more, too!
+
+	If you know what "ctags" is on UNIX, "etags" is basically the same
+thing.  If you have never used either of these programs, NOW IS THE TIME!
+Any C programmer will *LOVE* these programs.  Trust me.

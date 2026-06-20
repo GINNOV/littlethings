@@ -1,0 +1,21 @@
+$VER: BangerKommKurz 1.3 (4-Sep-96)
+
+BangerKommKurz remove all comments of a asm-sorucecode and asm-includes
+
+
+Parameter:  FILES/A/M,ALL/S,QUIET/S
+
+FILES: one iile or more files or a directory
+ALL  : doing with subdirectories
+QUIET: no message
+
+
+BangerKommKurz is copyright 1996 by Andre´ Trettin and is FREEWARE
+
+Autor: Andre´ Trettin
+	   Duwockskamp 33
+	   21029 Hamburg
+
+Tele:  040/7246861
+EMail: tretti-a@rzbt.fh-hamburg.de
+

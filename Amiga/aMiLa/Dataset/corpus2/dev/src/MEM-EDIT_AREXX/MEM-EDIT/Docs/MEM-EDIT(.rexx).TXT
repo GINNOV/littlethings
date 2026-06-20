@@ -1,0 +1,420 @@
+
+                           MEM-EDIT(.rexx) Usage.
+                           ----------------------
+
+  Minimum Requirements Are:-
+  --------------------------
+
+           Any Classic Amiga, including WinUAE.
+           FULL, standard Kickstart 2.0x and Workbench 2.0x or better.
+           RexxMast running, and RX in the path.
+
+----------------------------------------------------------------------------
+
+  Overview:-
+  ----------
+
+  I have no idea what use this is in the real world but someone asked me to
+  write a HEX memory reader and writer using nothing but a standard classic
+  AMIGA OS and ARexx. This code will read VALID RAM and ROM addresses and
+  write to VALID RAM addresses.
+
+  It could be said that this ARexx script is the eqivalent of PEEKing a 256
+  byte dump FROM a given VALID memory address and POKEing a SINGLE BYTE
+  value TO a given VALID memory address.
+
+  Read the ARexx script to find any further information.
+
+  !!!WARNING!!!
+
+  DO NOT TRY TO READ AND WRITE HARDWARE REGISTERS WITH THIS AREXX CODE!!!
+
+  IT _IS_ POSSIBLE TO READ AND WRITE FROM AND TO _SOME_ OF THE HARDWARE
+  REGISTERS USING AREXX, BUT DON'T, AS YOU WILL GENERATE A 'GURU' IF YOU
+  DON'T KNOW WHAT YOU ARE DOING!!!
+
+  (I hope you enjoy messing about with coding like I do... :)
+
+  Enjoy finding simple solutions to often very difficult problems... :)
+
+----------------------------------------------------------------------------
+
+  MEM-EDIT Usage:-
+  ----------------
+
+  The window size is set to 640 x 200 from inside the project icon.
+  
+  To set to 640 x 256, change the 200 value in the 'WINDOW' TOOLTYPE inside
+  the project icon to 256 and save. This will make it very slightly more
+  user friendly. The project icon uses IconX as its 'Default Tool'.
+
+  This code has NO error detection NOR correction!!!
+  Invalid values WILL stop the ARexx script at best OR GIVE A COMPLETE
+  SYSTEM CRASH AT WORST.
+
+  However it DOES have built in confirmation prompts as a basic means of
+  error checking so that IF you DO make a typo, then you can go back to the
+  selection screen and try again.
+
+  It will NOT write to ANY drive however UNLESS the INPUTTED values are
+  VALID. However it WILL read and write, from and to ENFORCER addresses,
+  so DON'T do this unless you know EXACTLY what you are doing!!!
+  
+  To run the code just double click the MEM-EDIT project icon and away you
+  go.
+
+  The first screen is just a reminder of some of what is written here.
+  Press <RETURN/ENTER> to continue to the next screen.
+
+  You only have four choices, (at present). Just follow the on screen
+  prompts. REMEMBER that you CAN start at an ODD address but I suggest
+  that you do NOT do so.
+
+  I suggest the you use numbers (2) and (0) until you get used to your
+  potential typos and when you feel up to really messing about use the
+  other numbers also.
+
+  !!!USE NUMBERS THAT WRITE TO MEMORY COMPLETELY AT YOUR OWN RISK!!!
+
+  All SAVED dumps are sent to the 'S:' VOLUME and have the ASCII
+  'eqivalent' of the HEX address you have typed in for the filename.
+  For example 'S:00F80000'.
+
+  The VOLUME 'T:' MUST be available also at ALL times so make sure you have
+  'T:' assigned to some known PATH, (usually a RAMDISK).
+
+  With the limitations of AMIGA OS, AMIGADOS AND ARexx it IS possible to
+  extract the BINARY of the system ROM but this would take hours of messing
+  about. The dumps in the 'S' drawer ARE from the 3.1x ROM addresses.
+
+  Below is the ORIGINAL code and is a reference for any future upload with
+  upgrades as this code evolves.
+
+----------------------------------------------------------------------------
+
+  MEM-EDIT(.rexx), Dated 01-05-2009:-
+  -----------------------------------
+
+/* $VER: MEM-EDIT.rexx_Version_00-00-10_Public_Domain_May_2009_B_Walker_G0LCU. */
+
+/* IMPORTANT! THIS IS DEMO CODE ONLY AND THERE IS NO ERROR CORRECTION AT ALL! */
+
+/* This script works on OS2.0x too, NOT just OS3.xx. */
+
+/* This is a DEMO only and dumps a 256 byte dump to 'S:<ADDRESS_TYPED_IN>'. */
+/* The AMIGADOS commands 'Type' and 'Delete' MUST be in the C: VOLUME!!! */
+
+/* The 'T:' VOLUME MUST be assigned to a VALID 'VOLUME:Drawer', ('RAM:T'). */
+
+/* It will also WRITE a single byte to a valid memory location, SO BEWARE!!! */
+
+/* There ARE confirmation prompts to act as basic error checks throughout. */
+
+/* Coded by Barry Walker, G0LCU. No copyright as it is offered as PD. */
+/* Use ECHO for ordinary strings, and SAY for strings with variables inside. */
+
+/* ---------------------------------------- */
+
+/* Set up a basic startup screen... */
+ECHO 'c'x
+ECHO '$VER: MEM-EDIT.rexx_Version_00-00-10_Public_Domain_May_2009_B_Walker_G0LCU.'
+ECHO ''
+ECHO 'A simple hexadecimal memory EDITOR using standard ARexx for classic AMIGAs.'
+ECHO 'SAVED memory dumps are to S:<ADDRESS_TYPED_IN> and of 256 bytes in size!'
+ECHO ''
+ECHO 'This is issued as Public Domain and donated by B.Walker, G0LCU...'
+ECHO ''
+ECHO 'The characters must be in the range 0123456789ABCDEF and there MUST be two or'
+ECHO 'eight of them. Addresses and byte values are in hexadecimal AND leading zeros'
+ECHO 'ARE important!!!'
+ECHO ''
+ECHO '!!!WARNING!!!'
+ECHO '-------------'
+ECHO ''
+ECHO 'There is NO error correction at all, therefore any INPUTTING typos WILL cause'
+ECHO 'ARexx to stop with an error report, OR, GENERATE A SERIOUS SYSTEM CRASH!!!'
+ECHO ''
+ECHO 'BE VERY AWARE OF THIS!!!'
+CALL keyboardhold
+
+/* ---------------------------------------- */
+
+/* Set up general variables. */
+bytevalue = '00'
+dumpstartaddress = '00FC0000'
+dumpstring = ''
+jobtodo = '0'
+savefile = 'myfile'
+simplecheck = 'Y'
+
+/* Note the variable, <dumpstartaddresshex>, below, MUST be a string */
+/* representation of a hexadecimal, preferably, EVEN address. */
+/* The leading zero(s) and trailing 'x' ARE BOTH IMPORTANT!!! */
+/* The DEMO address, '00FC0000', is inside the classic AMIGA ROM area. */
+dumpstartaddresshex = '00FC0000'x
+
+/* Similarly for the byte variable, <realbytehex>, below. */
+realbytehex = '00'x
+
+/* ---------------------------------------- */
+
+/* Enter a hexadecimal address from '00000000' to '00FFFF00'. */
+DO FOREVER
+ECHO 'c'x
+ECHO 'Hexadecimal memory reader and writer...'
+ECHO ''
+ECHO 'Type a number then <RETURN/ENTER>:-'
+ECHO '-----------------------------------'
+ECHO ''
+ECHO '                (1) for a 256 byte memory dump to disk.'
+ECHO '                (2) for a 256 byte memory read only.'
+ECHO '                (3) for a SINGLE BYTE WRITE to memory.'
+ECHO ''
+ECHO '                (0) to QUIT.'
+PULL jobtodo
+IF jobtodo = '1' THEN CALL saveandread
+IF jobtodo = '2' THEN CALL readonly
+IF jobtodo = '3' THEN CALL writebyte
+IF jobtodo = '0' THEN CALL getout
+END
+
+/* ---------------------------------------- */
+
+/* Read a memory dump and auto-save to S:<ADDRESS_TYPED_IN>... */
+saveandread:
+CALL enteraddress
+IF simplecheck ~= 'Y' THEN RETURN
+
+/* Open up a filename to save to. */
+OPEN(savefile, 'S:'||dumpstartaddress, 'W')
+/* Save the filename... */
+WRITECH(savefile, dumpstring)
+/* Immediately close the file when dumped. */
+CLOSE(savefile)
+
+/* ---------------------------------------- */
+
+/* Do a simple print to the screen of what is saved in hexadecimal */
+/* ASCII readable format using AMIGADOS command 'Type'. */
+readonly:
+IF jobtodo = '2' THEN CALL enteraddress
+IF simplecheck ~= 'Y' THEN RETURN
+ECHO 'c'x
+IF jobtodo = '1' THEN SAY 'File saved to the S: VOLUME as "[S:]'||dumpstartaddress||'"...'
+IF jobtodo = '2' THEN SAY 'Memory start address is at $'||dumpstartaddress||', plus offset shown.'
+ECHO ''
+ECHO 'ASCII display of the hexadecimal dump of a 256 byte string...'
+ECHO ''
+IF jobtodo = '1' THEN ADDRESS COMMAND 'C:Type S:'||dumpstartaddress||' HEX'
+IF jobtodo = '2' THEN CALL temporaryread
+CALL keyboardhold
+RETURN
+
+/* ---------------------------------------- */
+
+/* Do a temporary save to T: and read the contents... */
+temporaryread:
+/* Open up a temporary filename to save to... */
+OPEN(savefile, 'T:'||dumpstartaddress, 'W')
+/* Save the filename... */
+WRITECH(savefile, dumpstring)
+/* Immediately close the file when dumped. */
+CLOSE(savefile)
+
+/* Display contents of dump saved to T:. */
+ADDRESS COMMAND 'C:Type T:'||dumpstartaddress||' HEX'
+/* Delete the file when displayed. */
+ADDRESS COMMAND 'C:Delete T:'||dumpstartaddress||' QUIET'
+RETURN
+
+/* ---------------------------------------- */
+
+/* Manual hexadecimal memory address entry point... */
+enteraddress:
+ECHO 'c'x
+ECHO 'Enter a VALID hexadecimal address, for example, 00F80000<RETURN/ENTER>:-'
+ECHO ''
+PULL dumpstartaddress
+ECHO ''
+SAY 'Is "'||dumpstartaddress||'" correct? (Y/N<RETURN/ENTER>):-'
+ECHO ''
+PULL simplecheck
+IF simplecheck = 'Y' THEN CALL enteraddresscont
+RETURN
+
+/* If typed value is correct then carry on. */
+enteraddresscont:
+/* Convert the value to the contents of the address pointer... */
+dumpstartaddresshex = X2C(dumpstartaddress)
+
+/* Fetch the 256 byte binary string. */
+dumpstring = IMPORT(dumpstartaddresshex, 256)
+RETURN
+
+/* ---------------------------------------- */
+
+/* Write a single byte to memory. */
+/* Ask for confirmation first! */
+writebyte:
+ECHO 'c'x
+ECHO '!!!WARNING!!!'
+ECHO ''
+ECHO 'WRITING TO MEMORY CAN CAUSE A SERIOUS SYSTEM FALIURE!!!'
+ECHO ''
+ECHO 'ARE YOU SURE YOU WANT TO CONTINUE?, (Y/N<RETURN/ENTER>):-'
+ECHO ''
+PULL simplecheck
+IF simplecheck = 'Y' THEN CALL writebytecont
+RETURN
+
+/* Continue after confirmation... */
+writebytecont:
+CALL enteraddress
+IF simplecheck ~= 'Y' THEN RETURN
+
+/* Display where the memory write will be. */
+ECHO 'c'x
+SAY 'Memory address to write to is $'||dumpstartaddress||'.'
+ECHO ''
+ECHO 'Enter byte value in hexadecimal, for example, 7F<RETURN/ENTER>:-'
+ECHO ''
+PULL bytevalue
+ECHO ''
+SAY 'Is "'||bytevalue||'" correct? (Y/N<RETURN/ENTER>):-'
+ECHO ''
+PULL simplecheck
+IF simplecheck = 'Y' THEN CALL dowritebyte
+RETURN
+
+/* Do the write to memory!!! */
+dowritebyte:
+/* Convert the ASCII byte to the real HEX value. */
+realbytehex = X2C(bytevalue)
+
+/* Write a single hexadecimal byte to memory. */
+EXPORT(dumpstartaddresshex, realbytehex, 1)
+
+/* Read the BYTE, in LONGWORD form, from the changed address. */
+dumpstring = IMPORT(dumpstartaddresshex, 4)
+
+/* Display on screen the four contiguous bytes. */
+ECHO 'c'x
+SAY 'Address changed is $'||dumpstartaddress||', plus offset shown...'
+ECHO ''
+SAY '0000:  '||C2X(dumpstring)||'  for four bytes, (longword), only!'
+CALL keyboardhold
+RETURN
+
+/* ---------------------------------------- */
+
+/* Stop the display until the <RETURN/ENTER> key is pressed... */
+keyboardhold:
+ECHO ''
+ECHO 'Press <RETURN/ENTER> to continue:-'
+PULL jobtodo
+RETURN
+
+/* ---------------------------------------- */
+
+/* Clean exit... */
+getout:
+ECHO 'c'x
+ECHO 'Click the CLOSE gadget to QUIT...'
+ECHO ''
+EXIT(0)
+/* Program end. */
+
+----------------------------------------------------------------------------
+
+  This is a typical 256 byte HEX dump to disk starting at KS 3.1x ROM
+  address $00F80000...
+
+0000: 11144EF9 00F800D2 0000FFFF 00280044    ..Nù.ø.Ò.....(.D     
+0010: 0028000A FFFFFFFF 00414D49 47412052    .(.......AMIGA R     
+0020: 4F4D204F 70657261 74696E67 20537973    OM Operating Sys     
+0030: 74656D20 616E6420 4C696272 61726965    tem and Librarie     
+0040: 7300436F 70797269 67687420 A9203139    s.Copyright © 19     
+0050: 38352D31 39393320 00436F6D 6D6F646F    85-1993 .Commodo     
+0060: 72652D41 6D696761 2C20496E 632E2000    re-Amiga, Inc. .     
+0070: 416C6C20 52696768 74732052 65736572    All Rights Reser     
+0080: 7665642E 00332E31 20524F4D 20006578    ved..3.1 ROM .ex     
+0090: 65632E6C 69627261 72790065 78656320    ec.library.exec      
+00A0: 34302E31 30202831 352E372E 3933290D    40.10 (15.7.93).     
+00B0: 0A004E71 4E714AFC 00F800B6 00F8370E    ..NqNqJü.ø.¶.ø7.     
+00C0: 02280969 00F8008E 00F8009B 00F804AC    .(.i.ø...ø...ø.¬     
+00D0: 4E704FF8 040041FA FF2872FF 75017B00    NpOø..Aú.(r.u.{.     
+00E0: DA986402 528551C9 FFF851CA FFF44BFA    Ú.d.R.QÉ.øQÊ.ôKú     
+00F0: 001A41FA FF0C43F9 00F00000 B3C8670A    ..Aú..Cù.ð..³Èg.     
+
+  This would be saved to the S: VOLUME as [S:]00F80000...
+
+----------------------------------------------------------------------------
+
+  The archive is Public Domain/Emailware and you may modify it/them as you
+  please for your OWN experiments.
+
+----------------------------------------------------------------------------
+
+                                IMPORTANT:-
+                                -----------
+
+    The Legal Stuff:-
+    -----------------
+
+    These programs are Public Domain and no profit will be made from them,
+    also all of the files must remain unaltered and intact including this
+    one. The author is not responsible for any damage to, or loss of, or
+    failure of equipment or data caused in any way by the use of these
+    programs. There is NO warranty with the use of these software releases
+    and YOU USE THEM AT YOUR OWN RISK.
+
+----------------------------------------------------------------------------
+
+    Testing Evaluation:-
+    --------------------
+
+    An A1200 in 2MB, 6MB and 10MB modes using trapdoor memory AND/Or PCMCIA
+    memory expansions. WinUAE version 1.5.3 in classic Workbench 3.0x mode. 
+
+    All test conditions were/are running STANDARD OS3.0x, and using standard
+    ~topaz 8~ fonts throughout.
+
+    I have no idea what a strange configuration setup will create so refer
+    to the ~The Legal Stuff~ above.
+
+----------------------------------------------------------------------------
+
+                                 WARNING.
+                                 --------
+
+  1) DISCONNECT any faulty equipment under test from the MAINS supply.
+  2) If a DC supply is used do NOT reverse polarity the connections.
+  3) Do NOT power up any electronic item until it is safe to do so.
+  4) CHECK and RECHECK all of your construction and repair work thoroughly.
+  5) Handle ALL tools used with care.
+  6) Beware of ALL types of solvents, glues and etching fluids.
+  7) NEVER leave a soldering iron switched on unattended.
+  8) KEEP everything OUT of the reach of small children.
+  9) Switch OFF the AMIGA before disconnecting or connecting any hardware.
+ 10) And finally read 1) to 9) again.
+
+----------------------------------------------------------------------------
+
+   Contact:-
+   ---------
+
+   Mr Barry Walker, G0LCU,
+
+   Email:-     wisecracker@tesco.net
+   URL:-       http://homepages.tesco.net/wisecracker/G0LCU.HTM
+
+   Author of the ~TestGear?~ projects in the ~docs/hard~ drawer of AMINET.
+
+----------------------------------------------------------------------------
+
+   A very useful HardWare related site, (C) Anthony Hoffman, for
+   modifications, schematics, repairs and the like is:-
+
+                          http://amiga.serveftp.net/
+
+============================================================================

@@ -1,0 +1,22 @@
+Short:    Arexx scripts: compile stuff with GoldEd             vbcc harlock
+Author:   pfharlock@yahoo.com
+Uploader: pfharlock@yahoo.com
+Version:  july 9, 1999
+Type:     dev/c
+
+  These scripts are new and MUCH better than the ones I had uploaded
+previously.  I use these on a daily basis and am very happy with them.
+they fall short on multi source file projects and are used mainly
+to quickly compile test source.  If your interested in multi source
+file support from within ged, then you'll have to get a make program
+, (the one from geek gadgets, gg under aminet, should do nicely), and
+create a button in ged to invoke it.  I hope you get good use out of
+these scripts.  I stole alot of the internal workings from some other
+script written for use with dice, but I have fixed alot of bugs, and
+made it so it works under vbcc.  I hope the original author does not
+mind my use of his code.  any questions are welcomed, on these scripts
+vbcc or otherwise.
+
+                        Enjoy,
+                           Harlock
+

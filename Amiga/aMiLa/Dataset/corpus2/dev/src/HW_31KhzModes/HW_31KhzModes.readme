@@ -1,0 +1,20 @@
+Short:    Use 30.00/31.56Khz screens without the OS
+Author:   Fabio Bizzetti <bizzetti@mbox.vol.it>
+Uploader: Fabio Bizzetti <bizzetti@mbox.vol.it>
+Type:     dev/src
+
+
+
+Nothing to say, besides:
+
+Use this source (and/or its know-how) as you wish, it's completely freeware.
+I hope you'll support HW 30.00Khz screens anytime you need <= 4 sprites and
+you can use bitplanes. Same for 31.56Khz (1 sprite).
+
+This source can already be assembled and executed, and has a special mode
+for 1942 monitors, to fix its lack of vertical "auto size" feature.
+
+
+Enjoy!
+
+

@@ -1,0 +1,7 @@
+Short:        Strip comments and extraneous whitespace
+Author:       Chris Metcalf
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Strips comments and extraneous whitespace from C source files.  Useful for
+compacting the C header files to increase usable disk space.  

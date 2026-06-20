@@ -1,0 +1,41 @@
+SetMouse V2.0   © 1995 Ketil Hunn
+---------------------------------
+
+BACKGROUND
+  SetMouse is part of the Recall package (the BEST reminder-utility
+  available!), but is also released on its own.
+
+  Intentionally constructed to control the mouse pointer from Recall
+  input events (since the position of the mousepointer is not
+  accessible through the rawmouse input class), but may also be useful
+  for other purposes.
+
+DESCRIPTION
+  SetMouse will enable you to control the mouse pointer position from
+  Shell and/or generate left, middle or right mouse button presses (or
+  a combination of these).
+
+  May also be used to centre the mouse pointer on screen at boot time
+  (as in Windows) using the position -1,-1.
+
+USAGE
+  SetMouse XPOS=NUMBER/A/N,YPOS=NUMBER/A/N,LEFTBUTTON/S,MIDDLEBUTTON/S,
+           RIGHTBUTTON/S,DOUBLECLICK/S
+
+  XPOS          Horizontal mouse pointer position.
+  YPOS          Vertical mouse pointer position.
+  LEFTBUTTON    Generate a left mouse button press.
+  MIDDLEBUTTON  Generate a middle mouse button press.
+  RIGHTBUTTON   Generate a right mouse button press.
+  DOUBLECLICK   Generate a doubleclick left/middle/right mouse button
+                press.
+
+EXAMPLES
+  SetMouse 50 100              (move mouse pointer to X=50 Y=100)
+  SetMouse XPOS=50 YPOS=100    (move mouse pointer to X=50 Y=100)
+  SetMouse -1 -1               (centre mousepointer on screen)
+  SetMouse 12 90 LEFTBUTTON    (move mouse pointer to X=12 Y=90 and
+                                generate a right mouse button press)
+
+COPYRIGHTS
+  SetMouse V2.0 is © 1995 to Ketil Hunn!  You may use it as you like!

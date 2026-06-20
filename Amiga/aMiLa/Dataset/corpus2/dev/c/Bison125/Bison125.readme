@@ -1,0 +1,32 @@
+Name: Bison 1.25
+Short: GNU Bison - a compiler compiler (Amiga SAS/C port)
+Author: prometeo@flashnet.it (Giacomo Magnini)
+Uploader: prometeo@flashnet.it (Giacomo Magnini)
+Version: 1.25
+Type: dev/c
+
+This is a mostly unchanged port of the GNU Bison 1.25, a compiler
+compiler, almost compatible with the 'yacc' Un*x utility.
+
+Using the work made by Sandro Tolaini <tolaini@freenet.hut.fi>, I have
+successfully compiled it under SAS/C 6.57, with FULL optimization.
+I haven't updated the docs, though.
+
+Source code is included, to recompile just say 'smake'.
+
+I made a slight change to Bison.hairy to make the generated source more
+compatible to SAS/C, and I've commented out an assignment in main.c
+(line 167) which prevented bison to generate the source for an incomplete
+parser (I needed it for the project I'm working on, and old bison versions
+worked this way...).
+
+To install, simply copy the Bison program somewhere in your path. Copy the
+Bison.hairy and Bison.simple files in the same dir where the main program is.
+
+Please report me any bug!
+
+Much thanks to the GNU guys for their great software!
+
+Enjoy,
+Giacomo Magnini <prometeo@flashnet.it>
+

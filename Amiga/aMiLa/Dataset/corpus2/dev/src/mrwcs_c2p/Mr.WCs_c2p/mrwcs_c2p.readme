@@ -1,0 +1,27 @@
+Short:    not particularly fast c2p routine with detailed explanation
+Uploader: Niels Böhm alias Mr.WC (bohmmrwc@yahoo.com)
+Author:   Niels Böhm alias Mr.WC (bohmmrwc@yahoo.com)
+Type:     dev/src
+Version:  0.1
+
+This is an asm chunky to planar routine wrapped by an E program. It is not
+particularly fast, but by far faster than an ADD-ROXL approach. Works even
+on a plain 68000.
+
+The source is interwoven with a very detailed explanation of how it works.
+In the distributed form it is hardcoded for 8 bitplanes (i.e. 256 colours)
+but can easily be adapted for any lower number of bitplanes, if required.
+
+Archive contents:
+
+Original  Packed Ratio    Date     Time    Name
+-------- ------- ----- --------- --------  -------------
+    2628    1759 33.0% 14-Aug-00 01:24:24 +c2p
+   34137    8898 73.9% 14-Aug-00 01:24:10 +c2p.e
+     477     249 47.7% 14-Aug-00 01:51:00 +c2p.e.info
+     450     175 61.1% 14-Aug-00 01:51:00 +c2p.info
+    1210     605 50.0% 14-Aug-00 02:03:26 +mrwcs_c2p.readme
+     477     248 48.0% 14-Aug-00 01:51:00 +mrwcs_c2p.readme.info
+     628     269 57.1% 14-Aug-00 01:51:16  Mr.WCs_c2p.info
+-------- ------- ----- --------- --------
+   40007   12202 69.5% 14-Aug-100 02:04:50   7 files

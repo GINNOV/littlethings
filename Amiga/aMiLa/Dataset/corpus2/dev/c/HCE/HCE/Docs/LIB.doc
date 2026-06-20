@@ -1,0 +1,1441 @@
+The C libraries provided with HCE are the original Sozobon-C libraries
+by Dale Schumacher, which were partially ported from the ATARI ST by 
+Jeff Lydiatt on the 17th june 1989 (ZC distribution). The only changes
+I have made to these libraries since, are bug fixes to 'stdio.lib',
+the addition of 'environment.c' to 'Misc.lib', and also changed 
+parts of the maths library for math routines from Detlef Wuerkner`s 
+'HCC.lib' (HCC distribution).
+
+Note about this document.
+-------------------------
+This document is based on the 'zc.lib.doc' by Jeff Lydiatt, which was based
+on the original 'dlibs.libs' document by Dale Schumacher for the ATARI ST.
+I have rewritten many parts, added some new stuff and also taken out 
+the parts which were only meant for the ATARI ST.
+
+Note about error return values.
+-------------------------------
+On the ATARI ST functions return negative values on error.
+On the AMIGA functions may generate a positive value on error.
+If the global variable 'errno' contains a positve value, consider it to be
+an error returned from AmigaDos, via IoErr().
+
+Note about 'Math.lib'.
+----------------------
+The maths library uses the motorola fast floating point routines exclusively.
+The keyword 'float' acts the same as 'double'.
+The 'mathffp.library' and the 'mathtrans.library' are opened and closed
+each time you use one of there functions. If you open these libraries 
+yourself then you most also close them yourself.
+
+Note about all libs.
+---------------------
+The standard C libraries comprise of the following:
+
+                              Maths.lib
+                              Misc.lib
+                              Stdio.lib
+                              String.lib
+
+Normally all of the above files (except Maths.lib) would be joined to
+make a single C library. I have kept them seperate to try and make
+bug fixing and updating a bit easier.
+
+
+                        TABLE OF CONTENTS
+                      
+      Header files .................................. L64
+      Process control ............................... L151
+      Memory management ............................. L271
+      File handling ................................. L301
+      Input & Output ................................ L538
+      Formatting & Type conversion .................. L688
+      String manipulation ........................... L891
+      Charater functions ............................ L1102
+      Date & Time functions ......................... L1172
+      Searching & Sorting ........................... L1215
+      Error handling ................................ L1288
+      Variable argument lists ....................... L1310
+      Miscellaneous ................................. L1335
+      Revision record ............................... L1418
+      Final note .................................... L1427
+
+**********************************************************************
+*                         HEADER FILES:                              *
+**********************************************************************
+
+ar.h
+ This header defines the library archive header used by 'ar'.
+
+assert.h
+ This header defines the assert() run-time condition checking macro.
+
+basepage.h
+ The BASEPAGE struct and the _base variable, which is initialized
+ to point to the current process basepage, are defined in this file.
+
+ctype.h
+ Character classification and conversion.
+ The isxxxx() macros and toxxxx() macros are defined in this file.
+
+errno.h
+ This file defines the error code constants, the errno variable
+ and related error handling functions.
+
+fcntl.h
+ This file defines the O_xxxx constants used by open().
+
+limits.h
+ Various maximum and minimum values are defined by this file.
+ Among these are PATHSIZE and MAXINT.
+
+macros.h
+ This file contains a few useful macros including min(), max(),
+ abs() and swap().
+ 
+math.h
+ This file contains difines such as MAXDOUBLE and MAXFLOAT
+ and also contains function return values for all math functions.
+
+setjmp.h
+ This file defines the buffer needed to save your context when
+ using setjmp()/longjmp() or catch()/throw().
+
+stat.h
+ The struct stat and the file mode flag constants are defined
+ in this file.
+
+stdarg.h
+ This header defines the type and macros needed for variable
+ argument list processing.
+
+stddef.h
+ This is the root header file which should be included in all
+ programs.  It defines NULL, size_t, ptrdiff_t and the
+ offsetof() macro. (this file is included in stdio.h)
+
+stdio.h
+ This header file should be present in nearly all C programs.
+ It defines the 'FILE' struct, EOF and contains extern
+ declarations for standard i/o (Stdio.lib) and other commonly 
+ used functions. For convenience, the constants TRUE, FALSE and 
+ ERROR are also defined in this file, although this is 
+ somewhat non-standard. Also this header file includes 
+ the <stddef.h> and the <stdlib.h> as these files are 
+ needed in most C programs anyway.
+
+stdlib.h
+ Function prototypes and defines for Misc.lib.
+ This file defines the return values for the dynamic memory
+ managment functions, malloc(),calloc(),lalloc(),free() etc.
+ It also defines the return values for rand(),time(),mkdir() and
+ chk_abort().It also contains the defines for exit(), such as
+ EXIT_SUCCESS and EXIT_FAILURE.(this file is included by stdio.h)
+
+string.h
+ This file defines aliases for string function names (since some
+ string functions have various names on different systems) and
+ extern declarations for all string functions.
+
+time.h
+ This file defines time related constants and structures, and
+ extern declarations for the time functions.(Misc.lib)
+
+types.h
+ Thie file contains typedefs for many special and/or non-standard
+ type names.  Many of the typedefs in this file define type names
+ which are ANSI and/or System V standard.  This file is included
+ by several other header files, and includes <stddef.h>.
+
+***********************************************************************
+*                  PROCESS CONTROL: (misc.lib)                        *
+***********************************************************************
+
+    You should include <stdlib.h> in your program if you use functions
+    from this section.(contains prototypes)
+
+int _main()
+     This function defines the standard streams, checks to see which
+     of them are devices, and calls the user's main() function.
+     The startup module calls this function to start the C program. 
+     The following standard streams are initialized by _main():
+
+     stdin   - Standard input, may be redirected
+     stdout  - Standard output, may be redirected
+     stderr  - Usually the system console
+
+     The global variables '_argc', and  '_argv' are used to
+     store the values to be passed to the user's main().  If main()
+     returns then exit() is called with an EXIT_SUCCESS status.
+
+int main(int argc, char *argv[])
+     This function is not actually in the standard libraries, 
+     but must be present somewhere in the user's code. 
+     The parameters passed to it by '_main()' are the number of 
+     arguments in the command line and a pointer to the arguments.
+     The return value from 'main()' is passed, by '_main()', to 'exit()'. 
+     Therefore, you should always 'return()' from 'main()', or call 
+     'exit()' directly.
+
+void exit(int status)
+     Flushes and closes all open streams.
+     Returns <status> to the computers operating system.
+
+void abort()
+     Prints the message "^C" to stderr and calls exit() with a 
+     status code of 3.
+
+char *getenv(char *v)
+     Search for environment variable *v.  
+     If *v is found, a pointer to the string contained in the env variable
+     is returned. A NULL return value indicates, not found.
+
+int setenv(char *v, *s)
+    Sets environment variable *v to string *s.
+    Returns success/failure indicator.(0=failure,1=success)
+    note: To embed a space in a file name, precede it with 
+          the escape delimiter.(usually a backslash).
+          This applies to all env functions.
+ 
+int putenv(char *s)
+    The form is:
+                 
+    <VARIABLE>=<value>
+
+    Set an envirenment varible to <value>.
+    Returns success/failure indicator.(0=failure,1=success)
+
+char *ParseEnv(char *s)
+    ParseEnv(), holds a global string called 'String' which is 
+    initialized to *s. This env 'String' is searched for the first env
+    entry and if found a pointer to the entry is returned.
+    If ParseEnv() is called with a NULL value then the last env
+    'String' to be passed is searched for the next env entry.
+    A NULL return value indicates, no more entries.
+
+LONG System0(char *name,BPTR seglist,char *args)
+    Does CLI/Shell commands from within an application.
+
+    <name>    is the name of the command file to be run.
+    <seglist> must point to a file previously loaded into memory with
+              'BPTR LoadSeg(char *name)' or the like.
+    <args>    a list of args to be past to the command seperated by spaces.
+
+    Return values:
+                  1) Returns the commands 'exit()' status if command was run.
+                  2) Returns -1 if 'System0()' was called from workbench,
+                     (must only call from a CLI/Shell process).
+                  3) Returns -2 if memory failure.
+
+long fexecv(char *cmd,char *argv[])
+    Does CLI/Shell commands from within an application.
+    Simplifies a call to 'System0()'.
+
+    <cmd>    is the name of the command file to be run.
+    <argv>   an array of arguments to be passed to the command.
+
+    Return values:
+                  1) Returns the commands 'exit()' status if command was run.
+                  2) Returns -1 if 'fexecv()' was called from workbench,
+                     (must only call from a CLI/Shell process).
+                  3) Returns -1 if the command file wasn't found.
+                  4) Returns -2 if memory failure.
+
+int setjmp(jmp_buf context)
+    Save <context> for longjmp(). You MUST include <setjmp.h> to use.
+    Calling this function saves the current program context in the
+    context buffer provided and returns zero.  A later call to the
+    longjmp() function will cause the context to be restored and
+    your program will continue as if it just returned from setjmp(),
+    but this time with the (non-zero) return value specified in the
+    longjmp() call.  THE SAVED CONTEXT WILL NOT BE VALID IF YOU
+    EXIT THE FUNCTION THAT CALLED setjmp().
+
+void longjmp(jmp_buf context, int rv)
+    Return <rv> to the <context> saved by setjmp(). (see also, setjmp)
+    You MUST include <setjmp.h> to use.
+
+int catch(jmp_buf context, int (*func)())
+    Execute <func> with <context> saved for throw().  You MUST include
+    <setjmp.h> to use.  Return the value returned by <func>.  The main
+    advantage of these functions over catch/throw is the ability to
+    return zero from the function executed, and the logically "cleaner"
+    encapsulation of the non-local jump operation. These functions
+    are patterned after similar functions in LISP. (see also, setjmp/longjmp)
+
+void throw(jump_buf context, int rv)
+    Return <rv> to <context> saved by catch().  You MUST include
+    <setjmp.h> to use.
+
+***********************************************************************
+*                    MEMORY MANAGEMENT: (misc.lib)                    *
+***********************************************************************
+
+    You should include <stdlib.h> in your program if you use functions
+    from this section.(prototypes for malloc,calloc etc)
+
+char *malloc(int size)
+    Allocate at least <size> bytes of memory.  A pointer to the
+    requested block is returned, or NULL if there was not enough
+    free memory available.
+
+char *calloc(int n, size_t size)
+    Allocate space for an array of <n> element of <size> bytes each.
+    If the storage can be allocated, it is initialized to all zero.
+    NULL is returned if there isn't enough free memory.
+
+char *lalloc(long size)
+    Allocate at least <size> bytes of memory.  A pointer to the
+    requested block is returned, or NULL if there is not enough
+    free memory available.
+
+void free(char *addr)
+    Release the memory block at <addr> back into the free memory pool.
+ 
+long msize(long *addr)
+    Return the size, in bytes, of the memory block at <addr>.  Note
+    that the size is a long value, since the block may have been
+    allocated by lalloc().
+
+*************************************************************************
+*                 FILE HANDLING: (stdio.lib/misc.lib)                   *
+*************************************************************************
+
+    You should include <stdio.h> in your program if you use functions
+    from this section.(contains prototypes,defines and macros)
+
+int chdir(char *pathname)
+    Changes the current working directory to <pathname>.
+    Returns 0 for success, or a positive error code.
+
+int mkdir(char *pathname)
+    Creates a new directory called <pathname>.
+    Returns 0 for success, or a positive error code.
+
+int rmdir(char *pathname)
+    Removes an existing directory called <pathname>.
+    Returns 0 for success, or a positive error code.
+
+int access(char *name, int access_mode)
+    Return 0 if a file with the given <name> can be accessed
+    in the given <access_mode>.  Possible <access_mode> values are:
+        0 - file exists.
+        2 - file can be written.
+        4 - file can be read.
+        6 - file can be read and written.
+    Returns -1 if file not found.
+
+int fexists(fname)
+    call access() above with fname and 0 mode.(macro)
+
+int exists(fname)
+    exactly the same as fexists() above.(macro)
+
+char *_splitpath(char *src, *drive, *path, *file, *ext)
+ Parse the <src> filename into component parts. Returns <src>.
+ If any of the component pointers is NULL, that component will
+ be parsed, but not saved.  If a given component does not exist
+ in the <src> string, the component will be empty, (ie.: "").
+ The <drive> component will be a drive name followed by a colon,
+ (ie: "df0:").  The <path> component will be the subdirectory names
+ leading up to the filename, but will not include a trailing '/'
+ unless the path is simply the root path "/", and there will only
+ be a leading '/' if the path is fully qualified, or "rooted", 
+ ie: "/this/is/a/path/name".  The <file> component is the base filename
+ without any extension, ie: "filename".  The <ext> component is
+ the file extention with no leading '.', ie: "txt".  Recommended
+ sizes for the components is Drive[4], Path[128], File[10], Ext[4].
+ (This func lives in 'string.lib').
+
+char *_makepath(char *dst, *drive, *path, *file, *ext)
+ Build the <dst> filename from component parts. Returns <dst>.
+ This function is basically in inverse of _splitpath(), and will
+ accept the components parsed by _splitpath() as input.  It will
+ also allow a little more flexibility in that it will treat any
+ component which is a NULL pointer as an empty field, and the
+ <path> component may optionally have a trailing '/'.
+ (This func lives in 'string.lib').
+
+int stat(char *name, struct stat *statbuf)
+ Search for file <name> and load <statbuf> with information
+ about the file if it is found.  Return 0 if found, or
+ ERROR (-1) if no file/directory matched <name>.  Volume
+ labels are not included in the search.  The file <stat.h>
+ must be included if you use this function, since it defines
+ the stat structure.
+
+long fsize(char *name)
+ Return the size of the file <name> in bytes.  Note that this
+ is a long value.  Return -1L if the file is not found.
+
+int isatty(int handle)
+ Return non-zero if <handle> refers to a character device.
+ Negative handles always refer to character devices.
+
+int creat(char *filename, int pmode)
+ Create a new file with the given <filename>.  If a file with
+ the name already exists, it will be truncated to zero bytes.
+ <pmode> specifies the attributes initially given to the file.
+  Valid <pmode> values are:
+                    0x00      normal, read/write
+                    S_ISRO    read only
+                    S_IFHID   hidden file
+                    S_IFSYS   system file
+                    S_ISVOL   volume label
+ If S_ISVOL mode is specified, it must be the only mode given.
+ Other modes may be combined with the '|' operator.  The <stat.h>
+ file contains information useful with this function.
+
+int open(char *filename, int [iomode, pmode])
+  Attempt to open <filename> with the given <iomode>.  A file handle
+  is returned if the open succeeds.  A negative error code is returned
+  for errors.  Valid <iomode> values are:
+         O_RDONLY  read mode
+         O_WRONLY  write mode
+         O_RDWR    read/write mode
+  In addition to the (mutually exclusive) modes above, one or more
+  of the following options may be '|'-ed with <iomode>:
+         O_APPEND start file pointer at end of file
+         O_TRUNC  if file exists, truncate to 0 length
+         O_CREAT  creat() file if none exists (uses <pmode>)
+         O_EXCL   return EEXIST if file exists and
+                  O_CREAT is specified (exclusive mode).
+ Error returns are always < -3.  The <fcntl.h> file
+ contains iomode constants.  The <stat.h> file contains pmode
+ constants.
+
+int close(int h)
+ Close file referenced by the file handle <h>.  Return 0 for
+ success, or a negative error code.
+
+int remove(char *filename)
+ Delete <filename>, if it exists.  Return 0 for success, or a
+ negative error code.
+
+int rename(char *oldname, *newname)
+ Change the name of file <oldname> to <newname>.  You may use this
+ function to move files from one directory (pathname) to another,
+ but not from one drive to another.  Return 0 for success, or a
+ negative error code.
+
+long lseek(int h, long offset, int origin)
+ Move file pointer for file <h> to specified location.  <origin>
+ specifies the starting point for the <offset> distance.  Valid
+ <origin> values are:
+          SEEK_SET   from beginning of file (0)
+          SEEK_CUR   from current location (1)
+          SEEK_END   from end of file (2)
+ The <offset> value is the distance in bytes from the origin.
+ The final file position, or a negative error code, is returned.
+
+long tell(int h)
+ Return the current file position for the file <h>.
+
+FILE *fopen(char *filename, char *mode)
+ Open <filename> as a stream file.  This is the normal open way
+ to open a file.  The <mode> is a string specifying the mode(s)
+ that are relevent to the file open.  Valid <mode> characters are:
+         "r"   read mode
+         "w"   write mode
+         "a"   append mode
+         "b"   binary mode
+         "t"   text (translated) mode
+ At least one of "r", "w" or "a" must be specified.  "t" is assumed
+ and indicates that <nl> is translated to <cr><lf> on output and
+ vica-versa on input.  If the stream is a character device, the
+ translation is slightly different.  The output translation is the
+ same, but on input <cr> and <lf> both become <nl> in all cases.
+ The "b", for binary mode, overides "t" and indicated that characters
+ are not translated during i/o operations.  "a" represents append
+ mode and means that the file pointer will initially be placed at
+ the end of the file.  "w" mode will create a file if it doesn't
+ exist, or zero an existing file.  If "r" is the only mode specified,
+ the file must already exist.  A (FILE *) pointer is returned if the 
+ open succeeds, or NULL if it fails.
+
+FILE *freopen(char *filename, char *mode, FILE *fp)
+ Closes the file associated with <fp> and opens the new file as with
+ fopen(), except that a new FILE structure is not created.  The
+ existing FILE structure pointed to by <fp> is re-initialized with
+ the new file information.  This is typically used to redirect i/o
+ to standard streams stdin, stdout, stderr.  <fp> is returned for success, 
+ or NULL for failure.
+
+FILE *fdopen(int h, char *mode)
+ Associates a stream with the already open file <h>.  The <mode>
+ values are the same as for fopen(), but MUST be compatible with
+ the mode in which <h> was open()ed.  This function allows a file
+ opened with the low level open()/creat() calls to be used as a
+ buffered/translated stream.  A pointer to a FILE struct is returned,
+ or NULL for errors.
+
+int fclose(FILE *fp)
+ Close the stream <fp>, flushing the buffer.  Returns 0 on success.
+
+void setbuf(FILE *fp, char *buf)
+ If <buf> is NULL, make <fp> unbuffered; else <buf> must point to a 
+ buffer of BUFSIZ characters to be used as the stream buffer for <fp>.
+
+void setvbuf(FILE *fp, char *buf, int bmode, int size)
+ If <buf> is NULL or <bmode> is _IONBF, make <fp> unbuffered;
+   otherwise <buf> points to a buffer of <size> characters to be
+   used as the stream buffer for <fp>.  The <bmode> variable
+   indicates the type of buffering desired, as follows:
+  _IONBF  No buffering
+  _IOFBF  Full buffering (normal)
+  _IOLBF  Line buffering (not supported, same as _IOFBF)
+
+int fseek(FILE *fp, long offset, int origin)
+ Operates like lseek(), except it works on streams.  Note that
+ stream file positions may be misleading due to translation of
+ <nl> characters during i/o.  ftell() may be used reliably with
+ fseek() to reposition a file to a prior location.  WARNING:
+ fseek() returns 0 for success, none-zero for failure, according
+ to the ANSI standard.  Some implementations use 0 for failure.
+ This function is maintained for compatibility with old programs.
+ fsetpos() should be used in new code.  (see: fsetpos)
+
+void rewind(FILE *fp)
+ Operates like fseek(fp, 0L, SEEK_SET), except it also clears the
+ end-of-file and error flags for <fp>.  There is no return value.
+
+long ftell(FILE *fp)
+ Operates like tell(), except it works on streams.  Note that
+ stream file positions may be misleading due to translation of
+ <nl> characters during i/o.  This function is maintained for
+ compatibility with old programs.  fsetpos() should be used in
+ new code.  (see: fsetpos)
+
+int fgetpos(FILE *fp, fpos_t *pos)
+ Get the position of the stream <fp> and store it at the location
+ pointed to by <pos>.  This is the new X3J11 function to replace
+ ftell().  Returns 0 for success and ERROR for failure.
+
+int fsetpos(FILE *fp, fpos_t *pos)
+ Set the position of the stream <fp> to the value stored at the
+ location pointed to be <pos>.  Note that this function is only
+ required to work properly for a <pos> value which was previously
+ obtained by fgetpos() on the same stream.  This is the new X3J11
+ function to replace fseek().  Returns 0 for success and ERROR for
+ failure.
+
+int fileno(FILE *fp)
+ Return the file handle associated with the stream <fp>.(macro)
+
+int feof(FILE *fp)
+ Return non-zero if <fp> is at end of file.(macro)
+
+int ferror(FILE *fp)
+ Return non-zero if and error has occurred on <fp>.(macro)
+
+void clearerr(FILE *fp)
+ Clear the error flag on <fp>.(macro)
+
+sync()
+ Provided for compatibility. (dummy macro)
+
+***********************************************************************
+*               INPUT & OUTPUT FUNCTIONS: (stdio.lib)                 *
+***********************************************************************
+
+ You should include <stdio.h> in your program if you use functions
+ from this section.(prototypes/defines/macros)
+
+int read(int h, char *data, int length)
+ Read <length> bytes from the file reference by file handle <h>.
+ Data is stored in the buffer pointed to by <data>.  The number
+ of bytes actually read is returned, 0 for end of file, or a
+ negative error code.  Note that the maximum number of bytes
+ that can be read by this function is MAXINT.
+
+int write(int h, char *data, int length)
+ Write <length> bytes to the file reference by file handle <h>.
+ Data is written from the buffer pointed to by <data>.  The number
+ of bytes actually written is returned, or a negative error code.
+ Note that the maximum number of bytes that can be written by
+ this function is MAXINT.
+
+int fread(char *data, int size, int count, FILE *fp)
+ Read <count> items of <size> characters each from stream <fp>.
+ Data is stored in the buffer pointed to by <data>.  The number of
+ full items actually read is returned, or a negative error code.
+ This call DOES NOT translate characters, even if the stream is
+ opened in translate mode.
+
+int fwrite(char *data, int size, int count, FILE *fp)
+ Write <count> items of <size> characters each to stream <fp>.
+ Data is read from the buffer pointed to by <data>.  The number of
+ full items actually written is returned, or a negative error code.
+ This call DOES NOT translate characters, even if the stream is
+ opened in translate mode.
+
+int fgetc(FILE *fp)
+ Get a character from <fp>.  Returns the character or EOF.
+
+int fungetc(char c, FILE *fp)
+ Push the character <c> back to be gotten by the next fgetc()
+ call on <fp>.  Only 1 character may be ungotten at a time on
+ each stream.  Subsequent calls to fungetc() will write over
+ the currently saved character.
+
+int fputc(char c, FILE *fp)
+ Put the character <c> to the stream <fp>.
+
+int fflush(FILE *fp)
+ Flush the file i/o buffer of the stream <fp>.  The buffer is
+ automatically flushed when it is full, the stream is closed,
+ or the program terminates through exit().  This function has
+ no effect if the stream in unbuffered.  Call this function
+ before switching between reading and writing on a stream which
+ is opened for both.
+
+int getc(FILE *fp)
+ Same as fgetc() but implemented as a macro.
+
+int ungetc(char c, FILE *fp)
+ Same as fungetc() but implemented as a macro.
+
+int putc(char c, FILE *fp)
+ Same as fputc() but implemented as a macro.
+
+int getw(FILE *fp)
+ Get a 2-byte value from the stream <fp>.  The high-order byte is
+ read first.  Use feof() to test for end-of-file.(see: feof)
+
+int putw(int n, FILE *fp)
+ Put the 2-byte value <n> to the stream <fp>.  The high-order byte
+ is written first.
+
+int getl(FILE *fp)
+ Get a 4-byte value from the stream <fp>.  The high-order byte is
+ read first.  Use feof() to test for end-of-file.(see: feof)
+
+int putl(long n, FILE *fp)
+ Put the 4-byte value <n> to the stream <fp>.  The high-order byte
+ is written first.
+
+int getchar()
+ Same as "fgetc(stdin)".(macro)
+
+int ungetchar(char c)
+ Same as "fungetc(c, stdin)".  Note that this name will conflict
+ with any function beginning "ungetch..." due to having only 7
+ significant characters in external identifiers.(macro)
+
+int putchar(char c)
+ Same as "fputc(c, stdin)".(macro)
+
+char *fgets(char *data, int limit, FILE *fp)
+ Get data from <fp> and put it in the <data> buffer.  At most,
+ <limit>-1 characters will be read.  Input will also be terminated
+ when a newline is read.  <data> will be '\0' terminated and the
+ newline, if read, will be included.  A pointer to the start of
+ <data> is returned, or NULL for EOF.
+
+void fputs(char *data, FILE *fp)
+ Write the characters in <data> to the stream <fp>.  A newline
+ WILL NOT be added.
+
+char *gets(char *data)
+ Get data from stdin and put it in the <data> buffer.  Input is
+ terminated when a newline is read.  The newline will be replaced
+ by a '\0' to terminate the string.  A backspace character will
+ remove the preceeding character from the buffer, but will not
+ backspace past the start of the buffer.  A pointer to the start
+ of <data> is returned, or NULL for EOF.
+
+void puts(char *data)
+ Write the characters in <data> to stdout.  A newline WILL be
+ written after the data.
+
+long fprintf(FILE *fp, char *fmt[, arg1, ..., argN])
+ Formatted output to the stream <fp>.  See the _printf() function
+ for a description of the <fmt> formatting string.
+
+long printf(char *fmt[, arg1, ..., argN])
+ Formatted output to the stdout stream.  See the _printf() function
+ for a description of the <fmt> formatting string.
+
+int sprintf(char *buf, *fmt[, arg1, ..., argN])
+ Formatted output to the string <buf>.  See the _printf() function
+ for a description of the <fmt> formatting string.
+
+long vfprintf(FILE *fp, char *fmt, va_list ap)
+ Formatted output to the stream <fp> with a variable argument list.
+ See _printf() for formatting and va_start() for stdarg explanation.
+
+long vprintf(char *fmt, va_list ap)
+ Formatted output to the stdout stream with a variable argument list.
+ See _printf() for formatting and va_start() for stdarg explanation.
+
+int vsprintf(char *buf, char *fmt, va_list ap)
+ Formatted output to the string <buf> with a variable argument list.
+ See _printf() for formatting and va_start() for stdarg explanation.
+
+long fscanf(FILE *fp, char *fmt[, arg1, ..., argN])
+ Formatted input from the stream <fp>.  See the _scanf() function
+ for a description of the <fmt> formatting string.
+
+long scanf(char *fmt[, arg1, ..., argN])
+ Formatted input from the stdin stream.  See the _scanf() function
+ for a description of the <fmt> formatting string.
+
+long sscanf(char *buf, *fmt[, arg1, ..., argN])
+ Formatted input from the string <buf>.  See the _scanf() function
+ for a description of the <fmt> formatting string.
+
+***********************************************************************
+*         FORMATTING & TYPE CONVERSION: (stdio.lib/string.lib)        *
+***********************************************************************
+
+ You should include either <stdio.h> or <string.h> in your program
+ if you use functions from this section, (prototypes/defines/macros).
+ I have placed a comment at the end of each function description to
+ explain which include is needed.
+
+int _printf(char *op, int (*put)(), char *fmt, int *args)
+ This function does all the work for printf(), etc.  Many systems
+ don't provide direct access to this function (or it's equivalent),
+ but it is useful for writing your own printf()-like functions.
+ Since this is a non-standard interface, and v[sf]print() is now
+ available, you should probably use the stdarg functions instead.
+ <fmt> points to a format control string.  <args> points to a
+ list of arguments.  The format string is used to create and output
+ a stream with arguments.  The <put> function is used to output
+ each character.  The <op> parameter is given to the <put> function
+ to specify the output stream.  Calls to <put> are of the form:
+ "(*put)(c, op);" where <c> is the character to output.  The format
+ string is composed of characters and format specifications.  The
+ '%' character introduces a format specifier.  The general form of
+ a format specifier is:
+
+   %[-][ |+][0][<width>|*][.[<precision>|*]][l]{d|i|u|o|x|p|b|c|s}
+
+ The '-' specifies left justification.  The ' ' or '+' specifies
+ the character which preceeds positive numeric values.  The '0'
+ specifies that numeric fields will be padded with '0' rather than
+ ' '.  The <width> field is a numeric value specifying a minimum
+ field width.  The <precision> field is a numeric value specifying
+ the maximum number of data characters to display.  If '*' is
+ specified for the width or the precision, an "int" value is taken
+ from the argument list and used for that value.  If no width is
+ specified, the field width varies according to the data width.  If
+ no precision is specified, all data characters are included in the
+ data width.  If the data width exceeds the field width, the field
+ width will expand to allow all data characters to be printed.
+ Including the 'l' or capitalizing the trailing character specifies
+ that the associated value is a "long" type.  The trailing character
+ specifies the format type, as follows:
+       d Signed decimal integer
+       i same as 'd'
+       u Unsigned decimal integer
+       o Unsigned octal integer
+       x Unsigned hexadecimal integer
+       b Unsigned binary integer
+       p Pointer (displayed in %06.8lX format)
+       c Character
+       s String
+ If the character following the '%' is not recognized, it is
+ simply passed along to the output stream, thus "%%" is used to
+ print a single '%' character. (include: <stdio.h>)
+
+char *ltoa(long n, char *buf, int radix)
+ Convert the long value <n> to a string in <buf> using <radix>
+ as the number base.  If <n> is negative, then '-' will be the first
+ character in <buf>.  A pointer to <buf> is returned.
+ (include: <string.h>)
+
+char *ultoa(unsigned long n, char *buf, int radix)
+ Convert the unsigned long value <n> to a string in <buf> using
+ <radix> as the number base.  A pointer to <buf> is returned.
+ (include: <string.h>)
+
+char *itoa(int n, char *buf, int radix)
+ Convert the integer value <n> to a string in <buf> using <radix>
+ as the number base.  If <n> is negative, '-' will be the first
+ character in <buf>.  A pointer to <buf> is returned.
+ (include: <string.h>)
+
+long atol(char *number)
+ Convert the string <number> to a long value.  Leading whitespace
+ is ignored, a leading +/- is optional.  Characters are processed
+ until a non-digit is reached.  Return value is undefined in an
+ overflow situation. (include: <string.h>)
+
+int atoi(char *number)
+ Convert the string <number> to an int value.  Leading whitespace
+ is ignored, a leading +/- is optional.  Characters are processed
+ until a non-digit is reached.  Return value is undefined in an
+ overflow situation. (include: <string.h>)
+
+long strtol(char *number, char **nptr, int base) 
+ Convert the string <number> to a long value of base <base>.  Bases
+ from 0 to 36 are allowed.  Leading whitespace is ignored, and a
+ leading +/- is optional.  If the <base> is 0, a leading '0'
+ indicates base 8 and a leading "0x" or "0X" indicates base 16.
+ Characters are processed until a character is found which is not in
+ the specified base.  If <nptr> is non-NULL, it will be set to point
+ to the character which terminated the translation in <number>.
+ Return value is undefined in an overflow situation.
+ (include: <string.h>)
+
+unsigned long strtoul(char *number, char **nptr, int base)
+ Convert the string <number> to an unsigned long value of base
+ <base>.  Bases from 0 to 36 are allowed.  Leading whitespace is
+ ignored.  If the <base> is 0, a leading '0' indicates base 8 and a
+ leading "0x" or "0X" indicates base 16.  Characters are processed
+ until a character is found which is not in the specified base.  If
+ <nptr> is non-NULL, it will be set to point to the character which
+ terminated the translation in <number>.  Return value is undefined
+ in an overflow situation. (include: <string.h>)
+
+int _scanf(char *ip, int (*get)(), int (*unget)(), char *fmt, char **args)
+ This function does all the work for scanf(), etc.  Many systems
+ don't provide direct access to this function (or it's equivalent),
+ but it is useful for writing your own scanf()-like functions.
+ <fmt> points to a format control string.  <args> points to a
+ list of arguments, each of which is the address of a variable in
+ which input data may be stored.  The format string is used to
+ control reading of characters from the <get> function.  As each
+ character is needed <get> is called in the form "c = (*get)(ip);"
+ where <c> is the character read (negative for errors) and <ip> is
+ the auxiliary pointer specified by the <ip> parameter.  If a
+ character needs to be un-gotten, a call to <unget> of the form
+ "(*unget)(c, ip);" is made.  The format string is composed of
+ characters and format specifications.  Any characters in <fmt>,
+ except whitespace characters, which are not part of a format
+ specifier are expected to be matched one-to-one by characters in
+ the input stream.  Scanning terminates if a mismatch occurs or if
+ any call to <get> results in an error.  Whitespace characters
+ match 0 or more whitespace characters in the input stream.  The
+ '%' character introduces a format specifier.  The general form of
+ a format specifier is:
+
+                %[*][<width>][l|h]{d|u|o|x|b|i|c|s}
+
+ The '*' specifies that a field is to be scanned but not stored.
+ No variable pointer should be provided for non-stored format
+ specs.  The <width> field specifies the maximum number of
+ characters to be processed to fill the given format type.  Less
+ than <width> characters will be processed if the field ends
+ before <width> characters have been processed.  A field ends when
+ either a whitespace character, or a character which does not fit
+ the specified format, is read.  The preceding 'l' (or
+ capitalizing the conversion character) specifies that the
+ associated variable is a "long" type.  The trailing character
+ specifies the format type, as follows:
+        d Signed decimal integer
+        u Unsigned decimal integer
+        o Unsigned octal integer
+        x Unsigned hexadecimal integer
+        b Unsigned binary integer
+        i Unsigned decimal/octal/hexadecimal/binary integer
+        c Character
+        s String
+ If a <width> is specified with the 'c' format, exactly <width>
+ characters (including whitespace) are read from the input stream,
+ and written to a string.  No '\0' character is added If the
+ character following the '%' is not recognized, it is expected to
+ match the input stream as a non-format character, thus "%%" is
+ used to match a single '%' character.
+ One additional conversion is the brace-format.  Shown as "%[...]",
+ the '...' represent a list of characters.  If the first character
+ in the list is a '^', the field contains any characters -not- in
+ the list (starting with the 1st character after the '^').  If the
+ first character of the list is not a '^', then the field will
+ only contain those characters found in the list.  A right brace 
+ character (']') can be included as one of the list of characters
+ by placing it as the first character in the list.  If the '^'
+ negation character is the first character, the included brace
+ should be the next character after the '^'.  For maximum
+ portability, a range should be explicitly given (a good example
+ would be "%[0123456789]"), but to allow for porting from
+ systems with smarter scanf functions, this version of scanf
+ also supports ranges represented using a <first>-<last>
+ form (eg: "%[0-9]").  To use the first-last form, the
+ character <first> must be lexically less than or equal to
+ the character <last>.  If this rule is violated, or if the
+ hyphen is the first or last character of the list, the
+ hyphen will be assumed to be just another character in the
+ list and no range expansion will be done.  The resulting
+ string containing the characters in (or not in) the list
+ will be null terminated.  It should be noted that, unlike
+ most of the other formats, this conversion does allow the
+ programmer to specify that whitespace characters will be
+ included in the resulting string. (include: <stdio.h>)
+
+char *ctlcnv(char *string)
+ Convert \<char> notation in <string> to actual characters.  This
+ is useful for reading strings from a stream when you want to allow
+ insertion of control character or other characters that may have
+ special meaning otherwise, or may not otherwise be allowed.  The
+ following formats are supported:
+  \n  newline or linefeed
+  \r  carriage return
+  \0  null character (value 0)
+  \b  backspace
+  \t  horizontal tab
+  \v  vertical tab
+  \f  form feed
+  \a  alarm (bell)
+  \\  backslash
+  \'  single quote
+  \"  double quote
+  \NNN  octal constant
+  \xNN  hexadecimal constant
+  \<nl>  "folded" line (both characters removed)
+ A pointer to the modified <string> is returned.
+ (include: <string.h>)
+
+***********************************************************************
+*                  STRING MANIPULATION: (string.lib)                  *
+***********************************************************************
+
+ You should include <string.h> in your program if you use functions
+ from this section.(prototypes)
+
+char *memmove(char *dest, char *source, int len)
+ Copies the <source> block to the <dest>.  <len> bytes are
+ always copied.  No terminator is added to <dest>.  A pointer
+ to <dest> is returned.  Overlap checking IS done.
+
+char *lmemmove(char *dest, char *source, long len)
+ Same as memmove() except a long value is used for <len>.
+
+char *memcpy(char *dest, char *source, int len)
+ Copies the <source> block to the <dest>.  <len> bytes are
+ always copied.  No terminator is added to <dest>.  A pointer
+ to <dest> is returned.  Overlap checking IS NOT done.
+
+char *lmemcpy(char *dest, char *source, long len)
+ Same as memcpy() except a long value is used for <len>.
+
+char *memset(char *dest, char data, int len)
+        Set <len> bytes of <dest> to <data>. 
+        A pointer to <dest> is returned.
+
+int memcmp(char *blk1, char *blk2, int len)
+ Lexicographically compare the two blocks.  Return a value
+ indicating the relationship between the blocks.  Possible
+ return values are:
+                      negative  = blk1 < blk2
+                      0         = blk1 == blk2
+                      positive  = blk1 > blk2
+ <len> bytes are always compared.
+
+int memicmp(char *blk1, char *blk2, int len)
+ Compare blocks as with memcmp(), but ignore the case of any
+ alphabetic characters.
+
+char *memccpy(char *dst, char *src, char c, int cnt)
+ Copy bytes from <src> to <dst> until either <cnt> bytes have been
+ copied, or the character <c> has been copied.  If <c> is found,
+ a pointer to the character following <c> in <dst> is returned, or
+ NULL is <cnt> reaches 0 before <c> is found.
+
+char *memchr(char *buf, char c, int cnt)
+ Search the first <cnt> bytes of <buf> for <c>.  Returns a pointer to
+ the matching character, or NULL if not found.
+
+char *bzero(char *buf, int cnt)
+ Zero out <cnt> characters in <buf>.  
+ Returns <buf>.
+
+int strlen(char *string)
+ Returns the number of characters in a string, not including the
+ terminating '\0'.
+
+char *strcpy(char *dest, char *source)
+ Copies the <source> string to the <dest> including the '\0'.  A
+ pointer to the start of <dest> is returned.
+
+char *strncpy(char *dest, char *source, int limit)
+ Copies the <source> string to the <dest>.  At most, <limit>
+ characters are copied.  If <source> ends before <limit> characters
+ have been copied, the '\0' is copied, otherwise <dest> is not
+ terminated by the copy.
+
+char *strpcpy(char *dest, char *start, char *stop)
+ Copies characters from <start> up to <stop> into <dest>.  The
+ character pointed to by <stop> is not copied, and MUST be in the
+ same string as <start>.  The <dest> pointer is returned.
+
+char *strdup(char *string)
+ Create a copy of <string> and return a pointer to the copy.
+ Storage for the copy is obtained from 'malloc()' and can be 
+ freed  with a call to 'free(string)'.
+
+char *strset(char *string, char c)
+ Fill <string> with <c> upto the terminating '\0' of <string>.
+
+char *strnset(char *string, char c, int n)
+ Fill at most <n> characters of <string> with <c>, upto the
+ terminating '\0' of <string>.
+
+char *substr(char *dest, char *source, int start, int end)
+ Copy characters from <source> to <dest> starting with character
+ <start> and ending with <end>.  A pointer to <dest>, which will
+ be '\0' terminated, is returned.
+
+char *subnstr(char *dest, char *source, int start, int length)
+ Copy <length> characters from <source> to <dest> starting with
+ character <start>.  A pointer to <dest>, which will be '\0'
+ terminated, is returned.
+
+char *strcat(char *dest, char *source)
+ Concatenate <source> on the end of <dest>.  The terminator of
+ <dest> will be overwritten by the first character of <source>.
+ The termintor from <source> will be copied.  A pointer to
+ the modified <dest> is returned.
+
+char *strncat(char *dest, char *source, int limit)
+ Concatenate <limit> characters from <source> onto <dest>.  If
+ <source> contains less than <limit> characters, the length of
+ source is used for <limit>.  The terminating '\0' is always
+ added.  A pointer to <dest> is returned.
+
+char *strupr(char *string)
+ Convert all alphabetic characters in <string> to upper case.
+
+char *strlwr(char *string)
+ Convert all alphabetic characters in <string> to lower case.
+
+char *strrev(char *string)
+ Reverse the order of the characters in <string>.
+
+int strcmp(char *str1, char *str2)
+ Lexicographically compare the two strings.  Return a value
+ indicating the relationship between the strings.  Possible
+ return values are:
+                     negative = str1 < str2
+                     0        = str1 == str2
+                     positive = str1 > str2
+
+int strncmp(char *str1, char *str2, int limit)
+ Compare strings as with strcmp(), but limit comparison to the
+ <limit> characters.
+
+int stricmp(char *str1, char *str2)
+ Compare strings as with strcmp(), but ignore the case of any
+ alphabetic characters.
+
+int strnicmp(char *str1, char *str2, int limit)
+ Compare strings as with strncmp(), but ignore the case of any
+ alphabetic characters.
+
+char *strstr(char *string, char *pattern)
+ Return a pointer to the first occurance of <pattern> in <string>.
+ NULL is returned if <pattern> is not found.
+
+char *stristr(char *string, char *pattern)
+ Same as strstr(), but ignore the case of any alphabetic characters.
+
+char *strchr(char *string, char symbol)
+ Return a pointer to the first occurance of <symbol> in <string>.
+ NULL is returned if <symbol> is not found.  '\0' is included in
+ the search.
+
+char *strrchr(char *string, char symbol)
+ Return a pointer to the last occurance of <symbol> in <string>.
+ NULL is returned if <symbol> is not found.  '\0' is included in
+ the search.
+
+int strpos(char *string, char symbol)
+ Return the index of the first occurance of <symbol> in <string>.
+ -1 is returned if <symbol> is not found.
+
+int strrpos(char *string, char symbol)
+ Return the index of the last occurance of <symbol> in <string>.
+ -1 is returned if <symbol> is not found.
+
+int strspn(char *string, char *set)
+ Return the length of the sub-string of <string> that consists
+ entirely of characters found in <set>.  The terminating '\0'
+ in <set> is not considered part of the match set.  If the first
+ character of <string> is not in <set>, 0 is returned.
+
+int strcspn(char *string, char *set)
+ Return the length of the sub-string of <string> that consists
+ entirely of characters 'not' found in <set>.  The terminating '\0'
+ in <set> is not considered part of the match set.  If the first
+ character of <string> is in <set>, 0 is returned.
+
+char *strpbrk(char *string, char *set)
+ Return a pointer to the first occurance in <string> of any
+ character in <set>.
+
+char *strrpbrk(char *string, char *set)
+ Return a pointer to the last occurance in <string> of any
+ character in <set>.
+
+char *strtok(char *string, char *delim)
+ Return a token from <string>.  If <string> is not NULL, it is
+ the beginning of a string from which tokens are to be extracted.
+ Characters found in <delim> are skipped over to find the start
+ of a token, characters are then accumulated until a character in
+ <delim> is found, or the terminator of <string> is reached.
+ A pointer to the '\0' terminated token is then returned.  Note
+ that this function modifies <string> (by inserting '\0's) in
+ the process.  Subsequent calls to strtok() may specify NULL as
+ the <string> argument, in which case subsequent tokens are
+ returned, or NULL if there are no more tokens.
+
+char *strtrim(char *string, char *junk)
+ Remove leading and trailing characters found in <junk> from
+ <string>.  Return a pointer to the modified <string>.
+
+char *stradj(char *string, int dir)
+ Adjust <string> by adding space if <dir> is positive, or removing
+ space if <dir> is negative.  The magnitude of <dir> is the number
+ of character positions to add or remove.  Characters are added or
+ removed at the beginning of <string>.  A pointer to the modified
+ <string> is returned.
+
+int strrpl(char *string, char *ptrn, char *rpl, int n)
+ Replace at most <n> occurances of <ptrn> in <string> with <rpl>.
+ If <n> is -1, replace all.  Return the number of replacments.
+
+int strirpl(char *string, char *ptrn, char *rpl, int n)
+ Same as strrpl() except ignore the case of alphabetic characters.
+
+***********************************************************************
+*                 CHARACTER FUNCTIONS: (misc.lib)                     *
+***********************************************************************
+
+ You must include <ctype.h> in your program if you use functions
+ from this section. Please note that the isxxxx() functions,
+ except isascii(), only have defined results if isascii() is true.
+ (ie. they only work properly on values 0x00 through 0x7F)
+
+int toupper(int c)
+ Convert <c> to upper case, if alphabetic.  This is implemeted
+ as a macro and also as a function.  You may force use of the
+ function version rather than the macro (which evaluates its
+ argument twice) by using the "#undef toupper" directive.
+
+int tolower(int c)
+ Convert <c> to lower case, if alphabetic.  This is implemeted
+ as a macro and also as a function.  You may force use of the
+ function version rather than the macro (which evaluates its
+ argument twice) by using the "#undef tolower" directive.
+
+MACRO _toupper(int c)
+ This macro should be used only if <c> is known to be lower case.
+ It converts <c> to upper case.  Results are undefined if converting
+ a character which is not lower case.
+
+MACRO _tolower(int c)
+ This macro should be used only if <c> is known to be upper case.
+ It converts <c> to lower case.  Results are undefined if converting
+ a character which is not upper case.
+
+MACRO toascii(int c)
+ Convert <c> to 7-bit ascii, putting it into the range 0x00..0x7F.
+
+MACRO isalnum(int c)
+ Return non-zero if <c> is '0'..'9','A'..'Z','a'..'z'.
+
+MACRO isalpha(int c)
+ Return non-zero if <c> is 'A'..'Z','a'..'z'.
+
+MACRO isascii(int c)
+ Return non-zero if <c> is 0x00..0x7F.
+
+MACRO iscntrl(int c)
+ Return non-zero if <c> is 0x00..0x1F,0x7F.
+
+MACRO isdigit(int c)
+ Return non-zero if <c> is '0'..'9'.
+
+MACRO isgraph(int c)
+ Return non-zero if <c> is 0x21..0x7E.
+
+MACRO islower(int c)
+ Return non-zero if <c> is 'a'..'z'.
+
+MACRO isprint(int c)
+ Return non-zero if <c> is 0x20..0x7E.
+
+MACRO ispunct(int c)
+ Return non-zero if <c> is not iscntrl(), isalnum() or isspace().
+
+MACRO isspace(int c)
+ Return non-zero if <c> is 0x09..0x0D,0x20.
+
+MACRO isupper(int c)
+ Return non-zero if <c> is 'A'..'Z'.
+
+MACRO isxdigit(int c)
+ Return non-zero if <c> is '0'..'9','A'..'F','a'..'f'.
+
+***********************************************************************
+*                DATE & TIME FUNCTIONS: (misc.lib)                    *
+***********************************************************************
+
+ You should include <time.h> in your program if you use functions
+ from this section.(prototypes/defines)
+
+time_t time(time_t *rawtime)
+ Get the current system clock date/time value.  Although the value
+ of this function is compatible with the ANSI proposed standard,
+ on some systems (notably System V), this function returns the
+ number of seconds elapsed since 00:00:00 GMT on Jan 1, 1970.
+ This implementation returns an encoded date/time value instead.
+ Therefore any programs which depend on this value being a number
+ of seconds will not work properly.  However, other functions in
+ this section which make use of the raw time value returned by
+ time() are implemented to be compatible with this encoding, and
+ will work properly.  In addition to returning the raw time value,
+ if the <rawtime> pointer is not NULL, the value is stored in
+ the time_t variable <rawtime> points to.
+
+char *ctime(time_t *rawtime)
+ Convert <rawtime> to a string.  A 26 character fixed field string
+ is created from the raw time value.  The following is an example
+ of what this string might look like:
+                                      "Wed Jul 08 18:43:07 1987\n\0"
+
+ A pointer to the formatted string, which is held in an internal buffer, 
+ is returned.
+
+struct tm *localtime(time_t *rawtime)
+ Convert <rawtime> to fill time structure fields.  A pointer to an
+ internal structure is returned.  Refer to <time.h> for the values
+ of the various structure fields.
+
+struct tm *gmtime(time_t *rawtime)
+ This function currently returns NULL, as specified by the 
+ ANSI standard.
+
+char *asctime(struct tm *time)
+ Convert <time> structure value to a string.  The same format, and
+ the same internal buffer, as for ctime() is used for this function.
+
+***********************************************************************
+*            SEARCHING & SORTING: (misc.lib/string.lib)               *
+***********************************************************************
+
+ You should include <stdlib.h> or <string.h> in your program if you 
+ use functions from this section.(prototypes).
+ I have placed a comment at the end of each function description to
+ explain which include is needed.
+ 
+void qsort(char *base, int num, int size, int (*cmp)())
+ Perform a recursive quick-sort on an array starting at <base>
+ containing <num> elements of <size> bytes each.  The function
+ pointed to by <cmp> is used to compare elements.  Pointers to
+ two items in the array are passed to the function, which must
+ return a number representing their relationship as follows:
+
+          negative  =  item1 < item2
+          0         =  item1 == item2
+          positive  =  item1 > item2
+
+ The qsort() function requires the use of a temporary data area
+ that is large enough to hold <size> bytes.  The default space
+ provided is 128 bytes large.  If your record size is larger than
+ 128 bytes, YOU MUST provide an alternative storage area.  The
+ global variable "_qbuf" points to the storage qsort() will use.
+ Setting "_qbuf" to NULL restores use of the internal buffer.
+ This routine is optimized to avoid N*N sort times for ordered data.
+ In fact, performance on sorted or reverse-sorted data is actually
+ "best case" with this algorithm, rather than "worst case" as with
+ most qsort() implementations. (include: <stdlib.h>)
+
+void hsort(char *base, int num, int size, int (*cmp)())
+ Perform an N*log(N) heap-sort on an array starting at <base>
+ containing <num> elements of <size> bytes each.  The function
+ pointed to by <cmp> is used to compare elements.  Pointers to
+ two items in the array are passed to the function, which must
+ return a number representing their relationship as follows:
+
+          negative  =  item1 < item2
+          0         =  item1 == item2
+          positive  =  item1 > item2
+
+ The hsort() function requires no extra storage, is not recursive,
+ and has an almost constant N*log(N) sort time.  In the average
+ case, it is about half as fast as qsort() on random data.  If
+ portability is a concern, it should be noted that qsort() is
+ almost always available, but hsort() is not. (include: <stdlib.h>)
+
+char *bsearch(char *key, char *base, int num, int size, int (*cmp)())
+ Perform a binary search for <key> on the sorted data at <base>.
+ <num>, <size> and <cmp> are like the corresponding parameters
+ to qsort().  A pointer to the matching element is returned for
+ success, or NULL for failure.  The global variable "_bsearch"
+ will contain the index of either the matching element, or the
+ index of the element that the <key> value should be inserted
+ after.  The use of "_bsearch" is not supported by most
+ implementations of bsearch(). (include: <string.h>)
+
+char *lsearch(char *key, char *base, int *num, int size, int (*cmp)())
+ Perform a linear search for <key> on the data at <base>. The
+ <num>, <size> and <cmp> parameters are like the corresponding
+ parameters to qsort().  A pointer to the first matching element
+ is returned for success, or NULL for failure.  If <key> is not
+ found, it will be added to the end of the array and <num> will
+ be incremented.  Note that, unlike bsearch() and qsort(), the
+ <num> parameter is a POINTER to a location which holds the
+ number of elements to sort. (include: <stdlib.h>)
+
+char *lfind(char *key, char *base, int *num, int size, int (*cmp)())
+ Like lsearch(), but do not add elements which are not found.
+ Note that <num> is a POINTER, even though it is not modified.
+ (include: <stdlib.h>)
+
+***********************************************************************
+*             ERROR HANDLING FUNCTIONS: (misc.lib)                    *
+***********************************************************************
+
+ You should include <stdlib.h> in your program if you use functions
+ from this section.(prototypes/defines)
+
+int errno;
+ This variable is set to zero when the program is loaded.  It is
+ not zeroed out by any library functions, but may be set to a 
+ non-zero error number by many of them (particularly the 
+ standard i/o and system service functions).  The meaning of 
+ this error number may be found in the symbolic #defines in <errno.h>.
+
+void perror(char *msg)
+ Write, to stderr, <msg> (if non-null and non-empty), followed by
+ ": " and a system error message derived from the value of errno.
+
+char *strerror(int errnum)
+ Return the system error message for error <errnum>.  If <errnum>
+ is outside the range of valid error numbers, NULL is returned.
+
+***********************************************************************
+*                   VARIABLE ARGUMENT LISTS:                          *
+***********************************************************************
+
+ You must include <stdarg.h> in your program if you use functions
+ from this section. (macros)
+
+typedef ... va_list;
+ This is the type for a variable argument list traversal variable.
+
+MACRO va_start(list, param)
+ This macro initializes the va_list variable <list> to begin
+ traversing variable argument lists.  <param> is the last parameter
+ in the function call before the variable arguments began.  This
+ parameter MUST NOT be a register variable.
+
+MACRO va_arg(list, type)
+ This macro retrieves a variable argument of type <type>, updates
+ the va_list variable <list>, and returns the value of the retrieved
+ argument.  The <type> should not be parenthesised.
+
+MACRO va_end(list)
+ This macro must be called after all desired variable arguments have
+ been retrieved, to reset the context of the va_list variable <list>.
+
+***********************************************************************
+*             MISCELLANEOUS FUNCTIONS: (misc.lib/string.lib)          *
+***********************************************************************
+
+ You should include <stdlib.h>, <string.h>, <macros.h> or <assert.h> in
+ your program if you use functions from this section.(prtypes/defs/macros).
+ I have placed a comment at the end of each function description to
+ explain which include is needed.
+
+int getopt(int argc, char **argv, char *optstring)
+ This function eases the processing of the command line.  Each call
+ returns a character from <optstring>, with optarg set to a parameter
+ if one is required; or a '?' indicating that an invalid option was
+ found; or EOF indicating that all options have been processed.  The
+ <argc> and <argv> parameters are (of course) the argc and argv values
+ passed to main().  The <opstring> is a string of option characters.
+ If an option takes a parameter, it is followed by a ':' in <optstring>,
+ and the char *optarg variable (global) will be set to point to the
+ parameter string from the command line.  For example, "bno:v" defines
+ the valid option characters as 'b', 'n', 'o' and 'v', and 'o' takes
+ a parameter.  All options must be preceeded (in the command line) by
+ a '-' character.  A single '-' character is taken to indicate stdin
+ as a file, and terminates the argument processing.  A "--" string
+ indicated the end of options, and is skipped over.  When option
+ processing is successfully completed, the global variable optind will
+ contain the index into argv[] of the next argument to be processed.
+ Subsequent arguments should be processed with a loop like this:
+
+         while(optind < argc)
+               process(argv[optind++]);
+
+ If an error occurs during argument process, an error message is
+ written to stderr and '?' is returned by getopt().  Your program
+ should then give a usage message and abort.  If the global variable
+ opterr is set to zero, no error message will be given, but '?' will
+ still be returned.  Note that command lines accepted by getopt() are
+ quite flexible.  The command lines "-b -v -o filename -- - file",
+ "-vbofilename - file",  and "-ofilename -bv - file" all will return
+ the 'b', 'v', and 'o' options with the parameter to 'o' set to
+ "filename" and leave the arguments "-" and "file2" for further
+ processing. (include: <stdlib.h>)
+
+int rand()
+ Return a pseudorandom number in the range of 0..32767.
+ (include: <stdlib.h>)
+
+void srand(unsigned int seed)
+ Seed the random number generator. Default seed is 1.
+ (include: <stdlib.h>)
+
+void swab(int *src, int *dst, int n)
+ Swap adjacent bytes while copying <n> bytes from <src> to <dst>.
+ This allows bulk translation to/from Intel byte ordering.  Please
+ note the backward order of the <src> and <dst> parameters.
+ (include: <string.h>)
+
+MACRO abs(x)
+ Return the absolute value of <x>.  This macro evalutes it's
+ argument twice. ((x)<0?(-(x)):(x))
+ (include: <macros.h>)
+
+MACRO max(x,y)
+ Return the larger of <x> and <y>.  This macro evaluates the
+ larger argument twice and the smaller argument once.
+ (include: <macros.h>)
+
+MACRO min(x,y)
+ Return the smaller of <x> and <y>.  This macro evaluates the
+ smaller argument twice and the larger argument once.
+ (include: <macros.h>)
+
+MACRO swap(a,b)
+ Exchange <a> and <b> by chained XORs.  The macro evaluates
+ each argument several times.
+ (include: <macros.h>)
+
+MACRO assert(condition)
+ If <condition> is not true at run-time, this macro causes an
+ assert failure message to be written to stderr, displaying the
+ line number and source file name, and aborts the program.  If the
+ symbol NDEBUG is #defined, all assert() calls are disabled.
+ (include: <assert.h>)
+
+
+----- REVISION RECORD -----
+
+This area will contain a rough record of the changes I have made to 'dlibs'
+for future releases of HCE.
+
+Amiga V1.0
+ Original release. 21/6/94.
+
+
+----- FINAL NOTE -----
+
+If you think that this document is difficult to understand or that
+this version of 'dlibs' is missing things you need, or you have found
+a bug or bugs, then please write to:
+
+Jason Petty
+32 Balder Road,
+Norton,
+Stockton-On-Tees,
+Cleveland. TS20 1BE.
+
+all comments welcome, but please note I cannot reply to all letters!.
+
+----- END OF FILE -----

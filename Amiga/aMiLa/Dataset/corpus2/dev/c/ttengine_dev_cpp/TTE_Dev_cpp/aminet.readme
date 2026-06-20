@@ -1,0 +1,17 @@
+Short:        C++ includes for TTEngine
+Author:       Tomasz Kaczanowski "Kaczu¶" and Grzegorz Kraszewski "Krashan"
+Uploader:     Tomasz Kaczanowski "Kaczu¶" (kaczus@poczta.onet.pl)
+Type:         util/libs
+Version:      1.0
+Architecture: ppc-morphos >= 1.4.5
+Distribution: Aminet
+
+Licence: kind of giftware.
+Homepage: http://kaczus.republika.pl and http://teleinfo.pb.bialystok.pl/tte/
+
+You can find there an c++ include for ttengine.library version 7
+You can find there also simple examples how You can use this include
+Examples are tested on MorphOS, if check and change os-include/ppcinline files,
+you can build it for other amigaos-like systems.
+
+Kaczu¶

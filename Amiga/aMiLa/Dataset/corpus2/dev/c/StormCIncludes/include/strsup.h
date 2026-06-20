@@ -1,0 +1,2 @@
+
+#include <inline/strsup.h>

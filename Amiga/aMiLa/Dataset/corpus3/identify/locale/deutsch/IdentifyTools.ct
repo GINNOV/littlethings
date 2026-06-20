@@ -1,0 +1,175 @@
+;*
+;* identify.library
+;*
+;* Copyright (C) 2021 Richard "Shred" Koerber
+;*	http://identify.shredzone.org
+;*
+;* This program is free software: you can redistribute it and/or modify
+;* it under the terms of the GNU Lesser General Public License as published
+;* by the Free Software Foundation, either version 3 of the License, or
+;* (at your option) any later version.
+;*
+;* This program is distributed in the hope that it will be useful,
+;* but WITHOUT ANY WARRANTY; without even the implied warranty of
+;* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+;* GNU Lesser General Public License for more details.
+;*
+;* You should have received a copy of the GNU Lesser General Public License
+;* along with this program. If not, see <http://www.gnu.org/licenses/>.
+;*
+## version $VER: IdentifyTools.catalog 40.0 (13.02.2022)
+## codeset 0
+## language deutsch
+;
+MSG_NOIDENTIFY
+Benötigt identify.library V%ld oder höher!\n\
+
+;
+MSG_LISTEXP_HAIL
+-- ListExp V%s -- %s\n\n
+;
+MSG_LISTEXP_HELP
+Format:\n\
+\n\
+  FULL/S\t\talle Commodities auflisten\n\
+  MID=MANUFID/K/N\tInformation über den Hersteller\n\
+  PID=PRODID/K/N\tund sein Produkt\n\
+\n\
+Weitere Details findest du in der Anleitung.\n\
+
+;
+MSG_LISTEXP_OVERFLOW
+Falscher Bereich! (ManufID=0..65535 ProdID=0..255)\n\
+\n\
+
+;
+MSG_LISTEXP_SPECBOARD
+ Hersteller: %s\n\
+ Produkt:    %s\n\
+ Klasse:     %s\n\
+\n\
+
+;
+MSG_LISTEXP_HARDWARE
+** HARDWARE **\n\
+\n\
+System:  %s\n\
+CPU:     CPU=%s %s (Rev %s), FPU=%s %s, MMU=%s\n\
+
+;
+MSG_LISTEXP_POWERPC
+PowerPC: %s %s (unter %s)\n\
+
+;
+MSG_LISTEXP_HARDWARE2
+Chips:   %s (RAMSEY %s, GARY %s, CHUNKY %s) VBR=%s\n\
+\t DMA:   %s (Modus: %s)\n\
+\t Video: %s (Revision: %s)\n\
+\t Audio: %s\n\
+\t Uhr:   %s\n\
+AmigaOS: %s (%s, SetPatch %s, ROM %s)\n\
+         Exec %s   Workbench %s\n\
+Sys-Erw: GrafikOS: %s, AudioOS: %s, TCP/IP: %s\n\
+Takte:   Netz %s, VBlank %s, E %s\n\
+RAM:     Motherboard %s bit, %s, %s CAS, %sfache Bandbreite\n\
+\n\
+Speicher:\t   CHIP\t   FAST\t GESAMT\tROM = %s\tSLOW = %s\n\
+\t NORMAL\t%7s\t%7s\t%7s\n\
+\t  VIRT.\t%7s\t%7s\t%7s\n\
+\t GESAMT\t%7s\t%7s\t%7s\n\
+\n\
+\n\
+
+;
+MSG_LISTEXP_LISTTITLE
+** ERWEITERUNGEN **\n\
+\n\
+Nr ID        Hersteller           Produkt\n\
+----------------------------------------------------------------------------\n\
+
+;
+MSG_LISTEXP_BOARDLINE
+%2ld %5ld/%3ld %-20s %-20s %s\n
+;
+MSG_LISTEXP_CXTITLE
+\n\
+\n\
+** COMMODITIES **\n\
+\n\
+Name                     Title\n\
+----------------------------------------------------------------------------\n\
+
+;
+MSG_LISTEXP_CXLINE
+%-24s %-40s\n\
+
+;
+MSG_LISTEXP_LISTTITLE_WIDE
+** EXPANSIONS **\n\n\
+Nr ID        Hersteller           Produkt\n\
+             Adresse     Größe    Seriennr.            Zorro (Type/Flags)\n\
+----------------------------------------------------------------------------\n\
+
+;
+MSG_LISTEXP_BOARDLINE_WIDE
+%2ld %5ld/%3ld %-20s %-20s %s\n\
+             %08lx    %3ld%lcB    %08lx             Z%ld    (%02lx/%02lx)\n\n\
+
+;
+MSG_LISTEXP_UNKNOWN
+\n\
+Mindestens eine Erweiterung ist noch nicht bekannt. Bitte sende diese\n\
+Ausgabe an das Identify-Projekt, siehe: %s .\n\
+Vielen Dank für deine Hilfe!\n\n\
+
+;
+MSG_GURU_HAIL
+-- Guru V%s -- %s\n\n
+;
+MSG_GURU_HELP
+Format:\n\
+\n\
+  GURU\t\tzu analysierender Guru-Code\n\
+  LASTALERT/S\tLetzten System-Alert analysieren\n\
+\n\
+Weitere Details findest du in der Anleitung.\n\
+
+;
+MSG_GURU_BADCODE
+Dies ist kein gültiger GURU-Code...\n\
+\n\
+
+;
+MSG_GURU_RESULT
+ Alert-Code: %08lx\n\
+ Typ:        %s\n\
+ Subsystem:  %s\n\
+ Generell:   %s\n\
+ Speziell:   %s\n\
+\n\
+
+;
+MSG_GURU_NOLAST
+Bisher ist noch kein Guru aufgetreten...\n\
+\n\
+
+;
+MSG_FUNC_HAIL
+-- Function V%s -- %s\n\n
+;
+MSG_FUNC_HELP
+Format:\n\
+\n\
+  LN=LIBNAME/A\tName der Library\n\
+  O=OFFSET/N/A\tFunktionsoffset\n\
+\n\
+Weitere Details findest du in der Anleitung.\n\
+
+;
+MSG_FUNC_RESULT
+ Library:    %s\n\
+ Offset:     %ld\n\
+ Funktion:   %s\n\
+\n\
+
+;

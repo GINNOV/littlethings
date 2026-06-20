@@ -1,0 +1,47 @@
+Short:     Very simple stat program with C source
+Uploader:  angeloth@tin.it (Angelo Theodorou)
+Author:    Angelo Theodorou
+Type:      dev/src
+Requires:  Any Amiga
+Version:   0.2.7
+
+A too much very simple statistical program writtem in C just for training reasons.
+The source has some remarks, and it's intended for very beginners.
+The prog hasn't a GUI, but only a textual interface, so execute it from the CLI.
+(Note: Encelo is my nick in #AmigaITA.)
+
+.oOo.oOo.|-------> http://amigarulez.n3.net <-------|.oOo.oOo. Visit my homepage!
+
+
+#Please help me in C developing. And mail me if you know the right words to explain the statistical
+functions. (I made a translation from Italian, but I don't know the right English words)#
+
+
+History:
+
+->  0.2.7 * First Public release *
+          Added the possibility to quit, some remarks, and now the code is splitted in procedures.
+          Now the simple medium rejecting is called in this way, and not through his description.
+
+->  0.2.5 Changed the name from Stat to MiniStat (Stat was too much ;-}).
+          Added the simple medium rejecting, and the standard deviation.
+
+->  0.2b  Added the mean between the rejectings.
+          The source is now a little bit more readable.
+
+->  0.1   * First release ever made *
+
+
+Limitations:
+
+o The program actually doesn't operate on float numbers.
+o The program hasn't a graphic interface.
+
+To Do:
+
+o I'll try to make the program work with float numbers.
+o I'll try to add more statistical functions.
+o Maybe I'll add a very simple GUI...
+o Maybe I'll add a sort of graph...
+
+Mail me if you want to suggest something or if you want to HELP ME.

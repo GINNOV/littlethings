@@ -1,0 +1,102 @@
+	include	"/includes/exec/exec_lib.i"
+	include	"/includes/libraries/dos_lib.i"
+	include	"/includes/hardware/offsets.i"
+	include	"/includes/intuition/intuition_lib.i"
+	include	"/libs/AllRoundStarter"
+savenum	equ	4
+	move.l	4.w,a6
+	movea.l	#0,a1
+	jsr	FindTask(a6)
+	move.l	d0,a1
+	move.b	#-127,d0
+	jsr	SetTaskPri(a6)
+	lea	intname,a1
+	moveq	#0,d0
+	jsr	OpenLibrary(a6)
+	move.l	d0,_IntBase
+	lea	dosname,a1
+	moveq	#0,d0
+	jsr	OpenLibrary(a6)
+	move.l	d0,_DosBase
+	move.l	d0,a6
+	clr.l	AktZahler
+SaverLoop	move.l	#$8FFFF,Zahler
+	move.l	joy0dat+$DFF000,d6
+TestAll	sub.l	#1,Zahler
+	beq	StartSave
+	btst	#6,ciaapra
+	beq	Out
+	btst	#7,ciaapra
+	beq	SaverLoop
+	btst	#2,potgor+$DFF000
+	beq	SaverLoop
+	move.l	joy0dat+$DFF000,d0
+	eor.l	d6,d0
+	tst.l	d0
+	bne	SaverLoop
+	bra	TestAll
+StartSave	lea	saver1,a5
+	move.l	AktZahler,d0
+	move.l	(a5,d0.w),d1
+	jsr	LoadSeg(a6)
+	move.l	d0,StartAdr
+	addq.l	#1,d0
+	lsl.l	#2,d0
+	move.l	d0,a1
+	move.l	AktZahler,d1
+	lsl.w	d1
+	lea	Para1,a0
+	move.l	(a0,d1.w),d0
+	move.l	4(a0,d1.w),a0
+	jsr	(a1)
+	move.l	_DosBase,a6
+	move.l	StartAdr,d1
+	jsr	UnLoadSeg(a6)
+	move.l	#10,Zahler
+	add.l	#4,AktZahler
+	cmpi.l	#savenum*4,AktZahler
+	bne	NotLastOne
+	clr.l	AktZahler
+NotLastOne	btst	#6,ciaapra
+	bne	TestAll
+Out	btst	#7,ciaapra
+	bne	SaverLoop
+	move.l	_IntBase,a6
+	jsr	OpenWorkBench(a6)
+	move.l	d0,a0
+	jsr	DisplayBeep(a6)
+	move.l	_DosBase,a1
+	move.l	4.w,a6
+	jsr	CloseLibrary(a6)
+	move.l	_IntBase,a1
+	jsr	CloseLibrary(a6)
+	rts
+AktZahler	dc.l	0
+Zahler	dc.l	0
+_DosBase	dc.l	0
+_IntBase	dc.l	0
+StartAdr	dc.l	0
+
+saver1	dc.l	savername1
+saver2	dc.l	savername2
+saver3	dc.l	savername3
+saver4	dc.l	savername4
+
+Para1	dc.l	param2-param1,param1
+Para2	dc.l	param3-param2,param2
+Para3	dc.l	param4-param3,param3
+Para4	dc.l	param5-param4,param4
+
+param1	dc.b	"-080Ein kleiner Rat am Rande: Vielleicht solltest du nicht vorm Bildschirm einpennen!                      ",10
+param2	dc.b	10
+param3	dc.b	10
+param4	dc.b	10
+param5
+
+savername1	dc.b	"/commands/ScreenSaverStars",0
+savername2	dc.b	"/commands/ScreenSaverEllipse",0
+savername3	dc.b	"/commands/ScreenSaverMaus",0
+savername4	dc.b	"/commands/ScreenSaverEllipse2",0
+
+dosname	DOSNAME
+intname	INTNAME

@@ -1,0 +1,108 @@
+
+Chapitre 4 : Réorganisation du source, présentation des hook
+Par Corto
+
+Après l'exécution de l'exemple précédent, on s'aperçoit qu'il reste du chemin à parcourir dans la finalisation du player, malgré une meilleure apparence. Mais des améliorations conséquentes ne peuvent être envisagées sur des fondations faibles. Or, il faut avouer qu'à force d'ajouts, la structure de notre programme mérite une session de nettoyage. Sans oublier d'acquérir de nouvelles connaissances, y compris sur cette importante notion qu'est le hook.
+
+
+ Organisation du code
+
+On n'est plus efficace et on ne peut garantir un programme sain si le source est illisible et désordonné. Désormais, nous savons utiliser MUI : construire une interface, choisir ses composants et communiquer avec eux, ... Nous allons pouvoir mettre tout ça à profit pour que notre player devienne digne de ce nom. Comme la taille du source est amenée à grossir, il est en effet grand temps d'envisager un nouveau découpage de l'application, plus adapté.
+
+La fonction principale main() doit retrouver son rôle central : c'est elle qui va commander les initialisations, l'ouverture de la fenêtre ainsi que la gestion des événements de cette dernière. C'est pourquoi, par une simple opération de couper-coller, on a déplacé la boucle qui guette la fermeture de l'application.
+Les bibliothèques (ici intuition et muimaster) sont prises en charge par le couple de fonctions Initialize()/DeInitialize() dont le contenu peut évoluer sans perturber la fonction main(). En plus des bibliothèques, il faut prendre en compte les classes MUI (MCC) et tester leur présence pour pouvoir fournir clairement à l'utilisateur un message si ce n'est pas le cas. Cela évite de courrir après SnoopDos ... On pourrait également vérifier la version minimum à utiliser mais nos besoins actuels ne le réclament pas.
+La dernière fonction, que l'on a épurée, se charge de décrire l'application pour assurer son ouverture, avec les appels aux méthodes qui vont bien. Comme les variables app et window sont utilisées par cette fonction et par le programme principal, elles sont désormais déclarées en global.
+
+Une autre stratégie à mettre en place concerne le nommage des variables et principalement des composants MUI. Dans un programme conséquent, on se retrouve avec des dizaines de composants et autant de variables supplémentaires qui s'y réfèrent. Pour s'y retrouver, il est indispensable d'adopter une manière de nommer les variables, en choisissant par exemple un préfixe comme LV_ ou BT_ pour identifier respectivement une listview ou un bouton. On peut aussi envisager quelque chose de plus poussé. Par exemple, un bouton OK va se retrouver sur plusieurs fenêtres, c'est pourquoi il faut pouvoir les localiser indépendamment. On peut donc choisir de préfixer encore en amont avec le nom de la fenêtre ou du groupe : config_bt_ok par exemple. Mais libre à vous de choisir vos propres conventions.
+
+Pour simplifier le source, nous retirons la partie chargée des notifications destinées à griser ou dégriser les boutons d'actions. Nous avons vu leur intérêt mais avec la multitude de boutons et les actions auxquels ils correspondent, cela alourdirait inutilement les sources (par rapport bien sûr à notre objectif dans ce tutoriel).
+
+Voila à quoi ressemble le source ainsi nettoyé (disponible également ici avec son fichier M_Hook, éventuellement) :
+
+
+
+
+
+
+Notion de hook
+
+Grâce aux notifications, les composants intéragissent entre eux : un clic sur le bouton qui stoppe la chanson en cours fige le composant Busy. Mais qu'en est-il de la fonction qui va devoir changer le volume ou éjecter le disque ? Il faut pouvoir exécuter une fonction sur un événement donné. Il existe plusieurs moyens :
+- soit on met en place un hook, c'est un mécanisme qui permet d'affecter une fonction qui sera appelée à chaque fois qu'une action a lieu (clic sur un bouton, utilisation d'un slider, etc.).
+- soit on dérive la classe du composant pour pouvoir lui ajouter une méthode ! On commence à sentir l'intérêt de la programmation objet.
+
+Le hook n'est pas propre à MUI et il est préférable de ne limiter son utilisation que pour les cas où il est impossible de faire autrement. La dérivation de classe est préférée ... mais va-t-on devoir dériver chaque composant, un à un ? Non, pas forcément, il est possible de dériver un groupe mais ... ne brûlons pas les étapes :) Nous voyons en attendant l'utilisation d'un hook qui affiche la nouvelle valeur du volume après que l'on ait relâché le slider. La sortie du texte se fait dans la console shell, ça n'est pas très beau quand on travaille sur une interface mais l'important est ici de comprendre les hooks.
+
+Un hook ne doit pas faire peur. Les difficultés éventuelles sont masquées grâce à l'inclusion du fichier d'en-tête "M_Hook.h" qui propose des macros très pratiques. C'est aussi l'opportunité de n'utiliser qu'une seule notation quel que soit l'OS concerné. Et vu que les hooks touchent aux regristres processeurs ... ces macros sont les bienvenues ! Pour une cible 68k, cette en-tête a besoin du fichier "SDI_compiler.h" tout aussi utile au programmeur en général. On trouve cette include dans l'archive "CLib-SDI.lha" disponible sur Aminet.
+
+
+
+M_HOOK(ChangeVolume, APTR obj, struct TagItem *tag_list)
+
+{
+
+        int val;
+
+
+
+        get(obj, MUIA_Numeric_Value, &val);
+
+
+
+        printf("Nouvelle valeur : %d\n", val);
+
+
+
+        return TRUE;
+
+}
+
+
+
+Un autre moyen existe pour manipuler les hooks et même ... c'est le système lui-même qui nous l'offre à travers la fonction HookEntry de l'amiga.lib. Ainsi, on s'affranchit complètement de la notion de registres spécifiques à passer en paramètres. On se contente d'utiliser HookEntry comme n'importe quelle fonction système. En l'occurence, on l'affecte, elle et la fonction cible, au hook qui est transmis à la méthode MUIM_CallHook. Voici ce que devient le code précédent :
+
+
+
+static ULONG hook_ChangeVolumeFunc(struct Hook *hook, APTR obj, struct TagItem *tag_list)
+
+{
+
+        int val;
+
+
+
+        get(obj, MUIA_Numeric_Value, &val);
+
+
+
+        printf("Nouvelle valeur : %d\n", val);
+
+
+
+        return TRUE;
+
+}
+
+
+
+struct Hook hook_ChangeVolume = 
+
+{
+
+        {NULL, NULL}, (HOOKFUNC) HookEntry, (HOOKFUNC) hook_ChangeVolumeFunc, NULL
+
+};
+
+
+
+La fonction appelée par le hook ne mérite pas de commentaire particulier : on lit juste la valeur numérique de l'objet qui a déclenché l'appel de cette fonction et l'on affiche dans la sortie standard. Si le niveau sonore du lecteur CD était modifiable (via le mixer de MorphOS par exemple) grâce à une fonction système, c'est d'ici qu'elle serait appelée.
+
+Remarque : De nouveaux éléments font que VBCC bloque à la compilation en génération de code 68k. Il est nécessaire d'ajouter -DNO_INLINE_STDARG sur la ligne de compilation.
+
+
+ Notions acquises dans ce chapitre
+
+- importance de la clarté du source
+- convention pour le nommage des variables
+- découverte et pratique du hook
+
+

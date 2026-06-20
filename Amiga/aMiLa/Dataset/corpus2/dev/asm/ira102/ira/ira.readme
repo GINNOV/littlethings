@@ -1,0 +1,13 @@
+SHORT: 680x0 disass., for reassembling purposes.
+TYPE: dev/asm
+UPLOADER: ruehsen@ifm.uni-hamburg.de
+
+
+IRA102 is version V1.02 of my ReAssembler. Reassembler means that IRA translates
+any executable or binary file into an assembler sourcecode that might
+immediately be translated back by an assembler. E.g., you can do that with a
+debugging option. After that you can examine that program with any debugger.
+That's fine for finding and analysing viruses, repairing old programs, even
+optimising alien programs.
+
+              Tim Ruehsen.

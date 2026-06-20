@@ -1,0 +1,985 @@
+
+
+
+             PROPACK (tm) Instruction Manual - November 1992
+
+             Copyright (c) 1991,92 Rob Northen Computing, UK
+
+                          All Rights Reserved
+
+
+
+    LIST OF CONTENTS
+
+        1.0 FEATURES
+        2.0 COMMAND LINE
+        3.0 COMMANDS
+                3.1 NON-ARCHIVE COMMANDS
+                3.2 ARCHIVE COMMANDS
+        4.0 OPTIONS
+        5.0 FILE SPECIFICATION
+        6.0 SELF-EXTRACTING (SFX) ARCHIVE
+        7.0 STRUCTURE OF AN ARCHIVE
+        8.0 ERROR MESSAGES
+        9.0 TECHNICAL SUPPORT
+
+
+    1.0 FEATURES
+
+        Choice of two compression methods: Method 1 for high performance
+        compression and fast unpacking or Method 2 for good compression
+        and very fast unpacking.
+
+        Ability to pack executable files for different machines as well
+        as data files. Self-extraction and relocation is performed
+        automatically.
+
+        Decompression code runs with the minimum amount of workspace and
+        unpacks packed files in their own memory space.
+
+        Decompression source code provided for most game formats.
+
+        Archive command for fast and simple handling of packed files.
+        Automatic self-extraction of archives re-creates original files
+        across multiple directories and sub-directories.
+
+        Packed files contain 16 bit CRC checksums of both the packed and
+        unpacked data for checking data integrity.
+
+        Virus checking on PC executable files.
+
+        Key option provides security for packed files by allowing
+        decompression only when correct key is used.
+
+        Very fast to pack.
+
+        Packer supports wild card characters in file names, recursion of
+        subdirectories and list files.
+
+        Unpack command restores packed data and executable files to
+        their original size.
+
+
+    2.0 COMMAND LINE
+
+        PP <command> [-<option>] <file_names | @LISTFILE>
+
+        Parameters may be specified in upper or lower case and must be
+        separated with at least one space. The parameters must occur in
+        the command line in the order shown above. Multiple options may
+        occur in any order. Each option must be preceded with the option
+        character, either "-" or "/" with an optional space between the
+        option character and the option. The file specification may
+        include the wild card characters "*" and "?".
+
+
+    3.0 COMMANDS
+
+        PROPACK has two sets of commands:
+
+        NON-ARCHIVE commands and ARCHIVE commands.
+
+        The NON-ARCHIVE commands operate on individual files, either
+        data or executable. The ARCHIVE commands operate on a single
+        archive file which can contain one or more separate files,
+        either packed using Method 1 or 2, or stored using Method 0. All
+        files stored in an archive are treated as data files, no
+        distinction is made between the file type (data, pc, 68000 etc).
+
+
+    3.1 NON-ARCHIVE COMMANDS
+
+        p: PACK
+
+        This command is used to pack an unpacked data or executable
+        file. The original file is overwritten by the new packed file.
+
+        A file will not be packed if the packed file would be equal to
+        or larger than the original unpacked file. You cannot pack a
+        file that has already been packed.
+
+        Examples
+
+        PP p *.*
+
+        will pack all files in the current directory using Method 1. The
+        files will be packed as data.
+
+        PP p -fp -k0x1234 *.*
+
+        will pack all files in the current directory using Method 1. The
+        files expected are PC executable files, (either .EXE or .COM). A
+        key of 0x1234 (hex) is used to lock them.
+
+
+        u: UNPACK
+
+        This command is used to restore a packed data or executable file
+        to its original unpacked state. The packed data or executable
+        file is overwritten by the unpacked version. It is not necessary
+        to specify the Method of packing when the file was packed.
+
+        A file cannot be unpacked if it was packed and locked using the
+        lock option "-l".
+
+        A file packed and locked with a key using the "-k" option can
+        only be unpacked if the same key is used to unpack it.
+
+        NOTE
+
+            Unpacking a PC ".EXE" file may not produce an identical copy
+            of the original file. For example, the MS-DOS file compare
+            utility "comp" may report some differences when comparing
+            the original unpacked file with the PROPACK unpacked
+            version. These differences occur only in the files
+            relocation table and do not make the unpacked version behave
+            or run any differently from the original version. These
+            differences occur because PROPACK optimises the relocation
+            table when packing a PC .EXE file.
+
+            Unpacking an AMIGA file will not restore the symbol or debug
+            hunks occuring in the original unpacked file. This is
+            because these hunks do not get written to the packed file.
+
+        Examples
+
+        PP u *.*
+
+        will unpack all files in the current directory. The files
+        expected are packed data files.
+
+        PP u -fp -k0x1234 *.*
+
+        will unpack all files in the current directory. The files
+        expected are packed PC executable files (.EXE or .COM) locked
+        with the key 0x1234 (hex).
+
+
+        v: VERIFY
+
+        This command is used to verify the data integrity of a packed data
+        or executable file. The integrity of the packed and unpacked data
+        is checked.
+
+        Locked files may be verified. Files locked with a key can be
+        verified providing the same key used to pack them is used to
+        verify them. Executable files packed with a key do not require a
+        key to verify them.
+
+        Examples
+
+        PP v *.*
+
+        will verify all files in the current directory. The files
+        expected are packed data files.
+
+        PP v -fp -k0x1234 *.*
+
+        will verify all files in the current directory. The files
+        expected are PC executable files (.EXE or .COM) packed with the
+        key 0x1234 (hex).
+
+
+    3.2 ARCHIVE COMMANDS
+
+        All ARCHIVE commands must specify an archive file name. This
+        must be given immediately after the ARCHIVE command. The default
+        file extension for an archive file is ".RNC". If the extension
+        is omitted from the archive file name the default extension is
+        assumed. All files added to an archive are treated as data even
+        if the file type option "-f" specifies otherwise.
+        
+
+        a: ADD TO ARCHIVE
+
+        This command packs the files specified in the command line and
+        adds them to an existing archive. If the archive does not exist
+        an error message is displayed and the command is aborted.
+
+        An archive can be an archive file originally created with the
+        CREATE ARCHIVE command or it can be an existing PC, .EXE file.
+        If the archive is a .EXE file the archived files are appended to
+        the end of the .EXE file.
+
+        If a file that is to be added to the archive already exists in
+        the archive it is replaced regardless of the date of the file in
+        the directory or in the archive.
+
+        A file that has already been packed with PROPACK will be added
+        to the archive without any further packing.
+
+        If after packing there is no reduction in size from the original
+        file then the file is stored in its unpacked form in the
+        archive.
+
+        The full pathname of the file (with the exception of the drive
+        specifier) as specified in the command line is stored in the
+        archive. All file names are stored in upper case.
+
+        The source file EXTRACT.ASM in directory <source> of PROPACK can
+        be used to extract files from an archive. The structure of an
+        archive is given in section 7.0.
+
+
+        Examples
+
+        PP a myarc game\music\*.dat
+
+        packs all files in directory game\music which have the extension
+        .dat using Method 1 and adds them to the archive "myarc" in the
+        current directory.
+
+        PP a myarce -m2 -r *.*
+
+        packs all files in the current directory and all subdirectories
+        using Method 2 and adds them to the archive "myarc" in the
+        current directory.
+
+
+        c: CREATE ARCHIVE
+
+        This command is the same as the ADD TO ARCHIVE command except
+        that a new archive file as specified in the command line is
+        created. If a file with the same name as the archive file
+        already exists then the file is overwritten.
+
+        Examples
+
+        PP c myarc game
+
+        creates a new archive "myarc" of all files in directory game.
+
+        PP c myarc -m0 game
+
+        creates a new archive "myarc" of all files in directory game.
+        The files are not packed but just stored in the archive.
+
+
+        d: DELETE FROM ARCHIVE
+
+        This command removes the files specified in the command line
+        from an archive. The full pathname of the file (as specified
+        when it was added to the archive) must be given.  The file
+        specification may include the wild card characters "*" and
+        "?" and the recurse subdirectories option "-r" may be used.
+
+        Examples
+
+        PP d myarc game
+
+        deletes all files in directory game from archive "myarc".
+
+        PP d myarc -r game
+
+        deletes all files and subdirectories in directory game from
+        archive "myarc".
+
+
+        e: EXTRACT FROM ARCHIVE
+
+        This command extracts the files specified in the command line
+        from an archive. All files are extracted to the current
+        directory or to the target directory if the target directory
+        option "-t" is used. To extract files archived with the key
+        option "-k" the same key value must be specified when using this
+        command otherwise a "WRONG KEY" error message is displayed.
+        Files locked using the lock option "-l" cannot be extracted from
+        an archive.
+
+        Examples
+
+        PP e myarc game\music\sound.dat
+
+        extracts the file "sound.dat" from directory "game\music" in
+        archive "myarc" to the current directory.
+
+        PP e myarc -t game
+
+        extracts all files from the current directory in archive "myarc"
+        to the target directory "game". Directory "game" is created if
+        it doesn't already exist.
+
+        PP e myarc -k0x83DF -r *.dat
+
+        extracts all files with the extension ".dat" from the current
+        directory and all subdirectories in archive "myarc" using the
+        key 0x83DF (hex).
+
+
+        l: LIST & VERIFY ARCHIVE
+
+        This command lists and verifies the data integrity of the files
+        specified in the command line. If no files are specified all
+        files in all subdirectories in the archive are listed and
+        verified. Files archived using the key option "-k" require the
+        same key to list and verify the file, otherwise the error
+        message "KEY REQUIRED" or "WRONG KEY" is displayed.
+
+        Examples
+
+        PP l myarc
+
+        lists and verifies all files in all subdirectories of archive
+        "myarc"
+
+        PP l myarc -r game
+
+        list and verifies all files and all subdirectories in directory
+        "game" of archive "myarc".
+
+
+        s: CREATE SELF-EXTRACTING (SFX) ARCHIVE
+
+        This command is similar to the CREATE ARCHIVE command. It
+        creates a new executable (.EXE) program file archive from the
+        files specified on the command line. When the executable archive
+        program is run from MS-DOS it automatically unarchives all the
+        files contained in the archive, creating the directories and
+        subdirectories of the files stored in the archive.
+
+        See SELF-EXTRACTING (SFX) ARCHIVE for the options available
+        during self-extraction of an archive.
+
+        Examples
+
+        pp s game -r   (same as pp s game\*.* -r)
+
+        creates a self-extracting archive of all the files and
+        subdirectories in directory game. Every archived file is stored
+        as "game\" followed by the rest of the pathname. Self-extracting
+        this archive will create directory "game".
+
+        pp s c:\game -r
+
+        creates a self-extracting archive of all the files and
+        subdirectories in directory "c:\game". Every archived file is
+        stored as "\game" followed by the rest of the pathname.
+        Self-extracting this archive will create directory "\game".
+
+
+        x: EXTRACT WITH FULL PATHNAME
+
+        This command is the same as the EXTRACT FROM ARCHIVE command
+        except that the files specified in the command line are
+        extracted using the full pathname of the file stored in the
+        archive. If the target directory option "-t" is used the files
+        are extracted using the target directory as a base directory for
+        the full pathname of the extracted file. If any directory in the
+        pathname of the extracted file does not exist it is created.
+
+        Examples
+
+        PP e myarc game\music\sound.dat
+
+        extracts the file "game\music\sound.dat" in archive "myarc" to
+        "game\music\sound.dat".
+
+        PP e myarc
+
+        extracts all files in all subdirectories using their full
+        pathnames in archive "myarc".
+
+        PP e myarc -t c:\
+
+        extracts all files in all subdirectories using their full
+        pathnames in archive "myarc" to the root directory of drive C.
+
+
+    4.0 OPTIONS
+
+        -d: Specifies the dictionary size
+
+        This option is currently only used for packing files which are
+        unpacked to video ram through a video ram port address. The
+        dictionary size relates to the size of the decompression buffer
+        required to successfully unpack the file into video ram. The
+        smallest dictionary size is 512 bytes and the largest is 32,768
+        bytes for Method 1 packed files and 4096 bytes for Method 2
+        packed files. A typical dictionary size for unpacking to video
+        ram is 512 to 1024 bytes depending upon the amount of available
+        ram at the time of unpacking the file. Reducing the size of the
+        dictionary will also reduce the efficiency of the compression.
+
+
+        -f: Specifies the type of file
+
+        This option is used by the NON-ARCHIVE commands and tells
+        PROPACK the format of the file to expect. If no file type is
+        specified the default is assumed, which is data. All other
+        file types are executable. The archive commands will always pack
+        files as data, regardless of the setting of the file option.
+
+        You cannot pack a data file as an executable file.
+
+        NOTE
+
+            Any type of file (including executable files) may be packed
+            as data. A packed data file contains only the PROPACK header
+            information plus the actual packed data. Executable files
+            are packed with self-extract code added to the file. This
+            allows them to automatically unpack (and relocate if
+            necessary) when the file is run.
+
+        The current version of PROPACK supports the following file
+        types:
+
+        d: Data
+
+        Specifies the file type to be data, eg. game data, graphic data,
+        sprite data, music data etc. Any file type can be packed as
+        data.
+
+        p: IBM PC
+
+        Specifies the file type to be an PC ".EXE" or ".COM" file. You
+        cannot pack Microsoft Windows or OS/2 executable files.
+
+        s: Atari ST
+
+        Specifies the file type to be an Atari ST ".TOS" or ".PRG"
+        format file.
+
+        NOTE
+
+            Any debug information occuring at the end of an ST format
+            file will be packed with the rest of the file.
+
+        a: CBM Amiga
+
+        Specifies the file type to be an AmigaDos load file.
+
+        NOTE
+
+            SYMBOL and DEBUG hunks are not packed and will not appear in
+            the packed file. Files containing OVERLAY hunks will not be
+            packed.
+
+        m: MC68000
+
+        Specifies the file type to be an executable Motorola 68000
+        binary file containing 68000 instructions (and probably data).
+        The execution address of the file is assumed to be the start of
+        the file. A different execution address may be specified with
+        the "-x" option.
+
+        l: Atari Lynx
+
+        Specifies the file type to be an Epyx .BIN type file. The same
+        type of file produced by the ASM assembler.
+
+
+        -k: Lock/Unlock a file using a 16 bit key
+
+        This option is used by all the commands to specify a 16 bit key
+        word for data and executable file types. The PACK, ADD TO
+        ARCHIVE and CREATE ARCHIVE commands use the key to lock the
+        packed file so that it can only be unpacked using the same key.
+        The UNPACK, VERIFY, EXTRACT FROM ARCHIVE, LIST ARCHIVE and
+        EXTRACT WITH FULL PATHNAME commands must use the key same to
+        unpack or verify the packed file.
+
+        The key may be specified in decimal or hex.
+
+        Example
+
+        PP p -k0x1234 *.*
+
+        will pack all files in the current directory using the key
+        0x1234 (hex). The files expected are packed data files.
+
+        PP u -fp -k1234 *.*
+
+        will unpack all files in the current directory using the key
+        1234 (decimal). The files expected are PC (.EXE, .COM) files.
+
+        PP p -fs -k-99 *.*
+
+        will pack all files in the current directory using the key -99
+        (decimal). The files expected are Atari ST (.PRG, .TOS) files.
+
+
+        -l: Lock a packed file
+
+        This option is used by the PACK, ADD TO ARCHIVE and CREATE
+        ARCHIVE commands to lock a data or executable file after it has
+        been packed. This prevents the file from being unpacked (but not
+        verified) by PROPACK.
+
+        NOTE
+
+            Data files packed with this option may be unpacked by the
+            unpack source code provided in the <source> directory.
+
+        Example
+
+        PP p -l *.*
+
+        will pack and lock all files in the current directory. The files
+        will be packed as data.
+
+
+        -m: Method of Packing
+
+        This option is used to determine which method of packing is to
+        be used to pack a file. Method 0 stores the file without packing
+        and is used only by the ADD TO ARCHIVE and CREATE ARCHIVE
+        commands. Method 1 is designed to pack files as small as
+        possible while Method 2 is designed so that unpacking packed
+        files is as quick as possible. The choice of method is left to
+        the programmer and will depend largely on the application it is
+        used in. The default method is 1.
+
+        Examples
+
+        PP p -m2 *.*
+
+        will pack all files in the current directory using Method 2. The
+        files will be packed as data.
+
+        PP c myarc -m0 *.*
+
+        stores, without packing, all files in the current directory to
+        archive "myarc".
+
+
+        -r: recurse subdirectories
+
+        This option allows PROPACK commands to process subdirectories If
+        this option is used then all subdirectories contained within the
+        path name of the file specification will be examined for file
+        names that match the file name of the file specification.
+
+        Examples
+
+        pp c myarc -r *.dat
+
+        creates the archive "myarc" of all files which have the
+        extension ".dat" which are in the current directory and all its
+        subdirectories.
+
+        pp p -r game
+
+        packs all files in directory game and all its subdirectories.
+
+
+        -t: target/base directory
+
+        This option is used to specify the base directory to which you
+        want to direct the output from the PACK, UNPACK, EXTRACT FROM
+        ARCHIVE and EXTRACT WITH FULL PATHNAME commands. Normally the
+        PACK and UNPACK commands would overwrite the original unpacked
+        file. The EXTRACT FROM ARCHIVE would extract to the current
+        directory and the EXTRACT WITH FULL PATHNAME would extract to
+        the directory specified by the pathname of the file stored in
+        the archive.
+
+        Examples
+
+        PP p -t c:\test *.*
+
+        packs all files in the current directory and writes the packed
+        copy of the file to directory "c:\test".
+
+        PP e myarc -t c:\test
+
+        extracts all files in all subdirectories from archive "myarc" to
+        the base directory "c:\test". Any subdirectories will be created
+        if they don't already exist.
+
+
+        -u: update files in target directory
+
+        This option is used when packing data files to a target
+        directory, using the PACK command and the "-t" option. If a
+        packed file with the same name and same uncompressed file length
+        already exists in the target directory, and has a more recent
+        timestamp, then the file is not packed. Instead, the result "NOT
+        UPDATED" is displayed.
+
+        Example
+
+        PP p -t source -u *.asm
+
+        creates directory "source" and packs all files with the file
+        extension ".asm" into this directory. If the same command is
+        performed again before making any changes to any ".asm" files
+        none of the files will be packed.
+        
+
+        -v: verify packed data when run
+
+        This option is used when packing an executable file with the
+        PACK command. After the file has been packed it causes the data
+        integrity of the packed and unpacked data to be checked every
+        time the packed program is run. If the program has been
+        corrupted the data integrity test will fail and the following
+        message is displayed
+
+        CRC Check Failed: <file_name>
+
+        The program is then aborted. <file_name> is the name of the
+        packed program which has the error.
+
+        When this option is used on a PC ".EXE" file it causes the
+        packed ".EXE" program, every time it is run, to check the
+        integrity of the data and also check if the file has become
+        infected with a virus. If a virus is detected the following
+        message is displayed
+
+        Virus Check Failed: <file_name>
+
+        The program is then aborted. <file_name> is the name of the
+        packed program which has the error.
+
+
+        Example
+
+        PP p -fp -v *.exe
+
+        will pack all ".EXE" in the current directory. The files
+        expected are PC files. The integrity of the data will be checked
+        when the packed version of the file is run.
+
+
+        -w: work directory
+
+        This option specifies which directory is to be used when
+        temporary PROPACK files are created during the execution of a
+        command. If this option is not used the current directory is
+        used as the work directory. PROPACK temporary files begin with
+        the name "PROPACK" and have the extension "$$$".
+
+        Example
+
+        PP c myarc -w d:\ *.c
+
+        packs all files with the extension ".c" in the current directory
+        into the archive "myarc" using the root directory on drive d as
+        the work directory.
+
+
+        -x: Execution address
+
+        This option is used to specify a different execution address
+        when packing MC68000 executable binary files using the PACK
+        command with a file type of "-m". The execution address should
+        be given as a byte offset from the start of the file. In other
+        words, the absolute execution address will be the load address
+        of the file plus the offset value following the "-x". The offset
+        may be given in hex or decimal.
+
+        Example
+
+        PP p -fm -x0x1000 prog.bin
+
+        will pack the file MC68000 executable file "prog.bin" and start
+        execution of the program at the address it is loaded plus 0x1000
+        (hex).
+
+
+    5.0 FILE SPECIFICATION
+
+        The file specification is used by all commands to indicate what
+        files to act on. The file spec. may include one or more files,
+        including the wild card characters "*" and "?". Multiple files
+        may be specified separated with a space.
+
+        To allow for frequently used multiple file specifications a list
+        file can be used. The list file is a text file containing the
+        file specifications for the same command, one on each line of
+        the file, that would normally be entered on the command line
+        separated with spaces. To distinguish a list file from a normal
+        file the list file character "@" must be used immediately in
+        front of the list file name on the command line.
+
+        Examples
+
+        PP p *.dat
+
+        packs all files in the current directory which have the
+        extension ".DAT". The files will be packed as data.
+
+        PACK p music.dat sprite.dat graphic.dat
+
+        packs the data files "music.dat", "sprite.dat" and
+        "graphic.dat".
+
+        PP p @mylstfil
+
+        packs the data files listed in the list file "mylstfil".
+
+
+    6.0 SELF-EXTRACTING (SFX) ARCHIVE
+
+        See the CREATE SFX ARCHIVE command for use on how to create a
+        self-extracting archive.
+
+        Running a SFX archive with no extra parameters on the command
+        line will extract all files held in the archive using the
+        currently selected directory as the base/target directory.
+
+        A file extracted from a SFX archive will overwrite an existing
+        file of the same name if it already exists, unless the attribute
+        of the file is set to Read Only, in which case an "Open File
+        Error!" message is displayed. Directories and subdirectories in
+        the archive will be created if they don't already exist.
+
+        The command line for a SFX archive is:
+
+        SFX_ARC.EXE [<drive:path>] [<file_names>] [-options]
+
+        SFX_ARC.EXE
+
+        This is the name of the self-extracting archive created with the
+        CREATE SFX ARCHIVE command.
+
+        <drive:path>
+
+        This is the drive and path that the archived files are to be
+        written to. The path directory is created if it doesn't exist.
+        If there are any directory paths stored in the archive, then
+        these will be created inside the <drive:path> directory. If no
+        <drive:path> is specified then the current directory is used.
+
+        <file_names>
+
+        This specifies the files to be extracted from the archive. It
+        may include one or more files, including the wild card
+        characters "*" and "?". Multiple files may be specified
+        separated with a space. If no <file_names> are specified then
+        *.* is assumed. You cannot specify <file_names> without
+        specifying the <drive:path>.
+
+        A SFX archive when run exits to MS-DOS with the number of
+        successfully extracted files in register AL. This is the return
+        code when calling MS-DOS interrupt 21h function 4Ch.
+
+        <options>
+
+        -s: silent
+
+        This option inhibits all character output to the screen
+        generated during self-extracting of the archive.
+
+        -r: recurse subdirectories
+
+        This option when used with <file_names> allows subdirectories
+        stored in the archive to be searched for selection of the files
+        matching <file_names>.
+
+        -e: stop if error
+
+        This option causes the extraction of the archive to abort if an
+        error is generated. Normally archive extraction continues even
+        if an error is detected. The number of files successfully
+        extracted is returned in register AL when calling interrupt 21h
+        function 4Ch.
+
+        -c: copy from archive
+
+        This option allows files to be copied out of the archive and
+        left in their packed form. Normally files would be unpacked
+        during the extraction process.
+
+        -l: use one line for file name display
+
+        This option allows just one line of the screen to be used for
+        displaying the file name of the file extracted from the archive.
+        Normally one line is used per file extracted. If an error occurs
+        during extraction of a file then extraction continues on a new
+        line of the screen, leaving the error message visible.
+
+        Examples
+
+        SFX.EXE C:\PROPACK
+
+        will extract all files from the SFX archive "SFX.EXE" into
+        directory "C:\PROPACK". Directory "C:\PROPACK" will be created
+        if it doesn't exist.
+
+        SFX.EXE C:\PROPACK -r RNC*.*
+
+        will extract all files, from the SFX archive "SFX.EXE" into
+        directory "C:\PROPACK", which match the file name "RNC*.*" from
+        all subdirectories.
+
+        SFX.EXE -e
+
+        will extract all files from the SFX archive "SFX.EXE" and stop
+        if an error is encountered.
+
+        SFX.EXE C: *.exe *.com
+
+        will extract all "*.exe" and "*.com" files from the SFX archive
+        SFX.EXE onto the current directory in drive C:
+
+        SFX Error Messages
+
+        If an error occurs during the extraction of a file then an error
+        message is printed immediately after the file name. If the -e
+        option is used then the SFX program is aborted after displaying
+        the error message. The number of files successfully extracted is
+        returned in AL.
+
+        CRC File Error!
+
+        This occurs when the data in an archived file has been corrupted
+        and cannot be extracted.
+
+        Read File Error!
+
+        This occurs when MS-DOS returns a read error when reading from
+        the archive.
+
+        Write File Error!
+
+        This occurs when MS-DOS returns a write error when writing out
+        an extracted file to disk.
+
+        Open File Error!
+
+        This occurs when MS-DOS returns an open error when attempting to
+        open a file to extract into. This is displayed when the file to
+        be extracted already exists and has an attribute of Read Only.
+
+
+    7.0 STRUCTURE OF AN RNC ARCHIVE
+
+        The RNC archive file consists of an "Archive Directory
+        Structure", containing the directory and file names of the files
+        in the archive and pointers to them in the archive file,
+        followed by the actual packed data files. If a PC .EXE file is
+        specified as the archive file in the CREATE ARCHIVE command,
+        then the "Archive Directory Structure" begins at the end of the
+        .EXE file
+
+        The last 4 bytes of the archive file contain a pointer to the
+        start of the "Archive Directory Structure". For non PC .EXE
+        files the pointer should always be 0. For PC .EXE files the
+        pointer should point to the end of the load module or
+        overlay/debug info if present.
+
+        Archive Directory Structure
+
+        Field Name              Field Value     Field Size (bytes)
+
+        Archive Id              "RNCA"          4
+        Directory Size (bytes)                  2
+        Directory Checksum                      2
+
+        Pointer to Directory 2                  2
+        Directory Name 1                        Length of Directory Name 1
+        Null                    0               1
+
+        File Name 1                             Length of File Name 1
+        Null                    0               1
+        File 1 File Pointer                     4
+        File Name 2                             Length of File Name 2
+        Null                    0               1
+        File 2 File Pointer                     4
+        etc.
+        End of Directory 1      0               1
+
+        Pointer to Directory 3                  2
+        Directory Name 2                        Length of Directory Name 2
+        Null                    0               1
+
+        File Name 1                             Length of File Name 1
+        Null                    0               1
+        File 1 File Pointer                     4
+        File Name 2                             Length of File Name 2
+        Null                    0               1
+        File 2 File Pointer                     4
+        etc.
+        End of Directory 2      0               1
+
+        Pointer to Directory 4                  2
+        Directory Name 3                        Length of Directory Name 3
+        etc.
+
+        Archived File Structure
+
+        Packed File Header      "RNC"           3
+        Packing Method          0, 1 or 2       1
+        Original File Length                    4
+        Packed File Length (if method 1 or 2)   4
+        Packed Data (to end of file)
+
+        All length and pointer fields are stored most significant byte
+        to least significant byte.
+
+        The "Directory Size" field gives the size of the directory
+        starting from the "Archive Id" field and ending at the last "End
+        of Directory" null character. The maximum size of the directory
+        structure is 64K.
+
+        The "Pointer to Directory" fields specify the file pointer to
+        the next "Pointer to Directory" field relative to the archive
+        file position of the "Archive Id" field.
+
+        The "File Pointer" fields specify the file pointer of the
+        archived file relative to the beginning of the archive file.
+
+
+    8.0 ERROR MESSAGES
+
+        CAN'T PACK FILE
+
+        this occurs when you try to pack a file which would result in
+        the packed file being larger than or equal to the unpacked file.
+
+        ALREADY PACKED
+
+        this occurs when you try to pack a file that has already been
+        packed.
+
+        PACKED DATA CRC ERROR
+
+        this occurs when you verify a packed file and the stored packed
+        data CRC is different to the calculated CRC, meaning the packed
+        data has been corrupted.
+
+        UNPACKED DATA CRC ERROR
+
+        this occurs when you verify a packed file and the unpacked data
+        CRC is different to the calculated CRC, meaning the packed data
+        when unpacked would be different to the original unpacked file.
+
+        NOT A PACKED FILE
+
+        this occurs when you unpack or verify a file that is not a
+        packed file.
+
+        CAN'T PACK OVERLAY HUNK
+
+        this occurs when you pack an AMIGA load file which contains an
+        OVERLAY hunk.
+
+        LOCKED
+
+        this occurs when you try to unpack a file that was packed and
+        locked with the "-l" option.
+
+        KEY REQUIRED
+
+        this occurs when you try to unpack or verify a packed file which
+        was locked with a key using the "-k" option and have not
+        supplied a key to unlock the file.
+         
+        WRONG KEY
+
+        this occurs when you try to unpack or verify a packed file which
+        was locked with a key using the "-k" option and have not
+        supplied the right key.
+
+
+    9.0 TECHNICAL SUPPORT
+
+        Technical support for PROPACK can be obtained from:
+
+        Rob Northen Computing, England
+
+        Tel: +44 (0)428-707771
+        Fax: +44 (0)428-707772
+
+

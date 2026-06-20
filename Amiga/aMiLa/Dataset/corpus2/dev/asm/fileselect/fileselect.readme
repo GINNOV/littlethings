@@ -1,0 +1,17 @@
+Short:        File requester in assembler
+Uploader:     BIRJT cc newcastle edu au
+Architecture: m68k-amigaos
+
+Type: util/misc
+
+Uploader: BIRJT@cc.newcastle.edu.au
+
+Author: Andri Wichmann
+
+A new file requester which is small, fast and has some new
+features.  It has a flexible filter option, optional DOS-
+gadgets (delete, rename and makedir), displays the size of
+a program, is fast, can display all connected devices, etc.
+Version 2.0, includes source in assembly language.
+
+---------------------------CUT HERE-----------------------------

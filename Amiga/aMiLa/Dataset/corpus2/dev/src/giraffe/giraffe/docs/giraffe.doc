@@ -1,0 +1,1096 @@
+TABLE OF CONTENTS
+
+giraffe.library/G_Arc
+giraffe.library/G_BeginUpdate
+giraffe.library/G_CloseFont
+giraffe.library/G_CloseLayer
+giraffe.library/G_CycleLayer
+giraffe.library/G_DisownLayer
+giraffe.library/G_DropLayer
+giraffe.library/G_EndUpdate
+giraffe.library/G_RectangleFill
+giraffe.library/G_GetLayerBitmap
+giraffe.library/G_GetLayerBounds
+giraffe.library/G_GetLayerFrame
+giraffe.library/G_GetLayerOrigin
+giraffe.library/G_GetLayerParent
+giraffe.library/G_GetLayerSize
+giraffe.library/G_JustifyText
+giraffe.library/G_LayerRelative
+giraffe.library/G_Line
+giraffe.library/G_LockLayer
+giraffe.library/G_LockLayers
+giraffe.library/G_MapLayer
+giraffe.library/G_MoveLayer
+giraffe.library/G_MoveSizeLayer
+giraffe.library/G_OpenFont
+giraffe.library/G_OpenLayer
+giraffe.library/G_OpenRootLayer
+giraffe.library/G_OwnLayer
+giraffe.library/G_Pixel
+giraffe.library/G_PullLayer
+giraffe.library/G_PushLayer
+giraffe.library/G_Polygon
+giraffe.library/G_Polyline
+giraffe.library/G_Rectangle
+giraffe.library/G_ShuffleLayer
+giraffe.library/G_SizeLayer
+giraffe.library/G_Text
+giraffe.library/G_TextLength
+giraffe.library/G_UnlockLayer
+giraffe.library/G_UnlockLayers
+giraffe.library/G_UnmapLayer
+giraffe.library/G_UseFont
+giraffe.library/G_UseLayer
+giraffe.library/G_Wedge
+giraffe.library/G_WhichLayer
+
+
+giraffe.library/G_Arc
+
+    NAME
+	G_Arc -- draws an elliptical arc.
+
+    SYNOPSIS
+	void G_Arc( a0:drawable, struct GC *a1:gc, LONG d0:x, LONG d1:y, ULONG d2:width, ULONG d3:height, LONG d4:ang1, LONG d5:ang2 );
+
+    FUNCTION
+	Draws an arc defined by an ellipse [(x/a)^2+(y/b)^2=1].  The
+	size of the ellipse (a,b) is given by width and height.  And the
+	origin is given by (x,y).  An incomplete arc can be produced
+	by giving the two angles.  The value of 360 degrees is 
+	given in the header file giraffe.h as G_2pi.  The
+	thickness of the arc can be controled using gc.LineWidth.
+
+    INPUTS
+	drawable     -- either a bitmap or a layer.
+	gc           -- user initialized graphics context.
+	x,y          -- center of the ellipse.
+	width,height -- size of the ellipse.
+	ang1,ang2    -- angle swept by arc.
+
+    RESULT
+
+    BUGS
+
+    SEE ALSO
+	G_Wedge()
+
+giraffe.library/G_BeginUpdate
+
+    NAME
+	G_BeginUpdate -- limits clipping to the damagelist.
+
+    SYNOPSIS
+	BOOL G_BeginUpdate( G_Layer a0:layer );
+
+    FUNCTION
+	Sets the layer visibility only to the internal damagelist
+	for more efficient refreshing of a layer.  The damagelist
+	is automatically cleared assuming that the layer is to
+	be properly refreshed.
+	  During this time, the layer is locked so that no other
+	processes may interfere with the refresh.  When done call
+	G_EndUpdate().
+	  Because the layers without full clipping do not have 
+	their own cliplist or damagelist for that matter, all 
+	refreshes should begin with a full layer and then nest
+	into their children.  If you begin refreshing just a 
+	non-clipped layer, G_BeginUpdate() will return false 
+	indicating that the cliplist has not been changed.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    RESULT
+	result -- returns TRUE if damagelist was not empty.  NULL
+	          means that the layer needs no refreshing.
+
+    SEE ALSO
+	G_EndUpdate()
+
+giraffe.library/G_CloseFont
+
+    NAME
+	G_CloseFont -- release a font resource.
+
+    SYNOPSIS
+	void G_CloseFont( Font a0:font );
+
+    FUNCTION
+	Decrements the internal user count of a font supplied by
+	a call to openfont().  When this value reaches zero, then
+	the font resources are destroyed.
+
+    INPUTS
+	font -- pointer returned by G_OpenFont()
+
+    NOTES
+	I can't guarantee that any of the font functions are
+	working at this moment.
+
+    SEE ALSO
+	G_OpenFont()
+
+giraffe.library/G_CloseLayer
+
+    NAME
+	G_CloseLayer -- shuts down a layer from use.
+
+    SYNOPSIS
+	void G_CloseLayer( G_Layer a0:layer );
+
+    FUNCTION
+	Closes all resources used by the layer for clipping.  This
+	ends the users access to the layer.  The pointer remains valid
+	until the internal
+	usecount reaches zero (by G_DropLayer()).  It will then be removed
+	from the layer tree.  During this time, its cliplist has
+	been destroyed so that it cannot be mapped again.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    SEE ALSO
+	G_OpenLayer(), G_DropLayer()
+
+giraffe.library/G_CycleLayer
+
+    NAME
+	G_CycleLayer -- change the depth of a layer.
+
+    SYNOPSIS
+	void G_CycleLayer( G_Layer a0:layer );
+
+    FUNCTION
+	Moves a layer within its sibling list.  If the layer is behind
+	another, it is pulled to the front.  If in the front, it is
+	pushed to the back.  Any layers affected by the move are
+	automatically updated.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    SEE ALSO
+	G_PushLayer(), G_PullLayer(), G_ShuffleLayer()
+
+giraffe.library/G_DisownLayer
+
+    NAME
+	G_DisownLayer -- relinquish control of layer to its parent.
+
+    SYNOPSIS
+	BOOL G_DisownLayer( G_Layer a0:layer );
+
+    FUNCTION
+	  This sets a flag within the layer so that when its parent
+	is closed, it will be also.  Because this is like an indirect
+	call to G_CloseLayer(), the pointer is no longer available
+	unless a call to G_UseLayer() has also been made.  This 
+	function is useful for making a whole tree of layers that
+	can be closed with one function call.
+	  This function should only be called by the task that called 
+	G_OpenLayer().  Because the function cannot tell the 
+	difference, it's up to you.
+
+    INPUTS
+	layer -- layer pointer returned by G_OpenLayer()
+ 
+    RESULT
+	returns TRUE if the call was a success.
+
+    BUGS
+
+    SEE ALSO
+	G_OwnLayer(), G_UseLayer, G_DropLayer
+
+giraffe.library/G_DropLayer
+
+    NAME
+	G_DropLayer -- decreases the internal usecount value.
+
+    SYNOPSIS
+	void G_DropLayer( G_Layer a0:layer );
+
+    FUNCTION
+	Releases the user's access to a layer pointer.  Used in
+	conjunction with
+	G_UseLayer() in order to maintain the validity of a layer
+	pointer even after it has been closed.  G_UseLayer() and
+	G_DropLayer() must be called equal times.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    SEE ALSO
+	G_UseLayer()
+
+giraffe.library/G_EndUpdate
+
+    NAME
+	G_EndUpdate -- returns clipping to layer visibility.
+
+    SYNOPSIS
+	void G_EndUpdate( G_Layer a0:layer );
+
+    FUNCTION
+	Used in conjunction with G_BeginUpdate() to refresh a newly
+	exposed layer.  When the refresh is complete, this returns
+	the layer to its normal clipping state.  It also unlocks
+	the layer so that rendering by other processes can resume.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    BUGS
+
+    SEE ALSO
+	G_BeginUpdate()
+
+giraffe.library/G_RectangleFill
+
+    NAME
+	G_RectangleFill -- draws an area filled rectangle.
+
+    SYNOPSIS
+	void G_FilledRectangle( a0:drawable, struct GC *a1:gc, SHORT d0:left, SHORT d1:top, USHORT d2:width, USHORT d3:height );
+
+    FUNCTION
+	Draws a filled rectangle into the drawable.  The corners can
+	be beveled using the .Round field of the graphics context.
+	This sets the radius of curvature.
+
+    INPUTS
+	drawable     -- pointer to a bitmap or layer.
+	gc           -- user initialized graphics context.
+	left,top     -- upper-left corner.
+	width,height -- dimensions of the rectangle.
+
+    RESULT
+
+    BUGS
+
+    SEE ALSO
+	G_Rectangle()
+
+giraffe.library/G_GetLayerBitmap
+
+    NAME
+	G_GetLayerBitmap -- get the layer's bitmap pointer.
+
+    SYNOPSIS
+	E_EBitMapPtr G_GetLayerBitmap( G_Layer a0:layer );
+
+    FUNCTION
+	Exactly what you think!  This function returns a pointer to 
+	the EGS bitmap for the layer tree.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    RESULT
+	bitmap -- an EGS bitmap.
+
+    NOTES
+	The bitmap is only EGS because I've used those libraries
+	as drivers.  If you'd like, you can rewrite the 
+	files driver.c/driver.h to use whatever driver you want.
+
+    BUGS
+
+    SEE ALSO
+
+giraffe.library/G_GetLayerBounds
+
+    NAME
+	G_GetLayerBounds -- returns a rectangle of layer bounds.
+
+    SYNOPSIS
+	BOOL G_GetLayerBounds( G_Layer a0:layer, struct Rectangle *a1:bounds, BOOL d0:global );
+
+    FUNCTION
+	Fills the rectangle with the bounds of the layer.  Returns the
+	coordinates relative to its parent by default.  If the gloabal
+	flag is set 'TRUE', the coordinates are relative to the
+	root layer's coordinates.
+
+    INPUTS
+	layer  -- a valid layer pointer.
+	bounds -- pointer to a rectangle structure to be filled.
+	global -- boolean that indicates world coordinates.
+
+    RESULT
+	result -- returns 'FALSE' if layer bounds undefined.
+
+    BUGS
+
+    SEE ALSO
+	G_GetLayerFrame()
+
+giraffe.library/G_GetLayerFrame
+
+    NAME
+	G_GetLayerFrame -- fills a frame structure with layer dimensions.
+
+    SYNOPSIS
+	BOOL G_GetLayerFrame( G_Layer a0:layer, struct frame *a1:frame, BOOL global );
+
+    FUNCTION
+	Fills a frame structure with the origin and size of a layer.
+	The global flag indicates that the coordinates are to be
+	relative to root layer.  If the layer has an undefined frame
+	because it is not mapped, then this function returns 'FALSE'.
+
+    INPUTS
+	layer  -- a valid layer pointer.
+	frame  -- pointer to a frame structure.
+	global -- 'TRUE' indicates coordinates relative to the root.
+
+    RESULT
+	result -- returns 'FALSE' if layer frame is undefined.
+
+    BUGS
+
+    SEE ALSO
+	G_GetLayerBounds()
+
+giraffe.library/G_GetLayerOrigin
+
+    NAME
+	G_GetLayerOrigin -- returns coordinate pair of layer origin.
+
+    SYNOPSIS
+	BOOL G_GetLayerOrigin( G_Layer a0:layer, union G_Point a1:*xy, BOOL d0:global );
+
+    FUNCTION
+	Returns upper-left coordinate of layer.  If the layer bounds
+	are not defined, the it returns (0,0) but you can't tell the
+	difference.  Passing global as 'TRUE' indicates to return
+	the coordinates relative to the root layer.
+
+    INPUTS
+	layer  -- a valid layer pointer.
+	xy     -- pointer to G_Point union to fill.
+	global -- flag indicates coordinates relative to root layer.
+
+    RESULT
+	returns FALSE if the coordinates of the layer have
+	not been validated by mapping.
+
+    BUGS
+
+    SEE ALSO
+
+giraffe.library/G_GetLayerParent
+
+    NAME
+	G_GetLayerParent -- returns pointer to layer parent.
+
+    SYNOPSIS
+	G_Layer G_Layer G_GetLayerParent( G_Layer a0:layer );
+
+    FUNCTION
+	Returns a pointer to the layer's parent.  This pointer is
+	'used' so it must be dropped when no longer needed.
+	If you don't know what I'm talking about then please don't
+	use this function.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    RESULT
+	parent -- temporary pointer to the layer's parent.
+
+    BUGS
+
+    SEE ALSO
+	G_UseLayer(), G_DropLayer().
+
+giraffe.library/G_GetLayerSize
+
+    NAME
+	G_GetLayerSize -- returns coordinate pair of width/height.
+
+    SYNOPSIS
+	ULONG G_GetLayerSize( G_Layer a0:layer );
+
+    FUNCTION
+	As it says, the function returns the size of the layer.  If the
+	layer size is not defined because of mapping, then it will
+	return the size as NULL, since a layer cannot be of zero
+	size.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    RESULT
+	size -- coordinate pair of width/height.
+	         (packed as two 16-bit values.)
+
+    BUGS
+
+    SEE ALSO
+
+giraffe.library/G_JustifyText
+
+    NAME
+	G_JustifyText -- get cursor position for text in bounds.
+
+    SYNOPSIS
+	ULONG G_JustifyText( G_Font a0:font, STRPTR a1:string, SHORT d0:length, USHORT d1:width, USHORT d2:height, ULONG d3:flags );
+
+    FUNCTION
+		FONT_JUSTIFY_HORZ_LEFT	
+		FONT_JUSTIFY_HORZ_RIGHT	
+		FONT_JUSTIFY_HORZ_CENTER
+		FONT_JUSTIFY_VERT_TOP
+		FONT_JUSTIFY_VERT_BOTTOM	
+		FONT_JUSTIFY_VERT_CENTER
+
+    INPUTS
+	font         -- font resource pointer.
+	string       -- text to be justified.
+	length       -- size of the string.
+	width,height -- size of box in which to justify.
+	flags        -- controls type of justification.
+
+    SEE ALSO
+	G_Text(), G_TextLength(), giraffe/primitives.h
+
+giraffe.library/G_LayerRelative
+
+    NAME
+	G_LayerRelative -- translates world coordinates to a layer.
+
+    SYNOPSIS
+	ULONG G_LayerRelative( G_Layer a0:layer, ULONG *d0:xy );
+
+    FUNCTION
+	Simply translates a cooridinate pair by the local origin of
+	the layer and returns them as a 32-bit value.  If the layer
+	has not been mapped, then coordinates are returned unchanged.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    RESULT
+	-- returns local coordinate with x in the upper 16 bits.
+	and y in the lower.
+
+    BUGS
+
+    SEE ALSO
+
+giraffe.library/G_Line
+
+    NAME
+	G_Line -- draws a line segment between two points.
+
+    SYNOPSIS
+	void G_Line( a0:drawable, struct GC *a1:gc, SHORT d0:x1, SHORT d1:y1, SHORT d2:x2, SHORT d3:y2 );
+
+    FUNCTION
+	Draws a line between (x1,y1) and (x2,y2) according to the state
+	of the graphics context. The width of the line is controlled
+	by the gc.linewidth field.
+
+    INPUTS
+	drawable -- either a bitmap or a layer.
+	gc       -- user initialized graphics context.
+	x1,y1    -- start of the line from upper left.
+	x2,y2    -- end of the line from upper left.
+	
+    SEE ALSO
+
+giraffe.library/G_LockLayer
+
+    NAME
+	G_LockLayer -- gain exclusive access to a layer.
+
+    SYNOPSIS
+	void G_LockLayer( G_Layer a0:layer );
+
+    FUNCTION
+	This obtains an internal semaphore on a layer for exclusive
+	control and also gets a shared lock on the layer tree so
+	that the hierarchy won't be changed.
+	  If the layer has already been locked using locklayers(),
+	this lock will be made global.  Note: this cannot be done
+	the other way around.  A call to locklayer() before 
+	locklayers() will result in a freeze.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    RESULT
+
+    BUGS
+	Translation of shared to exclusive lock has not been
+	implemented.
+
+    SEE ALSO
+
+giraffe.library/G_LockLayers
+
+    NAME
+	G_LockLayers -- get an exclusive lock on the layer tree.
+
+    SYNOPSIS
+	void G_LockLayers( G_Layer a0:layer );
+
+    FUNCTION
+	This gets an exclusive lock on all the layers in the tree.
+	This is used in the example window server when a window is
+	being resized and direct drawing into the bitmap is required.
+
+	NOTE: many layer functions make use of these locks and since
+	they cannot be used interchangeably, ie. a call to locklayer()
+	followed by a call to G_LockLayers() will freeze the system,
+	be very careful of their use.
+
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    NOTE
+	  All locks are given in first come first serve order.
+	So for example, if a layer is locked but shared, and
+	someone else is waiting for an exclusive lock of the
+	entire tree, then if a third process just wants a
+	shared lock, then it will be forced to wait.
+
+    BUGS
+
+    SEE ALSO
+
+giraffe.library/G_MapLayer
+
+    NAME
+	G_MapLayer -- turns on layer graphics
+
+    SYNOPSIS
+	BOOL G_MapLayer( G_Layer a0:layer );
+
+    FUNCTION
+	Makes a layer and all of its children visible and updates
+	the clipping of all affected layers.  Prior to calling maplayer()
+	all graphics calls will be completely clipped.  This allows
+	a window to be popped onto the screen when needed and
+	invisible when not.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    RESULT
+	BOOL -- returns TRUE if successful.
+
+    BUGS
+	probably.
+
+    SEE ALSO
+	G_UnmapLayer()
+
+giraffe.library/G_MoveLayer
+
+    NAME
+	G_MoveLayer -- move the upper-left corner of a layer.
+
+    SYNOPSIS
+	void G_MoveLayer( G_Layer a0:layer, SHORT d0:left, SHORT d1:top );
+
+    FUNCTION
+	Moves the upper-left corner of a layer relative to its parent's
+	origin.  Any layers affected by this move are automatically
+	updated.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    BUGS
+
+    SEE ALSO
+	G_MoveSizeLayer()
+
+giraffe.library/G_MoveSizeLayer
+	
+    NAME
+	G_MoveSizeLayer -- change both the position/size of a layer.
+
+    SYNOPSIS
+	void G_MoveSizeLayer( G_Layer a0:layer, SHORT d0:left, SHORT d1:top, USHORT d2:width, USHORT d3:height );
+
+    FUNCTION
+	Changes the frame of the layer to the values given.  The children
+	of the layer are automatically resized according to their
+	internal layout.
+	
+    INPUTS
+	layer        -- a valid layer pointer.
+	left,top     -- new upper-left corner.
+	width,height -- new dimensions.
+
+    RESULT
+
+    BUGS
+
+    SEE ALSO
+	G_MoveLayer(), G_SizeLayer()
+
+giraffe.library/G_OpenFont
+
+    NAME
+	G_OpenFont -- opens a font resource
+
+    SYNOPSIS
+	G_Font G_OpenFont( STRPTR a0:name, SHORT d0:pointsize );
+
+    FUNCTION
+	Opens a font through 'graphics.library' and then creates a
+	image of it for use with EGS and giraffe.library.
+
+    INPUTS
+	name      -- name of the font.
+	pointsize -- size of the font to be opened.
+
+    RESULT
+	G_Font -- font requested
+
+    NOTES
+	The font must be in memory since I do not use the diskfont
+	library.
+
+    SEE ALSO
+	G_CloseFont()
+
+giraffe.library/G_OpenLayer
+
+    NAME
+	G_OpenLayer -- creates a new layer according to taglist.
+
+    SYNOPSIS
+	G_Layer G_OpenLayer( G_Layer a0:parent, struct TagItem *a1:tags );
+
+    FUNCTION
+	Creates a new layer as a child of parent.  Attributes are set
+	by the taglist and its layout is determined automatically when
+	the layer is mapped.  For a description of all tags, please
+	see the giraffe.h header file.
+
+    INPUTS
+	parent -- previously opened layer.
+	tags   -- a standard tag list with items defined in layers.h
+
+    RESULT
+	G_Layer -- an unmapped layer.
+
+    SEE ALSO
+	giraffe.h, G_MapLayer(), G_CloseLayer()
+
+giraffe.library/G_OpenRootLayer
+
+    NAME
+	G_OpenRootLayer -- creates a clipping hierarchy for a bitmap.
+
+    SYNOPSIS
+	G_Layer G_OpenRootLayer( E_EBitMapPtr a0:bitmap, struct
+TagItem * a1:tags );
+
+    FUNCTION
+	Creates a parentless layer that acts as the root for all other
+	layers created afterwards.  It is sized to the bounds of the
+	bitmap and automatically mapped.  Root layers can use a
+	subset of layer tags which make sense for its use.
+	   Root layers are destroyed using G_CloseLayer().
+
+    INPUTS
+	bitmap -- valid EGS bitmap pointer.
+	tags   -- an array of layer tags appropriate for the root.
+
+    RESULT
+	root -- pointer to a garp layer.
+
+    SEE ALSO
+	G_OpenLayer(), G_CloseLayer()
+
+giraffe.library/G_OwnLayer
+
+    NAME
+	G_OwnLayer -- attempts to gain ownership of layer.
+
+    SYNOPSIS
+	G_Layer G_OwnLayer( G_Layer a0:layer );
+
+    FUNCTION
+	  This call is the opposite of G_DisownLayer().  This will
+	try to regain control of the layer.  If successful, you'll
+	become responsible for calling G_CloseLayer().  Note that
+	this can only happen if the layer had already been 
+	disowned.
+
+    INPUTS
+	layer -- valid pointer to a layer.
+
+    RESULT
+	returns pointer to the layer if successful. otherwise
+	the result is NULL.
+
+    BUGS
+
+    SEE ALSO
+	G_DisownLayer()
+
+giraffe.library/G_Pixel
+
+    NAME
+	G_Pixel -- changes a single pixel in a drawable.
+
+    SYNOPSIS
+	void G_Pixel( a0:drawable, struct GC *a1:gc, SHORT d0:x, SHORT d1:y );
+
+    FUNCTION
+	Changes the state of a single pixel within a bitmap according
+	to the graphics context.  Automatic clipping is provided for
+	bitmaps or a layer can be used.
+
+    INPUTS
+	drawable -- either a bitmap or a layer.
+	gc       -- user initialized graphics context.
+	x,y      -- position of pixel from upper left.
+
+    SEE ALSO
+
+giraffe.library/G_PullLayer
+	
+    NAME
+	G_PullLayer -- pull a layer to the top of its stack.
+
+    SYNOPSIS
+	void G_PullLayer( G_Layer a0:layer );
+
+    FUNCTION
+	Moves a layer to the top of its sibling's stack.  Any layers
+	affected by the move are automatically updated.  In 
+	normal cases this is used for depth arranging a layer but
+	in the case of grouped layers, this can be used for
+	changing their order of arrangement.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    SEE ALSO
+	G_PushLayer(), G_CycleLayer(), G_ShuffleLayer()
+
+giraffe.library/G_PushLayer
+
+    NAME
+	G_PushLayer -- push a layer to the back of its stack.
+
+    SYNOPSIS
+	void G_PushLayer( G_Layer a0:layer );
+
+    FUNCTION
+	Moves a layer behind all of its siblings and updates and layers
+	affected by the move.  Normally this function is used to
+	change the depth of layers, but in the case of group
+	arranged layers, this function has the bonus side effect
+	of changing the order of the group.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    SEE ALSO
+	G_PullLayer(), G_CycleLayer(), G_ShuffleLayer()
+
+giraffe.library/G_Polygon
+
+    NAME
+	G_Polygon -- draw a filled polygon from list of vertices
+
+    SYNOPSIS
+	void G_Polygon( a:drawable, struct GC *a1:gc, SHORT *a2:xy, USHORT d0:count );
+
+    FUNCTION
+	Fills a polygon defined by the vertices in the array xy[].
+	The filling is controlled by the state of the graphics
+	context.
+
+    INPUTS
+	drawable -- pointer to either bitmap or layer
+	gc       -- user initialized graphics context.
+	xy       -- an array of points.
+	count    -- total number of points.
+
+    RESULT
+	
+    BUGS
+
+    SEE ALSO
+	
+giraffe.library/G_PolyLine
+    NAME
+    SYNOPSIS
+    FUNCTION
+    INPUTS
+    RESULT
+    BUGS
+    SEE ALSO
+
+giraffe.library/G_Rectangle
+
+    NAME
+	G_Rectangle -- draw a rectangular frame.
+
+    SYNOPSIS
+	void G_Rectangle( a0:drawable, struct GC *a1:gc, SHORT d0:left, SHORT d1:top, USHORT d2:width, USHORT d3:height );
+
+    FUNCTION
+	Draws a rectangle outline with upper-left corner at (left,top)
+	and dimensions (width,height) according to the state
+	of the graphics context. The width of the outline is controlled
+	by the gc.LineWidth field.  The corners can be rounded using
+	the gc.Round field.
+	
+    INPUTS
+	drawable     -- pointer to a bitmap or layer.
+	gc           -- user initialized graphics context.
+	left,top     -- upper-left corner.
+	width,height -- dimensions of the rectangle.
+
+    RESULT
+
+    BUGS
+
+    SEE ALSO
+	G_FilledRectangle()
+
+
+giraffe.library/G_ShuffleLayer
+
+    NAME
+	G_ShuffleLayer -- puts a layer behind a given sibling.
+
+    SYNOPSIS
+	void G_ShuffleLayer( G_Layer a0:layer, G_Layer a1:target );
+
+    FUNCTION
+	Moves the layer directly behind the target layer.  The target
+	layer is checked to be within the layer's local stack.  If the
+	target is NULL, then the layer is pulled to the front.  Any 
+	layers affected by the change are automatically updated.
+
+    INPUTS
+	layer  -- a valid layer pointer.
+	target -- a valid layer pointer with 'layer's stack.
+
+    NOTES
+	This function has not yet been implemented.
+
+    SEE ALSO
+	G_PushLayer(), G_PullLayer(), G_CycleLayer()
+
+giraffe.library/G_SizeLayer
+
+    NAME
+	G_SizeLayer -- change dimensions of a layer.
+
+    SYNOPSIS
+	void sizelayer( G_Layer a0:layer, USHORT d0:width, USHORT d1:height );
+
+    FUNCTION
+	Changes the dimensions of a given layer.  All children of the
+	layer are resized according to their internal layout.  All
+	affected layers are automatically updated.  Note once
+	a layer has been sized it is considered of fixed size
+	for all layer arrangement.
+
+    INPUTS
+	layer        -- a valid layer pointer.
+	width,height -- the new dimensions.
+
+    RESULT
+
+    BUGS
+
+    SEE ALSO
+	G_MoveLayer(), G_MoveSizeLayer()
+
+giraffe.library/G_Text
+giraffe.library/G_TextLength
+
+giraffe.library/G_UnlockLayer
+
+    NAME
+	G_UnlockLayer -- release a lock obtained by locklayer().
+
+    SYNOPSIS
+	void G_UnlockLayer( G_Layer a0:layer );
+
+    FUNCTION
+	Used in conjunction with G_LockLayer() to freeze the
+	internal state of a layer.  These functions must be called
+	in pairs.
+
+    INPUTS
+	layer -- a valid layer pointer that has been locked.
+
+    RESULT
+
+    BUGS
+
+    SEE ALSO
+	G_LockLayer(), G_LockLayers(), G_UnlockLayers()
+
+giraffe.library/G_UnlockLayers
+
+    NAME
+	G_UnlockLayers -- release lock obtained by locklayers().
+
+    SYNOPSIS
+	void G_UnlockLayers( G_Layer a0:layer );
+
+    FUNCTION
+	Used in conjunctionwith locklayers() to get exclusive access
+	to a layer hierarchy.  This function must be called in pair
+	with locklayer().
+
+    INPUTS
+
+    RESULT
+
+    BUGS
+
+    SEE ALSO
+
+giraffe.library/G_UnmapLayer
+
+    NAME
+	G_UnmapLayer -- set complete clipping for layer.
+
+    SYNOPSIS
+	void G_UnmapLayer( G_Layer a0:layer );
+
+    FUNCTION
+	Clears the clipping regions for the layer so that all graphics
+	requests will be completely clipped.  All children of this
+	layer are unmapped also and any layers uncovered by this
+	operation are automatically updated.  note: both maplayer()
+	and unmaplayer() can be used any number of times and the
+	state will be defined by the last call.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    RESULT
+
+    BUGS
+
+    SEE ALSO
+	G_MapLayer()
+
+giraffe.library/G_UseFont
+
+    NAME
+	G_UseFont -- increments the font usecount.
+
+    SYNOPSIS
+	G_Font G_UseFont( Font a0:font );
+
+    FUNCTION
+	When a font is shared by many different owners the internal
+	usecount can be incremented so that each has it's own
+	hook into the font.  Then each may call closelayer() independently
+	when they are done.
+
+    INPUTS
+	G_Font -- font to be shared.
+
+    SEE ALSO
+	G_OpenFont(), G_CloseFont()
+
+giraffe.library/G_UseLayer
+
+    NAME
+	G_UseLayer -- increments the internal usecount value.
+
+    SYNOPSIS
+	G_Layer G_UseLayer( G_Layer a0:layer );
+
+    FUNCTION
+	Used in conjunction with G_DropLayer() this allows a task to
+	keep the layer pointer valid even if the layer has been
+	passed to G_CloseLayer() by some other task.  The layer is
+	not actually removed from the tree until the internal usecount
+	reaches zero.
+
+    INPUTS
+	layer -- a valid layer pointer.
+
+    RESULT
+	G_Layer -- the same pointer.
+
+    SEE ALSO
+	G_DropLayer()
+
+giraffe.library/G_Wedge
+
+    NAME
+	G_Wedge -- draws a pie wedge.
+
+    SYNOPSIS
+	void G_Wedge( a0:drawable, struct GC *a1:gc, SHORT d0:x, SHORT d1:y, USHORT d2:width, USHORT d3:height, SHORT d4:ang1, SHORT d5:ang2 );
+
+    FUNCTION
+	Draws a wedge from an area filled ellipse.  The ellipse is 
+	defined the same as in the arc() function.  The angles range
+   	from 0 to 255 for a complete arc.  So 64 = 90 degrees.
+
+    INPUTS
+	drawable     -- either a bitmap or a layer.
+	gc           -- user initialized graphics context.
+	x,y          -- center of ellipse.
+	width,height -- size of ellipse.
+	ang1,ang2    -- angle swept by wedge.
+
+    RESULT
+
+    BUGS
+
+    SEE ALSO
+	G_Arc()
+
+giraffe.library/G_WhichLayer
+
+    NAME
+	G_WhichLayer -- tells which layer is foremost at coordinates.
+
+    SYNOPSIS
+	G_Layer G_WhichLayer( G_Layer a0:start, ULONG *a1:xy );
+
+    FUNCTION
+	  Checks to see which layer is exposed at the coordinates
+	specified by xy.  The start layer can be anyone within the
+	the layer tree.  This layer need not be mapped, so long
+	as the pointer is valid by openlayer()/uselayer().  The
+	coordinates xy are translated to the local origin of the
+	returned layer.
+	
+	IMPORTANT!!!
+	  This function calls G_DropLayer() on the layer that you
+	pass and G_UseLayer() on the pointer that it returns for
+	your convenience.  Please see the examples to see how
+	this function is to be used.
+
+    INPUTS
+	start -- a valid layer pointer.
+	xy    -- pointer to a coordinate pair in root coordinates.
+
+    RESULT
+	G_Layer  -- pointer to exposed layer.
+	ALSO: xy -- coordinate pair is translated to local origin
+	            of the layer.
+    SEE ALSO
+	G_UseLayer(), G_DropLayer()
+
+
+
+

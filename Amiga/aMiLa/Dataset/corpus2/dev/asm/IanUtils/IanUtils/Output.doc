@@ -1,0 +1,47 @@
+Output:  Cheap docs
+
+There are instructions contained in the program.  Run the program, and
+double click the AppIcon.
+
+Output sets up an AppIcon under 2.0 that processes IFF files.  It is a crude
+and simple program.
+
+For example, to set it up to view pictures, play sounds, and view text files:
+
+Select the icon in workbench and choose Information...
+
+Add the tooltypes
+
+8SVX=C:Hear *
+ILBM=SYS:Utilities/See *
+TEXT=SYS:Utilities/Read *
+
+* is where the argument will be inserted.  Arguments can be passed, e.g.
+ILBM=SYS:Utilities/See * PAL
+will force See to show all pictures in PAL.
+
+TEXT is called when the file is not IFF (like ASCII).
+
+Yes this is crude.  But it allows you to add any IFF file type and choose
+your own viewer, editor, or any other program.  I dropped it in my WBStartup
+drawer.
+
+I wrote this program a long time ago for my own personal use.  Future versions
+
+It seems sort of like MultiView, doesn't it.  I always thought it was strange
+how I mailed this program to Commodore to see if they wanted to include a
+similar program with the OS, and I never heard from them.  They've answered
+every other letter I sent, except when I mailed them this program.  Hmmmmm.....
+
+Actually, this program works well with multiview.  I have TEXT set to MultiView
+so it will show text and AmigaGuide files I drop on it.  Try this.
+
+Ian J. Einman               ###
+P.O. Box 5711              <o o>
+Bellingham, WA 98227        |v|
+U.S.A.                      \=/
+
+(the address contained within the program is also valid)
+
+
+NO © NO © FREE FREE FREE EVERYONE ELSE STEALS IT SO CAN THEE

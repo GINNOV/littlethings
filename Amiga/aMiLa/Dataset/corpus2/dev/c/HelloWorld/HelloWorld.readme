@@ -1,0 +1,18 @@
+Short:        Multitasking tutorial.
+Author:       jeroen@infothuis.nl (Jeroen Knoester)
+Uploader:     jeroen infothuis nl (Jeroen Knoester)
+Type:         dev/c
+Requires:     Kickstart 2.0+, C compiler
+Architecture: m68k-amigaos
+
+Helloworld is a multitasking demo in C. It shows
+how to create tasks and processes on the amiga and
+how to communicate basic information between those 
+tasks.
+
+It's part of Power Programs Amiga Features. Check out
+the website on 
+
+http://www.infothuis.nl/jeroen/amigafeatures.html
+
+Enjoy!

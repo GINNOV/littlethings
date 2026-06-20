@@ -1,0 +1,96 @@
+
+        fast 3D mapper in 68k asm, used in Enforce
+
+                     by Filip Doksansky
+
+        ------------------------------------------
+
+
+The Enfroce engine has been developed by Filip Doksansky. The used 68k
+3D mapping code are still fastest what i seen in 68k game, so i ask him
+if is possible, when the Enforce for 68k are canceled, relase at least
+the very fast beta (but it have limitations and bugses, ofcourse ;) what
+i still holding and the sources, at least the critical ones.
+There are what i get from autor. Sources aren't be much commented, yes,
+but its logical and readable... Good coder understand it, at least
+Blueberry/Loonies and Psycho/Loonies (they did the MS2k winning demo
+CyberCynematastic) understand it without big problems. The clipping code
+its not fastest, but there are diference betwen non-interactive purpose
+(demo) and interactive one (game). ;)
+
+The sources contains some bugses, what's better described in reall
+results - in the Enforce_demo_02 archive.
+
+Instead of all others, the Enforce feature mimpapping, for example. This
+aren't be in asm, and the sources for selecting what texture will be used
+for certain polygons (yes, i mean polygons, mipmap level can't be diferent
+for one of two triangle polygon, creating a wall - it will look at least
+weird ;))).
+
+Hope anyone find the asm sources interesting and try learn from it.
+Well, there is not a mipmapping, but its not a big problem did that anyway.
+It fix the problem that on far textures are visible moire and mainly speed-up
+game much, since mapping smaller textures are faster - cpu not must read
+that much datas. So, look at the Enforce demo (0.2 recommended, altrought
+its far, far from perfection ;) or even at the Doom - how many small
+textures, far away, are drawn? Much, right? So, what can happens, if there
+are the BIG texture used only where need, and for distant mapping used
+a smaller, for example half from orginal, version?  ...and even for LOONG
+distances, use a 1/4 of orginal texture ;)
+
+Feedback to author is not possible. At start, the Enforce are targeted
+to be a Amiga & pC game, maybe even with Mac port. It should not be only
+classical shooter game, there are planed a lot's of RPG - like enhancements,
+possibility of not do things always at 100%, etc...
+During the developing (one enployed man hobby = not much fast progress...)
+its made decision that the game should be only for graphic card users,
+because the AA chips are too speed-limiting and also because autor don't
+want hear AA users with poor cpu's (like 040/25) complaining about poor
+speed. Also, direct writing (during texture perspective correction - FPU)
+into graphic memory its hardly possible to do on AA chips. Well, its
+possible, but its too much effort for a too little gain - graphic card
+its years a necesary thig, so that decision seems to be wise.
+AA chips also can't handle higger resolutions without brutal DMA slow-down.
+Not even talking about hicolor shadows... ;)
+That's happen after the 0.2 beta.
+About month or so after that, a PPC only idea was born. Its simple - the
+game will be now only for PowerPC Amiga. That is because low-res mapping
+its todays not any great deal and curent 68k implementations with
+SLOW memory and GFX buses - together with the lack of L2 cache - makes
+nearly impossible to get usable speed for hires (640x480) CPU textured
+3D game. Yes, the Warp3D hardware texturing IS a solution, but there are
+ATM only two 3D capable GFX cards. CyberVision3D and CVPPC/BV. The CV3D
+have only 4MB of videomem and that is too low. It can be overclocked to
+reach about 27fps while looking at wall in simple room (How to do? Read my
+article at: www.starnet.com.au/davem/amiga.html), but as the game goal
+are providing very reall 3D space, the ViRGE poor speed are killed easily
+by the overdraw, what is hard to avoid with 3D rendering...
+Therefore only CVPPC/BV left, and these cards are only on PPC machines,
+(well, CSMKIII is not PPC mahcine, but only very few users having it)
+so there aren't be a valid reason, why not use PPC instead of 68k.
+Altrought very fast 68k machines (CSPPCs...) with 68060 probably have
+enought power to manipulate with all the polygons, while CVPPC doing
+its job and texturing these, the PPC decision are made.
+From this time i'm ex-betatester of Enforce, because Phase5 don't
+be able to deliver my the PPC cpu card... =8^(
+The PPC can have enought power to do texture mapping by itself, so the
+game still holding an option for SW rendering. FiDo says that the render
+by PPC its amazingly fast and the rewritten 68k code its possible speed-up
+for PPC a lot, using the more PPC registers for storing precalced increments
+for mapping... The PPC-only idea its also perfect for planing Mac port of
+the game. pC port will also be easier, since most code can be then into
+C, not into asm, what is hardly "portable" language (but fast... ;) .
+During the porting Enforce to pC he find that his pC are very, very slow
+anyway ;)
+
+But because - as FiDo told my - the guys what should cooperate with it on
+the game doing things VERY slowly, and due problems with the bugfull AmigaOS
+extensions like RTG, he finaly give up and Enfroce never will be for us.
+
+The last what i know is that he will code a engine only for pC games,
+most likely for Activision, IIRC.
+
+That is nothing new, he code the Enforce with some great ideas, like
+own script languge to control whole engine and therefore he thing that
+really code only engine - leverlords and graphicians create rest ;)
+Now he do that, sadly for pCs...

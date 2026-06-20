@@ -1,0 +1,592 @@
+A.1  SCREENS
+
+Example1
+  This program will open a low-resolution, non-Interlaced,
+  eight colour Custom Screen. It will display it for 30
+  seconds, and then close it.
+
+Example2
+  Same as Example1 except that the screen will be a high-
+  resolution, Interlaced, 4 colour Custom Screen.
+
+Example3
+  Same as Example1 except that we will use the TOPAZ_SIXTY
+  Italic style as default font. (See chapter 3 GRAPHICS for
+  more information about text styles.)
+
+Example4
+  This program will open two screens, one (low-resolution 32
+  colours) at the top of the display, and one (high-resolution
+  16 colours) a bit down.
+
+Example5
+  Same as Example4 except that after 10 seconds the low-
+  resolution screen will move down 75 lines. After another 10
+  seconds it will be put in front of all other screens. 10
+  seconds later it will move down another 75 lines. The program
+  will wait 10 seconds before the screens are closed and the
+  program exits.
+
+Example6
+  This program will open a low-resolution, non-Interlaced, 4
+  colour Custom Screen. It will after 5 seconds start to change
+  the screens colours, and will after a while close the screen
+  and exit.
+
+
+
+A.2  WINDOWS
+
+Example1
+  This program will open a normal window which is connected to
+  the Workbench Screen. It will display it for 30 seconds, and
+  then close it.
+
+Example2
+  This program will open a high resolution 16 colour Custom
+  Screen and a normal window which is connected to it. It will
+  display it for 30 seconds, and then close the Custom Screen
+  and the window.
+
+Example3
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System Gadgets,
+  and will automatically Activate the window. It will display
+  it for 30 seconds, and then close it. (Remember that the
+  Close Gadget does NOT close the window by itself, it will
+  only inform you that the user wants to close it. But in
+  this example we will not listen to what the user wants.)
+
+Example4
+  This program will open two normal windows which are connected
+  to the Workbench Screen. The windows will use all System
+  Gadgets. It will display them for 30 seconds, and then close
+  them.
+
+Example5
+  This program will open a Borderless window which is connected
+  to the Workbench Screen. It will display it for 30 seconds,
+  and then quit.
+
+Example6
+  Same as Example5 except that the window will also use all
+  System Gadgets.
+
+Example7
+  This program will open three windows, two are normal and the
+  third is a Backdrop window. The windows will use all System
+  Gadgets, except the Backdrop window, which only can use the
+  close-window gadget. After 30 seconds the program quits. (Try
+  to push either window 1 or 2 behind the Backdrop window.)
+
+Example8
+  This program will open a SuperBitMap window which is
+  connected to the Workbench Screen. Since it is a SuperBitMap
+  we also make the window into a Gimmezerozero window. The
+  window will use all System Gadgets, and some boxes will be
+  drawn. It will display the window for 30 seconds, and then
+  close it. (Shrink the window, and then enlarge it again, and
+  you will noticed that the lines are still there!)
+
+Example9
+  This program will open a normal window with all system
+  gadgets connected to it. If you activate the window, the
+  pointer will change shapes into a "nice" arrow.
+
+Example10
+  This program will open a two normal windows with all system
+  gadgets connected to them. If the first window is Activated,
+  the pointer will change shapes into a Zzz symbol, if the
+  second window is activated, the pointer will look like a
+  pistol.
+
+
+
+A.3  GRAPHICS
+
+Example1
+  This program will open a normal window which is connected to
+  the Workbench Screen. We will then draw a strange line with
+  help of Intuition's Border structure.
+
+Example2
+  This program will open a normal window which is connected to
+  the Workbench Screen. We will then draw two rectangles with
+  different colours. This shows how you can link Border
+  structures to each other in order to get the desired effects.
+
+Example3
+  This program will open a normal window which is connected to
+  the Workbench Screen. We will then print a text string with
+  help of Intuition's IntuiText structure.
+
+Example4
+  Same as Example3 except that the text will be printed with
+  underlined italic characters.
+
+Example5
+  This program will open a normal window which is connected to
+  the Workbench Screen. We will then draw the little nice arrow
+  we talked so much about.
+
+Example6
+  Same as Example5 except that we will draw it several times in
+  different colours. This shows how PlanePick/PlaneOnOff works.
+
+Example7
+  This program will open a normal window which is connected to
+  the Workbench Screen. We will then draw the nice 4 colour
+  face that was described in chapter 3.5 IMAGES.
+
+Example8
+  This program will open a normal window which is connected to
+  a 16-colour Custom screen. In the window we will draw the
+  famous AMIGA-logo.
+
+
+
+A.4  GADGETS
+
+Example1
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System
+  Gadgets, and will close first when the user has selected the
+  System gadget Close window. (Same as Example3 in chapter 2
+  WINDOWS, except that we have added an IDCMP check on the
+  Close window gadget.)
+
+Example2
+  Same as Example1 except that we have added a Boolean gadget
+  with the text "PRESS ME".
+
+Example3
+  Same as Example2 except that the on/off state of the gadget
+  is toggled each time the user hits the gadget.
+
+Example4
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System
+  Gadgets, and will close first when the user has selected
+  the System gadget Close window. Inside the window we have put
+  two Boolean gadgets with the text "GADGET 1" and "GADGET 2".
+
+Example5
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System Gadgets,
+  and will close first when the user has selected the System
+  gadget Close window. Inside the window we have put a Boolean
+  gadget with two Image structures connected to it. Each time
+  the user clicks on the gadget it will change images, lamp
+  on/lamp off.
+
+Example6
+  This program will open a normal window which is connected
+  to the Workbench Screen. The window will use all System
+  Gadgets, and will close first when the user has selected the
+  System gadget Close window. Inside the window we have put a
+  Boolean gadget with a connecting mask. The gadget will only
+  be highlighted when the user selects this gadget while
+  pointing inside the specified (masked) area.
+
+Example7
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System
+  Gadgets, and will close first when the user has selected the
+  System gadget Close window. Inside the window we have put a
+  String gadget.
+
+Example8
+  Same as Example7 except that it is an Integer gadget.
+
+Example9
+  Same as Example7 except that it is a Proportional gadget.
+
+Example10
+  Same as Example9 except that the Proportional gadget uses a
+  custom image knob.
+
+Example11
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System
+  Gadgets, and will close first when the user has selected the
+  System gadget Close window. Inside the window we have put a
+  Proportional gadget where the knob can be moved both
+  horizontally and vertically.
+
+Example12
+  This program will open a SuperBitmap window which is
+  connected to the Workbench Screen. The window will use all
+  System Gadgets, and will close first when the user has
+  selected the System gadget Close window. Inside the window we
+  have put two Proportional gadgets, one on the right side, and
+  one at the bottom. With help of these two gadgets, the user
+  can move around the BitMap.
+
+  This example is for experienced programmers only, since it
+  uses some functions etc which we have not discussed yet. I
+  have, however, included it here since it is a good example on
+  how you can combine Proportional gadgets with SuperBitmap
+  windows.
+
+
+
+A.5  REQUESTERS
+
+Example1
+  This example opens a Simple requester by calling the function
+  AutoRequest. It displays a message "This is a very simple
+  requester!", and has only one gadget connected to it (on the
+  right side of the requester) with the text "OK".
+
+Example2
+  Same as Example1, except that the requester displays a
+  message "Do you really want to quit?", and allows the user to
+  choose between "Yes" and "No". The program  will continue to
+  reopen the requester until the user has chosen "Yes".
+
+Example3
+  Same as Example1, except that this requester displays a
+  message "Insert a disk in any drive!", and allows the user to
+  choose between "Yes" and "No". The program will continue to
+  reopen the requester until the user has chosen "Yes" or
+  inserted a disk.
+
+Example4
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System Gadgets,
+  and will close first when the user has selected the System
+  gadget Close window. Inside the window we have activated an
+  Application requester with a connecting gadget. The requester
+  will first be satisfied when the user has selected the
+  gadget, and will then be deactivated. The window can now be
+  closed.
+
+Example5
+  Same as Example4, except that the requester is first
+  activated when the user double-clicks on the right mouse
+  button. This example shows how to create a Double-menu
+  requester, and how to monitor the IDCMP flags REQSET and
+  REQCLEAR.
+
+Example6
+  Same as Example5, except that whenever the user double-
+  clicks on the right mouse button, we will receive a REQVERIFY
+  message, and first when we have replied, will the requester
+  be activated. This example shows how to use the REQVERIFY
+  flag.
+
+Example7
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System Gadgets,
+  and will close first when the user has selected the System
+  gadget Close window. Inside the window we have activated an
+  Application requester with three connecting gadgets. Two are
+  Boolean gadgets ("OK and "CANCEL"), and one is a String
+  gadget.
+
+Example8
+  Same as Example7, except that it is an Integer gadget.
+
+Example9
+  Same as Example8, except that it is a Proportional gadget.
+
+
+
+A.6  ALERTS
+
+Example1
+  This example displays an Alert message at the top of the
+  display.
+
+
+
+A.7  MENUS
+
+Example1
+  This program opens a normal window to which we connect a menu
+  strip. The menu consists of four items: Plain, Bold,
+  Underlined and Italic. The user can select either Plain or a
+  combination of the other styles. (If the user selects Plain
+  all other modes will be mutual excluded, but if the user on
+  the other hand selects Bold, Underlined or Italic, only the
+  Plain option will be mutual excluded.
+  
+  This example also shows how a program should handle the IDCMP
+  flags, and how to collect several messages from one single
+  menu event.
+
+Example2
+  This example is very similar to Example1, but we have this
+  time put the edit styles in a subitem box which is connected
+  to the one and only item box called "Style".
+
+Example3
+  This example is very similar to Example2, but the user can
+  this time also access the subitems from the keyboard. For
+  example, to select Bold the user only needs to press the
+  right Amiga key [A] together with the "B" key.
+
+Example4
+  This program opens a normal window to which we connect a menu
+  strip. The menu consists of two items: Readmode and Editmode.
+  The readmode item is selected and ghosted, and when the user
+  selects the editmode item, it will become disabled (ghosted)
+  while the readmode item will be enabled (not ghosted). This
+  means that if the program is in "readmode", the user should
+  only be able to chose the "editmode", and v.v. The purpose
+  with this program is to show how you can use the OnMenu and
+  OffMenu functions in order to make an "user-friendly
+  interface".
+
+Example5
+  Exactly as Example1 except that we have changed Intuition's
+  checkmark to our own customized "arrow".
+
+Example6
+  This program opens a normal window to which we connect a menu
+  strip. The menu consists of six small dices which are all
+  action items. This example shows how you can use Images
+  inside a menu.
+
+Example7
+  This program opens a normal window to which we connect a menu
+  strip. The menu consists of one small action item with two
+  images.
+
+Example8
+  Same as Example1 except that we this time will verify any
+  menu operations. If the user tries to activate this program's
+  menu we check if the position of the pointer is somewhere at
+  the top of the window (less than 10 lines down). In that case
+  the menu operation will continue as normal, otherwise we
+  cancel the menu operation.
+
+
+
+A.8  IDCMP
+
+Example1
+  This program explains how to use the IDCMP flag MOUSEBUTTONS.
+ 
+Example2
+  This program explains how to use the IDCMP flag MOUSEMOVE.
+
+Example3
+  This program explains how to use the IDCMP flags: NEWSIZE,
+  ACTIVEWINDOW and INACTIVEWINDOW.
+
+Example4
+  This program explains how to use the IDCMP flag SIZEVERIFY.
+
+Example5
+  This program explains how to use the IDCMP flag RAWKEY.
+
+Example6
+  This program explains how to use the IDCMP flag VANILLAKEY.
+
+Example7
+  This program explains how to use the IDCMP flags:
+  DISKINSERTED and DISKREMOVED.
+
+Example8
+  This program explains how to use the IDCMP flag INTUITICKS.
+
+Example9
+  This program explains how to use the IDCMP flag
+  REFRESHWINDOW, and how to optimize the redrawing of the
+  window.
+
+
+
+A.9  MISCELLANEOUS
+
+Example1
+  This example shows how to allocate, and deallocate memory.
+
+Example2
+  This example shows how to allocate and deallocate memory with
+  help of the functions AllocRemember(), and FreeRemember().
+
+Example3
+  This example shows how to get a copy of the preferences.
+
+Example4
+  This example shows how to handle double mouse button events.
+
+Example5
+  This example prints out the current time.
+
+
+
+A.10  SPRITES
+
+Example1
+  This program shows how to declare and initialize some sprite
+  data and a SimpleSprite structure. It also shows how to
+  reserve a sprite (sprite 2), and how to move it around. The
+  user moves the sprite by pressing the arrow keys.
+
+Example2
+  This program shows how to declare and initialize some sprite
+  data and a SimpleSprite structure. It also shows how to
+  reserve a sprite (sprite 2), and how to move it around. The
+  user moves the sprite by pressing the arrow keys. In this
+  example we animate the sprite (6 frames, taken from
+  the arcade game Miniblast).
+
+Example3
+  This program shows how to set up a 15 coloured sprite, and
+  how to move it around.
+
+
+
+A.11  AMIGADOS
+
+Example1
+  This program collects ten integer values from the user, and
+  saves them in a file ("HighScore.dat") on the RAM disk. The
+  memory is then cleared, and the file cursor is moved to the
+  beginning of the file. The file is then loaded into the
+  memory again, and printed out.
+
+Example2
+  This example demonstrates how to create a directory called
+  "MyDirectory" on the RAM disk.
+
+Example3
+  This example demonstrates how to rename files and directories.
+  It will rename the file Example 1 created (called
+  "HighScore.dat") to "Numbers.dat". It will also rename the
+  directory Example 2 created ("MyDirectory") to "NewDirectory".
+
+Example4
+  This example demonstrates how to delete files and directories.
+  It will delete the file Example 1 and directory Example 2
+  created. (The file and directory are supposed to have been
+  renamed by Example 3.)
+
+Example5
+  This example demonstrates how to attach a short comment to a
+  file. A short file called "Letter.doc" will be created, and a
+  short comment will be attached. To see the comment use the
+  CLI command "List".
+
+Example6
+  This example demonstrates how to protect and unprotect files.
+  The file Example 5 created ("Letter.doc") will be protected,
+  and we will then try to delete it (unsuccessfully). We will
+  then unprotect the file and then try to delete it
+  (successfully).
+
+Example7
+  This program takes a file/directory/device name as
+  parameter, and prints out some interesting information about
+  it.
+
+Example8
+  This program takes a directory/device name as parameter,
+  and prints out all the file/directory-names inside it. This
+  example describes how to use Examine() and ExNext().
+
+
+
+A.12  LOW LEVEL GRAPHICS ROUTINES
+
+Example1
+  This example shows how to create your own display, and fill
+  it with a lot of pixels in seven different colours.
+
+Example2
+  This example shows how to create a large Raster and a smaller
+  display. We fill the Raster with a lot of pixels in seven
+  different colours and by altering the RxOffset and RyOffset
+  values in the RasInfo structure, the Raster is scrolled in
+  all directions. This method to scroll a large drawing in full
+  speed is used in many games and was even used in my own
+  racing game "Car".
+
+Example3
+  This example shows how to create a display that covers the
+  entire display. This method is called "Overscan", and is
+  primarily used in video and graphics programs, but can also
+  be used in games etc to make the display more interesting.
+
+Example4
+  This example demonstrates how to open two different ViewPorts
+  on the same display. The first ViewPort is in low resolution
+  and use 32 colours, while the second ViewPort is in high
+  resolution and only use 2 colours.
+
+Example5
+  This example demonstrates how to open a ViewPort in interlace
+  mode.
+
+Example6
+  This example demonstrates how to create a ViewPort in dual
+  playfield mode. Playfield 1 use four colours and is placed
+  behind playfield 2 which only use two colours (transparent
+  and grey). Playfield 1 is filled with a lot of dots and is
+  scrolled around while playfield 2 is is not moved and is
+  filled with only five grey rectangles.
+
+Example7
+  This example demonstrates how to create a ViewPort with the
+  special display mode "Hold and Modify".
+
+Example8
+  This example shows how to use the functions: SetAPen(),
+  SetBPen(), SetOPen(), SetDrMd(), SetDrPt(), WritePixel(),
+  ReadPixel(), Move(), Draw(), Text() and finally PolyDraw().
+
+Example9
+  This example shows how to flood fill a figure, and how to
+  draw filled rectangles (both solid as well as filled with
+  single and multi coloured patterns).
+
+Example10
+  This example demonstrate how to use the Area Fill functions.
+  [ AreaMove(), AreaDraw() and AreaEnd(). ]
+
+Example11
+  This example demonstrate how to copy rectangular memory areas
+  with help of the blitter. 
+
+
+
+A.13  VSPRITES
+
+Example1
+  This example demonstrates how to get and use a VSprite.
+  The VSprite can be moved around by the user by pressing
+  the arrow keys.
+
+Example2
+  This example demonstrates how to use several VSprites each
+  with its own colour table.
+
+Example3
+  This program demonstrates how to animate several (!) VSprites.
+
+
+
+A.14  HINTS AND TIPS
+
+Example1
+  This example tell you if you have an American (NTSC) or
+  European (PAL) system.
+
+Example2
+  This program will print "Hello!" in the CLI window if
+  started from CLI, or the text will be printed in a special
+  window that is automatically opened if run from workbench.
+
+Example3
+  This program will not open any console window if run from
+  workbench. The disadvantage is of course that you can not
+  use any "console functions" such as printf().
+
+Example4
+  This program tells you if it was run from workbench or
+  from a CLI window.
+
+

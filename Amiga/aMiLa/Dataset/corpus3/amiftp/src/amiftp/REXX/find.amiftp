@@ -1,0 +1,239 @@
+/* Find.AmiFTP for finding and downloading files from Aminet via TCP:
+ * Based on Browse.DaFTP by Osma Ahvenlampi and aminetfind.gvrexx by Josef Faulkner
+ *
+ * $VER: Find.AmiFTP 1.15 (11.3.96) by Sami Itkonen
+ * Usage:  find.AmiFTP [-e] ["substring"|"sub strings"] [-m<maxhits>] [-s<sitename>] [-p<portname]
+ *	[-f<findsite number>] [-w<width>] [-c<0|1>]
+ * Any of the arguments can be entered on the reqtools requester.
+ *
+ * Version history:
+ *
+ * 1.9 - Findsite didn't propagate from one script to another, fixed that bug
+ * 1.10 - All requesters/guide files now use the supplied public screen
+ * 1.11 - Changed the 'exact' keyword to the '-e' option
+ * 1.12 - Options can now be freely mixed in the command line.
+ *      - haegar2 (findsite) doesn't show age field, files found from there are now shown correctly 
+ * 1.13 - Added the viewmethod configuration option
+ * 1.14 - Added the view method 'builtin'
+ * 1.15 - Fixed the bug with the filtercrap
+	- You can now specify whether you want the crapfilter on or off with the -c option
+ */
+
+/* START OF CONFIGURATION VARIABLES */
+
+dldir = "ram:" 			/* Your default downloading directory */
+AmiFTP_bin = "amiftp" 	/* Full path to the AmiFTP binary */
+sitename = "ftp.uni-paderborn.de"	/* The default Aminet site you are using */
+pubscreen = "Workbench"			/* AmiFTP's public screen */
+
+viewmethod = "none"   /* This variable defines the method to view files. If set to "builtin", it 
+				uses AmiFTP's builtin VIEW command. If set to "processfile", it will use 
+				'rexx:processfile.rexx'. Set it to anything else to disable file viewing. */
+filtercrap = 0		     /* If this is set to 1, all crap will be filtered out, based on the
+				filterpat variable, which contains a standard AmigaDOS pattern */
+
+filterpat = "(comm/(#?bbs|ambos|fido|amiex|dlg|cnet|ums|uucp)|demo/#?)"
+
+width=100 		/* The default display width */
+maxhits=30 		/* The default number of maximum hits */
+fsitenum=1 		/* Your default Aminet findsite number (Select one of those below) */
+
+/* END OF CONFIGURATION VARIABLES - DO NOT CHANGE ANYTHING BELOW */
+
+
+findsite.1 = "ftp.wustl.edu"
+findsite.2 = "amiga.icu.net.ch"
+findsite.3 = "haegar2.uni-paderborn.de"
+
+portname = "FINDAMINET"
+amiftp_args = "PUBSCREEN " pubscreen
+found=0
+exact=0
+name = ''
+
+if right(dldir,1) ~= ':' & right(dldir,1) ~= '/' then dldir = dldir||'/'
+
+call LoadLibraries
+
+parse arg cmds
+
+call ParseCmds cmds
+
+if name = "" then do
+	cmds = rtgetstring(,"Please enter search keyword","Find which file?",,"rt_pubscrname="pubscreen )
+	if cmds = "" then exit
+	call ParseCmds cmds
+	if name = "" then exit
+end
+
+/*say name
+say maxhits width findsite.fsitenum portname sitename exact */
+
+address value portname
+
+if ~showlist(H,'TCP') then address command 'mount TCP: from amitcp:devs/inet-mountlist'
+if ~showlist(H,'TCP') then address command 'mount TCP:'
+if showlist(H,'TCP') then do
+	name=strip(name)
+
+	newfile = 'T:findfile' || pragma('ID') || '.guide'
+	if ~open( fnewfile, newfile, 'W' ) then exit 
+
+        call writeln( fnewfile, '@database Findfile' )
+	call writeln( fnewfile, '@node Main "Searching for '''name''' from 'findsite.fsitenum' - using site' sitename'"' )
+	call writeln( fnewfile, '@{" Search for a new file " rx "Find.AmiFTP -s'sitename' -p'portname' -f'fsitenum'"}')
+	call writeln( fnewfile, '' )
+
+	if open(1,'tcp:'||findsite.fsitenum||'/1848',w) then do
+		call writeln(1,'max 'maxhits)
+		call writeln(1,'width 'width)
+		if exact then call writeln(1,'find "'name'"')
+		else
+			call writeln(1,'find 'name)
+		call writeln(1,'quit')
+		do until eof(1)
+			text=readln(1)
+/* 			say text */
+			select
+				when left(text,6)='*** No' then call writeln( fnewfile, 'No matches found.')
+				when left(text,6)='*** Ad' then do
+					call writeln( fnewfile, '')
+					call writeln( fnewfile, 'Additional Matches Found.')
+					call writeln( fnewfile, '')
+				end
+				when text = '' then foo = 1
+				when text = 'Unknown command (? for help).' then foo = 1
+				otherwise
+					call WriteLine text
+			end
+		end
+		call writeln( fnewfile, '@endnode' )
+		call close( fnewfile )
+		if found then call InitAmiFTP
+		call shownode(pubscreen,newfile,'Main',0,0)
+		call delete( newfile )
+	end
+	else call rtezrequest( "Error opening TCP:","Ok","Find requester","rt_pubscrname="pubscreen )
+end
+else call rtezrequest( "You need AmiTCP installed in the proper directories, or mount TCP:","Ok","Find requester","rt_pubscrname="pubscreen )
+
+exit
+
+LoadLibraries:
+	if ~show(l, 'rexxsupport.library') then
+		if ~addlib('rexxsupport.library', 0, -30, 0) then exit 50
+
+	if ~show(l, 'rexxdossupport.library') then
+		if ~addlib('rexxdossupport.library', 0, -30, 0) then exit 50
+
+	if ~show(l, 'rexxreqtools.library') then
+		if ~addlib('rexxreqtools.library', 0, -30, 0) then exit 50
+
+	if ~show(l, 'amigaguide.library') then
+		if ~addlib('amigaguide.library', 0, -30, 0) then exit 50
+
+return
+
+/* This procedure is modified from the one in Browse.DaFTP */
+InitAmiFTP: procedure expose portname amiftp_args sitename AmiFTP_bin
+	if ~exists(AmiFTP_bin) then AmiFTP_bin = "AmiFTP"
+        if ~show( 'P', portname ) then do
+    		address command 'Run >NIL:' AmiFTP_bin '>NIL:' amiftp_args 'PORTNAME' portname
+        	address command 'WaitForPort' portname
+        	if RC ~= 0 then do
+     			call rtezrequest("Could not start AmiFTP",,"Find requester","rt_pubscrname="pubscreen )
+        		exit 20
+		end
+	end
+	'DEACTIVATE'
+	'GETATTR STEM STAT'
+	if STAT.CONNECTED ~= 1 then 
+		call ConnectSite
+	else if STAT.HOST ~= sitename then do
+		'DISCONNECT'
+		call ConnectSite
+	end	
+return
+
+ConnectSite: procedure expose sitename
+	'SETATTR HOST' sitename 'PORT 21' 	
+	'CONNECT NOSCAN'
+	'SETATTR REMOTEDIR /pub/aminet'
+return
+
+WriteLine: 
+	parse var text file.name file.dir file.size file.age file.desc
+	astpos = pos('*', file.age)
+	if fsitenum = 3 then do
+		file.desc = ' ' || file.age file.desc 
+		file.age = ''
+	end
+	else if astpos ~= 0 then do 
+		file.desc = ' ' || substr(file.age, astpos + 1) || file.desc
+		file.age = left(file.age, astpos - 1)
+	end
+	dot = lastpos(".", file.name)
+	if ~found then do
+		found = 1
+		call writeln( fnewfile, " FILE                   DIR        SIZE AGE  DESCRIPTION" )
+	end
+	if ~filtercrap | ~MatchPattern(filterpat, file.dir, "NoCase") then do
+		if (dot > 0) then
+			file.readme = left(file.name, dot) || 'readme'
+		else
+  			file.readme = file.name'.readme'
+		file.desc = translate(file.desc,'''','"')
+		if file.name ~= "" then do
+		select
+		when viewmethod = 'processfile' then
+/*name*/        	lin = '@{"' left(file.name, 20, ' ') '" rxs "address '''portname''';''
+GET BIN /pub/aminet/'file.dir'/'file.name' LOCAL 'dldir||file.name''';
+address command ''rexx:processfile.rexx 'dldir||file.name'''"}'
+		when viewmethod = 'builtin' then
+/*name*/        	lin = '@{"' left(file.name, 20, ' ') '" rxs "address '''portname''';''
+VIEW BIN /pub/aminet/'file.dir'/'file.name'''"}'
+		otherwise
+/*name*/        	lin = '@{"' left(file.name, 20, ' ') '" rxs "address '''portname''';''
+GET BIN /pub/aminet/'file.dir'/'file.name' LOCAL 'dldir||file.name'''"}'
+		end
+/*dir*/        		lin = lin left(file.dir, 10, ' ')
+/*size*/        	lin = lin right(file.size,4, ' ')
+/*age */        	lin = lin right(file.age,3, ' ')
+/*desc*/        	lin = lin '@{"'file.desc '" rxs "address '''portname''';''
+GET BIN /pub/aminet/'file.dir'/'file.readme' LOCAL t:'file.readme''';
+call shownode('''pubscreen''',''t:'file.readme''',''Readme'',0,0)"}'
+
+		call writeln( fnewfile, lin )
+		end
+	end
+
+return
+
+ParseCmds:
+	parse var cmds
+/*	say cmds */
+	do while word(cmds,words(cmds)) ~= ''
+		lw=word(cmds,words(cmds))
+		if left(word(cmds,words(cmds)),1)='-' then do
+			lc=upper(left(lw,2))
+			num=right(lw,length(lw)-2)
+/*			say num */
+			if lc='-M' then maxhits=num 
+			if lc='-S' then sitename=num 
+			if lc='-P' then portname=num 
+			if lc='-W' then width=num 
+			if lc='-E' then exact=1
+			if lc='-C' & (num = 0 | num = 1) then filtercrap = num
+			if lc='-F' & (num>0 & num<4) then fsitenum = num
+		end
+		else 
+			name = lw name
+		cmds=reverse(cmds)
+		parse var cmds .' 'cmds
+		cmds=reverse(cmds)
+	end
+	if index(name,'"')>0 then do
+		parse var name '"'name'"'
+	end
+return
+

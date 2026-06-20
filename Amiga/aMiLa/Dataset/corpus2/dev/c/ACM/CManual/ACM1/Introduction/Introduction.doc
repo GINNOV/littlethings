@@ -1,0 +1,1122 @@
+0    INTRODUCTION
+
+0.1  INTRODUCTION
+
+In this chapter we will look at how C compilers work, how to
+use the Lattice C compiler, repeat some important things in C,
+and finish of by explaining how two use the Amigas's Libraries,
+and discuss the three different types of memory. As you have
+noticed, this chapter will give you a short introduction to C,
+compilers and the Amiga.
+
+
+
+0.2  HOW TO COMPILE AND LINK
+
+The idea with C compilers is that you write a document
+(usually referred as "source code"), which is read by the
+C compiler in two stages. The first time the C compiler will
+create a working file, referred as "quad file". The quad file
+is then compiled a second time into an "object file".
+
+The object file contains mostly executable machine code, but it
+also contains references to external functions/variables in
+other object files and libraries. So before we can run the
+program we need to tie all object files and libraries together
+into one single program. It is done by the linker.
+
+
+-------------
+| Program.c |   Source Code
+-------------
+      |
+      |         1. First phase of compilation (lc1) 
+      V
+-------------
+| Program.q |   Quad file
+-------------
+      |
+      |         2. Second phase of compilation (lc2)
+      V
+-------------
+| Program.o |   Object file
+-------------
+      |
+      |         3. Linking (blink)
+      V
+-------------
+|  Program  |   Executable program
+-------------
+
+
+
+0.2.1  SOURCE CODE
+
+When you are going to write C programs you need an editor/
+wordprocessor to create the "source code". The source code is
+like a normal document except that it is written following some
+special rules. Almost any kind of editor/wordprocessor can be
+used. You can even use the MEMACS which you got when you bought
+your Amiga. (MEMACS exist on "The Extras Disk".)
+
+Here is an example of a source code:
+
+#include <stdio.h>
+
+main()
+{
+  printf("Hello!\n");
+}
+
+Once you have written the source code you need to save it. It
+is standard that the file names should end with the extension
+".c". So if you want to call your program "hello", the source
+code should be named "hello.c".
+
+
+
+0.2.2  FIRST PHASE OF COMPILATION
+
+Once the source code is saved you can start the first phase of
+compilation. If you use the Lattice C Compiler you simply use
+the command "lc1". To compile our example you only need to
+write "lc1 hello.c", and the compiler will then create a quad
+file named "hello.q".
+
+
+
+0.2.3  SECOND PHASE OF COMPILATION
+
+To start the second phase of compilation you use the command
+"lc2". To compile our example you then only need to write
+"lc2 hello.q", and the compiler will then create an object file
+named "hello.o".
+
+If you want to invoke both the first and second compiler pass
+in one single call you can use the command "lc". So if you
+write "lc hello.c" both the first and the second phase of
+compilation would be executed. (lc calls both lc1 and lc2
+automatically.)
+
+
+
+0.2.4  LINKING
+
+The quad file does not, as said before, contain only machine
+code instructions. It also contains calls to external functions
+in other object files and libraries. Before you may run the
+program you therefore need to tie everything together by a
+linker. Lattice C uses a linker called "blink".
+
+Every program you create must normally be linked together with
+the startup routine "c.o", and the two libraries: "lc.lib" and
+"amiga.lib".
+
+The object file and the two libraries are placed in the "lib"
+directory on the second Lattice C disk. That directory is
+normally already assigned the name "LIB:", so if you want to
+find the files, you simply write "LIB:c.o" for example.
+
+For almost all programs you call the linker like this:
+(This shows how to link our example "hello".)
+
+blink LIB:c.o, hello.o  TO hello  LIB LIB:lc.lib, LIB:amiga.lib
+        [A]      [B]       [C]    [D]     [E]          [F]
+
+
+[A] The object file "c.o" must always be placed before all
+    other object files. The file can be found in the logical
+    device "LIB:".
+
+[B] After the startup file "c.o" you may place all other
+    object files you want to link together. (Remember to put
+    a comma between them.) In this example we only have one
+    object file, "hello.o".
+
+[C] After the list of object files you write the word "TO" plus
+    a name which will be the name of the executable program. In
+    this example we want our program to be called "hello".
+
+[D] Almost all programs need to be linked together with some
+    libraries. The keyword "LIB" tells blink that the coming
+    file-names are names on libraries. (Remember to put a comma
+    between each library name.)
+    
+    Do not mix up the keyword "LIB" with the logical device
+    "LIB:". "LIB" tells the linker that a list of library-names
+    will come, while the logical device "LIB:" tells AmigaDOS
+    which device and directory to find some files in.
+
+[E] The library "lc.lib" must be the second last library in the
+    list. The library can be found in the logical device
+    "LIB:".)
+
+[F] The library "amiga.lib" must be the last library in the
+    list. The library can be found in the logical device
+    "LIB:".)
+
+
+If you want to invoke both the first and second compiler pass,
+plus link the object file together with the standard libraries,
+in one single call you can use the command "lc" with the added
+parameter "-L". So if you want to compile and link the program
+in one single command you only need to write:
+
+lc -L hello.c
+
+The command "lc" will invoke both the first and the second
+compiler pass, and the added parameter "-L" means that the
+finished object code should be linked together with the
+standard libraries.
+
+If you also want the linker to search the standard math library
+you simply put the letter "m" after the "-L":
+
+lc -Lm <file-name.c>
+
+Our simple example "hello" does not need the math library, but
+if you use any sort of calculations you normally need to
+include it. ALL examples in this manual will compile and link
+happily with the command:
+
+lc -Lm ExampleX.c
+
+
+
+0.3  C PROGRAMS
+
+This manual is written for everyone who has a little knowledge
+of C and who wants to program the Amiga. If you know how to
+write a program that prints out "hello!" on the screen, and
+are not totally confused by pointers and structures, I do not
+think you will have any problems reading this manual. All
+examples have been written as clearly as possible, and I have
+avoided many shortcuts in order to make the examples easily
+understandable.
+
+However, before we start with the real manual I think it is
+best to repeat some important features in C:
+
+
+
+0.3.1  #INCLUDE
+
+The first thing you find in a C program is the "#include"
+commands. They tell the compiler to read some files before
+compiling the code, and can therefore contain definitions of
+constants/structures/macros etc. The files are normally
+referred as "header files", and have because of that a ".h"
+extension.
+
+There exist two types of header files; your own and standard
+system definitions. If you include your own header files you
+put a double-quotation around the file name:
+
+#include "mydefinitions.h"
+
+The compiler will then look in the "current directory" for your
+file. If you on the other hand include any standard system
+definitions you put two angle-brackets around the file name:
+(The compiler will then look in the logical device "INCLUDE:")
+
+#include <intuition/intuition.h>
+
+
+Note that there is not semicolons after the #include
+statements! That is because the #include files are scanned
+by a macro pre-processor (included in the first compiler phase,
+lc1), and have actually nothing to do with the C compiler.
+
+
+Later in the manual we will often include the file intuition.h
+which contains definitions of many structures (such as Window,
+Border, Gadget etc) plus some important constants and macros.
+This and all other standard system header files are compressed
+and put on the second Lattice C disk. If you are interested to
+see what they actually define you can find the uncompressed
+files on the fourth Lattice C disk.
+
+
+
+0.3.2  #DEFINE
+
+After the #include statements the #define statements will come.
+With help of the #define command you can both declare constants
+and replacement strings, but you can even declare your own
+macros.
+
+The important thing to remember is that the first defined
+string is replaced with the second string by the macro pre-
+processor: (The first space will separate the first string from
+the second string. Note the underline character between MAX and
+WIDTH, and the quotations between Anders Bjerin.)
+
+#define MAX_WIDTH 150
+#define AUTHOR    "Anders Bjerin"
+
+The macro pre-processor will replace all MAX_WITH strings with
+150, and all AUTHOR strings with "Anders Bjerin".
+
+
+If there are any parentheses in the first string then you are
+declaring macros:
+
+#define SQUARE(x) x*x
+
+The first string is replaced with the second one as normal,
+but every element (separated by commas if more than one) inside
+the parentheses also moved into the formula. A line like this:
+
+nr = SQUARE(4);
+
+Will be replaced like this:
+
+nr = 4*4;
+
+
+It is however important to remember that the pre-processor
+consider everything to be strings, and a line like this:
+
+nr = SQUARE(4+1);
+
+Will be replaced like this:
+
+nr = 4+1*4+1
+
+Square of 4+1 is 25 (5*5), but nr is equal to 9. This shows
+that you have to be very careful when you define your macros.
+To solve this problem you only need to add some parentheses
+around the x:s:
+
+#define SQUARE(x) (x)*(x)
+
+nr = SQUARE(4+1);
+
+Will then be replaced like this:
+
+nr = (4+1)*(4+1);
+
+
+However, the macro is still not perfectly defined. Consider
+this statement:
+
+nr = 16 / SQUARE(2);
+
+Will then be replaced like this:
+
+nr = 16 / (2)*(2);
+
+16 divided by square of 2 is 16/4, which is equal to 4, but
+nr is equal to 16 (16/2 * 2). The solution to all this problems
+is to put parentheses around every element, PLUS parentheses
+around the whole expression:
+
+#define SQUARE(x) ((x)*(x))
+
+nr = 16 / SQUARE(2);
+
+Will then be replaced like this:
+
+nr = 16 / ((2)*(2)); /* OK */
+
+
+What you need to remember about macros is that:
+1. Put parentheses around every element.
+2. Put also parentheses around the whole expression.
+
+
+Here is a list of some commonly used macros:
+
+#define MAX(x,y)       ((x)>(y)?(x):(y))
+#define ABS(x)         ((x)<0?-(x):(x))
+#define ANSWER(c)      ((c)=='y'||(c)=='Y'?1:0)
+
+Remember, if you have written some good constants/macros you
+can put them all in a header file and #include it every time you
+need them.
+
+
+
+0.3.3  OTHER PRE-PROCESSOR COMMANDS
+
+#include and #define are the two most commonly used
+pre-processor commands, but there exist five more which can be
+used together with the #define command:
+
+1. You can check if something has been defined, and then define
+   something else. (#ifdef)
+
+2. You can check if something has not been defined, and then
+   define something else. (#ifndef)
+
+3. You can put an "else" statement which is connected to an
+   #ifdef/ifndef. (#else)
+
+4. You can put an end mark which is connected to an #ifdef/
+   #ifndef. (#endif)
+
+5. You can undefine the something that has already been defined.
+   (#undef)
+
+
+Here some examples which shows how you can use the pre-processor
+commands:
+
+#define BIG 1
+
+#ifdef BIG
+  #define HEIGHT 100  /* If BIG is defined, HEIGHT and WIDTH */
+  #define WIDTH  300  /* is defined to 100 and 300.          */
+#else
+  #define HEIGHT  50  /* If BIG is undefined, HEIGHT and     */
+  #define WIDTH   25  /* WIDTH is defined to 50 and 25.      */
+#endif
+
+
+These commands are very handy when you #include several files,
+and you want to check if something has been defined. If it is
+not defined you can include some other files and so on...
+
+#ifndef MY_DEFINITIONS      /* If MY_DEFINITIONS is undefined */
+  #include "mydefinitions"  /* we include "mydefinitions".    */
+#endif
+
+
+The last pre-processor command, #undef, undefines the last
+definition:
+
+#define HEIGHT 200  /* HEIGHT is defined as 200.            */
+#define HEIGHT 350  /* HEIGHT is redefined as 350.          */
+#undef HEIGHT       /* HEIGHT last definition is undefined, */
+                    /* and is redefined as previous to 200. */
+#undef HEIGHT       /* HEIGHT is now undefined.             */
+
+
+
+0.3.4  FUNCTIONS
+
+C compilers expect in general to find function definitions
+(what type of data the function will return) before they are
+referenced. Since the main() function will come first, and
+will probably contain references to other functions further
+down, we need to declare the functions before the main()
+function. When a function is defined, before it is declared,
+we need to put a semicolon after it. The compiler will then
+understand that we only define a function, and that the
+function will be declared later on:
+
+#include <stdio.h>
+
+void main();             /* Will not return anything.     */
+int get_radius();        /* Will return an integer value. */
+float calculate_area();  /* Will return a float value.    */
+void print_area();       /* Will not return anything.     */
+
+void main()
+{
+  int radius;
+  float area;
+  
+  radius = get_radius();
+  area = calculate_area( radius );
+  print_area( area );
+}
+
+int get_radius()
+{
+  int r;
+  
+  printf( "Please enter the radius: " );
+  scanf( "%d", &r );  
+
+  return( r );
+}
+
+float calculate_area( r )
+int r;
+{
+  float a;
+
+  a = 3.14 * r * r;
+
+  return( a );
+}
+
+void print_area( a )
+float a;
+{
+  printf( "The area is %f square units.\n", a );
+}
+
+
+
+0.3.5  VARIABLES
+
+Here are the standard Lattice C data types:
+
+-----------------------------------------------------------------
+|  TYPE            | BITS |   Minimum value  |   Maximum value  |
+|---------------------------------------------------------------|
+|  char            |   8  |            -128  |             127  |
+|  unsigned char   |   8  |               0  |             255  |
+|  short           |  16  |         -32 768  |          32 767  |
+|  unsigned short  |  16  |               0  |          65 535  |
+|  int             |  32  |  -2 147 483 648  |   2 147 483 647  |
+|  unsigned int    |  32  |               0  |   4 294 987 295  |
+|  long            |  32  |  -2 147 483 648  |   2 147 483 647  |
+|  unsigned long   |  32  |               0  |   4 294 987 295  |
+|  float           |  32  |         ±10E-37  |         ±10E+38  |
+|  double          |  64  |        ±10E-307  |        ±10E+308  |
+-----------------------------------------------------------------
+
+Important, these data types can be different on other versions
+of C, so be careful when using them. To be sure that the size
+of the variables are the same on different systems there exist
+a special list of variable definitions. You only need to
+include the file "exec/types.h", and you have a list of safe
+variable types. The file defines, among many things, these
+commonly used data types: 
+
+Amiga Data Types   Lattice C Data Types   Description
+-----------------------------------------------------------------
+
+LONG               long                   Signed 32-bit
+ULONG              unsigned long          Unsigned 32-bit
+LONGBITS           unsigned long          32 bits manipulation
+
+WORD               short                  Signed 16-bit
+UWORD              unsigned short         Unsigned 16-bit
+WORDBITS           unsigned short         16 bits manipulation
+
+BYTE               char                   Signed 8-bit
+UBYTE              unsigned char          Unsigned 8-bit
+BYTEBITS           unsigned char          8 bits manipulation
+
+VOID               void                   Nothing
+STRPTR             *unsigned char         String pointer
+CPTR               ULONG                  Absolute memory pointer
+
+TEXT               unsigned char          Text
+BOOL               short                  Boolean (The file has
+                                          also defined the two
+                                          words TRUE = 1 and
+                                          FALSE = 0)
+                                          
+-----------------------------------------------------------------
+Here is a list of some data types which should not be used any
+more:
+-----------------------------------------------------------------
+
+APTR               *STRPTR                Absolute memory pointer
+                                          (Misdefined, use CPTR!)
+SHORT              short                  Signed 16-bit   (WORD)
+USHORT             unsigned short         Unsigned 16-bit (UWORD)
+
+-----------------------------------------------------------------
+
+See file "exec/types.h" on the fourth Lattice C disk for more
+information. This file is automatically included when you
+include the "intuition.h" header file.
+
+
+
+0.3.6  STORAGE CLASSES FOR VARIABLES
+
+There exist six main types of storage classes for variables:
+  1. Automatic
+  2. Formal
+  3. Global
+  4. External Static
+  5. Internal Static
+  6. Register
+
+
+
+0.3.6.1  AUTOMATIC
+
+Automatic variables are declared inside functions with the
+keyword "auto" in front of them. (Variables which are declared
+inside a function with no keyword in front of them are assumed
+to also be automatic variables.) Space for them are reserved
+from the stack, and they can only be reached inside the same
+function that declared them. When the function has finished the
+memory is automatically deallocated back to the stack.
+
+Here is a small recursion program. The user can enter values
+until he enters 0 when all the numbers will be printed out
+backwards.
+
+#include <stdio.h>
+
+main()
+{
+  get_number();
+}
+
+get_number()
+{
+  auto int number; /* <== Here it is!             */
+                   /* Keyword "auto" is optional. */
+  
+  printf( "Enter a number (0: Quit) =>" );
+  scanf( "%d", &number );
+  if( number )
+    get_number();
+  else
+    printf( "%d\n", number );
+}
+
+
+
+0.3.6.2  FORMAL
+
+Very similar to automatic variables. Memory is reserved from
+the stack, they can only be reached inside the function which
+declared them, the memory is automatically deallocated back to
+the stack when the function quits. The only difference is that
+they are the functions "parameters" and are declared after the
+parentheses, but before the curly brackets.
+
+#include <stdio.h>
+
+void main();
+void print_number();
+
+void main()
+{
+  print_number( 3.142 );
+}
+
+void print_number( number )
+float number;                /* <== Here it is! */
+{
+  printf( "The number is %f!\n", number );
+}
+
+
+
+0.3.6.3  GLOBAL
+
+Global variables are declared outside the functions and can
+therefore be reached from everywhere. The memory is reserved
+in the BSS or DATA hunks, and can not be deallocated. (All
+uninitialized data is put in the BSS hunks, while all
+initialized data is put in the DATA hunks.)
+
+int number;      /* Put in the BSS hunks.  */
+int width = 12;  /* Put in the DATA hunks. */
+
+Information about global variables is put in the object file
+so other modules can reach the variables. If a variable is
+declared as a global variable (declared outside the functions)
+in module A, the variable should be declared as an external 
+global variable (declared outside the functions with the
+keyword "extern" in front of it) in module B.
+
+--------------------------------------------------------------
+| Module A                                                   |
+--------------------------------------------------------------
+#include <stdio.h>
+
+void main();
+
+char name = "Andirs Bjerin"; /* Declare this variable as a  */
+                             /* global variable. (DATA)    */
+void main()
+{
+  print_name();
+}
+
+
+--------------------------------------------------------------
+| Module B                                                   |
+--------------------------------------------------------------
+#include <stdio.h>
+
+void print_name();
+
+extern char name;   /* Tell the compiler that this variable */
+                    /* actually exist, but is declared in   */
+                    /* another module.                      */
+void print_name()
+{
+  name[ 3 ] = 'e';
+  printf("Programmer: %s\n", name );
+}
+
+To compile these two modules and link them you only need to:
+  1. Compile (lc1 and lc2) Module A: lc ModuleA.c
+  2. Compile (lc1 and lc2) Module B: lc ModuleB.c
+  3. Link the two object modules together with some other
+     libraries etc:
+     blink LIB:c.o, ModuleA.o, ModuleB.o TO program
+           LIB LIB:lc.lib, LIB:amiga.lib
+
+
+
+0.3.6.4  EXTERNAL STATIC
+
+Same as global variables but can ONLY be reached inside the
+same module. All functions in that module will know about the
+variable, but no functions in other modules can reach it. The
+memory is taken from the BSS or DATA hunks, but no information
+about these variables is put in the object files.
+
+To declare an external static variable you simply put the
+keyword "static" in front of a global variable.
+
+static numbers[ 20 ];
+
+
+
+0.3.6.5  INTERNAL STATIC
+
+Same as external static variables except that they are declared
+inside the functions, and can only be reached by that function.
+The special thing about internal static variables is that the
+memory is not deallocated when the the function has finished,
+and the values which were stored in them is untouched. (The
+memory was reserved from the BSS or DATA hunks.) An internal
+static variable will only be initialized once, but can later be
+changed, but not deallocated.
+
+#include <stdio.h>
+
+void main();
+void count_up();
+
+void main()
+{
+  int loop;
+  
+  for( loop = 0; loop < 20; loop++ )
+    count_up();
+}
+
+void count_up()
+{
+  static number = 1; /* We declare and initialize an internal */
+                     /* static variable. Since the number is  */
+                     /* a static variable it will only be     */
+                     /* initialized the first time we call    */
+                     /* the function. (DATA)                  */
+
+  number++;
+  
+  printf("Number: %d\n", number );
+}
+
+
+
+0.3.6.6  REGISTER
+
+Register variables are like automatic variables except that you
+ask the compiler if the variable can be allowed to use a
+processor register for it self. This is very handy if you use
+a variable a lot, for example in a loop. However, it is not
+sure that you can reserve a register. If you are lucky the
+compiler managed to reserve a register for the variable, but
+it is not always possible. The register variable will then be
+a normal automatic variable.
+
+#include <stdio.h>
+
+void main();
+
+void main()
+{
+  register int loop; /* <== Here it is! */
+  
+  for( loop = 0; loop < 10000; loop++)
+    ;
+}
+
+
+
+0.3.7  POINTERS
+
+Pointers are declared in the same way as normal variables with
+only one important difference. We put a "*" sign in front of
+the name:
+
+int a;  /* "a" is an integer variable. */
+int *b  /* "b" is an integer pointer variable. */
+
+If we want to get the address of a variable we put a "&" sign
+in front of the variable. "a" contains an integer value while
+"&a" is the memory address of that variable. If we want the
+pointer "b" to point to the variable "a", we simply write:
+
+b = &a; /* "b" will contain the address of variable "a". */
+
+It is important to remember that "b" is a pointer variable ("b"
+can point to any integer variable), while "&a" is a pointer
+constant ("&a" will always be the address of "a").
+
+
+
+0.3.8  STRUCTURES
+
+I will not try to explain everything about structures, but I
+will however give a short summary of how to use them.
+
+
+
+0.3.8.1  HOW TO DECLARE STRUCTURES
+
+You declare a structure type like this:
+1. Write the keyword "struct" plus a name for the structure
+   type.
+2. Put all variable-types with their names inside two curly
+   brackets.
+
+If you want to declare a structure type called "person" which
+should consist of an integer field, named "age", and two float
+fields, named "height" and "weight", you write:
+
+struct person
+{
+  int age;
+  float height, weight;
+}
+
+You can put often used structures declarations in a header file
+and then include it when necessary. When we are going to
+program the Amiga we will use a lot of declared structures
+which mainly exist in the header file "intuition.h".
+
+
+
+0.3.8.2  HOW TO CHANGE THE STRUCTURE'S FIELDS
+
+Once you have declared a structure type, you can declare
+structure variables and pointers. To declare a structure
+variable named "anders" and a structure pointer named
+"programmer" you write:
+
+struct person anders;
+
+struct person *programmer;
+
+You can now initialize the structure variable "anders" with
+some data. You do it by writing the name of the structure
+variable, put a dot, and then write the field you want to
+access. So if you want to change the age in the structure
+variable "anders" to 20, the height to 1.92, and the weight
+to 74.5 you write:
+
+anders.age = 20;
+anders.height = 1.92;
+anders.weight = 74.5;
+
+
+
+0.3.8.3  POINTERS AND STRUCTURES
+
+If we want to initialize the pointer "programmer" so it points
+to the "anders" structure, we write:
+
+programmer = &anders;
+
+Remember: "anders" is the structure variable.
+          "&anders" is the address of the structure variable.
+
+Once the structure pointer points to a structure we can start
+to check and change values of that structure. The important
+thing to remember is that we do not put a dot between the
+pointer name and the field name, we put a "->" sign. (The
+pointer "programmer" points to the field "height":
+programmer -> height etc.)
+
+if( programmer -> age == 20 )
+  /* The programmer is 20 years old. */
+
+programmer -> weight -= 5; /* The programmer is on a diet. */
+
+
+
+0.3.9  CASTING
+
+If you want to convert one type of data into another type of
+data you need to use a method which is usually referred as
+"casting". If you want to convert a WORD variable into a LONG
+variable type you would write something like this:
+
+WORD number;
+LONG data;
+
+data = (LONG) number;
+
+The command (LONG) tells the C compiler that the next data type
+should be converted into a LONG variable type.
+
+When you convert different variable types you normally do not
+need to do any casting. In the previous you could therefore
+have left out the (LONG) command, but to make it clear for
+anyone who reads the code that it is no mistake, it is best to
+keep it. 
+
+However, when you convert different pointer types you should
+use the casting method. Since the most common errors in C have
+something to do with pointers, C compiler are usually very fussy
+about which pointers may point to which variables/structures
+etc.
+
+If we have declared a pointer to be a normal memory CPTR
+pointer (programmer), and want it to point to a structure
+(person), the compiler would be very confused.
+
+struct person anders;
+CPTR programmer;
+
+programmer = &anders;
+
+A memory pointer, and a pointer to a structure, is actually the
+same thing, but the paranoid compiler does not believe it, and
+will give us a warning which look something like this:
+
+Example.c 27 Warning 30: pointers do not point to same type of object
+
+
+To tell the compiler that the two different types of memory
+addresses are actually the same thing you need to do some
+casting. We need to tell the compiler that a pointer to the
+structure anders (&anders) is actually a memory pointer (CPTR).
+
+programmer = (CPTR) &anders;
+
+
+
+0.4 LIBRARIES
+
+Many special functions have already been written for you, and
+are placed in different "libraries". If you want to access any
+of the functions, you simply need to "open" the right library.
+You open a library by calling the function OpenLibrary(), and
+it will return a pointer to a library structure.
+
+There exist roughly two different types of libraries, ROM
+libraries which are placed in ROM (surprise, surprise), and
+Disk libraries which are placed on the boot disk (system disk).
+
+
+
+0.4.1  ROM LIBRARIES
+
+ROM libraries are always available (they are placed in the ROM)
+but they still need to be opened before you may use their
+functions. Here is a list of the ROM Libraries:
+
+GRAPHICS   This library contains all functions which has
+           anything to do with graphics: Display (View,
+           ViewPorts and RastPorts), sprites (Hardware/
+           software sprites and BOBs), text and fonts etc.
+           Chapter 10 and some examples in the chapters 1 - 9
+           uses this library.
+
+LAYERS     This library contains routines that handles the
+           screen in such a way that different "layers"
+           (planes) can be used and overlap each other.
+            
+INTUITION  This library takes care of the "user interface" and
+           works with the Graphics and Layers libraries. Takes
+           care of screens/windows/gadgets/requesters/menus
+           etc. Chapter 1 - 9 explains how to use this library.
+
+EXEC       Takes care of the memory/tasks/libraries/devices/
+           resources, i/o ports etc.
+
+DOS        AmigaDOS. Contains routines which open/close/read/
+           write files etc. 
+
+MATHFFP    Motorola Fast Floating Point Routines. Handles
+           addition, subtraction, division, multiplication,
+           comparison, conversion etc. (Single Precision)
+
+RAM-LIB    Takes care of the RAM disk.
+
+EXPANSION  Handles the expansion slots.
+
+
+
+0.4.2  DISK LIBRARIES
+
+If a programs opens a disk library, AmigaDOS will look in the
+logical device "LIBS:", which has been assigned to system
+disk's "libs" directory, and will then load the whole library
+into RAM. If the library has already been loaded into RAM by
+another task, Exec will then use the already existing library.
+(This shows how memory efficient libraries are, since several
+program can use the same code.)
+
+Here is a list of the Disk Libraries:
+
+TRANSLATOR       This library translates English strings into
+                 phonetic strings.
+
+DISKFONT         Handles the Fonts on the disk.
+
+ICON             Takes care of the "icons" used by the
+                 Workbench.
+
+MATHTRANS        Contains functions like sin, cos, log, ln,
+                 square, power etc.
+
+MATHIEEEDOUBBAS  Same as the ROM Library "MATNFFP" but uses
+                 Double Precision.
+
+
+
+0.4.3  OPEN AND CLOSE LIBRARIES
+
+You open, as said above, a library by calling the function
+OpenLibrary(). It will return a pointer to a library structure,
+and the pointer MUST be stored in a pointer variable with a
+special name. For example, if you open the Intuition library,
+the pointer should be called "IntuitionBase", and if you open
+the Graphics library, the pointer should be called "GfxBase".)
+
+Synopsis: pointer = OpenLibrary( name, version );
+
+pointer:  (struct Library *) Pointer to a library structure.
+          If you open the Intuition library it is a pointer
+          to an IntuitionBase structure, and should be called
+          "IntuitionBase". If you open the Graphics library
+          it is a pointer to a GfxBase structure, and should
+          be called "GfxBase". (You will need to do some
+          casting here.)
+
+name:     (char *) Pointer to a string containing the library
+          name. The Intuition library is called 
+          "intuition.library", and the Graphics library is
+          called "graphics.library".
+
+version:  (long) You can here specify that the user need a
+          special version (or higher) of the library to run
+          the program. If you want any version of the
+          library, simply write 0. (The highest library
+          version is for the moment 34.)
+
+
+Every library which has been opened, must be closed before the
+program terminates. You close a library by calling the function
+CloseLibrary(), with the library pointer as the only argument.
+The ROM libraries do not actually need to be closed since they
+exist in ROM, and will not occupy any valuable memory, but
+close it anyway. (Always follow the rule: Close everything that
+you have opened!)
+
+Synopsis: CloseLibrary( pointer );
+
+pointer:  (struct Library *) Pointer to a library structure
+          which has been previously initialized by an
+          OpenLibrary() call.
+
+
+In this manual we will only discuss functions in the Intuition
+and Graphics libraries. Here is a fragment of a program that
+opens and closes the Intuition library:
+
+struct IntuitionBase *IntuitionBase;
+
+main()
+{
+  /* Open the Intuition Library (any version): */
+  IntuitionBase = (struct IntuitionBase *)
+    OpenLibrary( "intuition.library", 0 );
+  
+  if( IntuitionBase == NULL )
+    exit(); /* Could NOT open the Intuition Library! */
+
+
+  ... ...
+
+
+  /* Close the Intuition Library: */
+  CloseLibrary( IntuitionBase );
+}
+
+
+Here is another fragment of a program which this time opens and
+closes the Graphics library:
+
+struct GfxBase *GfxBase;
+
+main()
+{
+  /* Open the Graphics Library (any version): */
+  GfxBase = (struct GfxBase *)
+    OpenLibrary( "graphics.library", 0 );
+  
+  if( GfxBase == NULL )
+    exit(); /* Could NOT open the Graphics Library! */
+
+
+  ... ...
+
+
+  /* Close the Graphics Library: */
+  CloseLibrary( GfxBase );
+}
+
+
+
+0.5  MEMORY
+
+The Amiga can be expanded to a total of 9MB of memory. This
+memory can be divided into three different types:
+
+Chip Memory  The first 512KB is normally called "Chip Memory",
+             and can be accessed both by the processor as well
+             as the co-processors and the other special chips
+             in the Amiga. (All graphics/Sound etc which is
+             used by the special Chips (Blitter etc) must be
+             located here!)
+
+Slow Memory  The following 512KB (extra memory which is put
+             inside the Amiga) can only be accessed by the main
+             CPU, and can therefore not be used to store
+             graphics and sound data. It is called "Slow" since
+             it is not accessible by the Chips, but can be
+             interrupted by them. If you have a screen with a
+             high resolution and/or many colours this memory
+             will be slowed down since the Chips will steal
+             some memory cycles from it.
+             
+             There exist a new Chip set which enables the
+             co-processors and Chips to use this memory also,
+             which means that this memory could be used to
+             store graphics/sound data etc. However, most of
+             the Amigas (99.9%) have still the old Chips, and
+             this memory can NOT be used for graphics/sound
+             data.
+
+Fast Memory: The third type of memory is the following 8MB,
+             which can ONLY be accessed by the main processor,
+             and is NOT slowed down by the Chips. This memory
+             is therefore called "Fast Memory".
+
+
+The important thing to remember is that all Graphics and Sound
+data (all data handled by the Chips) MUST be stored in the
+"Chip Memory"! There exist three different ways of putting the
+data into the Chip Memory:
+
+1. If you use the Lattice C Compiler V5.00 or higher, you can
+   put the keyword "chip" in front of the name of the data, and
+   the Compiler will automatically put it in the Chip Memory.
+   Eg. UWORD chip graphics_data[] = { ... };
+
+2. If you use the Lattice C Compiler V4.00 you can compile the
+   source code with the added command "-acdb" which will load
+   all initialized data (DATA) into Chip Memory when the
+   program is loaded.
+   Eg. lc -acdb -Lm Example.c
+
+3. Allocate some Chip Memory by calling the function AllocMem(),
+   and then move all data into the newly allocated memory.
+
+
+There exist other methods, such as running the program "ATOM"
+etc, but I will not explain it here. (See your own manuals for
+more information.)  

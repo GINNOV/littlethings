@@ -1,0 +1,24 @@
+Short:        Collection of simple Ada-Sources
+Uploader:     walternn rupert informatik uni-stuttgart de (Norman Walter)
+Type:         dev/src
+Requires:     Ada-Compiler (e.g. GNU Gnat)
+Architecture: m68k-amigaos
+Autor:        walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+
+Some simple ada-sources, done for the University of Stuttgart.
+You can find the GNU Ada compiler GNAT at the GeekGadgets ftp-site:
+
+http://www.ninemoons.com
+
+Literature:
+
+Programming in Ada95, 2nd edition
+(also known as 'The Barnes Bible')
+John Barnes
+Addison-Wesley
+ISBN 0-201-34293-6
+
+Ada from the beginning
+Jan Skansholm
+Addison-Wesley
+ISBN 0-201-17522-3

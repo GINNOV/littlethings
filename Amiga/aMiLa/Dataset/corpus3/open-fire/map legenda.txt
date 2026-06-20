@@ -1,0 +1,7 @@
+.      - woda
+spacja - teren
+1, 2   - spawn pointy (bunkry)
+!, @   - bramy graczy
+f, F   - flagi graczy
+s, S   - wie¿yczki (sentry)
+#      - droga

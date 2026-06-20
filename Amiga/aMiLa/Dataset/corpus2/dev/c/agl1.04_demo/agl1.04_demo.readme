@@ -1,0 +1,17 @@
+Short:        Small example of IrisGL(TM) using AGL
+Author:       Jason Weber
+Uploader:     jason belvoir-arl-irisgt army mil
+Type:         dev/c
+Architecture: m68k-amigaos
+
+This example includes an executable complied from IrisGL(TM) compatible
+source.  This same executable has been compiled on an SGI without
+modification.
+
+This archive contains:
+box.c     (example of IrisGL(TM) source)
+box       (020/881 executable)
+agl.guide (the library's doc)
+
+
+See agl*.readme for an explanation of the AGL library.

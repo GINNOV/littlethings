@@ -1,0 +1,199 @@
+			The Making Of PopHelp
+			=====================
+(You may or you may not understand something about this memorandum of mine:)
+
+PopHelp v1.00      (01.01.1992)
+===============================
+ - Well, everything has some kind of beginning...
+ - Source 35901 bytes.
+ - PopHelp is PD © MADD.
+ - Only one menu - Commands: Copy, Rename, Delete, Move, MakeDir, Protect,
+   UnProtect, Install, Dir, Execute, FileNote, About, Quit.
+ - Copy: Type source and destination!  :-°
+ - Dir: All entries on screen one by one...
+ - CTRL-Q did not work since it was used as a menu short cut...
+ - Window titlebar blank-type...
+
+PopHelp v1.40      (18.01.1992)
+===============================
+ - PHWindow moved one pixel lower from screen top - makes it possible to use
+   screen depth-gadgets without wasting time.
+ - About and Quit moved to new menu: Pop.
+ - New menu - Disk: Relabel, Format, DiskCopy, Install moved from Commands.
+ - Disk commands do not use INHIBITOR and can not be interrupted.
+ - DiskCopy has no one drive copy - Copies the disk to itself!  heh heh...
+ - New menu - CopyBuffer: Allows you to use 32kb, 128kb or 256kb as a buffer
+   when copying. Useful if having only one disk drive. [ hah!  8-) ]
+   Own stupid checkmark...
+ - Copy creates destination path itself. You do not need to write everything
+   again. (wow!)
+ - Dir can be exited with keyboard too...
+ - Lots of code rewritten.
+ - I was in a hurry and did not have so much time to test all this...
+
+PopHelp v1.41      (19.01.1992)
+===============================
+ - Source 55179 bytes.
+ - Same as PH1.40, BUT...
+ - AAAARRRGGH !!! Of course, CopyBuffer did not work in PH1.40...
+   The Copy command works normally, but only 15kb of the whole buffer is
+   used so it does not matter which size you select...  NOW FIXED!
+   Next time I try to test everything myself too....  (Pathetic!)
+
+PopHelp v2.00p Pro (29.10.1992)
+===============================
+ - Source 120527 bytes + includes.
+ - The next generation and lost interest version...
+ - New 3D look! Window titlebar solid-type, popped window size bigger...
+ - DeviceGadgets DF0:, DF1:, RAM:, DH0: <-hmmh...
+ - OptionGadgets for DOS-command switches.
+ - Action and messageborders for better info.
+ - CTRL-Q not used for menus - works now with string-gadgets.
+ - New menu - Special: Vectors, Make.fastdir, Show.
+ - New menu - Preferences: Includes CopyBuffer with more options and SetSize,
+   ScreenMode PAL/NTSC, Borders for WB1.3/2.x style, PHPointer with own
+   arrow/BUSY-sign.
+ - Copy and most other commands understand jokers (*,?) and can handle a
+   directory - but not subdirectories...
+   Had to work on Move/Delete jokers - can not Delete() if directory is
+   Lock()ed!!!?  (was it only in RAM:?)   (urgh!)
+ - Protect and UnProtect now in same command and you can modify all flags -
+   not just delete...
+ - Dir recoded. Separate dirs/files, FIRST-gadget, memory/last -dir, use
+   trackdisk or '.fastdir' file, arrowgadgets to scroll directory (tried also
+   keyboard but gave it up...), use mouse to select subdirectories, can not
+   exit with keyboard...
+ - New commands: Type (only ASCII), SetClock.
+ - Format has Quick option, optional Verify (earlier MUST), MarkBADD broken
+   sectors.
+ - DiskCopy has one drive copy, optional Verify, Date destination after copy.
+ - Install has NoBoot option.
+ - Disk commands use INHIBITOR and can be interrupted with ESC...
+ - Everything(?) improved! See for yourselves!
+ - The OffGadget()s are slow!
+ - This should have been v1.00!!!
+ - Maybe I test it all next time...
+
+PopHelp v2.40 Pro  (09.06.1993)
+===============================
+ - Source 116668 bytes + includes (lots of things moved there)
+ - PopHelp is FreeWare and © MpL - MADD died...
+ - PopHelp is residentable. Menus, gadgets and some other stuff are now being
+   BUILT! (Did you not know that it is cheap to build in Finland now?)
+   -> Executable size is smaller than PH2.00p!
+ - GadgetOff()s speeded up with a trick. Speed improved considerably.
+ - SizeWindow()'s NEWSIZE removed and now we use something else. Have you
+   ever tried to run multiple PopHelps and then exited many of them about the
+   same time - something gets stuck!!!
+ - Quit confirm removed.
+ - Dir: The last directory on the screen when exited is now LastDir, not the
+   one that was last read in.
+ - Type can handle powerpacked files PP20/PX20.
+ - MarkBADD marks only blocks or the whole track. I do not know if there is
+   any use for the Blocks option but it is still there...
+   Number of bad blocks also reported after format.
+ - PHPointer has now KS2.x style arrow/busy-pointers instead of the stupid
+   old ones.
+ - Disk commands (most?) check better for write/(read?) -errors.
+ - Dir/LastDir: Titlebar was changed even if you tried to read a new dir and
+   it was not succesful...
+ - Dir/TrackDir now changes titlebar before trying to access dir and reports
+   if it is not found.
+ - TrackDir had keyboard exit on error - removed.
+ - MakeDir can create many directories with same command + errors.
+ - ClrDirScr did not return APen to white.
+ - Popped-up window size made a bit smaller - MsgBorder has max 4 lines.
+ - KeyToCont_Sub uses BusyPtr while waiting...
+ - DOS error #? in new color and DisplayBeep() used!
+ - Couldn't Lock() 'filename' (or whatever) changed to Couldn't Lock() File
+   because the filename is displayed somewhere anyway... (?)
+ - Preferences/Save preferences to 'S:PH.prefs'...
+ - DiskCopy: 'Error DFx:' - number of drive is OK again...
+ - Install/Relabel/ReName/MakeDir/SetClock have RemGs/AddGs now.
+ - No flash on FIRST-gadget when clicking empty.
+ - Copy/Move replace and Delete unprotect -> No -> ClrMsgBorder.
+ - Delete/FileNote have ID Failed!  DOS_Err has ClrMsgBorder. (There should
+   not be many more text-out-of-window situations anymore.)
+ - Delete xxx:dir ALL does not freeze anymore. (AddGs was done twice!)
+ - TrackDir seems to work with FFS too. (At least in KS2.x...)
+ - If you clicked DriveGadgets too fast when the second string-gadget was not
+   enabled the first string-gadget went off. If you now clicked OptionGadget,
+   the second string-gadget was activated against the rules...
+   If the other string-gadget is turned off it will not be Refresh()ed -
+   it was flashing sometimes......
+ - FileNote with blank comment -> remove - works again.
+ - Dir&Type have BusyOn also in PHWindow.
+ - Create.fastdir has 'Creating .fastdir'-message.
+ - BigWindow/SmallWindow have small OffGs/OnGs change..
+   Activated OptionGadgets deactivated if you use different command!
+ - DriveGadgets 'ghosted' in About, SetClock_save and SetSize - you were able
+   to use chars in size by pressing DriveGadgets.
+ - ClrMsgBorder in Copy_Err. If there is an error in Copy, incomplete
+   destination file is deleted.
+ - Format&Install have FastFileSystem-option.
+ - CopyBuffer 'k' changed to 'kb' (kilobyte). (Or should it be kB, KB, Kb?)
+ - Relabel changed to ReLabel... (?)
+ - Selecting Vectors/something does not activate Show anymore.
+ - EnterParmsTitle now set in BigWindow.
+ - No AllocMem() in Disk_Busy - we use UseOnlyNowBuf...
+ - Some stupid error-things improved...
+
+PopHelp v2.46 Pro  (14.09.1993)
+===============================
+ - Source 116981 bytes + includes.
+ - Flags&Comment work on Copy again.
+ - Disk swapping reduced when Copying with one drive... (before 9 - now 3!?)
+ - CopyBuffer has now only AutoSize&SetSize. (PrefsFile V2 now in use...)
+ - TrackDir on No DFx: had no RemGs and froze...
+ - In old Copy-routine, when you copied only one file and removed disk too
+   fast after writes (without TrackSalve's update) the destination file was
+   'empty'. This should not happen anymore as long as you do not remove disks
+   when the drive light is still on. (Just act normally!)
+ - One drive DiskCopy has 50kb minimum memory safety limit to leave some
+   space to breath.
+
+PopHelp v2.58 Pro (20.12.1994)
+==============================
+ - Source 121823 bytes + includes
+ - The army cleared my head so now to something completely different...  :)/
+ - The year is 1994!...
+ - Format/Date modified earlier only the disk's last modification date.
+   Now we set the disk's creation and last modification dates to the
+   current system date&time.
+ - Dir now displays free disk-space in kilobytes instead of blocks.
+ - DiskCopy with two drives uses double-buffering so its a bit faster now.
+ - Show improved. Shows brushes, full page pics, compressed or not.
+   Powerpacked files supported.
+   UnCompress one BytePerRow too small -bug fixed. Should now show most pics.
+   Ptr turned off.
+ - 'Dir of...' changed to 'Dir Of...'  (I think I've done this before...?)
+ - DiskBuf CopyMem() turned to CopyMemQuick()... look at that speed!
+ - Border colors are set automatically according to OS version (unless prefs
+   say something else).
+ - Inserted KS20+ style version string $VER:.
+ - PH froze when exiting LastDir if TrackDir was also selected! (RemGs was
+   not executed)
+ - Changed kb to K...  Is it OK now?
+ - 'Enter required parameters...' changed to 'Working...' when really doing
+   something.
+ - 'Trying to get pp file...' displayed if that is the case.
+ - Docs also in AmigaGuide®-format.
+
+PopHelp v2.58(a) Pro (01.06.1997)
+=================================
+ - Source <naah, who cares?>
+ - Yet another version is born; seems to work, still.
+ - Fixed a bug in About window. :-)
+ - Uploaded to Aminet.
+ - Next version will be awesome...
+
+  If you find a bug or want to suggest something new then please, write to
+ this address:  (not anymore, please ;-)
+
+	Mika Lundell
+	K-- not available --A21
+	6-- changed --SA
+	FINLAND
+
+	Internet: c71829@uwasa.fi
+	 FidoNet: 2:224/930

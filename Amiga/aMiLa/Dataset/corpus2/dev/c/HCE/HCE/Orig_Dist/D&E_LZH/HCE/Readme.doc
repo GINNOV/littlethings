@@ -1,0 +1,67 @@
+***************************************************************************
+*                                                                         *
+*                           HCE version 1.0                               *
+*                 C Compiler envirenment for the Amiga                    *
+*                           by Jason Petty.                               *
+*                                                                         *
+***************************************************************************
+
+/* Original Compiler Copyright.
+ * HCC:
+ *
+ * Copyright (c) 1988,1989,1991 by Sozobon, Limited.  Author: Johann Ruegg
+ *
+ * Permission is granted to anyone to use this software for any purpose
+ * on any computer system, and to redistribute it freely, with the
+ * following restrictions:
+ * 1) No charge may be made other than reasonable charges for reproduction.
+ * 2) Modified versions must be clearly marked as such.
+ * 3) The authors are not responsible for any harmful consequences
+ *    of using this software, even if they result from defects in it.
+ */
+
+/* Original Optimizer Copyright.
+ * TOP:
+ *
+ * Copyright (c) 1988,1989,1991 by Sozobon, Limited.  Author: Tony Andrews
+ *
+ * Permission is granted to anyone to use this software for any purpose
+ * on any computer system, and to redistribute it freely, with the
+ * following restrictions:
+ * 1) No charge may be made other than reasonable charges for reproduction.
+ * 2) Modified versions must be clearly marked as such.
+ * 3) The authors are not responsible for any harmful consequences
+ *    of using this software, even if they result from defects in it.
+ */
+
+/* Detlef Wuerkners original Copyright:
+ *
+ * HCC 2.0 Amiga version 1.1 and TOP 2.0 Amiga version 1.1. I declare the 
+ * work done by me as Public Domain. Detlef Wuerkner.
+ *
+ */
+
+/* My Copyright.
+ * HCE:
+ *
+ * Copyright (c) 1994. Author: Jason Petty.
+ *
+ * Permission is granted to anyone to use this software for any purpose
+ * on any computer system, and to redistribute it freely, with the
+ * following restrictions:
+ * 1) No charge may be made other than reasonable charges for reproduction.
+ * 2) Modified versions must be clearly marked as such.
+ * 3) The authors are not responsible for any harmful consequences
+ *    of using this software, even if they result from defects in it.
+ */
+
+**************************************************************************
+*                       DOCUMENTS & EXAMPLES                             *
+**************************************************************************
+
+This directory contains the rest of the HCE distribution (DOCS&EXAMPLES.LZH)
+which would not fit on the main distribution disk.
+
+sorry i did try!, Jason Petty.
+
+

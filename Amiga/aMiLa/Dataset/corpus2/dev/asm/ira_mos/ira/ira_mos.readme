@@ -1,0 +1,53 @@
+Short:        MC680x0 reassembler
+Author:       truehsen@aol.com (Tim Ruehsen), ported by Ilkka Lehtoranta
+Uploader:     ilkleht@isoveli.org (Ilkka Lehtoranta)
+Type:         dev/asm
+Version:      1.05
+Architecture: ppc-morphos
+
+This is MorphOS port of old reassembler written by Tim Ruehsen.
+
+Probably the most useless port I have ever done but examining old sources
+is fun... even old GadTools based prefs editor is included :) Performance wise
+there is not much difference; 68k version under JIT is almost as fast as PPC
+native version.
+
+This is second release of MorphOS port: the original version had broken
+argument parsing which is fixed in this release.
+
+Original readme from http://www.aminet.net/dev/asm/ira105_src.lha was:
+
+*----
+Tim Ruehsen, the author of IRA asked me to upload the IRA sources into
+Aminet. He cannot do this by himself because he doesn't own an Amiga anymore,
+so he has no access to his archives. This is definitely not the latest version
+of the sourcecode. The latest version (68060 + FPU support) got lost.
+Send any questions to truehsen@aol.com.
+
+Here the original text from the last public change of IRA:
+
+
+IRA103 is version V1.03 of my ReAssembler. Reassembler means that IRA translates
+any executable or binary file into an assembler sourcecode that might
+immediately be translated back by an assembler. E.g., you can do that with a
+debugging option. After that you can examine that program with any debugger.
+That's fine for finding and analysing viruses, repairing old programs, even
+optimising alien programs.
+
+V1.03beta
+       o Text in DATA hunks is now recognised.
+       o Much better -TEXT=1 option.
+       o Removed the -TEXT=2 option.
+       o A stand-alone postprocessor for symbolizing library calls is added.
+         See irapost.doc.
+       o A new pass (PASS 0) is added for finding data in CODE hunks. It is
+         switched on by the new -PREPROC option.
+       o Symbol hunks are now processed and symbols inserted into the source.
+       o Resident structures are searched for and extra symbols set. That means
+         .library and .device files are much better deassembled.
+       o The new command-line option -CONFIG is added. Coming up with this is
+         a an edible .cnf file.
+
+
+              Tim Ruehsen.
+----*

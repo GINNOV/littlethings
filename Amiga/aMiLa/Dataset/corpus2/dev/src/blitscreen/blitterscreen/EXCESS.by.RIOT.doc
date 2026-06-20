@@ -1,0 +1,11 @@
+
+Excess/RIOT (SIH95 40k intro)
+
+If your A1200 got fastmem then enjoy the 3 fx at 50Hz.
+The fx are that kind of bitmap fx you normally need a chunky-mode for.
+Or an Amiga.
+
+Added to this archive to show how gfx look like on the blitterscreen
+(BTW the intro uses different blitter-conversion, and the logo flipper
+is EOR-filling)
+

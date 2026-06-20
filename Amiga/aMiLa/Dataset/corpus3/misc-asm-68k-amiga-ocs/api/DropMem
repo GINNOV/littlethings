@@ -1,0 +1,7 @@
+	movem.l	a1/d0,-(sp)
+	include	/includes/exec/exec_lib.i
+	move.l	12(sp),a1
+	move.l	16(sp),d0
+	CALLEXEC	FreeMem
+	movem.l	(sp)+,a1/d0
+	rts

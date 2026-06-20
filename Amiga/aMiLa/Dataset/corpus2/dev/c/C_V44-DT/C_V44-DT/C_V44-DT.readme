@@ -1,0 +1,56 @@
+Short: How: OS3 V40-44 PicDatatype in 100% C
+Type: dev/c
+Version: 44.1
+Uploader: info@ar-kleinert.de
+Author: Andreas R. Kleinert
+Architecture: m68k-amigaos >= 3.0.0; ppc-morphos >= 1.4.5
+
+  samplePNM.datatype and source-code V44.2 (18.3.2008)
+  (C) 1996-2008 by Andreas R. Kleinert. All rights reserved.
+
+  ---
+  This small sample datatype source code demonstrates, how to completely
+  write an Amiga OS 3 datatype (V40-44) without any assembler stubs
+  or compiler/linker tricks in PURE C source code (currently SAS/C-based:
+  see Aminet:dev/c/CLib37x.LHA on how to adjust for some other compilers).
+
+  You may e.g. use this example source code to write more portable
+  Amiga OS 3 datatypes to allow easier porting of these
+  to other Amiga OS-derived operating systems (OS4/MOS).
+
+  Translate your 68k-assembler datatype startup-codes smartly
+  to C by simply using this source-code as an advice how to do it.
+
+  As a common case, a datatype of class picture, supporting
+  PNM-PGM (P5) and PNM-PPM (P6) has been used as an example.
+
+  With picture.datatype V40-42 only PGM is supported,
+  and with picture.datatype V43+ reading of PPM is offered as well,
+  while encountering an PGM file under V43 causes a fallback to V40
+  routines (could have been done differently, but was not necessary
+  here just for demonstration). Optionally, an alpha channel
+  can be generated.
+
+  For testing this datatype, simply use a tool from the NetPBM package
+  (or maybe for example a tool supporting sview5.library) and save
+  a graphics in the binary PGM or PPM format (P5/P6 of the PNM series).
+
+  Then install this datatype and try loading the file via MultiView.
+  Should work fine.
+
+  History:
+
+  V43.21 (18.3.08):  - fixed possible blitter race condition
+
+  V44.1 (11.2.2006): - rework of C_V43-DT.lha
+
+  ---
+  Feel free to use this source for own projects.
+
+  It is allowed to be spread and distributed anywhere, as far
+  as my consent is concerned.
+
+  This work was only roughly inspired by David Junod's original
+  example source codes for datatypes and the subsequent NKDs.
+
+  All mentioned trademarks are subject to their owners.

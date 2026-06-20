@@ -1,0 +1,7 @@
+This file contains the signatures for all files in the AmiFTP
+distribution. You can check if this file really came from me
+Magnus Lilja, by running this file through pgp (pgp md5sigs.asc).
+My public PGP-keyfile is available from my home-page:
+http://www.lysator.liu.se/~lilja/
+
+

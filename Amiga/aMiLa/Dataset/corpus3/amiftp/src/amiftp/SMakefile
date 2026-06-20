@@ -1,0 +1,179 @@
+# SMakefile for SAS/C
+# Copyright (c) 1995 Magnus Lilja.
+
+# Project files
+
+PROG=	AmiFTP
+CATALOGS= Catalogs/NewCatalog.ct Catalogs/Svenska/AmiFTP.catalog \
+	Catalogs/Italiano/AmiFTP.catalog Catalogs/Dansk/AmiFTP.catalog \
+	Catalogs/Deutsch/AmiFTP.catalog Catalogs/Norsk/AmiFTP.catalog \
+	Catalogs/Nederlands/AmiFTP.catalog Catalogs/Suomi/AmiFTP.catalog \
+	Catalogs/íslenska/AmiFTP.catalog
+
+LOCALES= Catalogs/Svenska.ct Catalogs/Italiano.ct Catalogs/Dansk.ct \
+	Catalogs/Deutsch.ct Catalogs/Norsk.ct Catalogs/Nederlands.ct \
+	Catalogs/Suomi.ct Catalogs/íslenska.ct
+
+DOCS= doc/AmiFTP.guide doc/HISTORY doc/README doc/AmiFTP.readme
+
+SRCS= 	misc.c data.c dofuncs.c change_dir.c readdir.c dirlist.c \
+	MainWindow.c AmiFTP.c TransferWindow.c SiteWindow.c config.c \
+	PrefsWindow.c ConnectWindow.c ftp.c rexx.c cache.c main.c locale.c \
+	AmiFTP_Cat.c AGuide.c ADT.c Menu.c SpeedBar.c
+#lex.c 
+OBJ =	obj/
+OBJS=  	$(OBJ)misc.o $(OBJ)data.o $(OBJ)dofuncs.o \
+ 	$(OBJ)change_dir.o $(OBJ)readdir.o $(OBJ)dirlist.o $(OBJ)MainWindow.o \
+	$(OBJ)AmiFTP.o $(OBJ)TransferWindow.o $(OBJ)SiteWindow.o $(OBJ)config.o \
+	$(OBJ)PrefsWindow.o $(OBJ)ConnectWindow.o $(OBJ)ftp.o $(OBJ)rexx.o \
+	$(OBJ)cache.o $(OBJ)main.o $(OBJ)locale.o $(OBJ)AmiFTP_Cat.o \
+	$(OBJ)AGuide.o $(OBJ)ADT.o $(OBJ)Menu.o $(OBJ)SpeedBar.o
+
+#$(OBJ)lex.o
+INCS= 	AmiFTP.h dirlist_struct.h gui.h AmiFTP_Cat.h
+MISC= 	SMakefile SCOPTIONS AmiFTP.cd
+LIBS=	dh1:classact/classactlib/classact.lib lib:asyncio.lib lib:wb2cli.o \
+	lib:reqtools.lib lib:sprintf.o
+GST=    $(OBJ)$(PROG).gst
+
+# Build options
+
+OPTFLAGS = 	OPTIMIZE OPTTIME
+CFLAGS=		DEBUG=LINE $(OPTFLAGS) #NOSTACKCHECK
+IDIRS= dh1:t
+
+# Compiler defaults
+
+SCOPTIONS=	STRINGMERGE PARAMETERS=REGISTERS SMALLCODE SMALLDATA \
+		NOVERSION NOICONS UNSIGNEDCHARS \
+		SAVEDS OBJNAME=$(OBJ)
+
+# Programs used
+
+RM=		Delete quiet
+CP=		Copy
+CAT=		Type
+TAGS=		ctags
+VER=		dh1:brev
+CI=		ci
+MAKE=		smake
+CATCOMP=	flexcat
+
+# current build version from the 'VERSION' file
+VERSION=	`$(CAT) VERSION`
+
+# Conversion rules
+.c.o:
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION $(OPTFLAGS) DEF SOCKIO
+
+.ct.catalog:
+	$(CATCOMP) AmiFTP.cd $< CATALOG $@
+.cd.ct:
+	$(CATCOMP) $< $@ NEWCTFILE $@
+
+# make the binary with debug options
+all: AmiFTP
+
+obj/AmiFTP.gst: SCOPTIONS AmiFTP.h gui.h AmiFTP_Cat.h#(replace with $(INCS)
+	GST `Cd`/$@ UNLOAD
+	-$(RM)  $@ >NIL:
+	SC NOOBJNAME NOGST MAKEGST=$@ gst.c DEF SOCKIO
+ 	
+# Build rules
+
+# obj/$(PROG).gst
+$(PROG):  $(OBJ)version.o $(OBJS)
+	$(CC) LINK $(OBJ)version.o $(OBJS) lib:_sas.o TO $@_d BATCH $(LIBS) dh1:tcp/tcphook/tcp.lib
+	slink $@_d TO $@ STRIPDEBUG NODEBUG
+	$(VER) # bump revision for next link
+
+locale:
+	MakeCatalogs
+
+# localisation using FlexCat and .cd-file
+AmiFTP_Cat.c: AmiFTP.cd
+	$(CATCOMP) AmiFTP.cd AmiFTP_Cat.c=C_c_V21.sd
+AmiFTP_Cat.h: AmiFTP.cd
+	$(CATCOMP) AmiFTP.cd AmiFTP_Cat.h=C_h.sd
+
+Catalogs/Suomi/AmiFTP.catalog: Catalogs/Suomi.ct
+Catalogs/Suomi.ct: AmiFTP.cd
+
+Catalogs/Svenska/AmiFTP.catalog: Catalogs/Svenska.ct
+Catalogs/Svenska.ct: AmiFTP.cd
+
+#Catalogs/íslenska/AmiFTP.catalog: Catalogs/íslenska
+#Catalogs/íslenska.ct: AmiFTP.cd
+
+Catalogs/Italiano/AmiFTP.catalog: Catalogs/Italiano.ct
+Catalogs/Italiano.ct: AmiFTP.cd
+
+Catalogs/Dansk/AmiFTP.catalog: Catalogs/Dansk.ct
+Catalogs/Dansk.ct: AmiFTP.cd
+
+Catalogs/Deutsch/AmiFTP.catalog: Catalogs/Deutsch.ct
+Catalogs/Deutsch.ct: AmiFTP.cd
+
+Catalogs/Nederlands/AmiFTP.catalog: Catalogs/Nederlands.ct
+Catalogs/Nederlands.ct: AmiFTP.cd
+
+Catalogs/Norsk/AmiFTP.catalog: Catalogs/Norsk.ct
+Catalogs/Norsk.ct: AmiFTP.cd
+
+Catalogs/NewCatalog.ct: AmiFTP.cd
+	$(CATCOMP) AmiFTP.cd NEWCTFILE Catalogs/NewCatalog.ct 
+
+# create version.c if it doesn't exist. Defines three global variables:
+# VersionID is the AmigaDOS $VER: string.
+# Version is the version number.
+# CompileDate is the build date.
+# use these instead of hardcoded variables or preprocessor #defines
+# within your source code!
+#const char CompileDate[] = __AMIGADATE__;
+version.c: smakefile
+	$(CP) TO $@ <FROM <
+const char VersionID[] = "$$VER: $(PROG) " VERSION " " __AMIGADATE__;
+const char Version[] = VERSION;
+char *linfotext = "AmiFTP - " VERSION " (" __DATE__ ")";
+char *infotext = "AmiFTP " VERSION " (" __DATE__ ")\nCopyright © 1995-1998 Magnus Lilja. All rights reserved.\n<lilja@lysator.liu.se>\n\nClassAct is © ClassAct Development Team\nAmiFTP is Shareware, please consider registering\n\nARexx-port: ";
+char *wintitle = "AmiFTP " VERSION " © 1995-1998 Magnus Lilja <lilja@lysator.liu.se>";
+<
+
+# recompile version.c if any of the other source files have changed.
+# first make sure VERSION exists, but don't bump it.
+obj/version.o:	version.c $(SRCS) $(INCS)
+#	$(VER) -n # make sure VERSION exists
+	$(CC) NODEBUG DEF=VERSION="$(VERSION)" OBJNAME=$(OBJ) version.c
+
+# store current source version in the RCS database.
+rev:
+	echo $(VERSION)
+	$(CI) -l$(VERSION) $(SRCS) $(INCS) $(MISC)
+	$(CI) -l$(VERSION) $(DOCS)
+	
+$(OBJ)ftp.o: ftp.c AmiFTP.h $(GST)
+$(OBJ)main.o: main.c AmiFTP.h $(GST)
+$(OBJ)dofuncs.o: dofuncs.c AmiFTP.h $(GST)
+$(OBJ)misc.o: misc.c AmiFTP.h $(GST)
+$(OBJ)data.o: data.c AmiFTP.h $(GST)
+$(OBJ)change_dir.o: change_dir.c AmiFTP.h $(GST)
+$(OBJ)readdir.o: readdir.c AmiFTP.h $(GST)
+$(OBJ)dirlist.o: dirlist.c AmiFTP.h $(GST)
+$(OBJ)lex.o: lex.c AmiFTP.h $(GST)
+$(OBJ)MainWindow.o: MainWindow.c AmiFTP.h gui.h $(GST)
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND $(OPTFLAGS)
+$(OBJ)AmiFTP.o: AmiFTP.c AmiFTP.h $(GST)
+$(OBJ)TransferWindow.o: TransferWindow.c AmiFTP.h gui.h  Trans.gui $(GST)
+$(OBJ)SiteWindow.o: SiteWindow.c $(GST)
+	sc $< OBJNAME=$(OBJ) DEF NOVERSION NOSTACKCHECK NOSTACKEXTEND $(OPTFLAGS)
+$(OBJ)config.o: config.c $(GST)
+$(OBJ)PrefsWindow.o: PrefsWindow.c $(GST)
+$(OBJ)ConnectWindow.o: ConnectWindow.c $(GST)
+$(OBJ)rexx.o: rexx.c AmiFTP.h $(GST)
+$(OBJ)cache.o: cache.c AmiFTP.h gui.h $(GST)
+$(OBJ)AmiFTP_Cat.o: AmiFTP_Cat.c
+$(OBJ)locale.o: locale.c AmiFTP.h $(GST)
+$(OBJ)AGuide.o: AGuide.c AmiFTP.h $(GST)
+$(OBJ)ADT.o: ADT.c AmiFTP.h $(GST)
+$(OBJ)Menu.o: Menu.c AmiFTP.h gui.h $(GST)
+$(OBJ)SpeedBar.o: SpeedBar.c AmiFTP.h gui.h penmapimages.c $(GST)

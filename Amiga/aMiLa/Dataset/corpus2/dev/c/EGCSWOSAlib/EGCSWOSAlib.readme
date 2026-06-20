@@ -1,0 +1,73 @@
+Short: Amiga.lib for EGCS-WarpUP
+Author: frank@phoenix.owl.de, MagicSN@Birdland.es.bawue.de
+Uploader: MagicSN@Birdland.es.bawue.de
+Type:dev/c
+Requires: EGCS WarpUP Installed
+
+As some of you might have noticed, EGCS-WarpUP does not contain
+an amiga.lib ... this archive fixes this problem... enclosed are
+the following files:
+
+- libppcamiga.a
+
+Copy this to ade:ppc-amigaos/lib
+
+- specs
+
+Copy this to ade:lib/gcc-lib/ppc-amigaos/2.7.2.1
+
+to update the init of the Linker.
+
+Note: If you have versions for both Kernels installed parallel,
+you should copy it instead to:
+
+ade:lib/gcc-lib/ppc-amigaos/egcs-2.91.57
+
+- src.lha
+
+This is the Source-Code of libppcamiga.a
+
+The libppcamiga.a supports the same functions which vbcc-WarpUP
+supports:
+
+- ArgArrayInit
+- ArgString
+- ArgInt
+- ArgArrayDone
+- CreateExtIO
+- CreateStdIO
+- DeleteExtIO
+- DeleteStdIO
+- CreatePort
+- DeletePort
+- CreateTask (concerning TaskPPCs please use powerpc.library !!!)
+- DeleteTask
+- FastRand
+- FreeIEvents
+- HotKey
+- LibAllocPooled
+- LibCreatePool
+- LibFreePooled
+- RangeRand
+- TimeDelay
+- waitbeam
+- definition of the constants ciaa, ciab, custom, AbsExecBase
+
+Also some often-used-Unix-Calls:
+
+- isseparator
+- iswhitespace
+- strnicmp (Note: stricmp is already defined somewhere else...)
+- strcasecmp
+- strncasecmp
+
+Note: BeginIO and NewList are defined in inline/alib.h which you
+for example can get in EGCS-WarpUP-Ad.lha on Aminet in dev/c !!!
+
+At this place i want to thank Frank Wille for providing the source
+code of his AmigaLib, despite the fact of helping a "concurrence"
+compiler to his own one with it !!! I found the work nearly already
+done, i only had to change some small things and recompile...
+
+Steffen Haeuser
+

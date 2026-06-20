@@ -1,0 +1,79 @@
+Wangi!.... Remember it is Clean and Fresh!
+
+Shrub:
+  Creates a directory tree, like Tree from MSDOS but it has a nice Workbench
+  GUI, search facility, is very fast and a lot more. (util/wb/Shrub.lha)
+
+RubbishDump:
+  A replacement for the trashcan... but it has SOUND! So when you delete a
+  file a sample is played (can in reality send any ARexx command).
+  (util/app/RubbDump.lha)
+
+AmigaGuidePrefs: (or AGPrefs to its friends...)
+  A complete preference editor for amigaguide. Lets you modify the colours
+  of certain attributes (has a preview), type of node and search paths.
+  (text/hyper/AmigaGuidePref.lha)
+
+WangiPad:
+  A powerful launchpad utility (ie. like toolmanger). The new version 2 should
+  make WP more powerful than ToolManager... watchout for it!
+  (util/wb/WangiPad.lha)
+
+Jiggler:
+  A WB hack. Makes all window move towards the mouse pointer. 
+  (game/gag/Jiggler.lha)
+
+DQua:
+  A simple quadratic equation solver. (misc/math/DQua.lha)
+
+MacCash:
+  Generates UK lottery numbers. Does not falsely predict them, it is 100% 
+  random. It hace a nice Workbench GUI. (misc/misc/MacCash.lha)
+
+DefDataTypeIconer: (or DefDTIcon...)
+  Lets you change files icons, based on their datatype!
+  (pix/icon/DefDTIcon.lha)
+
+NewEXT:
+  With the AmigaDos rename command you can do "rename #?.txt TO #?.doc" with
+  NewEXT you can... (util/batch/NewEXT)
+
+Startup-Menu:
+  A startup menu/utility. Lets you change the 'startup-sequece' used. Very 
+  customisable. (util/boot/Startup-Menu.lha)
+
+Bush:
+  Like Shrub but Shell only and slower... (util/cli/Bush.lha)
+
+DiceRoll:
+  Emulates dice throws... ie. generate random numbers. (util/misc/DiceRoll.lha)
+
+Publican:
+  PublicScreen utility. (util/misc/Publican.lha)
+
+MidMoose:
+  Emulates middle mouse button for those with only two buttons on their mice.
+  (util/mouse/MidMoose.lha)
+
+NaeGrey:
+  Makes the grey borders around screens black. (util/misc/naegrey.lha)
+
+SFPatch:
+  Code showing how to patch Amiga library functions. (dev/c/SFPatch.lha)
+
+UNFINISHED
+
+Wanginfo:
+  Patches Icon/Information on Workbench, musch like SwazInfo. It will however
+  have a radically different GUI... out RSN
+
+WangiPad2:
+  Adding mutl-pad support, gfx... to WangiPad
+
+Mueller:
+  Creates and views .readme files. Also will specifya new standard for them.
+
+Erase:
+  As Delete but file cant be restored... has been working for ages now, apart
+  from a single bug wich i cant be bothered fixing...
+  

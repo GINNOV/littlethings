@@ -1,0 +1,53 @@
+Short:    sources of StormGCC from Dec. 2000 CD
+Author:   stoecker@epost.de (Dirk Stoecker)
+Uploader: stoecker@epost.de (Dirk Stoecker)
+Type:     dev/src
+
+This is an multi-archive upload of the GPL part of StormC++ V4
+compiler. This is taken from the StormC V4 Professional distribution
+CD dated December 2000.
+
+The directory GNU_Sources of this CD contains following directories:
+
+binutils    <dir>   27068043
+cvs         <dir>    8202192
+gcc         <dir>   63100076
+Readme                   138
+Readme.info             2792
+
+The text of Readme-file is:
+| This drawer contains the modified GNU sources for GCC and CVS.
+|
+| Dieses Verzeichnis enthält die veränderten GNU Quelltexte für GCC und
+| CVS.
+
+I splitted the whole stuff into 3 tar.bz2 archives:
+
+stormgcc_binutils.tar.bz2    <main dir binutils>    5451534
+stormgcc_cvs.tar.bz2         <main dir cvs>         1830170
+stormgcc_gcc.tar.bz2         <main dir gcc>        11456201
+
+The lha-Files include these archives together with the GPL license,
+the Readme files and this text. This is to ensure every archive
+contains complete information. Don't ask me what to do with this stuff
+or blame me if anything is missing. I only copied it as is.
+
+The 3 lha archives have the names stormgcc_binut.lha, stormgcc_cvs.lha,
+stormgcc_gcc.lha.
+
+The decision to make all tar.bz2 is mainly because of size reasons.
+Also all the archives are signed with my PGP key, as well as the outer
+Aminet readmes contain a signature for the lha archives.
+
+I will not do any support for these files, but anyway here is my
+contact address:
+
+*********************************************************************
+* snail-mail:                  * e-mail:                            *
+*   Dirk Stoecker              *   stoecker@epost.de                *
+*   Geschwister-Scholl-Str. 10 *   dirk@dstoecker.de                *
+*   01877 Bischofswerda        * world wide web:                    *
+*   GERMANY                    *   http://www.dstoecker.de/         *
+* phone:                       * pgp key:                           *
+*   GERMANY +49 (0)3594/706666 *   get from WWW pages or keyservers *
+*********************************************************************

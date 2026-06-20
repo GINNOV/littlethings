@@ -1,0 +1,60 @@
+
+ Intuition Driven Clock
+ ~~~~~~~~~~~~~~~~~~~~~~
+ This is a very short program written to help me understand the DateStamp()
+function found in the DOS library. To cut a long story short, this function
+returns three long words as detailed below:
+
+1st Long Word:	Days elapsed since Jan 1st, 1978.
+
+2nd Long Word:	Minutes elapsed since midnight.
+
+3rd Long Word:	Number of seconds into this minute x50 ( x60 for PAL ).
+
+ I intend to use this function so that programs can determine the date and
+time and store this data along with any other data. This will be of most
+use in database applications, a subject I want to look at shortly.
+
+ To call DateStamp, you need to pass the address of the first of the three
+long words to receive the data explained above in register d1. Providing
+the system time is set, DateStamp will return the information already
+covered.
+
+ If the system time has not been set, the the three long words are set to
+zero, allowing your program to check and possibly prompt the user!
+
+ Onto decoding the information into 'human speak'. The date I'm still
+working on ( bloody leap years! ), but the time is fairly simple. First the
+hours and minutes past midnight can be calculated from the second long
+word. This is done by dividing by 60 ( 60 mins in every hour ). The integer
+part of the result will give the hours, the remainder the number of minutes
+past the hour.
+
+ It just so happens that divu stores the integer part of the division in
+the low order word of the destination operand and the remainder in the high
+order word. I tend to use RawDoFmt() to convert integers to ASCII strings
+as it does such a good job, allowing text and punctuation to be added at
+the same time as converting. See disc 10 for info on RawDoFmt().
+
+ Once the hours and mins have been obtained, it's time to get the seconds.
+This is done by dividing the third long word by 50 ( or 60 on a PAL Amiga
+). It may be a good idea to open the Graphics library and see what mode the
+machine is running in, and then using this information to decide wether to
+divide by 50 or 60. This way a program is portable between NTSC and PAL
+machines.
+
+ For the purpose of this program I just divide by 50 because I know my Amy
+is NTSC. Once this has been done RawDoFmt() builds a text string that is
+then displayed in the window's title bar using PrintIText.
+
+ As usual the program will run from the Workbench or CLI and can be quit by
+clicking on the windows close gadget. An interesting point can be
+demonstrated using this program. Run it and then select another window, the
+clock stops. This is because INTUITICKS are not posted to the UserPort of
+inactive windows, pity!
+
+			Mark.
+
+
+
+

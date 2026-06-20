@@ -1,0 +1,110 @@
+vbrowse by Volker Barthelmann
+
+INTRODUCTION
+
+    vbrowse is used as a message browser for vbcc. In conjunction with
+    vsend, tovbr and showerr it can display messages of vbcc in a window
+    with a listview gadget, start an editor and place the cursor on
+    the source line that caused the error/warning or give a more detailed
+    explanation of the error.
+    With a configurable editor it should be possible to create a kind
+    of simple integrated development environment.
+
+    vbrowse needs gadtools.library V39 or higher.
+
+
+LEGAL
+
+    vbrowse, vsend, tovbr and showerr are public domain.
+
+
+USAGE
+
+    When run vbrowse opens a window with a listview gadget and creates
+    a public message port. It will display all strings sent to it (by
+    vsend usually) in the listview.
+    If you double-click on a line that looks like a vbcc message it
+    will invoke a configurable command.
+
+    In error messages vbcc quotes one line of the file where the problem
+    was encountered and displays one line that explains the error and
+    contains filename and line number.
+
+    If you double-click on the quoted line one command will be invoked
+    with the filename and the line number as arguments. This command
+    should load the file into an editor and place the cursor on the
+    correct line.
+    It can be configured by specifying 'editor string' at the
+    command line where 'string' is the command to be executed. %d
+    will be replaced by the line number and %s by the filename. But
+    note that %d MUST be first, e.g.
+
+        run vbrowse editor "rx my_arexx_script %d %s" or
+        run vbrowse editor "ged line %d %s"
+
+    is ok, but
+
+        run vbrowse editor "ged %s line %d"
+
+    is wrong.
+
+    If you double-click on the line containing error number etc. another
+    command will be invoked with the error number as argument. This command
+    should display a more detailed description of the error.
+
+    This command can be specified by the 'error string' option, where
+    %d in string will be replaced by the error number.
+
+    The program showerr is provided and should be ok for this.
+
+    Also vbrowse accepts the keywords 'top', 'left', 'width' and 'height'
+    to specify the window position and size.
+
+    A complete invocation of vbrowse may look like this:
+
+    run vbrowse editor "rx my_arexx_script %d %s" error "showerr %d"
+                top 400 left 0 width 600 height 200
+
+    (Some '>nil:'s may be a good idea, too.)
+
+
+VSEND
+
+    The program vsend is used to send some text (usually the error messages
+    of vbcc) to vbrowse. It simply reads from stdin and sends the text
+    without modifications to vbrowse, e.g.
+
+        vsend <text_file_to_vbrowse
+
+    If you have a pipe command installed you can e.g. type something like
+
+        vc test.c | vsend
+
+    to send the output of vc to vbrowse.
+
+
+TOVBR
+
+    tovbr is a very small programm that simply executes its command line
+    and sends the result to vsend, i.e.
+
+        tovbr my_command my_parameters
+
+    is equivalent to
+
+        my_command my_parameters | vsend
+
+    So after e.g 'alias vc tovbr vc' you can use vc as before, but the
+    output will be sent to vbrowse.
+
+
+SHOWERR
+
+    This is a very small program that takes an error number as argument
+    and displays the corresponding page in the VBCCMessages.guide using
+    amigaguide.library.
+    It can be used with vbrowse.
+
+
+Volker                                                  volker@vb.franken.de
+

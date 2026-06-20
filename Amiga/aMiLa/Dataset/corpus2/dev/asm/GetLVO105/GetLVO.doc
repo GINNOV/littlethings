@@ -1,0 +1,120 @@
+/****** GetLVO.doc **********************************************************
+*
+*   NAME   
+*	GetLVO -- Obtain legible LVOs or *.i's from *_lib.fd files. (V1.05)
+*
+*   TEMPLATE
+*	LIB/A,PAT/A
+*
+*   SYNOPSIS
+*	GetLVO <libName> <funcName>
+*
+*   FUNCTION
+*	GetLVO first of all attempts to get a path to the *_lib.fd files
+*	contained in the environment variable 'GETLVO'. If this fails, it
+*       uses its default setting: 'FD:'.
+*	Next it scans the libName_lib.fd file and any matches to 'funcName'
+*	is sent to stdout in this format:
+*
+*	        _LVOfuncName EQU -$XXXX ; (parms,...)(regs,...)
+*
+*	GetLVO might be useful as a quick reference to functions that you
+*	only vaguely remember or for creating *.i files ready to use with
+*	your assembler (use <GetLVO libName *> for a total list of funct-
+*	ions). 
+*
+*   INPUTS
+*	libName  - Name of library without the '.library' extension.
+*	funcName - Function or pattern to search for in libName_lib.fd.
+*
+*   RESULT
+*	If all goes well a list of matching functions is sent to stdout
+*	and the returncode is set to 0.
+*
+*	If execution is halted while reading or writing GetLVO returns 1.
+*
+*	If no matches are found the program returns 5.
+*
+*	If something else goes wrong, like "Couldn't open file" or "Not
+*	enough memory" GetLVO exits with returncode 10 and additional
+*	information may be obtained by using the Why command.
+*
+*   EXAMPLE
+*	1> GetLVO exec FreeMem
+*	_LVOFreeMem EQU -$00D2 ; (memoryBlock,byteSize)(a1,d0)
+*
+*	1> GetLVO intuition FakeFunc
+*	- No matches found -
+*
+*	1> GetLVO dos Write*
+*	_LVOWrite      EQU -$0030 ; (file,buffer,length)(d1/d2/d3)
+*	_LVOWriteChars EQU -$03AE ; (buf,buflen)(d1/d2)
+*
+*   NOTES
+*	Requires dos.library V37+.
+*
+*	No wildcard matching for the 'libName' entry [yet]. If you want
+*	to create *.i files for all of your *_lib.fd's, I suggest that
+*	you get hold of my 'Expand' program, which allows wildcards with
+*	any program that is run from shell.
+*
+*       GetLVO is fully re-entrant (PURE) and can be made resident under
+*       e.g. WShell or by using the AmigaDOS 2.0 Resident command.
+*
+*	GetLVO is copyright (C) 1991 SmallCode SoftWare (KAS), but is free-
+*	ly redistributable if the following conditions are met:
+*
+*	    o  GetLVO is 'PostCardWare' - i.e., if you like this program
+*	       and use it regularly, you are OBLIGED to send me a post-
+*	       card. You'll find my address below.
+*
+*	    o  This archive should ALWAYS be redistributed in its entire-
+*	       ty and original format, holding the following files:
+*
+*	               GetLVO        - The executable itself 
+*	               GetLVO.doc    - What you are now reading
+*	               Env/GETLVO    - Sample ENV:GETLVO file
+*	               ZZEndPad.FOO  - Someone's still using XModem...
+*
+*	    o  It should NEVER be included in ANY commercial packages
+*	       without PRIOR written consent from the author.
+*
+*	    o  No monetary gains may be made from the distibution of this
+*	       archive.
+*
+*   BUGS
+*	Due to the action of dos.library's ReadArgs(), GetLVO fails in
+*	wildcard searching for single-char LVOs (e.g.: GetLVO asl ?) -
+*	however, this should be of no inconvenience in 'real life'.
+*
+*   SEE ALSO
+*
+*****************************************************************************
+*
+*   HISTORY
+*	V1.00 - Prototype.
+*	V1.01 - Skipped main() - now using _main() instead.
+*	V1.02 - Most routines now uses __regargs
+*	V1.03 - Now looks for path to *_lib.fd files in $GETLVO.
+*	V1.04 - Minor bugs fixed.
+*	V1.05 - First public release.
+*
+*   GREETINGS
+*	Sincere thanks go to:
+*
+*	    Carolyn Scheppner (CATS), whose "LVO" inspired me to write
+*	    this program.
+*
+*	    Adam Sjoegren (FastJack), FidoNet @2:230/149, for á-testing.
+*
+*   AUTHOR'S ADDRESS
+*	SmallCode SoftWare (KAS)
+*	Klaus Alexander Seistrup
+*	Islevdalvej 162/14
+*	DK-2610 Roedovre
+*	D E N M A R K
+*
+*	FidoNet @2:230/119.5
+*
+*/
+

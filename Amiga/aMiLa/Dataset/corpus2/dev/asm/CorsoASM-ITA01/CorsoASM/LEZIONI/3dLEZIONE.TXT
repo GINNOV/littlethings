@@ -1,0 +1,3504 @@
+
+PROGETTO PER LA LEZIONE SUL 3d:
+
+Per ora ci sono solo pezzi di doc altrui e miei scritti provvisori messi poco
+in ordine, che comunque servono come BASE DI PARTENZA.
+Da notare che questa lezione sara' messa dopo quelle che spiegano copper,
+blitter, interrupt eccetera, per cui chi legge e' vaccinato per quanto
+riguarda l'hardware manual.
+
+
+Ecco il "progetto" di questa lezione:
+
+		1 - PROSPETTIVA
+
+1)Spiegazione della prospettiva, fino ad arrivare alla routine semplice,
+  c'e' gia' lezione3d-1 che e' un'idea: fare solo traslazioni per far capire
+  bene... all'inizio solo PLOT di punti, piu' chiaro...
+1b)Spiegata la prospettiva, si possono fare anche altri esempi, come le
+   stelline 3d classiche che vengono dal centro, ci sono dei listatini di
+   riferimento...
+1c) Non so, un pavimento 3d, qualcosa che usi solo la prospettiva senza
+    rotazioni, ma solo traslazioni.
+
+		2 - ROTAZIONI
+
+2) Ora che la prospettiva e' capita, si possono fare le prime rotazioni, ma
+   all'inizio e' bene farle solo attorno ad 1 asse, poi attorno a due e
+   infine attorno ai 3, ma con molti listatini esempio per ogni passaggio e
+   una spiegaziuone decente del PERCHE' i punti ruotano. In concomitanza con
+   le rotazioni, si possono cominciare ad usare anche le LINEE.... ma per ora
+   solo WIREFRAME normalissimo...
+
+2b ) Fatte le rotazioni, si potrebbero inserire anche le vectorballs, basta
+     spiegare la routine di sort, quella delle blittate vabbe', a questo
+     punto il blitter lo sanno gia'.
+
+		3- HIDDEN
+
+3) Poi occorre spiegare come fare l'hidden line vector, ed in seguito anche
+   i filled.... mi raccomando la semplicita' e i vari passaggi con vari
+   listatini che illustrino l'evoluzione...
+
+		4 - LIGHTSOURCE o altro
+
+4) Lo scopo della lezione e' quello di far capire a CHIUNQUE come farsi un
+   filled vector di vecchio tipo, non occorrono ottimizzazioni esagerate
+   che complicano la comprensione, ne' casini con intersezioni o lightsource
+   REALE ecc. Comunque, si potrebbe illustrare come fare un lightsource
+   fakato con la pos. Z media delle facce, oppure come fare solidi inconvex
+   ecc...
+
+Per quanto riguarda il texture, zoom e rotazioni di pic, o labirinti alla DOOM
+dato che sono in giro dal 1992-93, quindi piu' recenti dei vettori, li metterei
+in una lezione a parte piu' avanti. Qua si copre l'evoluzione dei vectors dal
+1987 con i linevectors al 1990-91 con i lightsource.
+
+Nelle 3 directory ci sono esempi vari, compresi i tuoi listati, giusto per
+riferimento, nella compilazione degli esempi e della teoria:
+
+DIR:
+
+3d0 - questa lezione, e i listati dal dot/linevector all'hiddenlinevector
+3d1 - le vectorballs!
+3d2 - I filled vector, anche lightsourced.
+3d3 - giusto per riempimento, shaded vectors e chiunkyvecs di darkman, niente
+      di nuovo, ma almeno riempiono la parte vuota del dischetto...!!!
+
+******************* INIZIO DELLA LEZIONE: **********************************
+
+- sistema di rappresentazione
+
+Nota: per fare un linevector basta sapere la matematica a livello di terza
+media. (E' diverso il discorso per un filled vector lightsourced).
+Comunque, ricordatevi di non continuare mai a leggere fino a che non avete
+capito TUTTO, o al massimo ritornate indietro a rileggere quello che non
+avevate capito prima. In fondo si tratta di poche formule, che una volta
+"tradotte" in routines 680x0 funzionano "da sole", e basta aumentare il numero
+di loop dbra per far apparire oggetti piu' complessi.
+Quindi vedete di capire come funzionano, in questo modo potrete fare delle
+vostre modifiche o "invenzioni", altrimenti vi limitereste a cambiare gli
+oggetti e usare la routine degli esempi, cosa che vale poco.
+L'importante e' andare a piccoli passi, senza sperare di capire tutto in un
+pomeriggio.
+Inoltre dovete avere molta immaginazione a livello di tridimensionalita',
+ossia dovete riuscire ad immaginavi come sia fatto un certo oggetto se
+visto dall'alto, o da un lato eccetera. In pratica sarebbe utile la
+conoscenza delle proiezioni ortogonali, che sono un sistema di rappresentazione
+noto a ci usa programmi 3d come Imagine o Real 3d.
+
+******************************************************************************
+*				LA PROSPETTIVA				     *
+******************************************************************************
+
+Supponiamo di essere in una prateria dell'Arizona, a cavallo di una moto
+malvagia, e di esserci fermati a scrutare l'orizzonte.
+All'improvviso appare un cubo nel cielo! Un UFO!?
+Beh, ufo o non ufo, e' un buon esempio per spiegare come funge la prospettiva.
+Come sapete abbiamo 2 occhi. Ebbene, facciamo finta di averne uno solo,
+altrimenti dovremmo considerare troppe cose che sfociano nei caschetti della
+realta' vistuale e nelle stereometrie.
+Dunque eravano noi soli con l'ufo, e siccome siamo tosti portiamo la benda
+sull'occhio come un pirata (oltre al codino, orecchino ecc.), e vediamo
+l'ufo con il solo occhio scoperto.
+Siamo cosi' sorpresi che non ci viene nemmeno in mente di alzare la benda per
+vedere meglio. In compenso il cubo si avvicina ruotando minacciosamente.
+Essendo tosti, anziche' scappare ci mettiamo a studiare la prospettiva.
+Ecco un'illustrazione:
+
+	   ___
+	 /__ /|	<-- UFO			      !
+	|   | |
+	|___|/				     -O. <--- NOI
+					      ||
+______________________________________________/\_____________
+
+Questa immagine e' vista di "profilo".
+
+Noi, pero', l'immagine la vedremo "in prospettiva":
+
+	 _______________________________
+	|				|
+	|	       ____		|
+	|	      /   /\		|
+	|	     /___/  \		|
+	|	     \   \  /		|
+	|	      \___\/		|
+	|				|
+	|-------------------------------| <- LINEA DI ORIZZONTE
+	|				|
+	|				|
+	|_______________________________|
+
+
+Questa e' l'immagine come dovra' apparire sul monitor, ossia simile a cio'
+che si vede con gli occhi. Ma come si fa ad ottenerla?
+Il problema e' che la figura SOLIDA ha 3 dimensioni, mentre il monitor ne ha
+2 solamente! Altezza e larghezza! Gli manca la Z, ossia la profondita'.
+Allora, noi stiamo cercando di trasformare in una figura bidimensionale
+qualcosa che invece e' tridimensionale. Questo lo facciamo quando scattiamo
+una fotografia: un cubo sarebbe ritratto in 2 dimensioni.
+Ora sappiamo cosa cerchiamo. Vediamo meglio la situazione:
+
+Facciamo uno schema:
+
+					|
+	      ______________ _		|
+	     /|		   /|	 _	|
+	    / |		  / |	     _	|
+	   /  |		 /  |		-   _
+	  /   |		/   |		|      -  _  _
+	 /____|________/    |		|   _   - _-¢_> OCCHIO
+	|     |       |     |	    _   -     _ -    
+	|     |_______|____ |_  -	| _ -
+	|    /	      |    /	      _ -
+	|   /         |   /       _ -	|
+	|  /	      |  /    _ -	|
+	| /	      | / _ -		|
+	|/____________|/-		|
+					|
+					|
+
+		^			^
+	     OGGETTO X,Y,Z	      QUADRO
+
+
+Vediamo l'oggetto nello spazio, il nostro occhio, e tra l'occhio e l'oggetto
+un misterioso quadro.
+Dunque, dunque. Abbiamo definito l'oggetto tramite i suoi punti X,Y,Z. e
+vediamo che tragitto fanno tali punti per arrivare all'occhio: tutti i raggi
+vanno all'occhio, e i raggi dall'occhio vanno ai punti, a seconda delle
+interpretazioni filosofiche. Comunque e' certo che sul quadro viene tracciata
+una figura. Mmmmh... MA CERTO! E' la proiezione prospettica! In pratica il
+quadro non e' altro che il nostro MONITOR, su cui si forma la figura
+distorta prospetticamente. Infatti, se notate, nel caso il cubo si allontani
+la figura nel quadro diverrebbe piu' piccola, se si avvicinasse invece si
+ingrandirebbe, proprio come succede quando vediamo avvicinare o allontanare
+degli oggetti!
+Ora, sappiamo che l'equivalente bidimensionale (stampabile sul monitor) del
+nostro oggetto tridimensionale si otterrebbe mettendo una lastra di vetro
+tra noi e l'oggetto, e "calcando" la figura che vediamo usando un pennarello
+sul vetro. Logico no? Ma qua non abbiamo ne' pennarelli ne' lastra di vetro
+su cui calcare l'immagine. Abbiamo delle coordinate...
+
+					     |
+					    /|
+					   / |
+					  /  |
+					 /   |
+					/    |
+	      ______________ _	       /     |
+	     /|		   /|	 _     |     |
+	    / |		  / |	     _ |     |
+	   /  |		 /  |	       |-___ |
+	  /   |		/   |	       |/__/||-  _  _
+	 /____|________/    |	       ||  ||| - _-¢_> OCCHIO
+	|     |       |     |	    _  ||  ||| -    
+	|     |_______|____ |_  -      ||__|/|
+	|    /	      |    /	      _|-    |
+	|   /         |   /       _ -  |     |
+	|  /	      |  /    _ -      |     /
+	| /	      | / _ -	       |    /
+	|/____________|/-	       |   /
+				       |  /
+				       | /
+				       |/
+
+		^			^
+	     OCCHIO		      QUADRO
+
+
+Abbiamo leggermente inclinato il quadro, e notiamo che effettivamente c'e'
+disegnato il nostro cubo, ed e' IN DUE SOLE DIMENSIONI! X ed Y!
+
+Vediamo di rendere un poco piu' scientifico il nostro discorso: abbiamo un
+monitor a 2 dimensioni, X ed Y, nel quale possiamo tracciare punti, linee o
+quello che si vuole dando le coordinate dei punti:
+
+
+		  0,0		asse X
+		  o---------------------------------> 320,0
+		a |
+		s |
+		s |
+		e |
+		  |
+		Y |
+		  |				   |
+		  |  				___| 320,256
+	          \/
+		 0,256
+
+L'angolo in alto a sinistra del monitor e' il punto 0,0.
+
+
+Ora, abbiamo da progettare il nostro oggetto a 3 dimensioni, X,Y e Z, dove Z
+lo possiamo chiamare "profondita'":
+
+			  +
+			/|
+			/
+		       /
+		      /
+	             /
+		    /
+	    0,0,0  /		asse X
+		  o--------------------------------->
+		 /|
+		/ |
+	     Z /  |
+	      / a |
+	   e /  s |
+	  s /   s |
+	 s /	e |
+	a /	  |
+	 /	Y |
+	/	  |
+       |/	  |
+       -          \/
+
+
+Come si vede, e' stato aggiunto un asse che viene verso di noi, come se
+l'asse X ed Y fossero le connici di una finestra, e Z fosse una persiana
+aperta:
+		    ___		-> X
+		  /|   |
+		 / |   |
+		/  |   |
+		|  |   |
+		|  |___|
+		| /
+		|/
+
+	       /   |
+
+	     Z	   Y
+
+
+Se fossimo un punto nella finestra, andando a destra aumenterebbe la nostra X,
+andando in basso aumenterebbe la nostra Y, e andando fuori dalla casa verso
+di voi diminuirebbe lo Z, ossia la profondita', e in teoria dovremmo uscire
+dal monitor e venirvi in faccia.
+Ma questo non e' possibile, quindi dobbiamo farlo "sembrare" solamente.
+Da notare che solitamente il valore Z aumenta man mano che l'oggetto si
+allontana dall'osservarore, ossia man mano che "entra nella casa".
+L'osservatore, ossia l'occhio, di solito e' al punto Z=0, e gli Z negativi
+compaiono quando l'oggetto ci passa "dietro" e quindo non lo vediamo.
+
+Intanto, progettiamo il nostro cubo nel sistema di coordinate X, Y, Z:
+Per far questo si puo' usare carta a quadretti o millimetrata, oppure "a mente"
+se siete dei geni.
+Ecco una specie di progetto di un cubo, che come sapete ha 6 facce, e niente
+popo' di meno che 6 spigoli, ossia i punti che ci interessano.
+
+
+	MENO< X >PIU'		MENO			PIU'
+				 ^			/|
+				 Y		       Z
+				 v		     |/
+				PIU'		   MENO
+
+
+	      (P4) -50,-50,+50______________+50,-50,+50 (P5)
+			     /|		   /|
+			    / |		  / |
+			   /  |		 /  |
+			  /   |		/   |
+	 (P0) -50,-50,-50/____|________/+50,-50,-50 (P1)
+			|     |       |     |
+			|     |_______|_____|+50,+50,+50 (P6)
+			|    /-50,+50,+50 (P7)
+			|   /	      |   /
+			|  /	      |  /
+			| /	      | /
+			|/____________|/+50,+50,-50 (P2)
+	 (P3) -50,+50,-50
+
+
+Come vedete X e' lo scostamento destra-sinistra, Y e' il "su-giu'" e Z e' la
+profondita', ossia "avanti-indietro".
+
+Se notate, in questo esempio il punto 0,0,0 e' al centro del cubo, tanto per
+rendere chiaro il sistema: infatti i 4 punti che formano la faccia a sinistra
+hanno tutti la coordinata X = -50, mentre quelli che formano la faccia a
+destra hanno tutti la coordinata X = +50.
+D'altronde, i 4 punto che formano la faccia superiore hanno tutti la coordinata
+Y = -50, mentre quelli che formano la faccia inferiore hanno Y = +50.
+(attenzione che qua Y aumenta quando si va in "alto").
+Infine, i 4 punti che formano la faccia "davanti" hanno la coordinata Z = -50,
+mentre i 4 punti della faccia "dietro" hanno la coordinata Z = +50, ossia
+piu' profonda.
+
+Con queste informazioni possiamo fare una struttura dati di un cubo fatto di
+punti, a formare il nostro oggetto:
+
+CubeObject:	; Mega Semplice Mitico Cubo, 8 Punti.
+		; Ecco gli 8 punti definiti dalle coord. X,Y,Z
+
+	dc.w	-50,-50,-50	; P0 (X,Y,Z)
+	dc.w	+50,-50,-50	; P1 (X,Y,Z)
+	dc.w	+50,+50,-50	; P2 (X,Y,Z)
+	dc.w	-50,+50,-50	; P3 (X,Y,Z)
+	dc.w	-50,-50,+50	; P4 (X,Y,Z)
+	dc.w	+50,-50,+50	; P5 (X,Y,Z)
+	dc.w	+50,+50,+50	; P6 (X,Y,Z)
+	dc.w	-50,+50,+50	; P7 (X,Y,Z)
+
+NPuntiOggetto	= 8
+
+Ok, abbiamo l'oggetto! Il problema ora e' come metterlo in prospettiva.
+
+******************************************************************************
+*	CALCOLIAMO LA COORDINATA Y DEI PUNTI PROIETTATI SUL QUADRO	     *
+******************************************************************************
+
+Ritorniamo allo schema con l'occhio di prima, per vedere come trovare le
+coordinate Y dei punti proiettati sullo schermo; facciamo l'ipotesi che
+l'occhio si trovi a terra, alla posizione Y=0, lo so che e' impossibile, ma
+fate finta di essere in una trincea, e di veder spuntare il cubo dalla terra:
+
+Visione di "PROFILO":
+
+		<---------------- asse Z (profondita') --------------->
+ ^
+ |					|
+ a			    P		|	
+ s	      ______________ _		|	
+ s	     /|		   /|	 _	|	
+ e	    / |		  / |	     _	| P¹	
+ 	   /  |		 /  |		-  _
+ Y	  /   |		/   |		|      -  _  _		 TERRENO
+   ----- /____|________/    |-----------+-----------¢_> OCCHIO -------------
+ |	|     |       |     |T		|T¹
+ |	|     |_______|____ |		|
+ |	|    /	      |    /		|
+ v	.   .	      .   .
+		^			^
+	     OGGETTO X,Y,Z	      QUADRO
+
+
+Punti:
+
+OCCHIO	= posizione dell'osservatore, chiamiamolo O
+P	= Punto dell'oggetto nello spazio XYZ
+P¹	= Punto P proiettato sul quadro
+T	= Y=0 (livello del terreno) nel punto in cui "spunta" il cubo.
+T¹	= Y=0 (livello del terreno) nel punto in cui e' "piantato" il quadro.
+
+Vediamo come trovare la coordinata Y del punto P¹ sul quadro (il monitor),
+ossia la sua proiezione prospettica. Se notate "compaiono" 2 triangoli
+rettangoli simili, precisamente "O-P-T" e "O-P¹-T¹":
+
+		P
+	       |-_      |(quadro)
+	       |  -_    |
+	a      |    -_  |
+	s      |      -_|P¹
+	s      |	+_	
+	e      |	| -_
+	       |	|   -_
+	Y      |	|     -_
+	       |	|       -_
+	       |T_______|T¹_______-O (occhio)
+
+		<---- asse Z ---->
+
+
+Segmenti:
+
+PT	= Coordinata Y del punto P nello spazio (Yogg)
+P¹T¹	= Coordinata Y del punto P¹ nel quadro (INCOGNITA Y¹)
+OT	= Distanza Z del punto P dall'osservatore (DistZpunto)
+OT¹	= Distanza Z dell'osservatore dal quadro (DistZossSchermo)
+
+Se sapiamo quanto sono PT,OT e OT¹, per trovare P¹T¹ occorre considerare che
+l'altezza del triangolo triangolo grande sta all'altezza del triangolo piccolo
+(quello che ci serve), come la base del triangolo grande sta a quella del
+triangolo piccolo. Mi pare chiaro, no??
+Quindi, PT sta a P¹T¹ come OT sta a OT¹, in altri termini: PT:X=OT:OT¹
+
+Per ottenere quello che cerchiamo, ossia P¹T¹ (la coordinata Y del punto
+proiettato sullo schermo), dobbiamo moltiplicare gli estremi della proporzione,
+ossia PT*OT¹, e dividere il risultato per OT:
+
+	P¹T¹=(PT*OT¹)/OT
+
+Potremmo "tradurre" in:
+
+	Yproiettato = (Yogg*DistZossSchermo)/DistZPunto
+
+E quindi, grossolanamente, in:
+
+	move.w	Yogg,d0			; Coord Y dell'oggetto
+	muls.w	DistZossSchermo,d0	; DistZossSchermo*Yogg
+	divs.w	DistZPunto,d0	; In d1 abbiamo la coordinata Y del punto P¹
+
+Naturalmente occorrera' fare un loop che proietti tutti i punti.
+
+******************************************************************************
+*	CALCOLIAMO LA COORDINATA X DEI PUNTI PROIETTATI SUL QUADRO	     *
+******************************************************************************
+
+Bene, ora dovreste gia' intuire che per calcolare la X del punto P¹ il
+procedimento e' analogo. Prima abbiamo visto la scena di profilo, per cui
+l'asse Y era da considerarsi "in piedi", ossia perpendicolare al terreno,
+come un palo della luce. L'asse X invece veniva verso di noi, e in teoria
+si vedeva solo un punto, come una freccia che ci viene negli occhi.
+L'asse Z invece era la linea orizzontale, identificabile col terreno.
+Ora ci spostiamo, per vedela la scena dall'alto, in questo modo l'asse Z
+rimane invariato, mentre l'asse X prende il posto di quello Y:
+
+Ora spostiamoci ad una visione dall' "ALTO":
+
+		P
+	       |-_      |(quadro)
+	       |  -_    |
+	a      |    -_  |
+	s      |      -_|P¹
+	s      |	+_	
+	e      |	| -_
+	       |	|   -_
+	X      |	|     -_
+	       |	|       -_
+	       |T_______|T¹_______-O (occhio)
+
+		<---- asse Z ---->
+
+Il punto P in questo caso e' spostato alla destra dell'osservatore.
+
+Segmenti:
+
+PT	= Coordinata X del punto P nello spazio (Yogg)
+P¹T¹	= Coordinata X del punto P¹ nel quadro (INCOGNITA Y¹)
+OT	= Distanza Z del punto P dall'osservatore (DistZpunto)
+OT¹	= Distanza Z dell'osservatore dal quadro (DistZossSchermo)
+
+Vediamo come trovare la coordinata X del punto P¹.
+Anche questa volta dobbiamo fare:
+
+	P¹T¹=(PT*OT¹)/OT
+
+Potremmo "tradurre" in:
+
+	Xproiettato = (Xogg*DistZossSchermo)/DistZPunto
+
+E quind grossolanamente, in:
+
+	move.w	Xogg,d0			; Coord X dell'oggetto
+	muls.w	DistZossSchermo,d0	; DistZossSchermo*Xogg
+	divs.w	DistZPunto,d0	; In d1 abbiamo la coordinata X del punto P¹
+
+In definitiva dobbiamo fare la "stessa" cosa per la trovare la Y e la X.
+
+	move.w	Xogg,d0			; Coord X dell'oggetto
+	move.w	Yogg,d1			; Coord Y dell'oggetto
+	muls.w	DistZossSchermo,d0	; DistZossSchermo*Xogg
+	muls.w	DistZossSchermo,d1	; DistZossSchermo*Yogg
+	divs.w	DistZPunto,d0	; In d1 abbiamo la coordinata X del punto P¹
+	divs.w	DistZPunto,d1	; In d1 abbiamo la coordinata Y del punto P¹
+
+******************************************************************************
+*		ROUTINE FINALE DI PROIEZIONE PROSPETTICA		     *
+******************************************************************************
+
+Ora pero' dobbiamo pensare a come fare una routine approssimativa che proietti
+un punto 3d XYZ, ricavando X¹ e Y¹ in uscita.
+Per fare cio' occorre aggiungere alcune considerazioni a quelle gia' fatte.
+Cominciamo dal calcolo della coordinata X di P¹.
+Abbiamo detto che il procedimento e' questo:
+
+	P¹T¹	    = (PT     * OT¹	   )/OT
+
+	Xproiettato = (Xogg*DistZossSchermo)/DistZPunto
+
+Occorre pero' dire che per trovare la distanza Z del punto P dall'osservatore,
+che abbiamo identificato con OT (distZPunto), occorre fare un'addizione:
+
+	DistZPunto = Zogg + DistZossSchermo
+
+Ossia dobbiamo aggiungere la distanza dell'oss. dallo schermo alla coordinata Z
+del punto P, infatti:
+
+		P
+	       |-_      |(quadro)
+	       |  -_    |
+	a      |    -_  |
+	s      |      -_|P¹
+	s      |	+_	
+	e      |	| -_
+	       |	|   -_
+	X      |	|     -_
+	       |	|       -_
+	       |T_______|T¹_______-O (occhio)
+		-50     -60	 -366
+
+		<---- asse Z ---->
+
+In questo caso abbiamo che il quadro si trova alla posizione Z = -60, mentre
+P alla coordinata Z = -50, e l'occhio a -316.
+Quindi abbiamo Zogg = -50 e DistZossSchermo = 256. La distanza da O a T pero'
+e' di 366, ottenibile facendo 21+(-3), ossia (merda) Zogg+DistZossSchermo.
+
+La formula finale, quindi e':
+
+	P¹T¹	    = (PT     * OT¹	   )/OT
+
+	Xproiettato = (Xogg*DistZossSchermo)/(Zogg-DistZossSchermo) * NO! PIU'
+						* COME MAI ERA -?? porkocan
+
+Niente di preoccupante. La nostra "Pseudo-Routine" diventa:
+
+	move.w	Xogg,d0
+	move.w	DistZossSchermo,d1
+	muls.w	d0,d1		; Xogg*DistZossSchermo
+	move.w	DistZossSchermo,d2
+	sub.w	Zogg,d2	; Zogg-DistZossSchermo = DistZPunto
+	divs.w	d2,d1		; (Xogg*DistZossSchermo)/DistZPunto
+				; In d1 abbiamo la coordinata X del punto P¹
+
+Notate che in entrata ci servono Xogg e Zogg, che sono le coordinate X
+e Z del punto P, e DistZossSchermo, che e' la distanza dell'osservatore dallo
+schermo, che deve avere un valore simile alla distanza reale di chi guarda
+il monitor!
+						  __________
+	     ìììììììììì				 /	    \
+	    ììììììì    \			||	     \
+	   ìììììì     <O  <--- DistZossSchermo --->||	      \
+	   ììì( 	\			||	       |
+	   ììì '	_|			||	       |
+	    ìì		\			||	      /
+	     |		<			||	     /
+	     |	\ 	/			 \__________/
+		    ---'
+
+	     OSSERVATORE			   MONITOR
+
+
+Infine, occorre considerare che l'osservatore ha l'occhio allineato col
+centro dello schermo...
+E che dobbiamo centrare l'oggetto! Per cui dobbiamo aggiungere (alla fine) le
+coordinate del centro dello schermo, o il centro sarebbe il punto 0,0, ossia
+l'angolo in alto a sinistra, e il nostro cubo sarebbe visualizzato solo per
+un quarto in quell'angolo:
+		 ___
+		/__/| 0,0
+	       | x---------------
+	       |_|_|/		 |
+		 |		 |
+		 |		 |
+		 |		 |
+		 |		 |
+		 |		 |
+		 |		 |
+		  --------------- 320,256
+
+Aggiungendo invece, alla fine dei calcoli, CentroX e CentroY, ossia le
+coordinate X ed Y del centro, spostiamo il cubo stesso al centro.
+Se lo schermo e' in LowRes 320*256, il centro sara' 160,128 (320/2 , 256/2).
+
+		0,0
+		  ---------------
+		 |		 |
+		 |	 ___	 |
+		 |	/__/|	 |
+		 |     | x ||	 |	-> il centro e' 160,128
+		 |     |___|/	 |
+		 |		 |
+		 |		 |
+		  --------------- 320,256
+
+
+Vediamo quindi la formula FINALE:
+
+ P¹T¹	     = (PT     * OT¹	    )/OT		     \
+ Xproiettato = (Xogg*DistZossSchermo)/(Zogg-DistZossSchermo) / + CentroX
+
+Ecco la routine finale:
+
+PROSPETTIVA:
+	LEA	PuntiXYZtraslati(PC),A0	; indirizzo tab. delle X,Y,Z da
+					; proiettare (gia' traslate)
+	LEA	PuntiXYproiettati(PC),A1 ; tabella dove mettere le coordinate
+					 ; X¹,Y¹ proiettate.
+	MOVE.w	#LarghSchermo/2,D3 ; X centro dello schermo (per centrare)
+	MOVE.W 	#LunghSchermo/2,D4 ; Y centro dello schermo (per centrare)
+
+	MOVE.w	#NPuntiOggetto-1,D7	; numero di punti da proiettare
+PERLOP:
+	MOVEM.W	(a0)+,d0/d1/d2	; coord. X in d0, Y in d2, Z in d2
+	MULS.W	DistZoss,d0	; DistSchermoOss*Xogg
+	MULS.W	DistZoss,d1	; DistSchermoOss*Yogg
+	ADD.W	DistZoss,d2	; Zogg+DistZoss_quadro in d2
+	DIVS.w	D2,D0	   ; (DistZossSchermo*Xogg)/(Zogg-DistZossSchermo)
+	DIVS.w	D2,D1	   ; (DistZossSchermo*Yogg)/(Zogg-DistZossSchermo)
+	ADD.W	d3,D0	   ; + X centro dello schermo (per centrare)
+	ADD.W 	d4,D1	   ; + Y centro dello schermo (per centrare)
+	MOVEM.W	D0-D1,(A1) ; Salva i val X¹ e Y¹ Proiettati e traslati
+	ADDQ.W	#2+2,A1	   ; Saltiamo ai prossimi 2 val.
+	DBRA 	D7,PERLOP  ; Ripeti NumeroPunti volte per tutti i punti.
+	RTS		   ; fino a che non li hai proiettati tutti
+
+Comunque, possiamo decidere di porre la distanza tra lo schermo e l'osserv.
+a 256, in questo modo possiamo trasformare le 2 muls in "ASL.L #8":
+
+PROSPETTIVA:
+	LEA	PuntiXYZtraslati(PC),A0	 ; Indirizzo tab. delle X,Y,Z da
+					 ; proiettare (gia' traslate)
+	LEA	PuntiXYproiettati(PC),A1 ; Tabella dove mettere le coordinate
+					 ; X¹,Y¹ proiettate.
+	MOVE.w	#LarghSchermo/2,D3 ; X centro dello schermo (per centrare)
+	MOVE.W 	#LunghSchermo/2,D4 ; Y centro dello schermo (per centrare)
+
+	MOVE.w	#NPuntiOggetto-1,D7	; numero di punti da proiettare
+Proiez:
+	MOVEM.W	(a0)+,d0-d2 ; coord. X in d0, Y in d1, Z in d2
+->	ASL.L	#8,d0	   ; (MULS #256) DistZossSchermo*Xogg
+->	ASL.L	#8,d1	   ; (MULS #256) DistZossSchermo*Yogg
+->	ADD.W	#256,d2	   ; Zogg+DistZossSchermo (trovo dist. oss<->punto)
+	DIVS.w	D2,D0	   ; (DistZossSchermo*Xogg)/(Zogg-DistZossSchermo)
+	DIVS.w	D2,D1	   ; (DistZossSchermo*Yogg)/(Zogg-DistZossSchermo)
+	ADD.W	d3,D0	   ; + coord X centro dello schermo (per centrare)
+	ADD.W 	d4,D1	   ; + coord Y centro dello schermo (per centrare)
+	MOVEM.W	D0-D1,(A1) ; Salva i val X¹ e Y¹ Proiettati e traslati
+	ADDQ.W	#2+2,A1	   ; Saltiamo ai prossimi 2 val.
+	DBRA 	D7,Proiez  ; Ripeti NumeroPunti volte per tutti i punti.
+	RTS		   ; fino a che non li hai proiettati tutti
+
+(attenz. divisione per zero: ma non serve se si sta attenti...)
+
+->	ADD.W	#256,d2	   ; Zogg+DistZossSchermo (trovo dist. oss<->punto)
+	bne.s	NonZero
+	moveq	#1,d2	; evita divisione per zero
+NonZero:
+	DIVS.w	D2,D0	   ; (DistZossSchermo*Xogg)/(Zogg-DistZossSchermo)
+
+*****************************************************************************
+				TRASLAZIONI
+
+In pratica si aggiunge o sottrae lo stesso valore a tutti i punti x,y,z...
+*****************************************************************************
+
+Ecco, con una specie di fungo (o lecca-lecca), che illustriamo l'effetto delle
+semplici straslazioni:
+
+------------------------------------------------------------------------------
+
+X¹=X+XF
+		 _	 __	 ___	  __	   _
+ - 	/\___	/ \__	/. \_	/ . \	_/ .\	__/ \	___/\	+
+	\/	\_/	\__/	\___/	 \__/	  \_/	   \/
+
+ MENO	<	<	<	 ZERO	  >	  >	  >	PIU'
+
+Ci spostiamo piu' a destra o piu' a sinistra... come se lo vedessimo dal
+finestrino di un treno in movimento.
+
+------------------------------------------------------------------------------
+
+Y¹=Y+YF
+
+			   -		MENO
+			  ___
+			 <___>		 /\
+			   |
+			  ___
+			 /   \		 /\
+			 \___/
+			   |
+			  ___
+			 /   \
+			 |   |		ZERO
+			 \___/
+
+			  _|_
+			 /   \
+			 \___/		 \/
+
+			   |
+			  _|_
+			 <___>		 \/
+
+			   +		PIU'
+
+* Vediamo l'oggetto da un posto piu' alto o da uno piu' basso... come se
+  fossimo su un ascensore.
+
+------------------------------------------------------------------------------
+
+Z¹=Z+ZF
+	  ___				
+   - 	 /   \ 			 ___		   		+
+ 	(     )			/   \		  .-.
+	 \___/			\___/		  \_/	   <>	.
+
+ MENO	<	<	<	 ZERO	  >	  >	  >	PIU'
+
+
+* L'oggetto si ingrandisce o si rimpicciolisce: si avvicina o si allontana
+
+******************************************************************************
+*				ROTAZIONI				     *
+******************************************************************************
+
+spiegare piano piano... prima rotazione 2d rispetto ad un asse solo, poi
+via via fino a routine fast ok..
+
+
+a = in radianti (radianti=gradi/57.295779 - Es. 1 grado = 1/57.xx=0,017453)
+
+360° = 2*Pi
+
+Attorno
+
+Xnew = X*COS(a)-Y*SIN(a)
+
+z-axis:
+
+Ynew = X*SIN(a)-Y*COS(a)
+Znew = Z
+
+Attorno
+
+Xnew = X
+
+X-Axis:
+
+Ynew = Y*COS(a)-Z*SIN(a)
+Znew = Y*SIN(a)+Z*COS(a)
+
+Attorno
+
+Xnew = X*COS(a)+Z*SIN(a)
+
+Y-Axis:
+
+Ynew = Y
+Znew = X*SIN(a)+Z*COS(a)
+
+O, IN ALTRI TERMINI:
+
+xr = angolo rotazione X
+yr = angolo rotazione Y
+zr = angolo rotazione Z
+
+X¹ e' la nuova X, da usare la volta dopo; e' calcolata 2 assi alla volta usando
+i valori del calcolo precedente.
+
+Y¹=Y*COS(xr)-Z*SIN(xr)		;\ X
+Z¹=Y*SIN(xr)+Z*COS(xr)		;/
+
+X¹=X*COS(zr)-Y*SIN(zr)		;\ Z
+Y¹=X*SIN(zr)+Y*COS(zr)		;/
+
+X¹=X*COS(yr)-Z*SIN(yr)		;\ Y
+Z¹=X*SIN(yr)+Z*COS(yr)		;/
+
+Cos(a) = 	X1*X2+Y1*Y2+Z1*Z2
+	-------------------------------------
+	sqrt((x1^2+y1^2+z1^2)*(x2^2+y2^2+z2^2)
+
+
+------------------------------------------------------------------------------
+
+YY = Y*Cos(AX) + Z*Sin(AX)
+ Z = Z*Cos(AX) - Y*Sin(AX)
+ Y = YY
+
+XX = X*Cos(AY) + Z*Sin(AY)
+ Z = Z*Cos(AY) - X*Sin(AY)
+ X = XX
+
+XX = X*Cos(AZ) + Y*Sin(AZ)
+ Y = Y*Cos(AZ) - X*Sin(AZ)
+ X = XX
+
+------------------------------------------------------------------------------
+
+;ROTAZIONI: angoli r1,r2,r3
+;	    coordinate x,y,z
+; xa,ya,za  variabili temporanee
+
+xa=cos(r1)*x-sin(r1)*z
+za=sin(r1)*x+cos(r1)*z
+x=cos(r2)*xa+sin(r2)*y
+ya=cos(r2)*y-sin(r2)*xa
+z=cos(r3)*za-sin(r3)*ya
+y=sin(r3)*za+cos(r3)*ya
+
+----------------------------------------------------------------------------
+
+ASSE X:
+
+		 	 	 ___	 ___	 ___	 ___
+ +	 _|_	  |	 _L_	/   \	<_ _>	  |	<_i_>	-
+	<_'_>	 _|_	<___> 	\___/	  T	  |	  |
+ PIU'								MENO
+
+Ruota su se stesso attorno ad asse ________ X
+
+Qursto movimento puo' ricordare la rotazione di un ventilatore o di un'elica
+di nave visti di "profilo".
+	
+------------------------------------------------------------------------------
+
+ASSE Y:
+
+
+	  _	    	  __	 ___	 __ 		 _
+ + 	___\	___/\	_/  \	/   \	/  \_	/\___	/ __	-
+	 \_/	   \/	 \__/	\___/	\__/	\/	\_/
+
+ PIU'	<	<	<	 ZERO	  >	  >	  >	MENO
+
+
+Ruota su se stesso attorno ad asse  | Y
+				    |
+				    |
+				    |
+
+Questa rotazione puo' ricordare l'elica di un elicottero!
+
+------------------------------------------------------------------------------
+
+ASSE Z:
+
+		___|_	 	_|_		_|___
+	 +	   |	 X	 |	X	 |	 -
+			/ 	 |	 \	
+	 PIU'						MENO
+
+Ruota su se stesso attorno ad asse · Z	(asse rivolto verso di voi!)
+
+In pratica se la rotazione e' POSITIVA l'oggetto ruota in senso orario,
+proprio come fosse una lancetta di orologio, se e' NEGATIVA invece ruota in
+senso antiorario.
+
+------------------------------------------------------------------------------
+
+(fare pannello:
+
+ + X TRASL -
+
+ + Y TRASL -
+
+Ecc. con mouse...
+
+
+******************************************************************************
+*			HIDDEN LINES e FILLED				     *
+******************************************************************************
+
+(Da articolo di Slave/Perspex in Grapevine #16.
+
+Filled vectors
+
+Il principio di base dei vettori e' che gli oggetti sono fatti di punti che
+sono collegati tra loro da linee, per formare le "facce".
+I punti sono individuabili da 3 coordinate nei 3 assi X,Y,Z.
+X e' lo scostamento destra-sinistra, Y e' il "su-giu'" e Z e' la profondita',
+ossia "avanti-indietro".
+
+
+Ecco una specie di progetto di un cubo, che come sapete ha 6 facce, e niente
+popo' di meno che 6 spigoli, ossia i punti che ci interessano.
+
+
+		  -50,+50,+100______________+100,+100,+100
+			     /|		   /|
+			    / |		  / |
+			   /  |		 /  |
+			  /   |	        /   |
+	    - 50,+100,-50/____|________/+100,+100,-50
+			|     |        |    |
+			|     |________|____|+100,-50,+100
+			|    /-100,-100,+100/
+			|   /	       |   /
+			|  /	       |  /
+			| /	       | /
+			|/____________ |/+100,-100,-100
+	   -100,-100,-100
+
+
+Con queste informazioni possiamo fare una struttura dati di un cubo fatto di
+punti e facce, a formare il nostro oggetto:
+
+CubeObject:	; Mega Semplice Cubo, 8 Punti e 6 facce.
+
+CubePts:
+	dc.w	8-1		; 8 Punti (mettiamo -1 perche' faremo un DBRA
+				; per il loop prendendo questo valore.
+				; come sapete il DBRA richiede num.loop-1
+	dc.w	-100,+100,-100	; Ecco gli 8 punti definiti dalle coord. X,Y,Z
+	dc.w	+100,+100,-100
+	dc.w	+100,-100,-100
+	dc.w	-100,-100,-100
+	dc.w	-100,+100,+100
+	dc.w	+100,+100,+100
+	dc.w	+100,-100,+100
+	dc.w	-100,-100,+100
+
+; Ecco ora le informazioni di ogni faccia: la prima word e' il numero di
+; punti-1 (per il dbra), poi ci sono i punti che compongono tale faccia,
+; ossia quali 4 degli 8 punti del cubo formano tale faccia. Da notare che
+; l'ordine dei punti e' "orario" (ossia contandoli si gira nel senso delle
+; lancette dell'orologio) quando la faccia e' di fronte allo schermo, mentre
+; diventa antiorario quando la faccia e' dietro, e' "girata".
+; Questo ordine sara' utile per capire quando una faccia e' visibile o
+; nascosta dietro altre.
+
+CubeFace1Pts:
+	dc.w	4-1			; 4 Punti
+CubeFace1Cons:
+	dc.w	0*4,1*4,2*4,3*4,0*4	; 0-> 2-> 3-> 1->0 - I punti di questa
+					; faccia (*4 per trovare subito il
+					; punto dalla tabella al giusto
+					; offset semplicemente sommandolo a
+					; dove inizia la tab dei punti.
+CubFace1Col:
+	dc.w	VCol01		; Colore della faccia ($RGB)
+
+	dc.w	4-1
+	dc.w	4*4,7*4,6*4,5*4,4*4
+	dc.w	VCol02
+
+	dc.w	4-1
+	dc.w	0*4,3*4,7*4,4*4,0*4
+	dc.w	VCol03
+
+	dc.w	4-1
+	dc.w	1*4,5*4,6*4,2*4,1*4
+	dc.w	VCol04
+
+	dc.w	4-1
+	dc.w	0*4,4*4,5*4,1*4,0*4
+	dc.w	VCol05
+
+	dc.w	4-1
+	dc.w	3*4,2*4,6*4,7*4,3*4
+	dc.w	VCol06
+
+CubeEnd:
+	dc.w	0		; Con lo zero si termina la lista
+
+I punti che devono essere uniti da linee sono listati in ordine; il punto da
+cui si parte e' poi messo alla fine della lista:
+                                        
+Linea1 = punto0->punto1
+Linea2 = punto1->punto2
+Linea3 = punto2->punto3
+Linea4 = punto3->punto0
+
+
+Ecco ora la parte piu' spaventosa: i calcoli.
+
+
+AX, AY + AZ = Angolo Di Rotazione Per X,Y O Z
+
+CX + CY = Valori del Centro Per X +Y
+
+CX = 160	; Dimensioni per uno schermo 320x200
+CY = 100
+
+YY = Y*Cos(AX) + Z*Sin(AX)
+ Z = Z*Cos(AX) - Y*Sin(AX)
+ Y = YY
+
+XX = X*Cos(AY) + Z*Sin(AY)
+ Z = Z*Cos(AY) - X*Sin(AY)
+ X = XX
+
+XX = X*Cos(AZ) + Y*Sin(AZ)
+ Y = Y*Cos(AZ) - X*Sin(AZ)
+ X = XX
+
+ Z = 512/(512+Z)
+ X = X*Z+CX
+ Y = Y*Z+CY
+
+Ora abbiamo tutto quello che ci serve per fare un cubo in wireframe, anche in
+basic, se proprio siete sadici.
+
+; L'oggetto e' fatto di punti, connessioni tra tali punti e facce.
+; I punti sono TUTTI i punti nell'oggetto
+; Le connessioni sono "quali punti devono essere uniti per fare una faccia"
+; Le facce sono i primi 3 punti ordinati in ordine orario, cosi' si puo'
+; implementare con facilita' l'"hidden line", ossia le linee nascoste.
+
+; Prima che la faccia sia riempita+copiata una piccola routine calcola l'area
+; (piu' piccola possibile) che li blitter dovra' riempire (fill), pulire e
+; copiare. Questo e' fatto per gli assi X ed Y.
+
+; Puo' essere usata una TAB precalcolata della prospettiva per velocizzare,
+; calcolando tutte le combinazioni possibili di Z (Z= 640/(640+Z)).
+; In questo modo poi si puo' rimuovere il lento DIVS, sostituendolo con una
+; routine che trovi nella TAB il valore giusto, con il classico:
+;
+;	lea	PROSPTAB,a0
+;	add.l   d0,d0
+;	move.w  (a0,d0.w),d0
+;
+
+; La tabella del SENO puo' essere usata come una tabella di COSENO grazie alla
+; nota regola COS(n) = SIN(n-90°).
+
+Ecco la lista delle cose da fare:
+
+1) Localizzare l'oggetto.
+2) Prendere il numero di punti dalla struttura dell'oggetto.
+3) Ruotare tutti i punti dell'oggetto in un buffer appositamente creato.
+4) Avere un puntatore al blocco dati della prima faccia.
+5) Leggere il numero delle facce (Se=0 allora fine dell'oggetto).
+6) Leggere i punti a coppie e mandarli alla routine di draw linee.
+7) La routine di disegno delle linee disegna in un buffer a parte.
+8) Calcolare l'area X Y (piu' piccola possibile), per il FILL.
+9) Riempire (col fill del blitter) la faccia nel buffer.
+10) Copiare la faccia dal buffer allo schermo (3 bitplanes). Con:
+                                        
+; a0 = sorgente
+; a4 = dest
+
+	move.l	A3,Bltapth(A6)	; a
+	move.l	A4,Bltbpth(A6)	; b
+	move.l	A4,Bltdpth(A6)	; d
+	btst.l	#0,D7		; testiamo se abbiamo bisogno di questo Plane
+	beq.s	PlaneVuoto
+PlaneFull:
+	move.l	#$0DFC0000,BltCon0(A6)	; Minterms Per OR
+	bra.s	BlitPlane
+PlaneVuoto:
+	move.l	#$0D0C0000,BltCon0(A6)	; Minterms Per Maschera
+BlitPlane:
+	move.w	D4,Bltsize(A6)		; Dimensione
+
+Per un plane pieno o vuoto. Occorre fare questo per tutti i 3 bitpanes.
+Occorre pulire il buffer della faccia con il piu' piccolo X+Y (lo abbiamo gia'
+calcolato).
+Ripetere la procedura per tutte le facce dell'oggetto.
+Calcolare il piu' piccolo rettangolo X+Y per lo schermo e pulire lo schermo
+prima del prossimo loop.
+
+PS: Non dimentichiamoci di usare il double buffer.
+Il double buffer serve perche' mentre si visualizza un fotogramma si puo'
+pulire e scrivere quello nuovo da un'altra parte, e visualizzarlo alla fine
+del fotogramma. Altrimenti si vedrebbe il momento della cancellazione e
+del disegno del solido, a causa della lentezza di queste operazioni, rispetto
+al refresh video. (In pratica sembrerebbe fatto su un PC-MSDOS schifoso).
+
+
+Il modo il codice è messo insieme è che tu hai un Lev6 eseguendo con un doppio
+buffer changer attivato da un flag.  Tu hai un contatore che conteggi il numero
+di fotogrammi fin quando il doppio buffer fu ultimo attivato.  E tu aggiorni la
+rotazione di angoli Ogni fotogramma.
+                                        
+
+Ruota:
+	move.l	FaceBuffer(PC),A0
+	lea	STab+$80*2(PC),A5	; Indirizzo SinTab
+	lea	STab+$80(PC),A6		; Indirizzo CosTab
+	move.l	Object(PC),A1		; Indirizzo struttura Oggetto
+	lea	XYPoints(PC),A2		; Dove mettere i punti calcolati
+;	lea	Perspective(PC),A3	; Tab con prospettiva precalcolata
+	moveq	#0,D5
+	move.w	(A1)+,D5		; N. di Punti
+
+; Libero = A4
+
+PointLoop:
+	move.w	(A1)+,D0	; D0 = X
+	move.w	(A1)+,D1	; D1 = Y
+	move.w	(A1)+,D2	; D2 = Z
+
+	move.w	AngleY(PC),D7
+	move.w	(A5,D7.W),D6	; D6 = Sin(AX)
+	move.w	(A6,D7.W),D7	; D7 = Cos(AX)
+
+	; D0 = X
+	; D1 = Y
+	; D2 = Z
+	; D6 = Sin(AY)
+	; D7 = Cos(AY)
+
+; YY = Y*Cos(AY) + Z*Sin(AY)
+;  Z = Z*Cos(AY) - Y*Sin(AY)
+;  Y = YY
+
+	move.w	D1,D3		; D3 = Y
+	move.w	D2,D4		; D4 = Z
+
+	Muls.W	D6,D4		; D4 = Z*Sin(AY)
+	Muls.W	D7,D2		; D2 = Z*Cos(AY)
+	Muls.W	D6,D1		; D1 = Y*Sin(AY)
+	Muls.W	D7,D3		; D3 = Y*Cos(AY)
+
+	ADD.L	D4,D3		; D3 = Y*Cos(AY) + Z*Sin(AY)
+	Sub.L	D1,D2		; D2 = Z*Cos(AY) - Y*Sin(AY)
+
+	ADD.L	D3,D3
+	ADD.L	D2,D2
+	SWAP	D3		; D3 = Y
+	SWAP	D2		; D2 = Z
+
+	MOVE.W	AngleX(PC),D7
+	MOVE.W	(A5,D7.W),D6	; D6 = Sin(AX)
+	MOVE.W	(A6,D7.W),D7	; D7 = Cos(AX)
+
+	; D0 = X
+	; D2 = Z
+	; D3 = Y
+	; D6 = Sin(AY)
+	; D7 = Cos(AY)
+
+; XX = X*Cos(AX) + Z*Sin(AX)
+;  Z = Z*Cos(AX) - X*Sin(AX)
+;  X = XX
+
+	move.w	D0,D1		; D1 = X
+	move.w	D2,D4		; D4 = Z
+
+	Muls.W  D6,D4		; D4 = Z*Sin(AX)
+	Muls.W  D7,D2		; D2 = Z*Cos(AX)
+	Muls.W  D6,D0		; D0 = X*Sin(AX)
+	Muls.W  D7,D1		; D1 = X*Cos(AX)
+
+	ADD.L	D4,D1		; D1 = X*Cos(AX) + Z*Sin(AX)
+	Sub.L	D0,D2		; D2 = Z*Cos(AX) - X*Sin(AX)
+
+	ADD.L	D1,D1           
+	ADD.L	D2,D2           
+	SWAP	D1		; D1 = X
+	SWAP	D2		; D2 = Z
+
+	MOVE.W	AngleZ(PC),D7
+	MOVE.W	(A5,D7.W),D6    ; D6 = Sin(AZ)
+	MOVE.W	(A6,D7.W),D7    ; D7 = Cos(AZ)
+
+	; D1 = X
+	; D2 = Z
+	; D3 = Y
+	; D6 = Sin(AZ)
+	; D7 = Cos(AZ)
+
+; XX = X*Cos(AZ) + Y*Sin(AZ)
+;  Y = Y*Cos(AZ) - X*Sin(AZ)
+;  X = XX
+
+	MOVE.W	D1,D0		; D0 = X
+	MOVE.W	D3,D4		; D4 = Y
+
+	Muls.W	D6,D4		; D4 = Y*Sin(AZ)
+	Muls.W	D7,D3		; D3 = Y*Cos(AZ)
+	Muls.W	D6,D1		; D1 = X*Sin(AZ)
+	Muls.W	D7,D0		; D0 = X*Cos(AZ)
+
+	ADD.L	D4,D0		; D0 = X*Cos(AZ) + Y*Sin(AZ)
+	Sub.L	D1,D3		; D3 = Y*Cos(AZ) - X*Sin(AZ)
+
+	ADD.L	D0,D0
+	ADD.L	D3,D3
+	SWAP	D0		; D0 = X
+	SWAP	D3		; D3 = Y
+
+	; D0 = X
+	; D2 = Z
+	; D3 = Y
+
+;  Z = 512/(512+Z)
+;  X = X*Z+CX
+;  Y = Y*Z+CY                           
+
+	ADD.W	Zoom,D2
+	MoveQ	#8,D7
+	Ext.L	D0
+	Ext.L	D3
+	Asl.L	D7,D0
+	Asl.L	D7,D3
+	Tst.W	D2
+	Bpl.S	ZNotZero
+	MoveQ	#1,D2
+ZNotZero:
+	Divs.W	D2,D0
+	Divs.W	D2,D3
+
+;	ADD.W	Zoom(PC),D2	; D2 = Z+Zoom
+;	ADD.L	D2,D2
+;	MOVE.W	(A3,D2.W),D2	; D2 = Z Valore di Prospettiva
+
+;	Muls.W	D2,D0		; D0 = X*Z
+;	Muls.W	D2,D3		; D3 = Y*Z
+
+;	ADD.L	D0,D0
+;	ADD.L	D3,D3
+;	SWAP	D0
+;	SWAP	D3
+
+	ADD.W	#ScreenX/2,D0	; D0 = X*Z+CX
+	ADD.W	#ScreenY/2,D3	; D3 = Y*Z+CY
+
+	; D0 = X
+	; D3 = Y
+
+	Move.W	D2,MaxPts*2(A2)	; Salva Z
+	Move.W	D0,(A2)+	; Salva X
+	Move.W	D3,(A2)+	; Salva Y
+
+	DBRA	D5,PointLoop	; Calcolare Tutti i Punti
+
+Per sapere quale faccia e' nascosta, quindi quali non disegnare, occorre
+prendere i primi 3 punti ruotati (x+y) della faccia ed eseguire il calcolo:
+
+Se:
+
+	((Bx-Ax)*(Cy-By))-((Cx-Bx)*(By-Ay))
+
+E' positivo allora non disegnare la faccia!
+
+
+; Ecco la SINTAB, ripetuta 2 volte per poterla usare come una COSTAB.
+
+SineTableOfWordsX2:
+
+	dc.w	1,$324,$648,$96A,$C8C,$FAB,$12C8,$15E2,$18F9
+	dc.w	$1C0B,$1F1A,$2223,$2528,$2826,$2B1F,$2E11,$30FB
+	dc.w	$33DF,$36BA,$398C,$3C56,$3F17,$41CE,$447A,$471C
+	dc.w	$49B4,$4C3F,$4EBF,$5133,$539B,$55F5,$5842,$5A82
+	dc.w	$5CB3,$5ED7,$60EB,$62F1,$64E8,$66CF,$68A6,$6A6D
+	dc.w	$6C23,$6DC9,$6F5E,$70E2,$7254,$73B5,$7504,$7641
+	dc.w	$776B,$7884,$7989,$7A7C,$7B5C,$7C29,$7CE3,$7D89
+	dc.w	$7E1D,$7E9C,$7F09,$7F61,$7FA6,$7FD8,$7FF5,$7FFF
+	dc.w	$7FF5,$7FD8,$7FA6,$7F61,$7F09,$7E9C,$7E1D,$7D89
+	dc.w	$7CE3,$7C29,$7B5C,$7A7C,$7989,$7884,$776B,$7641
+	dc.w	$7504,$73B5,$7254,$70E2,$6F5E,$6DC9,$6C23,$6A6D
+	dc.w	$68A6,$66CF,$64E8,$62F1,$60EB,$5ED7,$5CB3,$5A82
+	dc.w	$5842,$55F5,$539B,$5133,$4EBF,$4C3F,$49B4,$471C
+	dc.w	$447A,$41CE,$3F17,$3C56,$398C,$36BA,$33DF,$30FB
+	dc.w	$2E11,$2B1F,$2826,$2528,$2223,$1F1A,$1C0B,$18F9
+	dc.w	$15E2,$12C8,$FAB,$C8C,$96A,$648,$324,1,$FCDC
+	dc.w	$F9B8,$F696,$F374,$F055,$ED38,$EA1E,$E707,$E3F5
+	dc.w	$E0E6,$DDDD,$DAD8,$D7DA,$D4E1,$D1EF,$CF05,$CC21
+	dc.w	$C946,$C674,$C3AA,$C0E9,$BE32,$BB86,$B8E4,$B64C
+	dc.w	$B3C1,$B141,$AECD,$AC65,$AA0B,$A7BE,$A57E,$A34D
+	dc.w	$A129,$9F15,$9D0F,$9B18,$9931,$975A,$9593,$93DD
+	dc.w	$9237,$90A2,$8F1E,$8DAC,$8C4B,$8AFC,$89BF,$8895
+	dc.w	$877C,$8677,$8584,$84A4,$83D7,$831D,$8277,$81E3
+	dc.w	$8164,$80F7,$809F,$805A,$8028,$800B,$8001,$800B
+	dc.w	$8028,$805A,$809F,$80F7,$8164,$81E3,$8277,$831D
+	dc.w	$83D7,$84A4,$8584,$8677,$877C,$8895,$89BF,$8AFC
+	dc.w	$8C4B,$8DAC,$8F1E,$90A2,$9237,$93DD,$9593,$975A
+	dc.w	$9931,$9B18,$9D0F,$9F15,$A129,$A34D,$A57E,$A7BE
+	dc.w	$AA0B,$AC65,$AECD,$B141,$B3C1,$B64C,$B8E4,$BB86
+	dc.w	$BE32,$C0E9,$C3AA,$C674,$C946,$CC21,$CF05,$D1EF
+	dc.w	$D4E1,$D7DA,$DAD8,$DDDD,$E0E6,$E3F5,$E707,$EA1E
+	dc.w	$ED38,$F055,$F374,$F696,$F9B8,$FCDC,2,$66E8,0
+	dc.w	$240,0,0,0,0,1,$324,$648,$96A,$C8C,$FAB,$12C8
+	dc.w	$15E2,$18F9,$1C0B,$1F1A,$2223,$2528,$2826,$2B1F
+	dc.w	$2E11,$30FB,$33DF,$36BA,$398C,$3C56,$3F17,$41CE
+	dc.w	$447A,$471C,$49B4,$4C3F,$4EBF,$5133,$539B,$55F5
+	dc.w	$5842,$5A82,$5CB3,$5ED7,$60EB,$62F1,$64E8,$66CF
+	dc.w	$68A6,$6A6D,$6C23,$6DC9,$6F5E,$70E2,$7254,$73B5
+	dc.w	$7504,$7641,$776B,$7884,$7989,$7A7C,$7B5C,$7C29
+	dc.w	$7CE3,$7D89,$7E1D,$7E9C,$7F09,$7F61,$7FA6,$7FD8
+	dc.w	$7FF5,$7FFF,$7FF5,$7FD8,$7FA6,$7F61,$7F09,$7E9C
+	dc.w	$7E1D,$7D89,$7CE3,$7C29,$7B5C,$7A7C,$7989,$7884
+	dc.w	$776B,$7641,$7504,$73B5,$7254,$70E2,$6F5E,$6DC9
+	dc.w	$6C23,$6A6D,$68A6,$66CF,$64E8,$62F1,$60EB,$5ED7
+	dc.w	$5CB3,$5A82,$5842,$55F5,$539B,$5133,$4EBF,$4C3F
+	dc.w	$49B4,$471C,$447A,$41CE,$3F17,$3C56,$398C,$36BA
+	dc.w	$33DF,$30FB,$2E11,$2B1F,$2826,$2528,$2223,$1F1A
+	dc.w	$1C0B,$18F9,$15E2,$12C8,$FAB,$C8C,$96A,$648,$324
+	dc.w	1,$FCDC,$F9B8,$F696,$F374,$F055,$ED38,$EA1E,$E707
+	dc.w	$E3F5,$E0E6,$DDDD,$DAD8,$D7DA,$D4E1,$D1EF,$CF05
+	dc.w	$CC21,$C946,$C674,$C3AA,$C0E9,$BE32,$BB86,$B8E4
+	dc.w	$B64C,$B3C1,$B141,$AECD,$AC65,$AA0B,$A7BE,$A57E
+	dc.w	$A34D,$A129,$9F15,$9D0F,$9B18,$9931,$975A,$9593
+	dc.w	$93DD,$9237,$90A2,$8F1E,$8DAC,$8C4B,$8AFC,$89BF
+	dc.w	$8895,$877C,$8677,$8584,$84A4,$83D7,$831D,$8277
+	dc.w	$81E3,$8164,$80F7,$809F,$805A,$8028,$800B,$8001
+	dc.w	$800B,$8028,$805A,$809F,$80F7,$8164,$81E3,$8277
+	dc.w	$831D,$83D7,$84A4,$8584,$8677,$877C,$8895,$89BF
+	dc.w	$8AFC,$8C4B,$8DAC,$8F1E,$90A2,$9237,$93DD,$9593
+	dc.w	$975A,$9931,$9B18,$9D0F,$9F15,$A129,$A34D,$A57E
+	dc.w	$A7BE,$AA0B,$AC65,$AECD,$B141,$B3C1,$B64C,$B8E4
+	dc.w	$BB86,$BE32,$C0E9,$C3AA,$C674,$C946,$CC21,$CF05
+	dc.w	$D1EF,$D4E1,$D7DA,$DAD8,$DDDD,$E0E6,$E3F5,$E707
+	dc.w	$EA1E,$ED38,$F055,$F374,$F696,$F9B8,$FCDC,2,$66E8
+	dc.w	0,$240,0,0,0,0
+
+Una introduzione by Asterix of Movement
+==========================================
+
+Scritto da Carl-Henrik Skårstedt durante le sue vacanze.
+
+     _              _
+     /|            |\
+/|\ /                \
+ | /                  \
+ |/_______\
+          /
+
+
+1. Prefazione
+=============
+
+Per la comprensione di questo testo sarebbe bene conoscere l'Algebra Lineare
+di base, perche' leggendo questo testo, dovresti anche essere capace di
+capire cio' che stai facendo, non soltanto convertire formule date in codice
+680x0. Se conosci la teoria dietro la tua routine, saprai anche come
+ottimizzarla o modificarla!
+
+Questo testo è utile non solo per programmare grafica 3d su Amiga, ma su tutti
+i computer che supporta una buona interfaccia grafica, veloce abbastanza da
+fare oggetti concavi in un fotogramma (non il PC).
+
+sqr() significa RADICE QUADRATA in questo testo.
+
+Il significato di questo testo è che esso sarà una parte di
+Come Codice.txt e che le stesse regole lavora per questo
+testo come per quello.
+I diritti di questa parte rimane con l'autore.
+Sourcecodes dovrebbe lavorare con più assemblers eccetto per
+Inserire ordinanando, che ha bisogno di un 68020 assembler.
+
+*******************************************************************************
+
+2. Introduzione ai vettori
+==========================
+
+Cosa è un vettore?
+-----------------
+Se hai visto delle demo, quei cubi che girano sono chiamati vettori.
+Possono essere palle, poligoni riempiti, linee, o altre cose.
+La cosa in comune a questi demos sono i calcoli di vettore delle posizioni
+degli oggetti. Esso può essere in uno, due o tre Dimensioni
+
+Per esempio prendiamo un cubo. Ogni angolo sul cubo
+rappresenta un vettore Al centro di rotazione.
+Tutti i vettori vanno Da qualche parte A qualche altra, normalmente noi usiamo
+vettori che vanno da un punto (0,0) a un punto (a,b).
+Questo vettore ha come quantità (a,b).
+
+Definizione di vettore:
+Una Quantità di Valore e Direzione
+
+o, in termini spicci: una linea.
+Una linea ha una lunghezza che possiamo chiamare r, e una direzione che
+possiamo chiamare t.
+Possiamo scrivere questo vettore (r,t) = (lunghezza,angolo).
+Ma c'è anche un altro modo, che è più usato per oggetti vettoriali con
+coordinate date.
+
+La linea da (0,0) a (x,y) ha la lunghezza sqr(x*x+y*y), e questo è il Valore
+del vettore.
+La direzione può essere vista come l'angolo tra l'asse x e la linea descritta
+dal vettore.
+
+Se studiamo questo in due dimensioni, possiamo avere un vettore di esempio
+come il seguente:
+
+     ^ y
+     |     _.(a,b)
+     |     /|
+     |    /
+     |   /
+     |  /  V
+     | /
+     |/\ - t=angolo tra asse x e vettore V
+  ---+------------>
+    (0,0)          x
+
+
+Possiamo chiamare questo vettore V, e, come possiamo vedere, va dal
+punto (0,0) a (a,b).
+Possiamo denotare questo vettore come V=(a,b).
+Ora abbiamo sia un valore di V (La lunghezza tra (0,0) e (a,b)) e la sua
+direzione (l'angolo nel diagramma)
+
+Se guardiamo al diagramma, possiamo vedere che la lunghezza del vettore può
+essere elaborata col teorema di pitagora:
+
+	r=sqr(a*a+b*b)
+
+E t è l'angolo (Può essere calcolato con t=tan(y/x))
+
+
+Tre Dimensioni?
+-----------------
+Ora, se abbiamo visto cosa e' un vettore in due dimensioni, cosa e' un vettore
+in tre dimensioni?
+
+In tre dimensioni, ogni punto ha tre coordinate, dunque anche il vettore deve
+avere tre coordinate.
+
+	V=(a,b,c)
+
+Ora la lunghezza del vettore diventa:
+
+	r=sqr(a*a+b*b+c*c)
+
+Che succede all'angolo ora?
+
+Qui possiamo avere differenti definizioni, ma pensiamo un attimo.
+Se iniziamo dando UN angolo, possiamo solo raggiungere un punto su un PIANO,
+ma noi desideriamo prendere una direzione nello Spazio.
+
+Se proviamo con DUE angoli, avremo un risultato migliore.
+Un angolo può rappresentare l'angolo tra l'asse Z e il vettore, l'altro la
+rotazione ATTORNO all'asse Z.
+
+Per altri problemi in questo campo (ce ne sono molti) studia il calcolo di
+molte variabili e particolarmente le trasformazioni polari in integrali tripli,
+o almeno integrali di superficie in campi di vettore.
+
+*******************************************************************************
+
+2.1 operazioni di Vettore:
+=========================
+
+(Se hai due, o una dimensione, hai due o una variabile invece di tre.
+ se ne hai di più hai, naturalmente, tante variabili quanto le dimensioni)
+
+* La SOMMA di due vettori (U=V+W) e' definita come:
+
+	V=(vx,vy,vz), W=(wx,wy,wz)=>
+
+	=> U=(vx+wx,vy+wy,vz+wz)
+
+* La negazione di un vettore U=-V è definito come:
+
+	V=(x,y,z) => U=(-x,-y,-z)
+
+* La differenza tra due vettori U=V-W e' definita come:
+
+	U=V+(-W)
+
+* Un vettore tra due punti (Da P1(x1,y1,z1) A P2(x2,y2,z2))
+  puo' essere elaborato:
+
+	V=(x2-x1,y2-y1,z2-z1,...)
+
+	(V va da P1 a P2)
+
+* Un vettore può essere moltiplicato per una costante:
+
+	U=k*V
+
+	(x*k,y*k,z*k)=k*(x,y,z)
+
+* Un sistema di coordinate può essere "Traslato" a un nuovo punto con la
+  formula di traslazione:
+
+	x'=x-k
+	y'=y-l
+	z'=z-m
+
+  Dove (k,l,m) è il VECCHIO punto dove il NUOVO sistema di coordinate dovrebbe
+  avere il suo punto (0,0,0)
+  Questa è una buona operazione se desideri Ruotare attorno a un NUOVO PUNTO!
+
+* Un vettore può essere ruotato (Controlla il capitolo 4)
+  Il vettore è sempre ruotato attorno al punto (0,0,0) così puoi traslarlo.
+
+* Possiamo fare un prodotto scalare e un prodotto in croce sui vettori
+  (vedere un qualsiasi libro circa l'introduzione all'algebra lineare)
+
+*******************************************************************************
+
+3. tecniche di PROGRAMMAZIONE
+====================
+
+******************************************************************************
+
+Un modo per usare numeri reali con gli Interi
+----------------------------------------------
+
+Finora abbiamo solo visto parecchie formule, ma come possiamo usarle in
+Assembler, dove possiamo avere solo byte/word/longword?
+(Se non hai un FPU, e non desideri che solo la gente con FPU possa vedere il
+ tuo demo, naturalmente!)
+
+Per la programmazione 68000 (compatibile con tutti i processori 680x0) e'
+comodo poter fare moltiplicazioni, divisioni ecc. con le WORDS.
+(I processori 68020+ possono farle anche con le longword)
+
+Ma noi abbiamo bisogno anche delle parti FRATTE, frazionarie dei numeri, cioe'
+i numeri "dopo la virgola", ma come facciamo se non c'e' la virgola?
+Possiamo provare a usare numeri che sono moltiplicati per una costante p.
+Allora possiamo fare la seguente operazione:
+
+  [cos(a)*p] * 75 (per esempio da una lista con cos(x) moltiplicato per p)
+
+Ma come puoi vedere questo numero cresce ogni volta che facciamo un'altra
+moltiplicazione, così che dobbiamo dividelo per p di nuovo:
+
+  [cos(a)*p] * 75 / p
+
+Se sei un esperto di coding, certamente dirai: "Oh no! non una divisione che
+perde parecchio tempo!".
+Ma se  scegli p attentamente (cioè p = 2 o 4 o 8 ...) tu puoi usare lo SHIFT
+invece di una divisione! Guardate questo esempio:
+
+	mulu.w	10(a0),d0	; 10(a0) è da una lista di valori cos*256
+	asr.l	#8,d0		; e noi "dividiamo" per 256!
+
+Ora abbiamo fatto una moltiplicazione di un numero con virgola fissa!
+(Un trucco per ottenere un margine di errore più piccolo:
+ pulire un registro dati Dx e usare un addx dopo l'asr, e avrai un
+ errore "arrotondato", "smussato" (round-off):
+
+	moveq	#0,d7		; Azzeriamo il registro d7
+	:
+	:
+	mulu.w	10(a0),d0	; prendiamo il valore dalla tabella (cos*256)
+	asr.l	#8,d0		; "dividiamo" per 256
+	addx.l	d7,d0		; arrotondiamo col solo Flag eXtend (d7=0)
+	:
+	rts
+
+ Questo dimezza l'errore!)
+
+Lo stesso sistema serve per le divisioni, ma nell'altro modo:
+
+	:
+	ext.l	d0
+	ext.l	d1
+	asl.l	#8,d0		;"Moltiplica" per 256
+	divs.w	d1,d0		; e dividi per z*256 ...
+	:
+	rts
+
+Addizioni e sottrazioni sono gli stessi come per le normali operazioni sugli
+interi: (non serve nessuno shif)
+
+	:
+	add.w	10(a0),d0
+	:
+
+	:
+	sub.w	16(a1),d1
+	:
+
+
+Così, Con le moltiplicazioni MUL prima, poi LSR.
+Con le divisioni LSL prima, poi DIV.
+
+Se desideri avere una più alta accuratezza con le moltiplicazioni, i processori
+68020 e superiori offrono un modo economico di fare operazioni in virgola
+mobile (32-bit totale).
+Puoi anche fare moltiplicazioni di interi 32*32->32, e usare coseni e seni a
+16-bit, che permettono di usare 'SWAP' invece di 'LSR'.
+
+*******************************************************************************
+
+Come posso usare Sin e Cos nel mio codice assembler?
+---------------------------------------------------
+Il modo più facile e più veloce è quello di includere una sinus-list, detta
+piu' frequentemente SINUS TAB, nel listato.
+Fare un programma che conteggi da 0 a 2*pi, per esempio 1024 volte.
+Salvare i valori e includeli nel codice.
+
+Se hai WORDS e 1024 differenti valori di seni allora puoi prendere SENO e
+COSENO in questo modo:
+
+	lea	sinuslist(pc),a0	; lista(tabella) di seni gia' calcolati
+	and.w	#$7fe,d0		; d0 e' l'angolo (escludi num. dispari)
+	move.w	(a0,d0.w),d1            ; d1=sin(d0)
+	add.w	#(1024/4)*2,d0		; aggiungi 90° (1/4 di angolo giro)
+					; per trovare il seno. *2 perche' sono
+					; words da raggiungere in tabella.
+	and.w	#$7fe,d0
+	move.w	(a0,d0.w),d0		; d0=cos (original d0)
+	:
+	:
+
+Per farsi la tabella si puo' usare il comodo comando "IS" o "CS" dell'ASMONE,
+oppure si puo' calcolare con le librerie matematiche o con altri linguaggi:
+
+pi=3.141592654
+vals=1024
+
+con un ciclo che aumenta sempre L da 0 a 1024:
+
+angolo = L/vals*2*pi
+
+Puoi naturalmente fare un programma che calcola il SENO in codice assembler,
+usando le librerie ieee o programmandoti una tua routine in virgola-mobile
+l'algoritmo e'.. (per sinus)
+
+ indata: v=angolo (dato in radianti)
+         Laps=numero di termini (meno=piu' veloce, ma piu' errori, intero)
+
+   1> Mlop=1
+      DFac=1
+      Ang2=angolo*angolo
+      Talj=angolo
+      segno=1
+      Result=0
+   2> FOR terms=1 TO Laps
+   2.1> Temp=Talj/Dfac
+   2.2> Result=segno*(Result+Temp)
+   2.3> Talj=Talj*Ang2
+   2.4> Mlop=Mlop+1
+   2.5> Dfac=Dfac*Mlop
+   2.6> segno=-segno
+   3> RETURN sin()=Result
+
+dove il sin() è tra -1 e 1...
+L'algoritmo usa i polinomi di MacLaurin, e sono perciò raccomandati solo per
+valori che non sono molto lontani da 0.
+
+4. La rotazione dei vettori
+==========================
+
+* In due dimensioni
+
+Ora conosciamo cos'e' un vettore, e desideriamo ruotarlo.
+Questo è molto semplice, se abbiamo un vettore dato con lunghezza e angolo,
+noi semplicemente aggiungiamo l'angolo di rotazione all'angolo e lasciarmo la
+lunghezza cosi' com'è:
+
+	ruotare V=(r,t) con un -> V'=(r,t+a)
+
+Ma normalmente non abbiamo questo semplice caso, abbiamo un vettore dato da
+due coordinate:
+
+	V=(x,y) dove x e y sono coordinate nel piano xy
+
+In Questo testo noi evidenziamo la rotazione di un vettore V=(r,t) con
+rot(V,a).
+Con questo Io intendo dire la rotazione del vettore V con l'angolo a.
+
+La rotazione di questo vettore e' possibile farla trasformando V in un vettore
+di lunghezza e direzione, ma siccome questo comporta quadrati, tangenti,
+radici quadrate etc., sarebbe meglio usare un metodo più veloce.
+E' qui che entra in scena la trigonometria.
+
+Ma prima, immaginiamo di avere un vettore V=(x,0)
+Quale potrebbe essere la rotazione di questo vettore?
+
+       V
+  ----------->
+
+  Ora, ruotiamolo con un angolo a:
+
+      _
+/|\y' /|
+ |   /
+ |V'/
+ | /
+ |/\a x'
+  ----->
+
+  Quali sono le nuove componenti del vettore? (x',y') ?
+
+	Ricordate queste "definizioni":
+
+Coseno:
+	ipotenusa/lato vicino all'angolo
+
+Seno:
+	ipotenusa/lato non vicino all'angolo
+
+		         ,
+		        /|
+	     Lunghezza>/ |< Lunghezza * sin(a)
+		      /a |
+		     '---+
+		Lunghezza * cos(a)
+
+
+Se mettiamo questo nella formula originale di rotazione (V'=rot(V,a)=V(r,t+a))
+possiamo vedere che possiamo convertire r e t in x e y con:
+
+	x=r*cos(t)
+	y=r*sin(t)
+
+Torniamo indietro al problema del vettore ruotato V=(x,0).
+Qui c'è r=x (=sqrt(x*x+0*0)), t=0 (=arctan(0/x)
+se mettiamo questo nella nostra formula abbiamo:
+
+	V=(r,t) se r=x, t=0
+
+Se ruotiamo questo vettore con l'angolo a abbiamo:
+
+	V=(r,t+a)
+
+E se trasliamo indietro alla nostra coordinata indicata:
+
+	V=(r*cos(t+a),r*sin(t+a))=(x*cos(a),x*sin(a))
+				 ^Inseriamo x=r, t=0
+
+E questa e' la formula per la rotazione di un vettore che non ha componente Y.
+
+Per un vettore V=(0,y) noi abbiamo:
+
+
+	r=y, t=pi/2 (=90 gradi) perche' ora siamo nell'asse y, che è a 90
+				gradi dall'asse X.
+
+
+	V=(r,t) => V'=(r,t+a) => V'=(r*cos(t+a),r*sin(t+a)) =>
+	V'=(y*cos(pi/2+a),y*sin(pi/2+a))
+
+Ora, ci sono un pò di formule trigonometriche che dicono che:
+
+ cos(pi/2+a)=sin(a) e sin(pi/2+a)=-cos(a)
+
+Dunque abbiamo:
+
+	V'=( y * sin(a) , y * ( -cos(a) ) )
+
+
+Ma se guardiamo al caso generale, abbiamo un vettore V che ha entrambe le
+componenti x e y.
+Ora possiamo usare le formule di rotazione dei singoli-casi per calcolare il
+caso generale caso con una addizione:
+
+
+  Vx'=rot((x,0),a) = (x*cos(a)         ,x*sin(a))
++ Vy'=rot((0,y),a) = (        +y*sin(a),        -y*cos(a))
+----------------------------------------------------------
+  V' =rot((x,y),a) = (x*cos(a)+y*sin(a),x*sin(a)-y*cos(a))
+
+
+(Vx' significa rotazione di V=(x,0) e Vy' è rotazione di V=(0,y))
+E abbiamo la rotazione di un vettore dato in coordinate!
+
+*****************************************************************************
+		FORMULA FINALE DI ROTAZIONE IN DUE DIMENSIONI
+*****************************************************************************
+
+.. .
+ . rot( (x,y), a)=( x*cos(a)+y*sin(a) , x*sin(a)-y*cos(a) )
+       componente X ^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^ componente Y
+
+*****************************************************************************
+
+* Tre dimensioni
+
+Nel caso delle 2 dimensioni, abbiamo ruotato le coordinate x e y, e non
+vediamo nessuna coordinate z cambiata.
+Perciò chiamiamo questo una rotazione attorno all'asse Z.
+
+Ora, la cosa piu' facile da fare in tre dimensioni è fare ancora la stessa
+cosa, semplicemente ruotare attorno a qualsiasi asse per ottenere la nuova
+coordinata.
+Lascia fuori la variabile che rappresenta la coordinata del corrente asse
+di rotazione, e puoi usare la stessa espressione.
+
+Se desideri ruotare solo una o due coordinate, puoi usare il normale metodo di
+rotazione, perchè non occorre calcolare una matrice di trasformazione 3x3.
+Ma se hai più punti, raccomando la versione ottimizzata.
+
+Ci sono ottimizzazioni in questo campo, ma vediamo prima almeno un modo per
+ruotare un vettore con 3 angoli dati:
+
+*******************************************************************************
+     METODO NORMALE DI ROTAZIONE DI UN VETTORE CON 3 ANGOLI DATI IN 3D:
+*******************************************************************************
+
+Assumi che desideriamo ruotare V=(x,y,z) attorno all'asse Z con l'angolo a,
+attorno y con b e attorno x con c.
+
+La prima rotazione che facciamo e' attorno all'asse Z:
+
+	U=(x,y) (x,y da V-vettore) =>
+	=> U'=rot(U,a)=rot((x,y),a)=(x',y')
+
+Ora vogliamo ruotare attorno all'asse Y:
+
+	W=(x',z) (x' è da U' e z è da V) =>
+	=> W'=rot(W,b)=rot((x',z),b)=(x'',z')
+
+E infine attorno all'asse X:
+
+	T=(y',z') (y' è da U' e z' è da W') =>
+	=> T'=rot(T,c)=rot((y',z'),c)=(y'',z'')
+
+Il vettore ruotato V' è il vettore di coordinate
+
+	(x'',y'',z'') !
+
+Con questo metodo possiamo estendere il comando di rotazione a:
+
+
+	V''= rot(V,angolo1,angolo2,angolo3) dove V è il vettore originale!
+	( V''= rot((x,y,z),angolo1,angolo2,angolo3) )
+
+
+Spero che non appaia troppo complicato.
+Come ho detto, ci sono ottimizzazioni di questo metodo.
+Queste ottimizzazioni possono essere fatte saltando una rotazione di quelle
+viste sopra, o qualche precalcolazione.
+
+L'ORDINE è molto importante. Non avrai la stessa risposta se ruoti X,Y,Z con
+gli stessi angoli di prima.
+
+******************************************************************************
+
+Ottimizzazioni:
+==============
+Per i vettori xyz possiamo scrivere le equazioni per formare le rotazioni:
+
+Considera:
+	c1=cos(angolo1)
+	c2=cos(angolo2)
+	c3=cos(angolo3)
+	s1=sin(angolo1)
+	s2=sin(angolo2)
+	s3=sin(angolo3)
+
+		(x*cos(a)+y*sin(a),x*sin(a)-y*cos(a))
+
+	x' = x*c1+y*s1
+	y' = x*s1-y*c1
+
+	x''= x'*c2+z*s2	  <- Coordinata X ruotata
+	z' = x'*s2-z*c2
+
+	y''= y'*c3+z'*s3  <- Coordinata Y ruotata
+	z''= y'*s3-z'*c3  <- Coordinata Z ruotata
+
+che dà:
+
+   x''= (x*c1+y*s1)*c2+z*s2= c2*c1 *x + c2*s1 *y + s2 *z
+        ^^^^^^^^^^^=x'       ^^^^^ xx   ^^^^^ xy   ^^ xz
+
+   y''= (x*s1-y*c1)*c3+((x*c1+y*s1)*s2-z*c2)*s3=
+        c3*s1 *x - c3*c1 *y + s3*s2*c1 *x + s3*s2*s1 *y - s3*c2 *z=
+
+        (s3*s2*c1+c3*s1) *x + (s3*s2*s1-c3*c1) *y + (-s3*c2) *z
+        ^^^^^^^^^^^^^^^^ yx   ^^^^^^^^^^^^^^^^ yy   ^^^^^^^^ yz
+
+   z''= (x*s1-y*c1)*s3-((x*c1+y*s1)*s2-z*c2)*c3=
+        s3*s1 *x - s3*c1 *y - c3*s2*c1 *x - c3*s2*s1 *y + c3*c2 *z=
+
+        (-c3*s2*c1+s3*s1) *x + (-c3*s2*s1-c3*c1) *y + (c3*c2) *z
+        ^^^^^^^^^^^^^^^^^ zx   ^^^^^^^^^^^^^^^^^ zy   ^^^^^^^ zz
+
+
+Ora, guardate la caratteristica, la struttura delle soluzioni:
+per x'' abbiamo calcolato l'originale (x,y,z) moltiplicato per qualche volta,
+lo stesso per y'' e z'', Qual'è il collegamento?
+
+Facciamo l'esempio di dover ruotare molti vettori dati con tre angoli che sono
+gli stessi per tutti i vettori, allora avremo questo schema di moltiplicazioni.
+Quando hai ruotato come sopra hai dovuto usare dodici moltiplicazioni per fare
+una rotazione, ma ora precalcoliamo queste 'costanti' per ottenere di scendere
+a solamente nove moltiplicazioni!
+	    ^^^^
+
+*******************************************************************************
+	FORMULA FINALE DI ROTAZIONE IN 3 DIMENSIONI CON 3 ANGOLI:
+*******************************************************************************
+
+x,y,z è la coordinata (x,y,z) originale.
+
+	c1=cos(angolo1)
+	c2=cos(angolo2)
+	c3=cos(angolo3)
+	s1=sin(angolo1)
+	s2=sin(angolo2)
+	s3=sin(angolo3)
+
+Se desideri ruotare parecchie coordinate con gli stessi angoli prima devi
+calcolare questi valori:
+
+		xx=c2*c1
+		xy=c2*s1
+		xz=s2
+		yx=c3*s1+s3*s2*c1
+		yy=-c3*c1+s3*s2*s1
+		yz=-s3*c2
+		zx=s3*s1-c3*s2*c1;s2*c1+c3*s1
+		zy=-s3*c1-c3*s2*s1;c3*c1-s2*s1
+		zz=c3*c2
+
+Allora, per ogni coordinata, devi usare la seguente moltiplicazione per
+ottenere le coordinate ruotate:
+
+	x''=xx * x + xy * y + xz * z
+	y''=yx * x + yy * y + yz * z
+	z''=zx * x + zy * y + zz * z
+
+Così, devi solo calcolare le costanti una volta per ogni nuovo angolo, e POI
+basta usare NOVE moltiplicazioni per ogni punto che vuoi ruotare per ottenere
+il nuovo set di punti.
+
+Guarda la fine di questo testo per un esempio di come questo può essere
+implementato in assembler 68000.
+
+Se vuoi saltare un angolo, puoi ottimizzare ulteriormente.
+Se desideri rimuovere l'angolo 3, assegna c3=1 e s3=0.
+Mettili nel calcolo delle costanti e sara' ottimizzato come vuoi.
+
+Quale metodo usare dipende naturalmente da quanto hai voglia di programmare,
+ma personalmente preferisco la versione ottimizzata, perche' se ne puo'
+essere piu' fieri.
+Se vuoi ruotare solo pochi punti con gli stessi angoli, la prima versione
+(non ottimizzata) potrebbe essere la scelta.
+
+Se lo desideri, puoi controllare se la matrice di trasformazione ha
+un determinante uguale a 1.
+
+*******************************************************************************
+
+5. Poligoni!
+============
+
+La parola "poligono" significa molti angoli, il che significa anche che ha
+parecchi punti (angoli) con linee disegnate.
+Se abbiamo, per esempio, 5 punti, possiamo disegnare linee:
+dal punto 1 al punto 2
+dal punto 2 al punto 3
+dal punto 3 al punto 4
+dal punto 4 al punto 5
+E se vogliamo un poligono CHIUSO dobbiamo disegnare anche una linea
+dal punto 5 al punto 1
+
+Punti: 2
+       .
+
+       .3
+  1
+  .
+  5..4
+
+Poligono APERTO costituito dai punti visti sopra:
+
+
+       /|
+      / |
+     /  /
+    /  /
+     _/
+
+
+Poligono CHIUSO costituito dai punti visti sopra:
+
+       /|
+      / |
+     /  /
+    /  /
+    \_/
+
+
+I "Filled vectors", cioe' "vettori riempiti" sono creati disegnando poligoni,
+e riempiendo il loro interno.
+Normalmente è usato il seguente algoritmo:
+
+Prima definiamo tutti gli "angoli" sul poligono come vettori, che ci permette
+di ruotarlo e di disegnalo nei nuovi angoli dopo la rotazione, poi disegniamo
+una linea dal punto 1 al punto 2, e così di seguito.
+L'ultima linea è da punto 5 al punto 1.
+Quando abbiamo finito usiamo un BLITTER-FILL per riempire l'area.
+
+Avremo bisogno di una speciale routine di tracciamento delle linee per
+disegnare queste linee per far funzionare bene il BLITTER-FILL.
+C'e' un esempio di routine adatta a questo compito nell'appendice del testo.
+Ulteriore teoria circa che richieste ci sono sulla routine di DRAW della linea
+sarà discussa più tardi (Appendice B 2).
+
+
+	Creare oggetti dai poligoni
+	===============================
+
+Un "oggetto" è una cosa tridimensionale creata con poligoni.
+Ma che succede alle superfici che sono sull'altro lato dell'oggetto?
+se ci sono parti nascoste nell'oggetto, che possiamo fare?
+
+Cominciamo con un cubo, è facile da immaginare.
+Possiamo vedere che nessuna parte del cubo è sopra un'altra, agli occhi
+dell'osservatore (a differenza, per esempio, di un toro).
+Alcune aree sono naturalmente fuori dal visibile, ma possiamo
+calcolare in che direzione e' rivolto il poligono (verso l'osservatore o
+nascosto dietro)
+
+Occorre definire i poligoni in oggetti nella stessa direzione
+(oraria o antioraria) in tutto l'oggetto. Non conta con quale punto parti,
+e' importante l'ordine.
+
+Prendi tre punti da un piano (punto1, punto2 e punto 3).
+Se tutti i tre punti non sono uguali a uno qualsiasi degli altri punti,
+questi punti definiscono un piano.
+Allora ti serviranno solo 3 punti per definire la direzione del piano.
+Esamina il seguente calcolo:
+
+	c=(x3-x1)*(y2-y1)-(x2-x1)*(y3-y1)
+
+(Questo è Dopo la proiezione 3d->2d, così non c'è nessuna coordinata Z.
+Se desideri conoscere come funge, guarda l'appendice b)
+
+Questa formula ha bisogno di tre punti, che è il minimo numero di coordinate
+per definire un poligono, che non sia una linea o un punto.
+Questo comporta due moltiplicazioni per piano, ma non è moltissimo comparato
+alla rotazione e alla proiezione 3d->2d.
+
+Ma vediamo che cosa da' questa equazione:
+
+Se c è negativo, il vettore normale del piano determinato dai tre punti
+è "diretto" verso l'osservatore ( = Il piano è di fronte all' osservatore =>
+il piano dovrebbe essere disegnato )...
+
+Se c è Positivo, il vettore normale del piano è "diretto" fuori dalla zona
+dell'osservatore ( = Il piano non può essere visto dal osservatore =>
+Non disegnare il piano) ...
+
+Ma per quanto riguarda gli oggetti le cui parti coprono altre parti
+dell'oggetto stesso, occorre fare una distinzione tra concavi e convessi.
+
+	Oggetti Convessi e concavi
+	===========================
+
+"Definizioni"
+
+Un oggetto convesso non ha nessuna parte che copre altre parti dello
+stesso oggetto, visto da tutti gli angoli.
+
+Un oggetto concavo ha parti che coprono altre parti dello stesso oggetto,
+visto da qualche angolo.
+
+
+Per gli oggetti convessi, si puo' disegnare una linea diritta da ogni punto
+dentro l'oggetto a ogni altro punto dell'oggetto senza avere nessuna linea che
+passa fuori dal "dominio" dell'oggetto.
+
+Avendo un oggetto CONVESSO, si puossono disegnare tutte le linee attorno
+ai piani visibili, e poi riempire con il blitter, perchè nessun poligono
+disegnato mai coprirà un altro poligono.
+Con qualche trucco si puo' anche trovare il modo di omettere alcune linee,
+se queste saranno disegnate due volte.
+
+Gli oggetti CONCAVI danno ulteriori problemi, il modo piu' facile per usare
+oggetti CONCAVI è di dividerli in oggetti CONVESSI più piccoli.
+Questo funziona per tutti gli oggetti, anche se si puo' avere qualche problema
+facendo cosi'.
+
+Naturalmente, si possono saltare parecchi piani che saranno "all'interno"
+dell'oggetto concavo.
+
+Quando si e' diviso l'oggetto, basta disegnare ogni oggetto convesso in
+un buffer di memoria temporaneo, e trattare questi oggetti come delle
+VECTORBALLS, con routines di SORTING (Ordinamento), che trovi quali parti
+stanno davanti alle altre.
+
+La coordinata Z può essere presa dalla media di tutti i valori Z nell'oggetto
+(Ossia: la somma di tutti i valori Z nell'oggetto divisa per il numero di
+coordinate).
+
+Quando si stanno ordinando gli oggetti, ci possono essere problemi con delle
+parti concave dell'oggetto che vengano selezionate nell'ordine sbagliato,
+perche' si e' preso un punto a a caso ESTERNO all'oggetto convesso, che
+l'oggetto corrente sta condividendo con un altro oggetto convesso.
+Un modo per risolvere questo problema è prendere un punto medio che sia
+nell'oggetto convesso, aggiungendo tutti i valori Z attorno l'oggetto e
+dividendo per il numero di coordinate aggiunte.
+In questo caso, si dovrebbero prendere punti da almeno due piani nell'oggetto.
+
+	Ottimizzazione degli Oggetti
+	============================
+
+Assumiamo di avere un oggetto CONVESSO.
+If it is closed, you have almost as few points as you have planes.
+(Se è chiuso, abbiamo pochi punti quanti sono pochi i piani???)
+Se abbiamo una lista che contiene ogni coordinata esistente (nessun punto deve
+essere ripetuto), questo per ogni poligono mostra che punti occorre prendere
+per questa coordinata, e si puo' tagliare ampiamente il numero di Rotazioni.
+
+Per esempio:
+
+ /* Un cubo */
+ /* l'ordine è importante! Qui è orario */
+
+  fine_piano=0
+
+pointlist:
+
+	dc.l	pt4,pt3,pt2,pt1,fine_piano
+	dc.l	pt5,pt6,pt2,pt1,fine_piano
+	dc.l	pt6,pt7,pt3,pt2,fine_piano
+	dc.l	pt7,pt8,pt4,pt3,fine_piano
+	dc.l	pt8,pt5,pt1,pt4,fine_piano
+	dc.l	pt5,pt6,pt7,pt8,fine_piano
+
+pt1:	dc.w -1,-1,-1
+pt2:	dc.w 1,-1,-1
+pt3:	dc.w 1,-1,1
+pt4:	dc.w -1,-1,1
+pt5:	dc.w -1,1,-1
+pt6:	dc.w 1,1,-1
+pt7:	dc.w 1,1,1
+pt8:	dc.w -1,1,1
+
+Ora, basta ruotare i punti pt1-pt8, che sono otto punti.
+Se avessimo elaborato quattro punti per ogni piano, avremmo dovuto calcolare
+ben 24 rotazioni!
+
+6. piani in tre dimensioni
+=============================
+
+Lightsourcing (sorgente di luce)
+--------------------------------
+
+Il lightsourcing è un modo per scoprire quanta luce riceve un piano da o un
+punto di luce (sferico) o un piano di luce (planare). Se il colore del piano
+rappresenta la luce che cade su esso, l'oggetto sarà un pò più realistico.
+
+Ciò a cui siamo interessati è l'Angolo del Vettore dalla Normale del piano al
+LIGHTSOURCE (=punto di luce).
+(questo è per un lightsource sferico, come una lampada)
+Per l'illuminazione planare, come quella del sole, serve l'Angolo tra la
+Normale del piano e il Vettore del LIGHTSOURCE.
+
+Ci serve il Coseno dell'angolo dato.
+
+Comunque, per avere la normale del piano si possono prendere tre punti nel
+poligono, e creare due vettori di questi.
+
+ Esempio:
+
+*  Prendiamo (x1,y1,z1) , (x2,y2,z2) e (x3,y3,z3)
+
+   Creiamo due vettori V1 e V2:
+
+   V1=(x2-x1,y2-y1,z2-z1)
+   V2=(x3-x1,y3-y1,z3-z1)
+
+Per avere la normale di questi verroti prendiamo il loro prodotto in croce:
+
+                |  i     j     k  |
+    N = V1xV2 = |x2-x1 y2-y1 z2-z1| =
+                |x3-x1 y3-y1 z3-z1|
+
+               n1                                       n2
+*   = ((y2-y1)*(z3-z1)-(y3-y1)*(z2-z1),-((x2-x1)*(z3-z1)-(x3-x1)*(z2-z1)),
+*      ,(x2-x1)*(y3-y1)-(x3-x1)*(y2-y1))
+                 n3
+
+Ora abbiamo N. Abbiamo anche le coordinate del LIGHTSOURCE (date).
+
+Per prendere il COS dell'Angolo tra due vettori possiamo usare il prodotto
+scalare tra N e L (=vettore del lightsource) diviso per la lunghezza di N e L:
+
+   <N,L>/(||N||*||L||) =
+
+*  (n1*l1+n2*l2+n3*l3)/(sqr(n1*n1+n2*n2+n3*n3)*sqr(l1*l1+l2*l2+l3*l3))
+|
+*  (può essere (n1*l1+n2*l2+n3*l3)/k se k è una costante precalcolata)
+
+Se tu non capisci quacosa, guarda le formule con un '*' nel bordo.
+n1 significa  "coordinata X di N", n2 "coordinata Y" e così di seguito, e la
+stessa cosa vale per L.
+
+Questo numero è tra -1 e 1 ed è il COS dell'angolo tra i vettori L e N.
+Le Radici Quadrate fanno perdere molto tempo, ma se teniamo l'oggetto intatto
+(facendo solo rotazioni/traslazioni etc.) e prendiamo sempre gli stessi punti
+nell'oggetto, allora ||N|| è intatto e può essere precalcolato.
+
+Se accertiamo che la lunghezza di L è sempre 1, non occorrera' dividere, e
+questo salva molti cicli.
+
+Il numero potra', come detto, essere tra -1 e 1. Occorrera' moltiplicare il
+numero con qualcosa prima di dividere cosicchè si avra' una più grande gamma
+di colori per la scelta della "tonalita" della faccia.
+Se il numero è negativo, occorre azzerarlo.
+
+Il numero può essere Negativo quando dovrebbe essere Positivo, questo perchè
+hai preso i punti nell'ordine sbagliato, ma allora basta negare il risultato.
+
+Tecniche Speciali -  Algoritmi di Ordinamento (sorting)
+=======================================================
+
+Quando occorre ordinare, di solito si comuncia col "Bubble-sorting", che
+pero' e' piuttosto lento, anche se facile da capire.
+E' meglio usare l'"Insert Sorting" o il "Quick Sorting", o altri piu'
+veloci.
+
+Metodo 1) Bubble Sorting
+-------------------------
+
+Assumiamo di avere una lista di Valori associati a dei Pesi (di metallo!).
+I più pesi piu' pesanti devono cadere in fondo, portando con se i Valori.
+I valori in questo caso possono essere le coordinate x¹ e y¹ o altre
+cose, come i bob delle vectorballs.
+I Pesi possono essere le coordinate Z prima della proiezione.
+
+Si comincia con i primi due elementi, controllando quale elemento è il più
+"pesante", e se è SOPRA l'elemento piu' "leggero", muovendo tutti i dati
+collegati al Peso e il Peso stesso al posto dell'elemento piu' "leggero",
+e di conseguenza mettendo i dati dell'elemento "leggero" dove erano quelli
+dell'elemento "pesante".
+Questa procedura è chiamata operazione di 'scambio' (swap).
+
+Poi si va sotto di 1 elemento e si controllano gli elementi 2 e 3...
+Si fanno vari passi fino a che non si e' in fondo alla lista.
+
+Il primo ciclo pero' non fara' l'ordinamento "finale", occorrera' andare ad
+ordinare la lista lo stesso numero di volte degli oggetti -1!
+Per cui, se ci sono 30 oggetti, occorre fare 29 loop come quello descritto.
+
+Una versione leggermente piu' "intelligente" e' quella che ogni volta che
+avviene uno scambio setta un flag, per cui se la lista fosse stata ordinata
+prima di aver fatto tutti i loop la routine si ferma.
+Se infatti la lista fosse: 2,1,3,4,5,6,7,8,9,10, basterebbe 1 solo loop per
+ordinarla, e non 9!
+
+Ecco un esempio di questo algoritmo, che ordina una tabella di words dalla
+piu' piccola alla piu' grande:
+
+Bubble:
+	lea	Positions(PC),a0 ; Lista di words da ordinare
+	moveq	#0,d0		; azzera d0 (flag di scambio avvenuto)
+Loop:
+	move.w	(a0),d1		; elemento 1
+	cmp.w	2(a0),d1	; elemento 2
+	ble.s	NoSwap		; elem. 2 minore dell'elem. 1? Se si OK
+	move.w	2(a0),(a0)	; altrimenti scambia gli elementi
+	move.w	d1,2(a0)
+	st	d0		; e segna che abbiamo scambiato
+NoSwap:
+	addq.w	#2,a0		; prossima comparazione
+	cmp.l	#EndPos-2,a0	; Siamo alla fine?
+	bcs.s	Loop		; Se non ancora finisci il "giro"
+	tst.w	d0		; Abbiamo finito con gli scambi?
+	bne.s	Bubble		; Se non ancora, dau un'altra ripassata
+	rts
+
+Positions:
+	dc.w	8,3,4,5,6,7,8,1,-1,2,6
+EndPos:
+
+Metodo 2) Insert sorting
+-------------------------
+
+Consideriamo gli stessi Valori e Pesi di prima.
+Per questo sistema, occorre selezionare una lunghezza (byte, word, long)
+per ogni la tavola di
+ordinamento (sorting-table o checklist)
+ una dimensione del checklist.
+
+  Il wordlength dipende dal numero di entrate tu hai,
+  e la dimensione di ogni entrata. Normalmente, esso è convienient
+  ____ usare Parole. La dimensione del checklist è la gamma
+  di Z-valori ____ ordinare, o trasformato Z-valori.
+  Se te, per esempio, sapere che il tuo Z-valori sta entro
+  512-1023 tu puoi prima diminuire ogni z-valore da 512,
+  e poi lsr' esso una volta, che ti darà una dimensione checklist
+  di 256 parole.
+  Tu anche avrai bisogno di un secondo buffer ____ mettere i tuoi ordinato
+  dati in, questo 2ndBUF sarà  come una copia dell'originale
+  elencare ma con le entrate ordinate.
+
+  Per questo metodo Io solo presento un algoritmo, è
+  più facile vedere come funziona da quello che da qualche
+  testo strano.
+
+  checklist(x) è il x'th parola nel checklist.
+
+Algoritmo:
+  1>  Pulire il checklist (assegna tutte le parole=0)
+  2>  Trasformano tutti i pesi se necessario.
+  3>  Per L=0 Al numero di oggetti
+  3.1> Aggiungono ENTRYSIZE A checklist(trasformato peso)
+  4>  Per L=0 A checklist dimensione-1
+  4.1> Aggiungere checklist(L),checklist(L+1)
+  5>  Per L=0 Al numero di oggetti
+  5.1> Mettono Entrata a 2ndBUF(checklist(trasformato peso))
+  5.2> Aggiungere ENTRYSIZE A checklist(trasformato weigth)
+
+  Ora, i tuoi dati è graziosamente ordinato nella lista 2ndBUF, la
+  lista originale è lasciata come esso fu (eccetto per Z-trasformazione).
+  (ENTRYSIZE è la dimensione dell'entrata, così se tu hai x,y,z coordinate
+  in parole, la tua dimensione è 3 parole=6 byte.)
+  Anche provare a pensare un piccolo circa ciò che tu prendi quando tu
+  trasformi. La sottrazione è utile fin quando esso minimizza i
+  loop, ma lsr-ing i pesi prendono tempo e fà il
+  risultato peggio. Naturalmente tu non devi esaminare la lista ogni volta che,
+  semplicemente accertare che tu sai che il più basso possibile e il
+  higest possibile peso è.
+
+
+Metodo 3) il Veloce-Ordinamento
+------------------------
+  Questo è un altro tipo di ordinare, e eccolo più efficiente
+  ____ usare puntatori, cosicchè ogni entrata avere un puntatore alla Prossima entrata.
+
+  tu puoi una entrata così:
+
+  Prossimo Offset=parola
+  x,y,z=coordinate.
+
+  (offset sono dall'indirizzo di partenza sortlist...)
+
+  Per accedere questa routine tu dovrai dare una Prima entrata
+  e numero di entrate. Nell'esecuzione originale, prima entrata
+  è naturalmente 0 (=prima entrata) e il numero di entrate è
+  naturalmente il numero totale di entrate.
+  Tu devi assegnare tutti i precedenti/prossimi puntatori ____ linkare una catena.
+
+  Quicksort è ricorsivo, che significa che tu dovrai
+  chiamare la routine dall'interno se stesso. Questo non è a
+  tutto complicato, tu semplicemente devi mettere alcune delle tue
+  variabili vecchie sullo stack per sicuro-keeping.
+
+  Ciò che esso fà è questo:
++> La prima entrata nella lista è il PIVOT Entrata.
+|  L'un per l'altro Entrata, noi mettiamo esso o Prima o Dopo
+|  il PIVOT. Se esso è accendino del PIVOT noi mettiamo esso Prima,
+|  altrimenti noi mettiamo esso Dopo.
+|  Ora noi abbiamo due nuove liste, Tutte le entrate Prima il PIVOT,
+|  e tutte le entrate Dopo il PIVOT (ma non il pivot se stesso,
+|  che è già ordinato).
+|  Ora noi quicksort Tutte le entrate Prima il pivot separatamente
++< e poi noi quicksort tutte le entrate Dopo il pivot.
+   (Noi facciamo questo chiamando sulla routine noi siamo già in)
+   Questo può causare problemi con lo stack se c'è troppo
+   molte cose ____ ordinare.
+
+   Il loop di ricorsione è rotto quando c'è <=1 entrata
+   ____ ordinare.
+
+   Contrario a qualche fede peoples, tu non hai bisogno di qualsiasi extra
+   elenca ____ risolvere questo.
+
+Algoritmo:
+
+Inparameters: (PivotEntry=primo elemento di lista
+               Elencare dimensione=dimensione di lista corrente)
+1> Se elencare dimensione <= 1 quindi uscire
+2> PivotWeight=Weight(PivotEntry)
+3> per l=2nd Entrata ____ elencare dimensione-1
+3.1> se weight(l) > PivotWeight
+3.1.1> inserire entrata in lista 1
+3.2> Altrimenti
+3.2.1> inserire entrata in lista 2
+4> Ordinare elencare 1 (bsr quicksort(prima entrata elencare 1, dimensione di lista 1))
+5> Ordinare elencare 1 (bsr quicksort(prima entrata elencare 2, dimensione di lista 2))
+6> Linkare elencare 1 -> PivotEntry -> elencare 2
+
+  (PivotEntry = FirstEntry, esso non deve assomigliare questo, ma Io preferisco
+   esso fin quando Io trovo esso più facile.)
+
+
+
+Speciali tecniche - Palle di Vettore
+=================================
+  palle di Vettore sono semplici. Semplicemente calcolare dove le
+  palle sono (con rotazioni, traduzioni o qualsiasi
+  esso può essere). Qualche volta tu anche calcoli la dimensione
+  della palla e così di seguito.
+
+  Tu non devi avere palle. Tu puoi avere le parti Convex
+  di un concave oggetto riempito, o tu puoi
+  avere immagini di quello che ti piace. In tre dimensioni
+  tu avrai il problema con immagini (palle o qualsiasi)
+  che dovrebbe essere di fronte a altri perchè esso è
+  ulteriore fuori da te. Qui c'è dove Ordinando
+  viene in. Se tu Incominci blitting l'immagine che
+  è più distante a te, e passo più vicino per
+  ogni oggetto, tu prendi un 3d-aspetto schermo.
+  La più vicina immagine sarà la più vicina.
+
+  Normalmente, tu inizi nel pulire lo schermo tu non stai
+  mostrando al momento (Parti di esso comunque. Una persona
+  in Silents solo pulito ogni seconda linea...)
+
+  Allora (mentre il blitter sta lavorandoti iniziare a ruotare,
+  ordinando e preparando al finalmente bob le immagini out
+
+  e quando tu hai controllato che il blitter è
+  terminato, tu inizi bobbing out tutte le immagini,
+  e quando il fotogramma è mostrato, tu scambi
+  schermi così tu mostri il tuo schermo terminato
+  il prossimo fotogramma.
+
+
+
+
+
+
+Appendice A: sorgenti di Esempio.
+
+  1  Optimised matrice di rotazione calcuation
+  2  Una linea disegnare routine per vettori riempiti
+  3  Quicksort in 68000 assembler
+  4  Inserire Ordinare in 68020 assembler
+
+
+  Optimised calcolo di matrice di rotazione
+
+Un 1. Un esempio di un calcolo di matrice di rotazione ottimizzato
+============================================================
+
+* Per questa routine, tu devi avere una tavola sinus di 1024 valori,
+* e tre parole con angoli e un posto (9 parole) ____ conservare
+* la matrice di trasformazione.
+*    __   .
+*  /( |( )|\/ '(|)
+* /  )|(|\|/\   |)
+
+Calcolare_Costanti
+
+                lea     Coses_Sines(pc),a0
+                lea     Angles(pc),a2
+                lea     Sintab(pc),a1
+
+                muovere.w  (a2),d0
+                e.w   #$7fe,d0
+                muovere.w  (a1,d0.w),(a0)
+                aggiungere.w   #$200,d0
+                e.w   #$7fe,d0
+                muovere.w  (a1,d0.w),2(a0)
+                muovere.w  2(a2),d0
+                e.w   #$7fe,d0
+                muovere.w  (a1,d0.w),4(a0)
+                aggiungere.w   #$200,d0
+                e.w   #$7fe,d0
+                muovere.w  (a1,d0.w),6(a0)
+                muovere.w  4(a2),d0
+                e.w   #$7fe,d0
+                muovere.w  (a1,d0.w),8(a0)
+                aggiungere.w   #$200,d0
+                e.w   #$7fe,d0
+                muovere.w  (a1,d0.w),10(a0)
+
+                ;xx=c2*c1
+                ;xy=c2*s1
+                ;xz=s2
+                ;yx=c3*s1+s3*s2*c1
+                ;yy=-c3*c1+s3*s2*s1
+                ;yz=-s3*c2
+                ;zx=s3*s1-c3*s2*c1;s2*c1+c3*s1
+                ;zy=-s3*c1-c3*s2*s1;c3*c1-s2*s1
+                ;zz=c3*c2
+
+                lea     Constants(pc),a1
+                muovere.w  6(a0),d0
+                muovere.w  (a0),d1
+                muovere.w  d1,d2
+                muls    d0,d1
+                asr.l   #8,d1
+                muovere.w  2(a0),d3
+                muls    d3,d0
+                asr.l   #8,d0
+                muovere.w  d0,(a1)
+                ;neg.w  d1
+                muovere.w  d1,2(a1)
+                muovere.w  4(a0),4(a1)
+                muovere.w  8(a0),d4
+                muovere.w  d4,d6
+                muls    4(a0),d4
+                asr.l   #8,d4
+                muovere.w  d4,d5
+                muls    d2,d5
+                muls    10(a0),d2
+                muls    d3,d4
+                muls    10(a0),d3
+                aggiungere.l   d4,d2
+                sub.l   d5,d3
+                asr.l   #8,d2
+                asr.l   #8,d3
+                muovere.w  d2,6(a1)
+                neg.w   d3
+                muovere.w  d3,8(a1)
+                muls    6(a0),d6
+                asr.l   #8,d6
+                neg.w   d6
+                muovere.w  d6,10(a1)
+                muovere.w  10(a0),d0
+                muovere.w  d0,d4
+                muls    4(a0),d0
+                asr.l   #8,d0
+                muovere.w  d0,d1
+                muovere.w  8(a0),d2
+                muovere.w  d2,d3
+                muls    (a0),d0
+                muls    2(a0),d1
+                muls    (a0),d2
+                muls    2(a0),d3
+                sub.l   d1,d2
+                asr.l   #8,d2
+                muovere.w  d2,12(a1)
+                aggiungere.l   d0,d3
+                asr.l   #8,d3
+                neg.w   d3
+                muovere.w  d3,14(a1)
+                muls    6(a0),d4
+                asr.l   #8,d4
+                muovere.w  d4,16(a1)
+
+                rts
+
+Coses_Sines     dc.w    0,0,0,0,0,0
+Angoli          dc.w    0,0,0
+Costanti       dc.w    0,0,0,0,0,0,0,0,0
+
+;Sintab è una tavola di valori 1024 sinus con un raggio di 256
+;che Io ho ulteriore giù il mio codice...
+
+
+
+
+  Una linea disegnare routine per vettori riempiti
+
+Un 2. Una linea disegnando routine per vettori riempiti in assembler:
+============================================================
+
+* scritto per kuma-seka età fa, lavora ottimo e
+* può essere ottimizzato per casi speciali...
+* la linea è (x0,y0)-(x1,y1) = (d0,d1)-(d2,d3) ...
+* Ricordare che tu devi avere DFF000 in a6 e
+* L'indirizzo di partenza di schermo in a0.
+* Solo a1-a7 e d7 è lasciato invariato.
+*    __   .
+*  /( |( )|\/ '(|)
+* /  )|(|\|/\   |)
+
+Schermo_widht=40 ;40 byte ampio schermo...
+riempire_linee:     ;(a6=$dff000, a0=partenza di bitplane ____ disegnare in)
+
+        cmp.w   d1,d3
+        beq.s   noline
+        ble.s   lin1
+        exg     d1,d3
+        exg     d0,d2
+lin1:   sub.w   d2,d0
+        muovere.w  d2,d5
+        asr.w   #3,d2
+        ext.l   d2
+        sub.w   d3,d1
+        muls    #Schermo_Widht,d3        ;può essere ottimizzato qui..
+        aggiungere.l   d2,d3
+        aggiungere.l   d3,a0
+        e.w   #$f,d5
+        muovere.w  d5,d2
+        eor.b   #$f,d5
+        ror.w   #4,d2
+        o.w    #$0b4a,d2
+        scambiare    d2
+        tst.w   d0
+        bmi.s   lin2
+        cmp.w   d0,d1
+        ble.s   lin3
+        muovere.w  #$41,d2
+        exg     d1,d0
+        bra.s   lin6
+lin3:   muovere.w  #$51,d2
+        bra.s   lin6
+lin2:   neg.w   d0
+        cmp.w   d0,d1
+        ble.s   lin4
+        muovere.w  #$49,d2
+        exg     d1,d0
+        bra.s   lin6
+lin4:   muovere.w  #$55,d2
+lin6:   asl.w   #1,d1
+        muovere.w  d1,d4
+        muovere.w  d1,d3
+        sub.w   d0,d3
+        ble.s   lin5
+        e.w   #$ffbf,d2
+lin5:   muovere.w  d3,d1
+        sub.w   d0,d3
+        o.w    #2,d2
+        lsl.w   #6,d0
+        aggiungere.w   #$42,d0
+bltwt:  btst    #6,2(a6)
+        bne.s   bltwt
+        bchg    d5,(a0)
+        muovere.l  d2,$40(a6)
+        muovere.l  #-1,$44(a6)
+        muovere.l  a0,$48(a6)
+        muovere.w  d1,$52(a6)
+        muovere.l  a0,$54(a6)
+        muovere.w  #Schermo_Widht,$60(a6)   ;larghezza
+        muovere.w  d4,$62(a6)
+        muovere.w  d3,$64(a6)
+        muovere.w  #Schermo_Widht,$66(a6)   ;larghezza
+        muovere.l  #-$8000,$72(a6)
+        muovere.w  d0,$58(a6)
+noline: rts
+
+
+
+
+  Quicksort in 68000 assembler
+
+Un 3. Il quicksort in 68000 assembler
+=====================================
+
+* Ordina una lista che assomiglia:
+* Prossimo offset di entrata.w, (x,y,z).w.
+* tutti gli offset devono essere assegnati eccetto per prima entrata's precedente offset
+* e l'ultima entrata's prossimo offset.
+* Offset sono Da Primo Indirizzo di ordinare lista
+* a5=primo indirizzo di ordinare lista!
+*    __   .
+*  /( |( )|\/ '(|)
+* /  )|(|\|/\   |)
+
+
+WghtOffs=6
+NextOffs=0
+
+QuickSort       ;(a5=partenza di sortlist,
+                ; d0=0 (puntatore alla prima entrata, prima volta=0)
+                ; d1=numero di entrate)
+
+
+                cmp.w   #1,d1
+                ble.s   .NothingToSort          ;non ordina se <=1 entrate
+                moveq   #0,d4                   ;dimensione elencare 1
+                moveq   #0,d5                   ;dimensione elencare 2
+                muovere.w  d0,d6                   ;prima Nentry=d0
+
+                muovere.w  WghtOffs(a5,d0.w),d2    ;d2=Pivot peso
+                muovere.w  NextOffs(a5,d0.w),d3    ;d3=2nd entrata
+                subq.w  #2,d1                   ;Dbf-loop+saltare primo
+
+.Permute        cmp.w  WghtOffs(a5,d3.w),d2     ;entrata peso<pivot peso?
+                ble.s   .Inferiore
+
+                muovere.w  d6,NextOffs(a5,d3.w)    ;Inserire Prima Nentry
+                addq.w  #1,d4                   ;aumentare dimensione di lista 1
+                muovere.w  d3,d6                   ;Assegnare nuovo Nentry
+
+                bra.s   .Fatto                   ;Continuare il loop...
+
+.Inferiore          muovere.w  NextOffs(a5,d0.w),NextOffs(a5,d3.w)
+                muovere.w  d3,NextOffs(a5,d0.w)    ;inserire Dopo prima entrata
+                addq.w  #1,d5                   ;dimensione di lista 2
+
+.Fatta           muovere.w  NextOffs(a5,d3.w),d3    ;Prendere prossima entrata
+                dbf     d1,.permute
+
+                muovere.w  d0,-(a7)                ;salvare Fentry..
+
+                muovere.w  NextOffs(a5,d0.w),d0    ;Ordinare a entrata dopo prima
+                muovere.w  d5,d1                   ;Dimensione di lista 2
+
+                movem.w d4/d6,-(a7)             ;Salvare importanti registri
+                bsr     QuickSort               ;e ordinare elencare 2
+                movem.w (a7)+,d4/d6             ;d1 è ora Prima Entrata...
+                muovere.w  (a7)+,d1
+
+                muovere.w  d0,NextOffs(a5,d1.w)    ;Mettere prima entrata di
+                                                ;lista 2 dopo Fentry...
+                muovere.w  d6,d0                   ;Ordinare a Nentry
+                muovere.w  d4,d1                   ;dimensione di lista 1
+
+                bsr     QuickSort               ;nessun importante registro
+                                                ;sinistra...
+.NothingToSort
+                        ;Ora l'offset alla prima entrata è in d0!
+                        ;____ prendere gli altri valori nel corretto ordine
+                        ;semplicemente scendere la lista (usando nextoffs.)
+                        ;Primo oggetto è il più pesante...
+
+                rts
+
+
+
+  Inserire Ordinare in 68020 assembler
+
+Un 4. Il Insert Ordinare in 68020 assembler:
+========================================
+
+* Questo non è precisamente come l'algoritmo descritto precedente,
+* esso incomincia nel creare una lista e poi conserva gli Indirizzi dei
+* dati ordinati in 2ndBUF invece...
+* Questo ordina tutte le liste, semplicemente specificare offset ____ appesantire (parola) e
+* dimensione di ogni entrata. Tu non hai bisogno di qualsiasi pre-formattazione.
+* nota che tu devi cambiare una linea se tu vuoi questo ____ lavorare
+* su 68000.. Io ho un indice scalato ad un punto. sostituire esso
+* con le linee dopo il punto_e_virgola.
+*    __   .
+*  /( |( )|\/ '(|)
+* /  )|(|\|/\   |)
+
+WghtOffs=4
+EntrySize=6
+
+InsertSort
+                ;(a5=partenza di dati
+                ; a4=partenza di checklist
+                ; a3=partenza di 2ndBUF
+                ; d0 è più basso valore di entrate
+                ; d1 è più alto valore
+                ; d2 è numero di entrate
+
+                movem.l a4/a5,-(a7)
+
+                sub.w   d0,d1           ;max dimensione di checklist questo ordinamento.
+                subq.w  #1,d2
+                subq.w  #1,d1           ;Dbf-loop...
+
+                muovere.w  d1,d3           ;pulire entrate usate
+.ClearChecklist clr.w   (a4)+
+                dbf     d3,.ClearCheckList
+
+                muovere.w  d2,d3           ;trasformare...
+.Trasformare      sub.w   d0,WghtOffs(a5)
+                addq.w  #EntrySize,a5
+                dbf     d3,.Trasformare
+
+                movem.l	(a7),a4/a5
+
+                muovere.w  d2,d3           ;Inserire prossima linea invece per
+.AddisList      muovere.w  WghtOffs(a5),d0 ;68000 compatibilità...
+                addq.w  #4,(a5,d0.w*2)  ;aggiungere.w d0,d0 addq.w #4,(a5,d0.w)
+                addq.w  #EntrySize,a5
+                dbf     d3,.AddisList
+
+                moveq   #-4,d0          ; #-lwdsize
+.GetMemPos      aggiungere.w   d0,(a4)
+                muovere.w  (a4)+,d0
+                dbf     d1,.GetMemPos
+
+                movem.l (a7)+,a4/a5
+.PutNewList     muovere.w  WghtOffs(a5),d0
+                muovere.w  (a4,d0.w),d0
+                muovere.l  a5,(a3,d0.w)
+                addq.w  #EntrySize,a5
+                dbf     d2,.PutNewList
+
+                ;In questo caso tu hai una lista di Indirizzi a
+                ;ogni oggetto. Io ho fatto esso questo modo per
+                ;fare esso più flessibile (tu forse hai più
+                ;dati in ogni entrata che me?).
+
+                rts
+
+
+
+  Ulteriore Informazione
+
+Appendice B: Ulteriore Informazione
+
+B 1: 'Prova' di nascosta-piano elimination equazione
+================================================
+
+  Io ho presentato la seguente equazione:
+  c=(x3-x1)*(y2-y1)-(x2-x1)*(y3-y1)
+  come un calcolo del normale vettore del piano
+  che il poligono in questione spanned.
+
+  Noi avevamo tre punti:
+  p1(x1,y1)
+  p2(x2,y2)
+  p3(x3,y3)
+
+  Se noi selezioniamo p1 come base-puntare, noi possiamo costruire i seguenti
+  vettori del resto dei punti:
+
+  V1=(x3-x1,y3-y1,p)
+  V2=(x2-x1,y2-y1,q)
+
+  Dove p e q nel valore z evidenzia che noi non siamo interessati in
+  questo valore, ma noi dobbiamo prendere esso nei nostri calcoli comunque.
+  (Questi valori non sono lo stesso come gli originali z-valori
+   dopo il 2d->3d proiezione)
+
+
+   Ora, noi possiamo prendere il normale vettore del piano che questi vettori
+   span da una semplice croce-prodotto:
+
+   V1 x V2 =
+
+  |  io       j      k|
+= |(x3-x1) (x2-x1)  p|  (se io=(1,0,0), j=(0,1,0), k=(0,0,1))
+  |(y3-y1) (y2-y1)  q|  (p e q sono non-importante)
+
+  Ma noi siamo solo interessati nel Z-direzione del
+  risultato-vettore di questa operazione, che è lo stesso come
+  prendendo solo il Z-coordinata fuori dalla croce-prodotto:
+
+   Z di (V1xV2) = (x3-x1)*(y2-y1)-(x2-x1)*(y3-y1)
+
+  Ora se Z è positivo, questo significa che il vettore risultante
+  sta puntando Nello schermo (positivi z-valori)
+  QED /Asterix
+
+B 2. Come fare una linea fill fuori dalla linea blitters-disegno
+==============================================================
+  Tu non puoi usare la linea blitter-disegno come esso è e
+  disegnare linee attorno un poligono senza un pò di cambiamenti speciali.
+
+  Per fare un fill-linea routine fuori un normale-lineroutine:
+
+   Primo, accertare esso disegna linee come esso dovrebbe,
+   molta linea-cassetti Io ho visto linee di disegni agli sbagliati punti
+   Accertarsi che tu usi Esclusivo o- invece di o-minterm
+   Sempre disegnare linee In discesa. (o In su, se tu preferisci che)
+   prima di disegnare la linea e prima blit-controllare, eor il primo
+   Punto Sullo Schermo Che La Linea Passerà.
+   Userà riempire-tipo modo di linea.
+
+
+
+
+B 3: Un approccio alternativo alle rotazioni in 3-spazio da M. Vissers
+================================================================
+
+/* Questo è un testo fornito da Michael Vissers, e fu un pò
+più lungo. Io ho rimosso la parte circa proiezione da 3d->2d,
+che fu identico alle parti del mio altro testo in capitolo 3.
+Se tu sai qualche basic lineare algebra, questo testo potrebbe essere
+più facile sciogliere della più lunga versione discussa in capitolo 4.
+Se tu non prendi come tu eri supposto per usare il risultato in
+capitolo 4 allora provare questa parte invece. */
+
+[ ] Tutto tu devi fare sta usando questi 3D matrices :
+
+(Un/B/G sono Alpha,Beta e Gamma.) /* A,B,C = Angoli di rotazione */
+
+|  cosA  -sinA  0  |    |  cosB   0  -sinB  |    |   1    0      0    |
+|  sinA   cosA  0  |    |   0     1    0    |    |   0   cosG  -cantare  |
+|   0      0    1  |    |  sinB   0   cosB  |    |   0   cantare   cosG  |
+
+Questa sono la rotazione matrices attorno il x,y e z asse'. Se tu useresti questi tu prenderai 12 muls'. 4 quattro per ogni asse. Ma, se tu moltiplichi
+questi tre matrices con eachother tu prenderai solo 9 muls'. Perchè 9 ???
+Semplice : dopo aver moltiplicato tu prenderai un 3x3 matrice, e 3*3=9 !
+
+Non ha importanza se tu non sai come moltiplicare questi matrices. Non è importante qui così Io semplicemente darò il 3x3 matrice dopo aver moltiplicato :
+
+(c = cos, s = peccare, A/B/G sono Alpha,Beta e Gamma.)
+
+        |     cA*cB               -cB*sA          sB   |
+        | cG*sA-sB*cA*sG      cA*cG+sG*sA*sB     cB*sG |
+        |-sG*sA-sB*cA*cG     -cA*sG+sA*sB*cG     cG*cB |
+
+Io spero Io ho scritto tutto senza errori :) Ok, come possiamo noi fare alcune
+coordinate usando questo matrice. Di nuovo, il trucco è tutto nel moltiplicare.
+Per prendere il nuovo (x,y,x) noi abbiamo bisogno dei punti originali e moltiplicare questi con
+il matrice. Io lavorerò con un simplyfied matrice. (per esempio H = cA*cB etc...)
+
+                        x   y   z   ( <= originali coordinate)
+                      -------------
+        Nuovo X =     |   H   Io   J   |
+        Nuovo Y =     |   K   L   M   |
+        Nuovo Z =     |   N   O   P   |
+
+Così...
+
+        Nuovo X = x * H + y * Io + z * J
+        Nuovo Y = x * K + y * L + z * M
+        Nuovo Z = x * N + y * O + z * P
+
+Ha ! Quello è molto più di 9 muls'. Bene, in effetti no. Per usare il matrice
+tu dovrai precalculate il matrice.
+
+Sempre ruotare con i tuoi punti originali e conservare essi in qualche altra parte.
+Semplicemente cambiare gli angoli al sintable ____ ruotare la forma.
+Se tu ruoti i punti ruotati il precedente fotogramma tu perderai tutto dettaglio
+finchè niente è lasciato.
+
+Così, ogni fotogramma somiglia a questo :      - pre calcolare nuovo matrice con
+                                         angoli dati.
+                                       - Calcolare punta con conservato
+                                         matrice.
+[ ]
+I punti risultanti sono tenendo presente (0,0). Così essi possono essere negativi a.
+Semplicemente usare un add ____ prendere esso nel mezzo dello schermo.
+
+Nota: Sempre usare muls,divs,asl,asr etc. Dati possono essere entrambi positivo e
+      negativo. Anche, assegnare le coordinate originali più grosse possibile,
+      e dopo aver ruotato dividere essi di nuovo. Questo svilupperà la
+      qualità del movimento.
+
+(Michael Vissers)
+
+
+B 4: Un piccolo math cenno per più accurati calcoli di vettore
+=============================================================
+
+nel momento in cui sta facendo un muls con un valore e poi downshifting il valore, usare
+e 'addx' ____ prendere roundoff errore invece di errore troncato, per
+esempio:
+	moveq	#0,d7
+DoMtxMul
+        :
+	muls	(a0),d0		;Fare un muls con un valore di peccato *256
+	asr.l	#8,d0
+	addx.w	d7,d0		;roundoff < trunc
+	:
+
+Quando tu fai un 'asr' l'ultimo outshifted bit va al x-flag.
+se tu usi un addx con sorgente=0 => dest=dest+'x-flag'.
+Questo dimezza l'errore, e fà oggetti di vettore complicati
+meno 'hacky'.
+
+
+ /)    __   .
+((   /( |( )|\/  '(|)
+ )) /  )|(|\|/\    |)
+(/
+
+
+
+
+				IL 3d
+
+
+NB: La Conoscenza delle linee fatte col blitter -, il riempimento, cookie cut
+(taglio biscotto), riempimento, e' utile per capire meglio certe parti
+della lezione
+
+INTRODUZIONE:
+
+La forma fondamentale e sintetica di qualsiasi oggetto noi desideriamo 
+rappresentare, sullo schermo, è espresso come una serie di coordinate x,y,z.
+Ogni triade ( i trio, vah) di coordinate corrisponde alle distanze da un
+origine (posta alle coordinate 0,0,0) dagli assi x,y,z.
+Di conseguenza, ogni trio di coordinate corrisponde ad un'unica posizione
+all'interno del sistema 3d.
+Le WORLD CORDINATES (coordinate rispetto al mondo) di un oggetto sono
+semplicemente le sue coordinate in questo sistema di assi.
+Vale a dire che le WORLD CORDINATES rappresentare il mondo che stiamo creando.
+
+NOZIONI FONDAMENTALI:
+
+Ci sono 3 principali fasi nel generare l'oggetto sullo schermo, una volta che
+abbiamo le nostre WORLD CORDINATES dei vari oggetti:
+
+1:	World coords (coordinate rispetto al mondo) - Vera forma di un oggetto
+
+2:	View coords (coordinate di vista attuale) - Le coordinate dell'
+	oggetto dopo qualsiasi rotazione o traslazione.
+
+3:	Display coords (coordinate proiettate) - Le coordinate dello schermo
+	che rappresentano l'oggetto, dopo che le coordinate 3d sono state
+	proiettate (convertite) prospetticamente da 3d a 2d (dato che il
+	monitor ha 2 dimensioni!).
+
+4:	Disegnare l'oggetto, secondo le coordinate trasformate in 2d.
+
+Durante la lezione gli oggetti verranno considerati come fatti di "facce"
+o di "piani". (da notare che non intendo "piani" come superfici infinite!)
+Quindi, per esempio, un cubo ha 6 facce.
+
+Queste superfici poligonali, fatte connettendo insieme i gruppi di coordinate
+degli oggetti, possono essere "incastrate" o "unite" assieme per formare
+oggetti complessi, ad esempio un elicottero o una cattedrale (Beh..)
+
+Un piano (faccia-superficie) che può essere visto da un solo lato, ed è
+attualmente nascosto, è chiamato HIDDEN surface (faccia nascosta).
+Lavorando out che
+Trovare quali facce sono visibili e quali HIDDEN (nascoste) è uno dei
+principali compiti delle routines 3d piu' complesse, quelle dei FILLED VECTORS,
+ossia dei solidi con facce "riempite".
+Di conseguenza sono stati inventati molti metodi per trovare le facce nascoste,
+addirittura specializzando le routines per particolari tipi di oggetti.
+Questo naturalmente all'insegna della massima velocita'.
+Cominceremo comunque con le routine 3d in WIREFRAME, che potremmo tradurre come
+"FIL DI FERRO", in cui il solido e' fatto di sole linee, dunque si vedono
+anche le linee nascoste. Questo pero' facilita le cose per iniziare.
+
+MANIPOLAZIONE:
+
+Come già detto, per visualizzare il nostro oggetto alle VIEW COORDINATES, cioe'
+alle coordinate di Vista, dovremo traslare (muovere) e ruotare le sue
+coordinate secondo varie angolazioni (o il solido se ne sta li' fermo, il
+bello del 3d e' il movimento!).
+Ebbene, le formule generali per trasformare le coordinare WORLD (ossia del
+nostro oggetto "statico" nelle coordinate VIEW (ruotate in vari modi) sono:
+
+----------------------------------------------------------------------------
+
+;ROTAZIONI: angoli r1,r2,r3
+;	    coordinate x,y,z
+; xa,ya,za  variabili temporanee
+
+xa=cos(r1)*x-sin(r1)*z
+za=sin(r1)*x+cos(r1)*z
+x=cos(r2)*xa+sin(r2)*y
+ya=cos(r2)*y-sin(r2)*xa
+z=cos(r3)*za-sin(r3)*ya
+y=sin(r3)*za+cos(r3)*ya
+
+----------------------------------------------------------------------------
+
+;TRASLAZIONE: variabili di traslazione mx,my,mz
+x=x+mx
+y=y+my
+z=z+mz
+
+(FACILE!!! Basta aggiungere mx a x, my a y e mz a z!)
+
+----------------------------------------------------------------------------
+
+;PROIEZIONE:  d = distanza dello schermo
+;             scx,scy = centro dello schermo (Es: 160,128 per schermo 320*256)
+sx=(d*x/z)+scx
+sy=(d*y/z)+scy
+
+----------------------------------------------------------------------------
+
+Spero che nessuno cada nel panico, ammetto che esiste chi odia la trigonometria
+e la matematica in generale, ma basta applicare le formule e niente altro!
+
+La prima manipolazione eseguita è la rotazione - prendendo in considerazione il
+roll,il pitch, e lo yaw dell'oggetto. (ma siamo in Italia?)
+
+Per ROLL
+; intendo la rotazione come quella di una ruota vista dal lato di una
+;macchina, o una rotazione come un disco vedendo dall'alto il giradi)
+merda tutto sbagliato
+ (asse di RULLIO - ossia in
+aereonautica e' il moto di rotazione dell'aeromobile intorno all'asse X, detto
+asse di ROLLIO nella terna cartesiana degli assi del corpo.
+o nelle navi l'oscillazione attorno ad un asse longitudinale, per cui la nave
+si inclina a destra e a sinistra.
+
+
+
+Per PITCH si intende "pendenza","inclinazione" (asse di BECCHEGGIO) nelle
+navi e' il movimento oscillante attorno al suo asse trasversale, con
+abbassamento alterno della prua e della poppa. Insomma la nave infila il "muso"
+, ossia la prua, sott'acqua e le eliche, dall'altra parte, (a poppa) emerge.
+
+
+	BECCHEGG!			BECCHEG!
+
+	   |\					   /|
+	   | \					  / |
+	   |  \					 /  /
+	    \  \_			       _/  /
+	-- - \  \/ - - - - - - 		- - - \/  /- - - - - 
+	      \  \			      /  /
+	       \  \			     /  /
+	        \  \			     ---
+	         \---
+
+Per YAW si intende un termine aeronautico, nientemeno che "l'imbardata", cioe'
+la rotazione di un velivolo attorno all'asse perpendicolare al piano
+individuato dagli assi di beccheggio e di rollio e che passa per il baricentro
+del velivolo stesso. (Z??)
+
+R1 corrisponde alla rotazione dell'oggetto rispetto ad un asse verticale (Y)
+
+R2 rispetto ad un asse messo come se avessimo il naso di Pinocchio, ossia
+   di cui noi vediamo solo un punto, dato che si allontana da noi a 90° (Z).
+
+R3 rispetto ad un asse orizzontale (X)
+
+La traslazione è abbastanza auto-esplicativa, dato che consiste semplicemente
+nell'aggiungere una quantità fissata alle differenti coordinate.
+
+Le formule di proiezione sono derivate dai triangoli simili, assumendo che uno
+schermo 2d (piatto) è stato posto tra tu e l'oggetto, a una distanza d.
+L'immagine può essere calcolata considerando due triangoli con gli stessi
+angoli, uno per la coordinata x e uno per y.
+
+Da notare che se d non è assegnato correttamente l'immagine dell'oggetto
+apparirà distorta (aberrata) - l'oggetto apparirà troppo piano e non '3d' o
+nel caso opposto troppo distorto.
+Questo è dovuto al fatto che si tenta di visualizzare una parte troppo grande 
+dell'oggetto sullo schermo - confronta questo con il camminare ai piedi di
+un campanile o di un grattacielo: se sei troppo vicino non puoi vedere tutta la
+costruzione, quindi per vedere tutta la costruzione (oggetto) dovresti
+fare dei passi indietro, allontanandoti.
+Analogamente la distorsione angolare sullo schermo è dovuta al fatto che si
+tenta di mostrare anche quello che non si vedrebbe sullo schermo data la tua
+distanza dall'oggetto!
+Fortunatamente questo valore non è particolarmente critico -  basta soltanto
+provare a cambiarlo finchè non trovi una "vista" accettabile.
+
+; qua far caricare esempi WIREFRAME...
+
+Così ora siamo in grado di posizionare una serie di punti sullo schermo
+per rappresentare nostro oggetto in 3d, unendo tali punti tra loro con delle
+linee, formando una vista in WIRE FRAME (Fil di Ferro) di tale oggetto.
+Sebbene la rappresentazione sia correttamente tridimensionale, non e' buona
+per rappresentare oggetti particolarmente complicati, dato che non si capisce
+quali punti sono davanti e quali dietro, perche' ci mancano informazioni
+chiare sulla profondita' dell'immagine. Bisogna togliere di mezzo le linee
+nascoste, ossia far diventare non trasparente il nostro oggetto.
+
+*******************************************************************************
+
+SUPERFICI NASCOSTE (HIDDEN SURFACES):
+
+Prima facciamo wireframe, solo linee, ma con superfici nascoste...
+
+
+*******************************************************************************
+
+SUPERFICI NASCOSTE e FACCE "SOLIDE" (FILLED VECTORS):
+
+Ovviamente abbiamo bisogno di "riempire" nostro oggetto per creare un solido
+che abbia un aspetto veramente "SOLIDO".
+Per fare questo abbiamo bisogno di assicuraci che quando riempiamo le facce
+dell'oggetto ci si limiti a riempire solo le facce corrette, ossia quelle
+DAVANTI, VISIBILI, non desideriamo certo vedere il "dietro" di un cubo mentre
+si sta guardando il suo "davanti".
+
+Descrivero' due metodi per visualizzare realisticamente oggetti 3d "riempiti",
+ossia FILLED: i vettori CONVEX e ICONVEX
+
+
+1)RIMOZIONE FACCE POSTERIORI. (CONVEX VECTORS)
+
+Questo metodo funziona solo su oggetti CONVESSI.
+Un oggetto CONVEX è uno dove non è possibile che una superficie sia
+parzialmente oscurata da un'altra.
+Esempi: poliedri, cubi, tetraedi, prismi, e anche qualche tipo di "astronave"
+non troppo complicata.
+La definizione di un oggetto convex fornisce un punto di partenza - noi
+possiamo semplicemente disegnare le facces che ci stanno di fronte, e ignorare
+il resto, fin quando da definizione devono essere completamente nascoste.
+
+E' possibile calcolare se un piano piatto è di fronte a noi calcolando il
+vettore "normale" a questo piano, e vedendo se ha una componente Z positiva
+o negativa.
+
+Un vettore "normale" ad un'altro è semplicemente un vettore che "esce fuori"
+dal piano perpendicolare alla sua superficie (o faccia).
+"NORMALE" si puo' definire anche come PERPENDICOLARE, a 90°...
+Per esempio riguardo al gambo di un tavolo puo' essere detto che e' "normale"
+alla tavola che sta suppotando, perche' è (almeno si spera) perpendicolare
+alla tavola superiore piana, la quale forse e' anche apparecchiata.
+
+Tuttavia esiste un metodo migliore. Considerate l'orientamento dei punti al
+margine della superficie...
+Immaginate di numerare gli angoli di un disco in ordine antiorario,
+attorno il suo margine.
+Ora girate il dischetto sottosopra, e guardate l'ordine dei numeri: ora sono
+in ordine orario!.
+Possiamo usare questo cambiamento di ordine per decidere in quale direzione
+sta puntando la faccia.
+
+Dati tre numeri di punti e coordinate, è possibile derivare il loro ordine:
+
+;orientazione:	p1,p2,p3 - punti nella faccia (2D coords!)
+;		v1,v1 - vettori 2d temporanei per p1>p2 e p2>p3
+
+v1.x=p2.x-p1.x		
+v1.y=p2.y-p1.y	
+
+v2.x=p3.x-p2.x
+v2.y=p3.y-p2.y
+orientazione=segno(v1.x*v2.y-v1.y*v2.x)
+;orientazione e' +/- 1 in relazione all'orientamento.
+;Il prodotto in croce del vettore 2d e' piu' veloce di un vettore normale 3d,
+;perche' per il calcolo bastano meno moltiplicazioni
+
+Così, per disegnare il nosto FILLED CONVEX VECTOR OBJECT, trasformiamo le sue
+coordinate come descritto, e poi disegnamo solo i poligoni in senso orario,
+usando una lista di punti definiti nel nostro oggetto.
+Finchè siamo sicuri che tutti i poligoni hanno numeri di punto tali che quando
+il poligono è visibile essi sono in ordine orario, e che l'oggetto è pienamente
+convesso (CONVEX),non avremo problemi.
+
+A questo punto non resta che caricare il sorgente v_convex.s che è una routine
+base di vettore convex. Ci sono abbastanza commenti nel sorgente.
+
+
+*******************************************************************************
+
+2) l'algoritrmo di colorazione del "PITTORE". (INCONVEX VECTORS)
+
+Il nome di questa tecnica spiega tutto.
+L'idea è che un pittore nel momento in cui sta dipingendo incominci dal fondale
+della sua scena, con i monti, poi gradatamente disegni i vari livelli del
+disegno, venendo avanti, fino a disegnare le cose piu' vicine.
+Quindi, niente di quello che sta davanti ad altre cose sarà coperto, saranno
+coperte solo le cose effettivamente coperte, dando la corretta immagine.
+Questa idea è facilmente applicanile al nostro sistema 3d.
+Filtriamo fuori tutti i piani nascosti tramite il loro orientamento (come
+sopra), e poi li disegnamo tutti in ordine dal piu' negativo come coordinata Z
+a quelli piu' vicini a Z=0.
+Le coordinate Z negative sono di fronte all'osservatore, cioe' a noi, mentre
+Z=0 e' dove e' posizionato l'osservatore. Le coordinate Z positive sono dietro
+l'osservatore, e come sapete non si vedono le cose che abbiamo dietro!!!
+
+Come possiamo fare questo in pratica ?
+
+Bene, quando consideriamo un piano (una faccia), avendo deciso che è visibile
+se e' orientamentata correttamente, allora scopriamo quanto e' lontana nella
+scena, ossia la sua profondità.
+Ci sono parecchi modi per fare questo, tuttavia per ragioni che spiegerò più
+avanti, noi possiamo soltanto calcolare la media della coordinata Z dell'angolo
+della faccia (o piano).
+Poi mettiamo questo valore e un puntatore alla definizione della faccia in una
+tabella (o array, insomma una tabella).
+Faremo questo per ogni faccia (o piano), poi ordiniamo (SORT) la tabella ( o
+array) in ordine dalla media Z più negativa alla piu' vicina a 0.
+A questo punto, semplicemente prendiamo i valori dall'array (dalla TABELLA)
+e disegnamo le facce nell'ordine della tabella.
+
+Ma se hai visto il sorgente convex, noterai che le facce sono disegnate
+direttamente sopra 'quello che è fatto prima' - questo è OK nel caso convex
+perche' mai una faccia si sorappone!
+
+Nel caso INCONVEX, tuttavia, le facce si possono sovrapporre, per questo c'e'
+l'algoritmo del "pittore" e l'ordinamento della profondità (SORT).
+Possiamo semplicemente disegare le nostre facce in un buffer temporaneo, e
+"tagliarle+copiarle" col blitter (cookie cut) nello schermo di visualizzazione.
+(Naturalmente "doppio bufferizzato"!).
+
+Per vedere in pratica un vettore ICONVEX, il sorgente e' v_inconvex.s.
+
+Si e' detto prima, che soltanto prendendo la media di ogni coordinata Z 
+dell'angolo delle facce genererà delle profondità decenti.
+La ragione dell'utilizzo di questo medoto, anziche' il teorema di Pitagora,
+calcolando x^2+y^2+z^2 (dimentica la radice), e facendo la media, e' 
+è semplicemente che non penso che lo "sforzo" sia necessario.
+L'algoritmo del "pittore" (painter) ha un inconveniente: non prende in
+considerazione il fatto che una faccia puo' estendersi sopra una considerevole
+gamma di valori z, così rappresentandola soltanto con un valore di media non
+dà una vera immagine della situazione.
+A questo problema si puo' tentare di ovviare, dovresti stare attento
+ai grandi piani, alle facce troppo estese, magari dividendole in due, oppure
+prendendo in considerazione anche i valori Z minimi & massimi
+
+
+*******************************************************************************
+
+Oggetti Multipli:
+
+Non molto tempo fa nella scena demo, c'era un trambusto enorme sul fatto di
+essere capace di visualizzare una grande quantità di oggetti indipendenti in
+una volta... quindi nacque l' "how many cubes scene", eccetera, ossia si
+gareggiava presentando schermate piene di cubetti, e vinceva chi ne aveva messo
+uno in piu', che poi spesso si rivelava essere uno sprite animato (HAHAHAHA!)
+Tuttavia, questa non e' la cosa piu' difficile da fare, basta solo fare degli
+arrangiamenti di codice adatto ad un solo oggetto, modificandolo.
+
+Cio' che deve essere fatto è far posizionare e ruotare tutti gli oggetti, che
+dovranno avere una tabella con informazioni "personalizzati", ma il "motore"
+che muove tutto e' lo stesso.
+Importante sara' una veloce e potente routine di SORT (ordinamento) della
+profondita', che si occupera' di far disegnare solo quello che serve.
+Inoltre occorrera' farsi molte tabelle e strutture che contengano le
+definizioni di tutti gli oggetti.
+
+*******************************************************************************
+
+Linee/Bob:
+
+Per implementare le VECTORBALLS abbiamo semplicemente bisogno di mettere le
+cordinate come con le facce, ordinare i loro valori Z con una routine di SORT,
+quindi disegnare la scena con i bob alla corretta profondità.
+I bitmaps per i bob possono essere semplicemente copiati col "cookie cut" del
+blitter sullo schermo.
+
+Le Linee possono essere facilmente inserite, calcolandone la media delle
+coordinate Z (tutte e 2), e poi inserendo tale media come puntatore alla
+struttura delle linee nella tabella delle profondità (DEPTH ARRAY), e
+procedendo in modo simile al bob.
+
+A proposito, potrebbe aiutare mettere qualche forma di marcatore di
+identificazione in queste definizioni di linea/bob/piano , così
+quando saltelliamo attraverso le profondità ordinate elencate il codice
+capisce con cosa ha a che fare (una linea o un bob..)
+
+*******************************************************************************
+
+LE OMBRE (SHADING):
+
+MEDODO DELLA "RETINATURA" O "PUNTEGGIATURA" DI ALCUNE FACCE
+Per mostrare i colori punteggiati abbiamo bisogno di alternare il colore dei
+pixel adiacenti... Per fare questo possiamo assegnare una maschera in memoria
+(01010101010 etc), e usarla come maschera per buttare giu' le facce.
+Quello che possiamo fare controllare i due colori che stiamo andando a
+punteggiare, e la coppia di bit per ogni rispettivo bit-piano.
+Se entrambi sono settati ad 1, questo significa che per questo bit-piano
+dobbiamo buttare giù la nostra faccia come al solito (cookie con la nostra
+faccia disegnata usandola come la sua propria maschera).
+Similmente se entrambi sono azzerati, noi facciamo lo stesso, cancellando
+l'area di schermo dove e' la faccia.
+Se sono differenti (es: colore 1 settato e colore 2 no), copiamo col "cookie"
+del blitter la faccia, ma usando la maschera 010101 come nostro piano Sorgente,
+e la faccia come maschera.
+Questo abbassa i bit nell'ordine 010101 dove il piano è sullo schermo.
+Se l'altra possibile situazione capita, con colore1 azzerato e colore2 settato,
+abbiamo bisogno di usare una maschera iniziandola con 1010...
+per fare questo usiamo il blitter in modo differente invertendo la maschera.
+
+Anche se e' veloce, questo metodo ha lo svantaggio di usare tonnellate di
+memoria per la maschera, che deve essere della stessa dimensione di un
+bitplane, o almeno come la faccia piu' grande che vuoi visualizzare.
+Per evitare questo, è possibile disabilitare il canale del blitter attraverso
+il quale passano i dati 1010; in questo modo si possono semplicemente mettere
+questi valori alternati nel registro BLTxDAT.
+Ora pero' sono necessarie due blittate per bit-piano, perche' solo una linea
+ogni 2 usa la stessa maschera:
+
+Linea1: 10101010 \
+Linea2: 01010101 | Solo le maschere per le linee 1,3,5.. sono le stesse.
+Linea3: 10101010 / Linee 2,4,6.. sono invertite.
+
+Vale a dire: Blittare ogni linea pari della faccia, invertire il valore
+di BLTxDAT, fare le linee saltate sulla prima blittata (dispari!)...
+Questo implica usare metà l'altezza per BLTSIZE, e aggiungere al blitter dei
+valori di modulo, così solo una linea ogni 2 è toccata.
+
+*******************************************************************************
+
+SORGENTE LUMINOSA (LIGHT SOURCING):
+
+Il "Light sourcing" consiste nel fare in modo che i colori delle facce
+rappresentino il riflesso della sorgente luminosa si su du esse.
+Due metodi sono frequentemente usati:
+
+Z-Valore solamente - Questo consiste semplicemente nel disegnare il piano piu'
+vicino all'osservatore con il colore piu' luminoso, mentre i piu' lontani con
+colori piu' scuri. E' semplice, dato che basta consultare il valore Z della
+distanza, ma non e' il modo piu' convincente dal punto di vista illusionistico.
+Puo' essere fatto interamente tramite la media delle coordinate Z delle facce,
+basta implementare una tabella contentente i colori secondo i valori Z, o in
+altri modi. (Per esempio, il colore si puo' calcolare con z/128, ossia la
+distanza diviso 128, se il colore generato e' uno valido RGB).
+
+Regola del Coseno di Lambert - Questa piccola regola stabilisce che la quantità
+di luce riflessa da una superficie segue il Coseno dell'angolo
+tra la normale alla superficie, e la direzione del raggio riflesso.
+Per evitare lunghe spiegazioni, ecco semplicemente il metodo:
+
+Calcolare la normale alla superficie.
+
+Si calcola trovando due vettori sulla superficie, e ottenendo la normale
+attraverso il prodotto in croce dei 2 vettori. I due vettori possono venire
+da qualsiasi dei 3 punti sulla faccia - Quindi a=p2-p1, b=p3-p1
+dove p1-3 sono le coordinate xyz di tre punti sulla faccia.
+a-b sono vettori.
+
+La Normale è data da: a*b= (a2*b3-a3*b2,a3*b1-a1*b3,a1*b2-a2*b1)
+
+Il vettore "normale" deve essere ridotto a un vettore di unità dividendolo
+dal suo modulo... Similmente il vettore dall'osservatore al piano deve
+essere trasformato in un vettore di unità.
+
+Il Coseno dell'angolo tra questi due vettori di unità è ora
+semplicemente il prodotto "dot" ossia prodotto "*" di essi
+Vale a dire a1*b1+a2*b2+a3*b3
+
+Questo valore tra 0 & 1 (quindi punto fissato aritmetico qui)
+dà il fattore di illuminazione della superficie, quindi il suo colore con
+un medoto simile alla tecnica del solo valore Z.
+
+*******************************************************************************
+
+VETTORI "FLESSIBILI" o "GELATINOSI" (FLEXY, JELLY & RUBBER VECTORS):
+
+Qualche demo ha vettori che si "piegano" e si flettono, come se fossero fatti
+di gomma(rubber), o gelatina(jelly).
+"Storcere" i nostri vettori 3d non e' complesso come sembra, dato che la
+deformazione e' fatta spesso usando sia semplici ondeggiamenti orizzontali
+tramite il BPLCON2 ($dff102) ripetuto ogni linea copper, sia in modo
+analogo ad un sinescroller, per cui in un buffer viene disegnato il vettore
+"giusto" e viene blittato a strisce per farlo ondeggiare.
+Se poi uniamo questi 2 metodi, sembrera' ancora di piu'.
+Comunque ci sono moltissimi metodi per far "sembrare" che questi solidi siano
+di gelatina, ma per lo piu' sono effetti o precalcolati o falsi al 90%.
+Ci vorrebbe un programma di Ray-Tracing come il Real3d o Imagine per farne
+uno reale, oppure qualcuno di voi se siete geni.
+
+*******************************************************************************
+
+STENCIL VECTORS (vettore a "stampino decorato"):
+
+Per decorare con un motivo geometrico le facce occore usare una tecnica simile
+allo SHADING tramite retinatura/punteggiatura.
+Da notare che la grafica sulle facce degli SCENCIL VECTORS non viene distorta
+prospetticamente, ma rimane "ferma" sulle facce che si muovono.
+In memoria dobbiamo avere un motivo grafico ripetitivo, o meglio ripetibile,
+in modo analogo alle mattonelle di un bagno, o meglio di un mosaico.
+Quando buttiamo giu' le facce, occore usare come sorgente questi bitplanes
+grafici al posto della faccia nel buffer temporaneo. Useremo poi un altro
+buffer temporaneo per una maschera (come solito).
+Per evitare di avere pezzi di grafica raw troppo grossi in memoria, si puo'
+fare l'operazione di copia "cookie" col blitter a pezzi piu' piccoli, insomma
+dividendo "in rate" l'operazione.
+
+*******************************************************************************
+
+Vettori WRAPPATI sulle facce di altri vettori:
+
+Questi vettori sono solitamente cubi che hanno su una o piu' facce una specie
+di "monitor" sul quale si puo' vedere un'altro vettore che gira, e a sua
+volta ci puo' essere un'altro vettore sulla faccia del vettore nel vettore.
+Un caso ITALIANO esemplare e' la demo "TRIPLE HERMAPHRODITE CUBE", dei DIVINA,
+programmata da LUYZ, che mostra un cubo lightsourced con una faccia "monitor"
+con un'altro cubetto, su una faccia del quale c'e' un'altro "monitor" con
+un cubino, anch'esso lightsourced.
+
+*******************************************************************************
+
+
+OTTIMIZAZIONE:
+
+Esaminando v_convex.s e v_iconvex.s avrai notato delle ottimizzazioni.
+
+-Pulire o blittare solo parte dello schermo o del buffer temporaneo.
+ Suona ovvio, e vero, ma per fare questo noi esaminiamo una "finestra" che
+ consiste di coordinate x/y minime & massime, cosicchè noi copiamo/puliamo
+ solo il minimo numero di words necessarie.
+
+-Non bloccare il processore in un ciclo di attesa WaiBlit per il blitter, se
+ non e' veramente necessario. La CPU e il BLITTER possono funzionare allo
+ stesso tempo, quindi fermare la CPU in un loop per attendere il blitter,
+ quando la stessa CPU poteva fare lo stesso lavoro del blitter, o fare
+ altri calcoli e' una mascalzonata.
+ Occorre attendere la fine della blittata solo prima di fare un'altra
+ blittata. Comunque anche l'organizzare le routines in modo che il blitter
+ lavori quando il processore fa moltiplicazioni e divisioni, evitando
+ di far attendere per nulla il processore, e' molto importante.
+ Si potrebbe sfruttare un interrupt che fa blittare quando serve.
+ Un semplice esempio di ottimizazione e' nel cancellare lo schermo.
+ Inceve di usare soltanto il blitter, si puo' pulire meta' con il blitter
+ e meta' col processore in "multitasking". Il bilanciare il lavoro tra CPU
+ e blitter e' importantissimo. In realta', su processori 68020+ conviene
+ far fare quasi tutto al processore, ma su 68000 rimane il problema.
+
+-Un'altro esempio è quello dell'estrusione. L'Extrusion è quello che succede
+al dentifricio quando viene compresso il tubetto: esce fuori con la forma
+del tubo stesso. Se il tubo e' a stella esce un solido a stella, se e' un
+cerchio esce a cilindro ecc.
+In termini di vettori significa che abbiamo una sezione a croce costante
+in un oggetto.
+Questo significa anche che i punti ad ogni fine dell'oggetto sono tutti
+connessi da un comune vettore. Per risparmiare il calcolo di molti punti,
+può essere calcolata soltanto una fine, e questo vettore comune.
+Allora per generare le coordinate all'altra fine basta aggiungere questo
+vettore con le coordinate dei punti all'altra fine.
+
+-Ordinare la profondità. se la scena e' complessa, la routine di SORT sara'
+ determinante per la velocita' complessiva
+
+*******************************************************************************
+
+CLIPPING:
+
+In qualche caso avrai bisogno di disegnare nello schermo anche le linne che
+hanno le coordinate "fuori da esso", per esempio quando ci avviciniamo molto
+ad un oggetto e alcune sue parti escono "fuori" dallo schermo.
+Caricare sorgente "polygon clipper"...
+Parecchi metodi possono essere usati, tipicamente facce di intersezione, ma
+lascio gli autori liberi di pensarci
+
+Paesaggi (LANDSCAPE):
+
+Beh.... io non so come si fa...
+
+*******************************************************************************
+
+Riferimenti:
+
+Questi libri, se li trovate e se siete maniaci, li potete consultare:
+
+COMPUTER GRAPHICS - Steven Harrington. ISBN 0-07-100472-6
+			Trattamento molto curato di tecniche di grafica
+			sia 2d che 3d, MOLTO TECNICO (principianti ciao!)
+			e non specifico per Amiga, dunque un trattato
+			"astratto" sulla grafica 2d-3d.
+			Se volete progettare roba per la realta' virtuale
+			basato su A4000 turbo puo' andare...
+
+Si ringraziano:
+
+Gli autori di ACC (Amiga Coders Club), in particolar modo 
+
+	Paul Kent
+
+
+

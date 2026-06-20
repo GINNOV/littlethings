@@ -1,0 +1,35 @@
+Here are two little programs that show all 2^24 colors on an
+AGA HAM8 screen without ever changing the 64 base color registers.
+
+gtest was the first attempt (people should not run gtest unless they first
+study the code to see how to exit :-).  gtest2 is the program that should
+interest most users.  Full source code is included with both programs.
+
+There is also an example use of the display database in gtest2.
+Hopefully this example will stir commercial developers to support
+the display database in their programs.
+
+This code, except the ListRequest () routine, is PD.  Donated to
+the public domain by the author, Loren J. Rittle <rittle@comm.mot.com>.
+Have fun with it, but please don't claim this work as your own.  As it
+is PD, please feel free to take any pieces to your own projects.
+
+ListRequest() originally by Willy Langeveld, October 1991.
+Changes for this project by myself.
+Willy gave me permission to include this code with another
+package.  As it is quite useful, I have included it here in
+another form.  Thanks Willy!
+
+Thanks to Chris Green (of Commodore) for:
+LoadRGB32 (struct ViewPort *, unsigned long *table);
+#pragma libcall GfxBase LoadRGB32 372 9802
+
+Let's hope that more entry points are revealed on UseNet to tide us
+over until the real includes are available...
+For example, I'd like the pragma info on the system calls that allow
+me to do double bufferred animation under the OS... :-)
+
+Enjoy!
+
+Loren J. Rittle <rittle@comm.mot.com>
+Fri Nov 20 00:34:04 1992
