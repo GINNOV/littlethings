@@ -15,6 +15,16 @@ Small, quick scripts used by blog posts, media workflows, and file cleanup exper
 | `freqChange.sh` | Converts source audio to 44.1 kHz PCM. | Requires media conversion tools. |
 | `mp3toWav.sh` | Converts MP3 audio to WAV. | Requires media conversion tools. |
 
+## Common Dependencies
+
+Several scripts expect command-line media tools such as `ffmpeg`. Install missing tools with Homebrew or your preferred package manager.
+
 ```bash
 brew install ffmpeg
 ```
+
+## Safety Notes
+
+- Run file-organization scripts on a copy first.
+- Use quoted paths when files or folders contain spaces.
+- Check each companion `.md` file for examples before running a script.

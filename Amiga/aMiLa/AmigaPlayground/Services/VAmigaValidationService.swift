@@ -1,4 +1,3 @@
-import Darwin
 import Foundation
 
 struct VAmigaServerConfig: Equatable {
@@ -29,17 +28,9 @@ struct VAmigaServerConfig: Equatable {
     }
 
     static var defaultConfigPath: String {
-        URL(fileURLWithPath: hostHomeDirectory, isDirectory: true)
+        URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true)
             .appendingPathComponent("Library/Application Support/vAmiga/vAmiga.ini")
             .path
-    }
-
-    private static var hostHomeDirectory: String {
-        if let passwd = getpwuid(getuid()),
-           let home = passwd.pointee.pw_dir {
-            return String(cString: home)
-        }
-        return FileManager.default.homeDirectoryForCurrentUser.path
     }
 }
 
@@ -69,12 +60,6 @@ struct VAmigaRPCResponse: Equatable {
 }
 
 struct VAmigaServerConfigPatcher {
-    private let vAmigaVersion: String?
-
-    init(vAmigaVersion: String? = VAmigaServerConfigPatcher.installedVAmigaVersionString()) {
-        self.vAmigaVersion = vAmigaVersion
-    }
-
     func apply(config: VAmigaServerConfig) throws -> VAmigaServerConfig {
         guard config.autoConfigure else { return config }
 
@@ -105,27 +90,16 @@ struct VAmigaServerConfigPatcher {
         )
     }
 
-    func restore(config: VAmigaServerConfig) {
-        guard let backupPath = config.backupPath else { return }
-        try? FileManager.default.removeItem(atPath: config.configPath)
-        try? FileManager.default.copyItem(
-            at: URL(fileURLWithPath: backupPath),
-            to: URL(fileURLWithPath: config.configPath)
-        )
-    }
-
     private func patchServerSection(in text: String, config: VAmigaServerConfig) -> String {
         let normalized = text.replacingOccurrences(of: "\r\n", with: "\n")
         var lines = normalized.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
-        let legacyServerLayout = Self.parsedVersion(vAmigaVersion).map { $0.major == 4 && $0.minor < 4 } ?? false
         let serverKeys: [String: String] = [
-            // vAmiga 4.4+: RSH=0, RPC=1, GDB=2, PROM=3, SER=4.
-            "ENABLE0": "1",
-            "ENABLE1": "1",
-            "ENABLE3": "1",
-            "ENABLE4": "1",
+            "AUTORUN0": "1",
+            "AUTORUN1": "1",
+            "AUTORUN3": "1",
+            "AUTORUN4": "1",
             "PORT0": "\(config.remoteShellPort)",
-            "PORT1": legacyServerLayout ? "\(config.remoteShellPort)" : "\(config.rpcPort)",
+            "PORT1": "\(config.rpcPort)",
             "PORT3": "\(config.prometheusPort)",
             "PORT4": "\(config.serialPort)",
             "PROTOCOL0": "0",
@@ -135,14 +109,7 @@ struct VAmigaServerConfigPatcher {
             "VERBOSE0": "1",
             "VERBOSE1": "1",
             "VERBOSE3": "1",
-            "VERBOSE4": "1",
-
-            // vAmiga 4.2.x: SER=0, RSH=1, PROM=2, GDB=3 and enable is named AUTORUN.
-            "AUTORUN1": "1",
-            "AUTORUN2": "1",
-            "PORT2": "\(config.prometheusPort)",
-            "PROTOCOL2": "0",
-            "VERBOSE2": "1"
+            "VERBOSE4": "1"
         ]
 
         guard let sectionStart = lines.firstIndex(where: { $0.trimmingCharacters(in: .whitespaces) == "[SRV]" }) else {
@@ -185,27 +152,6 @@ struct VAmigaServerConfigPatcher {
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         formatter.dateFormat = "yyyyMMddHHmmss"
         return formatter.string(from: Date())
-    }
-
-    private static func installedVAmigaVersionString() -> String? {
-        let plistURL = URL(fileURLWithPath: "/Applications/vAmiga.app/Contents/Info.plist")
-        guard
-            let data = try? Data(contentsOf: plistURL),
-            let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil),
-            let dictionary = plist as? [String: Any],
-            let version = dictionary["CFBundleShortVersionString"] as? String
-        else {
-            return nil
-        }
-
-        return version
-    }
-
-    private static func parsedVersion(_ version: String?) -> (major: Int, minor: Int)? {
-        guard let version else { return nil }
-        let components = version.split(separator: ".").compactMap { Int($0) }
-        guard components.count >= 2 else { return nil }
-        return (components[0], components[1])
     }
 }
 

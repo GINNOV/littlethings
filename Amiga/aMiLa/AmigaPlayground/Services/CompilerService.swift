@@ -2,10 +2,9 @@ import Foundation
 
 class CompilerService {
     static let shared = CompilerService()
-    private static let toolTimeout: TimeInterval = 10
     
-    let vasmPath = CompilerService.resolveVasmPath()
-    let ndkInclude = CompilerService.resolveRepoPath("Dataset/corpus3/amiga-dev/targets/m68k-amigaos/ndk/include_i")
+    let vasmPath = "/usr/local/bin/vasmm68k_mot"
+    let ndkInclude = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/Dataset/corpus3/amiga-dev/targets/m68k-amigaos/ndk/include_i"
     
     func compile(assemblyCode: String, completion: @escaping (Bool, String) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
@@ -41,11 +40,7 @@ class CompilerService {
             
             do {
                 try process.run()
-                let timedOut = !Self.waitForProcess(process, timeout: Self.toolTimeout)
-                if timedOut {
-                    process.terminate()
-                    _ = Self.waitForProcess(process, timeout: 1)
-                }
+                process.waitUntilExit()
                 
                 let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
                 let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
@@ -54,27 +49,24 @@ class CompilerService {
                 let errorStr = String(data: errorData, encoding: .utf8) ?? ""
                 
                 let fullOutput = (outputStr + "\n" + errorStr).trimmingCharacters(in: .whitespacesAndNewlines)
-                let success = !timedOut && process.terminationStatus == 0
-                let diagnostic = timedOut
-                    ? "vasm timed out after \(Int(Self.toolTimeout))s\n\(fullOutput)"
-                    : fullOutput
+                let success = (process.terminationStatus == 0)
                 
                 // Cleanup
                 try? FileManager.default.removeItem(at: sourceFile)
                 try? FileManager.default.removeItem(at: outputFile)
                 
                 DispatchQueue.main.async {
-                    completion(success, diagnostic)
+                    completion(success, fullOutput)
                 }
             } catch {
                 DispatchQueue.main.async {
-                    completion(false, "Failed to execute vasm: \(error.localizedDescription)\nChecked: /usr/local/bin/vasmm68k_mot, /opt/homebrew/bin/vasmm68k_mot, /usr/local/bin/vasm, /opt/homebrew/bin/vasm.")
+                    completion(false, "Failed to execute vasm: \(error.localizedDescription)\nEnsure /usr/local/bin/vasmm68k_mot is installed.")
                 }
             }
         }
     }
     
-    let xdftoolPath = CompilerService.resolveRepoPath("fine_tuning/.venv/bin/xdftool")
+    let xdftoolPath = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/fine_tuning/.venv/bin/xdftool"
 
     func generateBootableADF(assemblyCode: String, targetADFPath: String, completion: @escaping (Bool, String) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
@@ -113,22 +105,17 @@ class CompilerService {
             
             do {
                 try vasmProcess.run()
-                let timedOut = !Self.waitForProcess(vasmProcess, timeout: Self.toolTimeout)
-                if timedOut {
-                    vasmProcess.terminate()
-                    _ = Self.waitForProcess(vasmProcess, timeout: 1)
-                }
+                vasmProcess.waitUntilExit()
                 
                 let errorData = vasmErrorPipe.fileHandleForReading.readDataToEndOfFile()
                 let errorStr = String(data: errorData, encoding: .utf8) ?? ""
                 let outputData = vasmOutputPipe.fileHandleForReading.readDataToEndOfFile()
                 let outputStr = String(data: outputData, encoding: .utf8) ?? ""
                 
-                if timedOut || vasmProcess.terminationStatus != 0 {
+                if vasmProcess.terminationStatus != 0 {
                     try? FileManager.default.removeItem(at: sourceFile)
                     DispatchQueue.main.async {
-                        let prefix = timedOut ? "Assembly compilation timed out after \(Int(Self.toolTimeout))s:" : "Assembly compilation failed:"
-                        completion(false, "\(prefix)\n\(errorStr)\n\(outputStr)")
+                        completion(false, "Assembly compilation failed:\n\(errorStr)\n\(outputStr)")
                     }
                     return
                 }
@@ -176,11 +163,7 @@ class CompilerService {
             
             do {
                 try xdfProcess.run()
-                let timedOut = !Self.waitForProcess(xdfProcess, timeout: Self.toolTimeout)
-                if timedOut {
-                    xdfProcess.terminate()
-                    _ = Self.waitForProcess(xdfProcess, timeout: 1)
-                }
+                xdfProcess.waitUntilExit()
                 
                 let errorData = xdfErrorPipe.fileHandleForReading.readDataToEndOfFile()
                 let errorStr = String(data: errorData, encoding: .utf8) ?? ""
@@ -192,14 +175,13 @@ class CompilerService {
                 try? FileManager.default.removeItem(at: outputFile)
                 try? FileManager.default.removeItem(at: startupFile)
                 
-                if !timedOut && xdfProcess.terminationStatus == 0 {
+                if xdfProcess.terminationStatus == 0 {
                     DispatchQueue.main.async {
                         completion(true, "Successfully generated bootable ADF disk image at:\n\(targetADFPath)\n\nMount this disk in your Amiga emulator (e.g. FS-UAE / WinUAE) to boot and run your compiled assembly program instantly!")
                     }
                 } else {
                     DispatchQueue.main.async {
-                        let prefix = timedOut ? "xdftool timed out after \(Int(Self.toolTimeout))s:" : "xdftool failed to generate ADF:"
-                        completion(false, "\(prefix)\n\(errorStr)\n\(outputStr)")
+                        completion(false, "xdftool failed to generate ADF:\n\(errorStr)\n\(outputStr)")
                     }
                 }
             } catch {
@@ -211,45 +193,5 @@ class CompilerService {
                 }
             }
         }
-    }
-
-    private static func waitForProcess(_ process: Process, timeout: TimeInterval) -> Bool {
-        let semaphore = DispatchSemaphore(value: 0)
-        let previousTerminationHandler = process.terminationHandler
-        process.terminationHandler = { terminatedProcess in
-            previousTerminationHandler?(terminatedProcess)
-            semaphore.signal()
-        }
-
-        if !process.isRunning {
-            return true
-        }
-        return semaphore.wait(timeout: .now() + timeout) == .success
-    }
-
-    private static func resolveVasmPath() -> String {
-        let candidates = [
-            "/usr/local/bin/vasmm68k_mot",
-            "/opt/homebrew/bin/vasmm68k_mot",
-            "/usr/local/bin/vasm",
-            "/opt/homebrew/bin/vasm"
-        ]
-
-        return candidates.first { FileManager.default.isExecutableFile(atPath: $0) } ?? candidates[0]
-    }
-
-    private static func resolveRepoPath(_ relativePath: String) -> String {
-        let sourceFile = URL(fileURLWithPath: #filePath)
-        let repoRoot = sourceFile
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-        let repoPath = repoRoot.appendingPathComponent(relativePath).path
-
-        if FileManager.default.fileExists(atPath: repoPath) {
-            return repoPath
-        }
-
-        return relativePath
     }
 }

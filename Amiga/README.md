@@ -19,9 +19,10 @@ The friendlier website version is here: <https://ginnov.github.io/littlethings/>
 ## What To Expect
 
 - `Tools/` is the best starting point if you want to run something.
-- `aMiLa/` contains the native Amiga Playground app, model tooling, and source corpus work.
+- `aMiLa/amiga_sources/` is the organized source corpus for LLM learning and fine-tuning. The catalog in `aMiLa/amiga_sources/_catalog/` classifies projects by learning value, category, and proposed future location.
 - The fine-tuned model is documented in the [Antigravity Amiga 68k model card](aMiLa/fine_tuning/fused_model/README.md).
-- Some tools are tested in FS-UAE, vAmiga, or on real Amiga hardware, depending on the project.
+- Large manuals, PDFs, generated artifacts, model files, and media should stay out of normal Git history and use Git LFS when they need to be tracked.
+- Some tools are tested in FS-UAE, vAmiga, or on an Amiga 1200, but coverage varies by project.
 
 ## Website
 

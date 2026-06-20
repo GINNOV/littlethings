@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>SUFeedURL</key>
-	<string>https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/appcast-pixdeluxe.xml</string>
-	<key>SUPublicEDKey</key>
-	<string>Oq4b/BX26tC2nXfh+dmMFoHFP9RN8lyqxcgrZPY+Pd8=</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>

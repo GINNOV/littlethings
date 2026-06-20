@@ -7,7 +7,6 @@ struct AmigaPlaygroundActions {
     let assemble: () -> Void
     let fixCompileErrors: () -> Void
     let openPromptLibrary: () -> Void
-    let openExampleLibrary: () -> Void
     let saveCode: () -> Void
     let indentCode: () -> Void
     let runDefaultEmulator: () -> Void
@@ -35,12 +34,6 @@ extension FocusedValues {
 enum AppPreferenceDefaults {
     static let showChatBoingBallKey = "showChatBoingBall"
     static let showChatBoingBall = true
-    static let autoInjectGeneratedCodeKey = "autoInjectGeneratedCode"
-    static let autoInjectGeneratedCode = true
-    static let generateCodeCommentsKey = "generateCodeComments"
-    static let generateCodeComments = true
-    static let updateDefaultPromptsWhenAvailableKey = "updateDefaultPromptsWhenAvailable"
-    static let updateDefaultPromptsWhenAvailable = false
 }
 
 struct AmigaPlaygroundCommands: Commands {
@@ -53,7 +46,7 @@ struct AmigaPlaygroundCommands: Commands {
                     actions.assemble()
                 }
                 .disabled(!actions.canRun)
-                .keyboardShortcut("e", modifiers: .command)
+                .keyboardShortcut("r", modifiers: .command)
 
                 Button("Fix Compile Errors with Assistant") {
                     actions.fixCompileErrors()
@@ -65,11 +58,6 @@ struct AmigaPlaygroundCommands: Commands {
                     actions.openPromptLibrary()
                 }
                 .keyboardShortcut("l", modifiers: [.command, .option])
-
-                Button("Example Library") {
-                    actions.openExampleLibrary()
-                }
-                .keyboardShortcut("e", modifiers: [.command, .option])
 
                 Button("Save Code...") {
                     actions.saveCode()
@@ -90,7 +78,7 @@ struct AmigaPlaygroundCommands: Commands {
                     actions.newChat()
                 }
                 .disabled(!actions.canChat)
-                .keyboardShortcut("n", modifiers: .command)
+                .keyboardShortcut("n", modifiers: [.command, .shift])
 
                 Button("Clear Editor") {
                     actions.clearEditor()
@@ -104,7 +92,7 @@ struct AmigaPlaygroundCommands: Commands {
                     actions.runDefaultEmulator()
                 }
                 .disabled(!actions.canRun)
-                .keyboardShortcut("r", modifiers: .command)
+                .keyboardShortcut("r", modifiers: [.command, .shift])
 
                 Divider()
 
@@ -133,7 +121,6 @@ enum OutputTab: String, CaseIterable, Identifiable {
 
 struct ContentView: View {
     @StateObject private var llm = OllamaService.shared
-    @StateObject private var mlxServer = MLXServerController.shared
     @Environment(\.openWindow) private var openWindow
 
     enum BuildStatus {
@@ -307,8 +294,6 @@ CopperList:
     @AppStorage("vAmigaSerialPort") private var vAmigaSerialPort: Int = 8085
     @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
     @AppStorage(AppPreferenceDefaults.showChatBoingBallKey) private var showChatBoingBall: Bool = AppPreferenceDefaults.showChatBoingBall
-    @AppStorage(AppPreferenceDefaults.autoInjectGeneratedCodeKey) private var autoInjectGeneratedCode: Bool = AppPreferenceDefaults.autoInjectGeneratedCode
-    @AppStorage(AppPreferenceDefaults.generateCodeCommentsKey) private var generateCodeComments: Bool = AppPreferenceDefaults.generateCodeComments
 
     // Compilation & Output State
     @State private var outputConsole: String = "VASM compiler idle.\nPress Assemble to build the program."
@@ -319,14 +304,6 @@ CopperList:
     @State private var activeOutputTab: OutputTab = .console
     @State private var didCopyConsole: Bool = false
     @State private var lastSavedCodeURL: URL?
-
-    private var looksLikeC: Bool {
-        if let url = lastSavedCodeURL {
-            let ext = url.pathExtension.lowercased()
-            return ext == "c" || ext == "h"
-        }
-        return AssemblySourceFormatter.looksLikeC(codeText)
-    }
 
     private var selectedBackend: EmulatorBackend {
         EmulatorBackend(rawValue: emulatorBackend) ?? .fsUAE
@@ -347,62 +324,16 @@ CopperList:
     }
 
     private var llmConnectionTint: Color {
-        switch mlxServer.status {
-        case .running:
-            return .green
-        case .runningExternally, .starting, .stopping, .downloading:
-            return .accentColor
-        case .failed:
-            return .red
-        case .stopped:
-            break
-        }
-
         switch llm.connectionStatus {
         case .connected:
             return .green
         case .disconnected:
             return .red
         case .checking:
-            return .accentColor
+            return .orange
         case .unchecked:
             return .gray
         }
-    }
-
-    private var assistantConnectionStatusLabel: String {
-        switch mlxServer.status {
-        case .running:
-            return "MLX Server Running"
-        case .runningExternally:
-            return "MLX Running Outside App"
-        case .starting, .stopping, .downloading:
-            return mlxServer.status.label
-        case .failed:
-            return "MLX Setup Needed"
-        case .stopped:
-            return llm.connectionStatusLabel
-        }
-    }
-
-    private var mlxServerToggleIcon: String {
-        if mlxServer.canStop {
-            return "stop.fill"
-        }
-
-        return mlxServer.canDownload ? "arrow.down.circle.fill" : "play.fill"
-    }
-
-    private var mlxServerToggleHelp: String {
-        if mlxServer.canStop {
-            return "Stop local MLX model server"
-        }
-
-        return mlxServer.canDownload ? "Download local MLX model" : "Start local MLX model server"
-    }
-
-    private var canToggleMLXServer: Bool {
-        mlxServer.canDownload || mlxServer.canStart || mlxServer.canStop
     }
 
     // Chat Panel State
@@ -412,9 +343,6 @@ CopperList:
     @State private var currentChatTask: URLSessionDataTask?
     @State private var selfCorrectionAttempts: Int = 0
     @State private var originalUserPrompt: String = ""
-    @State private var assistantGenerationPhase: AssistantGenerationPhase = .idle
-    @State private var activeTemplateMatch: AssistantPromptTemplateMatch?
-    @State private var generatedCodeTemplateMatch: AssistantPromptTemplateMatch?
 
     private var canFixCompileErrors: Bool {
         buildStatus == .failure &&
@@ -567,7 +495,7 @@ SineWave:
     ]
 
     var examples: [String: String] {
-        ExampleLibraryStore.defaultExamplesByName
+        ContentView.examples
     }
 
     private var playgroundActions: AmigaPlaygroundActions {
@@ -575,7 +503,6 @@ SineWave:
             assemble: runCompilation,
             fixCompileErrors: fixCompileErrorsWithAssistant,
             openPromptLibrary: openPromptLibrary,
-            openExampleLibrary: openExampleLibrary,
             saveCode: saveCode,
             indentCode: indentCode,
             runDefaultEmulator: runInEmulator,
@@ -602,7 +529,7 @@ SineWave:
                             }
                         }
                         .disabled(isCompiling || isExportingADF)
-                        .keyboardShortcut(.init("e"), modifiers: .command)
+                        .keyboardShortcut(.init("r"), modifiers: .command)
                         .controlSize(.large)
                         .buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("assembleButton")
@@ -639,6 +566,16 @@ SineWave:
                         .accessibilityIdentifier("saveCodeButton")
                         .help("Save the current source code")
 
+                        Button(action: indentCode) {
+                            HStack {
+                                Image(systemName: "text.alignleft")
+                                Text("Indent")
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("indentCodeButton")
+                        .help("Indent assembly or C source for vasm")
+
                         Button(action: runInEmulator) {
                             HStack {
                                 Image(systemName: "play.tv")
@@ -646,7 +583,6 @@ SineWave:
                             }
                         }
                         .disabled(isCompiling || isExportingADF)
-                        .keyboardShortcut(.init("r"), modifiers: .command)
                         .buttonStyle(.bordered)
                         .accessibilityIdentifier("runDefaultEmulatorButton")
                         .help("Assemble and run in the selected emulator")
@@ -662,15 +598,22 @@ SineWave:
                         .accessibilityIdentifier("exportADFButton")
                         .help("Export a bootable ADF")
 
-                        Button(action: openExampleLibrary) {
+                        Menu {
+                            ForEach(Array(examples.keys).sorted(), id: \.self) { key in
+                                Button(key) {
+                                    loadExample(named: key)
+                                }
+                            }
+                        } label: {
                             HStack(spacing: 8) {
                                 Image(systemName: "books.vertical")
                                 Text("Examples")
                             }
                         }
+                        .menuStyle(.button)
                         .buttonStyle(.bordered)
                         .accessibilityIdentifier("goldExamplesMenu")
-                        .help("Open the example library")
+                        .help("Load an example assembly program")
 
                         Button(role: .destructive) {
                             clearEditor()
@@ -686,7 +629,6 @@ SineWave:
                             Image(systemName: "plus.message")
                         }
                         .disabled(assistantChat.isGenerating)
-                        .keyboardShortcut(.init("n"), modifiers: .command)
                         .buttonStyle(.bordered)
                         .help("Start a new chat")
                         .accessibilityLabel("Start a new chat")
@@ -713,7 +655,7 @@ SineWave:
                                     .frame(width: 8, height: 8)
                                     .accessibilityHidden(true)
 
-                                Text(assistantConnectionStatusLabel)
+                                Text(llm.connectionStatusLabel)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .accessibilityIdentifier("assistantConnectionStatusLabel")
@@ -722,21 +664,8 @@ SineWave:
 
                         Spacer()
 
-                        Button {
-                            toggleMLXServerFromAssistantHeader()
-                        } label: {
-                            Image(systemName: mlxServerToggleIcon)
-                        }
-                        .disabled(!canToggleMLXServer)
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .tint(.accentColor)
-                        .help(mlxServerToggleHelp)
-                        .accessibilityLabel(mlxServerToggleHelp)
-                        .accessibilityIdentifier("assistantToggleMLXServerButton")
-
                         Image(systemName: "sparkles")
-                            .foregroundStyle(.tint)
+                            .foregroundStyle(.orange)
                             .accessibilityHidden(true)
                     }
                     .padding(.horizontal, 12)
@@ -761,29 +690,26 @@ SineWave:
                                 } else {
                                     ForEach(assistantChat.messages) { msg in
                                         VStack(alignment: .leading, spacing: 4) {
-                                            VStack(alignment: .leading, spacing: 2) {
-                                                HStack(spacing: 6) {
-                                                    Text(msg.role == "user" ? "You" : "Assistant")
-                                                        .font(.caption)
-                                                        .fontWeight(.semibold)
-                                                        .foregroundColor(msg.role == "user" ? .cyan : .orange)
+                                            HStack(spacing: 6) {
+                                                Text(msg.role == "user" ? "You" : "Assistant")
+                                                    .font(.caption)
+                                                    .fontWeight(.semibold)
+                                                    .foregroundColor(msg.role == "user" ? .cyan : .orange)
 
-                                                    if let prompt = assistantChat.reusablePrompt(from: msg) {
-                                                        Button {
-                                                            copyPromptToClipboard(prompt, messageID: msg.id)
-                                                        } label: {
-                                                            Image(systemName: copiedPromptMessageID == msg.id ? "checkmark" : "doc.on.doc")
-                                                                .font(.caption)
-                                                                .frame(width: 18, height: 18)
-                                                        }
-                                                        .buttonStyle(.plain)
-                                                        .foregroundColor(copiedPromptMessageID == msg.id ? .green : .cyan.opacity(0.9))
-                                                        .help("Copy prompt")
-                                                        .accessibilityLabel("Copy prompt to clipboard")
-                                                        .accessibilityIdentifier("copyPromptButton")
+                                                if let prompt = assistantChat.reusablePrompt(from: msg) {
+                                                    Button {
+                                                        copyPromptToClipboard(prompt, messageID: msg.id)
+                                                    } label: {
+                                                        Image(systemName: copiedPromptMessageID == msg.id ? "checkmark" : "doc.on.doc")
+                                                            .font(.caption)
+                                                            .frame(width: 18, height: 18)
                                                     }
+                                                    .buttonStyle(.plain)
+                                                    .foregroundColor(copiedPromptMessageID == msg.id ? .green : .cyan.opacity(0.9))
+                                                    .help("Copy prompt")
+                                                    .accessibilityLabel("Copy prompt to clipboard")
+                                                    .accessibilityIdentifier("copyPromptButton")
                                                 }
-
                                             }
 
                                             Text(msg.content)
@@ -794,37 +720,22 @@ SineWave:
                                                 .cornerRadius(6)
                                                 .textSelection(.enabled)
 
-                                            if msg.role == "assistant", let tokenUsage = msg.tokenUsage {
-                                                HStack(spacing: 4) {
-                                                    Image(systemName: "number")
-                                                        .font(.caption2.weight(.semibold))
-                                                        .accessibilityHidden(true)
-
-                                                    Text(tokenUsage.displayText)
-                                                        .font(.caption2)
-                                                        .lineLimit(1)
-                                                        .minimumScaleFactor(0.75)
-                                                }
-                                                .foregroundColor(.white.opacity(0.62))
-                                                .accessibilityElement(children: .combine)
-                                                .accessibilityLabel(tokenUsage.displayText)
-                                                .accessibilityIdentifier("assistantMessageTokenUsageLabel")
-                                            }
-
                                             // Quick Code Inject Button
                                             if msg.role == "assistant" && assistantChat.isLikelyInjectableCode(msg.content) {
                                                 Button(action: {
                                                     injectCodeBlock(from: msg.content)
                                                 }) {
-                                                    HStack(spacing: 8) {
+                                                    HStack {
                                                         Image(systemName: "arrow.right.doc.on.clipboard")
                                                         Text("Inject Code into Editor")
                                                     }
                                                     .font(.caption)
+                                                    .padding(.horizontal, 8)
+                                                    .padding(.vertical, 4)
+                                                    .background(Color.orange)
+                                                    .cornerRadius(4)
+                                                    .foregroundColor(.black)
                                                 }
-                                                .buttonStyle(ChatInjectButtonStyle())
-                                                .accessibilityIdentifier("injectCodeButton")
-                                                .help("Confirm and inject this assistant code into the editor")
                                             }
                                         }
                                         .padding(.horizontal, 10)
@@ -834,19 +745,10 @@ SineWave:
 
                                 if assistantChat.isGenerating {
                                     VStack(alignment: .leading, spacing: 4) {
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(assistantGenerationPhase.title)
-                                                .font(.caption)
-                                                .fontWeight(.semibold)
-                                                .foregroundColor(.orange)
-
-                                            if let detail = assistantGenerationPhase.detail {
-                                                Text(detail)
-                                                    .font(.caption2)
-                                                    .foregroundColor(.white.opacity(0.62))
-                                            }
-                                        }
-
+                                        Text("Assistant")
+                                            .font(.caption)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.orange)
                                         Text(assistantChat.currentGeneration)
                                             .font(.system(.body, design: .monospaced))
                                             .foregroundColor(.white)
@@ -1033,7 +935,6 @@ SineWave:
                                 Text(outputConsole)
                                     .font(.system(.body, design: .monospaced))
                                     .foregroundColor(.white)
-                                    .textSelection(.enabled)
                                     .padding(10)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
@@ -1073,10 +974,6 @@ SineWave:
         .focusedSceneValue(\.amigaPlaygroundActions, playgroundActions)
         .onAppear {
             llm.refreshConnectionStatus()
-            mlxServer.refreshStatus()
-        }
-        .onChange(of: mlxServer.status) {
-            llm.refreshConnectionStatus()
         }
         .onChange(of: llm.provider) {
             llm.refreshConnectionStatus()
@@ -1091,13 +988,6 @@ SineWave:
             guard let prompt = notification.userInfo?["prompt"] as? String else { return }
             currentMessage = prompt
         }
-        .onReceive(NotificationCenter.default.publisher(for: .loadExampleIntoEditor)) { notification in
-            guard let code = notification.userInfo?["code"] as? String else { return }
-            let name = notification.userInfo?["name"] as? String ?? "Example"
-            codeText = code
-            generatedCodeTemplateMatch = nil
-            outputConsole = "Loaded '\(name)' example source code."
-        }
     }
 
     // Assemble the code using VASM Process helper
@@ -1110,24 +1000,22 @@ SineWave:
         isCompiling = true
         buildStatus = .running
         activeOutputTab = .console
-        outputConsole = templateConsoleMessage(validation: "compiling", fallback: "Assembling code using vasmm68k_mot...\n")
+        outputConsole = "Assembling code using vasmm68k_mot...\n"
 
         CompilerService.shared.compile(assemblyCode: codeText) { success, output in
             self.isCompiling = false
             self.buildStatus = success ? .success : .failure
-            self.outputConsole = self.templateConsoleMessage(validation: success ? "passed" : "failed", details: output, fallback: output)
+            self.outputConsole = output
         }
     }
 
     private func clearEditor() {
         codeText = ""
-        generatedCodeTemplateMatch = nil
         outputConsole = "Editor Cleared."
     }
 
     private func loadExample(named key: String) {
         codeText = examples[key] ?? ""
-        generatedCodeTemplateMatch = nil
         outputConsole = "Loaded '\(key)' example assembly source code."
     }
 
@@ -1139,9 +1027,6 @@ SineWave:
         currentMessage = ""
         selfCorrectionAttempts = 0
         originalUserPrompt = ""
-        assistantGenerationPhase = .idle
-        activeTemplateMatch = nil
-        generatedCodeTemplateMatch = nil
         outputConsole = "Started a new assistant chat."
     }
 
@@ -1152,10 +1037,6 @@ SineWave:
 
     private func openPromptLibrary() {
         openWindow(id: "prompt-library")
-    }
-
-    private func openExampleLibrary() {
-        openWindow(id: "example-library")
     }
 
     private func fixCompileErrorsWithAssistant() {
@@ -1179,10 +1060,7 @@ SineWave:
         isCompiling = true
         buildStatus = .running
         activeOutputTab = .console
-        outputConsole = templateConsoleMessage(
-            validation: "generating ADF",
-            fallback: "Validating code by building a bootable ADF and collecting vAmiga debug evidence...\n"
-        )
+        outputConsole = "Validating code by building a bootable ADF and collecting vAmiga debug evidence...\n"
 
         let tempADFPath = "/tmp/amiga_playground_temp.adf"
 
@@ -1190,13 +1068,12 @@ SineWave:
             if !success {
                 self.isCompiling = false
                 self.buildStatus = .failure
-                self.outputConsole = self.templateConsoleMessage(validation: "failed", details: resultMessage, fallback: resultMessage)
+                self.outputConsole = resultMessage
                 self.writeCompileFailureValidationArtifact(message: resultMessage)
                 return
             }
 
-            let launchMessage = resultMessage + "\n\nLaunching vAmiga and connecting to RPC/Prometheus servers..."
-            self.outputConsole = self.templateConsoleMessage(validation: "generated ADF", details: launchMessage, fallback: launchMessage)
+            self.outputConsole = resultMessage + "\n\nLaunching vAmiga and connecting to RPC/Prometheus servers..."
 
             let launchConfig = EmulatorLaunchConfig(
                 backend: .vAmiga,
@@ -1230,7 +1107,7 @@ SineWave:
         isCompiling = true
         buildStatus = .running
         activeOutputTab = .console
-        outputConsole = templateConsoleMessage(validation: "generating ADF", details: openingMessage, fallback: openingMessage)
+        outputConsole = openingMessage
 
         let tempADFPath = "/tmp/amiga_playground_temp.adf"
 
@@ -1238,12 +1115,11 @@ SineWave:
             if !success {
                 self.isCompiling = false
                 self.buildStatus = .failure
-                self.outputConsole = self.templateConsoleMessage(validation: "failed", details: resultMessage, fallback: resultMessage)
+                self.outputConsole = resultMessage
                 return
             }
 
-            let launchMessage = resultMessage + "\n\nLaunching \(label) with selected ROM and configuration..."
-            self.outputConsole = self.templateConsoleMessage(validation: "generated ADF", details: launchMessage, fallback: launchMessage)
+            self.outputConsole = resultMessage + "\n\nLaunching \(label) with selected ROM and configuration..."
 
             let launchConfig = EmulatorLaunchConfig(
                 backend: backend,
@@ -1300,17 +1176,14 @@ SineWave:
         isCompiling = true
         buildStatus = .running
         activeOutputTab = .console
-        outputConsole = templateConsoleMessage(
-            validation: "generating ADF",
-            fallback: "Assembling code and packaging bootable ADF for Web Emulator...\n"
-        )
+        outputConsole = "Assembling code and packaging bootable ADF for Web Emulator...\n"
 
         let tempADFPath = "/tmp/amiga_playground_temp.adf"
 
         CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: tempADFPath) { success, resultMessage in
             self.isCompiling = false
             self.buildStatus = success ? .success : .failure
-            self.outputConsole = self.templateConsoleMessage(validation: success ? "generated ADF" : "failed", details: resultMessage, fallback: resultMessage)
+            self.outputConsole = resultMessage
 
             if success {
                 // Increment trigger to notify WKWebView updateNSView to inject ADF file
@@ -1327,7 +1200,6 @@ SineWave:
     private func submitAssistantPrompt(_ rawPrompt: String, clearComposer: Bool) {
         guard let request = assistantChat.submit(rawPrompt) else { return }
         let submittedPrompt = rawPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
-        assistantGenerationPhase = selfCorrectionAttempts == 0 ? .generating : .repairing(attempt: selfCorrectionAttempts)
 
         if clearComposer {
             currentMessage = ""
@@ -1337,97 +1209,8 @@ SineWave:
             originalUserPrompt = submittedPrompt
         }
 
-        if selfCorrectionAttempts == 0,
-           isCommentOnlyEditorTransformPrompt(submittedPrompt) {
-            applyCommentOnlyEditorTransform(prompt: submittedPrompt)
-            return
-        }
-
-        let assistantRoute = AssistantPromptRouter.route(
-            prompt: submittedPrompt,
-            source: codeText,
-            isSelfCorrection: selfCorrectionAttempts > 0
-        )
-
-        if case .structuredModelPatch(let patchOutcome) = assistantRoute {
-            switch patchOutcome {
-            case .patched(let programPatch):
-                activeTemplateMatch = nil
-                generatedCodeTemplateMatch = nil
-                activeOutputTab = .console
-                outputConsole = "Applied source-aware Amiga program patch.\nChanged regions: \(programPatch.changedRegions.joined(separator: ", "))\nValidation: compiling"
-                let response = """
-                ```assembly
-                \(programPatch.source)
-                ```
-                """
-                let completion = assistantChat.complete(fullResponse: response, streamedResponse: "")
-                guard let injectedCode = completion.injectedCode else { return }
-                runAssemblyReliabilityGate(injectedCode, submittedPrompt: submittedPrompt)
-                return
-            case .rejected(let failures):
-                activeTemplateMatch = nil
-                generatedCodeTemplateMatch = nil
-                activeOutputTab = .console
-                assistantGenerationPhase = .idle
-                _ = assistantChat.complete(
-                    fullResponse: AssistantStructuredPatchRejectionPresenter.assistantMessage(failures: failures),
-                    streamedResponse: ""
-                )
-                outputConsole = AssistantStructuredPatchRejectionPresenter.consoleMessage(failures: failures)
-                return
-            case .notRecognized:
-                break
-            }
-        }
-
-        let shouldEditCurrentSource = assistantRoute == .sourceEdit
-        let streamMessages = shouldEditCurrentSource
-            ? AssistantSourceEditPlanner.requestMessages(from: request.messages, userPrompt: submittedPrompt, source: codeText)
-            : request.messages
-
-        if shouldEditCurrentSource {
-            activeTemplateMatch = nil
-            generatedCodeTemplateMatch = nil
-            activeOutputTab = .console
-            outputConsole = "Editing current editor source with model context. The existing code was sent as the source of truth; validation will compile the edited result."
-        }
-
-        if selfCorrectionAttempts == 0,
-           !shouldEditCurrentSource,
-           let templateMatch = AssistantPromptTemplate.match(for: submittedPrompt) {
-            activeTemplateMatch = templateMatch
-            generatedCodeTemplateMatch = nil
-            activeOutputTab = .console
-            outputConsole = "\(templateMatch.consoleSummary)\nValidation: preparing generated source"
-            let templateSource = sourceRespectingGeneratedCommentPreference(templateMatch.source)
-            let response = """
-            ```assembly
-            \(templateSource)
-            ```
-            """
-            let completion = assistantChat.complete(fullResponse: response, streamedResponse: "")
-            guard let injectedCode = completion.injectedCode else { return }
-
-            runAssemblyReliabilityGate(injectedCode, submittedPrompt: submittedPrompt)
-            return
-        }
-
-        if selfCorrectionAttempts == 0 && !shouldEditCurrentSource {
-            activeTemplateMatch = nil
-            generatedCodeTemplateMatch = nil
-            activeOutputTab = .console
-            outputConsole = AssistantPromptTemplate.fallbackMessage(for: submittedPrompt)
-        }
-
-        let adapterName = looksLikeC ? "adapters_c" : "adapters_asm"
-        let adapterPath = mlxServer.adapterDirectory(named: adapterName).path
-        if selfCorrectionAttempts > 0 {
-            outputConsole = assistantGenerationPhase.consoleMessage
-        }
         currentChatTask = OllamaService.shared.streamChat(
-            messages: streamMessages,
-            adapterPath: adapterPath,
+            messages: request.messages,
             onContentChunk: { chunk in
                 llm.markConnected()
                 assistantChat.appendContentChunk(chunk)
@@ -1439,19 +1222,17 @@ SineWave:
                 }
                 assistantChat.appendReasoningChunk(chunk)
             },
-            onCompletion: { contentResponse, reasoningResponse, tokenUsage in
+            onCompletion: { contentResponse, reasoningResponse in
                 currentChatTask = nil
                 llm.markConnected()
                 let completion = assistantChat.complete(
                     fullResponse: contentResponse,
                     streamedResponse: assistantChat.currentGeneration,
-                    reasoningResponse: reasoningResponse,
-                    tokenUsage: tokenUsage
+                    reasoningResponse: reasoningResponse
                 )
                 
                 guard let injectedCode = completion.injectedCode else {
                     self.selfCorrectionAttempts = 0
-                    self.assistantGenerationPhase = .idle
                     if let consoleMessage = completion.consoleMessage {
                         outputConsole = consoleMessage
                     }
@@ -1461,17 +1242,52 @@ SineWave:
                 // If it is C code, we inject it directly (since this editor compiles assembly only)
                 if AssemblySourceFormatter.looksLikeC(injectedCode) {
                     self.selfCorrectionAttempts = 0
-                    self.assistantGenerationPhase = .idle
-                    handleGeneratedCodeReady(
+                    injectGeneratedCode(
                         injectedCode,
                         prompt: self.originalUserPrompt.isEmpty ? submittedPrompt : self.originalUserPrompt,
-                        autoInjectConsoleMessage: completion.consoleMessage ?? "Injected code from Amiga Assistant.",
-                        readyConsoleMessage: "Assistant generated C code. Review it in chat, then click Inject Code into Editor to replace the editor contents."
+                        consoleMessage: completion.consoleMessage ?? "Injected code from Amiga Assistant."
                     )
                     return
                 }
                 
-                runAssemblyReliabilityGate(injectedCode, submittedPrompt: submittedPrompt)
+                // Perform compiler gate on generated 68k assembly
+                outputConsole = "Running compiler gate on generated 68k assembly..."
+                CompilerService.shared.compile(assemblyCode: injectedCode) { success, compilerOutput in
+                    if success {
+                        self.selfCorrectionAttempts = 0
+                        injectGeneratedCode(
+                            injectedCode,
+                            prompt: self.originalUserPrompt.isEmpty ? submittedPrompt : self.originalUserPrompt,
+                            consoleMessage: "Injected compiler-verified 68k assembly (passed VASM gate!)."
+                        )
+                    } else {
+                        if self.selfCorrectionAttempts < 2 {
+                            self.selfCorrectionAttempts += 1
+                            outputConsole = "Compiler gate failed!\n\(compilerOutput)\n\nTriggering automatic self-correction (Attempt \(self.selfCorrectionAttempts)/2)..."
+                            
+                            let repairPrompt = """
+                            Your generated 68k assembly code failed to compile with the following error from vasmm68k_mot:
+                            
+                            ```text
+                            \(compilerOutput)
+                            ```
+                            
+                            Please fix the compilation errors. Retain all original functionality, labels, and logic, but ensure the syntax is 100% correct and compilable.
+                            Return ONLY the entire corrected code block in a fenced code block (```assembly ... ```). Do not include any explanation outside the code block.
+                            """
+                            
+                            submitAssistantPrompt(repairPrompt, clearComposer: false)
+                        } else {
+                            self.selfCorrectionAttempts = 0
+                            injectGeneratedCode(
+                                injectedCode,
+                                prompt: self.originalUserPrompt.isEmpty ? submittedPrompt : self.originalUserPrompt,
+                                consoleMessage: "Injected code after maximum self-correction attempts (failed VASM gate)."
+                            )
+                            outputConsole = "VASM Compiler Gate Error:\n\(compilerOutput)"
+                        }
+                    }
+                }
             },
             onError: { error in
                 currentChatTask = nil
@@ -1481,127 +1297,9 @@ SineWave:
                 }
 
                 llm.markDisconnected(error)
-                assistantGenerationPhase = .idle
                 assistantChat.fail(error)
             }
         )
-    }
-
-    private func isCommentOnlyEditorTransformPrompt(_ prompt: String) -> Bool {
-        let normalized = prompt.lowercased()
-        let asksForComments = normalized.contains("add comment") ||
-            normalized.contains("add comments") ||
-            normalized.contains("comment each line") ||
-            normalized.contains("comments on each line") ||
-            normalized.contains("comment every line")
-        let preservesCode = normalized.contains("without changing") ||
-            normalized.contains("do not change") ||
-            normalized.contains("don't change") ||
-            normalized.contains("preserve the code") ||
-            normalized.contains("keep the code")
-
-        return asksForComments && preservesCode
-    }
-
-    private func applyCommentOnlyEditorTransform(prompt: String) {
-        activeTemplateMatch = nil
-        generatedCodeTemplateMatch = nil
-        activeOutputTab = .console
-        assistantGenerationPhase = .idle
-        selfCorrectionAttempts = 0
-
-        let source = codeText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !source.isEmpty else {
-            _ = assistantChat.complete(
-                fullResponse: "The editor is empty, so there is no source to comment.",
-                streamedResponse: ""
-            )
-            outputConsole = "No editor source to comment. Generate or paste code first, then ask to add comments without changing it."
-            return
-        }
-
-        let commentedSource = AssemblySourceFormatter.commentedSource(from: codeText)
-        codeText = commentedSource
-        _ = assistantChat.complete(
-            fullResponse: "Added comments to the existing editor source without changing executable statements.",
-            streamedResponse: ""
-        )
-        outputConsole = "Added comments to existing editor source without using model generation or replacing it with a new template."
-    }
-
-    private func runAssemblyReliabilityGate(_ source: String, submittedPrompt: String) {
-        let requestedPrompt = originalUserPrompt.isEmpty ? submittedPrompt : originalUserPrompt
-        assistantGenerationPhase = .validating
-        activeOutputTab = .console
-        if let activeTemplateMatch {
-            outputConsole = "\(activeTemplateMatch.consoleSummary)\nValidation: compiling"
-        } else {
-            outputConsole = assistantGenerationPhase.consoleMessage
-        }
-
-        CompilerService.shared.compile(assemblyCode: source) { success, compilerOutput in
-            let semanticResult = AssemblySemanticValidator.validate(source: source, prompt: requestedPrompt)
-
-            if success && semanticResult.passed {
-                self.selfCorrectionAttempts = 0
-                self.assistantGenerationPhase = .idle
-                if let activeTemplateMatch {
-                    self.outputConsole = "\(activeTemplateMatch.consoleSummary)\nValidation: passed"
-                    self.generatedCodeTemplateMatch = activeTemplateMatch
-                } else {
-                    self.outputConsole = "Passed"
-                    self.generatedCodeTemplateMatch = nil
-                }
-                handleGeneratedCodeReady(
-                    source,
-                    prompt: requestedPrompt,
-                    autoInjectConsoleMessage: activeTemplateMatch.map { "\($0.consoleSummary)\nValidation: passed" } ?? "Passed",
-                    readyConsoleMessage: activeTemplateMatch.map { "\($0.consoleSummary)\nValidation: passed" } ?? "Passed"
-                )
-                self.activeTemplateMatch = nil
-                return
-            }
-
-            let gateFailures = self.reliabilityGateFailures(
-                compilerSucceeded: success,
-                compilerOutput: compilerOutput,
-                semanticFailures: semanticResult.failures
-            )
-
-            if AssistantReliabilityGatePolicy.allowsFreeFormRepair(source: source),
-               self.selfCorrectionAttempts < 2 {
-                self.selfCorrectionAttempts += 1
-                assistantGenerationPhase = .repairing(attempt: self.selfCorrectionAttempts)
-                outputConsole = assistantGenerationPhase.consoleMessage
-                let repairPrompt = AssemblyRepairPromptBuilder.prompt(
-                    originalRequest: requestedPrompt,
-                    source: source,
-                    compilerOutput: compilerOutput,
-                    semanticFailures: semanticResult.failures,
-                    attempt: self.selfCorrectionAttempts
-                )
-                submitAssistantPrompt(repairPrompt, clearComposer: false)
-                return
-            }
-
-            self.selfCorrectionAttempts = 0
-            assistantGenerationPhase = .idle
-            activeTemplateMatch = nil
-            generatedCodeTemplateMatch = nil
-            outputConsole = AssistantReliabilityGatePolicy.terminalFailureMessage(source: source, failures: gateFailures)
-        }
-    }
-
-    private func reliabilityGateFailures(compilerSucceeded: Bool, compilerOutput: String, semanticFailures: [String]) -> [String] {
-        var failures: [String] = []
-
-        if !compilerSucceeded {
-            let trimmedCompilerOutput = compilerOutput.trimmingCharacters(in: .whitespacesAndNewlines)
-            failures.append(trimmedCompilerOutput.isEmpty ? "compiler failed" : trimmedCompilerOutput)
-        }
-
-        failures.append(contentsOf: semanticFailures)
-        return failures
     }
 
     private func compileRepairPrompt(source: String, compilerOutput: String) -> String {
@@ -1630,27 +1328,7 @@ SineWave:
     private func stopMessageGeneration() {
         currentChatTask?.cancel()
         currentChatTask = nil
-        assistantGenerationPhase = .idle
-        activeTemplateMatch = nil
-        generatedCodeTemplateMatch = nil
         assistantChat.cancel()
-    }
-
-    private func toggleMLXServerFromAssistantHeader() {
-        if mlxServer.canStop {
-            mlxServer.stop()
-            llm.refreshConnectionStatus()
-        } else if mlxServer.canDownload {
-            llm.provider = .lmStudio
-            llm.customUrl = ""
-            llm.modelName = OllamaService.publishedModelID
-            mlxServer.downloadModel(startAfterDownload: true)
-        } else if mlxServer.canStart {
-            llm.provider = .lmStudio
-            llm.customUrl = ""
-            llm.modelName = OllamaService.publishedModelID
-            mlxServer.start()
-        }
     }
 
     private func copyPromptToClipboard(_ prompt: String, messageID: UUID) {
@@ -1683,12 +1361,10 @@ SineWave:
     // Simple helper to isolate block between markdown fences and overwrite the editor
     private func injectCodeBlock(from responseText: String) {
         let prompt = assistantChat.promptPrecedingAssistantMessage(responseText) ?? "Manual assistant code injection"
-        let strippedResponse = AssistantChatSession.stripPlanningBlocks(from: responseText)
-        generatedCodeTemplateMatch = nil
-        if let range = strippedResponse.range(of: "```[a-zA-Z0-9]*\n", options: .regularExpression) {
-            let codeStart = strippedResponse.index(range.upperBound, offsetBy: 0)
-            if let endRange = strippedResponse[codeStart...].range(of: "```") {
-                let codeContent = strippedResponse[codeStart..<endRange.lowerBound]
+        if let range = responseText.range(of: "```[a-zA-Z0-9]*\n", options: .regularExpression) {
+            let codeStart = responseText.index(range.upperBound, offsetBy: 0)
+            if let endRange = responseText[codeStart...].range(of: "```") {
+                let codeContent = responseText[codeStart..<endRange.lowerBound]
                 injectGeneratedCode(
                     AssemblySourceFormatter.vasmReadySource(
                         from: String(codeContent).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1702,7 +1378,7 @@ SineWave:
 
         // Fallback if no code fences are found
         injectGeneratedCode(
-            AssemblySourceFormatter.vasmReadySource(from: strippedResponse),
+            AssemblySourceFormatter.vasmReadySource(from: responseText),
             prompt: prompt,
             consoleMessage: "Injected full assistant text block."
         )
@@ -1710,7 +1386,6 @@ SineWave:
 
     private func injectGeneratedCode(_ source: String, prompt: String, consoleMessage: String) {
         guard confirmReplacingEditorIfNeeded() else {
-            generatedCodeTemplateMatch = nil
             outputConsole = "Code injection cancelled. Existing editor content was kept."
             return
         }
@@ -1719,23 +1394,6 @@ SineWave:
         codeText = sourceWithInjectionHeader(source, proposedFileName: proposedFileName, prompt: prompt)
         playCodeInjectedSound()
         outputConsole = "\(consoleMessage)\nProposed file name: \(proposedFileName)"
-    }
-
-    private func handleGeneratedCodeReady(_ source: String, prompt: String, autoInjectConsoleMessage: String, readyConsoleMessage: String) {
-        guard autoInjectGeneratedCode else {
-            outputConsole = readyConsoleMessage
-            return
-        }
-
-        injectGeneratedCode(
-            sourceRespectingGeneratedCommentPreference(source),
-            prompt: prompt,
-            consoleMessage: autoInjectConsoleMessage
-        )
-    }
-
-    private func sourceRespectingGeneratedCommentPreference(_ source: String) -> String {
-        generateCodeComments ? AssemblySourceFormatter.commentedSource(from: source) : source
     }
 
     private func confirmReplacingEditorIfNeeded() -> Bool {
@@ -1858,67 +1516,12 @@ SineWave:
         self.isExportingADF = true
         self.buildStatus = .running
         self.activeOutputTab = .console
-        self.outputConsole = templateConsoleMessage(
-            validation: "generating ADF",
-            details: "Generating bootable ADF disk image at:\n\(url.path)...",
-            fallback: "Generating bootable ADF disk image at:\n\(url.path)...\n"
-        )
+        self.outputConsole = "Generating bootable ADF disk image at:\n\(url.path)...\n"
 
         CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: url.path) { success, resultMessage in
             self.isExportingADF = false
             self.buildStatus = success ? .success : .failure
-            self.outputConsole = self.templateConsoleMessage(validation: success ? "generated ADF" : "failed", details: resultMessage, fallback: resultMessage)
-        }
-    }
-
-    private func templateConsoleMessage(validation: String, details: String? = nil, fallback: String) -> String {
-        guard let generatedCodeTemplateMatch else { return fallback }
-        let detailText = details?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let detailText, !detailText.isEmpty {
-            return "\(generatedCodeTemplateMatch.consoleSummary)\nValidation: \(validation)\n\n\(detailText)"
-        }
-        return "\(generatedCodeTemplateMatch.consoleSummary)\nValidation: \(validation)"
-    }
-}
-
-private struct ChatInjectButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .foregroundColor(.orange.opacity(configuration.isPressed ? 0.72 : 0.95))
-            .background(Color(red: 0.18, green: 0.18, blue: 0.22).opacity(configuration.isPressed ? 0.85 : 1.0))
-            .clipShape(RoundedRectangle(cornerRadius: 4))
-            .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(Color.orange.opacity(configuration.isPressed ? 0.95 : 0.55), lineWidth: 1)
-            )
-    }
-}
-
-private struct SettingsInfoButton: View {
-    let text: String
-    @State private var isPresented = false
-
-    var body: some View {
-        Button {
-            isPresented.toggle()
-        } label: {
-            Image(systemName: "info.circle")
-                .imageScale(.medium)
-        }
-        .buttonStyle(.borderless)
-        .foregroundStyle(.secondary)
-        .help(text)
-        .accessibilityLabel("Setting information")
-        .accessibilityHint(text)
-        .popover(isPresented: $isPresented, arrowEdge: .trailing) {
-            Text(text)
-                .font(.caption)
-                .foregroundStyle(.primary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(12)
-                .frame(width: 280, alignment: .leading)
+            self.outputConsole = resultMessage
         }
     }
 }
@@ -1926,7 +1529,6 @@ private struct SettingsInfoButton: View {
 struct SettingsView: View {
     @StateObject private var llm = OllamaService.shared
     @StateObject private var mlxServer = MLXServerController.shared
-    @StateObject private var promptLibrary = PromptLibraryStore.shared
 
     @AppStorage("emulatorModel") private var emulatorModel: String = "A500"
     @AppStorage("emulatorCpu") private var emulatorCpu: String = "68000"
@@ -1945,15 +1547,9 @@ struct SettingsView: View {
     @AppStorage("vAmigaSerialPort") private var vAmigaSerialPort: Int = 8085
     @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
     @AppStorage(AppPreferenceDefaults.showChatBoingBallKey) private var showChatBoingBall: Bool = AppPreferenceDefaults.showChatBoingBall
-    @AppStorage(AppPreferenceDefaults.autoInjectGeneratedCodeKey) private var autoInjectGeneratedCode: Bool = AppPreferenceDefaults.autoInjectGeneratedCode
-    @AppStorage(AppPreferenceDefaults.generateCodeCommentsKey) private var generateCodeComments: Bool = AppPreferenceDefaults.generateCodeComments
-    @AppStorage(AppPreferenceDefaults.updateDefaultPromptsWhenAvailableKey) private var updateDefaultPromptsWhenAvailable: Bool = AppPreferenceDefaults.updateDefaultPromptsWhenAvailable
-    @AppStorage("romsDirectoryPath") private var romsDirectoryPath: String = EmulatorService.defaultRomsDirectory
+    @AppStorage("romsDirectoryPath") private var romsDirectoryPath: String = "/Users/megov/code/GitHub/littlethings/Amiga/commodore-amiga-firmware"
 
     @State private var availableRoms: [RomEntry] = []
-    @State private var isCheckingDefaultPromptUpdates = false
-    @State private var defaultPromptUpdateStatus: String?
-    @State private var pendingDefaultPromptUpdate: PendingDefaultPromptUpdate?
 
     let models = ["A500", "A500+", "A600", "A1000", "A1200", "A2000", "A3000", "A4000"]
     let cpus = ["68000", "68010", "68020", "68030", "68040", "68060"]
@@ -1982,167 +1578,19 @@ struct SettingsView: View {
         )
     }
 
-    private var fsUaeArgumentPresetSelection: Binding<String> {
-        Binding(
-            get: {
-                FSUAEArgumentPreset.presets.first(where: { $0.arguments == emulatorCustomArgs })?.id ?? FSUAEArgumentPreset.customID
-            },
-            set: { selectedPresetID in
-                guard let preset = FSUAEArgumentPreset.presets.first(where: { $0.id == selectedPresetID }) else { return }
-                emulatorCustomArgs = preset.arguments
-            }
-        )
-    }
-
-    private var hardwarePresetDescription: String {
-        if let selectedPreset = HardwarePreset.presets.first(where: { $0.id == selectedHardwarePresetID }) {
-            return selectedPreset.summary
-        }
-        return "Manual ROM, model, CPU, memory, or JIT settings are active."
-    }
-
-    private var fsUaeArgumentPresetDescription: String {
-        if let selectedPreset = FSUAEArgumentPreset.presets.first(where: { $0.arguments == emulatorCustomArgs }) {
-            return selectedPreset.summary
-        }
-        return "Manual FS-UAE command-line arguments are active."
-    }
-
-    private var aiSettingsModelName: Binding<String> {
-        Binding(
-            get: {
-                let trimmedName = llm.modelName.trimmingCharacters(in: .whitespacesAndNewlines)
-                let bundledModelAliases = [
-                    "",
-                    OllamaService.Provider.ollama.defaultModelName,
-                    OllamaService.publishedModelID,
-                    OllamaService.mlxServerRequestModelName
-                ]
-
-                if bundledModelAliases.contains(trimmedName) {
-                    return OllamaService.publishedModelDisplayName
-                }
-
-                return llm.modelName
-            },
-            set: { newValue in
-                llm.modelName = newValue
-            }
-        )
-    }
-
-    private var mlxServerToggleLabel: String {
-        if mlxServer.canStop {
-            return "Stop MLX Server"
-        }
-
-        return mlxServer.canDownload ? "Download Model" : "Start MLX Server"
-    }
-
-    private var mlxServerToggleIcon: String {
-        if mlxServer.canStop {
-            return "stop.fill"
-        }
-
-        return mlxServer.canDownload ? "arrow.down.circle.fill" : "play.fill"
-    }
-
-    private var canToggleMLXServer: Bool {
-        mlxServer.canDownload || mlxServer.canStart || mlxServer.canStop
-    }
-
     private var mlxServerStatusColor: Color {
         switch mlxServer.status {
         case .running:
             return .green
         case .runningExternally:
-            return .accentColor
-        case .starting, .stopping, .downloading:
-            return .accentColor
+            return .orange
+        case .starting, .stopping:
+            return .yellow
         case .failed:
             return .red
         case .stopped:
             return .secondary
         }
-    }
-
-    private func toggleMLXServerFromSettings() {
-        if mlxServer.canStop {
-            mlxServer.stop()
-            llm.refreshConnectionStatus()
-        } else if mlxServer.canDownload {
-            llm.provider = .lmStudio
-            llm.customUrl = ""
-            llm.modelName = OllamaService.publishedModelID
-            mlxServer.downloadModel(startAfterDownload: true)
-        } else if mlxServer.canStart {
-            llm.provider = .lmStudio
-            llm.customUrl = ""
-            llm.modelName = OllamaService.publishedModelID
-            mlxServer.start()
-        }
-    }
-
-    private func revealMLXServerLog() {
-        let logURL = URL(fileURLWithPath: mlxServer.logFilePath)
-        if FileManager.default.fileExists(atPath: logURL.path) {
-            NSWorkspace.shared.activateFileViewerSelecting([logURL])
-        } else {
-            NSWorkspace.shared.open(logURL.deletingLastPathComponent())
-        }
-    }
-
-    private var defaultPromptUpdateToggle: Binding<Bool> {
-        Binding(
-            get: { updateDefaultPromptsWhenAvailable },
-            set: { newValue in
-                updateDefaultPromptsWhenAvailable = newValue
-                defaultPromptUpdateStatus = nil
-                if newValue {
-                    checkForDefaultPromptUpdates()
-                }
-            }
-        )
-    }
-
-    private var defaultPromptUpdateAlertIsPresented: Binding<Bool> {
-        Binding(
-            get: { pendingDefaultPromptUpdate != nil },
-            set: { isPresented in
-                if !isPresented {
-                    pendingDefaultPromptUpdate = nil
-                }
-            }
-        )
-    }
-
-    private func checkForDefaultPromptUpdates() {
-        guard updateDefaultPromptsWhenAvailable, !isCheckingDefaultPromptUpdates else { return }
-        isCheckingDefaultPromptUpdates = true
-        defaultPromptUpdateStatus = "Checking for prompt updates..."
-
-        Task {
-            do {
-                let pendingUpdate = try await promptLibrary.checkForDefaultPromptUpdates()
-                isCheckingDefaultPromptUpdates = false
-                if let pendingUpdate {
-                    pendingDefaultPromptUpdate = pendingUpdate
-                    defaultPromptUpdateStatus = "\(pendingUpdate.conflictNames.count) locally edited default prompt update needs confirmation."
-                } else {
-                    defaultPromptUpdateStatus = "Default prompts are up to date."
-                }
-            } catch {
-                isCheckingDefaultPromptUpdates = false
-                defaultPromptUpdateStatus = "Could not update default prompts: \(error.localizedDescription)"
-            }
-        }
-    }
-
-    private func confirmPendingDefaultPromptUpdate() {
-        guard let pendingDefaultPromptUpdate else { return }
-        promptLibrary.confirmDefaultPromptUpdate(pendingDefaultPromptUpdate)
-        defaultPromptUpdateStatus = "Default prompts updated."
-        self.pendingDefaultPromptUpdate = nil
     }
 
     private var selectedRomDisplayName: String {
@@ -2160,115 +1608,6 @@ struct SettingsView: View {
         case .vAmiga:
             return "vAmiga validation uses Desktop automation servers to collect RPC trace, CPU, and runtime evidence."
         }
-    }
-
-    private var hardwarePresetSelection: Binding<String> {
-        Binding(
-            get: { selectedHardwarePresetID },
-            set: { presetID in
-                guard
-                    presetID != HardwarePreset.customID,
-                    let preset = HardwarePreset.presets.first(where: { $0.id == presetID })
-                else {
-                    return
-                }
-
-                applyHardwarePreset(preset)
-            }
-        )
-    }
-
-    private var selectedHardwarePresetID: String {
-        HardwarePreset.presets.first(where: { hardwareMatches($0) })?.id ?? HardwarePreset.customID
-    }
-
-    private func hardwareMatches(_ preset: HardwarePreset) -> Bool {
-        guard emulatorModel == preset.model,
-              emulatorCpu == preset.cpu,
-              emulatorChipRam == preset.chipRam,
-              emulatorFastRam == preset.fastRam,
-              emulatorJit == preset.jit
-        else {
-            return false
-        }
-
-        guard let presetRom = bestRom(for: preset) else {
-            return true
-        }
-
-        return selectedRomFilename == presetRom
-    }
-
-    private func applyHardwarePreset(_ preset: HardwarePreset) {
-        emulatorModel = preset.model
-        emulatorCpu = preset.cpu
-        emulatorChipRam = preset.chipRam
-        emulatorFastRam = preset.fastRam
-        emulatorJit = preset.jit
-
-        if let rom = bestRom(for: preset) {
-            selectedRomFilename = rom
-        }
-    }
-
-    private func bestRom(for preset: HardwarePreset) -> String? {
-        let matches = availableRoms.compactMap { rom -> (rom: RomEntry, score: Int)? in
-            let searchableName = rom.relativePath.lowercased()
-
-            guard preset.requiredRomTerms.allSatisfy({ searchableName.contains($0) }) else {
-                return nil
-            }
-
-            guard preset.anyRomTerms.isEmpty || preset.anyRomTerms.contains(where: { searchableName.contains($0) }) else {
-                return nil
-            }
-
-            guard !preset.excludedRomTerms.contains(where: { searchableName.contains($0) }) else {
-                return nil
-            }
-
-            let fileSize = romFileSize(rom)
-            if let minimumRomSize = preset.minimumRomSize, fileSize < minimumRomSize {
-                return nil
-            }
-
-            var score = preset.preferredRomTerms.reduce(0) { partialResult, term in
-                partialResult + (searchableName.contains(term) ? 10 : 0)
-            }
-
-            if fileSize == preset.idealRomSize {
-                score += 5
-            }
-
-            if searchableName.contains("[!]") {
-                score += 2
-            }
-
-            return (rom, score)
-        }
-
-        return matches
-            .sorted {
-                if $0.score == $1.score {
-                    return $0.rom.displayName.localizedStandardCompare($1.rom.displayName) == .orderedAscending
-                }
-
-                return $0.score > $1.score
-            }
-            .first?
-            .rom
-            .relativePath
-    }
-
-    private func romFileSize(_ rom: RomEntry) -> Int {
-        guard
-            let attributes = try? FileManager.default.attributesOfItem(atPath: rom.absolutePath),
-            let size = attributes[.size] as? NSNumber
-        else {
-            return 0
-        }
-
-        return size.intValue
     }
 
     private func chooseRomsDirectory() {
@@ -2302,10 +1641,6 @@ struct SettingsView: View {
                 .tabItem { Label("AI", systemImage: "sparkles") }
                 .accessibilityIdentifier("settingsAITab")
 
-            codeSettings
-                .tabItem { Label("Code", systemImage: "chevron.left.forwardslash.chevron.right") }
-                .accessibilityIdentifier("settingsCodeTab")
-
             hardwareSettings
                 .tabItem { Label("Hardware", systemImage: "cpu") }
                 .accessibilityIdentifier("settingsHardwareTab")
@@ -2325,73 +1660,24 @@ struct SettingsView: View {
             if !selectedRomFilename.isEmpty && !availableRoms.contains(where: { $0.relativePath == selectedRomFilename }) {
                 selectedRomFilename = ""
             }
-            if updateDefaultPromptsWhenAvailable {
-                checkForDefaultPromptUpdates()
-            }
         }
-        .alert("Update Default Prompts?", isPresented: defaultPromptUpdateAlertIsPresented) {
-            Button("Update") {
-                confirmPendingDefaultPromptUpdate()
-            }
-            Button("Cancel", role: .cancel) {
-                defaultPromptUpdateStatus = "Default prompt update skipped."
-                pendingDefaultPromptUpdate = nil
-            }
-        } message: {
-            Text(defaultPromptUpdateConfirmationMessage)
-        }
-    }
-
-    private var defaultPromptUpdateConfirmationMessage: String {
-        guard let pendingDefaultPromptUpdate else {
-            return ""
-        }
-
-        let names = pendingDefaultPromptUpdate.conflictNames.prefix(6).joined(separator: "\n")
-        let remainingCount = max(0, pendingDefaultPromptUpdate.conflictNames.count - 6)
-        let suffix = remainingCount == 0 ? "" : "\n...and \(remainingCount) more."
-        return "These bundled prompts have local edits and will be replaced by the GitHub version:\n\n\(names)\(suffix)"
     }
 
     private var generalSettings: some View {
         Form {
-            Section("General") {
-                HStack {
-                    Picker("Default emulator", selection: $emulatorBackend) {
-                        ForEach(EmulatorBackend.allCases) { backend in
-                            Text(backend.displayName).tag(backend.rawValue)
-                        }
-                    }
-                    SettingsInfoButton(text: selectedBackendDescription)
-                }
-
-                Toggle("Automatically run default emulator after assembly", isOn: $autoRunEmulator)
-            }
-
-            Section("UI") {
-                Toggle("Show Boing Ball animation in chat", isOn: $showChatBoingBall)
-                    .accessibilityIdentifier("showChatBoingBallToggle")
-
-                HStack {
-                    Toggle("Automatically inject generated code", isOn: $autoInjectGeneratedCode)
-                        .accessibilityIdentifier("autoInjectGeneratedCodeToggle")
-                    SettingsInfoButton(text: "When enabled, assistant code is inserted after generation and compiler checks finish. If the editor already contains code, the replacement confirmation still appears.")
-                }
-
-                HStack {
-                    Toggle("Update default prompts when available", isOn: defaultPromptUpdateToggle)
-                        .disabled(isCheckingDefaultPromptUpdates)
-                        .accessibilityIdentifier("updateDefaultPromptsToggle")
-                    SettingsInfoButton(text: "When enabled, Amiga Playground checks GitHub for bundled prompt updates. Custom prompts are preserved; locally edited bundled prompts require confirmation before replacement.")
-                }
-
-                if let defaultPromptUpdateStatus {
-                    Text(defaultPromptUpdateStatus)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .accessibilityIdentifier("defaultPromptUpdateStatus")
+            Picker("Default emulator", selection: $emulatorBackend) {
+                ForEach(EmulatorBackend.allCases) { backend in
+                    Text(backend.displayName).tag(backend.rawValue)
                 }
             }
+            Text(selectedBackendDescription)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Toggle("Automatically run default emulator after assembly", isOn: $autoRunEmulator)
+
+            Toggle("Show Boing Ball animation in chat", isOn: $showChatBoingBall)
+                .accessibilityIdentifier("showChatBoingBallToggle")
         }
         .formStyle(.grouped)
         .padding()
@@ -2406,7 +1692,7 @@ struct SettingsView: View {
                     }
                 }
 
-                TextField("Model card name", text: aiSettingsModelName)
+                TextField("Model name", text: $llm.modelName)
                     .textFieldStyle(.roundedBorder)
 
                 TextField("Custom API URL", text: $llm.customUrl)
@@ -2417,15 +1703,9 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
                     .accessibilityIdentifier("activeEndpointLabel")
 
-                Text("Model card: \(OllamaService.publishedModelDisplayName)")
+                Text("Request model: \(llm.requestModelName)")
                     .font(.caption.monospaced())
                     .foregroundStyle(.secondary)
-
-                if llm.requestModelName != aiSettingsModelName.wrappedValue {
-                    Text("API request model: \(llm.requestModelName)")
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.secondary)
-                }
             }
 
             Section("Local MLX Server") {
@@ -2441,34 +1721,32 @@ struct SettingsView: View {
                         .accessibilityIdentifier("mlxServerStatusLabel")
                 }
 
-                Text("Managed by bundled helper")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
                 if let detail = mlxServer.status.detail {
                     Text(detail)
                         .font(.caption)
                         .foregroundStyle(.red)
-                        .textSelection(.enabled)
-
-                    Button {
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(detail, forType: .string)
-                    } label: {
-                        Label("Copy Setup Instructions", systemImage: "doc.on.doc")
-                    }
-                    .accessibilityIdentifier("copyMLXSetupInstructionsButton")
                 }
 
                 HStack {
                     Button {
-                        toggleMLXServerFromSettings()
+                        llm.provider = .lmStudio
+                        llm.customUrl = ""
+                        llm.modelName = OllamaService.Provider.lmStudio.defaultModelName
+                        mlxServer.start()
                     } label: {
-                        Label(mlxServerToggleLabel, systemImage: mlxServerToggleIcon)
+                        Label("Start MLX Server", systemImage: "play.fill")
                     }
-                    .disabled(!canToggleMLXServer)
-                    .tint(.accentColor)
-                    .accessibilityIdentifier("toggleMLXServerButton")
+                    .disabled(!mlxServer.canStart)
+                    .accessibilityIdentifier("startMLXServerButton")
+
+                    Button {
+                        mlxServer.stop()
+                        llm.refreshConnectionStatus()
+                    } label: {
+                        Label("Stop", systemImage: "stop.fill")
+                    }
+                    .disabled(!mlxServer.canStop)
+                    .accessibilityIdentifier("stopMLXServerButton")
 
                     Button {
                         mlxServer.refreshStatus()
@@ -2484,34 +1762,17 @@ struct SettingsView: View {
                         Label("Folder", systemImage: "folder")
                     }
                     .accessibilityIdentifier("openMLXServerFolderButton")
-
-                    Link(destination: OllamaService.modelCardURL) {
-                        Label("Model Card", systemImage: "link")
-                    }
-                    .accessibilityIdentifier("mlxServerModelCardLink")
                 }
 
                 Text("Endpoint: \(mlxServer.endpointDescription)")
                     .font(.caption.monospaced())
                     .foregroundStyle(.secondary)
 
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text("Log: \(mlxServer.logFilePath)")
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                        .truncationMode(.middle)
-
-                    Button {
-                        revealMLXServerLog()
-                    } label: {
-                        Image(systemName: "folder")
-                    }
-                    .buttonStyle(.borderless)
-                    .help("Open log location in Finder")
-                    .accessibilityLabel("Open MLX server log location")
-                    .accessibilityIdentifier("openMLXServerLogLocationButton")
-                }
+                Text("Log: \(mlxServer.logFilePath)")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .truncationMode(.middle)
             }
 
             Section("Instruction") {
@@ -2535,10 +1796,10 @@ struct SettingsView: View {
                     .font(.body.monospaced())
                     .frame(minHeight: 120)
                     .accessibilityIdentifier("assistantSystemPromptEditor")
-                    .overlay(alignment: .topTrailing) {
-                        SettingsInfoButton(text: "System prompt is sent as a system message before the chat history.")
-                            .padding(6)
-                    }
+
+                Text("System prompt is sent as a system message before the chat history.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
@@ -2549,36 +1810,8 @@ struct SettingsView: View {
         }
     }
 
-    private var codeSettings: some View {
-        Form {
-            Section("Code") {
-                HStack {
-                    Toggle("Generate comments", isOn: $generateCodeComments)
-                        .toggleStyle(.checkbox)
-                        .accessibilityIdentifier("generateCodeCommentsToggle")
-                    SettingsInfoButton(text: "When enabled, generated source asks the assistant to add an explanatory semicolon comment to each code line.")
-                }
-            }
-        }
-        .formStyle(.grouped)
-        .padding()
-        .accessibilityIdentifier("codeSettingsPane")
-    }
-
     private var hardwareSettings: some View {
         Form {
-            Section("Ideal Configuration") {
-                HStack {
-                    Picker("Preset", selection: hardwarePresetSelection) {
-                        Text("Custom").tag(HardwarePreset.customID)
-                        ForEach(HardwarePreset.presets) { preset in
-                            Text(preset.name).tag(preset.id)
-                        }
-                    }
-                    SettingsInfoButton(text: hardwarePresetDescription)
-                }
-            }
-
             Section("Kickstart ROM") {
                 Text("Directory: \(romsDirectoryPath)")
                     .font(.caption.monospaced())
@@ -2592,7 +1825,7 @@ struct SettingsView: View {
                     }
 
                     Button("Reset to Default") {
-                        romsDirectoryPath = EmulatorService.defaultRomsDirectory
+                        romsDirectoryPath = "/Users/megov/code/GitHub/littlethings/Amiga/commodore-amiga-firmware"
                         availableRoms = EmulatorService.shared.getAvailableRoms()
                         if !selectedRomFilename.isEmpty && !availableRoms.contains(where: { $0.relativePath == selectedRomFilename }) {
                             selectedRomFilename = ""
@@ -2641,23 +1874,11 @@ struct SettingsView: View {
 
     private var fsUaeSettings: some View {
         Form {
-            Section("Launch Arguments") {
-                HStack {
-                    Picker("Preset", selection: fsUaeArgumentPresetSelection) {
-                        Text("Custom").tag(FSUAEArgumentPreset.customID)
-                        ForEach(FSUAEArgumentPreset.presets) { preset in
-                            Text(preset.name).tag(preset.id)
-                        }
-                    }
-                    SettingsInfoButton(text: fsUaeArgumentPresetDescription)
-                }
-
-                HStack {
-                    TextField("Custom FS-UAE launch arguments", text: $emulatorCustomArgs)
-                        .textFieldStyle(.roundedBorder)
-                    SettingsInfoButton(text: "These arguments are appended when the default emulator is FS-UAE.")
-                }
-            }
+            TextField("Custom FS-UAE launch arguments", text: $emulatorCustomArgs)
+                .textFieldStyle(.roundedBorder)
+            Text("These arguments are appended when the default emulator is FS-UAE.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .formStyle(.grouped)
         .padding()
@@ -2691,192 +1912,6 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
-    }
-}
-
-private struct FSUAEArgumentPreset: Identifiable {
-    static let customID = "custom"
-
-    let id: String
-    let name: String
-    let arguments: String
-    let summary: String
-
-    static let presets: [FSUAEArgumentPreset] = [
-        FSUAEArgumentPreset(
-            id: "fullscreen",
-            name: "Fullscreen display",
-            arguments: "--fullscreen=1 --keep_aspect=1",
-            summary: "Starts FS-UAE fullscreen while preserving the original Amiga display aspect ratio."
-        ),
-        FSUAEArgumentPreset(
-            id: "windowed-hd",
-            name: "Windowed HD",
-            arguments: "--fullscreen=0 --window_width=1280 --window_height=720 --keep_aspect=1",
-            summary: "Forces a 1280x720 window and keeps the Amiga image proportional."
-        ),
-        FSUAEArgumentPreset(
-            id: "low-latency",
-            name: "Low-latency video",
-            arguments: "--video_sync=0 --scanlines=0",
-            summary: "Disables video sync and scanline styling for faster feedback while testing generated code."
-        ),
-        FSUAEArgumentPreset(
-            id: "classic-crt",
-            name: "Classic CRT look",
-            arguments: "--scanlines=1 --keep_aspect=1",
-            summary: "Adds scanlines and keeps the display closer to a classic monitor shape."
-        ),
-        FSUAEArgumentPreset(
-            id: "fast-floppy",
-            name: "Fast floppy loading",
-            arguments: "--floppy_drive_speed=0",
-            summary: "Speeds up disk loading for iteration-heavy compile and run loops."
-        )
-    ]
-}
-
-private struct HardwarePreset: Identifiable {
-    static let customID = "custom"
-
-    let id: String
-    let name: String
-    let model: String
-    let cpu: String
-    let chipRam: String
-    let fastRam: String
-    let jit: Bool
-    let anyRomTerms: [String]
-    let requiredRomTerms: [String]
-    let preferredRomTerms: [String]
-    let excludedRomTerms: [String]
-    let minimumRomSize: Int?
-    let idealRomSize: Int
-
-    var summary: String {
-        "\(model), CPU \(cpu), Chip RAM \(chipRam), Fast RAM \(fastRam), JIT \(jit ? "On" : "Off")"
-    }
-
-    static let presets: [HardwarePreset] = [
-        HardwarePreset(
-            id: "a500-kickstart-13",
-            name: "A500 Kickstart 1.3",
-            model: "A500",
-            cpu: "68000",
-            chipRam: "512 KB",
-            fastRam: "0 MB",
-            jit: false,
-            anyRomTerms: ["kick13", "1.3", "34.5", "315093-02"],
-            requiredRomTerms: [],
-            preferredRomTerms: ["34.5", "315093-02", "[!]"],
-            excludedRomTerms: ["a3000", "beta", "proto", "[h]", "[o]"],
-            minimumRomSize: nil,
-            idealRomSize: 262_144
-        ),
-        HardwarePreset(
-            id: "a500-plus-kickstart-204",
-            name: "A500+ Kickstart 2.04",
-            model: "A500+",
-            cpu: "68000",
-            chipRam: "1 MB",
-            fastRam: "0 MB",
-            jit: false,
-            anyRomTerms: ["a500+", "a500 plus", "390979"],
-            requiredRomTerms: ["2.04"],
-            preferredRomTerms: ["37.175", "390979", "[!]"],
-            excludedRomTerms: ["beta", "proto", "[h]", "[o]"],
-            minimumRomSize: 524_288,
-            idealRomSize: 524_288
-        ),
-        HardwarePreset(
-            id: "a600-kickstart-205",
-            name: "A600 Kickstart 2.05",
-            model: "A600",
-            cpu: "68000",
-            chipRam: "1 MB",
-            fastRam: "0 MB",
-            jit: false,
-            anyRomTerms: ["a600", "391304", "391388"],
-            requiredRomTerms: ["2.05"],
-            preferredRomTerms: ["37.350", "37.300", "391304", "391388", "[!]"],
-            excludedRomTerms: ["beta", "proto", "[h]", "[o]"],
-            minimumRomSize: 524_288,
-            idealRomSize: 524_288
-        ),
-        HardwarePreset(
-            id: "a1200-kickstart-31",
-            name: "A1200 Kickstart 3.1",
-            model: "A1200",
-            cpu: "68020",
-            chipRam: "2 MB",
-            fastRam: "0 MB",
-            jit: false,
-            anyRomTerms: ["a1200"],
-            requiredRomTerms: ["3.1"],
-            preferredRomTerms: ["40.68", "kick31", "[!]"],
-            excludedRomTerms: ["391773", "391774", "rom0", "rom1", "odd", "even", "beta", "proto", "[h]", "[o]"],
-            minimumRomSize: 524_288,
-            idealRomSize: 524_288
-        ),
-        HardwarePreset(
-            id: "a4000-kickstart-31",
-            name: "A4000 Kickstart 3.1",
-            model: "A4000",
-            cpu: "68040",
-            chipRam: "2 MB",
-            fastRam: "8 MB",
-            jit: false,
-            anyRomTerms: ["a4000"],
-            requiredRomTerms: ["3.1"],
-            preferredRomTerms: ["40.70", "40.68", "kick31", "[!]"],
-            excludedRomTerms: ["391657", "391773", "391774", "rom0", "rom1", "odd", "even", "beta", "proto", "[h]", "[o]"],
-            minimumRomSize: 524_288,
-            idealRomSize: 524_288
-        )
-    ]
-}
-
-private enum AssistantGenerationPhase: Equatable {
-    case idle
-    case generating
-    case validating
-    case repairing(attempt: Int)
-
-    var title: String {
-        switch self {
-        case .idle, .generating:
-            return "Assistant"
-        case .validating:
-            return "Checking generated code"
-        case .repairing(let attempt):
-            return "Self-repair pass \(attempt) of 2"
-        }
-    }
-
-    var detail: String? {
-        switch self {
-        case .idle:
-            return nil
-        case .generating:
-            return "Generating code from your prompt."
-        case .validating:
-            return "Compiling and validating before editor injection."
-        case .repairing:
-            return "The previous code failed validation, so the assistant is correcting it."
-        }
-    }
-
-    var consoleMessage: String {
-        switch self {
-        case .idle:
-            return ""
-        case .generating:
-            return "Generating"
-        case .validating:
-            return "Compiling and validating generated code"
-        case .repairing(let attempt):
-            return "Self-repair pass \(attempt) of 2: correcting generated code after validation failed"
-        }
     }
 }
 
@@ -3236,8 +2271,6 @@ struct SettingsNumberInput: NSViewRepresentable {
     }
 }
 
-#if !CODEX_CLI_TEST
 #Preview {
     ContentView()
 }
-#endif

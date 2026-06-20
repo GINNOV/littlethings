@@ -85,14 +85,9 @@ final class AmigaPlaygroundUITests: XCTestCase {
         XCTAssertTrue(app.windows.element(boundBy: 1).waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["General"].exists)
         XCTAssertTrue(app.buttons["AI"].exists)
-        XCTAssertTrue(app.buttons["Code"].exists)
         XCTAssertTrue(app.buttons["Hardware"].exists)
         XCTAssertTrue(app.buttons["FS-UAE"].exists)
         XCTAssertTrue(app.buttons["vAmiga"].exists)
-
-        app.buttons["Code"].click()
-        XCTAssertTrue(app.checkBoxes["Generate comments"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.descendants(matching: .any)["generateCodeCommentsToggle"].exists)
 
         app.buttons["AI"].click()
         XCTAssertTrue(app.staticTexts["Model name"].waitForExistence(timeout: 2))
@@ -101,52 +96,6 @@ final class AmigaPlaygroundUITests: XCTestCase {
 
         let screenshot = XCTAttachment(screenshot: app.windows.element(boundBy: 1).screenshot())
         screenshot.name = "Settings Tabs Visual Contract"
-        screenshot.lifetime = .keepAlways
-        add(screenshot)
-    }
-
-    func testPromptLibraryShowsGuidedProgressHeader() {
-        app.typeKey("l", modifierFlags: [.command, .option])
-
-        let promptWindow = app.windows["Prompt Library"]
-        XCTAssertTrue(promptWindow.waitForExistence(timeout: 5))
-        XCTAssertTrue(promptWindow.descendants(matching: .any)["promptProgressHeader"].waitForExistence(timeout: 3))
-        XCTAssertEqual(promptWindow.descendants(matching: .any)["demoSchoolSequenceNumber"].label, "Lesson 1 of 30")
-        XCTAssertTrue(promptWindow.staticTexts["01 Foundations - Minimal Executable"].exists)
-        XCTAssertTrue(promptWindow.staticTexts["Foundations / Reference / Beginner"].exists)
-
-        let nextButton = promptWindow.descendants(matching: .any)["demoSchoolNextButton"]
-        XCTAssertTrue(nextButton.exists)
-        nextButton.click()
-
-        XCTAssertTrue(promptWindow.staticTexts["02 Foundations - Registers and Stack"].waitForExistence(timeout: 2))
-        XCTAssertEqual(promptWindow.descendants(matching: .any)["demoSchoolSequenceNumber"].label, "Lesson 2 of 30")
-
-        let screenshot = XCTAttachment(screenshot: promptWindow.screenshot())
-        screenshot.name = "Prompt Library Guided Progress"
-        screenshot.lifetime = .keepAlways
-        add(screenshot)
-    }
-
-    func testExampleLibraryShowsGuidedProgressHeader() {
-        app.typeKey("e", modifierFlags: [.command, .option])
-
-        let exampleWindow = app.windows["Example Library"]
-        XCTAssertTrue(exampleWindow.waitForExistence(timeout: 5))
-        XCTAssertTrue(exampleWindow.descendants(matching: .any)["exampleProgressHeader"].waitForExistence(timeout: 3))
-        XCTAssertEqual(exampleWindow.descendants(matching: .any)["demoSchoolSequenceNumber"].label, "Lesson 1 of 10")
-        XCTAssertTrue(exampleWindow.staticTexts["01 ASM Clean Takeover Skeleton"].exists)
-        XCTAssertTrue(exampleWindow.staticTexts["System / System / Intermediate"].exists)
-
-        let nextButton = exampleWindow.descendants(matching: .any)["demoSchoolNextButton"]
-        XCTAssertTrue(nextButton.exists)
-        nextButton.click()
-
-        XCTAssertTrue(exampleWindow.staticTexts["02 ASM Copper Rainbow Lab"].waitForExistence(timeout: 2))
-        XCTAssertEqual(exampleWindow.descendants(matching: .any)["demoSchoolSequenceNumber"].label, "Lesson 2 of 10")
-
-        let screenshot = XCTAttachment(screenshot: exampleWindow.screenshot())
-        screenshot.name = "Example Library Guided Progress"
         screenshot.lifetime = .keepAlways
         add(screenshot)
     }

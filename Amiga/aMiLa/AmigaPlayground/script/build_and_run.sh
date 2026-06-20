@@ -10,11 +10,8 @@ PROJECT_FILE="$ROOT_DIR/AmigaPlayground.xcodeproj"
 BUILD_DIR="$ROOT_DIR/build"
 BUILT_APP="$BUILD_DIR/Debug/$APP_NAME.app"
 LOCAL_APP="$ROOT_DIR/$APP_NAME.app"
-HELPER_PRODUCT="$ROOT_DIR/.build/debug/MLXServerHelper"
 
 pkill -x "$APP_NAME" >/dev/null 2>&1 || true
-
-swift build --package-path "$ROOT_DIR" --product MLXServerHelper
 
 xcodebuild \
   -project "$PROJECT_FILE" \
@@ -25,9 +22,6 @@ xcodebuild \
 
 rm -rf "$LOCAL_APP"
 ditto "$BUILT_APP" "$LOCAL_APP"
-mkdir -p "$LOCAL_APP/Contents/Helpers"
-cp "$HELPER_PRODUCT" "$LOCAL_APP/Contents/Helpers/MLXServerHelper"
-chmod +x "$LOCAL_APP/Contents/Helpers/MLXServerHelper"
 
 open_app() {
   /usr/bin/open -n "$LOCAL_APP"

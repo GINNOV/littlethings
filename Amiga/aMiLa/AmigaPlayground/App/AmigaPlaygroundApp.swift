@@ -4,16 +4,6 @@ import AppKit
 @main
 struct AmigaPlaygroundApp: App {
     @Environment(\.openWindow) private var openWindow
-    private let updaterController = UpdaterController()
-
-    init() {
-        if CommandLine.arguments.contains("-UITestMode") {
-            UserDefaults.standard.removeObject(forKey: "promptLibraryItems")
-            UserDefaults.standard.removeObject(forKey: "promptLibraryDefaultSeedVersion")
-            UserDefaults.standard.removeObject(forKey: "exampleLibraryItems")
-            UserDefaults.standard.removeObject(forKey: "exampleLibraryDefaultSeedVersion")
-        }
-    }
 
     var body: some Scene {
         WindowGroup {
@@ -27,18 +17,11 @@ struct AmigaPlaygroundApp: App {
                 }
             }
 
-            UpdaterCommands(updaterController: updaterController)
-
             CommandGroup(after: .newItem) {
                 Button("Prompt Library") {
                     openWindow(id: "prompt-library")
                 }
                 .keyboardShortcut("l", modifiers: [.command, .option])
-
-                Button("Example Library") {
-                    openWindow(id: "example-library")
-                }
-                .keyboardShortcut("e", modifiers: [.command, .option])
             }
 
             AmigaPlaygroundCommands()
@@ -57,11 +40,6 @@ struct AmigaPlaygroundApp: App {
             PromptLibraryView()
         }
         .defaultSize(width: 820, height: 520)
-
-        Window("Example Library", id: "example-library") {
-            ExampleLibraryView()
-        }
-        .defaultSize(width: 860, height: 560)
     }
 }
 

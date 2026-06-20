@@ -39,54 +39,12 @@ final class MLXServerController: ObservableObject {
         let logFile: URL
     }
 
-    struct ModelDownloadFile: Equatable {
-        let relativePath: String
-
-        var remoteURL: URL {
-            let escapedPath = relativePath
-                .split(separator: "/")
-                .map { String($0).addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? String($0) }
-                .joined(separator: "/")
-
-            return URL(string: "https://huggingface.co/\(OllamaService.publishedModelID)/resolve/main/\(escapedPath)")!
-        }
-    }
-
-    struct HelperStatus: Decodable, Equatable {
-        enum Event: String, Decodable {
-            case ready
-            case preflight
-            case started
-            case running
-            case stopped
-            case failed
-        }
-
-        let event: Event
-        let message: String
-        let code: String?
-        let action: String?
-
-        static func parse(line: String) throws -> HelperStatus {
-            try JSONDecoder().decode(HelperStatus.self, from: Data(line.utf8))
-        }
-
-        var userFacingMessage: String {
-            guard let action, !action.isEmpty else {
-                return message
-            }
-
-            return "\(message)\n\n\(action)"
-        }
-    }
-
     enum Status: Equatable {
         case stopped
         case starting
         case running
         case runningExternally
         case stopping
-        case downloading(completed: Int, total: Int, currentFile: String)
         case failed(String)
 
         var label: String {
@@ -94,28 +52,21 @@ final class MLXServerController: ObservableObject {
             case .stopped:
                 return "Stopped"
             case .starting:
-                return "Starting MLX Server"
+                return "Starting..."
             case .running:
-                return "MLX Server Running"
+                return "Running"
             case .runningExternally:
-                return "MLX Running Outside App"
+                return "Already running outside app"
             case .stopping:
-                return "Stopping MLX Server"
-            case .downloading(let completed, let total, _):
-                let current = min(completed + 1, total)
-                return "Downloading Model \(current)/\(total)"
+                return "Stopping..."
             case .failed:
-                return "MLX Setup Needed"
+                return "Failed"
             }
         }
 
         var detail: String? {
             if case .failed(let message) = self {
                 return message
-            }
-
-            if case .downloading(_, _, let currentFile) = self {
-                return "Downloading \(currentFile)"
             }
 
             return nil
@@ -126,28 +77,8 @@ final class MLXServerController: ObservableObject {
 
     let configuration: Configuration
     private var process: Process?
-    private var downloadProcess: Process?
     private var logFileHandle: FileHandle?
     private let urlSession: URLSession
-    private var helperOutputBuffer = ""
-
-    static let modelDownloadFiles: [ModelDownloadFile] = [
-        ModelDownloadFile(relativePath: "README.md"),
-        ModelDownloadFile(relativePath: "chat_template.jinja"),
-        ModelDownloadFile(relativePath: "config.json"),
-        ModelDownloadFile(relativePath: "generation_config.json"),
-        ModelDownloadFile(relativePath: "model.safetensors"),
-        ModelDownloadFile(relativePath: "model.safetensors.index.json"),
-        ModelDownloadFile(relativePath: "model_version.json"),
-        ModelDownloadFile(relativePath: "tokenizer.json"),
-        ModelDownloadFile(relativePath: "tokenizer_config.json"),
-        ModelDownloadFile(relativePath: "adapters_asm/adapter_config.json"),
-        ModelDownloadFile(relativePath: "adapters_asm/adapters.safetensors"),
-        ModelDownloadFile(relativePath: "adapters_c/adapter_config.json"),
-        ModelDownloadFile(relativePath: "adapters_c/adapters.safetensors"),
-        ModelDownloadFile(relativePath: "docs/asm_capability_ladder.yaml"),
-        ModelDownloadFile(relativePath: "docs/model_learnings.md")
-    ]
 
     init(configuration: Configuration = .default, urlSession: URLSession = .shared) {
         self.configuration = configuration
@@ -155,40 +86,27 @@ final class MLXServerController: ObservableObject {
     }
 
     deinit {
-        downloadProcess?.terminate()
         stop()
     }
 
     static func buildInvocation(configuration: Configuration) -> Invocation {
-        let modelDirectory = configuration.workingDirectory.appendingPathComponent(configuration.modelDirectoryName, isDirectory: true)
-        let logFile = configuration.workingDirectory.appendingPathComponent(configuration.logFileName)
+        let command = [
+            "cd", shellQuoted(configuration.workingDirectory.path), "&&",
+            "exec", "uv", "run", "python", "-m", "mlx_lm.server",
+            "--model", shellQuoted(configuration.modelDirectoryName),
+            "--port", shellQuoted("\(configuration.port)")
+        ].joined(separator: " ")
 
         return Invocation(
-            executableURL: defaultHelperURL(),
-            arguments: [
-                "--model", modelDirectory.path,
-                "--port", "\(configuration.port)",
-                "--log-file", logFile.path,
-                "--runtime-command", "uv run python -m mlx_lm.server"
-            ],
+            executableURL: URL(fileURLWithPath: "/bin/zsh"),
+            arguments: ["-lc", command],
             workingDirectory: configuration.workingDirectory,
-            logFile: logFile
+            logFile: configuration.workingDirectory.appendingPathComponent(configuration.logFileName)
         )
     }
 
-    static func defaultHelperURL() -> URL {
-        if let helper = Bundle.main.url(forAuxiliaryExecutable: "MLXServerHelper") {
-            return helper
-        }
-
-        return packageDirectory()
-            .appendingPathComponent(".build/debug/MLXServerHelper")
-    }
-
-    static func packageDirectory() -> URL {
-        URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
+    private static func shellQuoted(_ value: String) -> String {
+        "'\(value.replacingOccurrences(of: "'", with: "'\\''"))'"
     }
 
     var endpointDescription: String {
@@ -199,36 +117,11 @@ final class MLXServerController: ObservableObject {
         Self.buildInvocation(configuration: configuration).logFile.path
     }
 
-    var modelDirectory: URL {
-        configuration.workingDirectory.appendingPathComponent(configuration.modelDirectoryName, isDirectory: true)
-    }
-
-    func adapterDirectory(named adapterName: String) -> URL {
-        modelDirectory.appendingPathComponent(adapterName, isDirectory: true)
-    }
-
-    var modelIsDownloaded: Bool {
-        Self.modelDownloadFiles
-            .filter { $0.relativePath.hasSuffix(".safetensors") || $0.relativePath == "config.json" || $0.relativePath == "tokenizer.json" }
-            .allSatisfy { FileManager.default.fileExists(atPath: modelDirectory.appendingPathComponent($0.relativePath).path) }
-    }
-
-    var canDownload: Bool {
-        guard !modelIsDownloaded else { return false }
-
-        switch status {
-        case .stopped, .failed:
-            return true
-        case .starting, .running, .runningExternally, .stopping, .downloading:
-            return false
-        }
-    }
-
     var canStart: Bool {
         switch status {
         case .stopped, .failed:
             return true
-        case .starting, .running, .runningExternally, .stopping, .downloading:
+        case .starting, .running, .runningExternally, .stopping:
             return false
         }
     }
@@ -237,7 +130,7 @@ final class MLXServerController: ObservableObject {
         switch status {
         case .running, .starting:
             return process != nil
-        case .stopped, .runningExternally, .stopping, .downloading, .failed:
+        case .stopped, .runningExternally, .stopping, .failed:
             return false
         }
     }
@@ -260,8 +153,9 @@ final class MLXServerController: ObservableObject {
         guard canStart else { return }
 
         let invocation = Self.buildInvocation(configuration: configuration)
-        guard modelIsDownloaded else {
-            status = .failed("MLX model files were not found in \(modelDirectory.path)\n\nUse Download Model in Amiga Playground, or run `cd \(configuration.workingDirectory.path) && ./download_model.sh`, then start the server again.")
+        let modelDirectory = configuration.workingDirectory.appendingPathComponent(configuration.modelDirectoryName, isDirectory: true)
+        guard FileManager.default.fileExists(atPath: modelDirectory.path) else {
+            status = .failed("Model directory not found: \(modelDirectory.path)")
             return
         }
 
@@ -300,204 +194,40 @@ final class MLXServerController: ObservableObject {
         process.terminate()
     }
 
-    func downloadModel(startAfterDownload: Bool = false) {
-        guard canDownload else { return }
-
-        let files = Self.modelDownloadFiles
-        status = .downloading(completed: 0, total: files.count, currentFile: files.first?.relativePath ?? "model")
-
-        DispatchQueue.global(qos: .utility).async { [weak self] in
-            guard let self else { return }
-
-            do {
-                try FileManager.default.createDirectory(at: self.modelDirectory, withIntermediateDirectories: true)
-
-                for (index, file) in files.enumerated() {
-                    DispatchQueue.main.async {
-                        self.status = .downloading(completed: index, total: files.count, currentFile: file.relativePath)
-                    }
-
-                    try self.download(file: file)
-                }
-
-                DispatchQueue.main.async {
-                    self.downloadProcess = nil
-                    self.status = .stopped
-                    if startAfterDownload {
-                        self.start()
-                    }
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    self.downloadProcess = nil
-                    self.status = .failed("Model download failed: \(error.localizedDescription)\n\nCheck your internet connection and make sure `/usr/bin/curl` is available, then try Download Model again.")
-                }
-            }
-        }
-    }
-
-    private func download(file: ModelDownloadFile) throws {
-        let destination = modelDirectory.appendingPathComponent(file.relativePath)
-        try FileManager.default.createDirectory(
-            at: destination.deletingLastPathComponent(),
-            withIntermediateDirectories: true
-        )
-
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
-        process.arguments = [
-            "--fail",
-            "--location",
-            "--continue-at", "-",
-            "--silent",
-            "--show-error",
-            "--output", destination.path,
-            file.remoteURL.absoluteString
-        ]
-        process.standardOutput = Pipe()
-        process.standardError = Pipe()
-
-        DispatchQueue.main.sync {
-            self.downloadProcess = process
-        }
-
-        try process.run()
-        process.waitUntilExit()
-
-        if process.terminationStatus != 0 {
-            throw NSError(
-                domain: "MLXServerController.ModelDownload",
-                code: Int(process.terminationStatus),
-                userInfo: [NSLocalizedDescriptionKey: "Could not download \(file.relativePath)"]
-            )
-        }
-    }
-
     private func launch(invocation: Invocation) {
         do {
-            try Self.ensureHelperExecutableExists(at: invocation.executableURL)
+            let logDirectory = invocation.logFile.deletingLastPathComponent()
+            try FileManager.default.createDirectory(at: logDirectory, withIntermediateDirectories: true)
+            _ = FileManager.default.createFile(atPath: invocation.logFile.path, contents: nil)
 
+            let handle = try FileHandle(forWritingTo: invocation.logFile)
             let process = Process()
-            let outputPipe = Pipe()
-            let errorPipe = Pipe()
             process.executableURL = invocation.executableURL
             process.arguments = invocation.arguments
             process.currentDirectoryURL = invocation.workingDirectory
-            process.standardOutput = outputPipe
-            process.standardError = errorPipe
+            process.standardOutput = handle
+            process.standardError = handle
             process.terminationHandler = { [weak self] launchedProcess in
                 DispatchQueue.main.async {
                     guard let self, self.process === launchedProcess else { return }
                     self.process = nil
-                    outputPipe.fileHandleForReading.readabilityHandler = nil
-                    errorPipe.fileHandleForReading.readabilityHandler = nil
+                    self.closeLogFile()
                     if case .stopping = self.status {
                         self.status = .stopped
-                    } else if case .failed = self.status {
-                        return
-                    } else if case .stopped = self.status {
-                        return
                     } else {
                         self.status = .failed("MLX server exited with status \(launchedProcess.terminationStatus). See \(invocation.logFile.path)")
                     }
                 }
             }
 
+            logFileHandle = handle
             self.process = process
-            helperOutputBuffer = ""
-            outputPipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
-                let data = handle.availableData
-                guard !data.isEmpty, let text = String(data: data, encoding: .utf8) else { return }
-                DispatchQueue.main.async {
-                    self?.handleHelperOutput(text)
-                }
-            }
-            errorPipe.fileHandleForReading.readabilityHandler = { handle in
-                _ = handle.availableData
-            }
             try process.run()
+            waitUntilHealthy(remainingAttempts: 30)
         } catch {
             closeLogFile()
             process = nil
             status = .failed(error.localizedDescription)
-        }
-    }
-
-    private static func ensureHelperExecutableExists(at helperURL: URL) throws {
-        let helperPath = helperURL.path
-        if FileManager.default.isExecutableFile(atPath: helperPath) {
-            return
-        }
-
-        guard helperURL.path.hasSuffix("/.build/debug/MLXServerHelper") else {
-            throw NSError(
-                domain: "MLXServerController.Helper",
-                code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "The MLX server helper was not found at \(helperPath)."]
-            )
-        }
-
-        let buildProcess = Process()
-        buildProcess.executableURL = URL(fileURLWithPath: "/usr/bin/swift")
-        buildProcess.arguments = ["build", "--product", "MLXServerHelper"]
-        buildProcess.currentDirectoryURL = packageDirectory()
-
-        let outputPipe = Pipe()
-        let errorPipe = Pipe()
-        buildProcess.standardOutput = outputPipe
-        buildProcess.standardError = errorPipe
-
-        do {
-            try buildProcess.run()
-            buildProcess.waitUntilExit()
-        } catch {
-            throw NSError(
-                domain: "MLXServerController.Helper",
-                code: 2,
-                userInfo: [NSLocalizedDescriptionKey: "Could not build MLXServerHelper with `/usr/bin/swift build --product MLXServerHelper`: \(error.localizedDescription)"]
-            )
-        }
-
-        guard buildProcess.terminationStatus == 0,
-              FileManager.default.isExecutableFile(atPath: helperPath) else {
-            let output = String(data: outputPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-            let error = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-            let details = (output + "\n" + error).trimmingCharacters(in: .whitespacesAndNewlines)
-            throw NSError(
-                domain: "MLXServerController.Helper",
-                code: Int(buildProcess.terminationStatus),
-                userInfo: [NSLocalizedDescriptionKey: "Could not build MLXServerHelper.\n\n\(details)"]
-            )
-        }
-    }
-
-    private func handleHelperOutput(_ text: String) {
-        helperOutputBuffer += text
-
-        while let newlineRange = helperOutputBuffer.range(of: "\n") {
-            let line = String(helperOutputBuffer[..<newlineRange.lowerBound])
-            helperOutputBuffer.removeSubrange(...newlineRange.lowerBound)
-            handleHelperLine(line)
-        }
-    }
-
-    private func handleHelperLine(_ line: String) {
-        let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedLine.isEmpty else { return }
-
-        guard let helperStatus = try? HelperStatus.parse(line: trimmedLine) else {
-            return
-        }
-
-        switch helperStatus.event {
-        case .ready, .preflight, .started:
-            status = .starting
-        case .running:
-            status = .running
-        case .stopped:
-            status = .stopped
-        case .failed:
-            status = .failed(helperStatus.userFacingMessage)
         }
     }
 

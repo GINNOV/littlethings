@@ -22,16 +22,6 @@
 		A11100002E8000C200000000 /* Services/PromptLibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000C100000000 /* Services/PromptLibraryStore.swift */; };
 		A11100002E8000C400000000 /* Views/PromptLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000C300000000 /* Views/PromptLibraryView.swift */; };
 		A11100002E8000D200000000 /* Services/MLXServerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000D100000000 /* Services/MLXServerController.swift */; };
-		A11100002E8000E200000000 /* Services/ExampleLibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000E100000000 /* Services/ExampleLibraryStore.swift */; };
-		A11100002E8000E400000000 /* Views/ExampleLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000E300000000 /* Views/ExampleLibraryView.swift */; };
-		A11100002E8000F200000000 /* Services/AssemblySemanticValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000F100000000 /* Services/AssemblySemanticValidator.swift */; };
-		A11100002E80010200000000 /* Services/DemoSchoolMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80010100000000 /* Services/DemoSchoolMetadata.swift */; };
-		A11100002E80010400000000 /* Views/DemoSchoolLibraryComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80010300000000 /* Views/DemoSchoolLibraryComponents.swift */; };
-		A11100002E80011200000000 /* App/UpdaterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80011100000000 /* App/UpdaterController.swift */; };
-		A11100002E80011400000000 /* App/UpdaterCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80011300000000 /* App/UpdaterCommands.swift */; };
-		A11100002E80011600000000 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A11100002E80011500000000 /* Sparkle */; };
-		A11100002E80012000000000 /* Services/AmigaProgramModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80011F00000000 /* Services/AmigaProgramModel.swift */; };
-		A11100002E80012200000000 /* Services/AmigaRuntimeEvidence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80012100000000 /* Services/AmigaRuntimeEvidence.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,16 +60,6 @@
 		A11100002E8000C100000000 /* Services/PromptLibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PromptLibraryStore.swift; sourceTree = "<group>"; };
 		A11100002E8000C300000000 /* Views/PromptLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PromptLibraryView.swift; sourceTree = "<group>"; };
 		A11100002E8000D100000000 /* Services/MLXServerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/MLXServerController.swift; sourceTree = "<group>"; };
-		A11100002E8000E100000000 /* Services/ExampleLibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/ExampleLibraryStore.swift; sourceTree = "<group>"; };
-		A11100002E8000E300000000 /* Views/ExampleLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/ExampleLibraryView.swift; sourceTree = "<group>"; };
-		A11100002E8000F100000000 /* Services/AssemblySemanticValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AssemblySemanticValidator.swift; sourceTree = "<group>"; };
-		A11100002E80010100000000 /* Services/DemoSchoolMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/DemoSchoolMetadata.swift; sourceTree = "<group>"; };
-		A11100002E80010300000000 /* Views/DemoSchoolLibraryComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/DemoSchoolLibraryComponents.swift; sourceTree = "<group>"; };
-		A11100002E80011000000000 /* App/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = App/Info.plist; sourceTree = "<group>"; };
-		A11100002E80011100000000 /* App/UpdaterController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/UpdaterController.swift; sourceTree = "<group>"; };
-		A11100002E80011300000000 /* App/UpdaterCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/UpdaterCommands.swift; sourceTree = "<group>"; };
-		A11100002E80011F00000000 /* Services/AmigaProgramModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AmigaProgramModel.swift; sourceTree = "<group>"; };
-		A11100002E80012100000000 /* Services/AmigaRuntimeEvidence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AmigaRuntimeEvidence.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,7 +67,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A11100002E80011600000000 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -141,10 +120,7 @@
 		A11100002E80006100000000 /* App */ = {
 			isa = PBXGroup;
 			children = (
-				A11100002E80011000000000 /* App/Info.plist */,
 				A11100002E80001100000000 /* App/AmigaPlaygroundApp.swift */,
-				A11100002E80011300000000 /* App/UpdaterCommands.swift */,
-				A11100002E80011100000000 /* App/UpdaterController.swift */,
 			);
 			name = App;
 			sourceTree = "<group>";
@@ -154,9 +130,7 @@
 			children = (
 				A11100002E80001400000000 /* Views/ContentView.swift */,
 				A11100002E80001200000000 /* Views/BoingBallView.swift */,
-				A11100002E80010300000000 /* Views/DemoSchoolLibraryComponents.swift */,
 				A11100002E8000C300000000 /* Views/PromptLibraryView.swift */,
-				A11100002E8000E300000000 /* Views/ExampleLibraryView.swift */,
 				A11100002E80001700000000 /* Views/WebEmulatorView.swift */,
 			);
 			name = Views;
@@ -165,14 +139,9 @@
 		A11100002E80006300000000 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				A11100002E80011F00000000 /* Services/AmigaProgramModel.swift */,
-				A11100002E80012100000000 /* Services/AmigaRuntimeEvidence.swift */,
 				A11100002E8000B100000000 /* Services/AssistantChatSession.swift */,
-				A11100002E8000F100000000 /* Services/AssemblySemanticValidator.swift */,
 				A11100002E80001300000000 /* Services/CompilerService.swift */,
-				A11100002E80010100000000 /* Services/DemoSchoolMetadata.swift */,
 				A11100002E80001600000000 /* Services/EmulatorService.swift */,
-				A11100002E8000E100000000 /* Services/ExampleLibraryStore.swift */,
 				A11100002E8000D100000000 /* Services/MLXServerController.swift */,
 				A11100002E80001500000000 /* Services/OllamaService.swift */,
 				A11100002E8000C100000000 /* Services/PromptLibraryStore.swift */,
@@ -214,9 +183,6 @@
 			dependencies = (
 			);
 			name = AmigaPlayground;
-			packageProductDependencies = (
-				A11100002E80011500000000 /* Sparkle */,
-			);
 			productName = AmigaPlayground;
 			productReference = A11100002E80000600000000 /* Amiga Playground.app */;
 			productType = "com.apple.product-type.application";
@@ -289,9 +255,6 @@
 				Base,
 			);
 			mainGroup = A11100002E80000200000000;
-			packageReferences = (
-				A11100002E80011700000000 /* XCRemoteSwiftPackageReference "Sparkle" */,
-			);
 			productRefGroup = A11100002E80000300000000 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -334,8 +297,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A11100002E80002100000000 /* App/AmigaPlaygroundApp.swift in Sources */,
-				A11100002E80011400000000 /* App/UpdaterCommands.swift in Sources */,
-				A11100002E80011200000000 /* App/UpdaterController.swift in Sources */,
 				A11100002E80002200000000 /* Views/BoingBallView.swift in Sources */,
 				A11100002E80002300000000 /* Services/CompilerService.swift in Sources */,
 				A11100002E80002400000000 /* Views/ContentView.swift in Sources */,
@@ -343,16 +304,9 @@
 				A11100002E80002600000000 /* Services/EmulatorService.swift in Sources */,
 				A11100002E8000B200000000 /* Services/AssistantChatSession.swift in Sources */,
 				A11100002E8000D200000000 /* Services/MLXServerController.swift in Sources */,
-				A11100002E8000E200000000 /* Services/ExampleLibraryStore.swift in Sources */,
 				A11100002E8000C200000000 /* Services/PromptLibraryStore.swift in Sources */,
 				A11100002E80002900000000 /* Services/VAmigaValidationService.swift in Sources */,
-				A11100002E8000F200000000 /* Services/AssemblySemanticValidator.swift in Sources */,
-				A11100002E80012000000000 /* Services/AmigaProgramModel.swift in Sources */,
-				A11100002E80012200000000 /* Services/AmigaRuntimeEvidence.swift in Sources */,
-				A11100002E80010200000000 /* Services/DemoSchoolMetadata.swift in Sources */,
-				A11100002E80010400000000 /* Views/DemoSchoolLibraryComponents.swift in Sources */,
 				A11100002E8000C400000000 /* Views/PromptLibraryView.swift in Sources */,
-				A11100002E8000E400000000 /* Views/ExampleLibraryView.swift in Sources */,
 				A11100002E80002700000000 /* Views/WebEmulatorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -521,14 +475,11 @@
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = App/Info.plist;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Amiga Playground";
 				INFOPLIST_KEY_CFBundleName = "Amiga Playground";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 GINNOV. All rights reserved.";
-				INFOPLIST_KEY_SUFeedURL = "https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/appcast-amigaplayground.xml";
-				INFOPLIST_KEY_SUPublicEDKey = "Oq4b/BX26tC2nXfh+dmMFoHFP9RN8lyqxcgrZPY+Pd8=";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -556,14 +507,11 @@
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = App/Info.plist;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Amiga Playground";
 				INFOPLIST_KEY_CFBundleName = "Amiga Playground";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 GINNOV. All rights reserved.";
-				INFOPLIST_KEY_SUFeedURL = "https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/appcast-amigaplayground.xml";
-				INFOPLIST_KEY_SUPublicEDKey = "Oq4b/BX26tC2nXfh+dmMFoHFP9RN8lyqxcgrZPY+Pd8=";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -695,25 +643,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		A11100002E80011700000000 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sparkle-project/Sparkle.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.7.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		A11100002E80011500000000 /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A11100002E80011700000000 /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A11100002E80000100000000 /* Project object */;
 }

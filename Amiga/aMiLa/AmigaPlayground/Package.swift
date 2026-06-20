@@ -6,39 +6,24 @@ let package = Package(
     platforms: [
         .macOS(.v14)
     ],
-    dependencies: [
-        .package(url: "https://github.com/sparkle-project/Sparkle.git", from: "2.7.1")
-    ],
+    dependencies: [],
     targets: [
         .executableTarget(
             name: "AmigaPlayground",
-            dependencies: [
-                .product(name: "Sparkle", package: "Sparkle")
-            ],
+            dependencies: [],
             path: ".",
             exclude: [
                 ".build",
                 ".codex",
-                "AGENTIC_AMIGA_CODE_PRODUCER_GOAL.md",
-                "App/Info.plist",
-                "Assets.xcassets",
-                "aMiLa",
                 "build",
-                "docs",
+                "AmigaPlayground.app",
                 "AmigaPlaygroundTests",
-                "AmigaPlaygroundUITests",
                 "AmigaPlayground.xcodeproj",
-                "Helpers",
                 "script"
             ],
             resources: [
                 .process("Resources")
             ]
-        ),
-        .executableTarget(
-            name: "MLXServerHelper",
-            dependencies: [],
-            path: "Helpers/MLXServerHelper"
         ),
         .testTarget(
             name: "AmigaPlaygroundTests",

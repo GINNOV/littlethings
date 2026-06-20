@@ -36,7 +36,6 @@ fastlane/test_output
 
 # Archive files
 *.xcarchive
-*.bundle
 
 # Node
 **/node_modules/
@@ -86,3 +85,4 @@ Amiga/aMiLa/**/*.o
 Amiga/aMiLa/**/*.a
 Amiga/aMiLa/.antigravitycli/
 Web_Apps/xbook-console/.antigravitycli
+Web_Apps/xbook-console/.next
