@@ -60,3 +60,10 @@ The current folder names are preserved for now. Physical moves should happen in
 a separate pass using `_catalog/reorganization-map.tsv`, because many imported
 projects may contain relative paths, README links, build scripts, or upstream
 history that assume the current layout.
+
+## Dependency Snapshots
+
+Some imported projects include historical dependency manifests. These are kept
+as `*.training-snapshot` files so the corpus text remains available for
+training, while GitHub does not treat archived third-party samples as active
+repository dependency roots.
